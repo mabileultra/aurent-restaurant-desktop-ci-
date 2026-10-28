@@ -1,10 +1,11 @@
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
 
-/** Сетевой сбой axios (нет ответа сервера), не бизнес-ошибка 4xx/5xx. */
 export function isApiNetworkError(error) {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
   if (!error) return false;
   const code = error.code;
   if (code === 'ERR_NETWORK' || code === 'ECONNABORTED' || code === 'ETIMEDOUT') return true;
+  if (error.message && /network\s*error/i.test(error.message)) return true;
   return !error.response && Boolean(error.request);
 }
 

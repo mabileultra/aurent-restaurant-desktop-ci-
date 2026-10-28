@@ -64,6 +64,18 @@ describe('apiErrorParser', () => {
     expect(parsed.message).toContain('Internet');
   });
 
+  it('parses offline browser condition with distinct wifi offline message', () => {
+    const originalOnLine = navigator.onLine;
+    try {
+      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
+      const parsed = parseApiError({ code: 'ERR_NETWORK' });
+      expect(parsed.isNetwork).toBe(true);
+      expect(parsed.message).toContain('Internet aloqasi uzildi');
+    } finally {
+      Object.defineProperty(navigator, 'onLine', { value: originalOnLine, configurable: true });
+    }
+  });
+
   it('parses 401 unauthorized errors', () => {
     const err = { response: { status: 401 } };
     const parsed = parseApiError(err);

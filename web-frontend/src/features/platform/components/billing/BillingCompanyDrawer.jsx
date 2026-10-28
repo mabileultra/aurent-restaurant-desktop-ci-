@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -143,9 +144,9 @@ export default function BillingCompanyDrawer({ p }) {
     toast.success("Kompaniya ma'lumotlari nusxalandi!");
   };
 
-  return (
+  const dialogNode = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label={b.companyName}
@@ -347,13 +348,13 @@ export default function BillingCompanyDrawer({ p }) {
 
                 {/* Faol kechiktirish (agar bo'lsa) */}
                 {activeDeferralDay(b) ? (
-                  <div className="mt-3 p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300">
+                  <div className="mt-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
                     <div className="font-bold flex items-center space-x-1.5">
                       <span>{k('deferral.title')}:</span>
                       <span>{k('deferral.until', { date: formatDate(activeDeferralDay(b)) })}</span>
                     </div>
                     {b.deferralReason ? (
-                      <div className="mt-1 text-[11px] text-blue-600/80 dark:text-blue-400">{b.deferralReason}</div>
+                      <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{b.deferralReason}</div>
                     ) : null}
                   </div>
                 ) : null}
@@ -393,7 +394,7 @@ export default function BillingCompanyDrawer({ p }) {
                   {/* STIR / INN */}
                   <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-800 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
                         <Hash size={16} />
                       </div>
                       <div>
@@ -514,7 +515,7 @@ export default function BillingCompanyDrawer({ p }) {
             </button>
             <button
               type="button"
-              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs shadow-md shadow-emerald-900/10 transition-colors"
+              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[color:var(--color-brand)] hover:bg-[color:var(--color-brand-hover)] text-white font-semibold text-xs shadow-md shadow-emerald-900/10 transition-colors"
               onClick={() => p.openPaymentModal(b.companyId, { returnToDrawer: true })}
             >
               <Wallet size={16} />
@@ -525,4 +526,9 @@ export default function BillingCompanyDrawer({ p }) {
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(dialogNode, document.body);
+  }
+  return dialogNode;
 }

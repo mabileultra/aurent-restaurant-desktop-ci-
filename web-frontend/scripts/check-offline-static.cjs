@@ -91,11 +91,8 @@ test('sync: runCatalogSyncIfNeeded keeps error message', () => {
   assert.match(sync, /reason: 'error',\s*error/);
 });
 
-test('start script prefers aurent-cashier-desktop', () => {
-  const aurentIdx = start.indexOf('aurent-cashier-desktop');
-  const stubIdx = start.indexOf('desktop-electron');
-  assert.ok(aurentIdx > -1 && stubIdx > -1);
-  assert.ok(aurentIdx < stubIdx, 'aurent must be preferred before desktop-electron');
+test('start script points to desktop-electron', () => {
+  assert.ok(start.includes('desktop-electron'));
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

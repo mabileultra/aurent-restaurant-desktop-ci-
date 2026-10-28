@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -117,6 +117,15 @@ import BillingCalendarView from './BillingCalendarView';
 import BillingCalendarListView from './BillingCalendarListView';
 
 describe('BillingCalendarView', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-27T10:00:00Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const mockT = (key, opts) => opts?.defaultValue || key;
   const mockMoney = (val) => Number(val || 0).toLocaleString('ru-RU');
   const mockP = {

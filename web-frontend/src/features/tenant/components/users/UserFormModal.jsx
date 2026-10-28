@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
 import UserCredentialsCreatedModal from './UserCredentialsCreatedModal';
@@ -8,8 +9,15 @@ export default function UserFormModal(props) {
 
   if (!p.open && !p.createdCredentials) return null;
 
+  const renderPortal = (content) => {
+    if (typeof document !== 'undefined' && document.body) {
+      return createPortal(content, document.body);
+    }
+    return content;
+  };
+
   if (p.open && p.isEdit && !p.user?.id) {
-    return (
+    return renderPortal(
       <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
         <div className="rounded-xl bg-white p-6 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
           {p.t('common.loading')}
@@ -25,7 +33,7 @@ export default function UserFormModal(props) {
         t={p.t}
         onClose={p.dismissCredentials}
       />
-      {p.open ? (
+      {p.open ? renderPortal(
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border bg-white dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-center justify-between border-b p-5 dark:border-slate-800">

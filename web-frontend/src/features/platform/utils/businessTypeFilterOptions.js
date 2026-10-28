@@ -19,9 +19,9 @@ function normalizeCode(code) {
 function optionLabel(t, code, types) {
   const normalized = normalizeCode(code);
   const fromApi = types.find((bt) => normalizeCode(bt.code) === normalized);
-  if (fromApi?.name) return fromApi.name;
-  if (normalized === 'UNIVERSAL') return t('platform.businessTypeChipUniversal');
-  return t(`productTemplates.businessTypes.${normalized}`, normalized);
+  return t(`productTemplates.businessTypes.${normalized}`, {
+    defaultValue: fromApi?.nameUz || fromApi?.name || normalized,
+  });
 }
 
 export function buildBusinessTypeFilterOptions(t, types = []) {

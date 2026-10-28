@@ -9,7 +9,7 @@
 - React Router + TanStack Query + Zustand
 - Base UI: `src/components/ui` + BEM CSS в `src/styles/ui`
 - Адаптив: `AppViewportSync` → compact / desktop / canonical (1024×768)
-- Тесты: только `test/**` · лимит файла: **≤ 300 строк** (`npm run check:size`)
+- Тесты: только `test/**` · лимит файла: **≤ 300 строк** (`pnpm run check:size`)
 
 ## Границы (кратко)
 
@@ -23,8 +23,8 @@
 
 ```bash
 cd restaurant-frontend
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 http://localhost:5174/login · `rstadmin` / `password`

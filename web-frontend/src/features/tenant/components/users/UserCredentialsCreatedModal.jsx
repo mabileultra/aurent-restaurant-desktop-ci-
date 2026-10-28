@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -27,8 +28,8 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+  const modalNode = (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl border bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('users.credentialsCreatedTitle')}</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t('users.credentialsCreatedHint')}</p>
@@ -75,4 +76,9 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalNode, document.body);
+  }
+  return modalNode;
 }

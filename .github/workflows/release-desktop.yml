@@ -39,19 +39,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: desktop-electron/package-lock.json
+          cache: pnpm
+          cache-dependency-path: desktop-electron/pnpm-lock.yaml
 
       - name: Install & build (Windows)
         working-directory: desktop-electron
         env:
           UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
         run: |
-          npm ci
-          npm run dist:win
+          pnpm install
+          pnpm run dist:win
 
       - name: Setup SSH
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
@@ -93,11 +97,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: desktop-electron/package-lock.json
+          cache: pnpm
+          cache-dependency-path: desktop-electron/pnpm-lock.yaml
 
       - name: Install & build (macOS)
         working-directory: desktop-electron
@@ -108,8 +116,8 @@ jobs:
           # macOS runners are PEP 668 “externally-managed” — need --break-system-packages.
           python3 -m pip install --user --break-system-packages setuptools
           python3 -c 'import setuptools; print("setuptools", setuptools.__version__)'
-          npm ci
-          npm run dist:mac
+          pnpm install
+          pnpm run dist:mac
 
       - name: Setup SSH
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
