@@ -5,6 +5,7 @@ import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
 import { shortWaiterName } from '../../utils/floorPosDerivations';
+import { buildCategoryByMenuId } from '../../utils/orderLineCategoryTone';
 import '../styles/cashier-order-dock.css';
 
 function useLiveClock() {
@@ -53,13 +54,10 @@ export default function CashierOrderDock({
 }) {
   const now = useLiveClock();
 
-  const categoryByMenuId = useMemo(() => {
-    const map = {};
-    for (const item of menuItems || []) {
-      if (item?.id != null) map[item.id] = item.category || '';
-    }
-    return map;
-  }, [menuItems]);
+  const categoryByMenuId = useMemo(
+    () => buildCategoryByMenuId(menuItems),
+    [menuItems],
+  );
 
   if (loading) {
     return (

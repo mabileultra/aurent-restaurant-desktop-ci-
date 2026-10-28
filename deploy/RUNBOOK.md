@@ -79,6 +79,7 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 - [ ] `bash deploy/backup.sh verify-latest` — бэкап целый
 - [ ] `bash scripts/load-test.sh` — p95 < 2с (опционально)
+- [ ] Перед релизом ресторана: `scripts/loadtest/README.md` — smoke → `peak2k` (staging); ёмкость: `deploy/CAPACITY-2000.md`
 - [ ] `bash deploy/health-alert.sh` — без ошибок
 - [ ] Супер-админ → Мониторинг — ошибок за 24ч в норме
 - [ ] Последний бэкап не старше 24ч

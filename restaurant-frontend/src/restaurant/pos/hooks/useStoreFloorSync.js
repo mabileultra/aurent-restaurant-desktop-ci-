@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { rstFloorApi } from '../../api/floor.api';
 
-const REVISION_POLL_MS = 2_000;
+/** ~2k concurrent: 3s watermark still feels live, half the revision RPS of 2s. */
+const REVISION_POLL_MS = 3_000;
 
 /**
  * Stage B: poll a tiny floor-revision watermark and invalidate heavy queries

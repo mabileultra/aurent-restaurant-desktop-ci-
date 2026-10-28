@@ -80,7 +80,7 @@ export function useKitchenPosPage() {
       stationFilter !== 'all' ? { stationId: stationFilter } : undefined,
     ).then((r) => r.data),
     enabled: workspace.storeId != null && kitchenBoardEnabled,
-    refetchInterval: kitchenBoardEnabled ? 5_000 : false,
+    refetchInterval: kitchenBoardEnabled ? 8_000 : false,
   });
 
   const staffQuery = useQuery({

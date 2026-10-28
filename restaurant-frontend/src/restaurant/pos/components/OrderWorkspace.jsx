@@ -3,6 +3,7 @@ import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
 import { shortWaiterName } from '../utils/floorPosDerivations';
+import { buildCategoryByMenuId } from '../utils/orderLineCategoryTone';
 import MenuPicker from './MenuPicker';
 import CancelReceiptPreview from './CancelReceiptPreview';
 import OrderDiscountModal from './OrderDiscountModal';
@@ -97,13 +98,10 @@ export default function OrderWorkspace({
     return map;
   }, [order.items]);
 
-  const categoryByMenuId = useMemo(() => {
-    const map = {};
-    for (const item of menuItems || []) {
-      if (item?.id != null) map[item.id] = item.category || '';
-    }
-    return map;
-  }, [menuItems]);
+  const categoryByMenuId = useMemo(
+    () => buildCategoryByMenuId(menuItems),
+    [menuItems],
+  );
 
   const activeLines = (order.items ?? []).filter((line) => (
     line.itemStatus !== 'CANCELLED' && (Number(line.quantity) || 0) > 0

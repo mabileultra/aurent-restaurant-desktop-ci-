@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { lineHasPendingSend } from '../utils/floorPosDerivations';
+import {
+  categoryTone,
+  resolveOrderLineToneKey,
+} from '../utils/orderLineCategoryTone';
 import CancelReceiptPreview from './CancelReceiptPreview';
 import RstConfirmDialog from './RstConfirmDialog';
 import '../styles/order-workspace.css';
@@ -15,14 +19,6 @@ function pendingQty(line) {
   const qty = Number(line?.quantity) || 0;
   const sent = line?.sentQuantity == null ? qty : (Number(line.sentQuantity) || 0);
   return Math.max(0, qty - sent);
-}
-
-function categoryTone(name) {
-  const s = String(name || '').trim().toLowerCase();
-  if (!s) return 0;
-  let h = 0;
-  for (let i = 0; i < s.length; i += 1) h = (h * 33 + s.charCodeAt(i)) >>> 0;
-  return (h % 8) + 1;
 }
 
 export default function OrderLines({
@@ -85,9 +81,7 @@ export default function OrderLines({
           const canEditKitchen = allowKitchenRefuse && kitchen;
           const canEditPending = !locked && reorderPending;
           const canEdit = canEditNew || canEditKitchen || canEditPending;
-          const category = categoryByMenuId?.[line.menuItemId]
-            || categoryByMenuId?.[String(line.menuItemId)]
-            || '';
+          const category = resolveOrderLineToneKey(line, categoryByMenuId);
           const tone = categoryTone(category);
           const minQty = kitchen && !allowKitchenRefuse
             ? (line.sentQuantity == null ? Number(line.quantity) || 0 : Number(line.sentQuantity) || 0)
