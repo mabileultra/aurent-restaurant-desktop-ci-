@@ -76,6 +76,6 @@ describe('PlatformCompanyQuickDrawer', () => {
 
     expect(html).toContain('Filiallar (5)');
     expect(html).toContain('Restoran filiallarini ko‘rish');
-    expect(html).toContain('bg-amber-50');
+    expect(html).toContain('bg-emerald-50');
   });
 });

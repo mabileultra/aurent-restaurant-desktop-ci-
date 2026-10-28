@@ -42,27 +42,27 @@ describe('companyAvatarUtils', () => {
   });
 
   describe('getBusinessTypeBadgeClass', () => {
-    it('returns appropriate theme classes for various business types', () => {
-      expect(getBusinessTypeBadgeClass('RESTAURANT')).toContain('amber');
-      expect(getBusinessTypeBadgeClass('PHARMACY')).toContain('sky');
-      expect(getBusinessTypeBadgeClass('GROCERY')).toContain('emerald');
-      expect(getBusinessTypeBadgeClass('UNIVERSAL')).toContain('teal');
+    it('returns consistent neutral slate styling across all business types', () => {
+      expect(getBusinessTypeBadgeClass('RESTAURANT')).toContain('slate');
+      expect(getBusinessTypeBadgeClass('PHARMACY')).toContain('slate');
+      expect(getBusinessTypeBadgeClass('GROCERY')).toContain('slate');
+      expect(getBusinessTypeBadgeClass('UNIVERSAL')).toContain('slate');
       expect(getBusinessTypeBadgeClass('UNKNOWN')).toContain('slate');
     });
   });
 
   describe('getCompanyBranchMeta', () => {
-    it('returns restaurant specific icon, amber badge styling and custom tooltip', () => {
+    it('returns restaurant specific icon, brand emerald styling and custom tooltip', () => {
       const meta = getCompanyBranchMeta('RESTAURANT');
       expect(meta.icon).toBeDefined();
-      expect(meta.badgeClass).toContain('amber');
+      expect(meta.badgeClass).toContain('emerald');
       expect(meta.tooltip).toContain('Restoran');
     });
 
-    it('returns pharmacy specific icon and sky badge styling', () => {
+    it('returns pharmacy specific icon and brand emerald styling', () => {
       const meta = getCompanyBranchMeta('PHARMACY');
       expect(meta.icon).toBeDefined();
-      expect(meta.badgeClass).toContain('sky');
+      expect(meta.badgeClass).toContain('emerald');
       expect(meta.tooltip).toContain('Dorixona');
     });
 

@@ -76,12 +76,22 @@ export default function PlatformCompaniesPage() {
               onClick={() => p.setStatusFilter('INACTIVE')}
               className={`px-3 py-1.5 rounded-lg transition-all ${
                 p.statusFilter === 'INACTIVE'
-                  ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
+                  ? p.inactiveCompanies > 0
+                    ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
+                    : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : p.inactiveCompanies > 0
+                    ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-mono">
+              <span
+                className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                  p.inactiveCompanies > 0
+                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                }`}
+              >
                 {p.inactiveCompanies}
               </span>
             </button>

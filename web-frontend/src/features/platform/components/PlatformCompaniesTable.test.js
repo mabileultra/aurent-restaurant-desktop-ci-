@@ -90,11 +90,12 @@ describe('PlatformCompaniesTable', () => {
     expect(html).toContain('Filiallar');
     expect(html).toContain('Restoran filiallarini ko‘rish');
     expect(html).toContain('Filiallarni ko‘rish');
-    expect(html).toContain('bg-amber-50');
+    expect(html).toContain('bg-emerald-50');
 
-    // Business type badge
+    // Business type badge (neutral slate styling)
     expect(html).toContain('RETAIL');
     expect(html).toContain('RESTAURANT');
+    expect(html).toContain('bg-slate-100');
 
     // Status badges (active vs inactive)
     expect(html).toContain('common.active');
