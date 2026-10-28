@@ -3,9 +3,13 @@ package com.pos.taxanalytics.service.impl;
 import com.pos.exception.PosExceptions;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompaniesResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsCompanyProductResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyRowResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsCompanySupplyResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsCompanySupplyRowResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyQueryRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsCompanyService;
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyDays;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks.DayTurnover;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
@@ -20,6 +24,7 @@ import java.sql.Date;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +51,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         TaxAnalyticsPeriod range = TaxAnalyticsPeriod.resolve(period, from, to);
         TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
         int safePage = Math.min(Math.max(page, 0), 10_000);
-        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safeSize = Math.min(Math.max(size, 1), 5000);
         long total = repository.countCompanies(regionCode, districtCode, connectionStatus, search);
         List<TaxAnalyticsCompanyRowResponse> rows = repository.listCompanies(
             range, week, regionCode, districtCode, connectionStatus, search, safeSize, safePage * safeSize
@@ -77,8 +82,14 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         LocalDate today = LocalDate.now(TaxAnalyticsWeekWindow.ZONE);
         LocalDate thisMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate seriesFrom = thisMonday.minusWeeks(TaxAnalyticsCompanyWeeks.DISPLAYED);
+        LocalDate dayFrom = range.from();
+        LocalDate dayTo = range.to().isAfter(today) ? today : range.to();
+        if (dayTo.toEpochDay() - dayFrom.toEpochDay() + 1 > TaxAnalyticsCompanyDays.MAX_DAYS) {
+            dayFrom = dayTo.minusDays(TaxAnalyticsCompanyDays.MAX_DAYS - 1);
+        }
+        LocalDate seriesStart = seriesFrom.isBefore(dayFrom) ? seriesFrom : dayFrom;
         Map<LocalDate, DayTurnover> byDate = new HashMap<>();
-        for (Map<String, Object> day : repository.dailyTurnover(companyId, seriesFrom, today.plusDays(1))) {
+        for (Map<String, Object> day : repository.dailyTurnover(companyId, seriesStart, today.plusDays(1))) {
             byDate.put(toDate(day.get("sale_date")), new DayTurnover(
                 TaxAnalyticsWeekMath.decimal(day.get("fiscal_turnover")),
                 TaxAnalyticsWeekMath.decimal(day.get("non_fiscal_turnover"))
@@ -103,7 +114,45 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             fiscal,
             nonFiscal,
             fiscal.add(nonFiscal),
-            TaxAnalyticsCompanyWeeks.build(today, byDate)
+            TaxAnalyticsCompanyWeeks.build(today, byDate),
+            TaxAnalyticsCompanyDays.build(dayFrom, dayTo, byDate),
+            topProducts(companyId, range),
+            supplies(companyId, range)
+        );
+    }
+
+    private List<TaxAnalyticsCompanyProductResponse> topProducts(int companyId, TaxAnalyticsPeriod range) {
+        List<TaxAnalyticsCompanyProductResponse> products = new ArrayList<>();
+        for (Map<String, Object> row : repository.topProducts(companyId, range, 8)) {
+            products.add(new TaxAnalyticsCompanyProductResponse(
+                text(row.get("product_name")),
+                TaxAnalyticsWeekMath.decimal(row.get("quantity")),
+                TaxAnalyticsWeekMath.decimal(row.get("amount"))
+            ));
+        }
+        return products;
+    }
+
+    private TaxAnalyticsCompanySupplyResponse supplies(int companyId, TaxAnalyticsPeriod range) {
+        Map<String, Object> summary = repository.supplySummary(companyId, range);
+        List<TaxAnalyticsCompanySupplyRowResponse> rows = new ArrayList<>();
+        for (Map<String, Object> row : repository.supplyRows(companyId, range, 8)) {
+            Object date = row.get("document_date");
+            rows.add(new TaxAnalyticsCompanySupplyRowResponse(
+                text(row.get("receipt_number")),
+                date == null ? null : toDate(date).toString(),
+                blankToNull(row.get("supplier_name")),
+                TaxAnalyticsWeekMath.decimal(row.get("total_quantity")),
+                TaxAnalyticsWeekMath.decimal(row.get("total_cost"))
+            ));
+        }
+        long count = summary.get("receipt_count") instanceof Number number ? number.longValue() : 0L;
+        return new TaxAnalyticsCompanySupplyResponse(
+            count,
+            TaxAnalyticsWeekMath.decimal(summary.get("total_quantity")),
+            TaxAnalyticsWeekMath.decimal(summary.get("total_cost")),
+            TaxAnalyticsWeekMath.decimal(summary.get("total_retail")),
+            rows
         );
     }
 

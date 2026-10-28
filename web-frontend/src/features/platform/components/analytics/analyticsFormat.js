@@ -12,6 +12,11 @@ export function fmtMoney(n) {
   return `${v.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} сум`;
 }
 
+export function fmtQty(n) {
+  if (n == null || Number.isNaN(Number(n))) return '—';
+  return Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+}
+
 export function fmtDay(iso) {
   if (!iso) return '—';
   const [year, month, day] = String(iso).split('-').map(Number);

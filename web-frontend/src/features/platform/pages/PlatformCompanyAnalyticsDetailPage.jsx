@@ -7,6 +7,9 @@ import { PageLayout } from '../../../components/ui';
 import PlatformDateRangePicker from '../components/PlatformDateRangePicker';
 import AnalyticsSectionTabs from '../components/analytics/AnalyticsSectionTabs';
 import CompanyWeekTable from '../components/analytics/CompanyWeekTable';
+import CompanyDayTable from '../components/analytics/CompanyDayTable';
+import CompanyProductCards from '../components/analytics/CompanyProductCards';
+import CompanySupplySection from '../components/analytics/CompanySupplySection';
 import { fmtMoney } from '../components/analytics/analyticsFormat';
 import { useCompanyAnalyticsDetail } from '../hooks/useCompanyAnalyticsDetail';
 
@@ -99,15 +102,38 @@ export default function PlatformCompanyAnalyticsDetailPage() {
         />
       </div>
       {page.error ? null : (
-        <section className="ta-section">
-          <div className="ta-section__head">
-            <div>
-              <h2 className="ta-section__title">{t('platform.analytics.weeksTitle')}</h2>
-              <p className="ta-section__sub">{t('platform.analytics.weeksSubtitle')}</p>
-            </div>
+        <>
+          <CompanySupplySection t={t} supplies={detail?.supplies} loading={page.loading} />
+          <div className="ca-split">
+            <section className="ta-section">
+              <div className="ta-section__head">
+                <div>
+                  <h2 className="ta-section__title">{t('platform.analytics.daysTitle')}</h2>
+                  <p className="ta-section__sub">{t('platform.analytics.daysSubtitle')}</p>
+                </div>
+              </div>
+              <CompanyDayTable t={t} days={detail?.days} loading={page.loading} />
+            </section>
+            <section className="ta-section">
+              <div className="ta-section__head">
+                <div>
+                  <h2 className="ta-section__title">{t('platform.analytics.topProductsTitle')}</h2>
+                  <p className="ta-section__sub">{t('platform.analytics.topProductsSubtitle')}</p>
+                </div>
+              </div>
+              <CompanyProductCards t={t} products={detail?.topProducts} loading={page.loading} />
+            </section>
           </div>
-          <CompanyWeekTable t={t} weeks={detail?.weeks} loading={page.loading} />
-        </section>
+          <section className="ta-section">
+            <div className="ta-section__head">
+              <div>
+                <h2 className="ta-section__title">{t('platform.analytics.weeksTitle')}</h2>
+                <p className="ta-section__sub">{t('platform.analytics.weeksSubtitle')}</p>
+              </div>
+            </div>
+            <CompanyWeekTable t={t} weeks={detail?.weeks} loading={page.loading} />
+          </section>
+        </>
       )}
     </PageLayout>
   );

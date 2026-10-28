@@ -6,7 +6,7 @@ import { taxAnalyticsCompaniesApi } from '../../../api/taxAnalyticsCompanies.api
 import { cleanGeoName } from '../../shared/geo/geoNameUtils';
 
 const PERIODS = ['today', '7d', '30d', 'month', 'year'];
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5000;
 
 const emptyDraft = () => ({
   regionCode: '',

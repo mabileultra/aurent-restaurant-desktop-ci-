@@ -171,6 +171,60 @@ public class TaxAnalyticsCompanyQueryRepository {
         return jdbc.queryForList(sql, companyId, ts(fromInclusive), ts(toExclusive));
     }
 
+    public List<Map<String, Object>> topProducts(int companyId, TaxAnalyticsPeriod period, int limit) {
+        String sql = """
+            SELECT si.product_name AS product_name,
+                   COALESCE(SUM(si.quantity - COALESCE(si.returned_quantity, 0)), 0) AS quantity,
+                   COALESCE(SUM(si.line_total), 0) AS amount
+            FROM sale_items si
+            JOIN sales s ON s.id = si.sale_id
+            LEFT JOIN stores st ON st.id = s.store_id
+            WHERE s.status = 'COMPLETED'
+              AND COALESCE(s.company_id, st.company_id) = ?
+              AND s.created_at >= ? AND s.created_at < ?
+            GROUP BY si.product_name
+            ORDER BY amount DESC, quantity DESC
+            LIMIT ?
+            """;
+        return jdbc.queryForList(sql, companyId, ts(period.from()), ts(period.to().plusDays(1)), limit);
+    }
+
+    public Map<String, Object> supplySummary(int companyId, TaxAnalyticsPeriod period) {
+        String sql = """
+            SELECT COUNT(*) AS receipt_count,
+                   COALESCE(SUM(r.total_quantity), 0) AS total_quantity,
+                   COALESCE(SUM(r.total_cost), 0) AS total_cost,
+                   COALESCE(SUM(r.total_retail), 0) AS total_retail
+            FROM stock_receipts r
+            JOIN stores st ON st.id = r.store_id
+            WHERE st.company_id = ?
+              AND r.status = 'POSTED'
+              AND COALESCE(r.document_date, (r.created_at AT TIME ZONE 'Asia/Tashkent')::date) >= ?
+              AND COALESCE(r.document_date, (r.created_at AT TIME ZONE 'Asia/Tashkent')::date) < ?
+            """;
+        return jdbc.queryForMap(sql, companyId, period.from(), period.to().plusDays(1));
+    }
+
+    public List<Map<String, Object>> supplyRows(int companyId, TaxAnalyticsPeriod period, int limit) {
+        String sql = """
+            SELECT r.receipt_number AS receipt_number,
+                   COALESCE(r.document_date, (r.created_at AT TIME ZONE 'Asia/Tashkent')::date) AS document_date,
+                   sup.name AS supplier_name,
+                   COALESCE(r.total_quantity, 0) AS total_quantity,
+                   COALESCE(r.total_cost, 0) AS total_cost
+            FROM stock_receipts r
+            JOIN stores st ON st.id = r.store_id
+            LEFT JOIN suppliers sup ON sup.id = r.supplier_id
+            WHERE st.company_id = ?
+              AND r.status = 'POSTED'
+              AND COALESCE(r.document_date, (r.created_at AT TIME ZONE 'Asia/Tashkent')::date) >= ?
+              AND COALESCE(r.document_date, (r.created_at AT TIME ZONE 'Asia/Tashkent')::date) < ?
+            ORDER BY document_date DESC, r.created_at DESC
+            LIMIT ?
+            """;
+        return jdbc.queryForList(sql, companyId, period.from(), period.to().plusDays(1), limit);
+    }
+
     private static void appendFilters(
         StringBuilder sql,
         List<Object> args,

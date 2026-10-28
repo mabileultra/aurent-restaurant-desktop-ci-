@@ -20,6 +20,9 @@ public record TaxAnalyticsCompanyDetailResponse(
     BigDecimal fiscalTurnover,
     BigDecimal nonFiscalTurnover,
     BigDecimal totalTurnover,
-    List<TaxAnalyticsCompanyWeekResponse> weeks
+    List<TaxAnalyticsCompanyWeekResponse> weeks,
+    List<TaxAnalyticsCompanyDayResponse> days,
+    List<TaxAnalyticsCompanyProductResponse> topProducts,
+    TaxAnalyticsCompanySupplyResponse supplies
 ) {
 }

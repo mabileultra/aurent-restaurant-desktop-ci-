@@ -75,6 +75,7 @@ export default function PlatformCompanyAnalyticsPage() {
           <h2 className="ta-section__title">
             <Building2 size={16} strokeWidth={2.2} aria-hidden className="ta-inline-icon" />
             {t('platform.analytics.companiesResults')}
+            {list?.totalElements != null ? ` · ${list.totalElements}` : ''}
           </h2>
         </div>
         {page.error ? null : (
