@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnalyticsDelta } from './AnalyticsDelta';
 import { fmtMoney } from './analyticsFormat';
+import { scrollAnalyticsBlock } from './scrollAnalyticsBlock';
 
 export default function CompanyAnalyticsTable({ t, rows, loading, page, size, labelGeo }) {
   const navigate = useNavigate();
@@ -76,8 +77,24 @@ export function CompanyAnalyticsPager({ t, page, size, total, pageSizes, onPage,
   const from = total ? page * size + 1 : 0;
   const to = Math.min((page + 1) * size, total);
   const pages = Math.max(1, Math.ceil(total / size));
+  const rootRef = useRef(null);
+  const firstPaint = useRef(true);
+
+  useLayoutEffect(() => {
+    if (firstPaint.current) {
+      firstPaint.current = false;
+      return;
+    }
+    scrollAnalyticsBlock(rootRef.current);
+  }, [page, size]);
+
+  const choose = (event, apply) => {
+    event.currentTarget.blur();
+    apply();
+  };
+
   return (
-    <div className="ta-footer">
+    <div className="ta-footer" ref={rootRef}>
       <span>{t('platform.analytics.shown', { from, to, total })}</span>
       <div className="ta-period">
         {pageSizes.map((option) => (
@@ -85,14 +102,14 @@ export function CompanyAnalyticsPager({ t, page, size, total, pageSizes, onPage,
             key={option}
             type="button"
             className={`ta-period__btn${size === option ? ' is-active' : ''}`}
-            onClick={() => onSize(option)}
+            onClick={(event) => choose(event, () => onSize(option))}
           >
             {option}
           </button>
         ))}
-        <button type="button" className="ta-btn" disabled={page <= 0} onClick={() => onPage(page - 1)}>‹</button>
+        <button type="button" className="ta-btn" disabled={page <= 0} onClick={(event) => choose(event, () => onPage(page - 1))}>‹</button>
         <span>{page + 1} / {pages}</span>
-        <button type="button" className="ta-btn" disabled={page + 1 >= pages} onClick={() => onPage(page + 1)}>›</button>
+        <button type="button" className="ta-btn" disabled={page + 1 >= pages} onClick={(event) => choose(event, () => onPage(page + 1))}>›</button>
       </div>
     </div>
   );

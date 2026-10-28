@@ -10,7 +10,6 @@ import CompanyWeekTable from '../components/analytics/CompanyWeekTable';
 import CompanyDayTable from '../components/analytics/CompanyDayTable';
 import CompanyDayReceiptsModal from '../components/analytics/CompanyDayReceiptsModal';
 import CompanyProductCards from '../components/analytics/CompanyProductCards';
-import CompanySupplySection from '../components/analytics/CompanySupplySection';
 import { fmtMoney } from '../components/analytics/analyticsFormat';
 import { useCompanyAnalyticsDetail } from '../hooks/useCompanyAnalyticsDetail';
 
@@ -105,7 +104,6 @@ export default function PlatformCompanyAnalyticsDetailPage() {
       </div>
       {page.error ? null : (
         <>
-          <CompanySupplySection t={t} supplies={detail?.supplies} loading={page.loading} />
           <div className="ca-split">
             <section className="ta-section">
               <div className="ta-section__head">
