@@ -1,6 +1,8 @@
 import React from 'react';
 import { Boxes, Receipt, Wallet } from 'lucide-react';
 import { fmtDay, fmtMoney, fmtQty } from './analyticsFormat';
+import { CompanyAnalyticsPager } from './CompanyAnalyticsTable';
+import { usePagedRows } from '../../hooks/usePagedRows';
 
 function SupplyCard({ icon: Icon, tone, label, value }) {
   return (
@@ -17,7 +19,7 @@ function SupplyCard({ icon: Icon, tone, label, value }) {
 }
 
 export default function CompanySupplySection({ t, supplies, loading }) {
-  const rows = supplies?.rows ?? [];
+  const pager = usePagedRows(supplies?.rows);
   return (
     <section className="ta-section">
       <div className="ta-section__head">
@@ -46,9 +48,9 @@ export default function CompanySupplySection({ t, supplies, loading }) {
           value={loading ? '…' : fmtMoney(supplies?.totalRetail)}
         />
       </div>
-      {loading ? <p className="ta-muted">{t('common.loading')}</p> : rows.length ? (
+      {loading ? <p className="ta-muted">{t('common.loading')}</p> : pager.rows.length ? (
         <div className="ca-supplies">
-          {rows.map((row) => (
+          {pager.rows.map((row) => (
             <article key={`${row.receiptNumber}-${row.documentDate}`} className="ca-supply">
               <div>
                 <p className="ca-supply__title">{row.receiptNumber}</p>
@@ -64,6 +66,15 @@ export default function CompanySupplySection({ t, supplies, loading }) {
       ) : (
         <p className="ta-muted">{t('platform.analytics.supplyEmpty')}</p>
       )}
+      <CompanyAnalyticsPager
+        t={t}
+        page={pager.page}
+        size={pager.size}
+        total={loading ? 0 : pager.total}
+        pageSizes={pager.pageSizes}
+        onPage={pager.setPage}
+        onSize={pager.setSize}
+      />
     </section>
   );
 }

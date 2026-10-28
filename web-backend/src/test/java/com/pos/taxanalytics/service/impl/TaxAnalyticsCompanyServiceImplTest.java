@@ -67,14 +67,14 @@ class TaxAnalyticsCompanyServiceImplTest {
             "non_fiscal_turnover", new BigDecimal("5")
         ));
         when(repository.dailyTurnover(eq(3), any(), any())).thenReturn(List.of());
-        when(repository.topProducts(eq(3), any(TaxAnalyticsPeriod.class), eq(8))).thenReturn(List.of());
+        when(repository.topProducts(eq(3), any(TaxAnalyticsPeriod.class), eq(200))).thenReturn(List.of());
         when(repository.supplySummary(eq(3), any(TaxAnalyticsPeriod.class))).thenReturn(Map.of(
             "receipt_count", 0L,
             "total_quantity", BigDecimal.ZERO,
             "total_cost", BigDecimal.ZERO,
             "total_retail", BigDecimal.ZERO
         ));
-        when(repository.supplyRows(eq(3), any(TaxAnalyticsPeriod.class), eq(8))).thenReturn(List.of());
+        when(repository.supplyRows(eq(3), any(TaxAnalyticsPeriod.class), eq(200))).thenReturn(List.of());
 
         TaxAnalyticsCompanyDetailResponse detail = service.detail(3, "7d", null, null);
 

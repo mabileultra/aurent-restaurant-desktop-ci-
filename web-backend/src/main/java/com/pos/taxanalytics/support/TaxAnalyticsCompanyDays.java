@@ -9,10 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** Days of the selected period, newest first. Long ranges keep the latest 31 days. */
+/** Days of the selected period, newest first. */
 public final class TaxAnalyticsCompanyDays {
-
-    public static final int MAX_DAYS = 31;
 
     private TaxAnalyticsCompanyDays() {
     }
@@ -24,9 +22,6 @@ public final class TaxAnalyticsCompanyDays {
     ) {
         LocalDate end = to.isBefore(from) ? from : to;
         LocalDate start = from;
-        if (end.toEpochDay() - start.toEpochDay() + 1 > MAX_DAYS) {
-            start = end.minusDays(MAX_DAYS - 1);
-        }
         List<TaxAnalyticsCompanyDayResponse> days = new ArrayList<>();
         for (LocalDate day = end; !day.isBefore(start); day = day.minusDays(1)) {
             DayTurnover turnover = byDate.get(day);

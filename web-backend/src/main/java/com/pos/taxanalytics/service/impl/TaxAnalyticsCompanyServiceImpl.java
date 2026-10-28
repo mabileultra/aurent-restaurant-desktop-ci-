@@ -84,9 +84,6 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         LocalDate seriesFrom = thisMonday.minusWeeks(TaxAnalyticsCompanyWeeks.DISPLAYED);
         LocalDate dayFrom = range.from();
         LocalDate dayTo = range.to().isAfter(today) ? today : range.to();
-        if (dayTo.toEpochDay() - dayFrom.toEpochDay() + 1 > TaxAnalyticsCompanyDays.MAX_DAYS) {
-            dayFrom = dayTo.minusDays(TaxAnalyticsCompanyDays.MAX_DAYS - 1);
-        }
         LocalDate seriesStart = seriesFrom.isBefore(dayFrom) ? seriesFrom : dayFrom;
         Map<LocalDate, DayTurnover> byDate = new HashMap<>();
         for (Map<String, Object> day : repository.dailyTurnover(companyId, seriesStart, today.plusDays(1))) {
@@ -123,7 +120,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
 
     private List<TaxAnalyticsCompanyProductResponse> topProducts(int companyId, TaxAnalyticsPeriod range) {
         List<TaxAnalyticsCompanyProductResponse> products = new ArrayList<>();
-        for (Map<String, Object> row : repository.topProducts(companyId, range, 8)) {
+        for (Map<String, Object> row : repository.topProducts(companyId, range, 200)) {
             products.add(new TaxAnalyticsCompanyProductResponse(
                 text(row.get("product_name")),
                 TaxAnalyticsWeekMath.decimal(row.get("quantity")),
@@ -136,7 +133,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
     private TaxAnalyticsCompanySupplyResponse supplies(int companyId, TaxAnalyticsPeriod range) {
         Map<String, Object> summary = repository.supplySummary(companyId, range);
         List<TaxAnalyticsCompanySupplyRowResponse> rows = new ArrayList<>();
-        for (Map<String, Object> row : repository.supplyRows(companyId, range, 8)) {
+        for (Map<String, Object> row : repository.supplyRows(companyId, range, 200)) {
             Object date = row.get("document_date");
             rows.add(new TaxAnalyticsCompanySupplyRowResponse(
                 text(row.get("receipt_number")),
