@@ -1,4 +1,4 @@
-import { Package, TrendingDown, TrendingUp, AlertTriangle, Warehouse } from 'lucide-react';
+import { Package, TrendingDown, TrendingUp, AlertTriangle, Warehouse, Banknote } from 'lucide-react';
 
 export function buildStockDashboardCards(t, data) {
   return [
@@ -25,9 +25,19 @@ export function buildStockDashboardCards(t, data) {
     {
       icon: Warehouse,
       label: t('stockReports.kpiStock'),
+      hint: t('stockReports.kpiStockRetailHint'),
       units: data?.currentStockUnits,
-      money: data?.currentStockCostEstimate,
+      money: data?.currentStockRetailEstimate,
+      emphasize: 'money',
       color: 'amber',
+    },
+    {
+      icon: Banknote,
+      label: t('stockReports.kpiStockCost'),
+      hint: t('stockReports.kpiStockCostHint'),
+      money: data?.currentStockCostEstimate,
+      emphasize: 'money',
+      color: 'slate',
     },
     {
       icon: AlertTriangle,

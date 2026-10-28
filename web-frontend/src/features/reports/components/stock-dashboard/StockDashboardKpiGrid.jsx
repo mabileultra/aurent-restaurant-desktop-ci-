@@ -3,8 +3,9 @@ import { fmtMoney } from '../../../../utils/formatMoney';
 
 export default function StockDashboardKpiGrid({ cards, formatUnits, t, isLoading, isError }) {
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-      {cards.map(({ icon: Icon, label, units, money, color, link }) => {
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      {cards.map(({ icon: Icon, label, hint, units, money, color, link, emphasize }) => {
+        const showMoney = money != null && !isLoading && !isError;
         const inner = (
           <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${link ? 'hover:border-emerald-500/50 transition' : ''}`}>
             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
@@ -12,11 +13,17 @@ export default function StockDashboardKpiGrid({ cards, formatUnits, t, isLoading
               <p className="text-xs">{label}</p>
             </div>
             <p className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
-              {`${formatUnits(units)} ${t('stockReports.unitsSuffix')}`}
+              {emphasize === 'money'
+                ? (isLoading ? '…' : showMoney ? fmtMoney(money) : '—')
+                : `${formatUnits(units)} ${t('stockReports.unitsSuffix')}`}
             </p>
-            {money != null && !isLoading && !isError && (
+            {emphasize === 'money' && units != null && (
+              <p className="text-xs text-slate-500">{`${formatUnits(units)} ${t('stockReports.unitsSuffix')}`}</p>
+            )}
+            {emphasize !== 'money' && showMoney && (
               <p className="text-xs text-slate-500">{fmtMoney(money)}</p>
             )}
+            {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
           </div>
         );
         return link ? <Link key={label} to={link}>{inner}</Link> : <div key={label}>{inner}</div>;

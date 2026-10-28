@@ -63,6 +63,7 @@ public class StockDashboardServiceImpl implements StockDashboardService {
         );
         long currentStockUnits = NativeAggregateRowSupport.toLong(stockTotals, 0);
         BigDecimal currentStockCost = NativeAggregateRowSupport.toBigDecimal(stockTotals, 1);
+        BigDecimal currentStockRetail = NativeAggregateRowSupport.toBigDecimal(stockTotals, 2);
 
         long lowStockSkuCount = stockDashboardFactsRepository.countLowStockSkus(companyId, storeId);
 
@@ -78,6 +79,7 @@ public class StockDashboardServiceImpl implements StockDashboardService {
             writeOffCost,
             currentStockUnits,
             currentStockCost,
+            currentStockRetail,
             lowStockSkuCount,
             StockDashboardDailyMerger.merge(
                 start,

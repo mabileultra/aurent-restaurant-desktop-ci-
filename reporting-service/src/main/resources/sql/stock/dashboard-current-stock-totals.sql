@@ -24,7 +24,10 @@ SELECT
             ),
             0
         )
-    ), 0) AS stock_cost
+    ), 0) AS stock_cost,
+    COALESCE(SUM(
+        GREATEST(COALESCE(sb.stock_qty, 0), 0) * COALESCE(p.selling_price, 0)
+    ), 0) AS stock_retail
 FROM product_snapshot_facts p
 LEFT JOIN stock_balance sb ON sb.product_id = p.product_id
 WHERE p.company_id = :companyId
