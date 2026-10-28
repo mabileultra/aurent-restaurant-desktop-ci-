@@ -80,28 +80,24 @@ export default function CashierPinLoginPage() {
     >
       <CashierPinLoginVisual />
 
-      {showCompanyCodeField ? (
-        <div className="cashier-pin-login__top-actions">
-          <CashierPinLoginCompanyPopover
-            t={t}
-            value={companyCode}
-            onChange={setCompanyCode}
-            disabled={loading}
-            open={companyPopoverOpen}
-            onToggle={() => setCompanyPopoverOpen((v) => !v)}
-            onClose={() => setCompanyPopoverOpen(false)}
-          />
-        </div>
-      ) : null}
-
       <div className="cashier-pin-roster">
         <CashierPinLoginChrome
           t={t}
           onFullscreen={toggleFullscreen}
           onQuit={quitApp}
           showQuit={showQuit}
+          companyControl={showCompanyCodeField ? (
+            <CashierPinLoginCompanyPopover
+              t={t}
+              value={companyCode}
+              onChange={setCompanyCode}
+              disabled={loading}
+              open={companyPopoverOpen}
+              onToggle={() => setCompanyPopoverOpen((v) => !v)}
+              onClose={() => setCompanyPopoverOpen(false)}
+            />
+          ) : null}
         />
-
         {step === 'roster' ? (
           <CashierPinLoginRoster
             t={t}

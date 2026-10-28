@@ -1733,7 +1733,11 @@
       "waiter": "Ofitsiant",
       "waiterAssignFailed": "Ofitsiantni tayinlab bo‘lmadi",
       "waiterAssigned": "Ofitsiant tayinlandi",
-      "waiterMe": "Men (joriy foydalanuvchi)"
+      "waiterMe": "Men (joriy foydalanuvchi)",
+      "dishCount": "{{count}}",
+      "favoriteAdd": "Sevimlilarga",
+      "favoriteRemove": "Sevimlilardan olib tashlash",
+      "filterFavorites": "Sevimlilar"
     },
     "pos": {
       "bookings": "Bronlar",

@@ -1773,7 +1773,11 @@
       "waiter": "Официант",
       "waiterAssignFailed": "Не удалось назначить официанта",
       "waiterAssigned": "Официант назначен",
-      "waiterMe": "Я (текущий пользователь)"
+      "waiterMe": "Я (текущий пользователь)",
+      "dishCount": "{{count}}",
+      "favoriteAdd": "В избранное",
+      "favoriteRemove": "Убрать из избранного",
+      "filterFavorites": "Избранное"
     },
     "pos": {
       "bookings": "Бронирования",
