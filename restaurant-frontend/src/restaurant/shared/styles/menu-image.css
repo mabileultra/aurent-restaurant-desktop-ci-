@@ -1,0 +1,7 @@
+.rst-menu-card__media > .rst-menu-image,
+.rst-menu-row__thumb > .rst-menu-image,
+.rst-menu-cat-card__media > .rst-menu-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+}

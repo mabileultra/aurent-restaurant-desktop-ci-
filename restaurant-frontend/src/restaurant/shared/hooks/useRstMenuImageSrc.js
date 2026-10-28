@@ -1,40 +1,64 @@
 import { useEffect, useState } from 'react';
-import { rstMenuApi } from '../../api/menu.api';
 import { isDirectMenuImageUrl, parseMenuImageItemId } from '../utils/menuImageRef';
+import { loadMenuImageBlob } from '../utils/menuImageLoadQueue';
+import {
+  menuImageShiftMode,
+  peekMenuImageSrc,
+  subscribeMenuImages,
+} from '../utils/menuImageShiftCache';
 
 /**
- * Resolves POS menu imageUrl: http(s)/data URI as-is, or aurent-menu-img:{id} via auth fetch.
+ * Shift-open photos come from the shift cache (kept until the shift ends).
+ * With no shift session, a card loads its own url and drops it on unmount.
+ * A closed shift does not load.
  */
 export function useRstMenuImageSrc(imageUrl) {
-  const [src, setSrc] = useState(() => (isDirectMenuImageUrl(imageUrl) ? imageUrl : ''));
+  const direct = isDirectMenuImageUrl(imageUrl) ? imageUrl : '';
+  const itemId = direct ? '' : (parseMenuImageItemId(imageUrl) || '');
+  const [src, setSrc] = useState(() => direct || (itemId ? peekMenuImageSrc(itemId) : ''));
 
   useEffect(() => {
-    if (isDirectMenuImageUrl(imageUrl)) {
-      setSrc(imageUrl);
+    if (direct) {
+      setSrc(direct);
       return undefined;
     }
-    const itemId = parseMenuImageItemId(imageUrl);
     if (!itemId) {
       setSrc('');
       return undefined;
     }
     let cancelled = false;
-    let objectUrl = '';
-    setSrc('');
-    rstMenuApi.getImageBlob(itemId)
-      .then((blob) => {
-        if (cancelled || !blob) return;
-        objectUrl = URL.createObjectURL(blob);
-        if (!cancelled) setSrc(objectUrl);
-      })
-      .catch(() => {
-        if (!cancelled) setSrc('');
-      });
+    let ownedUrl = '';
+    const apply = (next) => {
+      if (!cancelled) setSrc(next || '');
+    };
+    const cached = peekMenuImageSrc(itemId);
+    if (cached) {
+      apply(cached);
+    } else if (menuImageShiftMode() === 'closed') {
+      apply('');
+    } else {
+      loadMenuImageBlob(itemId)
+        .then((result) => {
+          if (cancelled || !result?.src) return;
+          if (result.owned) ownedUrl = result.src;
+          apply(result.src);
+        })
+        .catch(() => apply(''));
+    }
+    const unsubscribe = subscribeMenuImages(() => {
+      const next = peekMenuImageSrc(itemId);
+      if (next) {
+        apply(next);
+        return;
+      }
+      if (!ownedUrl) apply('');
+    });
     return () => {
       cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      unsubscribe();
+      if (ownedUrl) URL.revokeObjectURL(ownedUrl);
     };
-  }, [imageUrl]);
+  }, [direct, itemId]);
 
   return src;
 }

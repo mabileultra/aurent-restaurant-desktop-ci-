@@ -27,6 +27,8 @@ import { useFloorPosMutations } from './useFloorPosMutations';
 import { useRestaurantAslMarking } from './useRestaurantAslMarking';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
+import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
+import { useMenuImageShiftPreload } from '../../shared/hooks/useMenuImageShiftPreload';
 
 const COUNTER_STALE_MS = 15_000;
 const FLOOR_STALE_MS = 8_000;
@@ -560,6 +562,14 @@ export function useFloorPosPage() {
       { onSuccess: () => setLineNoteEdit(null) },
     );
   };
+
+  const menuPhotos = useMenuPhotos(storeId);
+  useMenuImageShiftPreload({
+    shiftId: shift?.id ?? null,
+    menuItems: menuQuery.data,
+    photosEnabled: menuPhotos.enabled,
+    payPending: m.payMutation.isPending,
+  });
 
   return {
     t, user, workspace, access,

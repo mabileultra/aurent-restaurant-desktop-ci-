@@ -12,6 +12,7 @@ import { prefetchPrintWaiterRoster, seedPrintWaiterRoster } from '../utils/print
 import { createPrintRelayLeader } from '../utils/printRelayLeader';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 import { playPosSound } from '../utils/posSounds';
+import { popMenuImageBusy, pushMenuImageBusy } from '../../shared/utils/menuImageLoadQueue';
 
 const POLL_MS = 300;
 const CAPS_TIMEOUT_MS = 2500;
@@ -337,6 +338,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
         outcome = { ack: false, release: true, mode: 'error' };
       }
       inFlight.delete(job.id);
+      popMenuImageBusy();
       if (printerKey) {
         const left = (perPrinter.get(printerKey) || 1) - 1;
         if (left > 0) perPrinter.set(printerKey, left);
@@ -398,6 +400,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
               continue;
             }
             inFlight.add(job.id);
+            pushMenuImageBusy();
             runJob(job);
           }
         } while (pendingFlushRef.current && !cancelled);
