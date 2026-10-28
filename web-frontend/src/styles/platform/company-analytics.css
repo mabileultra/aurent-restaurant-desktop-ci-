@@ -7,12 +7,10 @@
 .ca-receipt-kinds { margin-bottom: 0.75rem; }
 .ca-receipt-modal { display: flex; flex-direction: column; gap: 0.75rem; }
 .ca-receipts { display: flex; justify-content: center; }
-.ca-receipts--pair { justify-content: center; gap: 1rem; flex-wrap: wrap; }
 .ca-receipt-paper {
   width: min(100%, 22rem); background: #fff; color: #000; border: 1px solid #e2e8f0;
   border-radius: 0.75rem; padding: 0.75rem 0.5rem 1rem;
 }
-.ca-receipt-paper__label { margin: 0 0 0.5rem; text-align: center; font-size: 0.75rem; font-weight: 700; color: #334155; }
 .ta-page .ca-meta {
   display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.35rem; color: var(--ta-muted); font-size: 0.8rem;
 }

@@ -29,7 +29,7 @@ export default function CompanyDayReceiptsModal({ companyId, date, onClose }) {
           </button>
           {list.receiptLoading ? <p className="ta-muted">{t('common.loading')}</p> : null}
           {list.receiptError ? <p className="ta-muted">{t('platform.analytics.loadFailed')}</p> : null}
-          {list.receipt ? <CompanyDayReceiptView t={t} receipt={list.receipt} /> : null}
+          {list.receipt ? <CompanyDayReceiptView receipt={list.receipt} /> : null}
         </div>
       ) : (
         <>
