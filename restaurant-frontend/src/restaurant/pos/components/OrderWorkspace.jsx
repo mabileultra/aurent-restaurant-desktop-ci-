@@ -4,12 +4,13 @@ import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
 import { shortWaiterName } from '../utils/floorPosDerivations';
 import { buildCategoryByMenuId } from '../utils/orderLineCategoryTone';
-import MenuPicker from './MenuPicker';
+import MenuCatalogBoard from './MenuCatalogBoard';
 import CancelReceiptPreview from './CancelReceiptPreview';
 import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
 import RstConfirmDialog from './RstConfirmDialog';
 import '../styles/order-workspace.css';
+import '../styles/menu-catalog-board.css';
 
 function useLiveClock() {
   const [now, setNow] = useState(() => Date.now());
@@ -137,8 +138,8 @@ export default function OrderWorkspace({
   };
 
   return (
-    <div className="rst-order">
-      <section className="rst-order__catalog">
+    <div className="rst-order rst-order--board">
+      <div className="rst-order__board-head">
         <div className="rst-order__context">
           {hideBack ? null : (
             <button type="button" className="rst-order__back" onClick={onBack}>
@@ -162,20 +163,20 @@ export default function OrderWorkspace({
             <span>LIVE</span>
           </div>
         </div>
+      </div>
 
-        <MenuPicker
-          items={menuItems}
-          onAdd={onAddItem}
-          onComposeFamily={onComposeFamily}
-          t={t}
-          qtyByMenuId={qtyByMenuId}
-        />
-        {billing ? (
+      <MenuCatalogBoard
+        items={menuItems}
+        qtyByMenuId={qtyByMenuId}
+        onAdd={onAddItem}
+        onComposeFamily={onComposeFamily}
+        t={t}
+        billingNote={billing ? (
           <p className="rst-order__billing-note">
             {newCount > 0 ? t('rst.order.billingHintUnsent') : t('rst.order.billingHint')}
           </p>
         ) : null}
-      </section>
+      />
 
       <aside className="rst-order__ticket">
         <div className="rst-order__ticket-head">

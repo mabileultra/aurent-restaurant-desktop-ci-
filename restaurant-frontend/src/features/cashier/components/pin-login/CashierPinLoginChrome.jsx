@@ -39,6 +39,7 @@ export default function CashierPinLoginChrome({
   onFullscreen,
   onQuit,
   showQuit,
+  companyControl = null,
 }) {
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const theme = useSyncExternalStore(subscribeRestaurantTheme, readRestaurantTheme, () => 'dark');
@@ -75,6 +76,8 @@ export default function CashierPinLoginChrome({
         />
 
         {hallDesktop ? null : <RestaurantMobileInstallCorner />}
+
+        {companyControl}
 
         <button
           type="button"

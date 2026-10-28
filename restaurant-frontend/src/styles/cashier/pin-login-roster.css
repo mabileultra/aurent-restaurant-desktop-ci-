@@ -31,8 +31,10 @@
     linear-gradient(180deg, rgb(8 15 30 / 0.72) 0%, rgb(8 15 30 / 0.55) 45%, rgb(8 15 30 / 0.78) 100%);
 }
 
-.cashier-pin-login--roster .cashier-pin-login__top-actions {
-  z-index: 5;
+/* Company chip lives in chrome-right (not fixed top-actions) so it stays aligned. */
+.cashier-pin-roster__chrome-right .cashier-pin-login__company-wrap {
+  position: relative;
+  z-index: 6;
 }
 
 .cashier-pin-roster {

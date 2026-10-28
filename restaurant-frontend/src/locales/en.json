@@ -1730,7 +1730,11 @@
       "waiter": "Waiter",
       "waiterAssignFailed": "Failed to assign waiter",
       "waiterAssigned": "Waiter Assigned",
-      "waiterMe": "Me (current user)"
+      "waiterMe": "Me (current user)",
+      "dishCount": "{{count}}",
+      "favoriteAdd": "Add to favorites",
+      "favoriteRemove": "Remove from favorites",
+      "filterFavorites": "Favorites"
     },
     "pos": {
       "bookings": "Reservations",
