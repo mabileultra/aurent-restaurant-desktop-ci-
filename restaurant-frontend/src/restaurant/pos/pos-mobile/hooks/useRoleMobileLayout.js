@@ -6,30 +6,27 @@ import {
   writeRoleMobilePrefs,
 } from '../utils/roleMobilePrefs';
 
-function isDesktopElectronShell() {
-  return typeof window !== 'undefined' && Boolean(
-    window.aurentRestaurant?.isDesktop || window.desktopCashier?.isDesktop,
-  );
-}
-
 /**
  * Compact phone shell for a POS role family (cashier / cook / …).
- * Auto on narrow screens, or forced via header icon. Off on Electron / POS terminals.
+ * Auto below desktop width (1024), or forced via header icon.
+ * Short landscape POS terminals stay on the desktop floor UI.
  */
 export function useRoleMobileLayout({
   prefsKey,
   allowedRoles,
 }) {
   const role = useAuthStore((s) => s.user?.role);
-  const { compact, posTerminal } = useViewportProfile();
+  const { compact, desktop, posTerminal } = useViewportProfile();
   const [forceMobile, setForceMobileState] = useState(
     () => readRoleMobilePrefs(prefsKey).forceMobile,
   );
 
   const roleUpper = String(role || '').toUpperCase();
   const canUse = allowedRoles.has(roleUpper);
-  const lockDesktop = isDesktopElectronShell() || posTerminal;
-  const enabled = canUse && !lockDesktop && (compact || forceMobile);
+  /** Width under 1024 — switch to mobile; no broken mid-size desktop board. */
+  const autoMobile = !desktop;
+  const lockDesktop = posTerminal;
+  const enabled = canUse && !lockDesktop && (autoMobile || forceMobile);
 
   const setForceMobile = useCallback((next) => {
     const value = Boolean(next);
@@ -47,7 +44,7 @@ export function useRoleMobileLayout({
     canUse,
     lockDesktop,
     showEnterMobile: canUse && !enabled && !lockDesktop,
-    showExitMobile: canUse && enabled && (forceMobile || !compact),
+    showExitMobile: canUse && enabled && (forceMobile || desktop),
     enterMobile,
     exitMobile,
     setForceMobile,
