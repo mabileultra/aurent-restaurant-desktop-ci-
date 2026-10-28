@@ -25,7 +25,7 @@ export default function StoreFormModal({
 }) {
   const { t } = useTranslation();
 
-  const isCreate = !initial;
+  const isCreate = !initial?.id;
   const schema = useMemo(() => z.object({
     name: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colName') })),
     address: z.string().optional(),
@@ -172,7 +172,7 @@ export default function StoreFormModal({
     onSubmit(payload);
   };
 
-  const modalTitle = title ?? (initial ? t('stores.editTitle') : t('stores.addTitle'));
+  const modalTitle = title ?? (initial?.id ? t('stores.editTitle') : (showCompanySelect ? t('platform.addBranch', { defaultValue: 'Filial qo‘shish' }) : t('stores.addTitle')));
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">

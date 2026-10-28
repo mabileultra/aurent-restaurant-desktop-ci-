@@ -138,7 +138,7 @@ export default function PlatformCompanyQuickDrawer({
               </button>
 
               <Link
-                to={`/platform/stores?companyId=${company.id}`}
+                to={`/platform/stores?focusCompany=${company.id}#company-${company.id}`}
                 className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border ${branchMeta.badgeClass} transition-colors`}
                 title={branchMeta.tooltip}
               >

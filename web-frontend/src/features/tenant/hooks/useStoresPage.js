@@ -21,6 +21,25 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const [editing, setEditing] = useState(null);
   const [menuId, setMenuId] = useState(null);
   const [pharmacyIntegrationStore, setPharmacyIntegrationStore] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [selectedStore, setSelectedStore] = useState(null);
+  const [viewMode, setViewModeState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.has('focusCompany') || sp.has('company') || window.location.hash?.startsWith('#company-')) {
+        return 'grouped';
+      }
+      return localStorage.getItem('stores-view-mode') || (showCompanySelect ? 'grouped' : 'table');
+    }
+    return showCompanySelect ? 'grouped' : 'table';
+  });
+
+  const setViewMode = (mode) => {
+    setViewModeState(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('stores-view-mode', mode);
+    }
+  };
 
   const resolvedCompanyId = showCompanySelect
     ? (companyId ? Number(companyId) : undefined)
@@ -53,15 +72,16 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
 
   const saveMutation = useMutation({
     mutationFn: (payload) =>
-      editing ? storeApi.update(editing.id, payload) : storeApi.create(payload),
+      editing?.id ? storeApi.update(editing.id, payload) : storeApi.create(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
+      qc.invalidateQueries({ queryKey: ['stores-all'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
       }});
-      toast.success(editing ? t('stores.updated') : t('stores.created'));
+      toast.success(editing?.id ? t('stores.updated') : t('stores.created'));
       setModalOpen(false);
       setEditing(null);
     },
@@ -73,6 +93,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
+      qc.invalidateQueries({ queryKey: ['stores-all'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -88,6 +109,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
+      qc.invalidateQueries({ queryKey: ['stores-all'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -100,12 +122,50 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onError: (e) => toast.error(e.response?.data?.message ?? t('stores.deleteFailed')),
   });
 
-  const rows = data?.content ?? [];
-  const total = data?.totalElements ?? 0;
+  const { data: allStores = [] } = useQuery({
+    queryKey: ['stores-all', resolvedCompanyId],
+    queryFn: () => storeApi.getAll().then((r) => r.data || []),
+    staleTime: 60_000,
+  });
+
+  const scopeStores = resolvedCompanyId
+    ? allStores.filter((s) => s.companyId === resolvedCompanyId)
+    : allStores;
+
+  const totalStores = scopeStores.length || (data?.totalElements ?? 0);
+  const activeStores = scopeStores.length > 0
+    ? scopeStores.filter((s) => s.active).length
+    : (data?.content ?? []).filter((s) => s.active).length;
+  const inactiveStores = Math.max(0, totalStores - activeStores);
+  const companiesCount = resolvedCompanyId
+    ? (scopeStores.length > 0 ? 1 : 0)
+    : (companies?.length || new Set(allStores.map((s) => s.companyId).filter(Boolean)).size);
+
+  const rawRows = data?.content ?? [];
+  const rows = useMemo(() => {
+    if (statusFilter === 'ACTIVE') return rawRows.filter((r) => r.active);
+    if (statusFilter === 'INACTIVE') return rawRows.filter((r) => !r.active);
+    return rawRows;
+  }, [rawRows, statusFilter]);
+
+  const total = data?.totalElements ?? rows.length;
   const totalPages = data?.totalPages ?? 0;
 
-  const openCreate = () => {
-    setEditing(null);
+  const handleStatusFilterChange = (nextFilter) => {
+    setStatusFilter(nextFilter);
+    setPage(0);
+  };
+
+  const openQuickDrawer = (store) => {
+    setSelectedStore(store);
+  };
+
+  const closeQuickDrawer = () => {
+    setSelectedStore(null);
+  };
+
+  const openCreate = (defaultValues = null) => {
+    setEditing(defaultValues);
     setModalOpen(true);
   };
 
@@ -199,6 +259,18 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     handleGeoChange,
     toggleMutation,
     tryDelete,
+    statusFilter,
+    setStatusFilter: handleStatusFilterChange,
+    totalStores,
+    activeStores,
+    inactiveStores,
+    companiesCount,
+    selectedStore,
+    openQuickDrawer,
+    closeQuickDrawer,
+    viewMode,
+    setViewMode,
+    allStores,
     pharmacyIntegrationStore,
     openPharmacyIntegration,
     closePharmacyIntegration,

@@ -84,9 +84,9 @@ describe('PlatformCompaniesTable', () => {
     expect(html).toContain('AVESTA-01');
     expect(html).toContain('Nusxalash');
 
-    // Store/branch link with companyId query parameter and contextual styling
-    expect(html).toContain('href="/platform/stores?companyId=comp-1"');
-    expect(html).toContain('href="/platform/stores?companyId=comp-2"');
+    // Store/branch link with focusCompany query parameter and hash for auto-scroll/expand
+    expect(html).toContain('href="/platform/stores?focusCompany=comp-1#company-comp-1"');
+    expect(html).toContain('href="/platform/stores?focusCompany=comp-2#company-comp-2"');
     expect(html).toContain('Filiallar');
     expect(html).toContain('Restoran filiallarini ko‘rish');
     expect(html).toContain('Filiallarni ko‘rish');

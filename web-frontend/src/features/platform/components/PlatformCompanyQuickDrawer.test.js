@@ -61,7 +61,7 @@ describe('PlatformCompanyQuickDrawer', () => {
     expect(html).toContain('305481920');
     expect(html).toContain('54157');
     expect(html).toContain('Samarqand sh.');
-    expect(html).toContain('href="/platform/stores?companyId=62"');
+    expect(html).toContain('href="/platform/stores?focusCompany=62#company-62"');
     expect(html).toContain('Filiallar (2)');
   });
 

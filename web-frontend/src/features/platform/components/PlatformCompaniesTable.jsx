@@ -185,7 +185,7 @@ export default function PlatformCompaniesTable({
                     {/* Branches count badge */}
                     <td className="px-4 py-3">
                       <Link
-                        to={`/platform/stores?companyId=${row.id}`}
+                        to={`/platform/stores?focusCompany=${row.id}#company-${row.id}`}
                         onClick={(e) => e.stopPropagation()}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${branchMeta.badgeClass} transition-colors`}
                         title={branchMeta.tooltip}
