@@ -12,6 +12,7 @@ import {
   sliceImportPage,
 } from '../utils/productImportPagination';
 import { verifyProductImportRowsTasnif } from '../utils/verifyProductImportTasnif';
+import { bumpImportQty } from '../../../utils/productImportQty';
 import {
   applyMarkup,
   buildEditableRows,
@@ -202,6 +203,17 @@ export function useProductImport(onClose) {
     });
   };
 
+  const setRowQuantity = (rowNum, direction) => {
+    const row = (preview?.rows ?? []).find((r) => r.rowNum === rowNum);
+    setEditable((prev) => ({
+      ...prev,
+      [rowNum]: {
+        ...prev[rowNum],
+        quantity: bumpImportQty(prev[rowNum]?.quantity, row, direction),
+      },
+    }));
+  };
+
   const setRowPrice = (rowNum, raw) => {
     const parsed = parseMoneyInput(raw);
     setEditable((prev) => ({
@@ -322,7 +334,7 @@ export function useProductImport(onClose) {
 
   const runImport = async () => {
     if (!pendingFile) return;
-    // Магазин нужен только для прихода; «в каталог» — карточки без остатка.
+    // Магазин нужен только для прихода. Количество строки уходит в приход или в начальный остаток каталога.
     if (canImport && mode === 'AS_RECEIPT' && !defaultStoreId) {
       toast.error(t('products.import.storeRequiredReceipt'));
       return;
@@ -351,6 +363,8 @@ export function useProductImport(onClose) {
         if (ed.packageCode) payload.packageCode = String(ed.packageCode).trim();
         if (ed.markedProduct != null) payload.markedProduct = Boolean(ed.markedProduct);
         if (ed.ikpuStatus) payload.ikpuStatus = String(ed.ikpuStatus).trim();
+        const qty = Number(ed.quantity);
+        if (Number.isFinite(qty) && qty >= 0) payload.quantity = qty;
         return payload;
       });
 
@@ -464,6 +478,7 @@ export function useProductImport(onClose) {
     applyDefaultStoreToAll,
     applyDefaultLocationToAll,
     refreshPreview,
+    setRowQuantity,
     setRowPrice,
     setRowCategory,
     setRowStore,

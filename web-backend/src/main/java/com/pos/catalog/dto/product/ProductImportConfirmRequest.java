@@ -33,7 +33,9 @@ public record ProductImportConfirmRequest(
         String barcode,
         String packageCode,
         Boolean markedProduct,
-        String ikpuStatus
+        String ikpuStatus,
+        /** Количество строки. Пусто — берётся из файла. */
+        @DecimalMin("0") BigDecimal quantity
     ) {
     }
 }

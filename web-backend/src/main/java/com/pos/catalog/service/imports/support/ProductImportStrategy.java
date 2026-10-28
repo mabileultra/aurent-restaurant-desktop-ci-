@@ -7,8 +7,9 @@ import java.util.Locale;
  * <p>
  * Остаток (источник истины):
  * <ul>
- *   <li>{@code TO_CATALOG} / {@code AS_RECEIPT} — карточка с initialStock=0;
- *       при {@code AS_RECEIPT} количество из файла идёт только в складской приход.</li>
+ *   <li>{@code AS_RECEIPT} — карточка с initialStock=0;
+ *       количество (из файла или минус в предпросмотре) идёт только в складской приход.</li>
+ *   <li>{@code TO_CATALOG} — без документа прихода; количество строки становится начальным остатком карточки.</li>
  *   <li>{@code AS_FILE} / {@code TO_STORES} — quantity файла → initialStock → RESTOCK при create.</li>
  * </ul>
  * {@code TO_STORES} = выбранный магазин (defaultStoreId обязателен), не «во все магазины».
@@ -27,9 +28,9 @@ public record ProductImportStrategy(
         return new ProductImportStrategy(toSelectedStore, catalogOnly, asReceipt);
     }
 
-    /** Карточка без начального RESTOCK (каталог или приход отдельно). */
+    /** Приход кладёт количество в документ, не в начальный остаток карточки. */
     public boolean zeroInitialStock() {
-        return catalogOnly || asReceipt;
+        return asReceipt;
     }
 
     public boolean requiresDefaultStore() {

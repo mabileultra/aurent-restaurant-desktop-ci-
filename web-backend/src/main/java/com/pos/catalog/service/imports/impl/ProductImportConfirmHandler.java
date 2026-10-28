@@ -8,12 +8,12 @@ import com.pos.catalog.service.imports.ProductImportParseOptions;
 import com.pos.catalog.service.imports.ProductImportSupport;
 import com.pos.catalog.service.imports.support.ProductImportCatalogRefs;
 import com.pos.catalog.service.imports.support.ProductImportProductCreator;
+import com.pos.catalog.service.imports.support.ProductImportQuantity;
 import com.pos.catalog.service.imports.support.ProductImportReceiptSupport;
 import com.pos.catalog.service.imports.support.ProductImportStrategy;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.inventory.dto.warehouse.StockReceiptLineRequest;
-import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -99,11 +99,8 @@ public class ProductImportConfirmHandler {
                 );
                 created++;
                 if (strategy.asReceipt() && productId != null) {
-                    BigDecimal qty = QuantityUtil.normalize(row.quantity());
-                    if (qty != null && qty.signum() < 0) {
-                        throw new BadRequestException("Количество не может быть отрицательным");
-                    }
-                    if (qty != null && qty.signum() > 0) {
+                    BigDecimal qty = ProductImportQuantity.resolve(row, rowOpts);
+                    if (qty.signum() > 0) {
                         receiptLines.add(receiptSupport.toLine(productId, row, rowOpts));
                     }
                 }

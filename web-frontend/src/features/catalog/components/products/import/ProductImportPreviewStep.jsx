@@ -38,6 +38,7 @@ export default function ProductImportPreviewStep(props) {
     applyDefaultLocationToAll,
     refreshPreview,
     editable,
+    setRowQuantity,
     setRowPrice,
     setRowCategory,
     setRowStore,
@@ -189,6 +190,7 @@ export default function ProductImportPreviewStep(props) {
           stores={stores}
           visibleColumns={visibleColumns}
           tasnifByRow={tasnifByRow}
+          setRowQuantity={setRowQuantity}
           setRowPrice={setRowPrice}
           setRowCategory={setRowCategory}
           setRowStore={setRowStore}

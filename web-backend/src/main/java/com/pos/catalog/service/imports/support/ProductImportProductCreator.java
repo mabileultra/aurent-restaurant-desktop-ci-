@@ -10,7 +10,6 @@ import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.domain.ProductQuantityRules;
 import com.pos.exception.BadRequestException;
 import com.pos.util.ProductImportParseUtil;
-import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -52,7 +51,7 @@ public class ProductImportProductCreator {
             null,
             unitOfMeasure
         );
-        BigDecimal initialStock = resolveInitialStock(row, zeroInitialStock);
+        BigDecimal initialStock = resolveInitialStock(row, rowOpts, zeroInitialStock);
         Integer storeId = resolveStoreId(row, rowOpts, defaultStoreId);
         List<ProductStorePriceRequest> storePrices = storeId != null
             ? List.of(new ProductStorePriceRequest(storeId, sellingPrice))
@@ -120,15 +119,15 @@ public class ProductImportProductCreator {
         return raw;
     }
 
-    private static BigDecimal resolveInitialStock(ProductImportPreviewRow row, boolean zeroInitialStock) {
+    private static BigDecimal resolveInitialStock(
+        ProductImportPreviewRow row,
+        ProductImportConfirmRequest.ImportRowConfirm rowOpts,
+        boolean zeroInitialStock
+    ) {
         if (zeroInitialStock) {
             return BigDecimal.ZERO;
         }
-        BigDecimal initialStock = QuantityUtil.normalize(row.quantity());
-        if (initialStock.signum() < 0) {
-            throw new BadRequestException("Количество не может быть отрицательным");
-        }
-        return initialStock;
+        return ProductImportQuantity.resolve(row, rowOpts);
     }
 
     private Integer resolveStoreId(

@@ -74,6 +74,7 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
           applyDefaultLocationToAll={imp.applyDefaultLocationToAll}
           refreshPreview={imp.refreshPreview}
           editable={imp.editable}
+          setRowQuantity={imp.setRowQuantity}
           setRowPrice={imp.setRowPrice}
           setRowCategory={imp.setRowCategory}
           setRowStore={imp.setRowStore}

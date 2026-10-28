@@ -335,3 +335,47 @@
 .dark .product-import-preview-table tbody tr.is-missing td {
   background: rgb(127 29 29 / 0.18);
 }
+
+.product-import-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.product-import-qty__btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  background: #fff;
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.product-import-qty__btn:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.product-import-qty__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.product-import-qty__value {
+  min-width: 3.25rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .product-import-qty__btn {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark .product-import-qty__btn:hover:not(:disabled) {
+  background: #1e293b;
+}

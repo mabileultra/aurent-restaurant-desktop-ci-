@@ -60,6 +60,7 @@ export function buildEditableRows(rows, markupPercent) {
       packageCode: '',
       markedProduct: false,
       ikpuStatus: null,
+      quantity: r.quantity == null || r.quantity === '' ? '0' : String(Number(r.quantity)),
     };
   });
   return map;

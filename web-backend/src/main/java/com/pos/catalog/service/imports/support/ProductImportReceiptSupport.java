@@ -8,7 +8,6 @@ import com.pos.inventory.dto.warehouse.CreateStockReceiptRequest;
 import com.pos.inventory.dto.warehouse.StockReceiptLineRequest;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.inventory.service.stock.StockReceiptService;
-import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -29,7 +28,7 @@ public class ProductImportReceiptSupport {
         ProductImportPreviewRow row,
         ProductImportConfirmRequest.ImportRowConfirm rowOpts
     ) {
-        BigDecimal qty = QuantityUtil.normalize(row.quantity());
+        BigDecimal qty = ProductImportQuantity.resolve(row, rowOpts);
         BigDecimal purchase = row.costPrice() != null && row.costPrice().signum() >= 0
             ? row.costPrice()
             : BigDecimal.ZERO;
