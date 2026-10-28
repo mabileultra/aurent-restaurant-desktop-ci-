@@ -6,8 +6,8 @@ import PlatformCompanyQuickDrawer from './PlatformCompanyQuickDrawer';
 globalThis.React = React;
 
 vi.mock('react-router-dom', () => ({
-  Link: ({ children, to, className }) =>
-    React.createElement('a', { href: to, className }, children),
+  Link: ({ children, to, className, title }) =>
+    React.createElement('a', { href: to, className, title }, children),
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -62,5 +62,20 @@ describe('PlatformCompanyQuickDrawer', () => {
     expect(html).toContain('54157');
     expect(html).toContain('Samarqand sh.');
     expect(html).toContain('href="/platform/stores?companyId=62"');
+    expect(html).toContain('Filiallar (2)');
+  });
+
+  it('renders restaurant contextual branch label and styling', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyQuickDrawer, {
+        open: true,
+        company: { ...mockCompany, businessType: 'RESTAURANT', storeCount: 5 },
+        t: mockT,
+      })
+    );
+
+    expect(html).toContain('Filiallar (5)');
+    expect(html).toContain('Restoran filiallarini ko‘rish');
+    expect(html).toContain('bg-amber-50');
   });
 });

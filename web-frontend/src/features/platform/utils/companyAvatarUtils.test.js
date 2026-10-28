@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getBusinessTypeBadgeClass,
+  getCompanyBranchMeta,
   getCompanyInitials,
   getCompanyPalette,
 } from './companyAvatarUtils';
@@ -47,6 +48,29 @@ describe('companyAvatarUtils', () => {
       expect(getBusinessTypeBadgeClass('GROCERY')).toContain('emerald');
       expect(getBusinessTypeBadgeClass('UNIVERSAL')).toContain('teal');
       expect(getBusinessTypeBadgeClass('UNKNOWN')).toContain('slate');
+    });
+  });
+
+  describe('getCompanyBranchMeta', () => {
+    it('returns restaurant specific icon, amber badge styling and custom tooltip', () => {
+      const meta = getCompanyBranchMeta('RESTAURANT');
+      expect(meta.icon).toBeDefined();
+      expect(meta.badgeClass).toContain('amber');
+      expect(meta.tooltip).toContain('Restoran');
+    });
+
+    it('returns pharmacy specific icon and sky badge styling', () => {
+      const meta = getCompanyBranchMeta('PHARMACY');
+      expect(meta.icon).toBeDefined();
+      expect(meta.badgeClass).toContain('sky');
+      expect(meta.tooltip).toContain('Dorixona');
+    });
+
+    it('returns default store icon and emerald styling for retail or other types', () => {
+      const meta = getCompanyBranchMeta('UNIVERSAL');
+      expect(meta.icon).toBeDefined();
+      expect(meta.badgeClass).toContain('emerald');
+      expect(meta.label).toBe('Filiallar');
     });
   });
 });

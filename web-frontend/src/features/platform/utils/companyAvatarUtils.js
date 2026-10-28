@@ -1,3 +1,5 @@
+import { Pill, Store, UtensilsCrossed } from 'lucide-react';
+
 /**
  * Utilities for company brand avatars and styling in Platform Companies UI.
  */
@@ -82,5 +84,39 @@ export function getBusinessTypeBadgeClass(code) {
       return 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800';
     default:
       return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+  }
+}
+
+/**
+ * Returns contextual branch metadata (icon, label, tooltip, styling) based on company business type.
+ * e.g., Restaurants show UtensilsCrossed (🍽️) + "Restoran filiallari",
+ * Pharmacies show Pill (💊) + "Dorixona filiallari",
+ * Retail/General show Store (🏪) + "Filiallar".
+ */
+export function getCompanyBranchMeta(businessType, t = (k, opts) => opts?.defaultValue || k) {
+  const normalized = (businessType || '').toUpperCase();
+  switch (normalized) {
+    case 'RESTAURANT':
+    case 'CANTEEN':
+      return {
+        icon: UtensilsCrossed,
+        label: t('platform.branchTypes.restaurant', { defaultValue: 'Filiallar' }),
+        tooltip: t('platform.viewCompanyBranchesRestaurant', { defaultValue: 'Restoran filiallarini ko‘rish' }),
+        badgeClass: 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/50 border-amber-200/80 dark:border-amber-800/60',
+      };
+    case 'PHARMACY':
+      return {
+        icon: Pill,
+        label: t('platform.branchTypes.pharmacy', { defaultValue: 'Filiallar' }),
+        tooltip: t('platform.viewCompanyBranchesPharmacy', { defaultValue: 'Dorixona filiallarini ko‘rish' }),
+        badgeClass: 'bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/50 border-sky-200/80 dark:border-sky-800/60',
+      };
+    default:
+      return {
+        icon: Store,
+        label: t('platform.branchTypes.default', { defaultValue: 'Filiallar' }),
+        tooltip: t('platform.viewCompanyBranchesDefault', { defaultValue: 'Filiallarni ko‘rish' }),
+        badgeClass: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 border-emerald-200/80 dark:border-emerald-800/60',
+      };
   }
 }

@@ -6,16 +6,21 @@ import StoresFiltersBar from '../components/stores/StoresFiltersBar';
 import StoresTable from '../components/stores/StoresTable';
 import { useStoresPage } from '../hooks/useStoresPage';
 
-export default function StoresPage({ showCompanySelect = false, companyIdFilter, companies = [] }) {
+export default function StoresPage({
+  title,
+  showCompanySelect = false,
+  companyIdFilter,
+  companies = [],
+}) {
   const p = useStoresPage({ showCompanySelect, companyIdFilter, companies });
 
   return (
     <PageLayout
-      title={p.t('stores.title')}
+      title={title || (showCompanySelect ? p.t('platform.storesTitle', { defaultValue: 'Filiallar' }) : p.t('stores.title'))}
       actions={(
         <BaseButton variant="secondary" onClick={p.openCreate}>
           <Plus size={16} />
-          {p.t('stores.add')}
+          {showCompanySelect ? p.t('platform.addBranch', { defaultValue: 'Filial qo‘shish' }) : p.t('stores.add')}
         </BaseButton>
       )}
       filters={(

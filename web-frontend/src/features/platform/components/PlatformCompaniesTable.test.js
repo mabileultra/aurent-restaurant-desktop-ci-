@@ -84,9 +84,13 @@ describe('PlatformCompaniesTable', () => {
     expect(html).toContain('AVESTA-01');
     expect(html).toContain('Nusxalash');
 
-    // Store link with companyId query parameter
+    // Store/branch link with companyId query parameter and contextual styling
     expect(html).toContain('href="/platform/stores?companyId=comp-1"');
     expect(html).toContain('href="/platform/stores?companyId=comp-2"');
+    expect(html).toContain('Filiallar');
+    expect(html).toContain('Restoran filiallarini ko‘rish');
+    expect(html).toContain('Filiallarni ko‘rish');
+    expect(html).toContain('bg-amber-50');
 
     // Business type badge
     expect(html).toContain('RETAIL');

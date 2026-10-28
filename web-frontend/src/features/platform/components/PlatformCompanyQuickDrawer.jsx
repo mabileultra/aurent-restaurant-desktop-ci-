@@ -8,13 +8,13 @@ import {
   MapPin,
   Pencil,
   Phone,
-  Store,
   X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   getBusinessTypeBadgeClass,
+  getCompanyBranchMeta,
   getCompanyInitials,
   getCompanyPalette,
 } from '../utils/companyAvatarUtils';
@@ -54,6 +54,8 @@ export default function PlatformCompanyQuickDrawer({
   const initials = getCompanyInitials(company.name);
   const palette = getCompanyPalette(company.name, company.id);
   const badgeClass = getBusinessTypeBadgeClass(company.businessType);
+  const branchMeta = getCompanyBranchMeta(company.businessType, t);
+  const BranchIcon = branchMeta.icon;
 
   const region = regionName ? regionName(company.regionCode) : company.regionCode;
   const district = districtName ? districtName(company.districtCode) : company.districtCode;
@@ -137,10 +139,11 @@ export default function PlatformCompanyQuickDrawer({
 
               <Link
                 to={`/platform/stores?companyId=${company.id}`}
-                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 transition-colors"
+                className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border ${branchMeta.badgeClass} transition-colors`}
+                title={branchMeta.tooltip}
               >
-                <Store size={14} />
-                <span>{t('platform.colStores')} ({company.storeCount ?? 0})</span>
+                <BranchIcon size={14} />
+                <span>{branchMeta.label} ({company.storeCount ?? 0})</span>
                 <ExternalLink size={12} className="opacity-70" />
               </Link>
             </div>

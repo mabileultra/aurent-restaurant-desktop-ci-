@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Copy, Eye, Store } from 'lucide-react';
+import { Check, Copy, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
@@ -9,6 +9,7 @@ import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
 import { PlatformErrorState } from '../../../components/ui';
 import {
   getBusinessTypeBadgeClass,
+  getCompanyBranchMeta,
   getCompanyInitials,
   getCompanyPalette,
 } from '../utils/companyAvatarUtils';
@@ -65,7 +66,7 @@ export default function PlatformCompaniesTable({
                 {t('platform.colLocation', { defaultValue: 'Manzil' })}
               </th>
               <th className="px-4 py-3 font-medium">{t('platform.colLoginCode')}</th>
-              <th className="px-4 py-3 font-medium">{t('platform.colStores')}</th>
+              <th className="px-4 py-3 font-medium">{t('platform.colBranches', { defaultValue: 'Filiallar' })}</th>
               <th className="px-4 py-3 font-medium">{t('platform.colBusinessType')}</th>
               <th className="px-4 py-3 font-medium">{t('common.status')}</th>
               <th className="w-12 px-4 py-3" />
@@ -103,6 +104,8 @@ export default function PlatformCompaniesTable({
                 const initials = getCompanyInitials(row.name);
                 const palette = getCompanyPalette(row.name, row.id);
                 const badgeClass = getBusinessTypeBadgeClass(row.businessType);
+                const branchMeta = getCompanyBranchMeta(row.businessType, t);
+                const BranchIcon = branchMeta.icon;
 
                 const district = districtName(row.districtCode);
                 const region = regionName(row.regionCode);
@@ -182,15 +185,15 @@ export default function PlatformCompaniesTable({
                       )}
                     </td>
 
-                    {/* Stores count badge */}
+                    {/* Branches count badge */}
                     <td className="px-4 py-3">
                       <Link
                         to={`/platform/stores?companyId=${row.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
-                        title={t('platform.viewCompanyStores', { defaultValue: 'Do‘konlarni ko‘rish' })}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${branchMeta.badgeClass} transition-colors`}
+                        title={branchMeta.tooltip}
                       >
-                        <Store size={12} />
+                        <BranchIcon size={12} />
                         <span>{row.storeCount ?? 0}</span>
                       </Link>
                     </td>
