@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Coins, PlugZap, ShieldX } from 'lucide-react';
 import '../../../styles/platform/tax-analytics.css';
@@ -8,6 +8,7 @@ import PlatformDateRangePicker from '../components/PlatformDateRangePicker';
 import AnalyticsSectionTabs from '../components/analytics/AnalyticsSectionTabs';
 import CompanyWeekTable from '../components/analytics/CompanyWeekTable';
 import CompanyDayTable from '../components/analytics/CompanyDayTable';
+import CompanyDayReceiptsModal from '../components/analytics/CompanyDayReceiptsModal';
 import CompanyProductCards from '../components/analytics/CompanyProductCards';
 import CompanySupplySection from '../components/analytics/CompanySupplySection';
 import { fmtMoney } from '../components/analytics/analyticsFormat';
@@ -30,6 +31,7 @@ function Kpi({ icon: Icon, tone, label, value }) {
 export default function PlatformCompanyAnalyticsDetailPage() {
   const page = useCompanyAnalyticsDetail();
   const { t, detail } = page;
+  const [receiptDay, setReceiptDay] = useState(null);
   const region = detail ? page.labelGeo(detail.regionNameRu, detail.regionNameUz) : '';
   const district = detail ? page.labelGeo(detail.districtNameRu, detail.districtNameUz) : '';
 
@@ -112,7 +114,7 @@ export default function PlatformCompanyAnalyticsDetailPage() {
                   <p className="ta-section__sub">{t('platform.analytics.daysSubtitle')}</p>
                 </div>
               </div>
-              <CompanyDayTable t={t} days={detail?.days} loading={page.loading} />
+              <CompanyDayTable t={t} days={detail?.days} loading={page.loading} onOpenDay={setReceiptDay} />
             </section>
             <section className="ta-section">
               <div className="ta-section__head">
@@ -135,6 +137,13 @@ export default function PlatformCompanyAnalyticsDetailPage() {
           </section>
         </>
       )}
+      {receiptDay ? (
+        <CompanyDayReceiptsModal
+          companyId={page.companyId}
+          date={receiptDay}
+          onClose={() => setReceiptDay(null)}
+        />
+      ) : null}
     </PageLayout>
   );
 }

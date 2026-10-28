@@ -44,6 +44,7 @@ export function useCompanyAnalyticsDetail() {
 
   return {
     t,
+    companyId: validId ? id : null,
     validId,
     periods: PERIODS,
     period,

@@ -3,7 +3,7 @@ import { fmtDay, fmtMoney } from './analyticsFormat';
 import { CompanyAnalyticsPager } from './CompanyAnalyticsTable';
 import { usePagedRows } from '../../hooks/usePagedRows';
 
-export default function CompanyDayTable({ t, days, loading }) {
+export default function CompanyDayTable({ t, days, loading, onOpenDay }) {
   const pager = usePagedRows(days);
   const visible = loading ? [] : pager.rows;
   return (
@@ -22,7 +22,11 @@ export default function CompanyDayTable({ t, days, loading }) {
             {loading ? (
               <tr><td colSpan={4} className="ta-muted">{t('common.loading')}</td></tr>
             ) : visible.length ? visible.map((day) => (
-              <tr key={day.date}>
+              <tr
+                key={day.date}
+                className="ca-day-row"
+                onClick={() => onOpenDay?.(day.date)}
+              >
                 <td>{fmtDay(day.date)}</td>
                 <td>{fmtMoney(day.fiscalTurnover)}</td>
                 <td>{fmtMoney(day.nonFiscalTurnover)}</td>

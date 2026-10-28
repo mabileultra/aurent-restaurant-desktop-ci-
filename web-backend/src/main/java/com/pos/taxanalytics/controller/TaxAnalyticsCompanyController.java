@@ -3,6 +3,9 @@ package com.pos.taxanalytics.controller;
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompaniesResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsReceiptDetailResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsReceiptsResponse;
+import com.pos.taxanalytics.service.TaxAnalyticsCompanyReceiptService;
 import com.pos.taxanalytics.service.TaxAnalyticsCompanyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tax-analytics/companies")
@@ -26,6 +30,7 @@ import java.time.LocalDate;
 public class TaxAnalyticsCompanyController {
 
     private final TaxAnalyticsCompanyService taxAnalyticsCompanyService;
+    private final TaxAnalyticsCompanyReceiptService taxAnalyticsCompanyReceiptService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
@@ -56,5 +61,28 @@ public class TaxAnalyticsCompanyController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
         return ResponseEntity.ok(taxAnalyticsCompanyService.detail(companyId, period, from, to));
+    }
+
+    @GetMapping("/{companyId}/receipts")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
+    @Operation(summary = "Чеки фирмы за день")
+    public ResponseEntity<TaxAnalyticsReceiptsResponse> receipts(
+        @PathVariable int companyId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam(defaultValue = "ALL") String kind,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(taxAnalyticsCompanyReceiptService.list(companyId, date, kind, page, size));
+    }
+
+    @GetMapping("/{companyId}/receipts/{saleId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
+    @Operation(summary = "Пробитый чек фирмы")
+    public ResponseEntity<TaxAnalyticsReceiptDetailResponse> receipt(
+        @PathVariable int companyId,
+        @PathVariable UUID saleId
+    ) {
+        return ResponseEntity.ok(taxAnalyticsCompanyReceiptService.detail(companyId, saleId));
     }
 }
