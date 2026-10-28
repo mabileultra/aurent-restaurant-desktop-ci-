@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useMenuAdminPage } from '../hooks/useMenuAdminPage';
+import { useMenuDishExport } from '../hooks/useMenuDishExport';
 import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
 import MenuCardMenu from '../components/MenuCardMenu';
 import MenuPhotoSwitch from '../components/MenuPhotoSwitch';
@@ -12,10 +13,25 @@ import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
 import '../styles/menu-admin.css';
 
+const MenuDishImportModal = lazy(() => import('../components/MenuDishImportModal'));
+
 export default function MenuAdminPage() {
   const p = useMenuAdminPage();
   const photos = useMenuPhotos(p.workspace.storeId, p.t);
   const [cardMenu, setCardMenu] = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const dishExport = useMenuDishExport({
+    t: p.t,
+    items: p.items,
+    stations: p.stations,
+    menuCategories: p.menuCategories,
+  });
+  const listProps = {
+    ...p,
+    exportDishes: dishExport.exportList,
+    exportBusy: dishExport.busy,
+    openImport: () => setImportOpen(true),
+  };
 
   if (p.workspace.noAssignment) {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
@@ -33,14 +49,26 @@ export default function MenuAdminPage() {
 
       <MenuDishFilters p={p} />
       <MenuDishList
-        p={p}
+        p={listProps}
         photosEnabled={photos.enabled}
+        onEditDish={(item) => p.startEdit(item)}
         onOpenMenu={(item, rect) => {
           setCardMenu((cur) => (cur?.item?.id === item.id ? null : { item, rect }));
         }}
       />
-      <MenuDishForm p={p} />
+      <MenuDishForm p={p} photosEnabled={photos.enabled} />
       <MenuVariantFormModal p={p} />
+      {importOpen ? (
+        <Suspense fallback={null}>
+          <MenuDishImportModal
+            storeId={p.workspace.storeId}
+            items={p.items}
+            stations={p.stations}
+            menuCategories={p.menuCategories}
+            onClose={() => setImportOpen(false)}
+          />
+        </Suspense>
+      ) : null}
 
       <MenuCardMenu
         menu={cardMenu}
