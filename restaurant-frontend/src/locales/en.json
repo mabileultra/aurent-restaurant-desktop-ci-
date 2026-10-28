@@ -1737,7 +1737,16 @@
       "dishCount": "{{count}}",
       "favoriteAdd": "Add to favorites",
       "favoriteRemove": "Remove from favorites",
-      "filterFavorites": "Favorites"
+      "filterFavorites": "Favorites",
+      "filterAll": "All",
+      "filterRecent": "Recent",
+      "filterDiscounts": "Discounts",
+      "allDishes": "All dishes",
+      "notOpen": "Cannot add a dish to this order",
+      "nothingToSend": "No new items for the kitchen",
+      "modMin": "In “{{group}}” pick at least {{min}} (now {{count}})",
+      "modMax": "In “{{group}}” max {{max}} (now {{count}})",
+      "cashShort": "Amount is less than due"
     },
     "pos": {
       "bookings": "Reservations",
@@ -1783,7 +1792,10 @@
       "zoomLabel": "Interface scale",
       "zoomOut": "Subtract",
       "zoomReset": "Reset zoom level",
-      "backToAdmin": "← Admin"
+      "backToAdmin": "← Admin",
+      "hwOccupied": "Occupied: {{count}}",
+      "hwOpenSum": "Open: {{amount}}",
+      "hwPaidShift": "Paid: {{amount}}"
     },
     "reports": {
       "amount": "Amount",

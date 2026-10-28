@@ -180,10 +180,26 @@
   align-items: center;
   padding: 0.45rem 1.15rem 0.7rem;
   border-top: 1px solid var(--rst-line);
-  color: #6f7b91;
+  color: rgba(255, 255, 255, 0.72);
   font-size: 0.72rem;
   font-weight: 600;
   background: var(--rst-surface);
+  line-height: 1.15;
+}
+
+.rst-pos__hw-stat {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.rst-pos__hw-sep {
+  width: 1px;
+  height: 0.85rem;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
 .rst-pos__hw-right {

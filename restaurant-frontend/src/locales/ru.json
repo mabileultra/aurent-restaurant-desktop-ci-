@@ -1780,7 +1780,16 @@
       "dishCount": "{{count}}",
       "favoriteAdd": "В избранное",
       "favoriteRemove": "Убрать из избранного",
-      "filterFavorites": "Избранное"
+      "filterFavorites": "Избранное",
+      "filterAll": "Все",
+      "filterRecent": "Недавние",
+      "filterDiscounts": "Скидки",
+      "allDishes": "Все блюда",
+      "notOpen": "Нельзя добавить блюдо в этот заказ",
+      "nothingToSend": "Нет новых позиций для кухни",
+      "modMin": "В «{{group}}» выберите минимум {{min}} (сейчас {{count}})",
+      "modMax": "В «{{group}}» максимум {{max}} (сейчас {{count}})",
+      "cashShort": "Сумма меньше к оплате"
     },
     "pos": {
       "bookings": "Бронирования",
@@ -1826,7 +1835,10 @@
       "zoomLabel": "Масштаб интерфейса",
       "zoomOut": "Уменьшить",
       "zoomReset": "Сбросить масштаб",
-      "backToAdmin": "← Админка"
+      "backToAdmin": "← Админка",
+      "hwOccupied": "Занято: {{count}}",
+      "hwOpenSum": "Открыто: {{amount}}",
+      "hwPaidShift": "Оплачено: {{amount}}"
     },
     "reports": {
       "amount": "Сумма",
