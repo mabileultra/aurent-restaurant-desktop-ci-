@@ -1,66 +1,85 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 /**
  * Local stack (same split as web-frontend):
  * identity 8081 · platform 8084 · restaurant 8087 · gateway 8080
- * Override: VITE_DEV_API_PROXY / VITE_DEV_IDENTITY_PROXY / VITE_DEV_PLATFORM_PROXY
+ * Override via .env.development.local:
+ *   VITE_DEV_*_PROXY=https://r-aurent.uz  → UI local, API from server
  */
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5174,
-    proxy: {
-      '/downloads': {
-        target: process.env.VITE_DOWNLOADS_PROXY || 'https://aurent.uz',
-        changeOrigin: true,
-        secure: true,
-      },
-      '/api/v1/auth': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/users': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/platform/module-access': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/platform/security': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/platform/account': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/companies': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api/v1/platform': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api/v1/billing': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api/v1/rst': {
-        target: process.env.VITE_DEV_RESTAURANT_PROXY || 'http://127.0.0.1:8087',
-        changeOrigin: true,
-      },
-      '/api': {
-        // Local default 18080: host :8080 is often nginx; gateway compose maps 18080 when needed.
-        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:18080',
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const identity = env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081';
+  const platform = env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084';
+  const restaurant = env.VITE_DEV_RESTAURANT_PROXY || 'http://127.0.0.1:8087';
+  const api = env.VITE_DEV_API_PROXY || 'http://127.0.0.1:18080';
+  const downloads = env.VITE_DOWNLOADS_PROXY || 'https://aurent.uz';
+
+  return {
+    plugins: [react()],
+    server: {
+      port: 5174,
+      proxy: {
+        '/downloads': {
+          target: downloads,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/auth': {
+          target: identity,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/users': {
+          target: identity,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/platform/module-access': {
+          target: identity,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/platform/security': {
+          target: identity,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/platform/account': {
+          target: identity,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/companies': {
+          target: platform,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/platform': {
+          target: platform,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/billing': {
+          target: platform,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api/v1/rst': {
+          target: restaurant,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/api': {
+          target: api,
+          changeOrigin: true,
+          secure: true,
+        },
       },
     },
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-  },
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+    },
+  };
 });

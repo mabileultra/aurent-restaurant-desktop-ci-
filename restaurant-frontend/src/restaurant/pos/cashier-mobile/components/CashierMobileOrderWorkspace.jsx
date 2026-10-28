@@ -3,6 +3,7 @@ import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
 import { shortWaiterName } from '../../utils/floorPosDerivations';
+import { buildCategoryByMenuId } from '../../utils/orderLineCategoryTone';
 import CancelReceiptPreview from '../../components/CancelReceiptPreview';
 import MenuPicker from '../../components/MenuPicker';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
@@ -76,6 +77,11 @@ export default function CashierMobileOrderWorkspace({
     }
     return map;
   }, [order.items]);
+
+  const categoryByMenuId = useMemo(
+    () => buildCategoryByMenuId(menuItems),
+    [menuItems],
+  );
 
   const activeLines = (order.items ?? []).filter((line) => (
     line.itemStatus !== 'CANCELLED' && (Number(line.quantity) || 0) > 0
@@ -213,6 +219,7 @@ export default function CashierMobileOrderWorkspace({
               onQty={onQty}
               onRemove={onRemove}
               onEditNote={onEditNote}
+              categoryByMenuId={categoryByMenuId}
               priceMode="total"
               t={t}
             />

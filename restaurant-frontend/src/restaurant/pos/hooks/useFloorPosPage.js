@@ -30,13 +30,14 @@ import { useStoreFloorSync } from './useStoreFloorSync';
 import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
 import { useMenuImageShiftPreload } from '../../shared/hooks/useMenuImageShiftPreload';
 
-const COUNTER_STALE_MS = 15_000;
-const FLOOR_STALE_MS = 8_000;
-const SHIFT_STALE_MS = 20_000;
-const MENU_STALE_MS = 10 * 60_000;
-const ORDER_STALE_MS = 3_000;
+/** Tuned for ~2k concurrent POS on one API: less chatter, still snappy enough. */
+const COUNTER_STALE_MS = 20_000;
+const FLOOR_STALE_MS = 10_000;
+const SHIFT_STALE_MS = 30_000;
+const MENU_STALE_MS = 15 * 60_000;
+const ORDER_STALE_MS = 4_000;
 /** Fallback if revision poll misses; primary sync is useStoreFloorSync (~2s watermark). */
-const ORDER_POLL_MS = 12_000;
+const ORDER_POLL_MS = 18_000;
 
 function draftOrderFromTable(table) {
   if (!table) return null;
@@ -120,7 +121,7 @@ export function useFloorPosPage() {
     queryFn: () => rstOrderApi.listActive(storeId, channel).then((r) => r.data),
     enabled: storeId != null && !!channel && !activeOrderId,
     staleTime: COUNTER_STALE_MS,
-    refetchInterval: 10_000,
+    refetchInterval: 15_000,
     refetchOnWindowFocus: true,
   });
   const shiftQuery = useQuery({
@@ -131,7 +132,7 @@ export function useFloorPosPage() {
     },
     enabled: storeId != null,
     staleTime: SHIFT_STALE_MS,
-    refetchInterval: 30_000,
+    refetchInterval: 45_000,
   });
   const menuQuery = useQuery({
     queryKey: ['rst-menu-pos', storeId],
@@ -140,7 +141,7 @@ export function useFloorPosPage() {
     },
     enabled: storeId != null,
     staleTime: MENU_STALE_MS,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
     refetchOnWindowFocus: true,
   });
   const floorHalls = floorQuery.data?.halls;

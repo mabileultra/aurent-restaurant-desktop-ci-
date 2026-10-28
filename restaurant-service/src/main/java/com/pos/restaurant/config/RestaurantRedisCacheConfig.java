@@ -1,9 +1,5 @@
 package com.pos.restaurant.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -19,7 +15,6 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.StringUtils;
@@ -71,19 +66,12 @@ public class RestaurantRedisCacheConfig {
         LettuceConnectionFactory restaurantRedisConnectionFactory,
         RestaurantRedisProperties properties
     ) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.activateDefaultTyping(
-            LaissezFaireSubTypeValidator.instance,
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            JsonTypeInfo.As.PROPERTY
-        );
-        GenericJackson2JsonRedisSerializer json = new GenericJackson2JsonRedisSerializer(mapper);
+        RestaurantRedisValueSerializer values = new RestaurantRedisValueSerializer();
 
         RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
             .disableCachingNullValues()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(json));
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(values));
 
         Map<String, RedisCacheConfiguration> caches = Map.of(
             RestaurantCacheNames.MENU,

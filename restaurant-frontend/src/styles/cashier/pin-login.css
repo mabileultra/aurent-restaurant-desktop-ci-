@@ -113,42 +113,53 @@
   flex-shrink: 0;
 }
 
+/* Match roster chrome controls; orange when company code is set. */
 .cashier-pin-login__company-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  min-width: 2.25rem;
-  height: 2.25rem;
+  gap: 0.4rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   margin: 0;
-  padding: 0 0.55rem;
-  border-radius: 9999px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #64748b;
+  padding: 0 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgb(15 23 42 / 0.08);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, color 0.15s ease;
 }
 
 .cashier-pin-login__company-chip-code {
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 800;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 .cashier-pin-login__company-chip:hover {
-  border-color: #94a3b8;
-  color: #334155;
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.28);
+  color: #fff;
 }
 
 .cashier-pin-login__company-chip.is-open,
 .cashier-pin-login__company-chip.is-set {
-  border-color: #10b981;
-  color: #10b981;
-  box-shadow: 0 4px 14px rgb(16 185 129 / 0.18);
-  padding: 0 0.7rem 0 0.5rem;
+  border-color: rgb(255 122 26 / 0.75);
+  background: var(--rst-accent, #f97316);
+  color: #1a140c;
+  box-shadow: none;
+  padding: 0 0.85rem;
+}
+
+.cashier-pin-login__company-chip.is-open:hover,
+.cashier-pin-login__company-chip.is-set:hover {
+  filter: brightness(1.06);
+  border-color: rgb(255 122 26 / 0.9);
+  background: var(--rst-accent, #f97316);
+  color: #1a140c;
 }
 
 .cashier-pin-login__company-chip:active:not(:disabled) {
@@ -159,12 +170,13 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
+  z-index: 20;
   width: min(14rem, calc(100vw - 2rem));
   padding: 0.875rem;
   border-radius: 0.875rem;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  box-shadow: 0 12px 32px rgb(15 23 42 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(15 23 42 / 0.96);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
 }
 
 .cashier-pin-login__company-label {
@@ -172,26 +184,59 @@
   margin-bottom: 0.375rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #475569;
+  color: rgb(255 255 255 / 0.72);
 }
 
 .cashier-pin-login__company-input {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgb(255 255 255 / 0.18);
   border-radius: 0.625rem;
-  background: #fff;
+  background: rgb(255 255 255 / 0.08);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-align: center;
-  color: #0f172a;
+  color: #fff;
 }
 
 .cashier-pin-login__company-input:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.15);
+  border-color: rgb(255 122 26 / 0.75);
+  box-shadow: 0 0 0 3px rgb(255 122 26 / 0.2);
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-chip {
+  border-color: rgb(15 23 42 / 0.12);
+  background: #fff;
+  color: #334155;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-chip:hover {
+  border-color: rgb(15 23 42 / 0.22);
+  color: #0f172a;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-chip.is-open,
+.cashier-pin-login--roster-light .cashier-pin-login__company-chip.is-set {
+  border-color: rgb(255 122 26 / 0.75);
+  background: var(--rst-accent, #f97316);
+  color: #1a140c;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-popover {
+  border-color: #e2e8f0;
+  background: #fff;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-label {
+  color: #475569;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-input {
+  border-color: #e2e8f0;
+  background: #fff;
+  color: #0f172a;
 }
 
 .cashier-pin-login__card {

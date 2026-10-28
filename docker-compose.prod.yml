@@ -90,7 +90,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: aurent-redis
-    mem_limit: 64m
+    # ~2k POS: menu/floor cache across restaurant (+ pharmacy)
+    mem_limit: 256m
     restart: unless-stopped
     command:
       - redis-server
@@ -98,6 +99,10 @@ services:
       - 'no'
       - --save
       - ''
+      - --maxmemory
+      - 200mb
+      - --maxmemory-policy
+      - allkeys-lru
       - --requirepass
       - ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
     volumes:
@@ -416,8 +421,19 @@ services:
   restaurant-db:
     image: postgres:15-alpine
     container_name: aurent-restaurant-db
-    mem_limit: 192m
+    # Single-node target ~2k concurrent waiters (pool 40 + headroom)
+    mem_limit: 768m
     restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - max_connections=120
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - effective_cache_size=512MB
     environment:
       POSTGRES_DB: ${RESTAURANT_DB_NAME:-restaurant_db}
       POSTGRES_USER: ${RESTAURANT_DB_USER:-restaurant_user}
@@ -440,12 +456,14 @@ services:
       context: .
       dockerfile: restaurant-service/Dockerfile
     container_name: aurent-restaurant-service
-    mem_limit: 1024m
+    mem_limit: 1536m
     restart: unless-stopped
     depends_on:
       restaurant-db:
         condition: service_healthy
       redpanda:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       RESTAURANT_DB_URL: jdbc:postgresql://restaurant-db:5432/${RESTAURANT_DB_NAME:-restaurant_db}
@@ -458,6 +476,14 @@ services:
       DOMAIN_KAFKA_ENABLED: ${DOMAIN_KAFKA_ENABLED:-true}
       POS_CORE_URL: http://backend:8080/api/v1
       POS_INTERNAL_API_KEY: ${POS_INTERNAL_API_KEY:-pos-internal-dev-key-change-in-prod}
+      RESTAURANT_REDIS_ENABLED: ${RESTAURANT_REDIS_ENABLED:-true}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      RESTAURANT_REDIS_DB: ${RESTAURANT_REDIS_DB:-2}
+      RESTAURANT_HIKARI_MAX_POOL: ${RESTAURANT_HIKARI_MAX_POOL:-40}
+      RESTAURANT_HIKARI_MIN_IDLE: ${RESTAURANT_HIKARI_MIN_IDLE:-10}
+      TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-300}
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - '127.0.0.1:8087:8087'
@@ -670,7 +696,8 @@ services:
       context: .
       dockerfile: api-gateway/Dockerfile
     container_name: aurent-api-gateway
-    mem_limit: 640m
+    # Peak POS fan-in (menu/floor polls) — 640m OOM'd under cashiers2k
+    mem_limit: 896m
     restart: unless-stopped
     depends_on:
       backend:
