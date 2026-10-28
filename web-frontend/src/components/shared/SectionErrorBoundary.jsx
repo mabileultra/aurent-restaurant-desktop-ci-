@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Sentry } from '../../observability/initSentry';
 import PlatformErrorState from '../ui/PlatformErrorState';
 
@@ -70,16 +69,3 @@ export default class SectionErrorBoundary extends Component {
     return this.props.children;
   }
 }
-
-SectionErrorBoundary.propTypes = {
-  children: PropTypes.node.isRequired,
-  sectionName: PropTypes.string,
-  title: PropTypes.node,
-  description: PropTypes.node,
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
-  fallback: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-  resetKeys: PropTypes.array,
-  onError: PropTypes.func,
-  onReset: PropTypes.func,
-  className: PropTypes.string,
-};

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { AlertTriangle, RotateCcw, ShieldAlert, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { parseApiError } from '../../utils/apiErrorParser';
@@ -124,15 +123,3 @@ export default function PlatformErrorState({
     </div>
   );
 }
-
-PlatformErrorState.propTypes = {
-  error: PropTypes.any,
-  title: PropTypes.node,
-  description: PropTypes.node,
-  onRetry: PropTypes.func,
-  retryLabel: PropTypes.node,
-  retryLoading: PropTypes.bool,
-  action: PropTypes.node,
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
-  className: PropTypes.string,
-};
