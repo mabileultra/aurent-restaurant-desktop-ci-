@@ -128,7 +128,7 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 4. Установленная касса проверяет обновления автоматически и через «Вид → Проверить обновления»
 5. Новые пользователи: `https://домен/install`
 
-Локально: `cd desktop-electron && npm run dist && bash ../deploy/publish-desktop.sh`
+Локально: `cd desktop-electron && pnpm run dist && bash ../deploy/publish-desktop.sh`
 
 ## SSL + dual domain (aurent.uz + r-aurent.uz)
 

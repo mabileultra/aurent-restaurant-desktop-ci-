@@ -3,8 +3,10 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --cache /root/.npm
+RUN corepack enable && corepack prepare pnpm@11 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
 COPY . .
 ARG VITE_API_URL=/api/v1
@@ -23,7 +25,7 @@ ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV VITE_SENTRY_ENVIRONMENT=$VITE_SENTRY_ENVIRONMENT
 ENV VITE_SENTRY_TRACES_SAMPLE_RATE=$VITE_SENTRY_TRACES_SAMPLE_RATE
 ENV VITE_SENTRY_RELEASE=$VITE_SENTRY_RELEASE
-RUN npm run build
+RUN pnpm run build
 
 # Serve
 FROM nginx:1.27-alpine

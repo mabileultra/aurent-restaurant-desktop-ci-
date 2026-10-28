@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import Spinner from './Spinner';
 
 const VARIANT_CLS = {
   primary:
@@ -20,13 +21,19 @@ export default function BaseButton({
   variant = 'primary',
   size = 'md',
   type = 'button',
+  loading = false,
+  disabled = false,
   className,
   children,
   ...props
 }) {
+  const spinnerVariant = variant === 'primary' || variant === 'danger' ? 'white' : 'emerald';
+  const spinnerSize = size === 'sm' ? 'xs' : 'sm';
+
   return (
     <button
       type={type}
+      disabled={disabled || loading}
       className={clsx(
         'inline-flex items-center justify-center gap-2 transition-colors disabled:cursor-not-allowed',
         VARIANT_CLS[variant],
@@ -35,6 +42,7 @@ export default function BaseButton({
       )}
       {...props}
     >
+      {loading && <Spinner size={spinnerSize} variant={spinnerVariant} />}
       {children}
     </button>
   );

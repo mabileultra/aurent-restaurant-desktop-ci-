@@ -9,17 +9,17 @@ cd "$DESKTOP_ROOT"
 
 if [[ ! -d node_modules/electron ]]; then
   echo "Installing desktop-electron dependencies…"
-  npm install
+  pnpm install
 fi
 
-npm run sync-icons
+pnpm run sync-icons
 
 export AURENT_WEB_URL="${AURENT_WEB_URL:-http://localhost:5173/cashier/login}"
 export AURENT_API_URL="${AURENT_API_URL:-http://localhost:8080/api/v1}"
 
 if ! curl -sf "$AURENT_WEB_URL" >/dev/null 2>&1; then
   echo "Frontend not running at $AURENT_WEB_URL"
-  echo "Start: cd web-frontend && npm run dev"
+  echo "Start: cd web-frontend && pnpm dev"
 fi
 
-exec npm start
+exec pnpm start

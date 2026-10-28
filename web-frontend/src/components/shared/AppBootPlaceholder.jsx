@@ -1,6 +1,8 @@
 import { isCashierPinLoginPath } from '../../utils/isCashierPinLoginPath';
 import '../../styles/shared/app-boot-placeholder.css';
 
+import Spinner from '../ui/Spinner';
+
 /** Placeholder while auth / desktop API bootstrap — never leave a blank dark void. */
 export default function AppBootPlaceholder({ label = 'Aurent…', tone }) {
   const pinLogin = isCashierPinLoginPath();
@@ -14,7 +16,7 @@ export default function AppBootPlaceholder({ label = 'Aurent…', tone }) {
           : 'app-boot-placeholder--dark'
       }`}
     >
-      {label}
+      <Spinner size="xl" text={label} variant="emerald" />
     </div>
   );
 }

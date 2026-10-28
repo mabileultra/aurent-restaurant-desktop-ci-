@@ -61,7 +61,7 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
         width: MENU_WIDTH,
         zIndex: 9999,
       }}
-      className="rounded-lg border border-slate-200 bg-white py-1 shadow-xl dark:border-slate-600 dark:bg-slate-800"
+      className="rounded-lg border border-slate-200 bg-white py-1 shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
     >
       {actions.map((action) => (
         <button
@@ -72,7 +72,7 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
             action.onClick();
             onOpenChange(false);
           }}
-          className={`block w-full px-3 py-2.5 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
+          className={`block w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:!bg-slate-800 ${
             action.danger ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'
           }`}
         >

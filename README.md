@@ -27,6 +27,8 @@ postsystem/
 └── docker-compose.prod.yml
 ```
 
+> 📦 **Muhim (pnpm migratsiyasi)**: Loyiha barcha JS/Node qismlarida `npm`dan `pnpm`ga o'tkazilgan. Barcha OS lar (Windows, macOS, Linux) uchun o'rnatish va migratsiya qo'llanmasi: **[PNPM_MIGRATION.md](./PNPM_MIGRATION.md)**.
+
 ## Локальная разработка
 
 ```bash
@@ -35,12 +37,12 @@ docker compose up -d --build
 
 # Или по отдельности:
 cd web-backend && mvn spring-boot:run
-cd web-frontend && npm install && npm run dev
+cd web-frontend && pnpm install && pnpm run dev
 ```
 
 API: `http://localhost:8080/api/v1`  
 Веб: `http://localhost:5173` (Docker: порт 5173 → nginx 80)  
-Ресторан (отдельный фронт): `cd restaurant-frontend && npm run dev` → `http://localhost:5174`
+Ресторан (отдельный фронт): `cd restaurant-frontend && pnpm run dev` → `http://localhost:5174`
 
 Демо-логин после init БД: `admin` / `password`
 

@@ -1,0 +1,235 @@
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import PlatformStoresGroupedView from './PlatformStoresGroupedView';
+
+globalThis.React = React;
+
+vi.mock('../../../shared/geo/useGeoNameLookup', () => ({
+  useGeoNameLookup: () => ({
+    regionName: (code) => (code === 'TAS' ? 'Toshkent sh.' : 'Yo‘q'),
+    districtName: (code) => (code === 'YUN' ? 'Yunusobod' : 'Yo‘q'),
+    empty: 'Yo‘q',
+  }),
+}));
+
+describe('PlatformStoresGroupedView', () => {
+  const mockT = (key, opts) => {
+    if (opts?.count !== undefined) {
+      if (key === 'platform.groupedBranchesCount') return `${opts.count} ta filial`;
+      if (key === 'platform.groupedActiveCount') return `${opts.count} faol`;
+      if (key === 'platform.groupedInactiveCount') return `${opts.count} nofaol`;
+    }
+    return opts?.defaultValue || key;
+  };
+
+  const mockCompanies = [
+    { id: 1, name: 'EVOS Fast Food MCHJ', businessType: 'RESTAURANT', tin: '123456789' },
+    { id: 2, name: 'Dori-Darmon Farmatsiya', businessType: 'PHARMACY', tin: '987654321' },
+  ];
+
+  const mockStores = [
+    {
+      id: 101,
+      companyId: 1,
+      companyName: 'EVOS Fast Food MCHJ',
+      name: 'EVOS Chilonzor',
+      businessType: 'RESTAURANT',
+      phone: '+998901112233',
+      address: 'Chilonzor 1-mavze',
+      regionCode: 'TAS',
+      districtCode: 'YUN',
+      active: true,
+    },
+    {
+      id: 102,
+      companyId: 1,
+      companyName: 'EVOS Fast Food MCHJ',
+      name: 'EVOS Yunusobod',
+      businessType: 'RESTAURANT',
+      phone: '+998904445566',
+      address: 'Yunusobod 4-mavze',
+      regionCode: 'TAS',
+      districtCode: 'YUN',
+      active: false,
+    },
+    {
+      id: 201,
+      companyId: 2,
+      companyName: 'Dori-Darmon Farmatsiya',
+      name: 'Apteka Markaziy',
+      businessType: 'PHARMACY',
+      phone: '+998907778899',
+      address: 'Amir Temur shoh ko‘chasi 10',
+      regionCode: 'TAS',
+      districtCode: 'YUN',
+      active: true,
+    },
+  ];
+
+  const defaultProps = {
+    t: mockT,
+    stores: mockStores,
+    companies: mockCompanies,
+    search: '',
+    businessType: '',
+    regionCode: '',
+    districtCode: '',
+    statusFilter: 'ALL',
+    isPending: false,
+    menuId: null,
+    onMenuOpenChange: vi.fn(),
+    onEdit: vi.fn(),
+    onToggleActive: vi.fn(),
+    onDelete: vi.fn(),
+    onPharmacyIntegration: vi.fn(),
+    onSelectStore: vi.fn(),
+    openCreateForCompany: vi.fn(),
+  };
+
+  it('renders company hierarchy cards with company names, STIR, and branch count pills', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, defaultProps)
+    );
+
+    // Company headers
+    expect(html).toContain('EVOS Fast Food MCHJ');
+    expect(html).toContain('Dori-Darmon Farmatsiya');
+    expect(html).toContain('STIR: 123456789');
+
+    // Branch counts for EVOS (2 branches, 1 active, 1 inactive)
+    expect(html).toContain('2 ta filial');
+    expect(html).toContain('1 faol');
+    expect(html).toContain('1 nofaol');
+
+    // Branch counts for Dori-Darmon (1 branch, 1 active)
+    expect(html).toContain('1 ta filial');
+  });
+
+  it('renders sub-table of branches inside expanded company accordion', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, defaultProps)
+    );
+
+    expect(html).toContain('EVOS Chilonzor');
+    expect(html).toContain('EVOS Yunusobod');
+    expect(html).toContain('Apteka Markaziy');
+
+    // Formatted phone
+    expect(html).toContain('+998 (90) 111-22-33');
+
+    // Status badges
+    expect(html).toContain('Faol');
+    expect(html).toContain('Nofaol');
+  });
+
+  it('filters branches by statusFilter (ACTIVE)', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        statusFilter: 'ACTIVE',
+      })
+    );
+
+    expect(html).toContain('EVOS Chilonzor');
+    expect(html).toContain('Apteka Markaziy');
+    expect(html).not.toContain('EVOS Yunusobod');
+  });
+
+  it('filters branches by search query', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        search: 'Apteka',
+      })
+    );
+
+    expect(html).toContain('Apteka Markaziy');
+    expect(html).not.toContain('EVOS Chilonzor');
+  });
+
+  it('renders empty message when no stores match the search query', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        search: 'Non-existent branch 9999',
+      })
+    );
+
+    expect(html).toContain('Filiallar topilmadi');
+  });
+
+  it('renders loading spinner when isPending is true', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        isPending: true,
+      })
+    );
+
+    expect(html).toContain('animate-spin');
+    expect(html).not.toContain('EVOS Fast Food');
+  });
+
+  it('filters by companyId and isolates selected company and its branches', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        companyId: '2',
+      })
+    );
+
+    // Dori-Darmon Farmatsiya (companyId: 2) should be present
+    expect(html).toContain('Dori-Darmon Farmatsiya');
+    expect(html).toContain('Apteka Markaziy');
+
+    // EVOS Fast Food MCHJ (companyId: 1) should be filtered out
+    expect(html).not.toContain('EVOS Fast Food MCHJ');
+    expect(html).not.toContain('EVOS Chilonzor');
+    expect(html).not.toContain('EVOS Yunusobod');
+
+    // Toolbar count should reflect strictly 1 company and 1 filial
+    expect(html).toContain('1 ta kompaniya • 1 ta filial');
+  });
+
+  it('auto-expands and highlights target company when focusCompanyId is provided without filtering out other companies', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        focusCompanyId: '2',
+      })
+    );
+
+    // Both companies remain present in directory list
+    expect(html).toContain('EVOS Fast Food MCHJ');
+    expect(html).toContain('Dori-Darmon Farmatsiya');
+
+    // DOM scroll anchors exist
+    expect(html).toContain('id="company-group-1"');
+    expect(html).toContain('id="company-group-2"');
+
+    // Focused company 2 (Dori-Darmon Farmatsiya) is auto-expanded and highlighted with emerald ring
+    expect(html).toContain('Apteka Markaziy');
+    expect(html).toContain('ring-emerald-500');
+
+    // Overall count maintains all companies and branches
+    expect(html).toContain('2 ta kompaniya • 3 ta filial');
+  });
+
+  it('respects controlled hasUserToggled and expandedIds when user collapses a focused company', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        focusCompanyId: '2',
+        hasUserToggled: true,
+        expandedIds: new Set(), // user collapsed it
+      })
+    );
+
+    // Company remains present in directory list
+    expect(html).toContain('Dori-Darmon Farmatsiya');
+
+    // Branches should be collapsed (not in DOM)
+    expect(html).not.toContain('Apteka Markaziy');
+  });
+});

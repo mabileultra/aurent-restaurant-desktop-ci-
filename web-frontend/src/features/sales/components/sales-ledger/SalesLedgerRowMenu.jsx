@@ -14,7 +14,7 @@ export default function SalesLedgerRowMenu({ menu, t, onClose, onPrint, onReturn
       />
       <div
         role="menu"
-        className="fixed z-[210] min-w-[180px] rounded-lg border border-slate-200 bg-white py-1 text-left shadow-xl dark:border-slate-700 dark:bg-slate-800"
+        className="fixed z-[210] min-w-[180px] rounded-lg border border-slate-200 bg-white py-1 text-left shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
         style={{
           top: `${menu.rect.bottom + 4}px`,
           right: `${window.innerWidth - menu.rect.right}px`,

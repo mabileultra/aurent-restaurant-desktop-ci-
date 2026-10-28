@@ -9,7 +9,7 @@ const BUST_KEY = 'rst-print-profile-bust';
 const cache = new Map();
 
 function bindBustListener() {
-  if (typeof window === 'undefined' || bindBustListener.done) return;
+  if (typeof window === 'undefined' || typeof window.addEventListener !== 'function' || bindBustListener.done) return;
   bindBustListener.done = true;
   window.addEventListener('storage', (event) => {
     if (event.key !== BUST_KEY || !event.newValue) return;

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import clsx from 'clsx';
 import BaseButton from './BaseButton';
@@ -26,10 +27,10 @@ export default function BaseModal({
 }) {
   if (!open) return null;
 
-  return (
+  const modalNode = (
     <div
       className={clsx(
-        'fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4',
+        'fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-xs p-4',
         overlayClassName,
       )}
     >
@@ -77,4 +78,9 @@ export default function BaseModal({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalNode, document.body);
+  }
+  return modalNode;
 }

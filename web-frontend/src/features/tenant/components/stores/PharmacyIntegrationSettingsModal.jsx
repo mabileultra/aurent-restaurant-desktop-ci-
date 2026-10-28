@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { usePharmacyIntegrationSettings } from '../../hooks/usePharmacyIntegrationSettings';
 import { storeIsPharmacy } from '../../utils/storeAslMarkingSupport';
@@ -13,9 +14,9 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
     p.submit(e);
   };
 
-  return (
-    <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
+  const modalNode = (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+      <button type="button" className="absolute inset-0 bg-black/60" aria-label="Close" onClick={onClose} />
       <div
         className="pharm-int-settings relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
         role="dialog"
@@ -80,4 +81,9 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalNode, document.body);
+  }
+  return modalNode;
 }

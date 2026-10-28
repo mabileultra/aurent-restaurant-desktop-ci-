@@ -19,7 +19,7 @@ export default function ZReportsRowMenu({
       />
       <div
         role="menu"
-        className="fixed z-[210] min-w-[280px] max-w-[90vw] rounded-lg border border-slate-200 bg-white py-2 text-left shadow-xl dark:border-slate-700 dark:bg-slate-800"
+        className="fixed z-[210] min-w-[280px] max-w-[90vw] rounded-lg border border-slate-200 bg-white py-2 text-left shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
         style={{
           top: `${menu.rect.bottom + 4}px`,
           right: `${window.innerWidth - menu.rect.right}px`,
