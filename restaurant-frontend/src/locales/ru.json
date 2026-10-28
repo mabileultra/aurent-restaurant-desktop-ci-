@@ -831,7 +831,10 @@
       "menuImportTasnifShortOk": "ОК",
       "menuImportTasnifShortMiss": "нет",
       "menuImportTasnifShortSkip": "—",
-      "menuImportTasnifShortIdle": "?"
+      "menuImportTasnifShortIdle": "?",
+      "menuCategoryPhoto": "Фото раздела",
+      "menuCategoryPhotoHint": "Показывается на кассе в карточках категорий (до 400 КБ).",
+      "category": "Категория"
     },
     "audit": {
       "colDetail": "Событие",

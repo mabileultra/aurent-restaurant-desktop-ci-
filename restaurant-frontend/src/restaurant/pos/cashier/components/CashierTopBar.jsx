@@ -23,7 +23,7 @@ export default function CashierTopBar({
   showExitMobile = false,
   onExitMobile,
   compactActions = false,
-  /** Full-order desktop: MenuPicker portals search here. */
+  /** Full-order desktop: Menu catalog search portal. */
   showMenuSearch = false,
   roleLabel = '',
   shift = null,
@@ -85,17 +85,17 @@ export default function CashierTopBar({
               {t(item.labelKey)}
             </button>
           ))}
+          <CashierQuickSaleButton
+            enabled={quickSaleEnabled}
+            storeId={storeId}
+            shift={shift}
+            onOpened={onQuickSaleOpened}
+            t={t}
+          />
         </div>
       ) : null}
 
       <div className="rst-cashier-top__actions">
-        <CashierQuickSaleButton
-          enabled={quickSaleEnabled}
-          storeId={storeId}
-          shift={shift}
-          onOpened={onQuickSaleOpened}
-          t={t}
-        />
         {compactActions ? (
           <WaiterMobileHeaderActions
             enabled
@@ -111,7 +111,7 @@ export default function CashierTopBar({
           <>
             {canAdmin ? (
               <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
-                <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
+                <BaseButton type="button" variant="primary">{t('rst.pos.toAdmin')}</BaseButton>
               </Link>
             ) : null}
             <RestaurantThemeSwitch />

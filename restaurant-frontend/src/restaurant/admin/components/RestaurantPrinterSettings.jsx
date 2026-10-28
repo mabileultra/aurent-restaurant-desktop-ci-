@@ -140,6 +140,7 @@ export default function RestaurantPrinterSettings({
         sortOrder: category.sortOrder ?? 100,
         autoPrint: true,
         printPrinterName: name,
+        imageUrl: category.imageUrl || null,
       });
       await qc.invalidateQueries({ queryKey: ['rst-menu-categories-admin', storeId] });
       await qc.invalidateQueries({ queryKey: ['rst-menu-categories', storeId] });

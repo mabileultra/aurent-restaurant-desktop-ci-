@@ -791,7 +791,10 @@
       "menuImportTasnifShortOk": "OK",
       "menuImportTasnifShortMiss": "no",
       "menuImportTasnifShortSkip": "—",
-      "menuImportTasnifShortIdle": "?"
+      "menuImportTasnifShortIdle": "?",
+      "menuCategoryPhoto": "Section photo",
+      "menuCategoryPhotoHint": "Shown on POS category cards (up to 400 KB).",
+      "category": "Category"
     },
     "audit": {
       "colDetail": "Event",
