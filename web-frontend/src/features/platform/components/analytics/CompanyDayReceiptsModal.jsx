@@ -21,7 +21,7 @@ export default function CompanyDayReceiptsModal({ companyId, date, onClose }) {
     : t('platform.analytics.receiptsTitle', { date: fmtDay(date) });
 
   return (
-    <BaseModal open title={title} onClose={onClose} size="xl">
+    <BaseModal open title={title} onClose={onClose} size="xl" className="ta-page">
       {list.saleId ? (
         <div className="ca-receipt-modal">
           <button type="button" className="ca-back" onClick={list.closeReceipt}>
