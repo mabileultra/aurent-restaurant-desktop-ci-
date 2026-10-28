@@ -60,32 +60,7 @@
   grid-row: 1 / -1;
 }
 
-@media (max-width: 1100px) {
-  .rst-order--board {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.95fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
-  }
-
-  .rst-order--board .rst-order__board-head {
-    grid-column: 1 / -1;
-  }
-
-  .rst-order--board .rst-order__categories {
-    grid-column: 1;
-    grid-row: 2;
-    max-height: 11rem;
-  }
-
-  .rst-order--board .rst-order__dishes {
-    grid-column: 1;
-    grid-row: 3;
-  }
-
-  .rst-order--board .rst-order__ticket {
-    grid-column: 2;
-    grid-row: 2 / -1;
-  }
-}
+/* No mid-width board squash: desktop keeps 3 cols; below 1024 POS uses mobile shell. */
 
 .rst-order__catalog,
 .rst-order__ticket {
