@@ -88,3 +88,21 @@ html.app-viewport--canonical .scales-plu-page__title {
 html.app-viewport--canonical .admin-main .overflow-x-auto {
   max-width: 100%;
 }
+
+/* Table Action Menus & Popovers in Dark Mode (overrides any leaked Bootstrap .bg-white !important) */
+html.dark [role='menu'],
+.dark [role='menu'] {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark [role='menu'] [role='menuitem']:not(.text-red-600):not(.text-red-400):not(.text-red-700):not(.text-red-300),
+.dark [role='menu'] [role='menuitem']:not(.text-red-600):not(.text-red-400):not(.text-red-700):not(.text-red-300) {
+  color: #f1f5f9;
+}
+
+html.dark [role='menu'] [role='menuitem']:hover,
+.dark [role='menu'] [role='menuitem']:hover {
+  background-color: #1e293b !important;
+}

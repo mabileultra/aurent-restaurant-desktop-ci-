@@ -15,7 +15,7 @@ export default function CategoryRowMenu({ rowMenu, onClose, onEdit, onDelete }) 
       />
       <div
         role="menu"
-        className="fixed z-[90] min-w-[160px] rounded-lg border border-slate-200 bg-white py-1 text-left shadow-xl dark:border-slate-700 dark:bg-slate-800"
+        className="fixed z-[90] min-w-[160px] rounded-lg border border-slate-200 bg-white py-1 text-left shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
         style={{
           top: `${rowMenu.rect.bottom + 4}px`,
           right: `${window.innerWidth - rowMenu.rect.right}px`,
