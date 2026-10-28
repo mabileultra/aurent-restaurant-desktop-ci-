@@ -204,7 +204,9 @@ export default function RestaurantCashierPosPage() {
         )}
       </div>
 
-      {showFull || mobile.enabled ? null : <PosHardwareBar t={p.t} />}
+      {showFull || mobile.enabled ? null : (
+        <PosHardwareBar t={p.t} halls={p.halls} shift={p.shift} />
+      )}
       {mobile.enabled && !showFull ? (
         <CashierMobileNavSheet
           tab={p.tab}

@@ -1740,7 +1740,16 @@
       "dishCount": "{{count}}",
       "favoriteAdd": "Sevimlilarga",
       "favoriteRemove": "Sevimlilardan olib tashlash",
-      "filterFavorites": "Sevimlilar"
+      "filterFavorites": "Sevimlilar",
+      "filterAll": "Hammasi",
+      "filterRecent": "Yaqinda",
+      "filterDiscounts": "Chegirmalar",
+      "allDishes": "Barcha taomlar",
+      "notOpen": "Bu buyurtmaga taom qo‘shib bo‘lmaydi",
+      "nothingToSend": "Oshxonaga yangi pozitsiyalar yo‘q",
+      "modMin": "«{{group}}» bo‘yicha kamida {{min}} tanlang (hozir {{count}})",
+      "modMax": "«{{group}}» bo‘yicha ko‘pi {{max}} (hozir {{count}})",
+      "cashShort": "Summa to‘lovdan kam"
     },
     "pos": {
       "bookings": "Bronlar",
@@ -1786,7 +1795,10 @@
       "zoomLabel": "Interfeys masshtabi",
       "zoomOut": "Kichiklashtirish",
       "zoomReset": "Masshtabni tiklash",
-      "backToAdmin": "← Adminka"
+      "backToAdmin": "← Adminka",
+      "hwOccupied": "Band: {{count}}",
+      "hwOpenSum": "Ochiq: {{amount}}",
+      "hwPaidShift": "To‘langan: {{amount}}"
     },
     "reports": {
       "amount": "Summa",
