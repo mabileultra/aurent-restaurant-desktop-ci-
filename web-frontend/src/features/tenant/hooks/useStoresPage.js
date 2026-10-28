@@ -23,6 +23,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const [pharmacyIntegrationStore, setPharmacyIntegrationStore] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedStore, setSelectedStore] = useState(null);
+  const [expandedCompanyIds, setExpandedCompanyIds] = useState(() => new Set());
+  const [hasUserToggledGrouped, setHasUserToggledGrouped] = useState(false);
   const [viewMode, setViewModeState] = useState(() => {
     if (typeof window !== 'undefined') {
       const sp = new URLSearchParams(window.location.search);
@@ -271,6 +273,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     viewMode,
     setViewMode,
     allStores,
+    expandedCompanyIds,
+    setExpandedCompanyIds,
+    hasUserToggledGrouped,
+    setHasUserToggledGrouped,
     pharmacyIntegrationStore,
     openPharmacyIntegration,
     closePharmacyIntegration,

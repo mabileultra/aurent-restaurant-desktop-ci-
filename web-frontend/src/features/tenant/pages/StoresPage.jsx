@@ -165,6 +165,10 @@ export default function StoresPage({
             stores={p.allStores}
             companies={p.companies}
             companyId={p.companyId}
+            expandedIds={p.expandedCompanyIds}
+            onExpandedIdsChange={p.setExpandedCompanyIds}
+            hasUserToggled={p.hasUserToggledGrouped}
+            onHasUserToggledChange={p.setHasUserToggledGrouped}
             search={p.search}
             businessType={p.businessType}
             regionCode={p.regionCode}

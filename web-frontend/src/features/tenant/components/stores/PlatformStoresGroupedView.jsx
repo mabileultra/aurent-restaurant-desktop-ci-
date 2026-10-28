@@ -34,6 +34,10 @@ export default function PlatformStoresGroupedView({
   districtCode = '',
   statusFilter = 'ALL',
   isPending = false,
+  expandedIds: controlledExpandedIds,
+  onExpandedIdsChange,
+  hasUserToggled: controlledHasUserToggled,
+  onHasUserToggledChange,
   menuId = null,
   onMenuOpenChange,
   onEdit,
@@ -43,8 +47,14 @@ export default function PlatformStoresGroupedView({
   onSelectStore,
   openCreateForCompany,
 }) {
-  const [expandedIds, setExpandedIds] = useState(() => new Set());
-  const [hasUserToggled, setHasUserToggled] = useState(false);
+  const [internalExpandedIds, setInternalExpandedIds] = useState(() => new Set());
+  const [internalHasUserToggled, setInternalHasUserToggled] = useState(false);
+
+  const expandedIds = controlledExpandedIds ?? internalExpandedIds;
+  const setExpandedIds = onExpandedIdsChange ?? setInternalExpandedIds;
+
+  const hasUserToggled = controlledHasUserToggled ?? internalHasUserToggled;
+  const setHasUserToggled = onHasUserToggledChange ?? setInternalHasUserToggled;
 
   const targetFocusId = useMemo(() => {
     if (focusCompanyId != null && focusCompanyId !== '') {
@@ -234,6 +244,22 @@ export default function PlatformStoresGroupedView({
       const el = document.getElementById(`company-group-${targetFocusId}`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Clean up focusCompany and hash from URL so it doesn't linger and re-trigger on view switch
+      if (typeof window !== 'undefined' && window.history?.replaceState) {
+        try {
+          const url = new URL(window.location.href);
+          if (url.searchParams.has('focusCompany') || url.searchParams.has('company') || url.hash) {
+            url.searchParams.delete('focusCompany');
+            url.searchParams.delete('company');
+            url.hash = '';
+            const nextUrl = url.pathname + (url.search ? url.search : '');
+            window.history.replaceState({}, '', nextUrl);
+          }
+        } catch {
+          // ignore in test / non-browser environments
+        }
       }
     }, 150);
 

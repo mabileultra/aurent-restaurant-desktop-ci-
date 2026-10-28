@@ -215,4 +215,21 @@ describe('PlatformStoresGroupedView', () => {
     // Overall count maintains all companies and branches
     expect(html).toContain('2 ta kompaniya • 3 ta filial');
   });
+
+  it('respects controlled hasUserToggled and expandedIds when user collapses a focused company', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        focusCompanyId: '2',
+        hasUserToggled: true,
+        expandedIds: new Set(), // user collapsed it
+      })
+    );
+
+    // Company remains present in directory list
+    expect(html).toContain('Dori-Darmon Farmatsiya');
+
+    // Branches should be collapsed (not in DOM)
+    expect(html).not.toContain('Apteka Markaziy');
+  });
 });
