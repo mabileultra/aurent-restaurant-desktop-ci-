@@ -6,7 +6,7 @@ import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu'
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
-import { PlatformErrorState } from '../../../components/ui';
+import { PlatformErrorState, Spinner } from '../../../components/ui';
 import {
   getBusinessTypeBadgeClass,
   getCompanyBranchMeta,
@@ -75,11 +75,8 @@ export default function PlatformCompaniesTable({
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {isPending ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-slate-500">
-                  <div className="inline-flex items-center gap-2">
-                    <span className="h-4 w-4 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-                    <span>{t('common.loading')}</span>
-                  </div>
+                <td colSpan={9} className="px-4 py-12 text-center text-slate-500">
+                  <Spinner size="md" text={t('common.loading')} />
                 </td>
               </tr>
             ) : isError ? (
