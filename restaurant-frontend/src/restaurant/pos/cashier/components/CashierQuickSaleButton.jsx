@@ -1,12 +1,13 @@
 import { useCashierQuickSale } from '../hooks/useCashierQuickSale';
-import '../styles/cashier-quick-sale.css';
 
+/** Same chrome as Оплаченные / Отказы — lives in the header quick row. */
 export default function CashierQuickSaleButton({
   enabled = false,
   storeId,
   shift,
   onOpened,
   t,
+  className = 'rst-cashier-top__quick-btn rst-cashier-top__quick-btn--sale',
 }) {
   const sale = useCashierQuickSale({ storeId, shift, onOpened });
   if (!enabled) return null;
@@ -14,7 +15,7 @@ export default function CashierQuickSaleButton({
   return (
     <button
       type="button"
-      className="rst-cashier-quick"
+      className={className}
       disabled={sale.pending}
       onClick={sale.start}
     >

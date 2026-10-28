@@ -6,8 +6,16 @@ import { rstMenuApi } from '../../api/menu.api';
 import { isDesktopPrinter, listDesktopPrinters } from '../../pos/utils/desktopPrinters';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { toastApiError } from '../../../utils/apiError';
+import { readImageDataUrl } from '../../../utils/readImageDataUrl';
 
-const emptyForm = () => ({ name: '', sortOrder: 100, autoPrint: false, printPrinterName: '' });
+const emptyForm = () => ({
+  name: '',
+  sortOrder: 100,
+  autoPrint: false,
+  printPrinterName: '',
+  imageUrl: '',
+  imageName: '',
+});
 
 export const MENU_CAT_PAGE_SIZE_OPTIONS = [10, 14, 20];
 const DEFAULT_PAGE_SIZE = 14;
@@ -72,6 +80,7 @@ export function useMenuCategoriesAdminPage() {
         sortOrder: Number(form.sortOrder) || 100,
         autoPrint: Boolean(form.autoPrint),
         printPrinterName: form.autoPrint && form.printPrinterName ? form.printPrinterName : null,
+        imageUrl: form.imageUrl || null,
       };
       if (editingId) return rstMenuApi.updateCategory(editingId, body);
       return rstMenuApi.createCategory(workspace.storeId, body);
@@ -102,7 +111,19 @@ export function useMenuCategoriesAdminPage() {
       sortOrder: row.sortOrder,
       autoPrint: Boolean(row.autoPrint),
       printPrinterName: row.printPrinterName || '',
+      imageUrl: row.imageUrl || '',
+      imageName: row.imageUrl ? t('rst.admin.imageAttached') : '',
     });
+  };
+
+  const onImageFile = async (file) => {
+    if (!file) return;
+    try {
+      const dataUrl = await readImageDataUrl(file, 400 * 1024);
+      setForm((current) => ({ ...current, imageUrl: dataUrl, imageName: file.name }));
+    } catch {
+      toast.error(t('rst.admin.imageUploadFailed'));
+    }
   };
 
   return {
@@ -128,6 +149,7 @@ export function useMenuCategoriesAdminPage() {
     saveMutation,
     deactivateMutation,
     startEdit,
+    onImageFile,
     resetForm: () => {
       setEditingId(null);
       setForm(emptyForm());

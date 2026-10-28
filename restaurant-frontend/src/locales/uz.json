@@ -795,7 +795,10 @@
       "menuImportTasnifShortOk": "OK",
       "menuImportTasnifShortMiss": "yo‘q",
       "menuImportTasnifShortSkip": "—",
-      "menuImportTasnifShortIdle": "?"
+      "menuImportTasnifShortIdle": "?",
+      "menuCategoryPhoto": "Bo'lim fotosi",
+      "menuCategoryPhotoHint": "Kassada kategoriya kartalarida ko‘rinadi (400 KB gacha).",
+      "category": "Kategoriya"
     },
     "audit": {
       "colDetail": "Hodisa",

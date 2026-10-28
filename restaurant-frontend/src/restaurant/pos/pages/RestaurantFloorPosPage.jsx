@@ -399,7 +399,7 @@ export default function RestaurantFloorPosPage() {
             <>
               {p.canAdmin ? (
                 <Link to="/rst/admin/dashboard">
-                  <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
+                  <BaseButton type="button" variant="primary">{p.t('rst.pos.toAdmin')}</BaseButton>
                 </Link>
               ) : null}
               <PosSoundToggle t={p.t} />

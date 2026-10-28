@@ -132,24 +132,25 @@
 }
 
 .rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort {
-  scrollbar-width: none;
+  gap: 0.3rem;
 }
 
-.rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort::-webkit-scrollbar {
-  display: none;
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__filters,
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__order {
+  gap: 0.3rem;
 }
 
 .rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort-btn {
-  min-height: 2rem;
-  padding: 0.25rem 0.65rem;
-  font-size: 0.78rem;
+  min-height: 2.25rem;
+  padding: 0.3rem 0.25rem;
+  font-size: 0.72rem;
+  border-radius: 0.65rem;
 }
 
 .rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort-btn--icon {
-  min-width: 2.15rem;
-  min-height: 2rem;
-  padding: 0.15rem 0.4rem;
-  font-size: 1rem;
+  min-height: 2.25rem;
+  padding: 0.25rem;
+  font-size: 1.05rem;
 }
 
 .rst-cashier.rst-cashier--mobile .rst-cashier-tables__list {

@@ -21,12 +21,6 @@
   font-size: 0.82rem;
 }
 
-.rst-pos__zoom-btn,
-.rst-pos__zoom-value {
-  min-width: 2.35rem;
-  min-height: 2.35rem;
-}
-
 .rst-floor-section-tabs {
   padding: 0.28rem;
   border-radius: 14px;
@@ -149,12 +143,6 @@
   .rst-pos__online {
     padding: 0.35rem 0.65rem;
     font-size: 0.7rem;
-  }
-
-  .rst-pos__zoom-btn,
-  .rst-pos__zoom-value {
-    min-width: 2.55rem;
-    min-height: 2.55rem;
   }
 
   .rst-pos__body {

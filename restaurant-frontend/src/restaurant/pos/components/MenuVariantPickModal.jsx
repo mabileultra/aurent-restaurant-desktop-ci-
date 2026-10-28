@@ -15,31 +15,35 @@ export default function MenuVariantPickModal({ variants, onClose, onPick, t }) {
   return (
     <RstOverlay onClose={onClose}>
       <div className="rst-modal__card rst-item-compose">
-        <h2 className="rst-modal__title">{title}</h2>
-        <p className="rst-modal__text">{t('rst.order.pickVariantHint')}</p>
-        <div className="rst-item-compose__group rst-item-compose__group--size">
-          <div className="rst-item-compose__options">
-            {list.map((item, index) => {
-              const portion = formatVariantPortionLabel(item, {
-                index,
-                count: list.length,
-                t,
-              });
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="rst-item-compose__option rst-item-compose__option--size"
-                  onClick={() => onPick(item)}
-                >
-                  <span className="rst-item-compose__portion-label">{portion}</span>
-                  <em className="rst-item-compose__price">{fmtMoneyCompact(item.price)}</em>
-                </button>
-              );
-            })}
+        <header className="rst-item-compose__head">
+          <h2 className="rst-modal__title">{title}</h2>
+          <p className="rst-modal__text">{t('rst.order.pickVariantHint')}</p>
+        </header>
+        <div className="rst-item-compose__scroll">
+          <div className="rst-item-compose__group rst-item-compose__group--size">
+            <div className="rst-item-compose__options">
+              {list.map((item, index) => {
+                const portion = formatVariantPortionLabel(item, {
+                  index,
+                  count: list.length,
+                  t,
+                });
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="rst-item-compose__option rst-item-compose__option--size"
+                    onClick={() => onPick(item)}
+                  >
+                    <span className="rst-item-compose__portion-label">{portion}</span>
+                    <em className="rst-item-compose__price">{fmtMoneyCompact(item.price)}</em>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-        <div className="rst-modal__actions">
+        <div className="rst-modal__actions rst-item-compose__actions">
           <BaseButton type="button" variant="ghost" onClick={onClose}>
             {t('common.cancel')}
           </BaseButton>

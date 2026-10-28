@@ -72,143 +72,147 @@ export default function ModifierPickModal({
   return (
     <RstOverlay onClose={onClose}>
       <div className="rst-modal__card rst-item-compose">
-        <h2 className="rst-modal__title">{item.name}</h2>
-        <p className="rst-modal__text">
-          {variantList
-            ? t('rst.order.composeHintWithPortion')
-            : hasAnyMods
-              ? t('rst.order.composeHintAddons')
-              : t('rst.order.addNoteHint')}
-        </p>
+        <header className="rst-item-compose__head">
+          <h2 className="rst-modal__title">{item.name}</h2>
+          <p className="rst-modal__text">
+            {variantList
+              ? t('rst.order.composeHintWithPortion')
+              : hasAnyMods
+                ? t('rst.order.composeHintAddons')
+                : t('rst.order.addNoteHint')}
+          </p>
+        </header>
 
-        {variantList ? (
-          <div className="rst-item-compose__section">
-            <div className="rst-item-compose__addons-head">
-              <strong>{t('rst.order.portionSection')}</strong>
-            </div>
-            <div className="rst-item-compose__options rst-item-compose__options--portion">
-              {variantList.map((variant, index) => {
-                const active = variant.id === item.id;
-                const portion = formatVariantPortionLabel(variant, {
-                  index,
-                  count: variantList.length,
-                  t,
-                });
-                return (
-                  <button
-                    key={variant.id}
-                    type="button"
-                    className={`rst-item-compose__option rst-item-compose__option--size${active ? ' is-active' : ''}`}
-                    onClick={() => {
-                      if (!active) {
-                        setError('');
-                        onSelectVariant?.(variant);
-                      }
-                    }}
-                  >
-                    <span className="rst-item-compose__portion-label">{portion}</span>
-                    <em className="rst-item-compose__price">{fmtMoneyCompact(variant.price)}</em>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-
-        {showSizeMods ? (
-          <div className="rst-item-compose__section">
-            <div className="rst-item-compose__addons-head">
-              <strong>{t('rst.order.sizeGroupTitle')}</strong>
-            </div>
-            {sizeGroups.map((group) => (
-              <div
-                key={group.id}
-                className="rst-item-compose__group rst-item-compose__group--size"
-              >
-                <p className="rst-modal__text mb-1">{t('rst.order.sizePickHint')}</p>
-                <div className="rst-item-compose__options">
-                  {(group.options ?? []).map((option) => {
-                    const checked = selectedIds.includes(option.id);
-                    const disabled = !checked && !canToggleModifierOption(group, option.id, selectedIds);
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={`rst-item-compose__option rst-item-compose__option--size${checked ? ' is-active' : ''}`}
-                        disabled={disabled}
-                        onClick={() => {
-                          setError('');
-                          onToggle(option.id);
-                        }}
-                      >
-                        <span>{option.name}</span>
-                        <em>{fmtMoneyCompact(option.priceDelta)}</em>
-                      </button>
-                    );
-                  })}
-                </div>
+        <div className="rst-item-compose__scroll">
+          {variantList ? (
+            <div className="rst-item-compose__section">
+              <div className="rst-item-compose__addons-head">
+                <strong>{t('rst.order.portionSection')}</strong>
               </div>
-            ))}
-          </div>
-        ) : null}
-
-        {showAddons ? (
-          <div className="rst-item-compose__section">
-            <div className="rst-item-compose__addons-head">
-              <strong>{t('rst.order.addonsSection')}</strong>
-            </div>
-            <p className="rst-modal__text mb-1">{t('rst.order.addonsOptionalHint')}</p>
-            {addonGroups.map((group) => (
-              <div key={group.id} className="rst-item-compose__group">
-                <strong>
-                  {group.name}
-                  {group.availableForAll ? (
-                    <em className="rst-item-compose__scope">{t('rst.order.addonStoreWide')}</em>
-                  ) : null}
-                </strong>
-                <p className="rst-modal__text mb-1">
-                  {t('rst.admin.selectRange', { min: group.minSelect, max: group.maxSelect })}
-                </p>
-                <div className="rst-item-compose__options">
-                  {(group.options ?? []).map((option) => {
-                    const checked = selectedIds.includes(option.id);
-                    const disabled = !checked && !canToggleModifierOption(group, option.id, selectedIds);
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={`rst-item-compose__option${checked ? ' is-active' : ''}`}
-                        disabled={disabled}
-                        onClick={() => {
+              <div className="rst-item-compose__options rst-item-compose__options--portion">
+                {variantList.map((variant, index) => {
+                  const active = variant.id === item.id;
+                  const portion = formatVariantPortionLabel(variant, {
+                    index,
+                    count: variantList.length,
+                    t,
+                  });
+                  return (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      className={`rst-item-compose__option rst-item-compose__option--size${active ? ' is-active' : ''}`}
+                      onClick={() => {
+                        if (!active) {
                           setError('');
-                          onToggle(option.id);
-                        }}
-                      >
-                        <span>{option.name}</span>
-                        <em>{fmtMoneyCompact(option.priceDelta)}</em>
-                      </button>
-                    );
-                  })}
-                </div>
+                          onSelectVariant?.(variant);
+                        }
+                      }}
+                    >
+                      <span className="rst-item-compose__portion-label">{portion}</span>
+                      <em className="rst-item-compose__price">{fmtMoneyCompact(variant.price)}</em>
+                    </button>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        ) : null}
+            </div>
+          ) : null}
 
-        <label className="rst-item-compose__note">
-          <span>{t('rst.order.lineNote')}</span>
-          <textarea
-            value={note ?? ''}
-            onChange={(e) => onNoteChange?.(e.target.value)}
-            rows={3}
-            maxLength={300}
-            placeholder={t('rst.order.lineNotePh')}
-          />
-        </label>
+          {showSizeMods ? (
+            <div className="rst-item-compose__section">
+              <div className="rst-item-compose__addons-head">
+                <strong>{t('rst.order.sizeGroupTitle')}</strong>
+              </div>
+              {sizeGroups.map((group) => (
+                <div
+                  key={group.id}
+                  className="rst-item-compose__group rst-item-compose__group--size"
+                >
+                  <p className="rst-modal__text mb-1">{t('rst.order.sizePickHint')}</p>
+                  <div className="rst-item-compose__options">
+                    {(group.options ?? []).map((option) => {
+                      const checked = selectedIds.includes(option.id);
+                      const disabled = !checked && !canToggleModifierOption(group, option.id, selectedIds);
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={`rst-item-compose__option rst-item-compose__option--size${checked ? ' is-active' : ''}`}
+                          disabled={disabled}
+                          onClick={() => {
+                            setError('');
+                            onToggle(option.id);
+                          }}
+                        >
+                          <span>{option.name}</span>
+                          <em>{fmtMoneyCompact(option.priceDelta)}</em>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {showAddons ? (
+            <div className="rst-item-compose__section">
+              <div className="rst-item-compose__addons-head">
+                <strong>{t('rst.order.addonsSection')}</strong>
+              </div>
+              <p className="rst-modal__text mb-1">{t('rst.order.addonsOptionalHint')}</p>
+              {addonGroups.map((group) => (
+                <div key={group.id} className="rst-item-compose__group">
+                  <strong>
+                    {group.name}
+                    {group.availableForAll ? (
+                      <em className="rst-item-compose__scope">{t('rst.order.addonStoreWide')}</em>
+                    ) : null}
+                  </strong>
+                  <p className="rst-modal__text mb-1">
+                    {t('rst.admin.selectRange', { min: group.minSelect, max: group.maxSelect })}
+                  </p>
+                  <div className="rst-item-compose__options">
+                    {(group.options ?? []).map((option) => {
+                      const checked = selectedIds.includes(option.id);
+                      const disabled = !checked && !canToggleModifierOption(group, option.id, selectedIds);
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={`rst-item-compose__option${checked ? ' is-active' : ''}`}
+                          disabled={disabled}
+                          onClick={() => {
+                            setError('');
+                            onToggle(option.id);
+                          }}
+                        >
+                          <span>{option.name}</span>
+                          <em>{fmtMoneyCompact(option.priceDelta)}</em>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <label className="rst-item-compose__note">
+            <span>{t('rst.order.lineNote')}</span>
+            <textarea
+              value={note ?? ''}
+              onChange={(e) => onNoteChange?.(e.target.value)}
+              rows={3}
+              maxLength={300}
+              placeholder={t('rst.order.lineNotePh')}
+            />
+          </label>
+        </div>
 
         {error ? <p className="rst-item-compose__error">{error}</p> : null}
 
-        <div className="rst-modal__actions">
+        <div className="rst-modal__actions rst-item-compose__actions">
           <BaseButton type="button" variant="ghost" onClick={onClose} disabled={isPending}>
             {t('common.cancel')}
           </BaseButton>

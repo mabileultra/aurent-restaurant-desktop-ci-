@@ -1,10 +1,12 @@
 import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import RstRowActions from '../../shared/components/RstRowActions';
+import RstMenuImage from '../../shared/components/RstMenuImage';
 import { useMenuCategoriesAdminPage } from '../hooks/useMenuCategoriesAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
+import '../styles/menu-category-photo.css';
 
 export default function MenuCategoriesAdminPage() {
   const p = useMenuCategoriesAdminPage();
@@ -96,6 +98,35 @@ export default function MenuCategoriesAdminPage() {
               onChange={(e) => p.setForm({ ...p.form, sortOrder: e.target.value })}
             />
           </label>
+          <div className="rst-admin-field rst-admin-field--full rst-cat-photo">
+            <span className="rst-admin-field__label">{p.t('rst.admin.menuCategoryPhoto')}</span>
+            <p className="rst-admin-field__hint">{p.t('rst.admin.menuCategoryPhotoHint')}</p>
+            {p.form.imageUrl ? (
+              <div className="rst-cat-photo__preview">
+                <RstMenuImage imageUrl={p.form.imageUrl} className="rst-cat-photo__img" />
+                <div className="rst-cat-photo__meta">
+                  <strong>{p.form.imageName || p.t('rst.admin.imageAttached')}</strong>
+                  <BaseButton
+                    type="button"
+                    variant="ghost"
+                    onClick={() => p.setForm({ ...p.form, imageUrl: '', imageName: '' })}
+                  >
+                    {p.t('rst.admin.clearImage')}
+                  </BaseButton>
+                </div>
+              </div>
+            ) : (
+              <label className="rst-file rst-cat-photo__pick">
+                <input
+                  className="rst-file__input"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => p.onImageFile(e.target.files?.[0])}
+                />
+                <span className="rst-file__btn">{p.t('rst.admin.chooseFile')}</span>
+              </label>
+            )}
+          </div>
         </div>
         <div className="rst-admin-form__actions">
           <BaseButton type="submit" disabled={p.saveMutation.isPending}>

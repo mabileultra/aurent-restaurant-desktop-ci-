@@ -6,10 +6,13 @@ import CashierCheckRow from './CashierCheckRow';
 import CashierTableTile from './CashierTableTile';
 import '../styles/cashier-table-board.css';
 
-const SORT_KEYS = [
+const FILTER_KEYS = [
   { key: 'OCCUPIED', labelKey: 'rst.cashier.filterOccupied' },
   { key: 'WAITING_PAYMENT', labelKey: 'rst.cashier.filterBillIssued' },
   { key: 'FREE', labelKey: 'rst.cashier.filterFree' },
+];
+
+const ORDER_KEYS = [
   { key: 'AMOUNT_DESC', labelKey: 'rst.cashier.sortSeatsDesc', symbol: '↓' },
   { key: 'AMOUNT_ASC', labelKey: 'rst.cashier.sortSeatsAsc', symbol: '↑' },
 ];
@@ -70,22 +73,42 @@ export default function CashierTableBoard({
           <span>{rows.length}</span>
         </div>
         <div className="rst-cashier-tables__sort" role="group" aria-label={t('rst.cashier.sortLabel')}>
-          {SORT_KEYS.map((row) => (
-            <button
-              key={row.key}
-              type="button"
-              className={[
-                'rst-cashier-tables__sort-btn',
-                row.symbol ? 'rst-cashier-tables__sort-btn--icon' : '',
-                sortKey === row.key ? 'is-active' : '',
-              ].filter(Boolean).join(' ')}
-              aria-label={t(row.labelKey)}
-              title={t(row.labelKey)}
-              onClick={() => setSortKey(row.key)}
-            >
-              {row.symbol ?? t(row.labelKey)}
-            </button>
-          ))}
+          <div className="rst-cashier-tables__filters">
+            {FILTER_KEYS.map((row) => (
+              <button
+                key={row.key}
+                type="button"
+                className={[
+                  'rst-cashier-tables__sort-btn',
+                  sortKey === row.key ? 'is-active' : '',
+                ].filter(Boolean).join(' ')}
+                aria-pressed={sortKey === row.key}
+                title={t(row.labelKey)}
+                onClick={() => setSortKey(row.key)}
+              >
+                {t(row.labelKey)}
+              </button>
+            ))}
+          </div>
+          <div className="rst-cashier-tables__order" role="group" aria-label={t('rst.cashier.sortSeatsDesc')}>
+            {ORDER_KEYS.map((row) => (
+              <button
+                key={row.key}
+                type="button"
+                className={[
+                  'rst-cashier-tables__sort-btn',
+                  'rst-cashier-tables__sort-btn--icon',
+                  sortKey === row.key ? 'is-active' : '',
+                ].filter(Boolean).join(' ')}
+                aria-label={t(row.labelKey)}
+                aria-pressed={sortKey === row.key}
+                title={t(row.labelKey)}
+                onClick={() => setSortKey(row.key)}
+              >
+                {row.symbol}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {!rows.length ? (
