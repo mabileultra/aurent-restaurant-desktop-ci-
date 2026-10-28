@@ -3390,6 +3390,7 @@
       "supplyEmpty": "Поставок за период нет",
       "weekCompare": "Эта неделя {{currentFrom}}–{{currentTo}} · прошлая {{prevFrom}}–{{prevTo}}",
       "colCompany": "Фирма",
+      "colStores": "Магазины",
       "colThisWeek": "Эта неделя",
       "colPrevWeek": "Прошлая неделя",
       "colWeekDelta": "Разница",

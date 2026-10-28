@@ -3176,6 +3176,7 @@
       "supplyEmpty": "Davrda yetkazib berish yo‘q",
       "weekCompare": "Shu hafta {{currentFrom}}–{{currentTo}} · o‘tgan {{prevFrom}}–{{prevTo}}",
       "colCompany": "Firma",
+      "colStores": "Do‘konlar",
       "colThisWeek": "Shu hafta",
       "colPrevWeek": "O‘tgan hafta",
       "colWeekDelta": "Farq",

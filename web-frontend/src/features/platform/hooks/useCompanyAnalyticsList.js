@@ -6,7 +6,7 @@ import { taxAnalyticsCompaniesApi } from '../../../api/taxAnalyticsCompanies.api
 import { cleanGeoName } from '../../shared/geo/geoNameUtils';
 
 const PERIODS = ['today', '7d', '30d', 'month', 'year'];
-const PAGE_SIZE = 5000;
+const PAGE_SIZES = [10, 20, 50, 100];
 
 const emptyDraft = () => ({
   regionCode: '',
@@ -23,6 +23,7 @@ export function useCompanyAnalyticsList() {
   const [draft, setDraft] = useState(emptyDraft);
   const [applied, setApplied] = useState(emptyDraft);
   const [page, setPage] = useState(0);
+  const [size, setSize] = useState(20);
 
   const params = useMemo(() => {
     const range = period === 'custom' && customFrom && customTo
@@ -35,9 +36,9 @@ export function useCompanyAnalyticsList() {
       connectionStatus: applied.connectionStatus || undefined,
       search: applied.search?.trim() || undefined,
       page,
-      size: PAGE_SIZE,
+      size,
     };
-  }, [period, customFrom, customTo, applied, page]);
+  }, [period, customFrom, customTo, applied, page, size]);
 
   const listQuery = useQuery({
     queryKey: ['tax-analytics-companies', params],
@@ -84,6 +85,12 @@ export function useCompanyAnalyticsList() {
     setDraft,
     page,
     setPage,
+    size,
+    pageSizes: PAGE_SIZES,
+    setSize: (next) => {
+      setSize(next);
+      setPage(0);
+    },
     regions: regionsQuery.data ?? [],
     districts: districtsQuery.data ?? [],
     labelGeo,

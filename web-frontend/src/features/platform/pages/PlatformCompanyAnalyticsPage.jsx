@@ -84,16 +84,18 @@ export default function PlatformCompanyAnalyticsPage() {
             rows={rows}
             loading={page.loading}
             page={page.page}
-            size={list?.size || 20}
+            size={page.size}
             labelGeo={page.labelGeo}
           />
         )}
         <CompanyAnalyticsPager
           t={t}
           page={page.page}
-          size={list?.size || 20}
+          size={page.size}
           total={list?.totalElements || 0}
+          pageSizes={page.pageSizes}
           onPage={page.setPage}
+          onSize={page.setSize}
         />
       </section>
     </PageLayout>

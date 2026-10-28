@@ -51,7 +51,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         TaxAnalyticsPeriod range = TaxAnalyticsPeriod.resolve(period, from, to);
         TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
         int safePage = Math.min(Math.max(page, 0), 10_000);
-        int safeSize = Math.min(Math.max(size, 1), 5000);
+        int safeSize = Math.min(Math.max(size, 1), 100);
         long total = repository.countCompanies(regionCode, districtCode, connectionStatus, search);
         List<TaxAnalyticsCompanyRowResponse> rows = repository.listCompanies(
             range, week, regionCode, districtCode, connectionStatus, search, safeSize, safePage * safeSize
@@ -172,6 +172,8 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             blankToNull(row.get("district_name_ru")),
             blankToNull(row.get("district_name_uz")),
             connected(row.get("connected")),
+            row.get("store_count") instanceof Number stores ? stores.intValue() : 0,
+            blankToNull(row.get("store_names")),
             fiscal,
             nonFiscal,
             fiscal.add(nonFiscal),

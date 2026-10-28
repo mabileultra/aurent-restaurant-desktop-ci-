@@ -15,6 +15,7 @@ export default function CompanyAnalyticsTable({ t, rows, loading, page, size, la
             <th>#</th>
             <th>{t('platform.analytics.colCompany')}</th>
             <th>{t('platform.analytics.colRegion')}</th>
+            <th>{t('platform.analytics.colStores')}</th>
             <th>{t('platform.analytics.connectionStatus')}</th>
             <th>{t('platform.analytics.colFiscalTurnover')}</th>
             <th>{t('platform.analytics.colNonFiscalTurnover')}</th>
@@ -26,7 +27,7 @@ export default function CompanyAnalyticsTable({ t, rows, loading, page, size, la
         </thead>
         <tbody>
           {loading ? (
-            <tr><td colSpan={10} className="ta-muted">{t('common.loading')}</td></tr>
+            <tr><td colSpan={11} className="ta-muted">{t('common.loading')}</td></tr>
           ) : rows.length ? rows.map((row, index) => (
             <tr
               key={row.companyId}
@@ -43,6 +44,10 @@ export default function CompanyAnalyticsTable({ t, rows, loading, page, size, la
                 <div className="ta-muted">{row.tin || '—'}</div>
               </td>
               <td>{labelGeo({ nameRu: row.regionNameRu, nameUz: row.regionNameUz }) || '—'}</td>
+              <td className="ca-stores">
+                <div className="ca-firm">{row.storeCount || 0}</div>
+                <div className="ta-muted">{row.storeNames || '—'}</div>
+              </td>
               <td>
                 <span className={`ta-badge ${row.connected ? 'ta-badge-green' : 'ta-badge-red'}`}>
                   {row.connected ? t('platform.analytics.statusConnected') : t('platform.analytics.statusNotConnected')}
@@ -59,7 +64,7 @@ export default function CompanyAnalyticsTable({ t, rows, loading, page, size, la
               </td>
             </tr>
           )) : (
-            <tr><td colSpan={10} className="ta-muted">{t('platform.analytics.empty')}</td></tr>
+            <tr><td colSpan={11} className="ta-muted">{t('platform.analytics.empty')}</td></tr>
           )}
         </tbody>
       </table>
@@ -67,15 +72,27 @@ export default function CompanyAnalyticsTable({ t, rows, loading, page, size, la
   );
 }
 
-export function CompanyAnalyticsPager({ t, page, size, total, onPage }) {
+export function CompanyAnalyticsPager({ t, page, size, total, pageSizes, onPage, onSize }) {
   const from = total ? page * size + 1 : 0;
   const to = Math.min((page + 1) * size, total);
+  const pages = Math.max(1, Math.ceil(total / size));
   return (
     <div className="ta-footer">
       <span>{t('platform.analytics.shown', { from, to, total })}</span>
       <div className="ta-period">
+        {pageSizes.map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={`ta-period__btn${size === option ? ' is-active' : ''}`}
+            onClick={() => onSize(option)}
+          >
+            {option}
+          </button>
+        ))}
         <button type="button" className="ta-btn" disabled={page <= 0} onClick={() => onPage(page - 1)}>‹</button>
-        <button type="button" className="ta-btn" disabled={(page + 1) * size >= total} onClick={() => onPage(page + 1)}>›</button>
+        <span>{page + 1} / {pages}</span>
+        <button type="button" className="ta-btn" disabled={page + 1 >= pages} onClick={() => onPage(page + 1)}>›</button>
       </div>
     </div>
   );

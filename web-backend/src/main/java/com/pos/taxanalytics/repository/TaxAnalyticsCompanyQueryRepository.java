@@ -93,6 +93,8 @@ public class TaxAnalyticsCompanyQueryRepository {
                    gd.name_ru AS district_name_ru,
                    gd.name_uz AS district_name_uz,
                    CASE WHEN conn.company_id IS NOT NULL THEN 1 ELSE 0 END AS connected,
+                   (SELECT COUNT(*) FROM stores s WHERE s.company_id = c.id) AS store_count,
+                   (SELECT string_agg(s.name, ', ' ORDER BY s.name) FROM stores s WHERE s.company_id = c.id) AS store_names,
                    COALESCE(pt.fiscal_turnover, 0) AS fiscal_turnover,
                    COALESCE(pt.non_fiscal_turnover, 0) AS non_fiscal_turnover,
                    COALESCE(wt.total_turnover, 0) AS week_turnover,

@@ -13,6 +13,8 @@ public record TaxAnalyticsCompanyRowResponse(
     String districtNameRu,
     String districtNameUz,
     boolean connected,
+    int storeCount,
+    String storeNames,
     BigDecimal fiscalTurnover,
     BigDecimal nonFiscalTurnover,
     BigDecimal totalTurnover,
