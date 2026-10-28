@@ -1221,7 +1221,8 @@
     "costPrice": "Tan narxi ≥ 0",
     "sellingPrice": "Sotuv narxi > 0",
     "nonZeroQty": "0 dan farqli oʻzgartirish kiriting",
-    "roleRequired": "Rolni tanlang"
+    "roleRequired": "Rolni tanlang",
+    "phoneComplete": "Telefon raqamini to‘liq kiriting (+998 XX XXX-XX-XX)"
   },
   "dashboard": {
     "title": "Asosiy",
@@ -2236,6 +2237,7 @@
     "allCompanies": "Barcha kompaniyalar",
     "selectCompany": "Kompaniyani tanlang",
     "searchCompany": "Kompaniya qidirish…",
+    "selectCompanyFirst": "Avval kompaniyani tanlang",
     "activeLabel": "Do‘kon faol",
     "empty": "Do‘konlar topilmadi",
     "created": "Do‘kon yaratildi",

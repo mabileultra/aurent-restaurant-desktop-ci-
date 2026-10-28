@@ -620,7 +620,8 @@
     "costPrice": "Себестоимость ≥ 0",
     "sellingPrice": "Цена продажи > 0",
     "nonZeroQty": "Укажите изменение ≠ 0",
-    "roleRequired": "Выберите роль"
+    "roleRequired": "Выберите роль",
+    "phoneComplete": "Введите номер телефона полностью (+998 XX XXX-XX-XX)"
   },
   "dashboard": {
     "title": "Обзор",

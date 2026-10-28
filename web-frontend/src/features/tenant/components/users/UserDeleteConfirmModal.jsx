@@ -1,10 +1,11 @@
+import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 
 export default function UserDeleteConfirmModal({ user, t, isPending, onClose, onConfirm }) {
   if (!user) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+  const modalNode = (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('users.deleteTitle')}</h2>
@@ -40,4 +41,9 @@ export default function UserDeleteConfirmModal({ user, t, isPending, onClose, on
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalNode, document.body);
+  }
+  return modalNode;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,6 +9,8 @@ import { BaseSelect } from '../../../../components/ui';
 import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusinessTypes';
 import RegionDistrictFields from '../../../shared/geo/RegionDistrictFields';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
+import { formatUzPhone, digitsAfter998, isCompleteUzPhone } from '../../../../utils/phoneUz';
+import { normalizeBusinessTypeCode } from '../../../../config/productCatalogConfig';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
   focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -35,7 +38,14 @@ export default function StoreFormModal({
     districtCode: isCreate
       ? z.string().min(1, t('validation.fieldRequired', { field: t('geo.district') }))
       : z.string().optional(),
-    phone: z.string().optional(),
+    phone: z.string().optional().refine(
+      (val) => !val || digitsAfter998(val).length === 0 || isCompleteUzPhone(val),
+      {
+        message: t('validation.phoneComplete', {
+          defaultValue: 'Telefon raqamini to‘liq kiriting (+998 XX XXX-XX-XX)',
+        }),
+      }
+    ),
     code: z.string().optional(),
     companyId: showCompanySelect
       ? z.string().min(1, t('validation.fieldRequired', { field: t('stores.colCompany') }))
@@ -64,8 +74,9 @@ export default function StoreFormModal({
   const watchedBusinessType = watch('businessType');
   const watchedRegionCode = watch('regionCode');
   const watchedDistrictCode = watch('districtCode');
+  const watchedPhone = watch('phone');
   const {
-    types: companyTypes,
+    types: companyTypes = [],
     defaultTypeCode,
     isLoading: typesLoading,
     needsCompany,
@@ -75,19 +86,27 @@ export default function StoreFormModal({
 
   const businessTypeOptions = useMemo(() => {
     if (needsCompany) {
-      return [{ value: '', label: t('stores.selectCompanyFirst') }];
+      return [{ value: '', label: t('stores.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' }) }];
     }
     if (companyTypes.length > 0) {
-      return companyTypes.map((bt) => ({
-        value: bt.code,
-        id: bt.id,
-        label: bt.name || t(`productTemplates.businessTypes.${bt.code}`, { defaultValue: bt.code }),
-      }));
+      return companyTypes.map((bt) => {
+        const normCode = normalizeBusinessTypeCode(bt.code);
+        return {
+          value: bt.code,
+          id: bt.id,
+          label: t(`productTemplates.businessTypes.${normCode}`, {
+            defaultValue: bt.name || bt.code,
+          }),
+        };
+      });
     }
+    const normDefault = normalizeBusinessTypeCode(defaultTypeCode);
     return [{
       value: defaultTypeCode,
       id: null,
-      label: t(`productTemplates.businessTypes.${defaultTypeCode}`),
+      label: t(`productTemplates.businessTypes.${normDefault}`, {
+        defaultValue: defaultTypeCode,
+      }),
     }];
   }, [companyTypes, defaultTypeCode, needsCompany, t]);
 
@@ -138,7 +157,7 @@ export default function StoreFormModal({
       address: initial?.address ?? '',
       regionCode: initial?.regionCode ?? '',
       districtCode: initial?.districtCode ?? '',
-      phone: initial?.phone ?? '',
+      phone: initial?.phone && digitsAfter998(initial.phone) ? formatUzPhone(initial.phone) : '',
       code: initial?.code ?? '',
       companyId: initial?.companyId ? String(initial.companyId) : '',
       businessType: initial?.businessType ?? '',
@@ -152,10 +171,11 @@ export default function StoreFormModal({
   const handleFormSubmit = (data) => {
     const regionCode = data.regionCode?.trim() || '';
     const districtCode = data.districtCode?.trim() || '';
+    const phoneDigits = digitsAfter998(data.phone);
     const payload = {
       name: data.name.trim(),
       address: data.address?.trim() || null,
-      phone: data.phone?.trim() || null,
+      phone: phoneDigits ? formatUzPhone(data.phone) : null,
       code: data.code?.trim() || null,
       companyId: data.companyId ? Number(data.companyId) : undefined,
       businessType: data.businessType,
@@ -174,7 +194,7 @@ export default function StoreFormModal({
 
   const modalTitle = title ?? (initial?.id ? t('stores.editTitle') : (showCompanySelect ? t('platform.addBranch', { defaultValue: 'Filial qo‘shish' }) : t('stores.addTitle')));
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 p-5 dark:border-slate-800">
@@ -248,7 +268,22 @@ export default function StoreFormModal({
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{t('stores.colPhone')}</label>
-            <input {...register('phone')} className={inputCls} />
+            <input
+              {...register('phone')}
+              type="tel"
+              inputMode="tel"
+              maxLength={19}
+              value={watchedPhone ?? ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                const digits = digitsAfter998(val);
+                const next = digits ? formatUzPhone(val) : '';
+                setValue('phone', next, { shouldValidate: true });
+              }}
+              placeholder="+998 (90) 123-45-67"
+              className={inputCls}
+            />
+            {errors.phone && <p className="mt-1 text-xs text-red-400">{errors.phone.message}</p>}
           </div>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             <input type="checkbox" {...register('active')} className="rounded border-slate-300" />
@@ -269,4 +304,9 @@ export default function StoreFormModal({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 }
