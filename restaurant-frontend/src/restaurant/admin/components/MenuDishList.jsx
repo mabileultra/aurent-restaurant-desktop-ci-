@@ -17,13 +17,30 @@ function dishTags(item, t) {
     }));
 }
 
-export default function MenuDishList({ p, onOpenMenu, photosEnabled = true }) {
+export default function MenuDishList({ p, onOpenMenu, onEditDish, photosEnabled = true }) {
   return (
     <div className="rst-menu-board">
       <div className="rst-menu-board__head">
         <strong>{p.t('rst.admin.menuList')}</strong>
         <div className="rst-menu-board__head-actions">
           <span>{p.total}</span>
+          <BaseButton
+            type="button"
+            variant="secondary"
+            className="rst-menu-board__btn-light"
+            onClick={p.exportDishes}
+            disabled={p.exportBusy}
+          >
+            {p.t('rst.admin.menuExport')}
+          </BaseButton>
+          <BaseButton
+            type="button"
+            variant="secondary"
+            className="rst-menu-board__btn-light"
+            onClick={p.openImport}
+          >
+            {p.t('rst.admin.menuImport')}
+          </BaseButton>
           <BaseButton type="button" onClick={p.openComposer}>
             {p.t('rst.admin.addDish')}
           </BaseButton>
@@ -48,7 +65,19 @@ export default function MenuDishList({ p, onOpenMenu, photosEnabled = true }) {
             const tags = dishTags(item, p.t);
 
             return (
-              <article key={item.id} className={`rst-menu-card${!item.available ? ' is-off' : ''}`}>
+              <article
+                key={item.id}
+                className={`rst-menu-card${!item.available ? ' is-off' : ''}${onEditDish ? ' is-clickable' : ''}`}
+                role={onEditDish ? 'button' : undefined}
+                tabIndex={onEditDish ? 0 : undefined}
+                onClick={onEditDish ? () => onEditDish(item) : undefined}
+                onKeyDown={onEditDish ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onEditDish(item);
+                  }
+                } : undefined}
+              >
                 {photosEnabled ? (
                   <div className="rst-menu-card__media">
                     {item.imageUrl ? (
@@ -127,7 +156,10 @@ export default function MenuDishList({ p, onOpenMenu, photosEnabled = true }) {
                               <button
                                 type="button"
                                 className="rst-menu-card__size-btn"
-                                onClick={() => p.openVariantForm(item, size)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  p.openVariantForm(item, size);
+                                }}
                               >
                                 <span className="rst-menu-card__size-portion">{portion}</span>
                                 <span className="rst-menu-card__size-price">{fmtMoneyCompact(size.price)}</span>
