@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RstMenuImage from '../../shared/components/RstMenuImage';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
@@ -217,7 +218,7 @@ export default function MenuPicker({
               {photos.enabled ? (
                 <div className="rst-menu-card__media">
                   {imageUrl ? (
-                    <img src={imageUrl} alt="" className="rst-menu-card__img" />
+                    <RstMenuImage imageUrl={imageUrl} className="rst-menu-card__img" />
                   ) : (
                     <div className="rst-menu-card__media-empty">{t('rst.admin.noPhoto')}</div>
                   )}

@@ -13,6 +13,8 @@ export function useMenuPhotos(storeId, t) {
     queryFn: () => rstMenuPhotoApi.get(storeId).then((r) => r.data),
     enabled: storeId != null,
     staleTime: 15_000,
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
   });
   const mutation = useMutation({
     mutationFn: (enabled) => rstMenuPhotoApi.setEnabled(storeId, enabled).then((r) => r.data),
