@@ -41,6 +41,12 @@
   },
   "errors": {
     "unknown": "Noma’lum xatolik yuz berdi",
+    "wifiOffline": "Internet aloqasi uzildi",
+    "offlineBannerDesc": "Qurilma oflayn. Wi-Fi yoki tarmoq ulanishini tekshiring",
+    "onlineRestored": "Internet aloqasi tiklandi",
+    "onlineRestoredDesc": "Barcha ma’lumotlar sinxronlanmoqda",
+    "networkRetry": "Qayta tekshirish",
+    "networkChecking": "Tekshirilmoqda…",
     "network": "Internet yoki server bilan aloqa uzildi. Tarmoq ulanishini tekshiring.",
     "networkTitle": "Tarmoq xatosi",
     "unauthorized": "Sessiya muddati tugadi. Iltimos, qayta kiring.",
@@ -841,7 +847,7 @@
     "failed": "Kirish xatosi",
     "badCredentials": "Login yoki parol noto‘g‘ri",
     "badCompanyCode": "Kompaniya kodi noto‘g‘ri",
-    "networkError": "Server bilan aloqa yo‘q. IP va portni «Ko‘rinish → Server sozlamalari…» orqali tekshiring",
+    "networkError": "Internet yoki server bilan aloqa uzildi. Tarmoq ulanishingizni tekshiring",
     "sessionExpired": "Sessiya tugadi. PIN bilan qayta kiring.",
     "footer": "Aurent · © {{year}}",
     "downloadCashier": "Kassani yuklab olish"

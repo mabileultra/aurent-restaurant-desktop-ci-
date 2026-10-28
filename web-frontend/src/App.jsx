@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import ThemedToaster from './components/shared/ThemedToaster';
+import GlobalOfflineBanner from './components/shared/GlobalOfflineBanner';
 import VirtualKeyboardOverlay from './components/shared/VirtualKeyboardOverlay';
 import HtmlLangSync from './components/shared/HtmlLangSync';
 import AppViewportSync from './components/shared/AppViewportSync';
@@ -37,6 +38,7 @@ export default function App() {
           </AuthSessionGuard>
         </AuthBootstrap>
       </BrowserRouter>
+      <GlobalOfflineBanner />
       <ThemedToaster />
       <VirtualKeyboardOverlay />
     </QueryClientProvider>
