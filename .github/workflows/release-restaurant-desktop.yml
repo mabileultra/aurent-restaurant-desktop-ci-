@@ -51,13 +51,17 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
+          cache: pnpm
           cache-dependency-path: |
-            restaurant-desktop/package-lock.json
-            restaurant-frontend/package-lock.json
+            restaurant-desktop/pnpm-lock.yaml
+            restaurant-frontend/pnpm-lock.yaml
 
       - name: Build jar + UI (no JRE / no electron)
         env:
@@ -73,7 +77,7 @@ jobs:
           JAR="$(ls -1 restaurant-service/target/restaurant-service-*.jar | grep -v plain | head -1)"
           mkdir -p restaurant-desktop/resources
           cp -f "$JAR" restaurant-desktop/resources/restaurant-service.jar
-          (cd restaurant-desktop && npm ci --ignore-scripts && npm run bundle-ui)
+          (cd restaurant-desktop && pnpm install && pnpm run bundle-ui)
           test -f restaurant-desktop/resources/restaurant-service.jar
           test -f restaurant-desktop/ui/index.html
           # Flat payload so Windows/mac download paths are predictable.
@@ -97,11 +101,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: restaurant-desktop/package-lock.json
+          cache: pnpm
+          cache-dependency-path: restaurant-desktop/pnpm-lock.yaml
 
       - name: Cache portable JRE (win-x64)
         uses: actions/cache@v4
@@ -115,7 +123,7 @@ jobs:
           path: |
             ~/AppData/Local/electron/Cache
             ~/AppData/Local/electron-builder/Cache
-          key: electron-win-${{ hashFiles('restaurant-desktop/package-lock.json') }}
+          key: electron-win-${{ hashFiles('restaurant-desktop/pnpm-lock.yaml') }}
 
       - name: Download jar + UI
         uses: actions/download-artifact@v4
@@ -128,8 +136,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm ci
-          npm install @embedded-postgres/windows-x64@18.4.0-beta.17 --no-save --force
+          pnpm install
+          pnpm add @embedded-postgres/windows-x64@18.4.0-beta.17 --save-optional
           node scripts/sync-pgsql-native.cjs win32 x64
           node scripts/fetch-jre.js --targets win-x64
           node scripts/fetch-vcredist.js
@@ -213,11 +221,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: restaurant-desktop/package-lock.json
+          cache: pnpm
+          cache-dependency-path: restaurant-desktop/pnpm-lock.yaml
 
       - name: Cache portable JRE (mac-x64)
         uses: actions/cache@v4
@@ -231,7 +243,7 @@ jobs:
           path: |
             ~/Library/Caches/electron
             ~/Library/Caches/electron-builder
-          key: electron-mac-x64-${{ hashFiles('restaurant-desktop/package-lock.json') }}
+          key: electron-mac-x64-${{ hashFiles('restaurant-desktop/pnpm-lock.yaml') }}
 
       - name: Download jar + UI
         uses: actions/download-artifact@v4
@@ -243,8 +255,8 @@ jobs:
         working-directory: restaurant-desktop
         run: |
           set -euo pipefail
-          npm ci
-          npm install @embedded-postgres/darwin-x64@18.4.0-beta.17 --no-save --force
+          pnpm install
+          pnpm add @embedded-postgres/darwin-x64@18.4.0-beta.17 --save-optional
           node scripts/sync-pgsql-native.cjs darwin x64
           node scripts/fetch-jre.js --targets mac-x64
           echo "== payload check =="
@@ -302,11 +314,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: restaurant-desktop/package-lock.json
+          cache: pnpm
+          cache-dependency-path: restaurant-desktop/pnpm-lock.yaml
 
       - name: Cache portable JRE (mac-arm64)
         uses: actions/cache@v4
@@ -320,7 +336,7 @@ jobs:
           path: |
             ~/Library/Caches/electron
             ~/Library/Caches/electron-builder
-          key: electron-mac-arm64-${{ hashFiles('restaurant-desktop/package-lock.json') }}
+          key: electron-mac-arm64-${{ hashFiles('restaurant-desktop/pnpm-lock.yaml') }}
 
       - name: Download jar + UI
         uses: actions/download-artifact@v4
@@ -332,8 +348,8 @@ jobs:
         working-directory: restaurant-desktop
         run: |
           set -euo pipefail
-          npm ci
-          npm install @embedded-postgres/darwin-arm64@18.4.0-beta.17 --no-save --force
+          pnpm install
+          pnpm add @embedded-postgres/darwin-arm64@18.4.0-beta.17 --save-optional
           node scripts/sync-pgsql-native.cjs darwin arm64
           node scripts/fetch-jre.js --targets mac-arm64
           echo "== payload check =="

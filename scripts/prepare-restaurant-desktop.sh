@@ -35,8 +35,8 @@ else
 fi
 
 echo "[prepare] bundling restaurant-frontend UI…"
-(cd "$ROOT/restaurant-desktop" && npm run bundle-ui)
+(cd "$ROOT/restaurant-desktop" && pnpm run bundle-ui)
 
 echo "[prepare] done — open app; Postgres+Java start automatically."
 echo "  Optional: export RESTAURANT_CLOUD_API_URL=https://r-aurent.uz/api/v1"
-echo "  Dev: cd restaurant-desktop && npm start"
+echo "  Dev: cd restaurant-desktop && pnpm start"

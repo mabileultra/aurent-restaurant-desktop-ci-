@@ -14,12 +14,12 @@ if (!fs.existsSync(path.join(frontendRoot, 'package.json'))) {
   throw new Error(`restaurant-frontend not found: ${frontendRoot}`);
 }
 
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 if (!fs.existsSync(path.join(frontendRoot, 'node_modules'))) {
-  execSync(`${npm} ci`, { cwd: frontendRoot, stdio: 'inherit', shell: true });
+  execSync(`${pnpm} install`, { cwd: frontendRoot, stdio: 'inherit', shell: true });
 }
 
-execSync(`${npm} run build`, {
+execSync(`${pnpm} run build`, {
   cwd: frontendRoot,
   stdio: 'inherit',
   shell: true,

@@ -18,7 +18,7 @@ async function loadSharp() {
   try {
     return require('sharp');
   } catch {
-    console.error('sharp not installed — run npm ci in desktop-electron');
+    console.error('sharp not installed — run pnpm install in desktop-electron');
     process.exit(1);
   }
 }

@@ -10,15 +10,15 @@ cd "$DESKTOP_ROOT"
 
 if [[ ! -d node_modules/electron ]]; then
   echo "Installing desktop-electron dependencies…"
-  npm install
+  pnpm install
 fi
 
 if [[ ! -f ui/index.html ]]; then
   echo "Bundling web-frontend into desktop-electron/ui…"
-  npm run bundle-ui
+  pnpm run bundle-ui
 fi
 
-npm run sync-icons
+pnpm run sync-icons
 
 export AURENT_UI_DEV=1
 export AURENT_UI_MODE=bundled
@@ -40,4 +40,4 @@ echo "API: $AURENT_API_URL"
 echo "Rollback: bash $POSTSYSTEM_ROOT/scripts/start-cashier-desktop.sh"
 echo
 
-exec npm start
+exec pnpm start

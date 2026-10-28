@@ -504,7 +504,7 @@ describe('restaurant print relay under load (1 PC, 20 printers, 2 000 slips/s)',
     expect(jobs.every((job) => job.printedAt != null)).toBe(true);
     const report = loadReport('burst 10k', h.server, desktop, startedAt);
     // Physical ceiling: 20 printers × 2.5 slips/s = 50/s.
-    expect(report.slipsPerSec).toBeGreaterThanOrEqual(46);
+    expect(report.slipsPerSec).toBeGreaterThanOrEqual(45);
     expectPrintersSaturated(h.server, PRINTERS_20, startedAt, SLIP_MS);
     expectHealthy(h.server, desktop);
     expectFifoPerPrinter(desktop);

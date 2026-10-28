@@ -5,7 +5,11 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { nativeImage } = require('electron');
+let electron = null;
+try {
+  electron = require('electron');
+} catch {}
+const nativeImage = electron && typeof electron === 'object' ? electron.nativeImage : null;
 
 /** 80mm paper @ ~203 dpi */
 const PAPER_WIDTH_PX = 384;
@@ -26,6 +30,14 @@ const INK_THRESHOLD = 140;
 function writeLogoPngTempFile(dataUrl, fileStem, opts = {}) {
   const raw = String(dataUrl || '').trim();
   if (!raw.startsWith('data:image/')) return null;
+
+  if (!nativeImage) {
+    const m = raw.match(/^data:image\/[\w+.-]+;base64,(.+)$/i);
+    if (!m) return null;
+    const filePath = path.join(os.tmpdir(), `${fileStem}.png`);
+    fs.writeFileSync(filePath, Buffer.from(m[1], 'base64'));
+    return filePath;
+  }
 
   let img = nativeImage.createFromDataURL(raw);
   if (!img || img.isEmpty()) {

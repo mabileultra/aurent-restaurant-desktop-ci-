@@ -15,9 +15,9 @@ bash scripts/start-cashier-desktop.sh --test
 ```
 # или
 cd desktop-electron
-npm install
-npm run sync-icons
-AURENT_WEB_URL=http://localhost:5173/cashier/login npm start
+pnpm install
+pnpm run sync-icons
+AURENT_WEB_URL=http://localhost:5173/cashier/login pnpm start
 ```
 
 ## Режим интерфейса
@@ -34,7 +34,7 @@ AURENT_WEB_URL=http://localhost:5173/cashier/login npm start
 Пункты меню смены режима **скрыты у клиентов**. Чтобы включить тест:
 
 ```bash
-AURENT_UI_DEV=1 npm start
+AURENT_UI_DEV=1 pnpm start
 ```
 
 или в `config.json`: `"allowBundledUi": true`.
@@ -42,7 +42,7 @@ AURENT_UI_DEV=1 npm start
 Сборка локального UI в `desktop-electron/ui/`:
 
 ```bash
-npm run bundle-ui
+pnpm run bundle-ui
 ```
 
 ## Офлайн-база
@@ -52,7 +52,7 @@ npm run bundle-ui
 Тест на своей машине:
 
 ```bash
-AURENT_OFFLINE_ENGINE=native npm start
+AURENT_OFFLINE_ENGINE=native pnpm start
 ```
 
 или в `config.json`: `"offlineEngine": "native"`.
@@ -66,7 +66,7 @@ AURENT_OFFLINE_ENGINE=native npm start
 Включить:
 
 ```bash
-AURENT_UI_DEV=1 AURENT_OFFLINE_FIRST=1 npm start
+AURENT_UI_DEV=1 AURENT_OFFLINE_FIRST=1 pnpm start
 ```
 
 или `"offlineFirst": true` в `config.json`.
@@ -76,7 +76,7 @@ AURENT_UI_DEV=1 AURENT_OFFLINE_FIRST=1 npm start
 ## Сборка Windows / Mac
 
 ```bash
-npm run dist
+pnpm run dist
 ```
 
 Не поднимайте `version` в `package.json`, пока не решите выкладывать установщик клиентам: автообновление разнесёт релиз по всем кассам.
