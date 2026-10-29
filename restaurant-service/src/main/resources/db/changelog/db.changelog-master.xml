@@ -60,6 +60,7 @@
     <include file="db/changelog/v53-store-floor-revision.xml"/>
     <include file="db/changelog/v54-menu-photos.xml"/>
     <include file="db/changelog/v56-pos-hot-path-indexes.xml"/>
+    <include file="db/changelog/v57-edge-admin-parity.xml"/>
 
 </databaseChangeLog>
 

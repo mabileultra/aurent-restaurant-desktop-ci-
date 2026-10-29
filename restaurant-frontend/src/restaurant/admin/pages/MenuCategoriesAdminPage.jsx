@@ -2,6 +2,7 @@ import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import RstRowActions from '../../shared/components/RstRowActions';
 import RstMenuImage from '../../shared/components/RstMenuImage';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import { useMenuCategoriesAdminPage } from '../hooks/useMenuCategoriesAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -11,11 +12,14 @@ import '../styles/menu-category-photo.css';
 export default function MenuCategoriesAdminPage() {
   const p = useMenuCategoriesAdminPage();
 
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
-
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.isLoading}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-stations">
       <div className="rst-halls__toolbar">
         <div>
@@ -216,5 +220,6 @@ export default function MenuCategoriesAdminPage() {
         ) : null}
       </div>
     </section>
+    </AdminWorkspaceGate>
   );
 }

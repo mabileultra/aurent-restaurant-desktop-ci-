@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-057-edge-stock-categories" author="pos">
+        <createTable tableName="edge_stock_categories">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="business_type_id" type="INT"/>
+            <column name="business_type_code" type="VARCHAR(64)"/>
+            <column name="business_type_name" type="VARCHAR(120)"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="edge_stock_categories" indexName="idx_edge_stock_categories_company">
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-057-edge-cash-registers" author="pos">
+        <createTable tableName="edge_cash_registers">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="register_number" type="INT"/>
+            <column name="equipment_model" type="VARCHAR(200)"/>
+            <column name="equipment_serial" type="VARCHAR(120)"/>
+            <column name="fiscal_card_id" type="VARCHAR(120)"/>
+            <column name="device_id" type="VARCHAR(120)"/>
+            <column name="workstation_name" type="VARCHAR(200)"/>
+            <column name="status" type="VARCHAR(32)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="edge_cash_registers" indexName="idx_edge_cash_registers_store">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

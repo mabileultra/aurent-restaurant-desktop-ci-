@@ -10,6 +10,7 @@ const RESTAURANT_MODULE_IDS = new Set([
   'restaurantPos',
   'restaurantRequestBill',
   'restaurantPickupLabel',
+  'restaurantCustomerDisplay',
   'restaurantQuickSale',
 ]);
 

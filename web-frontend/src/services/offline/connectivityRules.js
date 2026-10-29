@@ -17,13 +17,10 @@ export function hasLocalPosCatalog(state, storeId) {
 }
 
 export function isConnectivityOfflineLike(state) {
-  const browserOffline =
-    typeof navigator !== 'undefined' && navigator.onLine === false;
   return Boolean(
     state?.forceOfflineMode ||
       state?.offlineMode ||
-      !state?.apiOnline ||
-      browserOffline,
+      !state?.apiOnline,
   );
 }
 

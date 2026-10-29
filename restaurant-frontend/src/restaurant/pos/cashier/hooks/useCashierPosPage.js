@@ -6,6 +6,8 @@ import { tableStatusClass } from '../../utils/tableStatus';
 import { isCashierHallTab } from '../utils/cashierNav';
 import { usePrefetchCashierSales } from './usePrefetchCashierSales';
 import { useModuleAccess } from '../../../../hooks/useModuleAccess';
+import { usePublishCustomerDisplay } from '../../../customer-display/usePublishCustomerDisplay';
+import { openCustomerDisplayWindow } from '../../../customer-display/openCustomerDisplayWindow';
 
 /**
  * Cashier shell state on top of shared floor POS hook.
@@ -20,11 +22,21 @@ export function useCashierPosPage() {
   const [tab, setTabState] = useState('hall');
   const [selectedTableId, setSelectedTableId] = useState(null);
   const [fullOrder, setFullOrder] = useState(false);
+  const customerDisplayEnabled = hasModule('restaurantCustomerDisplay');
 
   usePrefetchCashierSales(
     floor.workspace.storeId,
     floor.access.canCounterSales && floor.workspace.storeId != null,
   );
+
+  usePublishCustomerDisplay({
+    enabled: customerDisplayEnabled,
+    order: floor.orderForUi,
+    storeName: floor.workspace.storeName || floor.workspace.storeLabel || '',
+    payModalOpen: floor.payModalOpen,
+    payPending: floor.payMutation?.isPending,
+    paidSale: floor.paidReceipt?.sale || null,
+  });
 
   const clearDraft = () => {
     floor.clearDraft();
@@ -188,5 +200,7 @@ export function useCashierPosPage() {
     isDraftOrder: floor.isDraftOrder,
     quickSaleEnabled: hasModule('restaurantQuickSale'),
     onQuickSaleOpened,
+    customerDisplayEnabled,
+    openCustomerDisplay: openCustomerDisplayWindow,
   };
 }

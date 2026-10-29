@@ -4,6 +4,7 @@ import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import RstMenuImage from '../../shared/components/RstMenuImage';
 import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import MenuDishFilters from '../components/MenuDishFilters';
 import RecipeFoodCostSummary from '../components/RecipeFoodCostSummary';
 import RecipeWizardModal from '../components/RecipeWizardModal';
@@ -19,14 +20,17 @@ export default function RecipesAdminPage() {
   const p = useRecipesAdminPage();
   const photos = useMenuPhotos(p.workspace.storeId);
 
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
-
   const selectedDish = p.selectedDish;
   const stockProductsPath = '/rst/admin/stock/products?create=1';
 
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.isLoading}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-tech">
       <div className="rst-halls__toolbar">
         <div>
@@ -259,5 +263,6 @@ export default function RecipesAdminPage() {
 
       <RecipeWizardModal p={p} photosEnabled={photos.enabled} />
     </section>
+    </AdminWorkspaceGate>
   );
 }

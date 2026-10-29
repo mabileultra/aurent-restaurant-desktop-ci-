@@ -239,6 +239,10 @@ export function useStaffAdminPage() {
     pageSizeOptions: STAFF_PAGE_SIZE_OPTIONS,
     isLoading: usersQuery.isLoading,
     isError: usersQuery.isError,
+    refetch: () => {
+      usersQuery.refetch();
+      commissionQuery.refetch();
+    },
     commissionLoading: commissionQuery.isLoading,
     defaultPercent,
     draftDefault,

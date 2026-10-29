@@ -499,6 +499,8 @@ export function useMenuAdminPage() {
     onImageFile,
     stationName,
     isLoading: (workspace.storeId == null && workspace.isLoading) || itemsQuery.isLoading,
+    isError: itemsQuery.isError,
+    refetch: () => itemsQuery.refetch(),
     resetForm: closeComposer,
   };
 }

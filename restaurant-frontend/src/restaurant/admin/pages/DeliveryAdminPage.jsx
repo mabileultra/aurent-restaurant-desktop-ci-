@@ -8,8 +8,8 @@ import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { deliveryStatusLabel, NEXT_DELIVERY_STATUS, orderStatusLabel } from '../../../features/orders/utils/ordersDisplayUtils';
 import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
 import RstRowActions from '../../shared/components/RstRowActions';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import { useDeliveryAdminPage } from '../hooks/useDeliveryAdminPage';
-import { getApiErrorMessage } from '../../../utils/apiError';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -27,13 +27,15 @@ export default function DeliveryAdminPage() {
   const p = useDeliveryAdminPage();
   const { i18n } = useTranslation();
   const locale = i18n.language || 'ru';
-  const errorMessage = getApiErrorMessage(p.error, p.t('rst.delivery.loadFailed'));
-
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
 
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.loading && !p.rows.length}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-delivery">
       <div className="rst-halls__toolbar">
         <div>
@@ -47,10 +49,6 @@ export default function DeliveryAdminPage() {
         </div>
       </div>
 
-      {p.workspace.isLoading && p.workspace.storeId == null ? null : !p.workspace.storeId ? (
-        <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
-      ) : (
-        <>
           <div className="rst-delivery__stats">
             <div className="rst-delivery__stat"><strong>{p.stats.total}</strong><span>{p.t('rst.delivery.statTotal')}</span></div>
             <div className="rst-delivery__stat"><strong>{p.stats.newCount}</strong><span>{p.t('rst.delivery.statNew')}</span></div>
@@ -115,8 +113,6 @@ export default function DeliveryAdminPage() {
             </BaseButton>
             <RstFilterResetButton t={p.t} onClick={p.resetFilters} />
           </div>
-
-          {p.isError ? <div className="rst-notice">{errorMessage}</div> : null}
 
           <div className="rst-data-card">
             <div className="rst-data-card__head">
@@ -229,8 +225,6 @@ export default function DeliveryAdminPage() {
               />
             ) : null}
           </div>
-        </>
-      )}
 
       <DeliveryOrderCreateModal
         open={p.addOpen}
@@ -263,5 +257,6 @@ export default function DeliveryAdminPage() {
         t={p.t}
       />
     </section>
+    </AdminWorkspaceGate>
   );
 }
