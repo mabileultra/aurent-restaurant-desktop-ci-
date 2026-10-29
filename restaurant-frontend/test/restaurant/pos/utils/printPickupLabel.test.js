@@ -25,6 +25,7 @@ describe('buildPickupLabelLines', () => {
   it('builds a TSPL sticker with the pickup number', () => {
     const tspl = buildPickupTspl({ pickupNo: 7, lines: ['TAKEAWAY', '1× Latte'] });
     expect(tspl).toContain('"7"');
+    expect(tspl).toContain('SIZE 61 mm,30 mm');
     expect(tspl).toContain('PRINT 1,1');
     expect(tspl).toContain('Latte');
   });

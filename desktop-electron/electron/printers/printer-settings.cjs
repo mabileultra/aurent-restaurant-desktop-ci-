@@ -15,6 +15,8 @@ function readPrinterSettings() {
   return {
     receiptPrinterName: cfg.receiptPrinterName || '',
     labelPrinterName: cfg.labelPrinterName || '',
+    /** driver = Windows GDI queue; tspl = RAW TSPL into that same Windows printer (USB ok). */
+    labelPrinterMode: cfg.labelPrinterMode === 'tspl' ? 'tspl' : 'driver',
     billPrinterName: cfg.billPrinterName || '',
     stationPrinters: readStationPrinters(cfg.stationPrinters),
   };
@@ -27,6 +29,9 @@ function writePrinterSettings(settings) {
   }
   if (typeof settings?.labelPrinterName === 'string') {
     patch.labelPrinterName = settings.labelPrinterName.trim();
+  }
+  if (settings?.labelPrinterMode === 'tspl' || settings?.labelPrinterMode === 'driver') {
+    patch.labelPrinterMode = settings.labelPrinterMode;
   }
   if (typeof settings?.billPrinterName === 'string') {
     patch.billPrinterName = settings.billPrinterName.trim();

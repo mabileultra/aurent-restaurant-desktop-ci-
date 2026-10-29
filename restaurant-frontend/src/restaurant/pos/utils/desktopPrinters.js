@@ -83,12 +83,17 @@ export function printRawLabel(printerName, bytes) {
   return desk.printRaw({ printerName, bytes });
 }
 
-export function printTicketHtml(html, printerName) {
+export function printTicketHtml(html, printerName, opts = {}) {
   const desk = printerBridge();
   if (typeof desk?.printTicketHtml !== 'function') {
     return Promise.reject(new Error('Печать недоступна в этой сборке'));
   }
-  return desk.printTicketHtml({ html, printerName });
+  return desk.printTicketHtml({
+    html,
+    printerName,
+    paperWmm: opts.paperWmm,
+    paperHmm: opts.paperHmm,
+  });
 }
 
 /**

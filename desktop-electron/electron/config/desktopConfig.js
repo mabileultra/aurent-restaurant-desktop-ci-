@@ -58,7 +58,13 @@ function writeUserConfig(patch) {
   const merged = { ...current, ...(patch || {}) };
 
   // Критичные ключи печати не удаляем, даже если patch принёс undefined
-  for (const key of ['stationPrinters', 'billPrinterName', 'receiptPrinterName', 'labelPrinterName']) {
+  for (const key of [
+    'stationPrinters',
+    'billPrinterName',
+    'receiptPrinterName',
+    'labelPrinterName',
+    'labelPrinterMode',
+  ]) {
     if (merged[key] === undefined && current[key] !== undefined) {
       merged[key] = current[key];
     }
@@ -141,6 +147,7 @@ function loadDesktopConfig({ isPackaged }) {
     // Kitchen/hub print — were omitted, so waiter SEND never saw Windows printer names.
     receiptPrinterName: String(user.receiptPrinterName || '').trim(),
     labelPrinterName: String(user.labelPrinterName || '').trim(),
+    labelPrinterMode: user.labelPrinterMode === 'tspl' ? 'tspl' : 'driver',
     billPrinterName: String(user.billPrinterName || '').trim(),
     stationPrinters,
   };
