@@ -10,10 +10,13 @@ export default function UserFormModal(props) {
   const modalContainerRef = useRef(null);
   const discardConfirmRef = useRef(null);
   const keepEditingBtnRef = useRef(null);
+  const lastActiveElementRef = useRef(null);
+  const wasOpenRef = useRef(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const handleSafeClose = () => {
     if (p.isDirty) {
+      lastActiveElementRef.current = document.activeElement;
       setShowDiscardConfirm(true);
       return;
     }
@@ -27,16 +30,19 @@ export default function UserFormModal(props) {
 
   const handleCancelDiscard = () => {
     setShowDiscardConfirm(false);
+    setTimeout(() => {
+      lastActiveElementRef.current?.focus?.();
+    }, 20);
   };
 
   useEffect(() => {
     if (showDiscardConfirm) {
-      keepEditingBtnRef.current?.focus();
+      keepEditingBtnRef.current?.focus?.();
       const raf = requestAnimationFrame(() => {
-        keepEditingBtnRef.current?.focus();
+        keepEditingBtnRef.current?.focus?.();
       });
       const timer = setTimeout(() => {
-        keepEditingBtnRef.current?.focus();
+        keepEditingBtnRef.current?.focus?.();
       }, 30);
       return () => {
         cancelAnimationFrame(raf);
@@ -47,36 +53,43 @@ export default function UserFormModal(props) {
   }, [showDiscardConfirm]);
 
   useEffect(() => {
+    if (p.open && !wasOpenRef.current) {
+      wasOpenRef.current = true;
+      const timer = setTimeout(() => {
+        if (modalContainerRef.current) {
+          const formEl = modalContainerRef.current.querySelector('form');
+          const firstField = formEl?.querySelector(
+            'button.base-select__trigger:not([disabled]), input:not([type="hidden"]):not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"]), select:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), textarea:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"])'
+          );
+          firstField?.focus?.();
+        }
+      }, 60);
+      return () => clearTimeout(timer);
+    }
     if (!p.open) {
+      wasOpenRef.current = false;
       setShowDiscardConfirm(false);
-      return undefined;
     }
-    if (showDiscardConfirm) {
-      return undefined;
-    }
+    return undefined;
+  }, [p.open]);
 
-    // Focus first interactive form field only when modal is open and not showing discard confirm
-    const timer = setTimeout(() => {
-      if (modalContainerRef.current && !showDiscardConfirm) {
-        const formEl = modalContainerRef.current.querySelector('form');
-        const firstField = formEl?.querySelector(
-          'button.base-select__trigger:not([disabled]), input:not([type="hidden"]):not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"]), select:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), textarea:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"])'
-        );
-        firstField?.focus();
-      }
-    }, 60);
+  useEffect(() => {
+    if (!p.open) return undefined;
 
     const handleKeyDown = (e) => {
       if (showDiscardConfirm) {
         if (e.key === 'Escape') {
           e.preventDefault();
-          setShowDiscardConfirm(false);
+          e.stopPropagation();
+          handleCancelDiscard();
           return;
         }
         if (e.key === 'Tab') {
           if (!discardConfirmRef.current) return;
-          const focusables = discardConfirmRef.current.querySelectorAll(
-            'button:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"])'
+          const focusables = Array.from(
+            discardConfirmRef.current.querySelectorAll(
+              'button:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"])'
+            )
           );
           if (focusables.length === 0) return;
           const first = focusables[0];
@@ -85,11 +98,13 @@ export default function UserFormModal(props) {
           if (e.shiftKey) {
             if (document.activeElement === first || !discardConfirmRef.current.contains(document.activeElement)) {
               e.preventDefault();
+              e.stopPropagation();
               last.focus();
             }
           } else {
             if (document.activeElement === last || !discardConfirmRef.current.contains(document.activeElement)) {
               e.preventDefault();
+              e.stopPropagation();
               first.focus();
             }
           }
@@ -103,32 +118,36 @@ export default function UserFormModal(props) {
         handleSafeClose();
       } else if (e.key === 'Tab') {
         if (!modalContainerRef.current) return;
-        const focusableElements = modalContainerRef.current.querySelectorAll(
-          'button:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), [href]:not([aria-hidden="true"]):not([tabindex="-1"]), input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"]):not([tabindex="-1"]), select:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), textarea:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])'
+        const focusableElements = Array.from(
+          modalContainerRef.current.querySelectorAll(
+            'button:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), [href]:not([aria-hidden="true"]):not([tabindex="-1"]), input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"]):not([tabindex="-1"]), select:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), textarea:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])'
+          )
         );
         if (focusableElements.length === 0) return;
         const first = focusableElements[0];
         const last = focusableElements[focusableElements.length - 1];
 
         if (e.shiftKey) {
-          if (document.activeElement === first) {
+          if (document.activeElement === first || !modalContainerRef.current.contains(document.activeElement)) {
             e.preventDefault();
+            e.stopPropagation();
             last.focus();
           }
         } else {
-          if (document.activeElement === last) {
+          if (document.activeElement === last || !modalContainerRef.current.contains(document.activeElement)) {
             e.preventDefault();
+            e.stopPropagation();
             first.focus();
           }
         }
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+
+    window.addEventListener('keydown', handleKeyDown, true);
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [p.open, p.isDirty, p.onClose, showDiscardConfirm]);
+  }, [p.open, showDiscardConfirm, p.isDirty, p.onClose]);
 
   if (!p.open && !p.createdCredentials) return null;
 

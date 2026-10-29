@@ -47,6 +47,7 @@ export function useUserFormModal({
   const usernameManuallyEditedRef = useRef(false);
 
   const form = useForm({
+    shouldFocusError: false,
     defaultValues: {
       role: '',
       firstName: '',
@@ -445,7 +446,7 @@ export function useUserFormModal({
     if (isPlatform && !isEdit && !companyId) {
       setError('companyId', {
         type: 'required',
-        message: t('users.companyRequired', { defaultValue: 'Kompaniyani tanlash majburiy' }),
+        message: t('users.companyRequired', { defaultValue: 'Kompaniyani tanlang' }),
       });
       hasCustomError = true;
       if (!firstErrorFieldId) firstErrorFieldId = 'user-form-company';
@@ -460,11 +461,18 @@ export function useUserFormModal({
       if (!firstErrorFieldId) firstErrorFieldId = 'user-form-role';
     }
 
+    const focusTarget = (id) => {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        el?.focus?.();
+      }, 20);
+    };
+
     handleSubmit(
       (data) => {
         if (hasCustomError) {
           if (firstErrorFieldId) {
-            document.getElementById(firstErrorFieldId)?.focus();
+            focusTarget(firstErrorFieldId);
           }
           return;
         }
@@ -483,13 +491,12 @@ export function useUserFormModal({
         ];
         const allErrors = {
           ...validationErrors,
-          ...(hasCustomError && firstErrorFieldId === 'user-form-company' ? { companyId: true } : {}),
+          ...(hasCustomError && !companyId && isPlatform && !isEdit ? { companyId: true } : {}),
           ...(hasCustomError && !selectedRole ? { role: true } : {}),
         };
         const firstField = order.find((f) => allErrors[f.name]);
         if (firstField) {
-          const el = document.getElementById(firstField.id);
-          el?.focus();
+          focusTarget(firstField.id);
         }
       }
     )(e);
