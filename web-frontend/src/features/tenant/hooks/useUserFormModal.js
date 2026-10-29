@@ -13,6 +13,7 @@ import {
   toStoreIdSet,
 } from '../utils/userFormModalUtils';
 import { asEntityList } from '../utils/companySelectOptions';
+import { normalizePhoneToE164 } from '../utils/phoneFormatUtils';
 import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
 import { resolveUserFormRoles } from '../../platform/utils/rolesByBusinessType';
 
@@ -40,15 +41,18 @@ export function useUserFormModal({
   const [pinDirty, setPinDirty] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const createCredentialsRef = useRef(null);
+  const initialCompanyRef = useRef('');
+  const initialStoresRef = useRef(new Set());
 
   const form = useForm({
     defaultValues: {
-      role: isPlatform ? 'ADMIN' : 'MANAGER',
+      role: '',
       firstName: '',
       lastName: '',
       patronymic: '',
       username: '',
       email: '',
+      phone: '',
       pin: '',
       password: '',
     },
@@ -112,6 +116,13 @@ export function useUserFormModal({
   // Non-PIN roles (company ADMIN): username + password editable on create and edit.
   const showPasswordField = !isPinRole;
 
+  const pinFieldLabel = useMemo(() => {
+    if (selectedRole === 'COOK') return t('users.pinCook', { defaultValue: 'Oshpaz PIN-kodi' });
+    if (selectedRole === 'WAITER') return t('users.pinWaiter', { defaultValue: 'Ofitsiant PIN-kodi' });
+    if (selectedRole === 'CASHIER') return t('users.pinCashier', { defaultValue: 'Kassir PIN-kodi' });
+    return t('users.pin', { defaultValue: 'PIN-kod' });
+  }, [selectedRole, t]);
+
   const companyLoginCode =
     (isEdit ? user?.companyLoginCode : selectedCompany?.loginCode) || null;
 
@@ -174,30 +185,45 @@ export function useUserFormModal({
         patronymic: user.patronymic ?? '',
         username: user.username ?? '',
         email: user.email ?? '',
+        phone: user.phone ?? '',
         role,
         pin: '',
         password: '',
       });
-      setStoreIds(role === 'CASHIER' || role === 'WAITER' ? cashierStoreSet(initialStores) : initialStores);
+      const finalStores = role === 'CASHIER' || role === 'WAITER' ? cashierStoreSet(initialStores) : initialStores;
+      setStoreIds(finalStores);
       setCompanyId(user.companyId != null ? String(user.companyId) : '');
+      initialCompanyRef.current = user.companyId != null ? String(user.companyId) : '';
+      initialStoresRef.current = new Set(finalStores);
     } else {
       const initialStores = Array.isArray(defaultStoreIds)
         ? new Set(defaultStoreIds.map(Number).filter((id) => !Number.isNaN(id)))
         : new Set();
       reset({
-        role: defaultCreateRole,
+        role: '',
         firstName: '',
         lastName: '',
         patronymic: '',
         username: '',
         email: '',
+        phone: '',
         pin: '',
         password: '',
       });
       setStoreIds(initialStores);
       setCompanyId('');
+      initialCompanyRef.current = '';
+      initialStoresRef.current = new Set(initialStores);
     }
-  }, [open, isEdit, user?.id, isPlatform, reset, defaultCreateRole, defaultStoreIds]);
+  }, [open, isEdit, user?.id, isPlatform, reset, defaultStoreIds]);
+
+  useEffect(() => {
+    if (!open || isEdit) return;
+    const available = (isPlatform ? filteredStores : stores).filter((s) => s.active !== false);
+    if (available.length === 1 && storeIds.size === 0) {
+      setStoreIds(new Set([Number(available[0].id)]));
+    }
+  }, [open, isEdit, isPlatform, filteredStores, stores, storeIds.size]);
 
   useEffect(() => {
     if (!isCashierRole) return;
@@ -206,6 +232,7 @@ export function useUserFormModal({
 
   useEffect(() => {
     if (!open || !roleAllowList.length) return;
+    if (!selectedRole) return;
     if (roleAllowList.includes(selectedRole)) return;
     setValue('role', roleAllowList[0], { shouldDirty: !isEdit, shouldValidate: true });
   }, [open, roleAllowList, selectedRole, setValue, isEdit]);
@@ -256,7 +283,18 @@ export function useUserFormModal({
     const firstName = fieldOn('firstName') ? data.firstName?.trim() : username;
     const lastName = fieldOn('lastName') ? data.lastName?.trim() : '—';
     const patronymic = fieldOn('patronymic') ? data.patronymic?.trim() || null : null;
-    const email = fieldOn('email') ? data.email.trim() : `${username}@example.com`;
+    const rawEmail = data.email?.trim() || '';
+    if (rawEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+      toast.error(t('validation.invalidEmail', { defaultValue: 'Email manzili noto\'g\'ri kiritildi' }));
+      return;
+    }
+    const email = rawEmail || `${username}@pos.internal`;
+    const rawPhone = data.phone?.trim() || '';
+    const phone = rawPhone ? normalizePhoneToE164(rawPhone) : undefined;
+    if (phone && phone.replace(/\D/g, '').length !== 12) {
+      toast.error(t('validation.invalidPhone', { defaultValue: 'Telefon raqami to‘liq kiritilmadi (+998 XX XXX-XX-XX)' }));
+      return;
+    }
     let selectedStoreIds = Array.from(storeIds).map(Number).filter((n) => !Number.isNaN(n));
 
     if (isCashierRole) {
@@ -296,7 +334,7 @@ export function useUserFormModal({
     }
 
     if (!role) {
-      toast.error(t('validation.fieldRequired', { field: t('users.role') }));
+      toast.error(t('users.roleRequired', { defaultValue: 'Rolni tanlash majburiy' }));
       return;
     }
 
@@ -320,6 +358,7 @@ export function useUserFormModal({
         patronymic,
         email,
         role,
+        ...(phone ? { phone } : {}),
         companyId: isPlatform && companyId ? Number(companyId) : undefined,
         storeIds: selectedStoreIds,
       };
@@ -337,6 +376,7 @@ export function useUserFormModal({
       patronymic,
       username,
       email,
+      ...(phone ? { phone } : {}),
       pin: isPinRole ? pin : undefined,
       ...(isPinRole || pwd.length === 0 ? {} : { password: pwd }),
       role,
@@ -355,9 +395,9 @@ export function useUserFormModal({
   };
 
   const fioFields = [
-    { name: 'lastName', label: t('users.lastName'), key: 'lastName' },
-    { name: 'firstName', label: t('users.firstName'), key: 'firstName' },
-    { name: 'patronymic', label: t('users.patronymic'), key: 'patronymic' },
+    { name: 'lastName', label: t('users.lastName'), key: 'lastName', required: true },
+    { name: 'firstName', label: t('users.firstName'), key: 'firstName', required: true },
+    { name: 'patronymic', label: t('users.patronymic'), key: 'patronymic', required: false },
   ].filter((f) => fieldOn(f.key));
 
   const dismissCredentials = () => {
@@ -366,6 +406,17 @@ export function useUserFormModal({
   };
 
   const selectedStoreId = storeIds.size > 0 ? String([...storeIds][0]) : '';
+
+  const isCompanyDirty = isPlatform && companyId !== initialCompanyRef.current;
+  const isStoresDirty = useMemo(() => {
+    if (storeIds.size !== initialStoresRef.current.size) return true;
+    for (const id of storeIds) {
+      if (!initialStoresRef.current.has(id)) return true;
+    }
+    return false;
+  }, [storeIds]);
+
+  const isDirty = form.formState.isDirty || isCompanyDirty || isStoresDirty;
 
   return {
     t,
@@ -406,5 +457,8 @@ export function useUserFormModal({
     toggleStore,
     storeOptions,
     fioFields,
+    pinFieldLabel,
+    isDirty,
+    watch,
   };
 }

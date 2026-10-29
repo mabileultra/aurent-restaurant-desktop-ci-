@@ -2,8 +2,20 @@ export const userFormInputCls = `w-full rounded-lg border border-slate-300 bg-wh
   focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
 
 export function toStoreIdSet(ids) {
-  const list = Array.isArray(ids) ? ids : [];
-  return new Set(list.map((id) => Number(id)).filter((n) => !Number.isNaN(n)));
+  if (ids instanceof Set) return ids;
+  if (typeof ids === 'number' || typeof ids === 'string') {
+    const n = Number(ids);
+    return !Number.isNaN(n) ? new Set([n]) : new Set();
+  }
+  const list = Array.isArray(ids)
+    ? ids
+    : (ids && typeof ids === 'object' && Array.isArray(ids.stores) ? ids.stores : []);
+  return new Set(
+    list
+      .map((item) => (item && typeof item === 'object' ? item.id : item))
+      .map((id) => Number(id))
+      .filter((n) => !Number.isNaN(n))
+  );
 }
 
 export function cashierStoreSet(ids) {
