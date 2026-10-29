@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { formatApiErrorMessage } from '../utils/apiErrorParser';
+import { isApiNetworkError, notifyNetworkOffline } from '../utils/apiNetworkError';
 import { queryRetryDelay, shouldRetryQuery } from './queryRetry';
 
 /**
@@ -10,6 +11,9 @@ import { queryRetryDelay, shouldRetryQuery } from './queryRetry';
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
+      if (isApiNetworkError(error)) {
+        notifyNetworkOffline(error);
+      }
       // Background query error handling
       if (query?.meta?.errorMessage) {
         toast.error(query.meta.errorMessage);
@@ -20,6 +24,9 @@ export const queryClient = new QueryClient({
   }),
   mutationCache: new MutationCache({
     onError: (error, _variables, _context, mutation) => {
+      if (isApiNetworkError(error)) {
+        notifyNetworkOffline(error);
+      }
       // Opt-out flag for custom local handling (e.g. inline form errors)
       if (mutation?.meta?.suppressGlobalError) return;
 

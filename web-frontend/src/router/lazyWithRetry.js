@@ -16,6 +16,9 @@ export async function importWithRetry(importer, attempts = 3) {
     return await importer();
   } catch (error) {
     if (!isChunkLoadError(error)) throw error;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw error;
+    }
     if (attempts > 1) {
       await wait(400 * (4 - attempts));
       return importWithRetry(importer, attempts - 1);
