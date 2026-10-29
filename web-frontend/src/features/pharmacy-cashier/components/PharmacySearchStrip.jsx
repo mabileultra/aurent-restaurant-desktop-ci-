@@ -19,11 +19,10 @@ const STRIP_TOGGLES = [
 ];
 
 /**
- * Два поля рядом: товар/штрихкод + КМ DataMatrix. Скан сам выбирает нужный путь.
+ * Одно поле: имя, штрихкод и DataMatrix. КМ уходит в чек сам.
  */
 export default function PharmacySearchStrip({
   searchInputRef,
-  kmInputRef,
   search,
   onSearchChange,
   onSearchEnter,
@@ -36,7 +35,6 @@ export default function PharmacySearchStrip({
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [activeIds, setActiveIds] = useState(() => new Set());
-  const [kmCode, setKmCode] = useState('');
 
   const toolbar = usePharmacyIntegrationToolbar({
     capabilities,
@@ -45,18 +43,6 @@ export default function PharmacySearchStrip({
     setMoreOpen,
   });
 
-  // После добавления по КМ — остаёмся в поле КМ для следующего скана
-  usePharmacySearchMarkAutoSubmit({
-    search: kmCode,
-    onSearchChange: setKmCode,
-    onMarkingScan: (code) => {
-      onMarkingScan?.(code);
-      requestAnimationFrame(() => kmInputRef?.current?.focus());
-    },
-    enabled: !scanDisabled,
-  });
-
-  // Если DataMatrix попал в товарный поиск — тоже автоматом в чек
   usePharmacySearchMarkAutoSubmit({
     search,
     onSearchChange,
@@ -78,27 +64,12 @@ export default function PharmacySearchStrip({
     toolbar.handleLink(link);
   };
 
-  const submitKm = (raw) => {
-    const value = String(raw || '').trim();
-    if (!value) return;
-    setKmCode('');
-    onMarkingScan?.(value);
-    requestAnimationFrame(() => kmInputRef?.current?.focus());
-  };
-
   const handleProductPaste = (e) => {
     const text = e.clipboardData?.getData('text') ?? '';
     if (!isMarkingCode(text)) return;
     e.preventDefault();
     onSearchChange?.('');
     onMarkingScan?.(text);
-  };
-
-  const handleKmPaste = (e) => {
-    const text = e.clipboardData?.getData('text') ?? '';
-    if (!text.trim()) return;
-    e.preventDefault();
-    submitKm(text);
   };
 
   return (
@@ -123,30 +94,6 @@ export default function PharmacySearchStrip({
           }}
         />
 
-        <label className="pharmacy-search-strip__km-wrap">
-          <span className="pharmacy-search-strip__km-badge" aria-hidden>
-            {t('pharmacyCashier.searchStrip.km')}
-          </span>
-          <input
-            ref={kmInputRef}
-            type="search"
-            className="pharmacy-search-strip__field pharmacy-search-strip__field--km"
-            value={kmCode}
-            disabled={scanDisabled}
-            placeholder={t('pharmacyCashier.searchStrip.kmPh')}
-            aria-label={t('pharmacyCashier.searchStrip.kmTitle')}
-            title={t('pharmacyCashier.searchStrip.kmTitle')}
-            autoComplete="off"
-            onChange={(e) => setKmCode(e.target.value)}
-            onPaste={handleKmPaste}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                submitKm(kmCode);
-              }
-            }}
-          />
-        </label>
       </div>
 
       <div className="pharmacy-search-strip__toggles" role="group" aria-label={t('pharmacyCashier.integrations.toolbar')}>
