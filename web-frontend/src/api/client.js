@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { normalizeCompanyLoginCode } from '../utils/authLogin';
 import { forceAuthReLogin } from '../utils/authSessionExpiry';
 import { isPublicAppPath } from '../utils/publicAppPaths';
-import { isApiNetworkError } from '../utils/apiNetworkError';
+import { isApiNetworkError, notifyNetworkOffline, notifyNetworkOnline } from '../utils/apiNetworkError';
 import {
   markApiUnreachable,
   refreshConnectivityStatus,
@@ -14,6 +14,7 @@ import { logApi } from '../services/desktop/activityLog';
 
 let connectivityRefreshTimer;
 let lastApiFailLogAt = 0;
+let isAppMarkedOffline = false;
 
 function scheduleConnectivityRefreshFromApi() {
   if (!isDesktopOfflineBridge()) return;
@@ -53,26 +54,34 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     scheduleConnectivityRefreshFromApi();
+    if (isAppMarkedOffline) {
+      isAppMarkedOffline = false;
+      notifyNetworkOnline();
+    }
     return response;
   },
   async (error) => {
     const original = error.config;
     const status = error.response?.status;
-    if (
-      isDesktopOfflineBridge() &&
-      (status === 502 || status === 503 || status === 504 || isApiNetworkError(error))
-    ) {
-      markApiUnreachable();
-      scheduleConnectivityRefreshFromApi();
-      const now = Date.now();
-      if (now - lastApiFailLogAt > 4_000) {
-        lastApiFailLogAt = now;
-        const url = String(original?.url || original?.baseURL || '');
-        logApi(
-          `API недоступен: ${status || error?.code || 'network'}`,
-          { url: url.slice(0, 160), method: original?.method },
-          'warn',
-        );
+    const isNetworkOrProxyFail =
+      status === 502 || status === 503 || status === 504 || isApiNetworkError(error);
+
+    if (isNetworkOrProxyFail) {
+      isAppMarkedOffline = true;
+      notifyNetworkOffline(error);
+      if (isDesktopOfflineBridge()) {
+        markApiUnreachable();
+        scheduleConnectivityRefreshFromApi();
+        const now = Date.now();
+        if (now - lastApiFailLogAt > 4_000) {
+          lastApiFailLogAt = now;
+          const url = String(original?.url || original?.baseURL || '');
+          logApi(
+            `API недоступен: ${status || error?.code || 'network'}`,
+            { url: url.slice(0, 160), method: original?.method },
+            'warn',
+          );
+        }
       }
     }
     const hasStoredToken = Boolean(useAuthStore.getState().token);

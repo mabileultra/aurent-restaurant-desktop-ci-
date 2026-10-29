@@ -8,6 +8,23 @@ export default defineConfig(({ mode }) => {
   const platformProxy = env.VITE_DEV_PLATFORM_PROXY || process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084';
   const apiProxy = env.VITE_DEV_API_PROXY || process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088';
 
+  const configureProxy = (proxy) => {
+    proxy.on('error', (err, req, res) => {
+      if (res && !res.headersSent && typeof res.writeHead === 'function') {
+        res.writeHead(503, {
+          'Content-Type': 'application/json; charset=utf-8',
+        });
+        res.end(
+          JSON.stringify({
+            error: 'NETWORK_UNREACHABLE',
+            message: 'Internet yoki server bilan aloqa uzildi. Tarmoq ulanishini tekshiring.',
+            code: err.code || 'ERR_NETWORK',
+          })
+        );
+      }
+    });
+  };
+
   return {
     plugins: [react()],
     server: {
@@ -18,51 +35,61 @@ export default defineConfig(({ mode }) => {
           target: identityProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/users': {
           target: identityProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/platform/module-access': {
           target: identityProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/platform/security': {
           target: identityProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/platform/account': {
           target: identityProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/companies': {
           target: platformProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/platform': {
           target: platformProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/billing': {
           target: platformProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api/v1/public': {
           target: platformProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
         '/api': {
           target: apiProxy,
           changeOrigin: true,
           secure: false,
+          configure: configureProxy,
         },
       },
     },

@@ -15,6 +15,9 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
   * { box-sizing: border-box; }
   body {
     @apply bg-slate-100 text-slate-900 dark:bg-[#0b1210] dark:text-slate-100;

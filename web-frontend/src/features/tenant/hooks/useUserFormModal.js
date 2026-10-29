@@ -13,8 +13,10 @@ import {
   toStoreIdSet,
 } from '../utils/userFormModalUtils';
 import { asEntityList } from '../utils/companySelectOptions';
+import { normalizePhoneToE164 } from '../utils/phoneFormatUtils';
 import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
 import { resolveUserFormRoles } from '../../platform/utils/rolesByBusinessType';
+import { transliterateCyrillicToLatin } from '../../../utils/transliterateCyrillic';
 
 export function useUserFormModal({
   open,
@@ -40,23 +42,52 @@ export function useUserFormModal({
   const [pinDirty, setPinDirty] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const createCredentialsRef = useRef(null);
+  const initialCompanyRef = useRef('');
+  const initialStoresRef = useRef(new Set());
+  const usernameManuallyEditedRef = useRef(false);
 
   const form = useForm({
+    shouldFocusError: false,
     defaultValues: {
-      role: isPlatform ? 'ADMIN' : 'MANAGER',
+      role: '',
       firstName: '',
       lastName: '',
       patronymic: '',
       username: '',
       email: '',
+      phone: '',
       pin: '',
       password: '',
     },
   });
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form;
+  const { register, handleSubmit, reset, watch, setValue, setError, clearErrors, formState: { errors } } = form;
   const selectedRole = watch('role');
+  const firstName = watch('firstName');
+  const lastName = watch('lastName');
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
+
+  useEffect(() => {
+    if (isEdit || !open || usernameManuallyEditedRef.current) return;
+    const cleanFirst = transliterateCyrillicToLatin(firstName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanLast = transliterateCyrillicToLatin(lastName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    let suggested = '';
+    if (cleanFirst && cleanLast) {
+      suggested = `${cleanFirst}.${cleanLast}`;
+    } else if (cleanFirst) {
+      suggested = cleanFirst;
+    } else if (cleanLast) {
+      suggested = cleanLast;
+    }
+    setValue('username', suggested, { shouldDirty: Boolean(suggested), shouldValidate: Boolean(suggested) });
+    if (suggested) {
+      clearErrors('username');
+    }
+  }, [firstName, lastName, isEdit, open, setValue, clearErrors]);
+
+  const onUsernameChange = () => {
+    usernameManuallyEditedRef.current = true;
+  };
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
@@ -112,6 +143,13 @@ export function useUserFormModal({
   // Non-PIN roles (company ADMIN): username + password editable on create and edit.
   const showPasswordField = !isPinRole;
 
+  const pinFieldLabel = useMemo(() => {
+    if (selectedRole === 'COOK') return t('users.pinCook', { defaultValue: 'Oshpaz PIN-kodi' });
+    if (selectedRole === 'WAITER') return t('users.pinWaiter', { defaultValue: 'Ofitsiant PIN-kodi' });
+    if (selectedRole === 'CASHIER') return t('users.pinCashier', { defaultValue: 'Kassir PIN-kodi' });
+    return t('users.pin', { defaultValue: 'PIN-kod' });
+  }, [selectedRole, t]);
+
   const companyLoginCode =
     (isEdit ? user?.companyLoginCode : selectedCompany?.loginCode) || null;
 
@@ -149,6 +187,7 @@ export function useUserFormModal({
       formInitializedRef.current = false;
       setPasswordVisible(false);
       setPinDirty(false);
+      usernameManuallyEditedRef.current = false;
       return;
     }
     if (formInitializedRef.current) return;
@@ -158,6 +197,7 @@ export function useUserFormModal({
     setPinDirty(false);
 
     if (isEdit) {
+      usernameManuallyEditedRef.current = true;
       const role = user.role ?? 'MANAGER';
       let initialStores = toStoreIdSet(user.storeIds);
       if (
@@ -174,30 +214,46 @@ export function useUserFormModal({
         patronymic: user.patronymic ?? '',
         username: user.username ?? '',
         email: user.email ?? '',
+        phone: user.phone ?? '',
         role,
         pin: '',
         password: '',
       });
-      setStoreIds(role === 'CASHIER' || role === 'WAITER' ? cashierStoreSet(initialStores) : initialStores);
+      const finalStores = role === 'CASHIER' || role === 'WAITER' ? cashierStoreSet(initialStores) : initialStores;
+      setStoreIds(finalStores);
       setCompanyId(user.companyId != null ? String(user.companyId) : '');
+      initialCompanyRef.current = user.companyId != null ? String(user.companyId) : '';
+      initialStoresRef.current = new Set(finalStores);
     } else {
+      usernameManuallyEditedRef.current = false;
       const initialStores = Array.isArray(defaultStoreIds)
         ? new Set(defaultStoreIds.map(Number).filter((id) => !Number.isNaN(id)))
         : new Set();
       reset({
-        role: defaultCreateRole,
+        role: '',
         firstName: '',
         lastName: '',
         patronymic: '',
         username: '',
         email: '',
+        phone: '',
         pin: '',
         password: '',
       });
       setStoreIds(initialStores);
       setCompanyId('');
+      initialCompanyRef.current = '';
+      initialStoresRef.current = new Set(initialStores);
     }
-  }, [open, isEdit, user?.id, isPlatform, reset, defaultCreateRole, defaultStoreIds]);
+  }, [open, isEdit, user?.id, isPlatform, reset, defaultStoreIds]);
+
+  useEffect(() => {
+    if (!open || isEdit) return;
+    const available = (isPlatform ? filteredStores : stores).filter((s) => s.active !== false);
+    if (available.length === 1 && storeIds.size === 0) {
+      setStoreIds(new Set([Number(available[0].id)]));
+    }
+  }, [open, isEdit, isPlatform, filteredStores, stores, storeIds.size]);
 
   useEffect(() => {
     if (!isCashierRole) return;
@@ -206,6 +262,7 @@ export function useUserFormModal({
 
   useEffect(() => {
     if (!open || !roleAllowList.length) return;
+    if (!selectedRole) return;
     if (roleAllowList.includes(selectedRole)) return;
     setValue('role', roleAllowList[0], { shouldDirty: !isEdit, shouldValidate: true });
   }, [open, roleAllowList, selectedRole, setValue, isEdit]);
@@ -256,7 +313,18 @@ export function useUserFormModal({
     const firstName = fieldOn('firstName') ? data.firstName?.trim() : username;
     const lastName = fieldOn('lastName') ? data.lastName?.trim() : '—';
     const patronymic = fieldOn('patronymic') ? data.patronymic?.trim() || null : null;
-    const email = fieldOn('email') ? data.email.trim() : `${username}@example.com`;
+    const rawEmail = data.email?.trim() || '';
+    if (rawEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+      toast.error(t('validation.invalidEmail', { defaultValue: 'Email manzili noto\'g\'ri kiritildi' }));
+      return;
+    }
+    const email = rawEmail || `${username}@pos.internal`;
+    const rawPhone = data.phone?.trim() || '';
+    const phone = rawPhone ? normalizePhoneToE164(rawPhone) : undefined;
+    if (phone && phone.replace(/\D/g, '').length !== 12) {
+      toast.error(t('validation.invalidPhone', { defaultValue: 'Telefon raqami to‘liq kiritilmadi (+998 XX XXX-XX-XX)' }));
+      return;
+    }
     let selectedStoreIds = Array.from(storeIds).map(Number).filter((n) => !Number.isNaN(n));
 
     if (isCashierRole) {
@@ -296,7 +364,7 @@ export function useUserFormModal({
     }
 
     if (!role) {
-      toast.error(t('validation.fieldRequired', { field: t('users.role') }));
+      toast.error(t('users.roleRequired', { defaultValue: 'Rolni tanlash majburiy' }));
       return;
     }
 
@@ -320,6 +388,7 @@ export function useUserFormModal({
         patronymic,
         email,
         role,
+        ...(phone ? { phone } : {}),
         companyId: isPlatform && companyId ? Number(companyId) : undefined,
         storeIds: selectedStoreIds,
       };
@@ -337,6 +406,7 @@ export function useUserFormModal({
       patronymic,
       username,
       email,
+      ...(phone ? { phone } : {}),
       pin: isPinRole ? pin : undefined,
       ...(isPinRole || pwd.length === 0 ? {} : { password: pwd }),
       role,
@@ -354,10 +424,88 @@ export function useUserFormModal({
     }
   };
 
+  const handleCompanyChange = (val) => {
+    setCompanyId(val);
+    if (val) {
+      clearErrors('companyId');
+    }
+  };
+
+  const handleRoleChange = (val) => {
+    setValue('role', val, { shouldDirty: true, shouldValidate: true });
+    if (val) {
+      clearErrors('role');
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    let hasCustomError = false;
+    let firstErrorFieldId = null;
+
+    if (isPlatform && !isEdit && !companyId) {
+      setError('companyId', {
+        type: 'required',
+        message: t('users.companyRequired', { defaultValue: 'Kompaniyani tanlang' }),
+      });
+      hasCustomError = true;
+      if (!firstErrorFieldId) firstErrorFieldId = 'user-form-company';
+    }
+
+    if (!selectedRole) {
+      setError('role', {
+        type: 'required',
+        message: t('users.roleRequired', { defaultValue: 'Rolni tanlash majburiy' }),
+      });
+      hasCustomError = true;
+      if (!firstErrorFieldId) firstErrorFieldId = 'user-form-role';
+    }
+
+    const focusTarget = (id) => {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        el?.focus?.();
+      }, 20);
+    };
+
+    handleSubmit(
+      (data) => {
+        if (hasCustomError) {
+          if (firstErrorFieldId) {
+            focusTarget(firstErrorFieldId);
+          }
+          return;
+        }
+        onSubmit(data);
+      },
+      (validationErrors) => {
+        const order = [
+          ...(isPlatform && !isEdit ? [{ name: 'companyId', id: 'user-form-company' }] : []),
+          { name: 'role', id: 'user-form-role' },
+          { name: 'store', id: 'user-form-store' },
+          { name: 'firstName', id: 'user-first-name' },
+          { name: 'lastName', id: 'user-last-name' },
+          { name: 'username', id: 'user-username' },
+          { name: 'pin', id: 'user-pin' },
+          { name: 'password', id: 'user-password' },
+        ];
+        const allErrors = {
+          ...validationErrors,
+          ...(hasCustomError && !companyId && isPlatform && !isEdit ? { companyId: true } : {}),
+          ...(hasCustomError && !selectedRole ? { role: true } : {}),
+        };
+        const firstField = order.find((f) => allErrors[f.name]);
+        if (firstField) {
+          focusTarget(firstField.id);
+        }
+      }
+    )(e);
+  };
+
   const fioFields = [
-    { name: 'lastName', label: t('users.lastName'), key: 'lastName' },
-    { name: 'firstName', label: t('users.firstName'), key: 'firstName' },
-    { name: 'patronymic', label: t('users.patronymic'), key: 'patronymic' },
+    { name: 'lastName', label: t('users.lastName'), key: 'lastName', required: true },
+    { name: 'firstName', label: t('users.firstName'), key: 'firstName', required: true },
+    { name: 'patronymic', label: t('users.patronymic'), key: 'patronymic', required: false },
   ].filter((f) => fieldOn(f.key));
 
   const dismissCredentials = () => {
@@ -366,6 +514,17 @@ export function useUserFormModal({
   };
 
   const selectedStoreId = storeIds.size > 0 ? String([...storeIds][0]) : '';
+
+  const isCompanyDirty = isPlatform && companyId !== initialCompanyRef.current;
+  const isStoresDirty = useMemo(() => {
+    if (storeIds.size !== initialStoresRef.current.size) return true;
+    for (const id of storeIds) {
+      if (!initialStoresRef.current.has(id)) return true;
+    }
+    return false;
+  }, [storeIds]);
+
+  const isDirty = form.formState.isDirty || isCompanyDirty || isStoresDirty;
 
   return {
     t,
@@ -382,6 +541,9 @@ export function useUserFormModal({
     companies,
     companyId,
     setCompanyId,
+    handleCompanyChange,
+    handleRoleChange,
+    handleFormSubmit,
     setStoreIds,
     companyLoginCode,
     passwordVisible,
@@ -391,6 +553,8 @@ export function useUserFormModal({
     dismissCredentials,
     register,
     setValue,
+    clearErrors,
+    setError,
     selectedRole,
     roleAllowList,
     handleSubmit,
@@ -406,5 +570,9 @@ export function useUserFormModal({
     toggleStore,
     storeOptions,
     fioFields,
+    pinFieldLabel,
+    isDirty,
+    watch,
+    onUsernameChange,
   };
 }

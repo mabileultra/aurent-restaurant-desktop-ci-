@@ -2,13 +2,13 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreVertical } from 'lucide-react';
 
-const MENU_WIDTH = 168;
-const MENU_ITEM_H = 40;
+const MENU_WIDTH = 196;
+const MENU_ITEM_H = 42;
 const GAP = 4;
 
 /**
  * Row kebab menu rendered in a portal so it is not clipped by table overflow.
- * @param {{ open: boolean, onOpenChange: (open: boolean) => void, actions: { label: string, onClick: () => void, danger?: boolean }[] }} props
+ * @param {{ open: boolean, onOpenChange: (open: boolean) => void, actions: { label: string, onClick: () => void, danger?: boolean, disabled?: boolean, disabledReason?: string }[] }} props
  */
 export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
   const anchorRef = useRef(null);
@@ -61,24 +61,40 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
         width: MENU_WIDTH,
         zIndex: 9999,
       }}
-      className="rounded-lg border border-slate-200 bg-white py-1 shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
+      className="rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl dark:!border-slate-700 dark:!bg-slate-900 animate-in fade-in zoom-in-95 duration-100"
     >
-      {actions.map((action) => (
-        <button
-          key={action.label}
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            action.onClick();
-            onOpenChange(false);
-          }}
-          className={`block w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:!bg-slate-800 ${
-            action.danger ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'
-          }`}
-        >
-          {action.label}
-        </button>
-      ))}
+      {actions.map((action) => {
+        const isDisabled = Boolean(action.disabled);
+        const tooltip = action.disabledReason || action.title;
+        return (
+          <button
+            key={action.label}
+            type="button"
+            role="menuitem"
+            disabled={isDisabled}
+            title={tooltip}
+            onClick={() => {
+              if (isDisabled) return;
+              action.onClick();
+              onOpenChange(false);
+            }}
+            className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
+              isDisabled
+                ? 'cursor-not-allowed opacity-50 text-slate-400 dark:text-slate-500 hover:bg-transparent'
+                : action.danger
+                  ? 'text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:!bg-slate-800'
+                  : 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:!bg-slate-800'
+            }`}
+          >
+            <div className="font-medium leading-snug">{action.label}</div>
+            {isDisabled && action.disabledReason ? (
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 font-normal leading-tight mt-0.5">
+                {action.disabledReason}
+              </div>
+            ) : null}
+          </button>
+        );
+      })}
     </div>
   ) : null;
 
@@ -87,14 +103,15 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
       <button
         ref={anchorRef}
         type="button"
+        aria-label="Amallar menyusi"
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => onOpenChange(!open)}
-        className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-700 dark:hover:text-white"
+        className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
       >
         <MoreVertical size={16} />
       </button>
-      {menu && createPortal(menu, document.body)}
+      {menu ? (typeof document !== 'undefined' && document.body ? createPortal(menu, document.body) : menu) : null}
     </>
   );
 }

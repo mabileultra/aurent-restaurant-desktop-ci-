@@ -17,6 +17,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const [districtCode, setDistrictCode] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
+  const [groupedPage, setGroupedPage] = useState(0);
+  const [groupedPageSize, setGroupedPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [menuId, setMenuId] = useState(null);
@@ -124,24 +126,15 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onError: (e) => toast.error(e.response?.data?.message ?? t('stores.deleteFailed')),
   });
 
+  const isGroupedViewActive = Boolean(showCompanySelect && viewMode === 'grouped');
+
+  // Only download all stores if user explicitly activates the grouped view accordion
   const { data: allStores = [] } = useQuery({
     queryKey: ['stores-all', resolvedCompanyId],
     queryFn: () => storeApi.getAll().then((r) => r.data || []),
+    enabled: isGroupedViewActive,
     staleTime: 60_000,
   });
-
-  const scopeStores = resolvedCompanyId
-    ? allStores.filter((s) => s.companyId === resolvedCompanyId)
-    : allStores;
-
-  const totalStores = scopeStores.length || (data?.totalElements ?? 0);
-  const activeStores = scopeStores.length > 0
-    ? scopeStores.filter((s) => s.active).length
-    : (data?.content ?? []).filter((s) => s.active).length;
-  const inactiveStores = Math.max(0, totalStores - activeStores);
-  const companiesCount = resolvedCompanyId
-    ? (scopeStores.length > 0 ? 1 : 0)
-    : (companies?.length || new Set(allStores.map((s) => s.companyId).filter(Boolean)).size);
 
   const rawRows = data?.content ?? [];
   const rows = useMemo(() => {
@@ -153,9 +146,36 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const total = data?.totalElements ?? rows.length;
   const totalPages = data?.totalPages ?? 0;
 
+  // Scalable KPI calculations without downloading all stores
+  const totalStores = total;
+  const rawActive = rawRows.filter((s) => s.active).length;
+  const rawInactive = rawRows.filter((s) => !s.active).length;
+
+  let activeStores;
+  let inactiveStores;
+
+  if (statusFilter === 'ACTIVE') {
+    activeStores = total;
+    inactiveStores = Math.max(0, totalStores - activeStores);
+  } else if (statusFilter === 'INACTIVE') {
+    inactiveStores = total;
+    activeStores = Math.max(0, totalStores - inactiveStores);
+  } else if (total <= rawRows.length) {
+    activeStores = rawActive;
+    inactiveStores = rawInactive;
+  } else {
+    inactiveStores = rawInactive;
+    activeStores = Math.max(0, totalStores - inactiveStores);
+  }
+
+  const companiesCount = resolvedCompanyId
+    ? (totalStores > 0 ? 1 : 0)
+    : (companies?.length || 0);
+
   const handleStatusFilterChange = (nextFilter) => {
     setStatusFilter(nextFilter);
     setPage(0);
+    setGroupedPage(0);
   };
 
   const openQuickDrawer = (store) => {
@@ -185,22 +205,26 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const handleSearchChange = (value) => {
     setSearch(value);
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handleCompanyChange = (value) => {
     setCompanyId(value || '');
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handleBusinessTypeChange = (code) => {
     setBusinessType(code || '');
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handleGeoChange = ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
     setRegionCode(nextRegion || '');
     setDistrictCode(nextDistrict || '');
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handlePageSizeChange = (nextSize) => {
@@ -277,6 +301,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     setExpandedCompanyIds,
     hasUserToggledGrouped,
     setHasUserToggledGrouped,
+    groupedPage,
+    setGroupedPage,
+    groupedPageSize,
+    setGroupedPageSize,
     pharmacyIntegrationStore,
     openPharmacyIntegration,
     closePharmacyIntegration,
