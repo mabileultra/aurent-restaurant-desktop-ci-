@@ -2,6 +2,7 @@ import { api } from './client';
 
 export const userApi = {
   getAll: () => api.get('/users'),
+  listManaged: (params) => api.get('/users/manage', { params }),
   getById: (id) => api.get(`/users/${id}`),
   create: (data) => api.post('/users', data),
   update: (id, d) => api.put(`/users/${id}`, d),

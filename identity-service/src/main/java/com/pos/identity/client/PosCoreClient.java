@@ -1,7 +1,10 @@
 package com.pos.identity.client;
 
 import com.pos.identity.client.dto.AuditRequest;
+import com.pos.identity.client.dto.CompanyDirectoryItem;
 import com.pos.identity.client.dto.CompanyDto;
+import com.pos.identity.client.dto.IdListRequest;
+import com.pos.identity.client.dto.StoreNameItem;
 import com.pos.identity.client.dto.StoreValidateRequest;
 import com.pos.identity.client.dto.StoreValidateResponse;
 import com.pos.identity.client.dto.SuperAdminLoginEmailRequest;
@@ -13,9 +16,13 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -61,6 +68,82 @@ public class PosCoreClient {
                 throw new BadRequestException("Store validation failed");
             })
             .body(StoreValidateResponse.class);
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public List<Integer> findCompanyIds(String businessType, String regionCode, String districtCode) {
+        List<Integer> body = posCoreRestClient.get()
+            .uri(builder -> {
+                builder.path("/internal/identity/companies/ids");
+                if (StringUtils.hasText(businessType)) {
+                    builder.queryParam("businessType", businessType.trim());
+                }
+                if (StringUtils.hasText(regionCode)) {
+                    builder.queryParam("regionCode", regionCode.trim());
+                }
+                if (StringUtils.hasText(districtCode)) {
+                    builder.queryParam("districtCode", districtCode.trim());
+                }
+                return builder.build();
+            })
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+        return body == null ? List.of() : body;
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public List<Integer> findCompanyIdsBySearch(String search) {
+        List<Integer> body = posCoreRestClient.get()
+            .uri(builder -> builder
+                .path("/internal/identity/companies/search-ids")
+                .queryParam("search", search.trim())
+                .build())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+        return body == null ? List.of() : body;
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public List<CompanyDirectoryItem> findCompaniesByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<CompanyDirectoryItem> body = posCoreRestClient.post()
+            .uri("/internal/identity/companies/by-ids")
+            .body(new IdListRequest(ids))
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+        return body == null ? List.of() : body;
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public List<Integer> findStoreIdsBySearch(String search) {
+        List<Integer> body = posCoreRestClient.get()
+            .uri(builder -> builder
+                .path("/internal/identity/stores/search-ids")
+                .queryParam("search", search.trim())
+                .build())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+        return body == null ? List.of() : body;
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public List<StoreNameItem> findStoreNamesByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<StoreNameItem> body = posCoreRestClient.post()
+            .uri("/internal/identity/stores/names")
+            .body(new IdListRequest(ids))
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+        return body == null ? List.of() : body;
     }
 
     public void syncUser(UserSyncRequest request) {

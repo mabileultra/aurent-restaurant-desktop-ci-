@@ -26,4 +26,27 @@ public interface StoreRepository extends JpaRepository<Store, Integer>, JpaSpeci
 
     @Query("select s.company.id, count(s) from Store s where s.company.id in :companyIds group by s.company.id")
     List<Object[]> countGroupedByCompanyId(@Param("companyIds") List<Integer> companyIds);
+
+    @Query("select s.id from Store s where lower(s.name) like :pattern")
+    List<Integer> findIdsByNameLike(@Param("pattern") String pattern);
+
+    @Query("""
+        select count(s) from Store s
+        where (:companyId is null or s.company.id = :companyId)
+        """)
+    long countScoped(@Param("companyId") Integer companyId);
+
+    @Query("""
+        select count(s) from Store s
+        where s.active = true
+          and (:companyId is null or s.company.id = :companyId)
+        """)
+    long countActiveScoped(@Param("companyId") Integer companyId);
+
+    @Query("""
+        select count(distinct s.company.id) from Store s
+        where s.company is not null
+          and (:companyId is null or s.company.id = :companyId)
+        """)
+    long countCompaniesScoped(@Param("companyId") Integer companyId);
 }

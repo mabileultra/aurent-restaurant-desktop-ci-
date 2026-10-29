@@ -275,7 +275,7 @@ export default function UsersPage({ mode = 'tenant' }) {
         onExportSelectedCsv={p.handleExportSelectedCsv}
         onSelectAllMatching={p.handleSelectAllMatching}
         isAllMatchingSelected={p.isAllMatchingSelected}
-        totalMatching={p.total}
+        totalMatching={p.pageRows.length}
         hasInactiveSelected={p.hasInactiveSelected}
         hasActiveSelected={p.hasActiveSelected}
       />
