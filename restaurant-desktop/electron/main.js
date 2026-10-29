@@ -5,6 +5,7 @@
 const path = require('path');
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { createWindowOpenHandler } = require('./runtime/windowOpenPolicy');
 const { resolveUiRoot, SERVICE_HOST, SERVICE_PORT, HEALTH_URL } = require('./config');
 const { ensureEdgeService, shutdownEdgeStack, getStackStatus } = require('./runtime/edgeStack');
 const { probeHealth } = require('./runtime/health');
@@ -127,6 +128,9 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'boot.html'));
   setMainWindow(mainWindow);
+  mainWindow.webContents.setWindowOpenHandler(
+    createWindowOpenHandler(() => mainWindow),
+  );
   mainWindow.on('closed', () => {
     mainWindow = null;
     setMainWindow(null);
