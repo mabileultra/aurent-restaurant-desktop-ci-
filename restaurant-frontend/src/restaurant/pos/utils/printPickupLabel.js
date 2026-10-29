@@ -1,14 +1,16 @@
 import {
   resolveTicketTitle,
   styleLine,
-  ticketPrintOptions,
   wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { fieldStyle } from '../../shared/printProfile/printProfileDefaults';
-import { printRawLabel, printTicketLines } from './desktopPrinters';
+import { printRawLabel, printTicketHtml } from './desktopPrinters';
 import { buildPickupTspl } from './pickupLabelTspl';
 
 const SLIP = 'PICKUP_LABEL';
+/** Stock New Stock / XP-365B queue paperId 257 — 60.9×30.4 mm. */
+const LABEL_W_MM = 61;
+const LABEL_H_MM = 30;
 
 function channelLabel(channel, t) {
   const key = String(channel || '').toUpperCase();
@@ -19,6 +21,14 @@ function channelLabel(channel, t) {
     return t?.('rst.pos.dineIn', { defaultValue: 'ЗАЛ' }) || 'ЗАЛ';
   }
   return t?.('rst.pos.takeaway', { defaultValue: 'TAKEAWAY' }) || 'TAKEAWAY';
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 export function buildPickupLabelLines({
@@ -52,6 +62,24 @@ export function buildPickupLabelLines({
   return lines.filter(Boolean);
 }
 
+function pickupLabelHtml(title, lines) {
+  const titleHtml = title
+    ? `<p style="margin:0 0 4px;text-align:center;font-weight:900;font-size:28px;letter-spacing:0.04em">${escapeHtml(title)}</p>`
+    : '';
+  const body = (lines || []).map((line) => {
+    const raw = String(line ?? '');
+    if (raw === '---') {
+      return '<hr style="border:none;border-top:1px dashed #000;margin:4px 0"/>';
+    }
+    return `<p style="white-space:pre;margin:0;font-size:12px">${escapeHtml(raw)}</p>`;
+  }).join('');
+  return `<div style="font-family:ui-monospace,Consolas,monospace">${titleHtml}${body}</div>`;
+}
+
+/**
+ * Pickup sticker: Windows GDI (like RestaurantPOS) or RAW TSPL into the same USB queue.
+ * Never send ESC/POS here — XP-365B in label mode ignores it and the queue still clears.
+ */
 export async function printPickupLabel({
   pickupNo,
   channel,
@@ -66,14 +94,19 @@ export async function printPickupLabel({
   if (!name) return { mode: 'skip' };
   const body = buildPickupLabelLines({ channel, items, printedAt, t, profile });
   if (rawMode === 'tspl') {
-    await printRawLabel(name, buildPickupTspl({ pickupNo, lines: body }));
+    await printRawLabel(name, buildPickupTspl({
+      pickupNo,
+      lines: body,
+      widthMm: LABEL_W_MM,
+      heightMm: LABEL_H_MM,
+    }));
     return { mode: 'silent' };
   }
-  await printTicketLines({
-    title: resolveTicketTitle(String(pickupNo || ''), profile, SLIP),
-    printerName: name,
-    lines: wrapSlipLines(body, profile, SLIP),
-    ...ticketPrintOptions(profile, SLIP),
-  });
+  const title = resolveTicketTitle(String(pickupNo || ''), profile, SLIP);
+  await printTicketHtml(
+    pickupLabelHtml(title, wrapSlipLines(body, profile, SLIP)),
+    name,
+    { paperWmm: LABEL_W_MM, paperHmm: LABEL_H_MM },
+  );
   return { mode: 'silent' };
 }

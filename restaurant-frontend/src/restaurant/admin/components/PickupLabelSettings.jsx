@@ -127,6 +127,9 @@ export default function PickupLabelSettings({ t }) {
             { value: 'tspl', label: t('rst.admin.labelPrinterTspl') },
           ]}
         />
+        {settings?.labelPrinterMode === 'tspl' ? (
+          <span className="rst-admin-field__hint">{t('rst.admin.labelPrinterTsplHint')}</span>
+        ) : null}
       </div>
     </section>
   );
