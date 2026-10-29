@@ -17,11 +17,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/** Local stand-in for cloud {@code /stores/manage} + store CRUD on the hall PC. */
+/**
+ * Local stand-in for cloud {@code /stores/manage} + store CRUD on the hall PC.
+ * Offline-created ids use a high range so they do not collide with cloud sequences.
+ */
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "app.restaurant.edge", name = "enabled", havingValue = "true")
 public class EdgeStoreManageService {
+
+    /** Reserved band for stores created offline on this PC (cloud ids stay far below). */
+    static final int OFFLINE_ID_BASE = 1_900_000_000;
 
     private final EdgeStoreRepository storeRepository;
     private final FloorTenantSupport tenantSupport;
@@ -56,15 +62,16 @@ public class EdgeStoreManageService {
         if (!StringUtils.hasText(name)) throw new BusinessException("name required");
         int nextId = storeRepository.findAll().stream()
             .map(EdgeStore::getId)
-            .filter(id -> id != null)
+            .filter(id -> id != null && id >= OFFLINE_ID_BASE)
             .max(Integer::compareTo)
-            .orElse(0) + 1;
+            .orElse(OFFLINE_ID_BASE - 1) + 1;
         EdgeStore row = EdgeStore.builder()
             .id(nextId)
             .companyId(companyId)
             .name(name.trim())
             .code(str(body.get("code")))
             .address(str(body.get("address")))
+            .phone(str(body.get("phone")))
             .businessType(normalizeType(str(body.get("businessType"))))
             .active(body.get("active") == null || Boolean.parseBoolean(String.valueOf(body.get("active"))))
             .build();
@@ -85,6 +92,7 @@ public class EdgeStoreManageService {
         }
         if (body.containsKey("code")) row.setCode(str(body.get("code")));
         if (body.containsKey("address")) row.setAddress(str(body.get("address")));
+        if (body.containsKey("phone")) row.setPhone(str(body.get("phone")));
         if (body.containsKey("businessType")) {
             row.setBusinessType(normalizeType(str(body.get("businessType"))));
         }

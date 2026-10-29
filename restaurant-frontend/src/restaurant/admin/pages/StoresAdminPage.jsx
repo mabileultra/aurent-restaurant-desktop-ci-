@@ -3,12 +3,16 @@ import { BaseButton, BaseInput } from '../../../components/ui';
 import RestaurantStoreFormModal from '../components/RestaurantStoreFormModal';
 import RstRowActions from '../../shared/components/RstRowActions';
 import { useStoresAdminPage } from '../hooks/useStoresAdminPage';
+import { isDesktopPrinter } from '../../pos/utils/desktopPrinters';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stores-admin.css';
 
+const OFFLINE_STORE_ID_BASE = 1_900_000_000;
+
 export default function StoresAdminPage() {
   const p = useStoresAdminPage();
+  const desktop = isDesktopPrinter();
 
   return (
     <section className="rst-stores">
@@ -32,6 +36,15 @@ export default function StoresAdminPage() {
         <Link to="/rst/admin/integrations">{p.t('rst.nav.integrations')}</Link>
       </div>
 
+      {desktop ? (
+        <div className="rst-stores__hint">
+          {p.t('rst.admin.storesLocalCreateHint', {
+            defaultValue:
+              'Новая точка создаётся на этом ПК сразу (и без сети). В облако она попадёт только после отдельного синка/создания на платформе.',
+          })}
+        </div>
+      ) : null}
+
       <label className="rst-admin-field rst-admin-field--full">
         <span className="rst-admin-field__label">{p.t('common.search')}</span>
         <BaseInput
@@ -42,7 +55,14 @@ export default function StoresAdminPage() {
       </label>
 
       {p.isError ? (
-        <div className="rst-notice">{p.t('rst.admin.storesLoadFailed')}</div>
+        <div className="rst-notice">
+          <p className="mb-2">{p.t('rst.admin.storesLoadFailed')}</p>
+          {p.refetch ? (
+            <BaseButton type="button" onClick={p.refetch}>
+              {p.t('common.retry', { defaultValue: 'Повторить' })}
+            </BaseButton>
+          ) : null}
+        </div>
       ) : p.isLoading ? (
         <div className="rst-empty">{p.t('common.loading')}</div>
       ) : p.rows.length === 0 ? (
@@ -57,6 +77,7 @@ export default function StoresAdminPage() {
         <div className="rst-stores__list">
           {p.rows.map((row) => {
             const isCurrent = Number(row.id) === Number(p.workspace.storeId);
+            const localOnly = Number(row.id) >= OFFLINE_STORE_ID_BASE;
             return (
               <article
                 key={row.id}
@@ -67,6 +88,11 @@ export default function StoresAdminPage() {
                     <h2>{row.name}</h2>
                     {isCurrent ? (
                       <span className="rst-stores__badge">{p.t('rst.admin.storeCurrentBadge')}</span>
+                    ) : null}
+                    {localOnly ? (
+                      <span className="rst-stores__badge">
+                        {p.t('rst.admin.storeLocalBadge', { defaultValue: 'Локально' })}
+                      </span>
                     ) : null}
                     {row.active === false ? (
                       <span className="rst-stores__badge rst-stores__badge--off">{p.t('common.inactive')}</span>
