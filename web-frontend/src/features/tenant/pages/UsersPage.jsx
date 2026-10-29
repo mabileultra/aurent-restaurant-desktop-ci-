@@ -69,6 +69,7 @@ export default function UsersPage({ mode = 'tenant' }) {
           onStatusFilterChange={p.handleStatusFilterChange}
           onRoleFilterChange={p.handleRoleFilterChange}
           isPending={p.isLoading}
+          hasActiveFilters={p.hasContextFilters}
         />
       )}
 
@@ -88,7 +89,7 @@ export default function UsersPage({ mode = 'tenant' }) {
               >
                 {p.t('platform.tabAll', { defaultValue: 'Barchasi' })}
                 <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
-                  {p.totalUsers}
+                  {p.tabTotalUsers ?? p.totalUsers}
                 </span>
               </button>
               <button
@@ -102,7 +103,7 @@ export default function UsersPage({ mode = 'tenant' }) {
               >
                 {p.t('platform.tabActive', { defaultValue: 'Faol' })}
                 <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-mono">
-                  {p.activeUsers}
+                  {p.tabActiveUsers ?? p.activeUsers}
                 </span>
               </button>
               <button
@@ -116,7 +117,7 @@ export default function UsersPage({ mode = 'tenant' }) {
               >
                 {p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}
                 <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-mono">
-                  {p.inactiveUsers}
+                  {p.tabInactiveUsers ?? p.inactiveUsers}
                 </span>
               </button>
             </div>
@@ -272,6 +273,11 @@ export default function UsersPage({ mode = 'tenant' }) {
         onClearSelection={p.handleClearSelection}
         onBulkToggleActive={p.handleBulkToggleActive}
         onExportSelectedCsv={p.handleExportSelectedCsv}
+        onSelectAllMatching={p.handleSelectAllMatching}
+        isAllMatchingSelected={p.isAllMatchingSelected}
+        totalMatching={p.total}
+        hasInactiveSelected={p.hasInactiveSelected}
+        hasActiveSelected={p.hasActiveSelected}
       />
 
       {/* 4. Modals and Quick Drawer */}

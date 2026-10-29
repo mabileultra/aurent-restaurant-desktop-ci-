@@ -28,6 +28,28 @@ export const STAFF_ROLES = [
   'ACCOUNTANT',
 ];
 
+export function compareUserFullName(a, b, sortDirection = 'asc') {
+  const cleanA = (a.fullName || '').replace(/[^\p{L}\p{N}]/gu, '').trim();
+  const cleanB = (b.fullName || '').replace(/[^\p{L}\p{N}]/gu, '').trim();
+
+  // Non-names or empty/symbol-only names always sink to the bottom in both directions
+  if (!cleanA && cleanB) return 1;
+  if (cleanA && !cleanB) return -1;
+  if (!cleanA && !cleanB) {
+    const cmpUser = (a.username || '').localeCompare(b.username || '', 'uz', { sensitivity: 'base' });
+    return sortDirection === 'asc' ? cmpUser : -cmpUser;
+  }
+
+  // Transliterate full names so Cyrillic (e.g. "Азиз") and Latin (e.g. "Aziz") sort together
+  const keyA = transliterateCyrillicToLatin(a.fullName || '').trim();
+  const keyB = transliterateCyrillicToLatin(b.fullName || '').trim();
+
+  const cmp = keyA.localeCompare(keyB, 'uz', { sensitivity: 'base' })
+    || (a.fullName || '').localeCompare(b.fullName || '', 'uz', { sensitivity: 'base' });
+
+  return sortDirection === 'asc' ? cmp : -cmp;
+}
+
 export function useUsersPage({ mode = 'tenant' } = {}) {
   const isPlatform = mode === 'platform';
   const { t } = useTranslation();
@@ -74,6 +96,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     queryKey: isPlatform ? ['users', 'platform'] : tenantKey('users'),
     queryFn: () => userApi.getAll().then((r) => r.data),
     enabled: isPlatform || tenantReady,
+    staleTime: 60_000,
     retry: 2,
   });
 
@@ -188,6 +211,24 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const adminUsers = useMemo(() => contextUsers.filter((u) => MANAGEMENT_ROLES.includes(u.role)).length, [contextUsers]);
   const staffUsers = useMemo(() => contextUsers.filter((u) => STAFF_ROLES.includes(u.role)).length, [contextUsers]);
 
+  // Counts for the segmented status tabs (Barchasi / Faol / Nofaol), respecting the active role filter
+  const roleScopedUsers = useMemo(() => {
+    if (!roleFilter || roleFilter === 'ALL') return contextUsers;
+    return contextUsers.filter((user) => {
+      if (roleFilter === 'MANAGEMENT') {
+        return MANAGEMENT_ROLES.includes(user.role);
+      }
+      if (roleFilter === 'STAFF') {
+        return STAFF_ROLES.includes(user.role);
+      }
+      return user.role === roleFilter;
+    });
+  }, [contextUsers, roleFilter]);
+
+  const tabTotalUsers = roleScopedUsers.length;
+  const tabActiveUsers = useMemo(() => roleScopedUsers.filter((u) => u.active).length, [roleScopedUsers]);
+  const tabInactiveUsers = useMemo(() => roleScopedUsers.filter((u) => !u.active).length, [roleScopedUsers]);
+
   const { mutate: toggleUser } = useMutation({
     mutationFn: (id) => userApi.toggle(id),
     onSuccess: () => {
@@ -236,13 +277,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
     list.sort((a, b) => {
       if (sortField === 'fullName') {
-        const cleanA = (a.fullName || '').replace(/[-—\s]/g, '');
-        const cleanB = (b.fullName || '').replace(/[-—\s]/g, '');
-        if (!cleanA && cleanB) return 1;
-        if (cleanA && !cleanB) return -1;
-        if (!cleanA && !cleanB) return (a.username || '').localeCompare(b.username || '');
-        const cmp = (a.fullName || a.username || '').localeCompare(b.fullName || b.username || '', undefined, { sensitivity: 'base' });
-        return sortDirection === 'asc' ? cmp : -cmp;
+        return compareUserFullName(a, b, sortDirection);
       }
 
       let valA = a[sortField];
@@ -388,6 +423,26 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     setSelectedUserIds(new Set());
   }, []);
 
+  const isAllMatchingSelected = sortedUsers.length > 0 && selectedUserIds.size === sortedUsers.length && sortedUsers.every((u) => selectedUserIds.has(String(u.id)));
+
+  const handleSelectAllMatching = useCallback(() => {
+    setSelectedUserIds(new Set(sortedUsers.map((u) => String(u.id))));
+  }, [sortedUsers]);
+
+  const selectedUsersList = useMemo(() => {
+    if (!selectedUserIds.size) return [];
+    return sortedUsers.filter((u) => selectedUserIds.has(String(u.id)));
+  }, [sortedUsers, selectedUserIds]);
+
+  const hasInactiveSelected = useMemo(
+    () => selectedUsersList.some((u) => !u.active),
+    [selectedUsersList]
+  );
+  const hasActiveSelected = useMemo(
+    () => selectedUsersList.some((u) => u.active),
+    [selectedUsersList]
+  );
+
   const handleBulkToggleActive = useCallback(async (targetActive) => {
     const ids = Array.from(selectedUserIds);
     if (!ids.length) return;
@@ -477,6 +532,14 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     || districtCode
   );
 
+  const hasContextFilters = Boolean(
+    search.trim()
+    || businessType
+    || companyId
+    || regionCode
+    || districtCode
+  );
+
   const subtitle = isLoading
     ? t('common.loading')
     : t('common.systemUsers', { count: users.length });
@@ -521,6 +584,9 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     inactiveUsers,
     adminUsers,
     staffUsers,
+    tabTotalUsers,
+    tabActiveUsers,
+    tabInactiveUsers,
     isLoading,
     isError,
     error,
@@ -543,10 +609,15 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     confirmDelete,
     isDeletePending,
     hasActiveFilters,
+    hasContextFilters,
     selectedUserIds,
     handleToggleSelectAll,
     handleToggleSelectUser,
     handleClearSelection,
+    handleSelectAllMatching,
+    isAllMatchingSelected,
+    hasInactiveSelected,
+    hasActiveSelected,
     handleBulkToggleActive,
     handleExportSelectedCsv,
     subtitle: `${subtitle}${searchSuffix}`,

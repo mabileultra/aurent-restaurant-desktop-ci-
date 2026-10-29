@@ -66,7 +66,7 @@ const BaseSelect = forwardRef(function BaseSelect(
       currentTarget: { value: next, name: name || '' },
     });
     setQuery('');
-    closeMenuRef.current();
+    closeMenuRef.current({ restoreFocus: true });
   };
 
   const selectedOption = useMemo(
@@ -118,6 +118,18 @@ const BaseSelect = forwardRef(function BaseSelect(
     const id = window.setTimeout(() => searchRef.current?.focus?.(), 0);
     return () => window.clearTimeout(id);
   }, [open, searchable]);
+
+  useEffect(() => {
+    if (!open) return;
+    const enabledIdx = visibleOptions.findIndex((o) => !o.disabled);
+    setHighlightIndex(enabledIdx >= 0 ? enabledIdx : 0);
+  }, [query, open, visibleOptions, setHighlightIndex]);
+
+  useEffect(() => {
+    if (!open || highlightIndex < 0 || !menuRef.current) return;
+    const item = menuRef.current.querySelector(`[data-index="${highlightIndex}"]`);
+    item?.scrollIntoView?.({ block: 'nearest' });
+  }, [highlightIndex, open]);
 
   useImperativeHandle(forwardedRef, () => ({
     get value() {
@@ -183,8 +195,18 @@ const BaseSelect = forwardRef(function BaseSelect(
                 aria-controls={listId}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
-                  if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) {
+                  if (event.key === 'Enter') {
                     event.preventDefault();
+                    event.stopPropagation();
+                    const targetIdx = highlightIndex >= 0 ? highlightIndex : 0;
+                    if (visibleOptions[targetIdx] && !visibleOptions[targetIdx].disabled) {
+                      commitSelection(visibleOptions[targetIdx].value);
+                    }
+                    return;
+                  }
+                  if (['ArrowDown', 'ArrowUp', 'Escape'].includes(event.key)) {
+                    // Allow useBaseSelect keydown listener on document to handle navigation
+                    return;
                   }
                   event.stopPropagation();
                 }}
@@ -199,12 +221,13 @@ const BaseSelect = forwardRef(function BaseSelect(
             ) : (
               visibleOptions.map((option, index) => {
                 const optionValue = toOptionValue(option.value);
-                const isSelected = optionValue === effectiveValue;
+                const isSelected = optionValue !== '' && optionValue === effectiveValue;
                 const isHighlighted = index === highlightIndex;
 
                 return (
                   <button
                     key={`${optionValue}-${index}`}
+                    data-index={index}
                     type="button"
                     role="option"
                     aria-selected={isSelected}
@@ -248,8 +271,8 @@ const BaseSelect = forwardRef(function BaseSelect(
     >
       {label ? (
         <label htmlFor={fieldId} className="base-select__label">
-          {required ? <span className="text-red-400">* </span> : null}
           {label}
+          {required ? <span className="text-red-500"> *</span> : null}
         </label>
       ) : null}
 
@@ -261,6 +284,8 @@ const BaseSelect = forwardRef(function BaseSelect(
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${fieldId}-error` : undefined}
         className="base-select__trigger"
         onClick={() => {
           if (disabled) return;
@@ -310,7 +335,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         ))}
       </select>
 
-      {error ? <p className="base-select__error">{error}</p> : null}
+      {error ? <p id={`${fieldId}-error`} className="base-select__error">{error}</p> : null}
       {menu}
     </div>
   );

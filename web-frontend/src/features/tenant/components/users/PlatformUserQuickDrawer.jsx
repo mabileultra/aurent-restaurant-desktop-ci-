@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Building2,
@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import { USER_ROLE_BADGE } from '../../constants';
 import { canDeleteUser } from '../../utils/userDeletePolicy';
 
@@ -58,52 +59,67 @@ export default function PlatformUserQuickDrawer({
   districtName,
 }) {
   const drawerRef = useRef(null);
+  const triggerRef = useRef(null);
+
+  const regionCodes = useMemo(() => (user?.regionCode ? [user.regionCode] : []), [user?.regionCode]);
+  const { regionName: lookupRegion, districtName: lookupDistrict } = useGeoNameLookup(regionCodes);
 
   useEffect(() => {
-    if (!open) return undefined;
-    const timer = setTimeout(() => {
-      const closeBtn = drawerRef.current?.querySelector('button');
-      closeBtn?.focus();
-    }, 50);
+    if (open) {
+      triggerRef.current = document.getElementById(`user-row-${user?.id}`)
+        || document.getElementById(`user-card-${user?.id}`)
+        || document.activeElement;
+      const timer = setTimeout(() => {
+        const closeBtn = drawerRef.current?.querySelector('button');
+        closeBtn?.focus();
+      }, 50);
 
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        onClose?.();
-      } else if (e.key === 'Tab') {
-        if (!drawerRef.current) return;
-        const focusables = drawerRef.current.querySelectorAll(
-          'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusables.length === 0) return;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          onClose?.();
+        } else if (e.key === 'Tab') {
+          if (!drawerRef.current) return;
+          const focusables = drawerRef.current.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
 
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
           }
         }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, onClose]);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else if (triggerRef.current) {
+      triggerRef.current.focus?.();
+      triggerRef.current = null;
+    }
+    return undefined;
+  }, [open, onClose, user?.id]);
 
   if (!open || !user) return null;
 
   const initials = getUserInitials(user.fullName || user.username);
-  const region = regionName ? regionName(user.regionCode) : user.regionCode;
-  const district = districtName ? districtName(user.districtCode) : user.districtCode;
-  const locationText = [region, district].filter(Boolean).join(' · ');
+  const regionRaw = user.regionCode ? (regionName ? regionName(user.regionCode) : lookupRegion(user.regionCode)) : '';
+  const districtRaw = user.districtCode ? (districtName ? districtName(user.districtCode) : lookupDistrict(user.districtCode)) : '';
+  const isPlaceholder = (val) => !val || val === 'Yo‘q' || val === 'Yo\'q' || val === 'Нет';
+  const validRegion = isPlaceholder(regionRaw) ? '' : regionRaw;
+  const validDistrict = isPlaceholder(districtRaw) ? '' : districtRaw;
+  const locationText = [validRegion, validDistrict].filter(Boolean).join(' · ');
 
   const handleCopyId = () => {
     if (user.id) {
@@ -144,8 +160,8 @@ export default function PlatformUserQuickDrawer({
               <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 flex items-center justify-center shrink-0 text-base font-bold font-mono shadow-xs">
                 {initials}
               </div>
-              <div className="min-w-0">
-                <h2 id="user-drawer-title" className="text-lg font-bold text-slate-900 dark:text-white truncate">
+              <div className="min-w-0 flex-1">
+                <h2 id="user-drawer-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white break-words line-clamp-2 leading-snug">
                   {user.fullName || user.username}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
@@ -270,17 +286,19 @@ export default function PlatformUserQuickDrawer({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
-                    <Calendar size={16} />
+                {user.createdAt ? (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                      <Calendar size={16} />
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-400 block">{t('users.createdAt', { defaultValue: 'Yaratilgan sana' })}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                        {formatSimpleDate(user.createdAt)}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs text-slate-400 block">{t('users.createdAt', { defaultValue: 'Yaratilgan sana' })}</span>
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
-                      {formatSimpleDate(user.createdAt)}
-                    </span>
-                  </div>
-                </div>
+                ) : null}
               </div>
             </div>
 
@@ -366,6 +384,18 @@ export default function PlatformUserQuickDrawer({
                 {user.active ? t('users.deactivate', { defaultValue: 'Faolsizlantirish' }) : t('users.activate', { defaultValue: 'Faollashtirish' })}
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onEdit?.(user);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-medium text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <KeyRound size={14} />
+              {t('users.resetPasswordOrPin', { defaultValue: 'Parol / PIN tiklash' })}
+            </button>
 
             <button
               type="button"

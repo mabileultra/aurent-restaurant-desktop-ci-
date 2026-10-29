@@ -16,6 +16,7 @@ import { asEntityList } from '../utils/companySelectOptions';
 import { normalizePhoneToE164 } from '../utils/phoneFormatUtils';
 import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
 import { resolveUserFormRoles } from '../../platform/utils/rolesByBusinessType';
+import { transliterateCyrillicToLatin } from '../../../utils/transliterateCyrillic';
 
 export function useUserFormModal({
   open,
@@ -43,6 +44,7 @@ export function useUserFormModal({
   const createCredentialsRef = useRef(null);
   const initialCompanyRef = useRef('');
   const initialStoresRef = useRef(new Set());
+  const usernameManuallyEditedRef = useRef(false);
 
   const form = useForm({
     defaultValues: {
@@ -58,9 +60,33 @@ export function useUserFormModal({
     },
   });
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form;
+  const { register, handleSubmit, reset, watch, setValue, setError, clearErrors, formState: { errors } } = form;
   const selectedRole = watch('role');
+  const firstName = watch('firstName');
+  const lastName = watch('lastName');
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
+
+  useEffect(() => {
+    if (isEdit || !open || usernameManuallyEditedRef.current) return;
+    const cleanFirst = transliterateCyrillicToLatin(firstName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanLast = transliterateCyrillicToLatin(lastName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    let suggested = '';
+    if (cleanFirst && cleanLast) {
+      suggested = `${cleanFirst}.${cleanLast}`;
+    } else if (cleanFirst) {
+      suggested = cleanFirst;
+    } else if (cleanLast) {
+      suggested = cleanLast;
+    }
+    setValue('username', suggested, { shouldDirty: Boolean(suggested), shouldValidate: Boolean(suggested) });
+    if (suggested) {
+      clearErrors('username');
+    }
+  }, [firstName, lastName, isEdit, open, setValue, clearErrors]);
+
+  const onUsernameChange = () => {
+    usernameManuallyEditedRef.current = true;
+  };
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
@@ -160,6 +186,7 @@ export function useUserFormModal({
       formInitializedRef.current = false;
       setPasswordVisible(false);
       setPinDirty(false);
+      usernameManuallyEditedRef.current = false;
       return;
     }
     if (formInitializedRef.current) return;
@@ -169,6 +196,7 @@ export function useUserFormModal({
     setPinDirty(false);
 
     if (isEdit) {
+      usernameManuallyEditedRef.current = true;
       const role = user.role ?? 'MANAGER';
       let initialStores = toStoreIdSet(user.storeIds);
       if (
@@ -196,6 +224,7 @@ export function useUserFormModal({
       initialCompanyRef.current = user.companyId != null ? String(user.companyId) : '';
       initialStoresRef.current = new Set(finalStores);
     } else {
+      usernameManuallyEditedRef.current = false;
       const initialStores = Array.isArray(defaultStoreIds)
         ? new Set(defaultStoreIds.map(Number).filter((id) => !Number.isNaN(id)))
         : new Set();
@@ -394,6 +423,78 @@ export function useUserFormModal({
     }
   };
 
+  const handleCompanyChange = (val) => {
+    setCompanyId(val);
+    if (val) {
+      clearErrors('companyId');
+    }
+  };
+
+  const handleRoleChange = (val) => {
+    setValue('role', val, { shouldDirty: true, shouldValidate: true });
+    if (val) {
+      clearErrors('role');
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    let hasCustomError = false;
+    let firstErrorFieldId = null;
+
+    if (isPlatform && !isEdit && !companyId) {
+      setError('companyId', {
+        type: 'required',
+        message: t('users.companyRequired', { defaultValue: 'Kompaniyani tanlash majburiy' }),
+      });
+      hasCustomError = true;
+      if (!firstErrorFieldId) firstErrorFieldId = 'user-form-company';
+    }
+
+    if (!selectedRole) {
+      setError('role', {
+        type: 'required',
+        message: t('users.roleRequired', { defaultValue: 'Rolni tanlash majburiy' }),
+      });
+      hasCustomError = true;
+      if (!firstErrorFieldId) firstErrorFieldId = 'user-form-role';
+    }
+
+    handleSubmit(
+      (data) => {
+        if (hasCustomError) {
+          if (firstErrorFieldId) {
+            document.getElementById(firstErrorFieldId)?.focus();
+          }
+          return;
+        }
+        onSubmit(data);
+      },
+      (validationErrors) => {
+        const order = [
+          ...(isPlatform && !isEdit ? [{ name: 'companyId', id: 'user-form-company' }] : []),
+          { name: 'role', id: 'user-form-role' },
+          { name: 'store', id: 'user-form-store' },
+          { name: 'firstName', id: 'user-first-name' },
+          { name: 'lastName', id: 'user-last-name' },
+          { name: 'username', id: 'user-username' },
+          { name: 'pin', id: 'user-pin' },
+          { name: 'password', id: 'user-password' },
+        ];
+        const allErrors = {
+          ...validationErrors,
+          ...(hasCustomError && firstErrorFieldId === 'user-form-company' ? { companyId: true } : {}),
+          ...(hasCustomError && !selectedRole ? { role: true } : {}),
+        };
+        const firstField = order.find((f) => allErrors[f.name]);
+        if (firstField) {
+          const el = document.getElementById(firstField.id);
+          el?.focus();
+        }
+      }
+    )(e);
+  };
+
   const fioFields = [
     { name: 'lastName', label: t('users.lastName'), key: 'lastName', required: true },
     { name: 'firstName', label: t('users.firstName'), key: 'firstName', required: true },
@@ -433,6 +534,9 @@ export function useUserFormModal({
     companies,
     companyId,
     setCompanyId,
+    handleCompanyChange,
+    handleRoleChange,
+    handleFormSubmit,
     setStoreIds,
     companyLoginCode,
     passwordVisible,
@@ -442,6 +546,8 @@ export function useUserFormModal({
     dismissCredentials,
     register,
     setValue,
+    clearErrors,
+    setError,
     selectedRole,
     roleAllowList,
     handleSubmit,
@@ -460,5 +566,6 @@ export function useUserFormModal({
     pinFieldLabel,
     isDirty,
     watch,
+    onUsernameChange,
   };
 }

@@ -31,11 +31,13 @@ describe('TableRowActionsMenu', () => {
       })
     );
 
-    // Verify disabled attribute and title tooltip are rendered
+    // Verify disabled attribute, aria-label, and subtitle are rendered
+    expect(html).toContain('aria-label="Amallar menyusi"');
     expect(html).toContain('disabled=""');
     expect(html).toContain('title="Ushbu rolni o‘chirish huquqi mavjud emas"');
     expect(html).toContain('O‘chirish');
-    expect(html).toContain('cursor-not-allowed opacity-40');
+    expect(html).toContain('cursor-not-allowed opacity-50');
+    expect(html).toContain('<div class="text-[11px] text-slate-400 dark:text-slate-500 font-normal leading-tight mt-0.5">Ushbu rolni o‘chirish huquqi mavjud emas</div>');
   });
 
   it('renders enabled action without disabled attribute', () => {
