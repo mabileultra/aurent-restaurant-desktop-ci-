@@ -122,11 +122,9 @@ export async function fiscalizeSaleBeforeCommit({
       errorPrefix: 'MULTIKASSA',
     });
   } catch (err) {
-    if (err?.soft) {
-      logFiscal(`Маркировка UNAVAILABLE → PENDING: ${err.message}`, null, 'warn');
-      return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
-    }
-    throw err;
+    if (!err?.soft) throw err;
+    // 401/таймаут Tasnif не отменяет чек ФМ: иначе продажа есть, а QR нет.
+    logFiscal(`Маркировка UNAVAILABLE, чек идёт в Multikassa: ${err.message}`, null, 'warn');
   }
 
   const body = buildSaleOperationBody({

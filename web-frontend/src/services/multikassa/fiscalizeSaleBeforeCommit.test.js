@@ -156,6 +156,37 @@ describe('fiscalizeSaleBeforeCommit → QR from Multikassa', () => {
     ).rejects.toMatchObject({ code: 'MULTIKASSA_FISCAL_FAILED' });
   });
 
+  it('Tasnif UNAVAILABLE still fiscalizes and returns the OFD QR', async () => {
+    const err = new Error('Сервис проверки маркировки ответил ошибкой');
+    err.code = 'MULTIKASSA_MARKING_UNAVAILABLE';
+    err.soft = true;
+    assertOnkmMarking.mockRejectedValue(err);
+    const qr = 'https://ofd.soliq.uz/check?t=TERM1&r=42&c=20260907122636&s=SIGN99';
+    runMultikassaOperation.mockResolvedValue({
+      fiscalStatus: FISCAL_STATUS.FISCALIZED,
+      fiscalSign: 'SIGN99',
+      fiscalReceiptSeq: '42',
+      multikassaSaleId: 'sale-guid-003',
+      fiscalQrUrl: qr,
+      terminalId: 'TERM1',
+      datetime: '20260907122636',
+      fiscalError: null,
+    });
+
+    const payload = await fiscalizeSaleBeforeCommit({
+      capabilities: { ...BASE_CAPS, requireBeforeSale: true, cashRegisterId: 11 },
+      cartItems: CART,
+      payment: { paymentMethod: 'CASH', amountTendered: 1000 },
+      total: 1000,
+      shiftId: 10,
+      cashierName: 'Cashier',
+    });
+
+    expect(runMultikassaOperation).toHaveBeenCalled();
+    expect(payload.fiscalQrUrl).toBe(qr);
+    expect(payload.fiscalStatus).toBe(FISCAL_STATUS.FISCALIZED);
+  });
+
   it('blocks sale when Tasnif rejects the marking code', async () => {
     const err = new Error('Код уже выведен из оборота');
     err.code = 'MULTIKASSA_MARKING_REJECTED';

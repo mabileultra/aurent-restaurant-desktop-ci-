@@ -29,22 +29,10 @@
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field,
-.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field--product,
-.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field--km {
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field--product {
   height: 28px;
   font-size: 0.75rem;
   padding: 0 8px;
-}
-
-.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field--km {
-  padding-left: 36px;
-}
-
-.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__km-badge {
-  left: 6px;
-  min-width: 24px;
-  height: 16px;
-  font-size: 0.5rem;
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact {
