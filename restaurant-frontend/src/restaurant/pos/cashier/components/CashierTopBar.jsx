@@ -121,9 +121,11 @@ export default function CashierTopBar({
                 type="button"
                 variant="ghost"
                 className="rst-cashier-top__cfd"
+                title={t('rst.cfd.openHint')}
                 onClick={onOpenCustomerDisplay}
               >
                 {t('rst.cfd.open')}
+                <span className="rst-cashier-top__cfd-keys">{t('rst.cfd.openKeys')}</span>
               </BaseButton>
             ) : null}
             <RestaurantThemeSwitch />

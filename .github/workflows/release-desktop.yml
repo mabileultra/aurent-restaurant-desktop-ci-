@@ -90,72 +90,13 @@ jobs:
         shell: bash
         run: rm -f ~/.ssh/deploy_key
 
-  build-mac:
-    if: ${{ inputs.manifest_only != true }}
-    runs-on: macos-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: pnpm
-          cache-dependency-path: desktop-electron/pnpm-lock.yaml
-
-      - name: Install & build (macOS)
-        working-directory: desktop-electron
-        env:
-          UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
-        run: |
-          # serialport/@serialport/bindings-cpp → node-gyp imports distutils (gone in Python 3.12+).
-          # macOS runners are PEP 668 “externally-managed” — need --break-system-packages.
-          python3 -m pip install --user --break-system-packages setuptools
-          python3 -c 'import setuptools; print("setuptools", setuptools.__version__)'
-          pnpm install
-          pnpm run dist:mac
-
-      - name: Setup SSH
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
-        run: |
-          chmod +x deploy/*.sh
-          bash deploy/server-setup.sh ci-ssh
-
-      - name: Upload macOS installers to server
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
-        run: |
-          set -euo pipefail
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            'mkdir -p /opt/aurent-pos/downloads/desktop'
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-            desktop-electron/dist/*.dmg \
-            desktop-electron/dist/*.zip \
-            desktop-electron/dist/*.blockmap \
-            desktop-electron/dist/latest-mac.yml \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/"
-
-      - name: Cleanup SSH key
-        if: always()
-        run: rm -f ~/.ssh/deploy_key
-
+  # Windows only — macOS runners queue forever on this org; hall PCs are Win.
   publish-manifest:
-    needs: [build-win, build-mac]
+    needs: [build-win]
     if: >-
       always() &&
       (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
-      (inputs.manifest_only == true || (needs.build-win.result == 'success' && needs.build-mac.result == 'success')) &&
+      (inputs.manifest_only == true || needs.build-win.result == 'success') &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/desktop-v') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -187,7 +128,6 @@ jobs:
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/Aurent-Cashier-${VERSION}-*" \
             "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/latest.yml" \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/latest-mac.yml" \
             desktop-electron/dist/ || true
           bash deploy/publish-desktop.sh
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
