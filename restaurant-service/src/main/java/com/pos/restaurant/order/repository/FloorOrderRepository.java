@@ -3,9 +3,11 @@ package com.pos.restaurant.order.repository;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +20,11 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
 
     @Query("select o from FloorOrder o left join fetch o.table left join fetch o.shift where o.id = :id and o.companyId = :companyId")
     Optional<FloorOrder> findByIdAndCompanyId(@Param("id") UUID id, @Param("companyId") Integer companyId);
+
+    /** Row lock for pay — no JOIN FETCH so Postgres locks only floor_orders. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from FloorOrder o where o.id = :id and o.companyId = :companyId")
+    Optional<FloorOrder> findByIdAndCompanyIdForUpdate(@Param("id") UUID id, @Param("companyId") Integer companyId);
 
     boolean existsByTableIdAndStatusIn(Integer tableId, Collection<OrderStatus> statuses);
 

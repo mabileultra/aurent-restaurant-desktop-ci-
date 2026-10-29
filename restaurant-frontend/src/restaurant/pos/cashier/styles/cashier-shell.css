@@ -562,20 +562,6 @@
   flex-shrink: 0;
 }
 
-.rst-cashier-top__cfd {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.rst-cashier-top__cfd-keys {
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.02em;
-  color: var(--rst-muted, #64748b);
-  opacity: 0.9;
-}
-
 .rst-cashier-panel {
   flex: 1;
   min-width: 0;

@@ -14,12 +14,11 @@ import com.pos.restaurant.recipe.service.RecipeStockRestoreService;
 import com.pos.restaurant.recipe.support.RecipeExplosion;
 import com.pos.restaurant.revenue.domain.RevenueOutboxChannel;
 import com.pos.restaurant.revenue.entity.RevenueOutbox;
+import com.pos.restaurant.revenue.service.RevenueOutboxDispatchService;
 import com.pos.restaurant.revenue.service.RevenueOutboxService;
 import com.pos.restaurant.revenue.support.RestaurantSaleCompletedFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,6 +35,7 @@ public class RecipeStockRestoreServiceImpl implements RecipeStockRestoreService 
     private final RecipeLineRepository recipeLineRepository;
     private final RecipeExplosion recipeExplosion;
     private final RevenueOutboxService outboxService;
+    private final RevenueOutboxDispatchService outboxDispatchService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -71,7 +71,7 @@ public class RecipeStockRestoreServiceImpl implements RecipeStockRestoreService 
             "rst-stock-restore:" + eventKey,
             writeJson(payload)
         );
-        scheduleSend(row.getId());
+        outboxDispatchService.dispatchAfterCommit(row.getId());
     }
 
     private Map<UUID, BigDecimal> explode(FloorOrder order, List<FloorOrderItem> items) {
@@ -96,19 +96,6 @@ public class RecipeStockRestoreServiceImpl implements RecipeStockRestoreService 
             .stream()
             .collect(Collectors.groupingBy(line -> line.getRecipe().getId()));
         return recipeExplosion.explode(items, recipes, lines);
-    }
-
-    private void scheduleSend(UUID outboxId) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            outboxService.trySend(outboxId);
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                outboxService.trySend(outboxId);
-            }
-        });
     }
 
     private String writeJson(Object value) {

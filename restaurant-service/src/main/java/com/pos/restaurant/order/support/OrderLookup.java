@@ -59,7 +59,22 @@ public class OrderLookup {
 
     /** Hall checks stay on BILLING. A takeaway walk-in can be paid while still OPEN. */
     public FloorOrder requirePayable(UUID orderId) {
-        FloorOrder order = require(orderId);
+        return assertPayable(require(orderId));
+    }
+
+    /**
+     * Same rules as {@link #requirePayable} but {@code SELECT … FOR UPDATE} so two parallel pays
+     * cannot both pass the status check. Re-loads table/shift after the lock for the pay path.
+     */
+    public FloorOrder requirePayableForUpdate(UUID orderId) {
+        Integer companyId = tenantSupport.requireCompanyId();
+        FloorOrder locked = orderRepository.findByIdAndCompanyIdForUpdate(orderId, companyId)
+            .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
+        assertPayable(locked);
+        return orderRepository.findByIdAndCompanyId(orderId, companyId).orElse(locked);
+    }
+
+    private static FloorOrder assertPayable(FloorOrder order) {
         if (order.getStatus() == OrderStatus.BILLING) {
             return order;
         }

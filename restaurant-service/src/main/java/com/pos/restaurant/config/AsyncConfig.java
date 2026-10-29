@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
 public class AsyncConfig {
 
     /** Parallel read slices for restaurant dashboard (finance + live ops). */
-    @Bean(name = "dashboardExecutor")
+    @Bean(name = RestaurantExecutorNames.DASHBOARD)
     public Executor dashboardExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix("rst-dashboard-");
