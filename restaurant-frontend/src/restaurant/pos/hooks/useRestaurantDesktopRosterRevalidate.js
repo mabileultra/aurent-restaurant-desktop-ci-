@@ -3,7 +3,7 @@ import axios from 'axios';
 import { isRestaurantDesktop } from '../../../utils/restaurantDesktop';
 import { useAuthStore } from '../../../store/authStore';
 import { forceAuthReLogin } from '../../../utils/authSessionExpiry';
-import api from '../../../api/client';
+import { api } from '../../../api/client';
 
 /**
  * After Electron quietly refreshes edge_staff from cloud, re-issue local JWT.
