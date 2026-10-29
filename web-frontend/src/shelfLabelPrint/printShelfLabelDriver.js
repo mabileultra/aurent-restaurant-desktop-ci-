@@ -43,7 +43,9 @@ function injectLabelPageRuleFromCssVars() {
 }
 
 function prepareLabelPrint() {
-  document.documentElement.classList.add(ELECTRON_SILENT_LABEL_CLASS);
+  // CSS прячет кассу и ставит этикетку в кадр только при обоих классах на <html>.
+  // Класс только на body оставляет слой на left:-10000px — в очередь Windows ничего не попадает.
+  document.documentElement.classList.add(ELECTRON_SILENT_LABEL_CLASS, SHELF_LABEL_PRINT_ACTIVE_CLASS);
   document.body.classList.add(SHELF_LABEL_PRINT_ACTIVE_CLASS);
 }
 
