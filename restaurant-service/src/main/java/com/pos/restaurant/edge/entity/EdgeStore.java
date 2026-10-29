@@ -38,6 +38,9 @@ public class EdgeStore {
     @Column(length = 500)
     private String address;
 
+    @Column(length = 40)
+    private String phone;
+
     @Column(name = "business_type", nullable = false, length = 64)
     private String businessType;
 

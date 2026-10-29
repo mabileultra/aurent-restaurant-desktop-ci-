@@ -150,6 +150,7 @@ public class EdgeStoreService {
         if (address != null) {
             row.setAddress(address);
         }
+        // phone is edge-local (manage CRUD); cloud bootstrap leaves it untouched
         String type = StringUtils.hasText(businessType) ? businessType.trim().toUpperCase() : row.getBusinessType();
         if (!StringUtils.hasText(type)) {
             type = "RESTAURANT";
@@ -174,7 +175,7 @@ public class EdgeStoreService {
             row.getAddress(),
             null,
             null,
-            null,
+            row.getPhone(),
             row.getCompanyId(),
             null,
             null,
