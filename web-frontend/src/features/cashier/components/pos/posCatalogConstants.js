@@ -1,10 +1,10 @@
 export const POS_CATALOG_VIEW_MODE_KEY = 'pos-catalog-view-mode';
-/** Больше товаров за страницу — быстрее сетка кассы (продукт). */
-export const POS_PRODUCT_PAGE_SIZE = 120;
+/** Страница каталога: с виртуализацией DOM не растёт — умеренный размер хватает. */
+export const POS_PRODUCT_PAGE_SIZE = 60;
 /** Аптека: меньше страница — серия/срок/FEFO не бьют по API. */
 export const PHARMACY_POS_PRODUCT_PAGE_SIZE = 40;
-/** Сколько страниц каталога держать заранее (включая уже показанную первую). */
-export const POS_CATALOG_PREFETCH_PAGES = 3;
+/** Prefetch: только текущая страница; дальше — по скроллу (DOM windowed). */
+export const POS_CATALOG_PREFETCH_PAGES = 1;
 /** Аптека: только текущая страница, дальше — по скроллу. */
 export const PHARMACY_CATALOG_PREFETCH_PAGES = 1;
 

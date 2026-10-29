@@ -35,6 +35,17 @@ export async function offlineImportBootstrap(payload) {
   );
 }
 
+export async function offlineImportCatalogDelta(payload) {
+  if (!isDesktopOfflineBridge()) return null;
+  if (typeof window.desktopCashier.offlineImportCatalogDelta !== 'function') {
+    return { ok: false, error: 'delta_unsupported', fullReset: true };
+  }
+  return withOfflineTimeout(
+    window.desktopCashier.offlineImportCatalogDelta(payload),
+    OFFLINE_BOOTSTRAP_IPC_TIMEOUT_MS,
+  );
+}
+
 export async function offlineListCategories() {
   if (!isDesktopOfflineBridge()) return [];
   return withOfflineTimeout(window.desktopCashier.offlineListCategories());

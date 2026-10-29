@@ -1,4 +1,4 @@
-import { renderPosCatalogProduct } from './posCatalogRenderProduct';
+import PosCatalogVirtualProducts from './PosCatalogVirtualProducts';
 
 export default function PosCatalogProductBrowse({
   t,
@@ -10,6 +10,7 @@ export default function PosCatalogProductBrowse({
   productsHasMore,
   viewMode,
   onAddProduct,
+  scrollParentRef,
 }) {
   if (productsLoading) {
     return <p className="pos-catalog-panel__empty">{t('common.loading')}</p>;
@@ -23,19 +24,18 @@ export default function PosCatalogProductBrowse({
     return <p className="pos-catalog-panel__empty">{t('pos.noProductsInCategory')}</p>;
   }
 
-  const renderProduct = (p) =>
-    renderPosCatalogProduct(p, { viewMode, t, onAddProduct });
-
   return (
     <>
       {searchActive ? (
         <p className="pos-catalog-panel__hint">{t('pos.searchAllCategories')}</p>
       ) : null}
-      {viewMode === 'list' ? (
-        <div className="pos-product-list">{products.map(renderProduct)}</div>
-      ) : (
-        <div className="pos-product-grid">{products.map(renderProduct)}</div>
-      )}
+      <PosCatalogVirtualProducts
+        products={products}
+        viewMode={viewMode}
+        t={t}
+        onAddProduct={onAddProduct}
+        scrollParentRef={scrollParentRef}
+      />
       {productsLoadingMore ? (
         <p className="pos-catalog-panel__load-more" role="status">
           {t('pos.loadingMoreProducts')}

@@ -134,6 +134,7 @@ const PosCatalogPanel = forwardRef(function PosCatalogPanel(
             productsHasMore={productsHasMore}
             viewMode={viewMode}
             onAddProduct={onAddProduct}
+            scrollParentRef={panel.catalogBodyRef}
           />
         ) : null}
       </div>

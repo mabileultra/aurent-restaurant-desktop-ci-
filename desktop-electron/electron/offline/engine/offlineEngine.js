@@ -17,7 +17,8 @@ function resolveOfflineEngine({ userConfig, env = process.env } = {}) {
   if (fromEnv) return fromEnv;
   const fromUser = normalizeOfflineEngine(userConfig?.offlineEngine);
   if (fromUser) return fromUser;
-  return ENGINE_SQLJS;
+  // Native by default; connection.cjs falls back to sql.js if the module fails to load.
+  return ENGINE_NATIVE;
 }
 
 module.exports = {

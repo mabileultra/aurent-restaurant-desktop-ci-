@@ -78,6 +78,7 @@ contextBridge.exposeInMainWorld('desktopCashier', {
 
   offlineGetStatus: () => invoke('offline:get-status'),
   offlineImportBootstrap: (payload) => invoke('offline:import-bootstrap', payload),
+  offlineImportCatalogDelta: (payload) => invoke('offline:import-catalog-delta', payload),
   offlineListCategories: () => invoke('offline:list-categories'),
   offlineSearchProducts: (opts) => invoke('offline:search-products', opts || {}),
   offlineGetProductByBarcode: (barcode) => invoke('offline:get-product-by-barcode', barcode),

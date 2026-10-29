@@ -1,6 +1,7 @@
 const { ipcMain } = require('electron');
 const localDb = require('./index.cjs');
 const { completeLocalCheckout } = require('./checkout.cjs');
+const { enqueueOfflineDb } = require('./offlineDbQueue.cjs');
 
 const IPC_TIMEOUT_MS = 16_000;
 const BOOTSTRAP_IPC_TIMEOUT_MS = 60_000;
@@ -9,7 +10,7 @@ const CHECKOUT_IPC_TIMEOUT_MS = 8_000;
 async function safeOffline(fn, fallback, timeoutMs = IPC_TIMEOUT_MS) {
   try {
     return await Promise.race([
-      fn(),
+      enqueueOfflineDb(fn),
       new Promise((_, reject) => {
         setTimeout(() => reject(new Error('offline_ipc_timeout')), timeoutMs);
       }),
@@ -57,6 +58,14 @@ function registerOfflineIpc(getConfig, probeBackendOnlineQuick) {
   ipcMain.handle('offline:import-bootstrap', async (_e, payload) =>
     safeOffline(
       () => localDb.importBootstrap(payload),
+      { ok: false, error: 'offline_db_unavailable' },
+      BOOTSTRAP_IPC_TIMEOUT_MS,
+    ),
+  );
+
+  ipcMain.handle('offline:import-catalog-delta', async (_e, payload) =>
+    safeOffline(
+      () => localDb.importCatalogDelta(payload),
       { ok: false, error: 'offline_db_unavailable' },
       BOOTSTRAP_IPC_TIMEOUT_MS,
     ),
@@ -121,7 +130,7 @@ function registerOfflineIpc(getConfig, probeBackendOnlineQuick) {
   ipcMain.handle('offline:complete-checkout', async (_e, payload) => {
     try {
       return await Promise.race([
-        completeLocalCheckout(payload || {}),
+        enqueueOfflineDb(() => completeLocalCheckout(payload || {})),
         new Promise((_, reject) => {
           setTimeout(() => reject(new Error('offline_checkout_timeout')), CHECKOUT_IPC_TIMEOUT_MS);
         }),

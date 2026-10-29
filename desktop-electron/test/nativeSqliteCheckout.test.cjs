@@ -24,7 +24,7 @@ require.cache[electronPath] = {
   },
 };
 
-test('native sqlite checkout works and sql.js remains default fallback', async (t) => {
+test('native sqlite checkout works (default engine path)', async (t) => {
   let betterSqlite3 = true;
   try {
     require('better-sqlite3');

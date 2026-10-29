@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,33 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
 
     @Query("SELECT p FROM Product p JOIN FETCH p.company WHERE p.id IN :ids")
     List<Product> findAllByIdWithCompany(@Param("ids") Collection<UUID> ids);
+
+    /** Active grocery products changed after {@code since} (offline catalog delta upserts). */
+    @Query("""
+        SELECT p FROM Product p
+        LEFT JOIN FETCH p.category
+        WHERE p.company.id = :companyId
+          AND p.isActive = true
+          AND p.updatedAt > :since
+        ORDER BY p.updatedAt ASC, p.id ASC
+        """)
+    List<Product> findActiveUpdatedSince(
+        @Param("companyId") Integer companyId,
+        @Param("since") Instant since
+    );
+
+    /** Deactivated products changed after {@code since} (offline catalog delta removals). */
+    @Query("""
+        SELECT p.id FROM Product p
+        WHERE p.company.id = :companyId
+          AND p.isActive = false
+          AND p.updatedAt > :since
+        ORDER BY p.updatedAt ASC, p.id ASC
+        """)
+    List<UUID> findInactiveIdsUpdatedSince(
+        @Param("companyId") Integer companyId,
+        @Param("since") Instant since
+    );
 
     @Query("""
         SELECT p FROM Product p
