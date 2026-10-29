@@ -138,4 +138,53 @@ describe('UsersTable', () => {
 
     expect(html).toContain('Hech narsa topilmadi');
   });
+
+  it('renders min-w-[760px] on table and id attribute on rows', () => {
+    const html = renderToStaticMarkup(React.createElement(UsersTable, defaultProps));
+
+    expect(html).toContain('min-w-[760px]');
+    expect(html).toContain('id="user-row-u1"');
+    expect(html).toContain('id="user-row-u2"');
+  });
+
+  it('renders bulk actions bar and only shows select all matching when entire page is selected', () => {
+    // 1. Partial selection (2 of 3 rows selected) -> must NOT show "Barcha 50 tasini tanlash"
+    const partialHtml = renderToStaticMarkup(
+      React.createElement(UsersTable, {
+        ...defaultProps,
+        selectedUserIds: new Set(['u1', 'u2']),
+        totalMatching: 50,
+        pageRows: defaultProps.pageRows,
+        hasInactiveSelected: true,
+        hasActiveSelected: true,
+      })
+    );
+
+    expect(partialHtml).toContain('2 ta tanlandi');
+    expect(partialHtml).not.toContain('Barcha 50 tasini tanlash');
+    expect(partialHtml).toContain('Faollashtirish');
+    expect(partialHtml).toContain('Faolsizlantirish');
+
+    // 2. Full page selection (all 3 rows selected) -> MUST show "Barcha 50 tasini tanlash"
+    const fullPageHtml = renderToStaticMarkup(
+      React.createElement(UsersTable, {
+        ...defaultProps,
+        selectedUserIds: new Set(['u1', 'u2', 'u3']),
+        totalMatching: 50,
+        pageRows: defaultProps.pageRows,
+        hasInactiveSelected: true,
+        hasActiveSelected: true,
+      })
+    );
+
+    expect(fullPageHtml).toContain('3 ta tanlandi');
+    expect(fullPageHtml).toContain('Barcha 50 tasini tanlash');
+  });
+
+  it('renders mobile card view for small screens', () => {
+    const html = renderToStaticMarkup(React.createElement(UsersTable, defaultProps));
+
+    expect(html).toContain('id="user-card-u1"');
+    expect(html).toContain('id="user-card-u2"');
+  });
 });

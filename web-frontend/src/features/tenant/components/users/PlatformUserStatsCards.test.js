@@ -47,7 +47,8 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-slate-400');
+    expect(html).toContain('ring-2 ring-slate-600');
+    expect(html).toContain('aria-pressed="true"');
   });
 
   it('applies emerald active ring on active users card when statusFilter is ACTIVE', () => {
@@ -58,7 +59,7 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-emerald-500/80');
+    expect(html).toContain('ring-2 ring-emerald-600');
   });
 
   it('applies purple active ring on management card when roleFilter is MANAGEMENT', () => {
@@ -69,7 +70,7 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-purple-500/80');
+    expect(html).toContain('ring-2 ring-purple-600');
   });
 
   it('applies sky active ring on staff card when roleFilter is STAFF', () => {
@@ -80,6 +81,6 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-sky-500/80');
+    expect(html).toContain('ring-2 ring-sky-600');
   });
 });

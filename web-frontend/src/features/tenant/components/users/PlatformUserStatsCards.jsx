@@ -12,6 +12,7 @@ export default function PlatformUserStatsCards({
   onStatusFilterChange,
   onRoleFilterChange,
   isPending = false,
+  hasActiveFilters = false,
 }) {
   const activePercent = totalUsers > 0
     ? Math.round((activeUsers / totalUsers) * 100)
@@ -22,11 +23,13 @@ export default function PlatformUserStatsCards({
       id: 'TOTAL',
       title: t('users.statsAll', { defaultValue: 'Jami foydalanuvchilar' }),
       value: totalUsers,
-      hint: t('users.statsAllDesc', { defaultValue: 'Platformada ro‘yxatdan o‘tgan' }),
+      hint: hasActiveFilters
+        ? t('users.statsFiltered', { defaultValue: 'Filtr bo‘yicha' })
+        : t('users.statsAllDesc', { defaultValue: 'Platformada ro‘yxatdan o‘tgan' }),
       icon: Users,
       iconColor: 'text-slate-700 dark:text-slate-300',
       iconBg: 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
-      activeRing: 'ring-2 ring-slate-400 dark:ring-slate-600 border-slate-300 dark:border-slate-600',
+      activeRing: 'ring-2 ring-slate-600 bg-slate-50 dark:bg-slate-800/80 border-slate-400 dark:border-slate-500 shadow-md',
       isActive: statusFilter === 'ALL' && roleFilter === 'ALL',
       onClick: () => {
         onStatusFilterChange?.('ALL');
@@ -41,7 +44,7 @@ export default function PlatformUserStatsCards({
       icon: UserCheck,
       iconColor: 'text-emerald-600 dark:text-emerald-400',
       iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60',
-      activeRing: 'ring-2 ring-emerald-500/80 border-emerald-300 dark:border-emerald-700',
+      activeRing: 'ring-2 ring-emerald-600 bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-600 shadow-md',
       isActive: statusFilter === 'ACTIVE',
       onClick: () => {
         onStatusFilterChange?.(statusFilter === 'ACTIVE' ? 'ALL' : 'ACTIVE');
@@ -55,7 +58,7 @@ export default function PlatformUserStatsCards({
       icon: ShieldCheck,
       iconColor: 'text-purple-600 dark:text-purple-400',
       iconBg: 'bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/60',
-      activeRing: 'ring-2 ring-purple-500/80 border-purple-300 dark:border-purple-700',
+      activeRing: 'ring-2 ring-purple-600 bg-purple-50/80 dark:bg-purple-950/40 border-purple-400 dark:border-purple-600 shadow-md',
       isActive: roleFilter === 'MANAGEMENT',
       onClick: () => {
         onRoleFilterChange?.(roleFilter === 'MANAGEMENT' ? 'ALL' : 'MANAGEMENT');
@@ -69,7 +72,7 @@ export default function PlatformUserStatsCards({
       icon: Store,
       iconColor: 'text-sky-600 dark:text-sky-400',
       iconBg: 'bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/60',
-      activeRing: 'ring-2 ring-sky-500/80 border-sky-300 dark:border-sky-700',
+      activeRing: 'ring-2 ring-sky-600 bg-sky-50/80 dark:bg-sky-950/40 border-sky-400 dark:border-sky-600 shadow-md',
       isActive: roleFilter === 'STAFF',
       onClick: () => {
         onRoleFilterChange?.(roleFilter === 'STAFF' ? 'ALL' : 'STAFF');
@@ -87,6 +90,7 @@ export default function PlatformUserStatsCards({
             key={card.id}
             role="button"
             tabIndex={0}
+            aria-pressed={card.isActive}
             onClick={card.onClick}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -94,10 +98,10 @@ export default function PlatformUserStatsCards({
                 card.onClick();
               }
             }}
-            className={`relative p-3.5 sm:p-4 rounded-xl bg-white dark:!bg-slate-900/90 border transition-all duration-200 shadow-sm ${
+            className={`relative p-3.5 sm:p-4 rounded-xl bg-white dark:!bg-slate-900/90 transition-all duration-200 shadow-sm ${
               card.isActive
-                ? card.activeRing
-                : 'border-slate-200 dark:!border-slate-800 hover:border-slate-300 dark:hover:!border-slate-700'
+                ? `${card.activeRing} border-2`
+                : 'border border-slate-200 dark:!border-slate-800 hover:border-slate-300 dark:hover:!border-slate-700'
             } cursor-pointer hover:shadow hover:-translate-y-0.5`}
           >
             <div className="flex items-center justify-between gap-2">

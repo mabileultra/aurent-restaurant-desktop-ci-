@@ -19,6 +19,9 @@ export default function UserFormModalFields({
   companies,
   companyId,
   setCompanyId,
+  handleCompanyChange,
+  handleRoleChange,
+  handleFormSubmit,
   setStoreIds,
   companyLoginCode,
   passwordVisible,
@@ -41,9 +44,15 @@ export default function UserFormModalFields({
   onClose,
   handleSubmit,
   onSubmit,
+  onUsernameChange,
 }) {
   const [pinVisible, setPinVisible] = useState(false);
   const [storeSearch, setStoreSearch] = useState('');
+
+  const getInputCls = (hasError) =>
+    hasError
+      ? `${userFormInputCls} !border-red-500 focus:!ring-red-500 !text-slate-900 dark:!border-red-500`
+      : userFormInputCls;
 
   const filteredStoreOptions = useMemo(() => {
     const q = storeSearch.trim().toLowerCase();
@@ -69,7 +78,7 @@ export default function UserFormModalFields({
     <form
       id="user-form-modal"
       autoComplete="off"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleFormSubmit || handleSubmit(onSubmit)}
       className="flex flex-col flex-1 min-h-0"
     >
       {/* Chrome autofill dummy preventers */}
@@ -132,14 +141,16 @@ export default function UserFormModalFields({
                   label={t('users.colCompany')}
                   required
                   value={companyId}
+                  error={errors.companyId?.message}
                   onChange={(e) => {
-                    setCompanyId(e.target.value);
+                    if (handleCompanyChange) handleCompanyChange(e.target.value);
+                    else setCompanyId(e.target.value);
                     if (!isEdit) setStoreIds(new Set());
                   }}
                   disabled={isEdit}
                   placeholder={t('stores.selectCompany')}
                   searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Kompaniyani qidirish…' })}
-                  options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
+                  options={buildCompanySelectOptions(companies)}
                 />
                 {!isEdit && companyLoginCode ? (
                   <p className="mt-1.5 text-xs text-slate-500 flex items-center gap-1">
@@ -159,7 +170,11 @@ export default function UserFormModalFields({
                   required
                   disabled={isRoleDisabled}
                   value={selectedRole}
-                  onChange={(e) => setValue('role', e.target.value, { shouldDirty: true, shouldValidate: true })}
+                  error={errors.role?.message}
+                  onChange={(e) => {
+                    if (handleRoleChange) handleRoleChange(e.target.value);
+                    else setValue('role', e.target.value, { shouldDirty: true, shouldValidate: true });
+                  }}
                   placeholder={
                     isRoleDisabled
                       ? t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })
@@ -183,7 +198,6 @@ export default function UserFormModalFields({
                     })[role] ?? t(`roles.${role}`, { defaultValue: role }),
                   }))}
                 />
-                {errors.role && <p className="mt-1 text-xs text-red-500">{t('users.roleRequired', { defaultValue: 'Rolni tanlash majburiy' })}</p>}
               </div>
             ) : null}
           </div>
@@ -298,10 +312,12 @@ export default function UserFormModalFields({
               <input
                 id="user-first-name"
                 {...register('firstName', { required: true })}
-                className={userFormInputCls}
+                className={getInputCls(errors.firstName)}
+                aria-invalid={Boolean(errors.firstName)}
+                aria-describedby={errors.firstName ? 'user-first-name-error' : undefined}
                 placeholder="Ism"
               />
-              {errors.firstName && <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+              {errors.firstName && <p id="user-first-name-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
             </div>
 
             <div>
@@ -311,10 +327,12 @@ export default function UserFormModalFields({
               <input
                 id="user-last-name"
                 {...register('lastName', { required: true })}
-                className={userFormInputCls}
+                className={getInputCls(errors.lastName)}
+                aria-invalid={Boolean(errors.lastName)}
+                aria-describedby={errors.lastName ? 'user-last-name-error' : undefined}
                 placeholder="Familiya"
               />
-              {errors.lastName && <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+              {errors.lastName && <p id="user-last-name-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
             </div>
           </div>
 
@@ -347,12 +365,17 @@ export default function UserFormModalFields({
               </label>
               <input
                 id="user-username"
-                {...register('username', { required: true })}
+                {...register('username', {
+                  required: true,
+                  onChange: () => onUsernameChange?.(),
+                })}
                 autoComplete="new-username"
-                className={userFormInputCls}
+                className={getInputCls(errors.username)}
+                aria-invalid={Boolean(errors.username)}
+                aria-describedby={errors.username ? 'user-username-error' : undefined}
                 placeholder="login_nomi"
               />
-              {errors.username && <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+              {errors.username && <p id="user-username-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
             </div>
 
             <div>
@@ -408,9 +431,15 @@ export default function UserFormModalFields({
                   placeholder={isEdit ? t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' }) : '••••'}
                   {...register('pin', {
                     required: pinRequired,
-                    onChange: () => setPinDirty?.(true),
+                    onChange: (e) => {
+                      const clean = (e.target.value || '').replace(/\D/g, '').slice(0, 6);
+                      setValue('pin', clean, { shouldDirty: true, shouldValidate: true });
+                      setPinDirty?.(true);
+                    },
                   })}
-                  className={`${userFormInputCls} pr-10 font-mono tracking-widest`}
+                  className={`${getInputCls(errors.pin)} pr-10 font-mono tracking-widest`}
+                  aria-invalid={Boolean(errors.pin)}
+                  aria-describedby={errors.pin ? 'user-pin-error' : undefined}
                 />
                 <button
                   type="button"
@@ -422,11 +451,17 @@ export default function UserFormModalFields({
                   {pinVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-slate-400">
-                {pinRequired
-                  ? t('users.pinHint', { defaultValue: '4–6 xonali raqam. Kassa ekraniga tezkor kirish uchun ishlatiladi.' })
-                  : t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' })}
-              </p>
+              {errors.pin ? (
+                <p id="user-pin-error" className="mt-1 text-xs text-red-500">
+                  {t('validation.required', { defaultValue: 'Majburiy maydon' })}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-400">
+                  {pinRequired
+                    ? t('users.pinHint', { defaultValue: '4–6 xonali raqam. Kassa ekraniga tezkor kirish uchun ishlatiladi.' })
+                    : t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' })}
+                </p>
+              )}
             </div>
           ) : null}
 
@@ -456,7 +491,9 @@ export default function UserFormModalFields({
                   autoComplete="new-password"
                   placeholder={isEdit ? t('users.passwordEditPlaceholder', { defaultValue: 'O\'zgartirish uchun yangi parol kiriting' }) : undefined}
                   {...register('password', isEdit ? {} : { required: true, minLength: 6 })}
-                  className={`${userFormInputCls} pr-10`}
+                  className={`${getInputCls(errors.password)} pr-10`}
+                  aria-invalid={Boolean(errors.password)}
+                  aria-describedby={errors.password ? 'user-password-error' : undefined}
                 />
                 <button
                   type="button"
@@ -474,7 +511,11 @@ export default function UserFormModalFields({
                 </p>
               )}
               {!isEdit && errors.password && (
-                <p className="mt-1 text-xs text-red-500">{t('users.passwordMinLength')}</p>
+                <p id="user-password-error" className="mt-1 text-xs text-red-500">
+                  {errors.password.type === 'required'
+                    ? t('validation.required', { defaultValue: 'Majburiy maydon' })
+                    : t('users.passwordMinLength', { defaultValue: 'Parol kamida 6 belgidan iborat bo‘lishi kerak' })}
+                </p>
               )}
             </div>
           ) : null}

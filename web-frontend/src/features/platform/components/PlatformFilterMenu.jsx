@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function PlatformFilterMenu({ options = [], value = '', onChange, label }) {
   const { t } = useTranslation();
+  if (!options || options.length === 0) return null;
   const caption = t('platform.toolbarFilter', { defaultValue: 'Фильтр' });
   const rootRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -33,7 +34,10 @@ export default function PlatformFilterMenu({ options = [], value = '', onChange,
     };
   }, [open]);
 
-  if (!options.length) return null;
+  const selectedOption = options.find((o) => o.value === value);
+  const displayTitle = selectedOption && value
+    ? `${label || caption}: ${selectedOption.label}`
+    : (label || caption);
 
   return (
     <div className="platform-filter-bar__menu" ref={rootRef}>
@@ -44,7 +48,7 @@ export default function PlatformFilterMenu({ options = [], value = '', onChange,
         aria-label={label || caption}
         onClick={() => setOpen((current) => !current)}
       >
-        <span>{caption}</span>
+        <span className="truncate max-w-[220px]">{displayTitle}</span>
         <span className="platform-filter-bar__filter-icon">
           <Filter size={15} strokeWidth={2.2} aria-hidden />
           {active ? <span className="platform-filter-bar__dot" /> : null}

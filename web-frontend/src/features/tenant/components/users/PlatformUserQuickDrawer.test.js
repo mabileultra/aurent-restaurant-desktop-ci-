@@ -5,6 +5,14 @@ import PlatformUserQuickDrawer from './PlatformUserQuickDrawer';
 
 globalThis.React = React;
 
+vi.mock('../../../shared/geo/useGeoNameLookup', () => ({
+  useGeoNameLookup: () => ({
+    regionName: (code) => code || '',
+    districtName: (code) => code || '',
+    empty: '',
+  }),
+}));
+
 describe('PlatformUserQuickDrawer', () => {
   const mockT = (key, fallback) => {
     if (typeof fallback === 'string') return fallback;
