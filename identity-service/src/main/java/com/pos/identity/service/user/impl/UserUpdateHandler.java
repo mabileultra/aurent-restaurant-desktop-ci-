@@ -15,6 +15,7 @@ import com.pos.identity.service.user.support.UserAccessPolicy;
 import com.pos.identity.util.DbExceptionTranslator;
 import com.pos.shared.log.LogUtil;
 import com.pos.identity.util.TextUtil;
+import com.pos.identity.util.EmailAddressRules;
 import com.pos.identity.util.UserLoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -77,7 +78,7 @@ public class UserUpdateHandler {
         }
 
         if (req.email() != null) {
-            String email = UserLoginUtil.normalizeEmail(req.email());
+            String email = EmailAddressRules.require(req.email());
             Integer companyId = accessPolicy.companyId(user);
             if (!email.equalsIgnoreCase(user.getEmail())) {
                 accessPolicy.assertEmailAvailable(companyId, email, user.getId());

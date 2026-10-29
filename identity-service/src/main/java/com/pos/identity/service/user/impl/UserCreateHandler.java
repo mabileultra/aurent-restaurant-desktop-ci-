@@ -18,6 +18,7 @@ import com.pos.identity.util.DbExceptionTranslator;
 import com.pos.shared.log.LogUtil;
 import com.pos.identity.util.PersonNameUtil;
 import com.pos.identity.util.TextUtil;
+import com.pos.identity.util.EmailAddressRules;
 import com.pos.identity.util.UserLoginUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,7 +53,7 @@ public class UserCreateHandler {
 
         Integer companyId = accessPolicy.resolveCompanyIdForCreate(req.companyId(), role.getName());
         String username = UserLoginUtil.normalizeUsername(req.username());
-        String email = UserLoginUtil.normalizeEmail(req.email());
+        String email = EmailAddressRules.require(req.email());
         accessPolicy.assertUsernameAvailable(companyId, username, null);
         accessPolicy.assertEmailAvailable(companyId, email, null);
 
