@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Loader, Eye, EyeOff } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Loader, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { BaseSelect } from '../../../../components/ui';
 import { userFormInputCls } from '../../utils/userFormModalUtils';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
+import { formatUzbekPhone } from '../../utils/phoneFormatUtils';
 
 export default function UserFormModalFields({
   t,
@@ -12,6 +13,7 @@ export default function UserFormModalFields({
   isCashierRole,
   isPinRole,
   pinRequired,
+  pinFieldLabel,
   showPasswordField,
   fieldOn,
   companies,
@@ -36,12 +38,13 @@ export default function UserFormModalFields({
   authCompanyName,
   toggleStore,
   storeOptions,
-  fioFields,
   onClose,
   handleSubmit,
   onSubmit,
 }) {
+  const [pinVisible, setPinVisible] = useState(false);
   const [storeSearch, setStoreSearch] = useState('');
+
   const filteredStoreOptions = useMemo(() => {
     const q = storeSearch.trim().toLowerCase();
     if (!q) return storeOptions;
@@ -49,263 +52,450 @@ export default function UserFormModalFields({
       [s.name, s.code].filter(Boolean).some((part) => String(part).toLowerCase().includes(q))
     );
   }, [storeOptions, storeSearch]);
+
+  const handleGeneratePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+    let generated = '';
+    for (let i = 0; i < 10; i += 1) {
+      generated += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setValue('password', generated, { shouldDirty: true, shouldValidate: true });
+    setPasswordVisible(true);
+  };
+
+  const isRoleDisabled = isPlatform && !isEdit && !companyId;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-5">
-      {isPlatform && isEdit ? (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {t('users.platformCredentialsTitle')}
-          </p>
-          {companyLoginCode ? (
-            <p className="mt-2 text-sm">
-              <span className="text-slate-500">{t('users.platformCompanyCode')}:</span>{' '}
-              <span className="font-mono font-semibold">{companyLoginCode}</span>
+    <form
+      id="user-form-modal"
+      autoComplete="off"
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col flex-1 min-h-0"
+    >
+      {/* Chrome autofill dummy preventers */}
+      <input
+        type="text"
+        name="chrome-autofill-prevent-username"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        autoComplete="off"
+      />
+      <input
+        type="password"
+        name="chrome-autofill-prevent-password"
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        autoComplete="new-password"
+      />
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        {/* Existing User Platform Credentials Summary (Edit mode) */}
+        {isPlatform && isEdit ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-800/40">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {t('users.currentCredentialsTitle', { defaultValue: 'Joriy hisob xulosasi' })}
             </p>
-          ) : null}
-          <p className="mt-1 text-sm">
-            <span className="text-slate-500">{t('users.credentialsLogin')}:</span>{' '}
-            <span className="font-mono font-semibold">{user?.username}</span>
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            {isPinRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
-          </p>
-        </div>
-      ) : null}
-      {isPlatform && !isEdit && companyLoginCode ? (
-        <div className="admin-soft-panel px-3 py-2 text-xs">
-          {t('users.platformCompanyCode')}: <span className="font-mono font-semibold">{companyLoginCode}</span>
-        </div>
-      ) : null}
-      {fioFields.map(({ name, label }) => (
-        <div key={name}>
-          <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">{label} *</label>
-          <input {...register(name, { required: true })} className={userFormInputCls} />
-          {errors[name] && <p className="mt-1 text-xs text-red-400">{t('validation.required')}</p>}
-        </div>
-      ))}
-      <div>
-        <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">{t('users.colUsername')} *</label>
-        <input
-          {...register('username', { required: true })}
-          autoComplete="username"
-          className={userFormInputCls}
-        />
-        {errors.username && <p className="mt-1 text-xs text-red-400">{t('validation.required')}</p>}
-      </div>
-      {isPinRole ? (
-        <div>
-          <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
-            {t('users.pin', { defaultValue: 'PIN-код кассира' })}
-            {pinRequired ? ' *' : ''}
-          </label>
-          <input
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder={isEdit ? t('users.pinEditHint', { defaultValue: 'Оставьте пустым, если менять PIN не нужно' }) : '••••'}
-            {...register('pin', {
-              required: pinRequired,
-              onChange: () => setPinDirty?.(true),
-            })}
-            className={userFormInputCls}
-          />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            {pinRequired
-              ? t('users.pinHint', { defaultValue: '4–6 цифр. Используется для входа кассира и разблокировки.' })
-              : t('users.pinEditHint', { defaultValue: 'Оставьте пустым, если менять PIN не нужно' })}
-          </p>
-        </div>
-      ) : null}
-      {fieldOn('email') ? (
-        <div>
-          <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">{t('users.email')} *</label>
-          <input type="email" {...register('email', { required: true })} className={userFormInputCls} />
-        </div>
-      ) : null}
-      {showPasswordField ? (
-        <div>
-          <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
-            {t('users.password')}
-            {!isEdit ? ' *' : ''}
-          </label>
-          <div className="relative">
-            <input
-              type={passwordVisible ? 'text' : 'password'}
-              autoComplete="new-password"
-              placeholder={isEdit ? t('users.passwordEditPlaceholder') : undefined}
-              {...register('password', isEdit ? {} : { required: true, minLength: 6 })}
-              className={`${userFormInputCls} pr-10`}
-            />
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:text-slate-800 dark:hover:text-white"
-              onClick={() => setPasswordVisible((v) => !v)}
-              aria-label={passwordVisible ? t('users.hidePassword') : t('users.showPassword')}
-            >
-              {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
+              {companyLoginCode ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500">{t('users.platformCompanyCode')}:</span>
+                  <span className="font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                    #{companyLoginCode}
+                  </span>
+                </div>
+              ) : null}
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500">{t('users.credentialsLogin')}:</span>
+                <span className="font-mono font-semibold text-slate-900 dark:text-white">{user?.username}</span>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              {isPinRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
+            </p>
           </div>
-          {isEdit && (
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {isPlatform ? t('users.passwordHiddenHint') : t('users.passwordEditHint')}
-            </p>
-          )}
-          {!isEdit && errors.password && (
-            <p className="mt-1 text-xs text-red-400">{t('users.passwordMinLength')}</p>
-          )}
-        </div>
-      ) : null}
-      {isPlatform && (
-        <div>
-          <BaseSelect
-            label={t('users.colCompany')}
-            required
-            value={companyId}
-            onChange={(e) => {
-              setCompanyId(e.target.value);
-              if (!isEdit) setStoreIds(new Set());
-            }}
-            disabled={isEdit}
-            placeholder={t('stores.selectCompany')}
-            searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
-            options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
-          />
-        </div>
-      )}
-      {(isPlatform || fieldOn('role') || !isEdit) ? (
-        <div>
-          <input type="hidden" {...register('role')} />
-          <BaseSelect
-            label={t('users.role')}
-            value={selectedRole}
-            onChange={(e) => setValue('role', e.target.value, { shouldDirty: true, shouldValidate: true })}
-            options={(
-              roleAllowList?.length
-                ? roleAllowList
-                : ['MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
-            ).map((role) => ({
-              value: role,
-              label: ({
-                ADMIN: t('users.roleAdmin'),
-                MANAGER: t('users.roleManager'),
-                CASHIER: t('users.roleCashier'),
-                WAITER: t('users.roleWaiter'),
-                COURIER: t('users.roleCourier'),
-                COOK: t('users.roleCook'),
-                ACCOUNTANT: t('users.roleAccountant'),
-              })[role] ?? t(`roles.${role}`, { defaultValue: role }),
-            }))}
-          />
-        </div>
-      ) : null}
-      {(isPlatform || fieldOn('stores') || isCashierRole) ? (
-        <div>
-          {isCashierRole ? (
-            <>
-              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span className="text-red-400">* </span>
-                {t('users.colStores')}
-              </label>
-              <BaseSelect
-                value={selectedStoreId}
-                disabled={storesLoading || (storeOptions.length === 0 && !storesError)}
-                placeholder={
-                  storesLoading
-                    ? t('common.loading')
-                    : storeOptions.length === 0
-                      ? t('users.noStoresAvailable')
-                      : t('users.selectStore')
-                }
-                onChange={(e) => {
-                  const next = e.target.value;
-                  if (!next) {
-                    setStoreIds(new Set());
-                    return;
-                  }
-                  toggleStore(next);
-                }}
-                options={[
-                  {
-                    value: '',
-                    label: storesLoading
-                      ? t('common.loading')
-                      : storeOptions.length === 0
-                        ? t('users.noStoresAvailable')
-                        : t('users.selectStore'),
-                  },
-                  ...storeOptions.map((s) => ({
-                    value: String(s.id),
-                    label: `${s.name}${s.active === false ? ` (${t('users.storeInactive')})` : ''}`,
-                    keywords: [s.name, s.code].filter(Boolean).join(' '),
-                  })),
-                ]}
-              />
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('users.cashierStoreHint')}</p>
-              {storesError ? (
-                <p className="mt-1 text-xs text-red-500">{t('users.storesLoadFailed')}</p>
-              ) : null}
-              {!storesLoading && !storesError && storeOptions.length === 0 ? (
-                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                  {isPlatform
-                    ? t('users.noStoresForSelectedCompany')
-                    : t('users.noStoresForYourCompany', {
-                        company: authCompanyName || (authCompanyId != null ? `#${authCompanyId}` : '—'),
-                      })}
-                </p>
-              ) : null}
-            </>
-          ) : (
-            <>
-              <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.colStores')}</label>
-              {storeOptions.length > 8 ? (
-                <input
-                  type="search"
-                  value={storeSearch}
-                  onChange={(e) => setStoreSearch(e.target.value)}
-                  placeholder={t('stores.searchPlaceholder')}
-                  className={`${userFormInputCls} mb-2`}
+        ) : null}
+
+        {/* 1. TASHKILOT VA ROL (Company & Role) */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            {t('users.sectionOrganization', { defaultValue: 'Tashkilot va Rol' })}
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {isPlatform && (
+              <div>
+                <BaseSelect
+                  id="user-form-company"
+                  label={t('users.colCompany')}
+                  required
+                  value={companyId}
+                  onChange={(e) => {
+                    setCompanyId(e.target.value);
+                    if (!isEdit) setStoreIds(new Set());
+                  }}
+                  disabled={isEdit}
+                  placeholder={t('stores.selectCompany')}
+                  searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Kompaniyani qidirish…' })}
+                  options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
                 />
-              ) : null}
-              <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border p-3 dark:border-slate-700">
-                {storesLoading ? (
-                  <p className="text-xs text-slate-500">{t('common.loading')}</p>
-                ) : storeOptions.length === 0 ? (
-                  <p className="text-xs text-slate-500">{t('users.noStoresAvailable')}</p>
-                ) : filteredStoreOptions.length === 0 ? (
-                  <p className="text-xs text-slate-500">{t('platform.noSearchResults')}</p>
-                ) : (
-                  filteredStoreOptions.map((s) => (
-                    <label key={s.id} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={storeIds.has(Number(s.id))}
-                        onChange={() => toggleStore(s.id)}
-                      />
-                      <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : ''}>
-                        {s.name}
-                        {s.active === false ? ` (${t('users.storeInactive')})` : ''}
-                      </span>
-                    </label>
-                  ))
+                {!isEdit && companyLoginCode ? (
+                  <p className="mt-1.5 text-xs text-slate-500 flex items-center gap-1">
+                    <span>{t('users.platformCompanyCode')}:</span>
+                    <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">#{companyLoginCode}</span>
+                  </p>
+                ) : null}
+              </div>
+            )}
+
+            {(isPlatform || fieldOn('role') || !isEdit) ? (
+              <div>
+                <input type="hidden" {...register('role')} />
+                <BaseSelect
+                  id="user-form-role"
+                  label={t('users.colRole')}
+                  required
+                  disabled={isRoleDisabled}
+                  value={selectedRole}
+                  onChange={(e) => setValue('role', e.target.value, { shouldDirty: true, shouldValidate: true })}
+                  placeholder={
+                    isRoleDisabled
+                      ? t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })
+                      : t('users.selectRole', { defaultValue: 'Rolni tanlang' })
+                  }
+                  searchable={false}
+                  options={(
+                    roleAllowList?.length
+                      ? roleAllowList
+                      : ['ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
+                  ).map((role) => ({
+                    value: role,
+                    label: ({
+                      ADMIN: t('users.roleAdmin', { defaultValue: 'Admin' }),
+                      MANAGER: t('users.roleManager', { defaultValue: 'Menejer' }),
+                      CASHIER: t('users.roleCashier', { defaultValue: 'Kassir' }),
+                      WAITER: t('users.roleWaiter', { defaultValue: 'Ofitsiant' }),
+                      COURIER: t('users.roleCourier', { defaultValue: 'Kuryer' }),
+                      COOK: t('users.roleCook', { defaultValue: 'Oshpaz' }),
+                      ACCOUNTANT: t('users.roleAccountant', { defaultValue: 'Buxgalter' }),
+                    })[role] ?? t(`roles.${role}`, { defaultValue: role }),
+                  }))}
+                />
+                {errors.role && <p className="mt-1 text-xs text-red-500">{t('users.roleRequired', { defaultValue: 'Rolni tanlash majburiy' })}</p>}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Filiallar (Branches) */}
+          {(isPlatform || fieldOn('stores') || isCashierRole) ? (
+            <div>
+              {isCashierRole ? (
+                <>
+                  <BaseSelect
+                    id="user-form-store"
+                    label={t('users.colStoreSingle', { defaultValue: 'Filial' })}
+                    required
+                    value={selectedStoreId}
+                    disabled={isRoleDisabled || storesLoading || (storeOptions.length === 0 && !storesError)}
+                    placeholder={
+                      isRoleDisabled
+                        ? t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })
+                        : storesLoading
+                          ? t('common.loading')
+                          : storeOptions.length === 0
+                            ? t('users.noStoresAvailable', { defaultValue: 'Filiallar mavjud emas' })
+                            : t('users.selectStore', { defaultValue: 'Filialni tanlang' })
+                    }
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      if (!next) {
+                        setStoreIds(new Set());
+                        return;
+                      }
+                      toggleStore(next);
+                    }}
+                    options={storeOptions.map((s) => ({
+                      value: String(s.id),
+                      label: `${s.name}${s.active === false ? ` (${t('users.storeInactive', { defaultValue: 'Faol emas' })})` : ''}`,
+                      keywords: [s.name, s.code].filter(Boolean).join(' '),
+                    }))}
+                  />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {t('users.cashierStoreHint', { defaultValue: 'Kassir va ofitsiantlar faqat bitta filialga biriktiriladi' })}
+                  </p>
+                  {storesError ? (
+                    <p className="mt-1 text-xs text-red-500">{t('users.storesLoadFailed')}</p>
+                  ) : null}
+                  {!isRoleDisabled && !storesLoading && !storesError && storeOptions.length === 0 ? (
+                    <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                      {isPlatform
+                        ? t('users.noStoresForSelectedCompany', { defaultValue: 'Tanlangan kompaniyada filiallar mavjud emas. Avval filial yarating.' })
+                        : t('users.noStoresForYourCompany', {
+                            company: authCompanyName || (authCompanyId != null ? `#${authCompanyId}` : '—'),
+                          })}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {t('platform.stores', { defaultValue: 'Filiallar' })}
+                  </label>
+                  {storeOptions.length > 8 ? (
+                    <input
+                      type="search"
+                      value={storeSearch}
+                      onChange={(e) => setStoreSearch(e.target.value)}
+                      placeholder={t('stores.searchPlaceholder', { defaultValue: 'Filialni qidirish…' })}
+                      className={`${userFormInputCls} mb-2`}
+                    />
+                  ) : null}
+                  <div className="max-h-36 space-y-2 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/50 dark:bg-slate-900/40">
+                    {isRoleDisabled ? (
+                      <p className="text-xs text-slate-400">{t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })}</p>
+                    ) : storesLoading ? (
+                      <p className="text-xs text-slate-500">{t('common.loading')}</p>
+                    ) : storeOptions.length === 0 ? (
+                      <p className="text-xs text-slate-500">{t('users.noStoresAvailable', { defaultValue: 'Filiallar mavjud emas' })}</p>
+                    ) : filteredStoreOptions.length === 0 ? (
+                      <p className="text-xs text-slate-500">{t('platform.noSearchResults')}</p>
+                    ) : (
+                      filteredStoreOptions.map((s) => (
+                        <label key={s.id} className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={storeIds.has(Number(s.id))}
+                            onChange={() => toggleStore(s.id)}
+                            className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 dark:border-slate-700"
+                          />
+                          <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200'}>
+                            {s.name}
+                            {s.active === false ? ` (${t('users.storeInactive', { defaultValue: 'Faol emas' })})` : ''}
+                          </span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : null}
+        </div>
+
+        {/* 2. SHAXSIY MA'LUMOTLAR (Personal info) */}
+        <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            {t('users.sectionPersonalInfo', { defaultValue: 'Shaxsiy ma\'lumotlar' })}
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="user-first-name" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {t('users.firstName')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="user-first-name"
+                {...register('firstName', { required: true })}
+                className={userFormInputCls}
+                placeholder="Ism"
+              />
+              {errors.firstName && <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="user-last-name" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {t('users.lastName')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="user-last-name"
+                {...register('lastName', { required: true })}
+                className={userFormInputCls}
+                placeholder="Familiya"
+              />
+              {errors.lastName && <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+            </div>
+          </div>
+
+          {fieldOn('patronymic') && (
+            <div>
+              <label htmlFor="user-patronymic" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {t('users.patronymic')}{' '}
+                <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+              </label>
+              <input
+                id="user-patronymic"
+                {...register('patronymic')}
+                className={userFormInputCls}
+                placeholder="Sharif (otasining ismi)"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 3. KIRISH VA XAVFSIZLIK (Credentials & Security) */}
+        <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            {t('users.sectionSecurity', { defaultValue: 'Kirish ma\'lumotlari' })}
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="user-username" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {t('users.colUsername')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="user-username"
+                {...register('username', { required: true })}
+                autoComplete="new-username"
+                className={userFormInputCls}
+                placeholder="login_nomi"
+              />
+              {errors.username && <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="user-phone" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {t('users.phone', { defaultValue: 'Telefon raqam' })}{' '}
+                <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+              </label>
+              <input
+                id="user-phone"
+                type="tel"
+                placeholder="+998 (90) 123-45-67"
+                {...register('phone', {
+                  onChange: (e) => {
+                    const formatted = formatUzbekPhone(e.target.value);
+                    setValue('phone', formatted, { shouldDirty: true });
+                  },
+                })}
+                className={userFormInputCls}
+              />
+            </div>
+          </div>
+
+          {fieldOn('email') && (
+            <div>
+              <label htmlFor="user-email" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {t('users.email')}{' '}
+                <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+              </label>
+              <input
+                id="user-email"
+                type="email"
+                placeholder="kassir@misol.uz"
+                {...register('email')}
+                className={userFormInputCls}
+              />
+            </div>
+          )}
+
+          {/* PIN field for cashier/cook/waiter */}
+          {isPinRole ? (
+            <div>
+              <label htmlFor="user-pin" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                {pinFieldLabel || t('users.pin', { defaultValue: 'PIN-kod' })}
+                {pinRequired ? <span className="text-red-500"> *</span> : null}
+              </label>
+              <div className="relative">
+                <input
+                  id="user-pin"
+                  type={pinVisible ? 'text' : 'password'}
+                  inputMode="numeric"
+                  maxLength={6}
+                  autoComplete="new-password"
+                  placeholder={isEdit ? t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' }) : '••••'}
+                  {...register('pin', {
+                    required: pinRequired,
+                    onChange: () => setPinDirty?.(true),
+                  })}
+                  className={`${userFormInputCls} pr-10 font-mono tracking-widest`}
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  onClick={() => setPinVisible((v) => !v)}
+                  aria-label={pinVisible ? t('users.hidePin', { defaultValue: 'PIN-kodni yashirish' }) : t('users.showPin', { defaultValue: 'PIN-kodni ko\'rsatish' })}
+                >
+                  {pinVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-slate-400">
+                {pinRequired
+                  ? t('users.pinHint', { defaultValue: '4–6 xonali raqam. Kassa ekraniga tezkor kirish uchun ishlatiladi.' })
+                  : t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' })}
+              </p>
+            </div>
+          ) : null}
+
+          {/* Password field for admin/manager */}
+          {showPasswordField ? (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="user-password" className="block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  {t('users.password')}
+                  {!isEdit ? <span className="text-red-500"> *</span> : null}
+                </label>
+                {!isEdit && (
+                  <button
+                    type="button"
+                    onClick={handleGeneratePassword}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                  >
+                    <Sparkles size={12} />
+                    {t('users.generatePassword', { defaultValue: 'Parol generatsiya qilish' })}
+                  </button>
                 )}
               </div>
-            </>
-          )}
+              <div className="relative">
+                <input
+                  id="user-password"
+                  type={passwordVisible ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder={isEdit ? t('users.passwordEditPlaceholder', { defaultValue: 'O\'zgartirish uchun yangi parol kiriting' }) : undefined}
+                  {...register('password', isEdit ? {} : { required: true, minLength: 6 })}
+                  className={`${userFormInputCls} pr-10`}
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  aria-label={passwordVisible ? t('users.hidePassword') : t('users.showPassword')}
+                >
+                  {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {isEdit && (
+                <p className="mt-1 text-xs text-slate-400">
+                  {isPlatform ? t('users.passwordHiddenHint') : t('users.passwordEditHint')}
+                </p>
+              )}
+              {!isEdit && errors.password && (
+                <p className="mt-1 text-xs text-red-500">{t('users.passwordMinLength')}</p>
+              )}
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      <div className="flex gap-3">
+      </div>
+
+      {/* Sticky Bottom Actions */}
+      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/95">
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 rounded-lg border border-slate-300 py-2.5 dark:border-slate-600"
+          className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
         >
           {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="admin-btn-primary flex-1 py-2.5 text-sm"
+          className="admin-btn-primary px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs"
         >
-          {isPending && <Loader size={14} className="mr-1 inline animate-spin" />}
+          {isPending && <Loader size={15} className="mr-2 inline animate-spin" />}
           {isEdit ? t('common.save') : t('users.createUser')}
         </button>
       </div>

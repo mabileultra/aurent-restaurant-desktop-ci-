@@ -284,25 +284,40 @@ html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
   box-shadow: var(--admin-shadow);
 }
 
-.admin-shell .admin-table-sticky-end {
+.admin-shell .admin-table-sticky-end,
+.admin-table-shell .admin-table-sticky-end {
   position: sticky;
   right: 0;
   z-index: 2;
   background: var(--admin-surface, #fff);
   box-shadow: -8px 0 8px -8px rgb(15 23 42 / 0.16);
+  transition: background-color 0.15s ease;
 }
 
-.admin-shell thead .admin-table-sticky-end {
+.admin-shell thead .admin-table-sticky-end,
+.admin-table-shell thead .admin-table-sticky-end {
   z-index: 3;
   background: #f8fafc;
 }
 
-.dark .admin-shell .admin-table-sticky-end {
+.admin-shell tr:hover td.admin-table-sticky-end,
+.admin-table-shell tr:hover td.admin-table-sticky-end {
+  background: rgb(248 250 252);
+}
+
+.dark .admin-shell .admin-table-sticky-end,
+.dark .admin-table-shell .admin-table-sticky-end {
   background: var(--admin-surface, #0f172a);
 }
 
-.dark .admin-shell thead .admin-table-sticky-end {
+.dark .admin-shell thead .admin-table-sticky-end,
+.dark .admin-table-shell thead .admin-table-sticky-end {
   background: rgb(30 41 59 / 0.5);
+}
+
+.dark .admin-shell tr:hover td.admin-table-sticky-end,
+.dark .admin-table-shell tr:hover td.admin-table-sticky-end {
+  background: rgb(30 41 59 / 0.7);
 }
 
 /* Icons — единый язык для плиток, ссылок и навигации */

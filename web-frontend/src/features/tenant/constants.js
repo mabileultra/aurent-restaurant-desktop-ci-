@@ -10,4 +10,7 @@ export const USER_ROLE_BADGE = {
   COURIER: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
   COOK: 'bg-violet-500/10 text-violet-700 dark:text-violet-400',
   ACCOUNTANT: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+  SUPER_ADMIN: 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+  PLATFORM_ADMIN: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+  PLATFORM_ANALYTICS: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400',
 };

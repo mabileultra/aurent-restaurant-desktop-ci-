@@ -63,22 +63,33 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
       }}
       className="rounded-lg border border-slate-200 bg-white py-1 shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
     >
-      {actions.map((action) => (
-        <button
-          key={action.label}
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            action.onClick();
-            onOpenChange(false);
-          }}
-          className={`block w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:!bg-slate-800 ${
-            action.danger ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'
-          }`}
-        >
-          {action.label}
-        </button>
-      ))}
+      {actions.map((action) => {
+        const isDisabled = Boolean(action.disabled);
+        const tooltip = action.disabledReason || action.title;
+        return (
+          <button
+            key={action.label}
+            type="button"
+            role="menuitem"
+            disabled={isDisabled}
+            title={tooltip}
+            onClick={() => {
+              if (isDisabled) return;
+              action.onClick();
+              onOpenChange(false);
+            }}
+            className={`block w-full px-3 py-2.5 text-left text-sm transition-colors ${
+              isDisabled
+                ? 'cursor-not-allowed opacity-40 text-slate-400 dark:text-slate-500 hover:bg-transparent'
+                : action.danger
+                  ? 'text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:!bg-slate-800'
+                  : 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:!bg-slate-800'
+            }`}
+          >
+            {action.label}
+          </button>
+        );
+      })}
     </div>
   ) : null;
 
@@ -94,7 +105,7 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
       >
         <MoreVertical size={16} />
       </button>
-      {menu && createPortal(menu, document.body)}
+      {menu ? (typeof document !== 'undefined' && document.body ? createPortal(menu, document.body) : menu) : null}
     </>
   );
 }
