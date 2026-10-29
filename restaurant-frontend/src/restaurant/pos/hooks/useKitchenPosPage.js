@@ -181,6 +181,11 @@ export function useKitchenPosPage() {
     shift: shiftQuery.data ?? null,
     isLoading: (workspace.storeId == null && workspace.isLoading) || ticketsQuery.isLoading,
     isError: ticketsQuery.isError,
+    refetch: () => {
+      ticketsQuery.refetch();
+      stationsQuery.refetch();
+      kitchenBoardQuery.refetch();
+    },
     canAdvance,
     canAdmin: user?.role === 'ADMIN' || user?.role === 'MANAGER',
     kitchenBoardEnabled,

@@ -1,6 +1,7 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import RstRowActions from '../../shared/components/RstRowActions';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import { useStationsAdminPage } from '../hooks/useStationsAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -9,11 +10,14 @@ import '../styles/stations-admin.css';
 export default function StationsAdminPage() {
   const p = useStationsAdminPage();
 
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
-
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.isLoading}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-stations">
       <div className="rst-halls__toolbar">
         <div>
@@ -170,5 +174,6 @@ export default function StationsAdminPage() {
         ) : null}
       </div>
     </section>
+    </AdminWorkspaceGate>
   );
 }

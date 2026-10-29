@@ -9,6 +9,5 @@ export function canRunOnlineSync(state = useConnectivityStore.getState()) {
   if (state.forceOfflineMode) return false;
   if (state.offlineMode) return false;
   if (!state.apiOnline) return false;
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
   return true;
 }

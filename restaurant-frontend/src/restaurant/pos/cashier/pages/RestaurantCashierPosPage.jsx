@@ -7,6 +7,7 @@ import OrderWorkspace from '../../components/OrderWorkspace';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
 import CashDrawerModal from '../../components/shift/CashDrawerModal';
 import PosHardwareBar from '../../components/PosHardwareBar';
+import PosLoadRetry from '../../components/PosLoadRetry';
 import { usePosUiScale } from '../../hooks/usePosUiScale';
 import { useCashierPosPage } from '../hooks/useCashierPosPage';
 import CashierTopBar from '../components/CashierTopBar';
@@ -85,6 +86,17 @@ export default function RestaurantCashierPosPage() {
     );
   }
 
+  if (p.workspace.storeId == null) {
+    return (
+      <RestaurantWorkspaceEmpty
+        t={p.t}
+        workspace={p.workspace}
+        zoomStyle={zoom.rootStyle}
+        onLogout={() => logoutAndResetSession()}
+      />
+    );
+  }
+
   const showFull = p.showFullOrder;
   const order = p.orderForUi;
   const hallName = p.isDraftOrder ? p.draftHallName : p.orderHallName;
@@ -153,6 +165,9 @@ export default function RestaurantCashierPosPage() {
 
   return (
     <div className={rootClass} style={zoom.rootStyle}>
+      {p.isError ? (
+        <PosLoadRetry t={p.t} messageKey="rst.floor.loadFailed" onRetry={p.refetch} />
+      ) : null}
       {mobileOrderOpen ? null : (
         <CashierTopBar
           storeName={p.workspace.storeName}
@@ -180,6 +195,8 @@ export default function RestaurantCashierPosPage() {
           storeId={p.workspace.storeId}
           quickSaleEnabled={p.quickSaleEnabled}
           onQuickSaleOpened={p.onQuickSaleOpened}
+          customerDisplayEnabled={p.customerDisplayEnabled}
+          onOpenCustomerDisplay={p.openCustomerDisplay}
           t={p.t}
         />
       )}

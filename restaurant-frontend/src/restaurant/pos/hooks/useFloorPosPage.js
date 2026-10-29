@@ -592,6 +592,10 @@ export function useFloorPosPage() {
     isLoading: (workspace.storeId == null && workspace.isLoading)
       || (onFloor ? floorQuery.isLoading : counterQuery.isLoading),
     isError: onFloor ? floorQuery.isError : counterQuery.isError,
+    refetch: () => {
+      if (onFloor) return floorQuery.refetch();
+      return counterQuery.refetch();
+    },
     handleTableClick, handleAddItem, handleComposeFamily,
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,
     handleRemoveItem,

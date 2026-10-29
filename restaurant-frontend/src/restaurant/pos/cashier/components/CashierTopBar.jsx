@@ -31,6 +31,8 @@ export default function CashierTopBar({
   storeId = null,
   quickSaleEnabled = false,
   onQuickSaleOpened,
+  customerDisplayEnabled = false,
+  onOpenCustomerDisplay,
   t,
 }) {
   return (
@@ -113,6 +115,16 @@ export default function CashierTopBar({
               <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
                 <BaseButton type="button" variant="primary">{t('rst.pos.toAdmin')}</BaseButton>
               </Link>
+            ) : null}
+            {customerDisplayEnabled && typeof onOpenCustomerDisplay === 'function' ? (
+              <BaseButton
+                type="button"
+                variant="ghost"
+                className="rst-cashier-top__cfd"
+                onClick={onOpenCustomerDisplay}
+              >
+                {t('rst.cfd.open')}
+              </BaseButton>
             ) : null}
             <RestaurantThemeSwitch />
             <LanguageSwitcher variant="rst" />

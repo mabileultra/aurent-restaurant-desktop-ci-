@@ -44,7 +44,12 @@ export default function DashboardAdminPage() {
       {p.workspace.isLoading && p.workspace.storeId == null ? null : !p.workspace.storeId ? (
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : p.dashQuery.isError ? (
-        <div className="rst-notice">{p.t('rst.admin.dashboardLoadFailed')}</div>
+        <div className="rst-notice">
+          <p className="mb-2">{p.t('rst.admin.dashboardLoadFailed')}</p>
+          <button type="button" className="rst-shell__group-toggle" onClick={() => p.dashQuery.refetch()}>
+            {p.t('common.retry', { defaultValue: 'Повторить' })}
+          </button>
+        </div>
       ) : !p.data ? (
         <div className="rst-empty">{p.t('common.loading')}</div>
       ) : (

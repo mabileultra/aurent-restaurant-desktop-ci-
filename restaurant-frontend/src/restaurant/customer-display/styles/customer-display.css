@@ -1,0 +1,276 @@
+/* Guest-facing second screen — light, readable at arm's length. */
+
+.rst-cfd {
+  --cfd-ink: #0f172a;
+  --cfd-muted: #64748b;
+  --cfd-line: #e2e8f0;
+  --cfd-bg: #f8fafc;
+  --cfd-card: #ffffff;
+  --cfd-brand: #0f766e;
+  --cfd-brand-deep: #115e59;
+  --cfd-accent: #ff7a1a;
+  --cfd-ok: #059669;
+  --cfd-danger: #e11d48;
+  min-height: 100dvh;
+  margin: 0;
+  color: var(--cfd-ink);
+  background:
+    radial-gradient(ellipse 80% 50% at 0% 0%, rgb(15 118 110 / 0.08), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 100%, rgb(255 122 26 / 0.08), transparent 50%),
+    var(--cfd-bg);
+  font-family: "Segoe UI", "PT Sans", system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.rst-cfd__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.rst-cfd__logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: var(--cfd-brand);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.rst-cfd__brand {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cfd-brand-deep);
+}
+
+.rst-cfd__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.75rem 1.75rem;
+  min-height: 0;
+}
+
+.rst-cfd__center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+}
+
+.rst-cfd__title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.rst-cfd__hint {
+  margin: 0;
+  max-width: 28rem;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  color: var(--cfd-muted);
+  line-height: 1.45;
+}
+
+.rst-cfd__mark {
+  width: clamp(4.5rem, 12vw, 7rem);
+  height: clamp(4.5rem, 12vw, 7rem);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.rst-cfd__mark--ok {
+  background: rgb(5 150 105 / 0.12);
+  color: var(--cfd-ok);
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
+  font-weight: 800;
+}
+
+.rst-cfd__mark--pay {
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+}
+
+.rst-cfd__spinner {
+  width: 42%;
+  height: 42%;
+  border: 3px solid rgb(255 255 255 / 0.28);
+  border-top-color: #fff;
+  border-radius: 999px;
+  animation: rst-cfd-spin 0.85s linear infinite;
+}
+
+@keyframes rst-cfd-spin {
+  to { transform: rotate(360deg); }
+}
+
+.rst-cfd--paying {
+  background: linear-gradient(160deg, var(--cfd-brand-deep), #0b3d3a 55%, #0a2f2c);
+  color: #fff;
+}
+
+.rst-cfd--paying .rst-cfd__brand {
+  color: #ecfdf5;
+}
+
+.rst-cfd--paying .rst-cfd__logo {
+  background: rgb(255 255 255 / 0.18);
+}
+
+.rst-cfd--paying .rst-cfd__hint {
+  color: rgb(236 253 245 / 0.78);
+}
+
+.rst-cfd__ticket-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rst-cfd__ticket-no {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 800;
+}
+
+.rst-cfd__ticket-store {
+  margin: 0;
+  color: var(--cfd-muted);
+  font-size: 1rem;
+}
+
+.rst-cfd__table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--cfd-card);
+  border: 1px solid var(--cfd-line);
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.06);
+}
+
+.rst-cfd__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rst-cfd__table th {
+  text-align: left;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cfd-muted);
+  border-bottom: 1px solid var(--cfd-line);
+  position: sticky;
+  top: 0;
+  background: var(--cfd-card);
+}
+
+.rst-cfd__table th:nth-child(2),
+.rst-cfd__table th:nth-child(3),
+.rst-cfd__table td:nth-child(2),
+.rst-cfd__table td:nth-child(3) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rst-cfd__table td {
+  padding: 0.95rem 1.1rem;
+  border-bottom: 1px solid var(--cfd-line);
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  vertical-align: middle;
+}
+
+.rst-cfd__table tr:last-child td {
+  border-bottom: none;
+}
+
+.rst-cfd__dish {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.rst-cfd__thumb {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.rst-cfd__thumb--empty {
+  display: grid;
+  place-items: center;
+  color: var(--cfd-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.rst-cfd__dish-name {
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.rst-cfd__totals {
+  margin-top: 1rem;
+  background: var(--cfd-card);
+  border: 1px solid var(--cfd-line);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.rst-cfd__total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+}
+
+.rst-cfd__total-row--discount {
+  color: var(--cfd-danger);
+}
+
+.rst-cfd__total-row--due {
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--cfd-line);
+  font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+  font-weight: 800;
+}
+
+.rst-cfd__total-row--due strong {
+  color: var(--cfd-ok);
+}
+
+.rst-cfd__denied {
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+  color: var(--cfd-muted);
+}

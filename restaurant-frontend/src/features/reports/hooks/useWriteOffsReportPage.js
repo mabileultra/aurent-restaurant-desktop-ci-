@@ -5,11 +5,12 @@ import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
 import { useReportStores } from './useReportStores';
+import { useWorkspaceBoundStoreFilter } from './useWorkspaceBoundStoreFilter';
 
 export function useWriteOffsReportPage() {
   const { from, to, setFrom, setTo, rangeEnabled } = useReportDateRange(29);
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_DEFAULT);
-  const [storeId, setStoreId] = useState('');
+  const { storeId, handleStoreChange } = useWorkspaceBoundStoreFilter(resetPage);
   const [createOpen, setCreateOpen] = useState(false);
   const { data: stores = [] } = useReportStores();
 
@@ -47,10 +48,7 @@ export function useWriteOffsReportPage() {
     totalPages: query.data?.totalPages ?? 0,
     isPending: query.isPending,
     isError: query.isError,
-    handleStoreChange: (value) => {
-      setStoreId(value);
-      resetPage();
-    },
+    handleStoreChange,
     createOpen,
     openCreate: () => setCreateOpen(true),
     closeCreate: () => setCreateOpen(false),

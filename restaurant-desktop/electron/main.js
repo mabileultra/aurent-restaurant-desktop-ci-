@@ -206,10 +206,9 @@ async function bootStack() {
   }
 
   let syncInFlight = false;
-  let lastLivePullAt = 0;
-  let lastLivePushAt = 0;
-  const LIVE_PULL_MS = 10_000;
-  const LIVE_PUSH_MS = 10_000;
+  let lastLiveSyncAt = 0;
+  let liveSyncInFlight = false;
+  const LIVE_SYNC_MS = 10_000;
   setInterval(async () => {
     const hit = await probeHealth(HEALTH_URL);
     let pendingOutbox = lastStatus.pendingOutbox || 0;
@@ -285,22 +284,18 @@ async function bootStack() {
       }
     }
 
-    // Quiet bi-directional live floor: push hall first, then pull cloud (~10s).
-    // Pull-before-push would reconcile-away local OPEN tables not yet on cloud.
-    if (online && Date.now() - lastLivePushAt >= LIVE_PUSH_MS) {
-      lastLivePushAt = Date.now();
+    // One mutex: push hall SoT first, then pull. Parallel push+pull was racing
+    // and could re-import a stale cloud snapshot over fresher local OPEN tables.
+    if (online && !liveSyncInFlight && Date.now() - lastLiveSyncAt >= LIVE_SYNC_MS) {
+      liveSyncInFlight = true;
+      lastLiveSyncAt = Date.now();
       try {
         await pushLiveToCloud();
-      } catch {
-        /* next tick */
-      }
-    }
-    if (online && Date.now() - lastLivePullAt >= LIVE_PULL_MS) {
-      lastLivePullAt = Date.now();
-      try {
         await refreshLiveFromCloud();
       } catch {
         /* next tick */
+      } finally {
+        liveSyncInFlight = false;
       }
     }
   }, 5000);

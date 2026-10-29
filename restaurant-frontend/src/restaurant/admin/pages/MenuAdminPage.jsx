@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { useMenuAdminPage } from '../hooks/useMenuAdminPage';
 import { useMenuDishExport } from '../hooks/useMenuDishExport';
 import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import MenuCardMenu from '../components/MenuCardMenu';
 import MenuPhotoSwitch from '../components/MenuPhotoSwitch';
 import MenuDishFilters from '../components/MenuDishFilters';
@@ -33,11 +34,14 @@ export default function MenuAdminPage() {
     openImport: () => setImportOpen(true),
   };
 
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
-
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.isLoading}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-menu">
       <div className="rst-menu__head">
         <div className="rst-menu__intro">
@@ -90,5 +94,6 @@ export default function MenuAdminPage() {
         }}
       />
     </section>
+    </AdminWorkspaceGate>
   );
 }

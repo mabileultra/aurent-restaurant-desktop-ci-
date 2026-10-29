@@ -948,6 +948,26 @@
       "sortSeatsDesc": "Summa kamayish bo‘yicha",
       "sortSeatsAsc": "Summa o‘sish bo‘yicha"
     },
+    "cfd": {
+      "brand": "Aurent Restaurant",
+      "open": "Xaridor ekrani",
+      "denied": "Xaridor ekrani o‘chirilgan. Superadminda modulni yoqing.",
+      "welcome": "Xush kelibsiz!",
+      "welcomeHint": "Kuting — buyurtmangiz tez orada ekranda chiqadi",
+      "paying": "To‘lov ketmoqda…",
+      "payingHint": "Iltimos, kuting",
+      "thanks": "Rahmat!",
+      "thanksHint": "Yana kutib qolamiz",
+      "receipt": "Chek",
+      "receiptNo": "Chek №{{no}}",
+      "colName": "Nomi",
+      "colQty": "Soni",
+      "colSum": "Summa",
+      "subtotal": "Jami",
+      "service": "Xizmat",
+      "discount": "Chegirma",
+      "due": "To‘lov"
+    },
     "commission": {
       "byWaiter": "Ofitsiantlar bo‘yicha",
       "closedAt": "Yopilgan",

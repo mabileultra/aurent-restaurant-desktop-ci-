@@ -16,12 +16,15 @@ describe('isModuleVisibleForBusinessType', () => {
     expect(isModuleVisibleForBusinessType('restaurantKitchen', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantPickupLabel', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('restaurantCustomerDisplay', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantQuickSale', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantPickupLabel', 'PHARMACY')).toBe(false);
+    expect(isModuleVisibleForBusinessType('restaurantCustomerDisplay', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantQuickSale', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'CLOTHING')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantPickupLabel', 'CLOTHING')).toBe(false);
+    expect(isModuleVisibleForBusinessType('restaurantCustomerDisplay', 'CLOTHING')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantQuickSale', 'CLOTHING')).toBe(false);
     expect(isModuleVisibleForBusinessType('cashierPos', 'RESTAURANT')).toBe(false);
     expect(isModuleVisibleForBusinessType('stockTransfers', 'RESTAURANT')).toBe(true);

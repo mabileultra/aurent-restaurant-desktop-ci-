@@ -5,6 +5,7 @@ import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
 import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspaceEmpty';
 import KitchenTicketCard from '../components/KitchenTicketCard';
+import PosLoadRetry from '../components/PosLoadRetry';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import PosSoundToggle from '../components/PosSoundToggle';
@@ -92,7 +93,7 @@ export default function RestaurantKitchenPage() {
     );
   }
 
-  if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
+  if (p.workspace.noAssignment || p.workspace.multipleAssignment || p.workspace.storeId == null) {
     return (
       <RestaurantWorkspaceEmpty
         t={p.t}
@@ -180,7 +181,9 @@ export default function RestaurantKitchenPage() {
           </div>
         </div>
 
-        {p.isError ? <div className="rst-notice">{p.t('rst.kitchen.loadFailed')}</div> : null}
+        {p.isError ? (
+          <PosLoadRetry t={p.t} messageKey="rst.kitchen.loadFailed" onRetry={p.refetch} />
+        ) : null}
 
         {(p.stations?.length > 0) ? (
           <div className="rst-kds-stations" role="tablist" aria-label={p.t('rst.kitchen.stationsFilter', { defaultValue: 'Станции' })}>

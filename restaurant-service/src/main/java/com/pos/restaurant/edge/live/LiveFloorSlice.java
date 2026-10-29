@@ -33,9 +33,10 @@ public final class LiveFloorSlice {
             full.openOrderItemModifiers(),
             full.kitchenTickets(),
             full.kitchenTicketLines(),
-            null,
-            null,
-            null,
+            // Closed history for offline hall reports (not only open floor).
+            full.closedOrders() == null ? List.of() : full.closedOrders(),
+            full.closedOrderItems() == null ? List.of() : full.closedOrderItems(),
+            full.closedOrderItemModifiers() == null ? List.of() : full.closedOrderItemModifiers(),
             full.orderPayments(),
             full.floorRevision()
         );

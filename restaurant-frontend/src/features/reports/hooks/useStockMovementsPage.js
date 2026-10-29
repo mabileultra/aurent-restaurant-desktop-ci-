@@ -5,13 +5,14 @@ import { REPORT_PAGE_SIZE_COMPACT, STOCK_MOVEMENT_TYPES } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
 import { useReportStores } from './useReportStores';
+import { useWorkspaceBoundStoreFilter } from './useWorkspaceBoundStoreFilter';
 
 export function useStockMovementsPage() {
   const { from, to, setFrom, setTo, rangeEnabled } = useReportDateRange();
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_COMPACT);
   const [search, setSearch] = useState('');
   const [movementType, setMovementType] = useState('ALL');
-  const [storeId, setStoreId] = useState('');
+  const { storeId, handleStoreChange } = useWorkspaceBoundStoreFilter(resetPage);
   const { data: stores = [] } = useReportStores();
 
   const params = useMemo(
@@ -61,9 +62,6 @@ export function useStockMovementsPage() {
       setMovementType(value);
       resetPage();
     },
-    handleStoreChange: (value) => {
-      setStoreId(value);
-      resetPage();
-    },
+    handleStoreChange,
   };
 }

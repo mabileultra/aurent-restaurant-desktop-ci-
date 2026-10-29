@@ -15,6 +15,11 @@ function normalizeList(data) {
   return [];
 }
 
+function onlineRefetchMs(onlineMs) {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
+  return onlineMs;
+}
+
 export function useDashboardAdminPage() {
   const { t } = useTranslation();
   const workspace = useRestaurantWorkspaceStore();
@@ -35,26 +40,34 @@ export function useDashboardAdminPage() {
     queryKey: ['rst-dashboard', workspace.storeId, params],
     queryFn: () => rstAnalyticsApi.dashboard(workspace.storeId, params).then((r) => r.data),
     enabled: workspace.storeId != null,
-    refetchInterval: 30_000,
+    refetchInterval: onlineRefetchMs(30_000),
+    retry: 1,
   });
 
   const hallsQuery = useQuery({
     queryKey: ['rst-dashboard-halls', workspace.storeId],
     queryFn: () => rstFloorApi.listHalls(workspace.storeId).then((r) => normalizeList(r.data)),
     enabled: workspace.storeId != null,
+    retry: 1,
   });
 
+  // Soft extras — never block the main dashboard if staff/stock endpoints glitch offline.
   const staffQuery = useQuery({
     queryKey: ['rst-dashboard-staff'],
-    queryFn: () => userApi.getAll().then((r) => normalizeList(r.data)),
+    queryFn: () => userApi.getAll().then((r) => normalizeList(r.data)).catch(() => []),
     staleTime: 60_000,
+    retry: false,
   });
 
   const stockQuery = useQuery({
-    queryKey: ['rst-dashboard-low-stock'],
-    queryFn: () => productApi.getLowStock().then((r) => normalizeList(r.data)),
+    queryKey: ['rst-dashboard-low-stock', workspace.storeId],
+    queryFn: () => productApi
+      .getLowStock(workspace.storeId)
+      .then((r) => normalizeList(r.data))
+      .catch(() => []),
     enabled: workspace.storeId != null,
-    refetchInterval: 60_000,
+    refetchInterval: onlineRefetchMs(60_000),
+    retry: false,
   });
 
   const waiters = useMemo(
@@ -76,6 +89,12 @@ export function useDashboardAdminPage() {
     if (!waiterId) return rows;
     return rows.filter((row) => String(row.waiterUserId || '') === String(waiterId));
   }, [dashQuery.data?.recentOrders, waiterId]);
+
+  const liveTables = useMemo(() => {
+    const rows = dashQuery.data?.liveTables ?? [];
+    if (!hallId) return rows;
+    return rows;
+  }, [dashQuery.data?.liveTables, hallId]);
 
   const quickActions = useMemo(
     () => resolveDashboardQuickActions(user?.role),
@@ -105,7 +124,10 @@ export function useDashboardAdminPage() {
     stockAlerts: (stockQuery.data ?? []).slice(0, 8),
     stockLoading: stockQuery.isLoading,
     recentOrders,
+    liveTables,
     quickActions,
-    data: dashQuery.data,
+    data: dashQuery.data
+      ? { ...dashQuery.data, liveTables }
+      : dashQuery.data,
   };
 }

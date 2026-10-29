@@ -35,6 +35,7 @@ export const CASHIER_MODULE_IDS = [
   { id: 'restaurantPos', group: 'cashier', roles: ['CASHIER', 'WAITER', 'MANAGER', 'ADMIN'] },
   { id: 'restaurantRequestBill', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
   { id: 'restaurantPickupLabel', group: 'restaurant', roles: [] },
+  { id: 'restaurantCustomerDisplay', group: 'restaurant', roles: [] },
   { id: 'restaurantQuickSale', group: 'restaurant', roles: [] },
   { id: 'restaurantKitchen', group: 'cashier', roles: ['COOK', 'CASHIER', 'WAITER', 'MANAGER', 'ADMIN'] },
 ];

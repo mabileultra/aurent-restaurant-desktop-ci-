@@ -31,6 +31,7 @@ import RstStockFlowScope from '../admin/components/RstStockFlowScope';
 import RestaurantFloorPosPage from '../pos/pages/RestaurantFloorPosPage';
 import RestaurantCashierPosPage from '../pos/cashier/pages/RestaurantCashierPosPage';
 import RestaurantKitchenPage from '../pos/pages/RestaurantKitchenPage';
+import CustomerDisplayPage from '../customer-display/pages/CustomerDisplayPage';
 import RestaurantCashierGuard from './RestaurantCashierGuard';
 import RstCatalogProductsPage from '../admin/pages/RstCatalogProductsPage';
 import RstCategoriesPage from '../admin/pages/RstCategoriesPage';
@@ -89,6 +90,14 @@ export const restaurantRoutes = (
             <RestaurantKitchenPage />
           </BillingAccessGuard>
         </RestaurantKitchenGuard>
+      )}
+    />
+    <Route
+      path="customer-display"
+      element={(
+        <BillingAccessGuard>
+          <CustomerDisplayPage />
+        </BillingAccessGuard>
       )}
     />
     <Route

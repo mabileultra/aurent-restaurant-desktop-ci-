@@ -3,6 +3,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useRestaurantStores } from '../../../hooks/useRestaurantStores';
 import { usePersistedRestaurantStoreId } from './usePersistedRestaurantStoreId';
+import { resolveRestaurantPickableStores } from '../utils/resolveRestaurantPickableStores';
 
 /**
  * Resolves which restaurant/canteen branch the current user works in.
@@ -40,7 +41,15 @@ export function useRestaurantWorkspaceStore() {
   }, [isFloorStaff, isCook, assignedRestaurantStores, assignedIds, restaurantStores]);
 
   const staffUsesAssignment = isFloorStaff || isCook;
-  const pickableStores = staffUsesAssignment ? staffPool : restaurantStores;
+  const pickableStores = useMemo(
+    () => resolveRestaurantPickableStores({
+      restaurantStores,
+      assignedIds,
+      staffUsesAssignment,
+      staffPool,
+    }),
+    [restaurantStores, assignedIds, staffUsesAssignment, staffPool],
+  );
   // Single JWT assignment is enough to open floor/menu/admin — do not block on store list.
   const soleAssignedId = assignedIds.length === 1 ? assignedIds[0] : null;
   const storesLoading = soleAssignedId != null
@@ -101,7 +110,11 @@ export function useRestaurantWorkspaceStore() {
     return null;
   }, [pickableStores, effectiveStoreId, staffUsesAssignment, cashier.storeId, cashier.storeName]);
 
-  const noCompanyRestaurants = !isLoading && restaurantStores.length === 0;
+  // Admin: empty /stores alone is not "no assignment" if JWT already has storeIds (edge offline).
+  const noCompanyRestaurants = !isLoading
+    && restaurantStores.length === 0
+    && assignedIds.length === 0
+    && !staffUsesAssignment;
   const noStaffStores = staffUsesAssignment && !isLoading && staffPool.length === 0 && assignedIds.length === 0;
   const staffStoresWrongType = staffUsesAssignment
     && !isLoading

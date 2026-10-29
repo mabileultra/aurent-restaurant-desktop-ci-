@@ -20,7 +20,9 @@ export const productApi = {
       },
     }),
   deactivate: (id) => api.delete(`/products/${id}`),
-  getLowStock: () => api.get('/products/low-stock'),
+  getLowStock: (storeId) => api.get('/products/low-stock', {
+    params: storeId != null ? { storeId } : undefined,
+  }),
   bulkTaxRate: (body) => api.patch('/products/bulk/tax-rate', body),
   bulkDeactivate: (body) => api.patch('/products/bulk/deactivate', body),
   importTemplate: () =>

@@ -944,6 +944,26 @@
       "sortSeatsDesc": "Amount high to low",
       "sortSeatsAsc": "Amount low to high"
     },
+    "cfd": {
+      "brand": "Aurent Restaurant",
+      "open": "Customer display",
+      "denied": "Customer display is off. Enable the module in Super Admin.",
+      "welcome": "Welcome!",
+      "welcomeHint": "Please wait — your order will appear here",
+      "paying": "Payment in progress…",
+      "payingHint": "Please wait",
+      "thanks": "Thank you!",
+      "thanksHint": "We look forward to seeing you again",
+      "receipt": "Receipt",
+      "receiptNo": "Receipt #{{no}}",
+      "colName": "Item",
+      "colQty": "Qty",
+      "colSum": "Amount",
+      "subtotal": "Subtotal",
+      "service": "Service",
+      "discount": "Discount",
+      "due": "Due"
+    },
     "commission": {
       "byWaiter": "By waiters",
       "closedAt": "Closed",

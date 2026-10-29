@@ -8,6 +8,7 @@ import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspac
 import BookingWorkspace from '../../shared/components/BookingWorkspace';
 import FloorTableGrid from '../components/FloorTableGrid';
 import FloorPosModals from '../components/FloorPosModals';
+import PosLoadRetry from '../components/PosLoadRetry';
 import OrderWorkspace from '../components/OrderWorkspace';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
@@ -219,7 +220,9 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
 
   return (
     <>
-      {p.isError ? <div className="rst-notice">{p.t('rst.floor.loadFailed')}</div> : null}
+      {p.isError ? (
+        <PosLoadRetry t={p.t} messageKey="rst.floor.loadFailed" onRetry={p.refetch} />
+      ) : null}
       {mobile ? (
         <WaiterMobileFloorBoard
           {...boardProps}
@@ -333,7 +336,7 @@ export default function RestaurantFloorPosPage() {
     );
   }
 
-  if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
+  if (p.workspace.noAssignment || p.workspace.multipleAssignment || p.workspace.storeId == null) {
     return (
       <RestaurantWorkspaceEmpty
         t={p.t}

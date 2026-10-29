@@ -3,6 +3,7 @@ import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
 import RstRowActions from '../../shared/components/RstRowActions';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import { useModifiersAdminPage } from '../hooks/useModifiersAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -11,11 +12,14 @@ import '../styles/stations-admin.css';
 export default function ModifiersAdminPage() {
   const p = useModifiersAdminPage();
 
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
-
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.isLoading}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-modifiers">
       <div className="rst-halls__toolbar">
         <div>
@@ -243,5 +247,6 @@ export default function ModifiersAdminPage() {
         ) : null}
       </div>
     </section>
+    </AdminWorkspaceGate>
   );
 }
