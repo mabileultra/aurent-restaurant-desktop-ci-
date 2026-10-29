@@ -169,6 +169,10 @@ export default function StoresPage({
             onExpandedIdsChange={p.setExpandedCompanyIds}
             hasUserToggled={p.hasUserToggledGrouped}
             onHasUserToggledChange={p.setHasUserToggledGrouped}
+            page={p.groupedPage}
+            onPageChange={p.setGroupedPage}
+            pageSize={p.groupedPageSize}
+            onPageSizeChange={p.setGroupedPageSize}
             search={p.search}
             businessType={p.businessType}
             regionCode={p.regionCode}

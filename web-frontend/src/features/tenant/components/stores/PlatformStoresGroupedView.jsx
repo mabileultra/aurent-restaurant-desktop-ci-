@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Spinner } from '../../../../components/ui';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS_EXTENDED } from '../../../../components/shared/TablePagination';
 import {
   getBusinessTypeBadgeClass,
   getCompanyBranchMeta,
@@ -38,6 +39,10 @@ export default function PlatformStoresGroupedView({
   onExpandedIdsChange,
   hasUserToggled: controlledHasUserToggled,
   onHasUserToggledChange,
+  page: controlledPage,
+  onPageChange: onControlledPageChange,
+  pageSize: controlledPageSize,
+  onPageSizeChange: onControlledPageSizeChange,
   menuId = null,
   onMenuOpenChange,
   onEdit,
@@ -49,12 +54,20 @@ export default function PlatformStoresGroupedView({
 }) {
   const [internalExpandedIds, setInternalExpandedIds] = useState(() => new Set());
   const [internalHasUserToggled, setInternalHasUserToggled] = useState(false);
+  const [internalPage, setInternalPage] = useState(0);
+  const [internalPageSize, setInternalPageSize] = useState(10);
 
   const expandedIds = controlledExpandedIds ?? internalExpandedIds;
   const setExpandedIds = onExpandedIdsChange ?? setInternalExpandedIds;
 
   const hasUserToggled = controlledHasUserToggled ?? internalHasUserToggled;
   const setHasUserToggled = onHasUserToggledChange ?? setInternalHasUserToggled;
+
+  const page = controlledPage ?? internalPage;
+  const setPage = onControlledPageChange ?? setInternalPage;
+
+  const pageSize = controlledPageSize ?? internalPageSize;
+  const setPageSize = onControlledPageSizeChange ?? setInternalPageSize;
 
   const targetFocusId = useMemo(() => {
     if (focusCompanyId != null && focusCompanyId !== '') {
@@ -192,10 +205,10 @@ export default function PlatformStoresGroupedView({
       }
     });
 
-    // Sort: companies with most branches first, then alphabetically
+    // Sort: companies with most branches first, then alphabetically (natural numeric)
     groups.sort((a, b) => {
       if (b.total !== a.total) return b.total - a.total;
-      return (a.company.name || '').localeCompare(b.company.name || '');
+      return (a.company.name || '').localeCompare(b.company.name || '', undefined, { numeric: true });
     });
 
     if (!cIdNum && orphanStores.length > 0) {
@@ -232,6 +245,38 @@ export default function PlatformStoresGroupedView({
     }
     return autoSet;
   }, [hasUserToggled, expandedIds, companyGroups, isActivelyFiltering, targetFocusId]);
+
+  // Reset pagination when any filter changes
+  useEffect(() => {
+    setPage(0);
+  }, [search, businessType, regionCode, districtCode, statusFilter, companyId, setPage]);
+
+  // When targetFocusId is provided, navigate to the page containing that company
+  useEffect(() => {
+    if (targetFocusId == null) return;
+    const targetIndex = companyGroups.findIndex((g) => {
+      return (
+        g.id === targetFocusId ||
+        String(g.id) === String(targetFocusId) ||
+        Number(g.id) === Number(targetFocusId)
+      );
+    });
+    if (targetIndex >= 0) {
+      const targetPage = Math.floor(targetIndex / pageSize);
+      if (page !== targetPage) {
+        setPage(targetPage);
+      }
+    }
+  }, [targetFocusId, companyGroups, pageSize, page, setPage]);
+
+  const total = companyGroups.length;
+  const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 1;
+  const safePage = page >= totalPages ? Math.max(0, totalPages - 1) : Math.max(0, page);
+
+  const pagedGroups = useMemo(() => {
+    const start = safePage * pageSize;
+    return companyGroups.slice(start, start + pageSize);
+  }, [companyGroups, safePage, pageSize]);
 
   // Auto-scroll and highlight targetFocusId
   useEffect(() => {
@@ -271,7 +316,7 @@ export default function PlatformStoresGroupedView({
       clearTimeout(scrollTimer);
       clearTimeout(highlightTimer);
     };
-  }, [targetFocusId, companyGroups.length]);
+  }, [targetFocusId, safePage, companyGroups.length]);
 
   const toggleGroup = (id) => {
     setHasUserToggled(true);
@@ -327,7 +372,10 @@ export default function PlatformStoresGroupedView({
   return (
     <div className="space-y-3">
       {/* Group Toolbar: Section Title + Counter + Prominent Expand/Collapse Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs">
+      <div
+        id="stores-grouped-toolbar"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs"
+      >
         <div className="flex items-center gap-2.5">
           <span className="font-bold text-slate-900 dark:text-white text-sm">
             {t('platform.companiesNetworkTitle', { defaultValue: 'Kompaniyalar tarmog‘i' })}
@@ -358,7 +406,7 @@ export default function PlatformStoresGroupedView({
 
       {/* Accordion List by Company */}
       <div className="space-y-3">
-        {companyGroups.map((group) => {
+        {pagedGroups.map((group) => {
           const isExpanded = effectiveExpanded.has(group.id);
           const isHighlighted =
             highlightedId != null &&
@@ -599,6 +647,33 @@ export default function PlatformStoresGroupedView({
           );
         })}
       </div>
+
+      {/* Pagination Footer */}
+      {total > 0 && (
+        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+          <TablePagination
+            page={safePage}
+            pageSize={pageSize}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              if (typeof window !== 'undefined') {
+                const el = document.getElementById('stores-grouped-toolbar');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(0);
+            }}
+            pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS_EXTENDED}
+            className="border-t-0"
+          />
+        </div>
+      )}
     </div>
   );
 }
