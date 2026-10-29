@@ -7,7 +7,15 @@ body,
   min-height: 100%;
 }
 
+/* Hall PC / desktop: lock document scroll — only inner panes may scroll. */
+html.app-viewport--desktop,
 html.app-viewport--desktop body,
+html.app-viewport--desktop #root {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
 html.app-viewport--canonical body {
   overflow-x: hidden;
 }
@@ -15,6 +23,8 @@ html.app-viewport--canonical body {
 .rst-shell {
   min-height: 100dvh;
   height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   font-size: var(--shell-font-size);
 }
 

@@ -29,4 +29,14 @@ public interface RevenueOutboxRepository extends JpaRepository<RevenueOutbox, UU
     );
 
     long countByStatus(String status);
+
+    @Query("""
+        select count(o) from RevenueOutbox o
+        where o.status = :status
+          and o.channel not in :excluded
+        """)
+    long countByStatusAndChannelNotIn(
+        @Param("status") String status,
+        @Param("excluded") Collection<com.pos.restaurant.revenue.domain.RevenueOutboxChannel> excluded
+    );
 }

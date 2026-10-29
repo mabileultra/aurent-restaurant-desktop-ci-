@@ -25,7 +25,7 @@ Same UX online and offline. Cloud only syncs in the background.
 | Auth | Local staff / PIN / roles / JWT (after one online bootstrap) |
 | Catalog + stock | Local copy of what is now in web-backend; stock moves → queue |
 | Print | Local receipt / kitchen printers |
-| Status strip | Online/offline + pending queue counts (not a mode switch) |
+| Status strip | **Hidden** — no network/queue chrome (confuses hall); sync stays quiet in Electron |
 | LAN | This PC = hub for kitchen / second screen / waiter phones on restaurant Wi‑Fi |
 
 ## Boundaries
@@ -67,12 +67,14 @@ Needs **one online** login + full bootstrap. Cold start with zero network is imp
 4. **Bootstrap pull** — done: halls/tables/menu/stations/modifiers/print profile/recipes/open shift + `edge_products` stock via `/products` cloud pages.
 5. **Bidirectional sync** — up path: `POST /edge/sync/push` → cloud `POST /rst/edge/sync/ingest` (idempotent). Down catalog re-bootstrap on next admin login. Full conflict audit still iterative.
 6. **OFD/card queue UX** — done on desktop: no silent flush; `OfdPendingConfirmBar` asks «Отправить в ОФД?».
-7. **LAN hub** — `RESTAURANT_LAN_HUB=1` binds UI to `0.0.0.0` (window still localhost).
-8. **Acceptance** — manual checklist on hall PC after cloud deploy of export/ingest endpoints.
+7. **LAN hub** — packaged default ON (`0.0.0.0`); override `RESTAURANT_LAN_HUB=0` or `userData/lan-hub.json`. Window stays localhost; phones use `http://LAN-IP:17887`.
+8. **Acceptance** — see `restaurant-desktop-acceptance.mdc` (Phase J). Ship candidate 0.1.30.
 
 ## Invariants
 
-- Hall UI talks **only** to local `restaurant-service`, not r-aurent.uz for ops.
-- Status strip shows link + queue sizes; buttons do not switch to a “backup scenario”.
+- Hall UI talks **only** to local `restaurant-service`, not r-aurent.uz for ops (months-offline).
+- When **online**, Electron reconciles quietly: floor push/pull + staff roster refresh (`replaceRoster`) so cloud password/revoke wins without abandoning local stack.
+- Cloud session for live sync persists in userData (`edge-live-cloud-session.json`); 401 clears it.
+- Live shift reconcile runs on **both** hall→cloud ingest and cloud→edge import (after floor upsert/ghosts). `openShift=null` closes OPEN only if store has **no** OPEN/BILLING orders; open tables keep shift (months-offline).
 - Grocery/pharmacy «Aurent Cashier» + `pos-offline.db` stay out of scope; **restaurant касса** stays in scope.
 - Site r-aurent.uz remains cloud SaaS; desktop is a separate product install.

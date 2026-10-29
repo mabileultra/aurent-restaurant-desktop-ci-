@@ -11,7 +11,6 @@
   --cfd-accent: #ff7a1a;
   --cfd-ok: #059669;
   --cfd-danger: #e11d48;
-  position: relative;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
@@ -286,41 +285,4 @@
   padding: 2rem;
   text-align: center;
   color: var(--cfd-muted);
-}
-
-.rst-cfd__keys {
-  position: absolute;
-  left: 50%;
-  bottom: 1rem;
-  transform: translateX(-50%);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  justify-content: center;
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  background: rgb(15 23 42 / 0.78);
-  color: #f8fafc;
-  font-size: 0.85rem;
-  z-index: 5;
-  pointer-events: none;
-  animation: rst-cfd-keys-fade 8s ease forwards;
-}
-
-.rst-cfd__keys kbd {
-  display: inline-block;
-  min-width: 2rem;
-  padding: 0.1rem 0.4rem;
-  margin-right: 0.35rem;
-  border-radius: 6px;
-  border: 1px solid rgb(248 250 252 / 0.35);
-  background: rgb(15 23 42 / 0.45);
-  font: inherit;
-  font-weight: 700;
-  text-align: center;
-}
-
-@keyframes rst-cfd-keys-fade {
-  0%, 70% { opacity: 1; }
-  100% { opacity: 0; }
 }

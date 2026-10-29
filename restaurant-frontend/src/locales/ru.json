@@ -987,8 +987,6 @@
     "cfd": {
       "brand": "Aurent Restaurant",
       "open": "Экран покупателя",
-      "openHint": "Открывает гостевой экран на весь монитор. F11 — полный экран, Esc — выйти.",
-      "openKeys": "F11 · Esc",
       "keysLabel": "Клавиши экрана покупателя",
       "keyFullscreen": "на весь экран",
       "keyExitFullscreen": "выйти из полного экрана",

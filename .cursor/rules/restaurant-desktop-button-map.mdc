@@ -1,0 +1,148 @@
+---
+description: Phase A — restaurant-desktop screen/button map (offline months + online reconcile)
+globs: restaurant-desktop/**/*,restaurant-frontend/src/restaurant/**/*,restaurant-service/src/main/java/com/pos/restaurant/edge/**
+alwaysApply: false
+---
+
+# Phase A — карта «до одной кнопки»
+
+## Legend
+
+| Tag | Meaning |
+|-----|---------|
+| `OK` | Works on local edge offline after bootstrap |
+| `OUTBOX` | Local write + push when online (flush quiet) |
+| `RECON` | Needs online cloud→local refresh (roster/catalog/shift/live) |
+| `LIVE` | Live floor push/pull |
+| `CONFIRM` | OFD/card — user confirm, never silent |
+| `STUB` | Edge stub / cloud-only — must not fake success offline |
+| `GAP` | Not done for «до кнопки» — phase to fix |
+
+No network/queue **chrome indicators** (product).
+
+---
+
+## Auth / entry
+
+| Surface | Offline | Online | Phase |
+|---------|---------|--------|-------|
+| Login password | `OK` local hash | `RECON` roster replace | **B** (partially done) |
+| PIN login | `OK` | `RECON` + upsert pin | **B** |
+| JWT refresh | `OK` local | revoke → fail login | **B** |
+| Bootstrap first install | needs net once | — | done |
+| Cloud session persist | — | userData | done |
+| 401 clear session + re-PIN | — | session clear + roster→refresh kick | **B** done |
+
+---
+
+## POS — Floor `/rst/pos`
+
+| Action | Offline | Online | Phase |
+|--------|---------|--------|-------|
+| Open table / guests | `OK`+`LIVE` | push→pull ~5s + on reconnect | **D** done |
+| Add/remove dish, mods, weight | `OK`+`LIVE` | same | **D** done |
+| Send kitchen / cancel / bill | `OK`+`LIVE` | same | **D** done |
+| Move / merge / waiter | `OK`+`LIVE` | same | **D** done |
+| Print ticket | `OK` local print | — | done |
+| Pay (from floor if any) | → cashier | | **C** |
+
+## POS — Cashier `/rst/cashier`
+
+| Tab / action | Offline | Online | Phase |
+|--------------|---------|--------|-------|
+| Hall board | `OK`+`LIVE` | watermark bump after pull | **D** done |
+| Sales / orders lists | `OK` local | closed history in live slice | **D** done |
+| Bookings | `OK` local edge API | cloud↔edge booking not in live slice | **G** |
+| Payment cash | `OK`+`OUTBOX` | flush | **C** |
+| Payment card | `CONFIRM` queue | | done rule |
+| Discount | `OK`+`LIVE` | | **D** |
+| Cash in/out | `OK`+`OUTBOX` | flush | **C** |
+| Shift open/close | `OK`+`LIVE` | live shift both ways; empty-floor close | **C** done |
+| Paid receipts / returns | `OK`+`OUTBOX` | quiet flush | **C** done |
+| OFD pending bar | `CONFIRM` | | done |
+
+## Kitchen `/rst/kitchen`
+
+| Action | Offline | Online | Phase |
+|--------|---------|--------|-------|
+| Ticket board / done / bump | `OK`+`LIVE` | tickets in live slice; ghost cancel on hall push | **D** done |
+| LAN phone → hall hub | `OK` packaged hub ON | `http://LAN-IP:port` → same edge; cloud via hall only | **H** done |
+
+## CFD `/rst/customer-display`
+
+| Action | Offline | Online | Phase |
+|--------|---------|--------|-------|
+| Show check | `OK` local | — | done visual |
+| No network chrome | — | — | done |
+
+---
+
+## Admin — overview / hall
+
+| Route | Offline | Online | Phase |
+|-------|---------|--------|-------|
+| `/rst/admin/dashboard` | `OK` local KPIs | local only (no fake cloud) | **G** done |
+| `/rst/admin/halls` | `OK` CRUD local | catalog refresh | **E** done |
+| `/rst/admin/booking` | `OK` local edge | not mirrored in live cloud slice | **G** noted |
+
+## Admin — menu / kitchen setup
+
+| Route | Offline | Online | Phase |
+|-------|---------|--------|-------|
+| menu / categories / modifiers | `OK` CRUD | catalog refresh on reconnect + ~15 min | **E** done |
+| recipes / stations | `OK` | in catalog-export bootstrap | **E** done |
+| printers / pickup-labels | `OK` local device | profiles via catalog where present | **E**/H |
+
+## Admin — stock
+
+| Route | Offline | Online | Phase |
+|-------|---------|--------|-------|
+| overview / balances / movements | `OK` local | stock pull on reconnect + ~15 min | **F** done |
+| receipts / expenses / transfers / production / write-offs / inventories | `OK`+`OUTBOX` (STOCK_*) | local apply; cloud balances via pull | **F** done |
+| products / categories / suppliers | `OK` CRUD | stock+suppliers refresh | **F** done |
+
+## Admin — staff / shifts
+
+| Route | Offline | Online | Phase |
+|-------|---------|--------|-------|
+| staff | `OK` local edit | `RECON` roster wins online | **B**/F |
+| shifts admin | `OK` local | `RECON` | **C** |
+
+## Admin — ops / analytics / system
+
+| Route | Offline | Online | Phase |
+|-------|---------|--------|-------|
+| delivery | `OK`+`LIVE` (orders channel) | | **D** done |
+| reports / sales / commission / low stock | `OK` local hall data | honest copy: not SaaS analytics | **G** done |
+| audit | `OK` local activity | honest copy: not full cloud audit | **G** done |
+| guide | `OK` static | — | done |
+| stores | `OK` edge stores | stores refresh with stock cycle | **F** done |
+| integrations | `OK` local ASL/tax/registers | Multikassa via desktop IPC when configured | **G** done |
+| billing | honest placeholder | invoices only on r-aurent.uz; edge stub never blocks | **G** done |
+| booking | `OK` local | not in live cloud slice | **G** noted |
+
+---
+
+## Electron background (no UI)
+
+| Job | Status | Phase |
+|-----|--------|-------|
+| Probe online | done | — |
+| Outbox flush harden (backoff, non-stock counts, 20 batches on reconnect) | done | **I** |
+| Live push→pull 5s + reconnect; edge watermark bump | done | **D** |
+| Staff roster 60s | done | **B** sooner on online |
+| Catalog periodic pull (~15 min) | done | **E** |
+| Stock/suppliers/stores periodic pull | done | **F** |
+| Shift live both ways + empty-floor close | done | **C** |
+| Session file | done | **B** 401 path |
+
+---
+
+## Phase order (execution)
+
+`A` (this file) → `B` auth → `C` shift/cashier money → `D` floor/kitchen/live → `E` catalog → `F` stock/refs → `G` reports/system honesty → `H` LAN → `I` flush harden → `J` ship
+
+## Acceptance «до одной кнопки»
+
+Hall-critical paths (Auth, Floor, Cashier pay/shift, Kitchen, Stock docs, Menu) are covered in phases B–I.  
+**Phase J:** checklist → `.cursor/rules/restaurant-desktop-acceptance.mdc`. Ship candidate **0.1.30** (Windows). Accepted gaps: booking live cloud, STOCK_* cloud ingest, no network chrome.

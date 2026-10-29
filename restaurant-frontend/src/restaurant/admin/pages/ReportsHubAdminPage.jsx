@@ -4,6 +4,7 @@ import {
   Receipt,
   Percent,
 } from 'lucide-react';
+import { isRestaurantDesktop } from '../../../utils/restaurantDesktop';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/analytics-admin.css';
@@ -51,13 +52,20 @@ function ReportsHubSection({ title, subtitle, links, t }) {
 
 export default function ReportsHubAdminPage() {
   const { t } = useTranslation();
+  const hallPc = isRestaurantDesktop();
 
   return (
     <section className="rst-report-hub">
       <div className="rst-halls__toolbar">
         <div>
           <h1 className="rst-coming__title">{t('rst.admin.reportsTitle')}</h1>
-          <p className="rst-coming__text mb-0">{t('rst.admin.reportsHubSubtitle')}</p>
+          <p className="rst-coming__text mb-0">
+            {hallPc
+              ? t('rst.admin.reportsHubSubtitleHallPc', {
+                  defaultValue: 'Отчёты по данным этого ПК зала. Облачная аналитика SaaS здесь не подменяется.',
+                })
+              : t('rst.admin.reportsHubSubtitle')}
+          </p>
         </div>
       </div>
 

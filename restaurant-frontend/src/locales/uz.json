@@ -951,8 +951,6 @@
     "cfd": {
       "brand": "Aurent Restaurant",
       "open": "Xaridor ekrani",
-      "openHint": "Mehmon ekranini to‘liq ochadi. F11 — to‘liq ekran, Esc — chiqish.",
-      "openKeys": "F11 · Esc",
       "keysLabel": "Xaridor ekrani tugmalari",
       "keyFullscreen": "to‘liq ekran",
       "keyExitFullscreen": "to‘liq ekrandan chiqish",

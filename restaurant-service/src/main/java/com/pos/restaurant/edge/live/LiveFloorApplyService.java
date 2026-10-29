@@ -21,6 +21,7 @@ public class LiveFloorApplyService {
     private final LiveFloorUpsertWriter upserts;
     private final LiveFloorGhostReconcile ghosts;
     private final LiveServicePercentApply servicePercentApply;
+    private final LiveShiftReconcile shiftReconcile;
     private final FloorRevisionBump floorRevision;
 
     @Transactional
@@ -51,10 +52,22 @@ public class LiveFloorApplyService {
         int payments = upserts.upsertPayments(snap);
         int closedGhosts = reconcileGhosts ? ghosts.reconcileOpen(snap) : 0;
         int staleTickets = reconcileGhosts ? ghosts.reconcileTickets(snap) : 0;
+        // After floor upsert (+ hall ghost close): align shift both ways (Phase C).
+        int openShift = shiftReconcile.apply(snap);
         floorRevision.noteRemote(snap.companyId(), snap.storeId(), snap.floorRevision());
+        // Phase D: edge pull must move local watermark so POS/kitchen polls refresh
+        // even when remote origin is 0 or unchanged after LWW upserts.
+        int touched = servicePercents + orders + items + links + mods
+            + closedOrders + closedItems + closedMods
+            + tickets + ticketLines + payments
+            + closedGhosts + staleTickets + openShift;
+        if (!reconcileGhosts && touched > 0) {
+            floorRevision.bump(snap.companyId(), snap.storeId());
+        }
 
         Map<String, Object> out = new HashMap<>();
         out.put("servicePercents", servicePercents);
+        out.put("openShift", openShift);
         out.put("openOrders", orders);
         out.put("openOrderItems", items);
         out.put("openOrderLinks", links);

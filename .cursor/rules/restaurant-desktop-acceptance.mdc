@@ -1,0 +1,61 @@
+---
+description: Phase J — restaurant-desktop acceptance before Windows ship
+globs: restaurant-desktop/**/*,restaurant-service/**/edge/**/*,restaurant-frontend/src/restaurant/**
+alwaysApply: false
+---
+
+# Phase J — приёмка restaurant-desktop (online reconcile + months offline)
+
+**Ship version candidate:** bump `restaurant-desktop/package.json` (was 0.1.29) → **0.1.30** when cutting the build.  
+**Scope:** Windows hall PC only. Do not mix with Aurent Cashier / pharmacy.
+
+## Pre-build
+
+- [ ] `restaurant-service` edge profile builds (includes `EdgeCloudSyncService`, `LiveShiftReconcile`, staff applier).
+- [ ] `pnpm` / prepare: UI bundle + jar in resources.
+- [ ] No network chrome / status strip under header (still `return null`).
+- [ ] LAN hub: packaged default ON; boot log shows `LAN phones: http://…`.
+
+## Smoke — offline months (local)
+
+- [ ] Cold start after bootstrap: floor open table, dish, kitchen ticket, pay cash — without internet.
+- [ ] Shift open/close local.
+- [ ] Stock receipt local.
+- [ ] PIN / password login against local roster.
+
+## Smoke — online reconcile (88551-style)
+
+- [ ] With network: change password / deactivate user in cloud → within ~1 min (or reconnect) login on PC fails / kick after roster refresh.
+- [ ] Close shift in cloud, empty floor on PC → local OPEN closes after live pull.
+- [ ] Local open tables still present → local shift NOT force-closed.
+- [ ] After offline sales: reconnect → outbox flush reduces pending (no manual sync button).
+- [ ] Catalog: new dish on cloud appears on PC after reconnect or ≤15 min.
+- [ ] Stock products refresh after reconnect or ≤15 min.
+
+## Smoke — LAN hub
+
+- [ ] Phone on same Wi‑Fi opens `http://<LAN-IP>:17887` (port from boot log).
+- [ ] Kitchen/waiter sees same open tickets as hall PC.
+- [ ] Hall window still `127.0.0.1` (not broken by hub).
+
+## Smoke — honesty
+
+- [ ] Billing page: text about r-aurent.uz, no fake invoices; POS not blocked.
+- [ ] Reports/audit subtitles: local hall data (desktop).
+
+## Ship commands (when user asks)
+
+```bash
+cd restaurant-desktop
+# bump version in package.json if needed
+pnpm run dist:win
+pnpm run manifest
+```
+
+Upload Windows artifact + manifest to restaurant-desktop downloads feed only.
+
+## Known accepted gaps (not blockers for 0.1.30)
+
+- Bookings not in live cloud↔edge slice (local hall OK).
+- STOCK_* outbox not pushed to cloud ingest (balances via periodic pull).
+- No network/queue chrome by product choice.

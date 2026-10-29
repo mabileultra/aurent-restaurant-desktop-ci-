@@ -22,16 +22,21 @@ public class EdgeBillingStubController {
     public ResponseEntity<Map<String, Object>> access() {
         return ResponseEntity.ok(Map.of(
             "billingEnabled", false,
-            "accessAllowed", true
+            "accessAllowed", true,
+            "hallDesktop", true,
+            "cloudBillingOnly", true
         ));
     }
 
     @GetMapping("/billing/me")
-    @Operation(summary = "Minimal billing me stub for edge")
+    @Operation(summary = "Minimal billing me stub for edge — not a fake invoice ledger")
     public ResponseEntity<Map<String, Object>> me() {
         return ResponseEntity.ok(Map.of(
             "billingEnabled", false,
-            "accessAllowed", true
+            "accessAllowed", true,
+            "hallDesktop", true,
+            "cloudBillingOnly", true,
+            "message", "Subscription billing is on r-aurent.uz; hall PC does not store invoices"
         ));
     }
 }

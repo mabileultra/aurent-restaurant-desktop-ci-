@@ -947,8 +947,6 @@
     "cfd": {
       "brand": "Aurent Restaurant",
       "open": "Customer display",
-      "openHint": "Opens the guest screen fullscreen. F11 — fullscreen, Esc — exit.",
-      "openKeys": "F11 · Esc",
       "keysLabel": "Customer display keys",
       "keyFullscreen": "fullscreen",
       "keyExitFullscreen": "exit fullscreen",

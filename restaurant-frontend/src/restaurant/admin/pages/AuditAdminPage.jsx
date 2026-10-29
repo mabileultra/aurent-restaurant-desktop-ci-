@@ -4,6 +4,7 @@ import TablePagination from '../../../components/shared/TablePagination';
 import { AUDIT_TYPE_FILTERS, useAuditAdminPage } from '../hooks/useAuditAdminPage';
 import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
+import { isRestaurantDesktop } from '../../../utils/restaurantDesktop';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -13,6 +14,7 @@ export default function AuditAdminPage() {
   const p = useAuditAdminPage();
   const { i18n } = useTranslation();
   const locale = i18n.language || 'ru';
+  const hallPc = isRestaurantDesktop();
 
   return (
     <AdminWorkspaceGate
@@ -26,7 +28,13 @@ export default function AuditAdminPage() {
         <div className="rst-halls__toolbar">
           <div>
             <h1 className="rst-coming__title">{p.t('rst.admin.auditTitle')}</h1>
-            <p className="rst-coming__text mb-0">{p.t('rst.admin.auditSubtitle')}</p>
+            <p className="rst-coming__text mb-0">
+              {hallPc
+                ? p.t('rst.admin.auditSubtitleHallPc', {
+                    defaultValue: 'Журнал этого ПК зала (локальные события). Не полный облачный audit SaaS.',
+                  })
+                : p.t('rst.admin.auditSubtitle')}
+            </p>
           </div>
         </div>
 
