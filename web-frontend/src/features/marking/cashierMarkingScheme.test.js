@@ -3,6 +3,7 @@ import { toOfdMarkingLabel } from '../../services/fiscal/shared/ofdMarkingLabel'
 import { buildFiscalDriveItem } from '../../services/fiscal/providers/fiscalDrive/buildFiscalDriveItem';
 import { buildSaleOperationBody } from '../../services/multikassa/buildMultikassaOperations';
 import { expandMarkedFiscalItems } from '../../services/fiscal/shared/expandMarkedFiscalItems';
+import { buildMarkingValidationProducts } from './onkm/buildProducts';
 import { buildCheckoutLineItems } from '../../store/cartStore';
 import { classifyPosScanInput } from '../cashier/utils/classifyPosScanInput';
 import {
@@ -133,6 +134,25 @@ describe('касса: схема маркировки', () => {
     });
     expect(plain.items[0].product_mark).toBeUndefined();
     expect(plain.items[0].product_label).toBeUndefined();
+  });
+
+  it('несколько КМ на одной строке уходят в Tasnif по одному коду', () => {
+    const second = `010${GTIN}21PACK002\u001d91CRYPTAA`;
+    const lines = expandMarkedFiscalItems([{
+      name: 'Чай',
+      ikpu: product.ikpu,
+      packageCode: product.packageCode,
+      quantity: 2,
+      unitPrice: 10,
+      productMarks: [KM, second],
+    }]);
+    const products = buildMarkingValidationProducts(lines);
+    expect(products).toHaveLength(2);
+    expect(products.map((row) => row.kmIds)).toEqual([
+      [KI],
+      [`010${GTIN}21PACK002`],
+    ]);
+    expect(products.map((row) => row.amount)).toEqual([1, 1]);
   });
 
   it('FiscalDrive: Labels = КИ; строка только с productMark тоже уходит', () => {
