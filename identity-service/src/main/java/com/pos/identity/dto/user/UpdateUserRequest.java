@@ -1,6 +1,7 @@
 package com.pos.identity.dto.user;
 
-import jakarta.validation.constraints.Email;
+import com.pos.identity.util.EmailAddressRules;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
@@ -12,7 +13,9 @@ public record UpdateUserRequest(
     String lastName,
     String patronymic,
     String fullName,
-    @Email String email,
+    @Size(max = 254)
+    @Pattern(regexp = EmailAddressRules.PATTERN, message = EmailAddressRules.MESSAGE)
+    String email,
     String password,
     String role,
     Integer companyId,

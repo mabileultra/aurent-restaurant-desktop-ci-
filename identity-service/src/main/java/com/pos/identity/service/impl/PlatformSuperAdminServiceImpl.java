@@ -17,6 +17,7 @@ import com.pos.identity.service.PlatformSuperAdminService;
 import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.service.support.UserSyncSupport;
 import com.pos.shared.log.LogUtil;
+import com.pos.identity.util.EmailAddressRules;
 import com.pos.identity.util.PersonNameUtil;
 import com.pos.identity.util.UserLoginUtil;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,7 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
             .orElseThrow(() -> new BadRequestException(roleName + " role is not configured"));
 
         String username = UserLoginUtil.normalizeUsername(request.username());
-        String email = UserLoginUtil.normalizeEmail(request.email());
+        String email = EmailAddressRules.require(request.email());
         assertPlatformUsernameAvailable(username, null);
         assertPlatformEmailAvailable(email, null);
 
