@@ -7,6 +7,7 @@ const {
   setMeta,
   ensureDeviceId,
 } = require('./connection.cjs');
+const { fold, foldSql } = require('./catalogSearchFold.cjs');
 
 async function importBootstrap(payload) {
   const db = await getDb();
@@ -102,7 +103,7 @@ async function listCategories() {
 
 async function searchProducts({ search = '', categoryId, limit = 200, offset = 0 } = {}) {
   const db = await getDb();
-  const q = String(search || '').trim().toLowerCase();
+  const q = String(search || '').trim();
   let sql = 'SELECT payload_json FROM products WHERE active = 1';
   const params = [];
   if (categoryId != null && categoryId !== '' && categoryId !== 'ALL') {
@@ -110,9 +111,17 @@ async function searchProducts({ search = '', categoryId, limit = 200, offset = 0
     params.push(Number(categoryId));
   }
   if (q) {
-    sql += ` AND (LOWER(name) LIKE ? OR LOWER(sku) LIKE ? OR LOWER(barcode) LIKE ?
-      OR EXISTS (SELECT 1 FROM product_barcodes b WHERE b.product_id = products.id AND LOWER(b.barcode) LIKE ?))`;
-    const like = `%${q}%`;
+    const like = `%${fold(q)}%`;
+    sql += ` AND (
+      ${foldSql("COALESCE(name, '')")} LIKE ?
+      OR ${foldSql("COALESCE(sku, '')")} LIKE ?
+      OR ${foldSql("COALESCE(barcode, '')")} LIKE ?
+      OR EXISTS (
+        SELECT 1 FROM product_barcodes b
+        WHERE b.product_id = products.id
+          AND ${foldSql("COALESCE(b.barcode, '')")} LIKE ?
+      )
+    )`;
     params.push(like, like, like, like);
   }
   sql += ' ORDER BY name LIMIT ? OFFSET ?';

@@ -9,6 +9,7 @@ import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.support.ProductListResponseAssembler;
+import com.pos.shared.text.CatalogSearchFold;
 import com.pos.pharmacy.catalog.support.ProductResponseFactory;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.common.TenantSupport;
@@ -46,7 +47,14 @@ public class ProductCatalogService {
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> list(String search, Boolean active, Integer storeId, Pageable pageable) {
         Integer companyId = tenant.requireCompanyId();
-        Page<Product> page = productRepository.search(companyId, trim(search), active, pageable);
+        Page<Product> page = productRepository.search(
+            companyId,
+            trim(search),
+            CatalogSearchFold.FROM,
+            CatalogSearchFold.TO,
+            active,
+            pageable
+        );
         List<ProductResponse> content = listResponseAssembler.assemble(page.getContent(), storeId);
         return new PageResponse<>(
             content,
