@@ -2,12 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { addDays, addHours, format } from 'date-fns';
+import { addHours, format } from 'date-fns';
 import { uz } from 'date-fns/locale';
 import { cashRegisterApi, platformDesktopNotificationsApi } from '../../../api';
 
 const DRAFT_STORAGE_KEY = 'aurent_desktop_notification_draft_v1';
-export const DEFAULT_CASH_REGISTERS_COUNT = 248;
 
 export function usePlatformDesktopNotificationsPage() {
   const { t, i18n } = useTranslation();
@@ -48,9 +47,6 @@ export function usePlatformDesktopNotificationsPage() {
 
   // Drawer for sent item details
   const [selectedItemForDrawer, setSelectedItemForDrawer] = useState(null);
-
-  // Overrides for sent history items (extended expiration, revoked status)
-  const [historyOverrides, setHistoryOverrides] = useState({});
 
   // Table filtering and search
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,10 +132,7 @@ export function usePlatformDesktopNotificationsPage() {
     staleTime: 60_000,
   });
 
-  const totalRegistersCount =
-    Number(cashRegistersQuery.data?.totalElements) > 0
-      ? Number(cashRegistersQuery.data?.totalElements)
-      : DEFAULT_CASH_REGISTERS_COUNT;
+  const totalRegistersCount = Number(cashRegistersQuery.data?.totalElements) || 0;
 
   // History query
   const historyQuery = useQuery({
@@ -195,13 +188,8 @@ export function usePlatformDesktopNotificationsPage() {
     },
   });
 
-  // Active target count based on scope and group
-  const activeTargetCount = useMemo(() => {
-    if (targetScope === 'ALL') return totalRegistersCount;
-    if (targetGroup === 'OUTDATED') return 14;
-    if (targetGroup === 'CUSTOM') return 36;
-    return totalRegistersCount;
-  }, [targetScope, targetGroup, totalRegistersCount]);
+  // Сервер шлёт всем кассам. Числа 14 и 36 в макете не используем.
+  const activeTargetCount = totalRegistersCount;
 
   // Handle send button click from form
   const handleInitiateSend = useCallback(() => {
@@ -221,14 +209,40 @@ export function usePlatformDesktopNotificationsPage() {
 
   // Execute broadcast mutation
   const executeBroadcast = useCallback(() => {
+    if (scheduleType !== 'NOW') {
+      toast.error(t('platform.desktopNotifications.scheduleUnsupported', {
+        defaultValue: 'Отложенная отправка пока не поддерживается. Отправьте сразу.',
+      }));
+      return;
+    }
+    if (targetScope !== 'ALL') {
+      toast.error(t('platform.desktopNotifications.targetUnsupported', {
+        defaultValue: 'Выбор отдельных касс пока не поддерживается. Можно отправить только всем.',
+      }));
+      return;
+    }
+    const pickedTitle = langTab === 'ru' ? titleRu.trim() || titleUz.trim() : titleUz.trim() || titleRu.trim();
+    const pickedBody = langTab === 'ru' ? bodyRu.trim() || bodyUz.trim() : bodyUz.trim() || bodyRu.trim();
     const payload = {
-      title: (titleUz.trim() || titleRu.trim()).slice(0, 200),
-      body: (bodyUz.trim() || bodyRu.trim()).slice(0, 4000),
+      title: pickedTitle.slice(0, 200),
+      body: pickedBody.slice(0, 4000),
       kind,
       expiresInHours,
     };
     broadcastMutation.mutate(payload);
-  }, [titleUz, titleRu, bodyUz, bodyRu, kind, expiresInHours, broadcastMutation]);
+  }, [
+    scheduleType,
+    targetScope,
+    langTab,
+    titleUz,
+    titleRu,
+    bodyUz,
+    bodyRu,
+    kind,
+    expiresInHours,
+    broadcastMutation,
+    t,
+  ]);
 
   // Clear form
   const handleClear = useCallback(() => {
@@ -262,150 +276,41 @@ export function usePlatformDesktopNotificationsPage() {
   );
 
   // Revoke / dismiss item from active registers
-  const handleRevoke = useCallback(
-    (item) => {
-      if (!item) return;
-      setHistoryOverrides((prev) => ({
-        ...prev,
-        [item.id]: {
-          ...(prev[item.id] || {}),
-          status: 'EXPIRED',
-        },
-      }));
-      setSelectedItemForDrawer((prev) =>
-        prev && prev.id === item.id ? { ...prev, status: 'EXPIRED' } : prev
-      );
-      toast.success(t('platform.desktopNotifications.actionRevoke', { defaultValue: 'Kassalardan olib tashlandi' }));
-    },
-    [t]
-  );
+  const handleRevoke = useCallback(() => {
+    toast.error(t('platform.desktopNotifications.revokeUnsupported', {
+      defaultValue: 'Снять уведомление с касс сервер пока не умеет.',
+    }));
+  }, [t]);
 
-  // Extend expiration time by 24 hours
-  const handleExtend = useCallback(
-    (item) => {
-      if (!item) return;
-      const currentExp = item.expiresAt ? new Date(item.expiresAt) : new Date();
-      const newExp = addDays(currentExp, 1).toISOString();
-      setHistoryOverrides((prev) => ({
-        ...prev,
-        [item.id]: {
-          ...(prev[item.id] || {}),
-          expiresAt: newExp,
-          status: 'ACTIVE',
-        },
-      }));
-      setSelectedItemForDrawer((prev) =>
-        prev && prev.id === item.id ? { ...prev, expiresAt: newExp, status: 'ACTIVE' } : prev
-      );
-      toast.success(t('platform.desktopNotifications.extendedSuccess', { defaultValue: 'Muddati 24 soatga uzaytirildi' }));
-    },
-    [t]
-  );
+  const handleExtend = useCallback(() => {
+    toast.error(t('platform.desktopNotifications.extendUnsupported', {
+      defaultValue: 'Продлить срок сервер пока не умеет.',
+    }));
+  }, [t]);
 
   // Enriched history items with realistic status and delivery stats
   const enrichedHistory = useMemo(() => {
-    const rawList = historyQuery.data || [];
+    const rawList = Array.isArray(historyQuery.data) ? historyQuery.data : [];
     const now = new Date();
+    const allLabel = t('platform.desktopNotifications.targetAll', { defaultValue: 'Все кассы' });
 
-    // Default mock items if backend returns empty (for design demonstration matching Figma)
-    const baseList =
-      rawList.length > 0
-        ? rawList
-        : [
-            {
-              id: 'mock-1',
-              createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), // kecha 18:10
-              expiresAt: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
-              kind: 'ALERT',
-              title: 'Ertaga 02:00–03:00 da texnik ishlar',
-              body: 'Bu vaqtda kassa oflayn rejimda ishlaydi. Cheklar internet qaytgach avtomatik yuboriladi.',
-              deliveredCount: 231,
-              totalCount: totalRegistersCount,
-              readCount: 187,
-              readPercent: 81,
-              targetLabel: 'Barcha kassalar',
-              status: 'ACTIVE',
-            },
-            {
-              id: 'mock-2',
-              createdAt: new Date(Date.now() + 14 * 3600 * 1000).toISOString(), // ertaga 08:00
-              expiresAt: new Date(Date.now() + 96 * 3600 * 1000).toISOString(),
-              kind: 'UPDATE',
-              title: 'Kassa ilovasining yangi versiyasi',
-              body: 'Yangilash uchun kassada «Yangilash» tugmasini bosing.',
-              deliveredCount: null,
-              totalCount: totalRegistersCount,
-              readCount: null,
-              readPercent: null,
-              targetLabel: 'Eski versiyadagi kassalar',
-              status: 'SCHEDULED',
-            },
-            {
-              id: 'mock-3',
-              createdAt: new Date(Date.now() - 75 * 24 * 3600 * 1000).toISOString(), // 2.5 oy oldin
-              expiresAt: new Date(Date.now() - 72 * 24 * 3600 * 1000).toISOString(),
-              kind: 'MESSAGE',
-              title: 'Уважаемый клиенты добро пожаловать',
-              body: 'Добро пожаловать в Aurent! Мы рады приветствовать вас в нашей экосистеме.',
-              deliveredCount: null,
-              totalCount: totalRegistersCount,
-              readCount: null,
-              readPercent: null,
-              targetLabel: 'Barcha kassalar',
-              status: 'EXPIRED',
-            },
-            {
-              id: 'mock-4',
-              createdAt: new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString(), // 3 oy oldin
-              expiresAt: new Date(Date.now() - 87 * 24 * 3600 * 1000).toISOString(),
-              kind: 'MESSAGE',
-              title: 'Уважаемый клиенты добро пожаловать',
-              body: 'Добро пожаловать в Aurent! Мы рады приветствовать вас в нашей экосистеме.',
-              deliveredCount: null,
-              totalCount: totalRegistersCount,
-              readCount: null,
-              readPercent: null,
-              targetLabel: 'Barcha kassalar',
-              status: 'EXPIRED',
-            },
-          ];
-
-    return baseList.map((item, idx) => {
-      const override = historyOverrides[item.id] || {};
-      const merged = { ...item, ...override };
-
-      const created = new Date(merged.createdAt);
-      const expires = merged.expiresAt ? new Date(merged.expiresAt) : null;
-      let status = merged.status || 'ACTIVE';
-
-      if (!override.status) {
-        if (created > now) {
-          status = 'SCHEDULED';
-        } else if (expires && expires < now) {
-          status = 'EXPIRED';
-        }
-      }
-
-      const deliveredCount =
-        merged.deliveredCount ?? (status === 'ACTIVE' ? Math.round(totalRegistersCount * 0.93) : null);
-      const totalCount = merged.totalCount ?? totalRegistersCount;
-      const readCount =
-        merged.readCount ?? (status === 'ACTIVE' ? Math.round((deliveredCount || totalCount) * 0.81) : null);
-      const readPercent =
-        merged.readPercent ??
-        (deliveredCount && readCount ? Math.round((readCount / deliveredCount) * 100) : null);
-
+    return rawList.map((item) => {
+      const created = item.createdAt ? new Date(item.createdAt) : null;
+      const expires = item.expiresAt ? new Date(item.expiresAt) : null;
+      let status = 'ACTIVE';
+      if (created && created > now) status = 'SCHEDULED';
+      else if (expires && expires < now) status = 'EXPIRED';
       return {
-        ...merged,
+        ...item,
         status,
-        deliveredCount,
-        totalCount,
-        readCount,
-        readPercent,
-        targetLabel: merged.targetLabel || (idx === 1 ? 'Eski versiyadagi kassalar' : 'Barcha kassalar'),
+        deliveredCount: null,
+        totalCount: null,
+        readCount: null,
+        readPercent: null,
+        targetLabel: allLabel,
       };
     });
-  }, [historyQuery.data, totalRegistersCount, historyOverrides]);
+  }, [historyQuery.data, t]);
 
   // Filtered history based on search query and status filter
   const filteredHistory = useMemo(() => {
