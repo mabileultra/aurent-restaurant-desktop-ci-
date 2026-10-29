@@ -62,6 +62,7 @@
     <include file="db/changelog/v56-pos-hot-path-indexes.xml"/>
     <include file="db/changelog/v57-edge-admin-parity.xml"/>
     <include file="db/changelog/v58-edge-stores-phone.xml"/>
+    <include file="db/changelog/v59-payment-one-per-order.xml"/>
 
 </databaseChangeLog>
 

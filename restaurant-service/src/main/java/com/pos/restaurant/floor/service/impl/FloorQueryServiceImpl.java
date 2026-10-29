@@ -60,7 +60,8 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     @Override
     @Cacheable(
         cacheNames = RestaurantCacheNames.FLOOR,
-        key = "T(com.pos.restaurant.security.RestaurantTenantContext).getCompanyId() + ':' + #storeId"
+        key = "T(com.pos.restaurant.security.RestaurantTenantContext).getCompanyId() + ':' + #storeId",
+        sync = true
     )
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
