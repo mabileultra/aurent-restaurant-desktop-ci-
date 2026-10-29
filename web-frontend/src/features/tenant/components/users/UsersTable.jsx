@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Download,
   KeyRound,
+  MapPin,
   RotateCcw,
   UserCheck,
   UserX,
@@ -440,8 +441,11 @@ export default function UsersTable({
             pageRows.map((user) => {
               const displayName = user.fullName || user.username;
               const isSelected = selectedUserIds.has(String(user.id));
-              const rCode = user.regionCode || companyById?.get?.(String(user.companyId ?? ''))?.regionCode;
-              const dCode = user.districtCode || companyById?.get?.(String(user.companyId ?? ''))?.districtCode;
+              const company = companyById?.get?.(String(user.companyId ?? ''));
+              const compName = user.companyName || company?.name;
+              const loginCode = user.companyLoginCode || company?.loginCode;
+              const rCode = user.regionCode || company?.regionCode;
+              const dCode = user.districtCode || company?.districtCode;
               const userRegion = rCode ? regionName(rCode) : '';
               const userDistrict = dCode ? districtName(dCode) : '';
               const isPlaceholder = (val) => !val || val === 'Yo‘q' || val === 'Yo\'q' || val === 'Нет';
@@ -543,14 +547,26 @@ export default function UsersTable({
                       <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                       {user.active ? t('users.activeStatus', { defaultValue: 'Faol' }) : t('users.inactiveStatus', { defaultValue: 'Nofaol' })}
                     </span>
-                    {user.companyName ? (
-                      <span className="text-slate-500 dark:text-slate-400 truncate max-w-[160px]">
-                        {user.companyName} {user.companyLoginCode ? `#${user.companyLoginCode}` : ''}
+                    {compName ? (
+                      <span
+                        className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[140px]"
+                        title={compName}
+                      >
+                        {compName}
+                      </span>
+                    ) : null}
+                    {loginCode ? (
+                      <span
+                        className="font-mono text-[10px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-200/60 dark:border-purple-800 shrink-0"
+                        title={`${t('users.companyLoginCode', { defaultValue: 'Kompaniya kodi' })}: #${loginCode}`}
+                      >
+                        #{loginCode}
                       </span>
                     ) : null}
                     {userLocation ? (
-                      <span className="text-slate-400 dark:text-slate-500 truncate text-[11px]">
-                        {user.companyName ? '· ' : ''}{userLocation}
+                      <span className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 text-[11px] truncate max-w-full">
+                        <MapPin size={11} className="shrink-0 text-slate-400" aria-hidden="true" />
+                        <span className="truncate">{userLocation}</span>
                       </span>
                     ) : null}
                   </div>

@@ -3638,6 +3638,7 @@
     "roleCook": "Oshpaz",
     "cashierStoreHint": "Kassir va ofitsiantlar faqat bitta filialga biriktiriladi — kassada filialni tanlash mumkin emas.",
     "cashierStoreRequired": "Kassir uchun filialni belgilang",
+    "companyRequired": "Kompaniyani tanlang",
     "storeInactive": "nofaol",
     "roleManager": "Menejer",
     "roleAdmin": "Admin",

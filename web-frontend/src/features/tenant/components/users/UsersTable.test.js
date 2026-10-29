@@ -181,10 +181,15 @@ describe('UsersTable', () => {
     expect(fullPageHtml).toContain('Barcha 50 tasini tanlash');
   });
 
-  it('renders mobile card view for small screens', () => {
+  it('renders mobile card view for small screens with separate shrink-0 login code and clean location without leading dot', () => {
     const html = renderToStaticMarkup(React.createElement(UsersTable, defaultProps));
 
     expect(html).toContain('id="user-card-u1"');
     expect(html).toContain('id="user-card-u2"');
+    // Location in card 1 has SAM · SAM_CITY and does not start with leading dot
+    expect(html).toContain('SAM · SAM_CITY');
+    expect(html).not.toContain('· SAM · SAM_CITY');
+    // Login code has shrink-0 and is separate
+    expect(html).toContain('#9001');
   });
 });
