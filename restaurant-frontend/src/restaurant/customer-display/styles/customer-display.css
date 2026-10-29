@@ -11,7 +11,9 @@
   --cfd-accent: #ff7a1a;
   --cfd-ok: #059669;
   --cfd-danger: #e11d48;
-  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   margin: 0;
   color: var(--cfd-ink);
   background:
@@ -29,6 +31,7 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem 0.75rem;
+  flex-shrink: 0;
 }
 
 .rst-cfd__logo {
@@ -139,12 +142,20 @@
   color: rgb(236 253 245 / 0.78);
 }
 
+.rst-cfd__ticket {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .rst-cfd__ticket-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .rst-cfd__ticket-no {
@@ -237,6 +248,7 @@
 
 .rst-cfd__totals {
   margin-top: 1rem;
+  flex-shrink: 0;
   background: var(--cfd-card);
   border: 1px solid var(--cfd-line);
   border-radius: 16px;

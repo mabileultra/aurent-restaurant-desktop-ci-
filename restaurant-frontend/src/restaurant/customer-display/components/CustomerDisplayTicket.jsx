@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 
 function DishThumb({ name, imageUrl }) {
@@ -9,12 +10,20 @@ function DishThumb({ name, imageUrl }) {
 }
 
 export default function CustomerDisplayTicket({ snapshot, t }) {
+  const listRef = useRef(null);
+  const lines = snapshot.lines || [];
   const orderLabel = snapshot.orderNo != null
     ? t('rst.cfd.receiptNo', { no: snapshot.orderNo })
     : t('rst.cfd.receipt');
 
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [lines.length, snapshot.total, snapshot.updatedAt]);
+
   return (
-    <>
+    <div className="rst-cfd__ticket">
       <div className="rst-cfd__ticket-head">
         <h2 className="rst-cfd__ticket-no">{orderLabel}</h2>
         {snapshot.storeName ? (
@@ -22,7 +31,7 @@ export default function CustomerDisplayTicket({ snapshot, t }) {
         ) : null}
       </div>
 
-      <div className="rst-cfd__table-wrap">
+      <div className="rst-cfd__table-wrap" ref={listRef}>
         <table className="rst-cfd__table">
           <thead>
             <tr>
@@ -32,7 +41,7 @@ export default function CustomerDisplayTicket({ snapshot, t }) {
             </tr>
           </thead>
           <tbody>
-            {(snapshot.lines || []).map((line) => (
+            {lines.map((line) => (
               <tr key={line.id}>
                 <td>
                   <div className="rst-cfd__dish">
@@ -70,6 +79,6 @@ export default function CustomerDisplayTicket({ snapshot, t }) {
           <strong>{fmtMoneyCompact(snapshot.total)}</strong>
         </div>
       </div>
-    </>
+    </div>
   );
 }
