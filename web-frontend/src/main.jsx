@@ -16,9 +16,11 @@ import { syncPrintCssVars } from './utils/syncPrintCssVars';
 import { syncReceiptDisplayCssVars } from './utils/syncReceiptDisplayCssVars';
 import { resetCashierDocumentUiState } from './utils/resetCashierDocumentUiState';
 import { clearChunkReloadFlag } from './router/chunkLoadError';
+import { registerPwa } from './utils/registerPwa';
 resetCashierDocumentUiState();
 window.setTimeout(clearChunkReloadFlag, 4000);
 initSentry();
+registerPwa();
 
 const isCashierRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier');

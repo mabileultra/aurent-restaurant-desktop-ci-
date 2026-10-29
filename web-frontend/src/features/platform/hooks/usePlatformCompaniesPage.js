@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { companyApi } from '../../../api/company.api';
+import { storeApi } from '../../../api/store.api';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
 import { platformBusinessTypeApi } from '../../../api';
 
@@ -62,9 +63,19 @@ export function usePlatformCompaniesPage() {
     queryFn: () => companyApi.getAll(params).then((r) => r.data),
   });
 
-  const { data: allCompanies = [] } = useQuery({
-    queryKey: ['companies-all'],
-    queryFn: () => companyApi.listAll().then((r) => r.data || []),
+  // Lightweight total stores count (requests only 1 item to obtain totalElements from PageResponse)
+  const { data: storeCountData } = useQuery({
+    queryKey: ['platform-stores-total-count'],
+    queryFn: () => storeApi.getManaged({ page: 0, size: 1 }).then((r) => r.data?.totalElements ?? 0).catch(() => 0),
+    staleTime: 60_000,
+  });
+
+  // If table is filtered by search or geography, retain baseline total companies count with size: 1
+  const isFiltered = Boolean(search.trim() || businessType || regionCode || districtCode);
+  const { data: baselineCount } = useQuery({
+    queryKey: ['companies-baseline-count'],
+    queryFn: () => companyApi.getAll({ page: 0, size: 1 }).then((r) => r.data?.totalElements ?? 0).catch(() => 0),
+    enabled: isFiltered,
     staleTime: 60_000,
   });
 
@@ -138,7 +149,8 @@ export function usePlatformCompaniesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['companies'] });
-      qc.invalidateQueries({ queryKey: ['companies-all'] });
+      qc.invalidateQueries({ queryKey: ['companies-baseline-count'] });
+      qc.invalidateQueries({ queryKey: ['platform-stores-total-count'] });
       qc.invalidateQueries({ queryKey: ['company-business-types'] });
       toast.success(t('platform.companySaved'));
       setModalOpen(false);
@@ -151,6 +163,8 @@ export function usePlatformCompaniesPage() {
     mutationFn: (id) => companyApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['companies'] });
+      qc.invalidateQueries({ queryKey: ['companies-baseline-count'] });
+      qc.invalidateQueries({ queryKey: ['platform-stores-total-count'] });
       toast.success(t('platform.companyDeleted'));
       setMenuId(null);
     },
@@ -173,14 +187,31 @@ export function usePlatformCompaniesPage() {
   const fromN = total === 0 ? 0 : page * pageSize + 1;
   const toN = Math.min((page + 1) * pageSize, total);
 
-  const totalCompanies = allCompanies.length > 0 ? allCompanies.length : total;
-  const activeCompanies = allCompanies.length > 0
-    ? allCompanies.filter((c) => c.active).length
-    : rawRows.filter((r) => r.active).length;
-  const inactiveCompanies = Math.max(0, totalCompanies - activeCompanies);
-  const totalStores = allCompanies.length > 0
-    ? allCompanies.reduce((acc, c) => acc + (c.storeCount || 0), 0)
-    : rawRows.reduce((acc, r) => acc + (r.storeCount || 0), 0);
+  // Scalable KPI calculations without fetching full datasets into browser memory
+  const totalCompanies = isFiltered ? (baselineCount ?? total) : total;
+  const rawActive = rawRows.filter((r) => r.active).length;
+  const rawInactive = rawRows.filter((r) => !r.active).length;
+
+  let activeCompanies;
+  let inactiveCompanies;
+
+  if (statusFilter === 'ACTIVE') {
+    activeCompanies = total;
+    inactiveCompanies = Math.max(0, totalCompanies - activeCompanies);
+  } else if (statusFilter === 'INACTIVE') {
+    inactiveCompanies = total;
+    activeCompanies = Math.max(0, totalCompanies - inactiveCompanies);
+  } else if (total <= rawRows.length) {
+    // Current page contains entire dataset: exact counts
+    activeCompanies = rawActive;
+    inactiveCompanies = rawInactive;
+  } else {
+    // Multi-page dataset: derive from page ratio / known inactive count
+    inactiveCompanies = rawInactive;
+    activeCompanies = Math.max(0, totalCompanies - inactiveCompanies);
+  }
+
+  const totalStores = storeCountData ?? rawRows.reduce((acc, r) => acc + (r.storeCount || 0), 0);
 
   const openCreate = () => {
     setEditing(null);
