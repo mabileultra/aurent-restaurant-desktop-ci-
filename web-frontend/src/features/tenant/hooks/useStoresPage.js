@@ -17,6 +17,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const [districtCode, setDistrictCode] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
+  const [groupedPage, setGroupedPage] = useState(0);
+  const [groupedPageSize, setGroupedPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [menuId, setMenuId] = useState(null);
@@ -156,6 +158,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const handleStatusFilterChange = (nextFilter) => {
     setStatusFilter(nextFilter);
     setPage(0);
+    setGroupedPage(0);
   };
 
   const openQuickDrawer = (store) => {
@@ -185,22 +188,26 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const handleSearchChange = (value) => {
     setSearch(value);
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handleCompanyChange = (value) => {
     setCompanyId(value || '');
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handleBusinessTypeChange = (code) => {
     setBusinessType(code || '');
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handleGeoChange = ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
     setRegionCode(nextRegion || '');
     setDistrictCode(nextDistrict || '');
     setPage(0);
+    setGroupedPage(0);
   };
 
   const handlePageSizeChange = (nextSize) => {
@@ -277,6 +284,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     setExpandedCompanyIds,
     hasUserToggledGrouped,
     setHasUserToggledGrouped,
+    groupedPage,
+    setGroupedPage,
+    groupedPageSize,
+    setGroupedPageSize,
     pharmacyIntegrationStore,
     openPharmacyIntegration,
     closePharmacyIntegration,

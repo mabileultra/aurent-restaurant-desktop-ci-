@@ -5,6 +5,22 @@ import PlatformStoresGroupedView from './PlatformStoresGroupedView';
 
 globalThis.React = React;
 
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key, opts) => {
+      if (key === 'products.recordsRange') {
+        return `Yozuvlar ${opts.from} – ${opts.to} / ${opts.total}`;
+      }
+      if (key === 'cashRegisters.pageSizePrefix') return 'Sahifada:';
+      if (key === 'common.prev') return 'Oldingi';
+      if (key === 'common.next') return 'Keyingi';
+      return opts?.defaultValue || key;
+    },
+    i18n: { language: 'uz' },
+  }),
+}));
+
 vi.mock('../../../shared/geo/useGeoNameLookup', () => ({
   useGeoNameLookup: () => ({
     regionName: (code) => (code === 'TAS' ? 'Toshkent sh.' : 'Yo‘q'),
@@ -231,5 +247,96 @@ describe('PlatformStoresGroupedView', () => {
 
     // Branches should be collapsed (not in DOM)
     expect(html).not.toContain('Apteka Markaziy');
+  });
+
+  it('renders TablePagination footer with total records range and page size selector', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, defaultProps)
+    );
+
+    // Records range
+    expect(html).toContain('Yozuvlar 1 – 2 / 2');
+    expect(html).toContain('Sahifada:');
+  });
+
+  it('paginates company groups based on pageSize and only renders visible page slice', () => {
+    const manyCompanies = Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      name: `Kompaniya #${i + 1}`,
+      businessType: 'RETAIL',
+    }));
+    const manyStores = Array.from({ length: 15 }, (_, i) => ({
+      id: 100 + i + 1,
+      companyId: i + 1,
+      name: `Filial #${i + 1}`,
+      businessType: 'RETAIL',
+      active: true,
+    }));
+
+    // Page 0 with pageSize 10 should render first 10 companies, but not company 11-15
+    const htmlPage0 = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        companies: manyCompanies,
+        stores: manyStores,
+        page: 0,
+        pageSize: 10,
+      })
+    );
+
+    expect(htmlPage0).toContain('id="company-group-1"');
+    expect(htmlPage0).toContain('id="company-group-10"');
+    expect(htmlPage0).not.toContain('id="company-group-11"');
+    expect(htmlPage0).not.toContain('id="company-group-15"');
+    expect(htmlPage0).toContain('Yozuvlar 1 – 10 / 15');
+
+    // Page 1 with pageSize 10 should render company 11-15, but not company 1-10
+    const htmlPage1 = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        companies: manyCompanies,
+        stores: manyStores,
+        page: 1,
+        pageSize: 10,
+      })
+    );
+
+    expect(htmlPage1).not.toContain('id="company-group-1"');
+    expect(htmlPage1).not.toContain('id="company-group-10"');
+    expect(htmlPage1).toContain('id="company-group-11"');
+    expect(htmlPage1).toContain('id="company-group-15"');
+    expect(htmlPage1).toContain('Yozuvlar 11 – 15 / 15');
+  });
+
+  it('auto-switches to the page containing focusCompanyId when target company is on a subsequent page', () => {
+    const manyCompanies = Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      name: `Kompaniya #${i + 1}`,
+      businessType: 'RETAIL',
+    }));
+    const manyStores = Array.from({ length: 15 }, (_, i) => ({
+      id: 100 + i + 1,
+      companyId: i + 1,
+      name: `Filial #${i + 1}`,
+      businessType: 'RETAIL',
+      active: true,
+    }));
+
+    const onPageChangeMock = vi.fn();
+
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        companies: manyCompanies,
+        stores: manyStores,
+        focusCompanyId: '14',
+        page: 1,
+        pageSize: 10,
+        onPageChange: onPageChangeMock,
+      })
+    );
+
+    expect(html).toContain('Kompaniya #14');
+    expect(html).toContain('id="company-group-14"');
   });
 });
