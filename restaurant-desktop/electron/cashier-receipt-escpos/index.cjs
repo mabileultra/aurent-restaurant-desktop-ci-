@@ -22,6 +22,7 @@ const { matchPrinterName } = require('../printers/printer-match.cjs');
 const fs = require('fs');
 const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
 const { logWarn } = require('./escpos-log.cjs');
+const { beepAndCut } = require('./escpos-layout.cjs');
 
 function wrapEscposError(err) {
   if (err instanceof EscposPrintError) {
@@ -252,7 +253,8 @@ async function printPlainTicketEscpos(payload) {
           }
         }
         printer.newLine();
-        printer.cut();
+        // Kitchen / station slips: double beep («тин-тин») then cut — sale path already beeps once.
+        beepAndCut(printer, 2, 2);
       },
       noPrinterHint: 'Принтер станции не выбран.',
     });

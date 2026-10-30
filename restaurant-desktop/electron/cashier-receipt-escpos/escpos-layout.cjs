@@ -36,13 +36,17 @@ function appendCenterHeader(printer, lines) {
 }
 
 /**
- * Один короткий сигнал зуммера, затем отрез.
+ * Сигнал зуммера, затем отрез.
  * ESC B — команда Epson, её же понимают типичные чековые принтеры.
  * @param {import('node-thermal-printer').printer} printer
+ * @param {number} [times=1] — сколько коротких «тин» (кухня: 2)
+ * @param {number} [duration=2] — длительность каждого (×50ms у Epson)
  */
-function beepAndCut(printer) {
+function beepAndCut(printer, times = 1, duration = 2) {
   if (typeof printer.beep === 'function') {
-    printer.beep(1, 2);
+    const n = Math.min(9, Math.max(1, Number(times) || 1));
+    const t = Math.min(9, Math.max(1, Number(duration) || 2));
+    printer.beep(n, t);
   }
   printer.cut();
 }
