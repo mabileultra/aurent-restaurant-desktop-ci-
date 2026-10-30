@@ -14,6 +14,7 @@ import com.pos.restaurant.order.support.WeightSaleSupport;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,6 +65,9 @@ public class KitchenTicketAssembler {
             .map(FloorOrderItemModifier::getName)
             .toList();
         BigDecimal qty = line.getQuantity() != null ? line.getQuantity() : item.getQuantity();
+        BigDecimal unit = item.getUnitPrice() == null ? BigDecimal.ZERO : item.getUnitPrice();
+        BigDecimal lineTotal = unit.multiply(qty == null ? BigDecimal.ZERO : qty)
+            .setScale(2, RoundingMode.HALF_UP);
         return new KitchenTicketLineResponse(
             line.getId(),
             item.getId(),
@@ -71,7 +75,9 @@ public class KitchenTicketAssembler {
             MenuPortionFormat.display(item.getMenuItem()),
             qty,
             WeightSaleSupport.kitchenNote(item.getMenuItem(), item.getNote(), qty),
-            modifiers
+            modifiers,
+            unit,
+            lineTotal
         );
     }
 }

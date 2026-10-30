@@ -11,6 +11,7 @@ import {
   emphPadRow,
   moneyRow,
   padRow,
+  qtyNameRow,
   RECEIPT_WIDTH,
   TICKET_WIDTH,
   ticketStamp,
@@ -22,8 +23,14 @@ function fmtQty(qty) {
   return String(Math.round(n * 1000) / 1000);
 }
 
-/** One item → one padded row (mods folded into name); note on extra line. */
-export function formatTicketItemLines(item, width = RECEIPT_WIDTH) {
+/**
+ * One item → one padded row (mods folded into name); note on extra line.
+ * @param {object} item
+ * @param {number|{ width?: number, withMoney?: boolean }} [opts]
+ */
+export function formatTicketItemLines(item, opts = RECEIPT_WIDTH) {
+  const width = typeof opts === 'number' ? opts : (opts?.width ?? RECEIPT_WIDTH);
+  const withMoney = typeof opts === 'number' ? true : opts?.withMoney !== false;
   const base = String(item?.name || item?.productName || '').trim() || '—';
   const mods = (item?.modifiers || [])
     .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
@@ -31,10 +38,13 @@ export function formatTicketItemLines(item, width = RECEIPT_WIDTH) {
     .filter(Boolean);
   const name = mods.length ? `${base} ${mods.join(' ')}` : base;
   const qty = fmtQty(item?.quantity);
-  const unit = fmtMoneyCompact(item?.unitPrice ?? item?.price ?? 0);
-  const total = fmtMoneyCompact(item?.lineTotal ?? item?.total ?? 0);
-  const money = `${qty}×${unit} = ${total}`;
-  const out = [padRow(name, money, width)];
+  const out = withMoney
+    ? [padRow(
+      name,
+      `${qty}×${fmtMoneyCompact(item?.unitPrice ?? item?.price ?? 0)} = ${fmtMoneyCompact(item?.lineTotal ?? item?.total ?? 0)}`,
+      width,
+    )]
+    : [qtyNameRow(item?.quantity, name, width)];
   if (item?.note) out.push(`  * ${item.note}`.slice(0, width));
   return out;
 }
@@ -147,8 +157,9 @@ export function buildRestaurantTicketBody({
 
   if (show('items')) {
     lines.push('---');
+    const withMoney = show('totals');
     for (const item of items) {
-      lines.push(...formatTicketItemLines(item));
+      lines.push(...formatTicketItemLines(item, { withMoney }));
     }
     lines.push('---');
   }

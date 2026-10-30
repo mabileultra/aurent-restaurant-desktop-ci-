@@ -151,4 +151,20 @@ describe('buildRestaurantTicketBody bill', () => {
     expect(joined).not.toContain('Спасибо за визит');
     expect(lines.at(-1)).toBe('---');
   });
+
+  it('totals off hides money on item rows and footer totals', () => {
+    const profile = factoryPrintProfile();
+    profile.slips.GUEST_BILL.fields.totals.on = false;
+    const lines = buildRestaurantTicketBody({
+      kind: 'bill',
+      order: baseOrder,
+      profile,
+      t,
+    });
+    const joined = lines.join('\n');
+    expect(joined).toMatch(/×23/);
+    expect(joined).not.toMatch(/14000|14 000|322/);
+    expect(joined).not.toMatch(/ИТОГО/i);
+    expect(joined).not.toMatch(/Подытог/i);
+  });
 });

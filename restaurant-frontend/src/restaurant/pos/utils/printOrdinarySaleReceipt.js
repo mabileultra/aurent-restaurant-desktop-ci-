@@ -66,10 +66,11 @@ export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
   }
 
   const when = sale.createdAt ? ticketStamp(sale.createdAt) : ticketStamp();
+  const withMoney = show('totals');
   const itemHtml = (sale.items || [])
     .filter((row) => !row.isServiceLine)
     .map((item) => {
-      const rows = formatTicketItemLines(item);
+      const rows = formatTicketItemLines(item, { withMoney });
       return `<div class="rst-ord-print__line">${rows.map((row) => `<div>${escapeHtml(row)}</div>`).join('')}</div>`;
     })
     .join('');

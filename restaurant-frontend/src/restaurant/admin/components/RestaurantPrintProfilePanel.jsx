@@ -9,7 +9,6 @@ import {
   printTicketLines,
 } from '../../pos/utils/desktopPrinters';
 import {
-  styleDishLine,
   ticketPrintOptions,
   wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
@@ -22,7 +21,7 @@ import {
   factoryPrintProfile,
   fieldStyle,
 } from '../../shared/printProfile/printProfileDefaults';
-import { emphQtyNameRow } from '../../pos/utils/ticketLayout';
+import { styleKitchenDishBlock } from '../../pos/utils/kitchenDishLines';
 
 const SLIP_LABEL = {
   CANCEL: 'rst.admin.printSlipCancel',
@@ -151,14 +150,19 @@ export default function RestaurantPrintProfilePanel({ storeId, t, onlySlip = nul
     try {
       const title = t('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ' });
       const opts = ticketPrintOptions(profile, slipType);
-      const dish = styleDishLine(emphQtyNameRow(1, 'Тест блюдо'), profile, slipType);
+      const dishLines = styleKitchenDishBlock([{
+        name: 'Тест блюдо',
+        quantity: 1,
+        unitPrice: 25000,
+        lineTotal: 25000,
+      }], profile, slipType);
       await printTicketLines({
         title: fieldStyle(profile, slipType, 'headerTitle').on ? title : '',
         printerName: printer,
         lines: wrapSlipLines([
           t('rst.admin.printTestMeta', { defaultValue: 'Зал · Стол 1' }),
           '---',
-          ...(dish ? [dish] : []),
+          ...dishLines,
           '---',
           t('rst.admin.printersTestOk'),
         ], profile, slipType),

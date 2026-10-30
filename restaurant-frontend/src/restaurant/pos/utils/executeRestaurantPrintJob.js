@@ -15,15 +15,14 @@ import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
 import {
   filterMetaLines,
   resolveTicketTitle,
-  styleDishLine,
   ticketPrintOptions,
   wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
+import { styleKitchenDishBlock } from './kitchenDishLines';
 import {
   isRefuseTicketTitle,
   kitchenTicketMetaLines,
-  qtyNameRow,
 } from './ticketLayout';
 import { resolvePrintWaiterName } from './printWaiterNames';
 
@@ -75,37 +74,16 @@ async function localHasPrinterFast(printerName) {
     || [...printerNameSetCache.set].some((n) => n === lower);
 }
 
-function itemLines(item) {
-  const portion = item.portionText ? ` (${item.portionText})` : '';
-  const name = `${item.name || ''}${portion}`;
-  const lines = [qtyNameRow(item.quantity, name)];
-  const mods = (item.modifiers || [])
-    .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
-    .filter(Boolean)
-    .join(', ');
-  if (mods) lines.push(`   + ${mods}`);
-  if (item.note) lines.push(`   * ${item.note}`);
-  return lines;
-}
-
-function batchItemLines(line) {
-  return itemLines({
+function batchDish(line) {
+  return {
     name: line?.name,
     quantity: line?.quantity,
     portionText: line?.portionText,
     note: line?.note,
     modifiers: line?.modifiers || [],
-  });
-}
-
-function styleBlockLines(block, profile, slipType) {
-  return block
-    .map((row) => {
-      if (!row) return row;
-      if (String(row).startsWith('   ')) return row;
-      return styleDishLine(row, profile, slipType);
-    })
-    .filter((row) => row != null);
+    unitPrice: line?.unitPrice ?? line?.price,
+    lineTotal: line?.lineTotal,
+  };
 }
 
 async function metaFromPayload(payload, order, t, waiterNameById, storeId) {
@@ -143,7 +121,7 @@ async function runCategorySlip(payload, t, waiterNameById, storeId) {
       lines: wrapSlipLines([
         ...meta,
         '---',
-        ...styleBlockLines(itemLines(dish), profile, slipType),
+        ...styleKitchenDishBlock([dish], profile, slipType),
         '---',
       ], profile, slipType),
       ...ticketPrintOptions(profile, slipType),
@@ -153,12 +131,17 @@ async function runCategorySlip(payload, t, waiterNameById, storeId) {
   // Fast path: payload already has dish text (no second round-trip to order API).
   if (payload.itemName || payload.header) {
     const qty = Number(payload.quantity) || 1;
+    const unitPrice = Number(payload.unitPrice ?? payload.price) || 0;
     await printCategory(null, {
       name: payload.itemName,
       quantity: qty,
       portionText: payload.portionText,
       note: payload.note,
       modifiers: payload.modifiers || [],
+      unitPrice,
+      lineTotal: payload.lineTotal != null
+        ? Number(payload.lineTotal)
+        : Math.round(unitPrice * qty * 100) / 100,
     });
     return { mode: 'silent', ack: true, release: false };
   }
@@ -180,10 +163,7 @@ async function runCategoryBatch(payload, t, waiterNameById, storeId) {
   const refuse = isRefuseTicketTitle(payload.title);
   const slipType = refuse ? 'CANCEL' : 'KITCHEN';
   const profile = await loadStorePrintProfile(storeId);
-  const dishLines = (payload.lines || []).flatMap((line, index) => {
-    const block = styleBlockLines(batchItemLines(line), profile, slipType);
-    return index === 0 ? block : ['', ...block];
-  });
+  const dishLines = styleKitchenDishBlock((payload.lines || []).map(batchDish), profile, slipType);
   if (!dishLines.length) return { mode: 'skip', ack: true, release: false };
   const meta = filterMetaLines(
     await metaFromPayload(payload, null, t, waiterNameById, storeId),
@@ -238,10 +218,7 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
         return { ack: false, release: true, mode: 'missing' };
       }
       const profile = await loadStorePrintProfile(storeId);
-      const dishLines = (payload.lines || []).flatMap((line, index) => {
-        const block = styleBlockLines(batchItemLines(line), profile, 'CANCEL');
-        return index === 0 ? block : ['', ...block];
-      });
+      const dishLines = styleKitchenDishBlock((payload.lines || []).map(batchDish), profile, 'CANCEL');
       if (!dishLines.length) return { ack: true, release: false, mode: 'skip' };
       const title = resolveTicketTitle(
         t?.('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ' }) || 'ОТКАЗ',

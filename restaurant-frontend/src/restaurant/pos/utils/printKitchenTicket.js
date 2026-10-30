@@ -12,33 +12,13 @@ import {
 import {
   filterMetaLines,
   resolveTicketTitle,
-  styleDishLine,
   ticketPrintOptions,
   wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
-import { kitchenTicketMetaLines, qtyNameRow } from './ticketLayout';
+import { styleKitchenDishBlock } from './kitchenDishLines';
+import { kitchenTicketMetaLines } from './ticketLayout';
 import { resolvePrintWaiterName } from './printWaiterNames';
-
-function itemLines(item) {
-  const portion = item.portionText ? ` (${item.portionText})` : '';
-  const name = `${item.name || ''}${portion}`;
-  const lines = [qtyNameRow(item.quantity, name)];
-  const mods = (item.modifiers || [])
-    .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
-    .filter(Boolean)
-    .join(', ');
-  if (mods) lines.push(`   + ${mods}`);
-  if (item.note) lines.push(`   * ${item.note}`);
-  return lines;
-}
-
-function styleKitchenBlock(items, profile, slipType) {
-  return items.flatMap((item) => itemLines(item).map((row) => {
-    if (!row || String(row).startsWith('   ')) return row;
-    return styleDishLine(row, profile, slipType);
-  }).filter((row) => row != null));
-}
 
 async function resolveWaiterName(order, waiterName, waiterNameById) {
   if (waiterName) return waiterName;
@@ -90,7 +70,7 @@ async function sendGroups(groups, settings) {
           ...meta,
           group.label ? `≫ ${group.label}` : '',
           '---',
-          ...styleKitchenBlock(fresh, profile, slipType),
+          ...styleKitchenDishBlock(fresh, profile, slipType),
           '---',
         ].filter(Boolean), profile, slipType),
         ...ticketPrintOptions(profile, slipType),
@@ -141,7 +121,7 @@ export async function printCategoryTicketOnAdd({
         t,
       }), profile, slipType),
       '---',
-      ...styleKitchenBlock([{ ...line, quantity: qty }], profile, slipType),
+      ...styleKitchenDishBlock([{ ...line, quantity: qty }], profile, slipType),
       '---',
     ], profile, slipType),
     ...ticketPrintOptions(profile, slipType),
@@ -183,6 +163,7 @@ export async function printKitchenTicket({
     }
     const qty = qtyMap.has(String(line.id)) ? qtyMap.get(String(line.id)) : line.quantity;
     const note = noteMap.has(String(line.id)) ? noteMap.get(String(line.id)) : line.note;
+    const unitPrice = Number(line.unitPrice ?? line.price) || 0;
     byStation.get(key).items.push({
       lineId: `${line.id}:${qty}`,
       name: line.name,
@@ -190,6 +171,9 @@ export async function printKitchenTicket({
       note,
       modifiers: line.modifiers,
       portionText: line.portionText,
+      unitPrice,
+      // Printed qty may be a delta — amount = unit × printed qty.
+      lineTotal: Math.round(unitPrice * (Number(qty) || 0) * 100) / 100,
     });
   }
 
@@ -225,14 +209,22 @@ export async function printKitchenBoardTickets(tickets, t, waiterNameById, store
         const key = line.id ? String(line.id) : `${ticket.id}:${line.orderItemId}`;
         return line.orderItemId && !readPrintedKitchenLines().has(key);
       })
-      .map((line) => ({
-        lineId: line.id ? String(line.id) : `${ticket.id}:${line.orderItemId}`,
-        name: line.name,
-        quantity: line.quantity,
-        note: line.note,
-        modifiers: (line.modifiers || []).map((name) => ({ name })),
-        portionText: line.portionText,
-      }));
+      .map((line) => {
+        const qty = line.quantity;
+        const unitPrice = Number(line.unitPrice ?? line.price) || 0;
+        return {
+          lineId: line.id ? String(line.id) : `${ticket.id}:${line.orderItemId}`,
+          name: line.name,
+          quantity: qty,
+          note: line.note,
+          modifiers: (line.modifiers || []).map((name) => ({ name })),
+          portionText: line.portionText,
+          unitPrice,
+          lineTotal: line.lineTotal != null
+            ? Number(line.lineTotal)
+            : Math.round(unitPrice * (Number(qty) || 0) * 100) / 100,
+        };
+      });
     if (!items.length) continue;
     const ticketWithStore = storeId != null && ticket.storeId == null
       ? { ...ticket, storeId }

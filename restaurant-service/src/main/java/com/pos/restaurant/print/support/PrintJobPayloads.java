@@ -47,7 +47,8 @@ public final class PrintJobPayloads {
         String itemName,
         String portionText,
         String note,
-        List<String> modifiers
+        List<String> modifiers,
+        BigDecimal unitPrice
     ) {}
 
     /** Several category lines to one Windows printer (one physical cut). */
@@ -65,7 +66,8 @@ public final class PrintJobPayloads {
         BigDecimal quantity,
         String portionText,
         String note,
-        List<String> modifiers
+        List<String> modifiers,
+        BigDecimal unitPrice
     ) {}
 
     public record PickupLabel(

@@ -55,6 +55,10 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
   const divider = '-'.repeat(TICKET_WIDTH);
   const groups = groupShiftItemsByCategory(items, uncategorized);
 
+  const profile = await loadStorePrintProfile(report.storeId);
+  const slipType = 'SHIFT_ITEMS';
+  const show = (key) => fieldStyle(profile, slipType, key).on;
+  const withMoney = show('totals');
   const itemLines = items.length
     ? groups.flatMap((group, index) => {
       const catQty = t?.('rst.shift.itemsQty', {
@@ -63,17 +67,18 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
       }) || `${group.quantity} шт.`;
       const block = [
         `≫ ${group.label}`,
-        ...group.items.map((row) => padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount))),
-        padRow(group.label, catQty),
-        moneyRow('', group.amount),
+        ...group.items.map((row) => (
+          withMoney
+            ? padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount))
+            : padRow(`${Number(row.quantity)} x ${row.name}`, '')
+        )),
+        ...(withMoney
+          ? [padRow(group.label, catQty), moneyRow('', group.amount)]
+          : [padRow(group.label, catQty)]),
       ];
       return index < groups.length - 1 ? [...block, divider] : block;
     })
     : [emptyLabel];
-
-  const profile = await loadStorePrintProfile(report.storeId);
-  const slipType = 'SHIFT_ITEMS';
-  const show = (key) => fieldStyle(profile, slipType, key).on;
   const lines = wrapSlipLines([
     ...(show('headerTitle') ? [title.toUpperCase()] : []),
     ...(store ? [store] : []),
@@ -81,7 +86,7 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
     ...(show('time') ? [period] : []),
     divider,
     ...(show('items') ? itemLines : []),
-    ...(show('totals') ? [divider, padRow(totalLabel, qtyLabel), moneyRow('', totalAmount)] : []),
+    ...(withMoney ? [divider, padRow(totalLabel, qtyLabel), moneyRow('', totalAmount)] : []),
   ], profile, slipType);
 
   if (isDesktopPrinter()) {
@@ -105,12 +110,14 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
         defaultValue: `${group.quantity} шт.`,
       }) || `${group.quantity} шт.`;
       const dishRows = group.items.map((row) => (
-        `<div class="rst-ord-print__row"><span>${escapeHtml(`${Number(row.quantity)} × ${row.name}`)}</span><strong>${fmtMoneyCompact(row.amount)}</strong></div>`
+        withMoney
+          ? `<div class="rst-ord-print__row"><span>${escapeHtml(`${Number(row.quantity)} × ${row.name}`)}</span><strong>${fmtMoneyCompact(row.amount)}</strong></div>`
+          : `<div class="rst-ord-print__row"><span>${escapeHtml(`${Number(row.quantity)} × ${row.name}`)}</span></div>`
       )).join('');
       return `
         <p class="rst-ord-print__cat">${escapeHtml(`≫ ${group.label}`)}</p>
         ${dishRows}
-        <div class="rst-ord-print__row"><span>${escapeHtml(group.label)} · ${escapeHtml(catQty)}</span><strong>${fmtMoneyCompact(group.amount)}</strong></div>
+        <div class="rst-ord-print__row"><span>${escapeHtml(group.label)} · ${escapeHtml(catQty)}</span>${withMoney ? `<strong>${fmtMoneyCompact(group.amount)}</strong>` : ''}</div>
       `;
     }).join('<hr />')
     : `<p>${escapeHtml(emptyLabel)}</p>`;

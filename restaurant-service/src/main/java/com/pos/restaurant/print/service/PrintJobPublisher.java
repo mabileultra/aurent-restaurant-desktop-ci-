@@ -173,7 +173,8 @@ public class PrintJobPublisher {
                 qty,
                 MenuPortionFormat.display(menuItem),
                 WeightSaleSupport.kitchenNote(menuItem, item.getNote(), qty),
-                modifierNames(modifiers.getOrDefault(item.getId(), List.of()))
+                modifierNames(modifiers.getOrDefault(item.getId(), List.of())),
+                item.getUnitPrice() == null ? BigDecimal.ZERO : item.getUnitPrice()
             ));
         }
         if (lines.isEmpty()) {
@@ -237,7 +238,8 @@ public class PrintJobPublisher {
                 qty,
                 MenuPortionFormat.display(menuItem),
                 WeightSaleSupport.kitchenNote(menuItem, item.getNote(), qty),
-                modifierNames(modifiers.getOrDefault(item.getId(), List.of()))
+                modifierNames(modifiers.getOrDefault(item.getId(), List.of())),
+                item.getUnitPrice() == null ? BigDecimal.ZERO : item.getUnitPrice()
             ));
             String baseTitle = category.getName() == null ? "" : category.getName();
             titleByPrinter.putIfAbsent(printer, voidSlip ? ("ОТКАЗ · " + baseTitle) : baseTitle);
@@ -282,7 +284,8 @@ public class PrintJobPublisher {
             item.getName(),
             MenuPortionFormat.display(item.getMenuItem()),
             WeightSaleSupport.kitchenNote(item.getMenuItem(), item.getNote(), quantity),
-            modifierNames(mods)
+            modifierNames(mods),
+            item.getUnitPrice() == null ? BigDecimal.ZERO : item.getUnitPrice()
         ));
     }
 

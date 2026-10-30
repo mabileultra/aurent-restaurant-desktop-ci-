@@ -11,5 +11,7 @@ public record KitchenTicketLineResponse(
     String portionText,
     BigDecimal quantity,
     String note,
-    List<String> modifiers
+    List<String> modifiers,
+    BigDecimal unitPrice,
+    BigDecimal lineTotal
 ) {}
