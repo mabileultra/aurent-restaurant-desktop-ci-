@@ -1,0 +1,14 @@
+# POS catalog performance (grocery cashier)
+
+## Invariants
+
+1. Product browse must stay **windowed** (`PosCatalogVirtualProducts`) — do not `.map()` the full loaded catalog into the DOM. Column/row stride must come from `measurePosCatalogLayout` (live CSS probe), not hard-coded breakpoints alone.
+2. Grocery prefetch stays at **1** page (`POS_CATALOG_PREFETCH_PAGES`); do not restore 3×120 preload.
+3. Offline bootstrap import is **chunked** (`catalogBootstrapImport.cjs`) and offline IPC DB work is **serialized** (`offlineDbQueue.cjs`) so yields during import cannot race other handlers.
+4. Desktop offline engine **defaults to native**; sql.js only via explicit config/env or load failure fallback.
+5. Grocery catalog refresh prefers **`/sync/catalog/delta`** + `importCatalogDelta` when `lastCatalogSyncAt` exists; full `/sync/bootstrap` only on first sync, store mismatch, force, pharmacy, or `fullReset`.
+
+## Must NOT
+
+- Load the entire store catalog into React state for one paint without virtualization.
+- Reintroduce a monolithic sync `importBootstrap` loop without event-loop yields on large payloads.

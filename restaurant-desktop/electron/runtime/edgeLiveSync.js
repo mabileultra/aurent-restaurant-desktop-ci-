@@ -1,9 +1,23 @@
 const { requestJson, localBase, cloudBase, bootstrapSecret } = require('./edgeHttp');
+const {
+  readLiveCloudSession,
+  writeLiveCloudSession,
+  clearLiveCloudSession,
+} = require('./edgeLiveSessionStore');
 
-/** In-memory cloud session for quiet live floor re-pull while desktop is online. */
+/** Cloud session for quiet live floor sync — memory + userData (survives restart). */
 let liveCloudSession = null;
 let liveRefreshInFlight = false;
 let livePushInFlight = false;
+let sessionHydrated = false;
+
+function hydrateSessionOnce() {
+  if (sessionHydrated) return;
+  sessionHydrated = true;
+  if (!liveCloudSession) {
+    liveCloudSession = readLiveCloudSession();
+  }
+}
 
 function rememberLiveCloudSession({
   token,
@@ -16,6 +30,7 @@ function rememberLiveCloudSession({
     ? storeIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
     : [];
   if (!token || !ids.length) return;
+  sessionHydrated = true;
   liveCloudSession = {
     token,
     companyId: companyId == null ? null : Number(companyId),
@@ -24,15 +39,22 @@ function rememberLiveCloudSession({
     bootstrapSecret: bootstrapSecret(secret),
     savedAt: Date.now(),
   };
+  writeLiveCloudSession(liveCloudSession);
+}
+
+function clearSession() {
+  liveCloudSession = null;
+  clearLiveCloudSession();
 }
 
 function getLiveCloudSession() {
+  hydrateSessionOnce();
   return liveCloudSession;
 }
 
 /** Re-pull live floor from cloud into local edge DB. Best-effort. */
 async function refreshLiveFromCloud() {
-  const session = liveCloudSession;
+  const session = getLiveCloudSession();
   if (!session?.token || !session.storeIds?.length) {
     return { skipped: true, reason: 'no-session' };
   }
@@ -63,12 +85,13 @@ async function refreshLiveFromCloud() {
           storeId,
           ok: true,
           openOrders: Number(local.data?.openOrders || 0),
+          openShift: Number(local.data?.openShift || 0),
           kitchenTickets: Number(local.data?.kitchenTickets || 0),
         });
       } catch (err) {
         results.push({ storeId, ok: false, error: err.message || String(err) });
         if (err.status === 401 || err.status === 403) {
-          liveCloudSession = null;
+          clearSession();
           break;
         }
       }
@@ -81,7 +104,7 @@ async function refreshLiveFromCloud() {
 
 /** Push local OPEN/BILLING floor to cloud for phone clients. */
 async function pushLiveToCloud() {
-  const session = liveCloudSession;
+  const session = getLiveCloudSession();
   if (!session?.token || !session.storeIds?.length || !session.companyId) {
     return { skipped: true, reason: 'no-session' };
   }
@@ -120,7 +143,7 @@ async function pushLiveToCloud() {
       } catch (err) {
         results.push({ storeId, ok: false, error: err.message || String(err) });
         if (err.status === 401 || err.status === 403) {
-          liveCloudSession = null;
+          clearSession();
           break;
         }
       }

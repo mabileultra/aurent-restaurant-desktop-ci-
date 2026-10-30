@@ -6,9 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { createWindowOpenHandler } = require('./runtime/windowOpenPolicy');
-const { resolveUiRoot, SERVICE_HOST, SERVICE_PORT, HEALTH_URL } = require('./config');
+const { resolveUiRoot, SERVICE_HOST, SERVICE_PORT } = require('./config');
 const { ensureEdgeService, shutdownEdgeStack, getStackStatus } = require('./runtime/edgeStack');
-const { probeHealth } = require('./runtime/health');
 const { startLocalUiServer } = require('./ui/localUiServer');
 const {
   getLocalAuthStatus,
@@ -16,9 +15,10 @@ const {
   bootstrapStaffFromCloud,
   fetchCloudPinRoster,
   ensureStaffViaCloudPin,
-  refreshLiveFromCloud,
-  pushLiveToCloud,
 } = require('./runtime/edgeAuthBootstrap');
+const { startEdgeOnlineReconcileLoop } = require('./runtime/edgeOnlineReconcileLoop');
+const { resolveLanHubEnabled } = require('./runtime/edgeLanHubConfig');
+const { listLanIpv4, primaryLanIpv4 } = require('./runtime/edgeLanAddresses');
 const {
   getCompanyLoginCode,
   setCompanyLoginCode,
@@ -116,6 +116,8 @@ function createWindow() {
     title: 'Aurent Restaurant',
     icon: resolveAppIcon(),
     backgroundColor: '#0f172a',
+    show: false,
+    fullscreen: true,
     // Native menu stays available via Alt — do not permanently eat vertical space on Windows.
     autoHideMenuBar: true,
     webPreferences: {
@@ -124,6 +126,15 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: true,
     },
+  });
+
+  mainWindow.once('ready-to-show', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (!mainWindow.isFullScreen()) {
+      mainWindow.setFullScreen(true);
+    }
+    mainWindow.show();
+    mainWindow.focus();
   });
 
   mainWindow.loadFile(path.join(__dirname, 'boot.html'));
@@ -167,11 +178,10 @@ async function bootStack() {
   }
 
   const backendOrigin = `http://${SERVICE_HOST}:${SERVICE_PORT}`;
-  // LAN hub: kitchen / phones on restaurant Wi‑Fi hit this PC (RESTAURANT_LAN_HUB=1).
-  const lanHub = process.env.RESTAURANT_LAN_HUB === '1' || process.env.RESTAURANT_LAN_HUB === 'true';
+  // Phase H: phones/kitchen on Wi‑Fi → this PC. Packaged default ON; env/file can override.
+  const lanHub = resolveLanHubEnabled({ isPackaged: app.isPackaged });
   const uiHost = lanHub ? '0.0.0.0' : '127.0.0.1';
   // Fixed port so localStorage (company code, theme) survives restarts.
-  // Random port:0 made every launch a new origin → empty company code.
   const preferredUiPort = Number(process.env.RESTAURANT_UI_PORT || 17887);
   let lastListenErr = null;
   for (let offset = 0; offset < 5; offset += 1) {
@@ -194,7 +204,15 @@ async function bootStack() {
     throw lastListenErr || new Error('UI server failed to bind');
   }
   const localUiOrigin = `http://127.0.0.1:${uiServer.port}`;
-  bootLog(`UI server: ${uiServer.origin}${lanHub ? ' (LAN hub)' : ''}`);
+  const lanIps = lanHub ? listLanIpv4() : [];
+  const lanPrimary = lanHub ? primaryLanIpv4() : null;
+  const lanHubUrls = lanIps.map((ip) => `http://${ip}:${uiServer.port}`);
+  bootLog(`UI server: ${localUiOrigin}${lanHub ? ' (LAN hub 0.0.0.0)' : ''}`);
+  if (lanHub && lanHubUrls.length) {
+    bootLog(`LAN phones: ${lanHubUrls.join(' | ')}  (same Wi‑Fi as this PC)`);
+  } else if (lanHub) {
+    bootLog('LAN hub on, but no LAN IPv4 yet — check Wi‑Fi / firewall for port UI');
+  }
   publishStatus({
     phase: 'ready',
     online: false,
@@ -202,6 +220,8 @@ async function bootStack() {
     message: lanHub ? 'Local hall ready (LAN hub)' : 'Local hall ready',
     uiOrigin: localUiOrigin,
     lanHub,
+    lanHubUrl: lanPrimary ? `http://${lanPrimary}:${uiServer.port}` : null,
+    lanHubUrls,
   });
 
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -209,106 +229,22 @@ async function bootStack() {
     await mainWindow.loadURL(localUiOrigin);
   }
 
-  let syncInFlight = false;
-  let lastLiveSyncAt = 0;
-  let liveSyncInFlight = false;
-  const LIVE_SYNC_MS = 10_000;
-  setInterval(async () => {
-    const hit = await probeHealth(HEALTH_URL);
-    let pendingOutbox = lastStatus.pendingOutbox || 0;
-    // DNS alone is not enough (school filters often resolve but block HTTPS).
-    let online = false;
-    try {
-      online = await new Promise((resolve) => {
-        const https = require('https');
-        const req = https.get(
-          'https://r-aurent.uz/api/v1/actuator/health',
-          { timeout: 4000 },
-          (res) => {
-            res.resume();
-            resolve(res.statusCode >= 200 && res.statusCode < 500);
-          }
-        );
-        req.on('error', () => resolve(false));
-        req.on('timeout', () => {
-          req.destroy();
-          resolve(false);
-        });
-      });
-    } catch {
-      online = false;
-    }
-    try {
-      const http = require('http');
-      pendingOutbox = await new Promise((resolve) => {
-        http.get(`http://${SERVICE_HOST}:${SERVICE_PORT}/api/v1/edge/sync/status`, (res) => {
-          let raw = '';
-          res.on('data', (c) => { raw += c; });
-          res.on('end', () => {
-            try {
-              const j = JSON.parse(raw);
-              resolve(Number(j.pending || 0) + Number(j.failed || 0));
-            } catch {
-              resolve(pendingOutbox);
-            }
-          });
-        }).on('error', () => resolve(pendingOutbox));
-      });
-    } catch {
-      /* ignore */
-    }
-    publishStatus({ serviceHealthy: hit.ok, pendingOutbox, online });
-
-    // Auto-push when uplink is back and there is a queue (OFD stays manual confirm in UI).
-    if (online && pendingOutbox > 0 && !syncInFlight && process.env.RESTAURANT_CLOUD_SYNC_URL) {
-      syncInFlight = true;
-      try {
-        await new Promise((resolve, reject) => {
-          const http = require('http');
-          const req = http.request(
-            {
-              hostname: SERVICE_HOST,
-              port: SERVICE_PORT,
-              path: '/api/v1/edge/sync/push',
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-            },
-            (res) => {
-              res.resume();
-              res.on('end', resolve);
-            }
-          );
-          req.on('error', reject);
-          req.end();
-        });
-      } catch {
-        /* next tick */
-      } finally {
-        syncInFlight = false;
-      }
-    }
-
-    // One mutex: push hall SoT first, then pull. Parallel push+pull was racing
-    // and could re-import a stale cloud snapshot over fresher local OPEN tables.
-    if (online && !liveSyncInFlight && Date.now() - lastLiveSyncAt >= LIVE_SYNC_MS) {
-      liveSyncInFlight = true;
-      lastLiveSyncAt = Date.now();
-      try {
-        await pushLiveToCloud();
-        await refreshLiveFromCloud();
-      } catch {
-        /* next tick */
-      } finally {
-        liveSyncInFlight = false;
-      }
-    }
-  }, 5000);
+  startEdgeOnlineReconcileLoop({
+    publishStatus,
+    getLastStatus: () => lastStatus,
+  });
 }
 
 app.whenReady().then(async () => {
   ipcMain.handle('restaurant:get-status', async () => ({
     ...lastStatus,
     stack: getStackStatus(),
+  }));
+  ipcMain.handle('restaurant:get-lan-hub', async () => ({
+    enabled: Boolean(lastStatus.lanHub),
+    lanHubUrl: lastStatus.lanHubUrl || null,
+    lanHubUrls: lastStatus.lanHubUrls || [],
+    uiOrigin: lastStatus.uiOrigin || null,
   }));
   ipcMain.handle('restaurant:get-edge-auth-status', async () => {
     try {

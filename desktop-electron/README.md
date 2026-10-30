@@ -47,17 +47,15 @@ pnpm run bundle-ui
 
 ## Офлайн-база
 
-По умолчанию **sql.js** — как сейчас у клиентов. Native SQLite не включается сам.
+По умолчанию **native SQLite** (быстрее bootstrap/поиск). Если native-модуль не загрузился — автоматически sql.js.
 
-Тест на своей машине:
+Откат на sql.js:
 
 ```bash
-AURENT_OFFLINE_ENGINE=native pnpm start
+AURENT_OFFLINE_ENGINE=sqljs pnpm start
 ```
 
-или в `config.json`: `"offlineEngine": "native"`.
-
-Если native-модуль не загрузился — снова sql.js. Откат: `AURENT_OFFLINE_ENGINE=sqljs` или удалить поле `offlineEngine`.
+или в `config.json`: `"offlineEngine": "sqljs"`.
 
 ## Старт без ожидания сайта (фаза 6, тест)
 

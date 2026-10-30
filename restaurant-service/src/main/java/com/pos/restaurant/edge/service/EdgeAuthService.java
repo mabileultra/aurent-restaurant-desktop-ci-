@@ -7,11 +7,11 @@ import com.pos.restaurant.edge.dto.EdgeCloudPinUpsertRequest;
 import com.pos.restaurant.edge.dto.EdgeLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinRosterEntry;
-import com.pos.restaurant.edge.dto.EdgeStaffBootstrapItem;
 import com.pos.restaurant.edge.dto.EdgeStaffBootstrapRequest;
 import com.pos.restaurant.edge.entity.EdgeStaff;
 import com.pos.restaurant.edge.repository.EdgeStaffRepository;
 import com.pos.restaurant.edge.support.EdgePinDigest;
+import com.pos.restaurant.edge.support.EdgeStaffBootstrapApplier;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.shared.jwt.JwtClaimsExtractor;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +25,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -40,6 +38,7 @@ public class EdgeAuthService {
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
     private final ObjectProvider<EdgeStoreService> edgeStoreService;
+    private final EdgeStaffBootstrapApplier staffBootstrapApplier;
 
     @Value("${app.restaurant.edge.bootstrap-secret:}")
     private String bootstrapSecret;
@@ -164,45 +163,7 @@ public class EdgeAuthService {
 
     @Transactional
     public int bootstrap(EdgeStaffBootstrapRequest request) {
-        long existing = staffRepository.countByActiveTrue();
-        if (existing == 0) {
-            if (StringUtils.hasText(bootstrapSecret)
-                && !bootstrapSecret.equals(String.valueOf(request.bootstrapSecret()))) {
-                throw new BusinessException("Invalid bootstrap secret");
-            }
-        }
-        int saved = 0;
-        Set<Integer> storeIds = new HashSet<>();
-        for (EdgeStaffBootstrapItem item : request.staff()) {
-            if (item == null || item.userId() == null || !StringUtils.hasText(item.username())) {
-                continue;
-            }
-            EdgeStaff row = staffRepository.findById(item.userId()).orElseGet(EdgeStaff::new);
-            row.setUserId(item.userId());
-            row.setCompanyId(request.companyId());
-            row.setCompanyLoginCode(firstNonBlank(item.companyLoginCode(), request.companyLoginCode()));
-            row.setUsername(item.username().trim());
-            row.setEmail(item.email());
-            row.setFullName(item.fullName());
-            row.setRole(StringUtils.hasText(item.role()) ? item.role().trim() : "WAITER");
-            row.setPasswordHash(resolvePasswordHash(item.passwordHash(), item.password(), row.getPasswordHash()));
-            row.setPinHash(resolvePinHash(item.pinHash(), item.pin(), row.getPinHash()));
-            row.setStoreIdsJson(writeJson(item.storeIds()));
-            row.setAllowedModulesJson(writeJson(item.allowedModules()));
-            row.setCanRequestBill(Boolean.TRUE.equals(item.canRequestBill()));
-            row.setActive(item.active() == null || item.active());
-            row.setUpdatedAt(Instant.now());
-            staffRepository.save(row);
-            if (item.storeIds() != null) {
-                storeIds.addAll(item.storeIds());
-            }
-            saved++;
-        }
-        EdgeStoreService stores = edgeStoreService.getIfAvailable();
-        if (stores != null) {
-            stores.upsertFromStoreIds(request.companyId(), storeIds);
-        }
-        return saved;
+        return staffBootstrapApplier.apply(request);
     }
 
     @Transactional(readOnly = true)

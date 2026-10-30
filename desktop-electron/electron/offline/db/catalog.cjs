@@ -4,79 +4,18 @@ const {
   rowsFromStmt,
   parseJson,
   getMeta,
-  setMeta,
   ensureDeviceId,
 } = require('./connection.cjs');
 const { fold, foldSql } = require('./catalogSearchFold.cjs');
+const { importBootstrapChunked } = require('./catalogBootstrapImport.cjs');
+const { applyCatalogDelta } = require('./catalogDeltaImport.cjs');
 
 async function importBootstrap(payload) {
-  const db = await getDb();
-  db.run('BEGIN');
-  try {
-    db.run('DELETE FROM product_barcodes');
-    db.run('DELETE FROM products');
-    db.run('DELETE FROM categories');
+  return importBootstrapChunked(payload);
+}
 
-    const metaOpts = { persist: false };
-    if (payload?.storeId != null) setMeta('storeId', String(payload.storeId), metaOpts);
-    if (payload?.storeName) setMeta('storeName', payload.storeName, metaOpts);
-    if (payload?.syncedAt) setMeta('lastCatalogSyncAt', payload.syncedAt, metaOpts);
-
-    for (const cat of payload?.categories || []) {
-      db.run('INSERT INTO categories(id, name, payload_json) VALUES(?, ?, ?)', [
-        cat.id,
-        cat.name,
-        JSON.stringify(cat),
-      ]);
-    }
-
-    for (const product of payload?.products || []) {
-      const barcodes = Array.isArray(product.barcodes) ? product.barcodes : [];
-      const primary = product.barcode || barcodes[0] || '';
-      db.run(
-        `INSERT INTO products(
-          id, sku, name, selling_price, tax_rate, barcode, category_id,
-          sale_type, unit_code, quantity_scale, allow_fraction, stock_quantity, active, payload_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          product.id,
-          product.sku || '',
-          product.name,
-          Number(product.sellingPrice ?? 0),
-          Number(product.taxRate ?? 12),
-          primary,
-          product.categoryId ?? null,
-          product.saleType || 'PIECE',
-          product.unitCode || 'PCS',
-          Number(product.quantityScale ?? 0),
-          product.allowFraction ? 1 : 0,
-          Number(product.stockQuantity ?? 0),
-          product.active === false ? 0 : 1,
-          JSON.stringify(product),
-        ],
-      );
-      const codes = new Set([primary, ...barcodes].filter(Boolean));
-      for (const code of codes) {
-        db.run('INSERT OR REPLACE INTO product_barcodes(barcode, product_id) VALUES(?, ?)', [
-          code,
-          product.id,
-        ]);
-      }
-    }
-
-    setMeta('bootstrapReady', '1', { persist: false });
-    db.run('COMMIT');
-    persistDb();
-    return {
-      ok: true,
-      productCount: (payload?.products || []).length,
-      categoryCount: (payload?.categories || []).length,
-      syncedAt: payload?.syncedAt || new Date().toISOString(),
-    };
-  } catch (err) {
-    db.run('ROLLBACK');
-    throw err;
-  }
+async function importCatalogDelta(payload) {
+  return applyCatalogDelta(payload);
 }
 
 async function getBootstrapStatus() {
@@ -172,6 +111,7 @@ async function decreaseLocalStockBatch(lines = [], { persist = true } = {}) {
 
 module.exports = {
   importBootstrap,
+  importCatalogDelta,
   getBootstrapStatus,
   listCategories,
   searchProducts,

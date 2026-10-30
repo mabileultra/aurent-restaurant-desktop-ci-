@@ -7,6 +7,7 @@ import {
   offlineMarkSalesSynced,
   isDesktopOfflineBridge,
 } from './desktopOfflineBridge';
+import { pullAndApplyCatalogDelta, shouldUseCatalogDelta } from './catalogDeltaSync';
 import { markApiReachable, useConnectivityStore } from '../../store/connectivityStore';
 import { FISCAL_STATUS, resolvePendingFiscalProvider, toSaleFiscalPayload } from '../fiscal';
 import { logCatalog, logSale } from '../desktop/activityLog';
@@ -67,9 +68,33 @@ export async function refreshCatalogBootstrap(storeId, { force = false, catalogK
     }
   }
 
+  if (
+    shouldUseCatalogDelta({
+      catalogKind,
+      force,
+      storeMismatch,
+      lastCatalogSyncAt: status.lastCatalogSyncAt,
+    })
+  ) {
+    const delta = await pullAndApplyCatalogDelta(storeId, status.lastCatalogSyncAt, {
+      catalogKind,
+    });
+    if (!delta.fullReset) {
+      return {
+        skipped: false,
+        mode: 'delta',
+        productCount: delta.imported?.productCount ?? status.productCount,
+        upserted: delta.imported?.upserted ?? delta.data?.products?.length ?? 0,
+        removed: delta.imported?.removed ?? delta.data?.removedProductIds?.length ?? 0,
+        syncedAt: delta.data?.syncedAt ?? new Date().toISOString(),
+      };
+    }
+  }
+
   const data = await pullCatalogBootstrap(storeId, { catalogKind });
   return {
     skipped: false,
+    mode: 'bootstrap',
     productCount: data?.products?.length ?? 0,
     syncedAt: data?.syncedAt ?? new Date().toISOString(),
   };

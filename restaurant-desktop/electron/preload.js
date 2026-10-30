@@ -52,4 +52,5 @@ contextBridge.exposeInMainWorld('aurentRestaurant', {
     ipcRenderer.on('restaurant:status', handler);
     return () => ipcRenderer.removeListener('restaurant:status', handler);
   },
+  getLanHub: () => ipcRenderer.invoke('restaurant:get-lan-hub'),
 });
