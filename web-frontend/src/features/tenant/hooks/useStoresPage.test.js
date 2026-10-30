@@ -138,4 +138,61 @@ describe('useStoresPage performance optimization', () => {
     // Initial total companies count when no search
     expect(hookResult.companiesCount).toBe(3);
   });
+
+  it('uses authoritative server stats from storeApi.getStats when available', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    queryClient.setQueryData(['stores-manage', {
+      page: 0,
+      size: 14,
+      search: undefined,
+      companyId: undefined,
+      businessType: undefined,
+      regionCode: undefined,
+      districtCode: undefined,
+    }], {
+      content: [
+        { id: 10, name: 'Store A', active: true, companyId: 1 },
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      page: 0,
+      size: 14,
+    });
+
+    queryClient.setQueryData(['stores-stats', {
+      search: undefined,
+      status: undefined,
+      businessType: undefined,
+      regionCode: undefined,
+      companyId: undefined,
+    }], {
+      totalStores: 150,
+      activeStores: 130,
+      inactiveStores: 20,
+      companiesCount: 45,
+    });
+
+    let hookResult;
+    function Consumer() {
+      hookResult = useStoresPage({
+        showCompanySelect: true,
+        companies: [{ id: 1, name: 'Company 1' }],
+      });
+      return React.createElement('div', null, hookResult.totalStores);
+    }
+
+    renderToStaticMarkup(
+      React.createElement(QueryClientProvider, { client: queryClient },
+        React.createElement(Consumer)
+      )
+    );
+
+    expect(hookResult.totalStores).toBe(150);
+    expect(hookResult.activeStores).toBe(130);
+    expect(hookResult.inactiveStores).toBe(20);
+    expect(hookResult.companiesCount).toBe(45);
+  });
 });

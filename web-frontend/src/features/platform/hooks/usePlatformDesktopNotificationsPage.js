@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { addHours } from 'date-fns';
-import { platformDesktopNotificationsApi } from '../../../api';
+import { platformDesktopNotificationsApi, platformCashRegistersApi } from '../../../api';
 import { formatUzbekDate } from '../components/desktop-notifications/desktopNotificationFormatters';
 import {
   enrichDesktopNotificationHistory,
@@ -52,7 +52,17 @@ export function usePlatformDesktopNotificationsPage() {
     setCustomHours,
   });
 
-  const totalRegistersCount = null;
+  // Platform-wide cash registers stats (avoids tenant 403 on /api/v1/cash-registers)
+  const registersStatsQuery = useQuery({
+    queryKey: ['platform-cash-registers-stats'],
+    queryFn: () => platformCashRegistersApi.getStats().then((r) => r.data).catch(() => null),
+    staleTime: 60_000,
+  });
+
+  const totalRegistersCount = registersStatsQuery.data?.totalRegisters ?? null;
+  const activeRegistersCount = registersStatsQuery.data?.activeRegisters ?? totalRegistersCount;
+  const onlineRegistersCount = registersStatsQuery.data?.onlineRegisters ?? null;
+  const [revokeConfirmItem, setRevokeConfirmItem] = useState(null);
 
   const historyQuery = useQuery({
     queryKey: ['platform-desktop-notifications'],
@@ -174,31 +184,48 @@ export function usePlatformDesktopNotificationsPage() {
     setTimeout(() => document.getElementById('broadcast-title-input')?.focus(), 150);
   }, [t, draft]);
 
-  const handleRevoke = useCallback(async () => {
-    if (!selectedItemForDrawer?.id) return;
+  const handleRevoke = useCallback(async (targetItem) => {
+    const item = targetItem ?? selectedItemForDrawer;
+    if (!item?.id) return;
     try {
-      await platformDesktopNotificationsApi.revoke(selectedItemForDrawer.id);
-      toast.success(t('platform.desktopNotifications.revoked', { defaultValue: 'Уведомление снято с касс' }));
+      await platformDesktopNotificationsApi.revoke(item.id);
+      toast.success(t('platform.desktopNotifications.revoked', {
+        defaultValue: 'Xabar kassalardan olib tashlandi',
+      }));
       queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
-      setSelectedItemForDrawer(null);
+      if (selectedItemForDrawer?.id === item.id) {
+        setSelectedItemForDrawer(null);
+      }
     } catch (e) {
       toast.error(e.response?.data?.message ?? t('platform.desktopNotifications.revokeFailed', {
-        defaultValue: 'Не удалось снять уведомление',
+        defaultValue: 'Xabarni olib tashlab bo‘lmadi',
       }));
     }
   }, [selectedItemForDrawer, t, queryClient]);
 
-  const handleExtend = useCallback(async () => {
-    if (!selectedItemForDrawer?.id) return;
+  const handleRevokePrompt = useCallback((item) => {
+    setRevokeConfirmItem(item ?? selectedItemForDrawer);
+  }, [selectedItemForDrawer]);
+
+  const handleConfirmRevoke = useCallback(async () => {
+    if (!revokeConfirmItem?.id) return;
+    const itemToRevoke = revokeConfirmItem;
+    setRevokeConfirmItem(null);
+    await handleRevoke(itemToRevoke);
+  }, [revokeConfirmItem, handleRevoke]);
+
+  const handleExtend = useCallback(async (targetItem) => {
+    const item = targetItem ?? selectedItemForDrawer;
+    if (!item?.id) return;
     try {
-      await platformDesktopNotificationsApi.extend(selectedItemForDrawer.id, { expiresInHours: 24 });
+      await platformDesktopNotificationsApi.extend(item.id, { expiresInHours: 24 });
       toast.success(t('platform.desktopNotifications.extended', {
-        defaultValue: 'Срок уведомления продлён на 24 часа',
+        defaultValue: 'Xabar muddati 24 soatga uzaytirildi',
       }));
       queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
     } catch (e) {
       toast.error(e.response?.data?.message ?? t('platform.desktopNotifications.extendFailed', {
-        defaultValue: 'Не удалось продлить срок',
+        defaultValue: 'Muddatni uzaytirib bo‘lmadi',
       }));
     }
   }, [selectedItemForDrawer, t, queryClient]);
@@ -259,11 +286,23 @@ export function usePlatformDesktopNotificationsPage() {
     draftSaved: draft.draftSaved,
     isDraftRestored: draft.isDraftRestored,
     handleDismissDraftNotice: draft.handleDismissDraftNotice,
+    activeRegistersCount,
     totalRegistersCount,
-    allRegistersCount: totalRegistersCount,
+    allRegistersCount: activeRegistersCount,
+    onlineRegistersCount,
+
+    // Confirm Modal
     confirmModalOpen,
     setConfirmModalOpen,
     executeBroadcast,
+
+    // Revoke Confirm Modal
+    revokeConfirmItem,
+    setRevokeConfirmItem,
+    handleRevokePrompt,
+    handleConfirmRevoke,
+
+    // Detail Drawer
     selectedItemForDrawer,
     setSelectedItemForDrawer,
     searchQuery,

@@ -1,4 +1,6 @@
 import {
+  ArrowDownLeft,
+  ArrowUpRight,
   Banknote,
   Check,
   CreditCard,
@@ -36,6 +38,8 @@ export default function PharmacyPayRail({
   total,
   onReturn,
   onDiscount,
+  onCashIn,
+  onCashOut,
   onConfirm,
   checkoutDisabled,
   isPending,
@@ -178,6 +182,28 @@ export default function PharmacyPayRail({
           <RotateCcw size={16} strokeWidth={2.25} aria-hidden />
           {t('pos.return')}
         </button>
+        {onCashIn && (
+          <button
+            type="button"
+            className="pharmacy-pay-rail__tool pharmacy-pay-rail__tool--cash-in"
+            onClick={onCashIn}
+            title={t('pos.cashIn', { defaultValue: 'Kirim' })}
+          >
+            <ArrowDownLeft size={16} strokeWidth={2.25} aria-hidden />
+            {t('pos.cashIn', { defaultValue: 'Kirim' })}
+          </button>
+        )}
+        {onCashOut && (
+          <button
+            type="button"
+            className="pharmacy-pay-rail__tool pharmacy-pay-rail__tool--cash-out"
+            onClick={onCashOut}
+            title={t('pos.cashOut', { defaultValue: 'Chiqim' })}
+          >
+            <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden />
+            {t('pos.cashOut', { defaultValue: 'Chiqim' })}
+          </button>
+        )}
       </div>
 
       <div className="pharmacy-pay-rail__footer">

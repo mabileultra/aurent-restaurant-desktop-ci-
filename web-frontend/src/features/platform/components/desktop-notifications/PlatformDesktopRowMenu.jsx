@@ -1,11 +1,11 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Copy, Eye, MoreVertical, Trash2 } from 'lucide-react';
+import { Clock, Copy, Eye, MoreVertical, Trash2 } from 'lucide-react';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-const MENU_WIDTH = 200;
-const MENU_HEIGHT = 126;
+const MENU_WIDTH = 210;
+const MENU_HEIGHT = 166;
 const GAP = 4;
 
 /**
@@ -18,6 +18,8 @@ export default function PlatformDesktopRowMenu({
   onClose,
   onViewDetails,
   onDuplicate,
+  onExtend,
+  onRevoke,
   t,
 }) {
   const triggerRef = useRef(null);
@@ -157,21 +159,32 @@ export default function PlatformDesktopRowMenu({
         <span>{t('platform.desktopNotifications.actionDuplicate')}</span>
       </button>
 
-      {/* 3. Revoke (Coming soon disabled) */}
+      {/* 3. Extend (+24h) */}
       <button
         type="button"
         role="menuitem"
-        disabled
-        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-slate-400 opacity-60 cursor-not-allowed select-none"
-        title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
+        onClick={() => {
+          onClose();
+          onExtend?.(item);
+        }}
+        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-800 outline-none transition-colors cursor-pointer"
       >
-        <div className="flex items-center gap-2">
-          <Trash2 size={14} className="shrink-0" />
-          <span>{t('platform.desktopNotifications.actionRevoke')}</span>
-        </div>
-        <span className="rounded bg-slate-100 dark:bg-slate-750 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-          {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-        </span>
+        <Clock size={14} className="text-slate-400 shrink-0" />
+        <span>{t('platform.desktopNotifications.actionExtend24h', { defaultValue: 'Muddatni uzaytirish (+24 soat)' })}</span>
+      </button>
+
+      {/* 4. Revoke */}
+      <button
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          onClose();
+          onRevoke?.(item);
+        }}
+        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 focus:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 dark:focus:bg-red-950/40 outline-none transition-colors cursor-pointer"
+      >
+        <Trash2 size={14} className="text-red-500 shrink-0" />
+        <span>{t('platform.desktopNotifications.actionRevoke', { defaultValue: 'Kassalardan olib tashlash' })}</span>
       </button>
     </div>
   ) : null;

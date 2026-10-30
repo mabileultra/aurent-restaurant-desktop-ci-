@@ -49,8 +49,9 @@ describe('PlatformDesktopRowMenu', () => {
     expect(html).toContain('role="menuitem"');
     expect(html).toContain('platform.desktopNotifications.drawerTitle');
     expect(html).toContain('platform.desktopNotifications.actionDuplicate');
-    expect(html).toContain('platform.desktopNotifications.actionRevoke');
-    expect(html).toContain('Tez kunda');
-    expect(html).toContain('disabled=""');
+    expect(html).toContain('Muddatni uzaytirish (+24 soat)');
+    expect(html).toContain('Kassalardan olib tashlash');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).not.toContain('disabled=""');
   });
 });

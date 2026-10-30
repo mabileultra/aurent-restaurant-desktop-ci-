@@ -1,6 +1,7 @@
 import PosOrderDiscountModal from '../components/PosOrderDiscountModal';
 import { PosReturnModal } from '../../../components/pos';
 import WeightEntryModal from '../components/WeightEntryModal';
+import ShiftCashMovementModal from '../components/ShiftCashMovementModal';
 import PosRegisterWorkspace from '../components/pos/PosRegisterWorkspace';
 import { usePosPage } from '../hooks/usePosPage';
 
@@ -48,6 +49,8 @@ export default function PosPage() {
             shiftIsOpen={p.shiftIsOpen}
             onReturn={() => p.setReturnOpen(true)}
             onDiscount={p.handleDiscount}
+            onCashIn={p.handleCashIn}
+            onCashOut={p.handleCashOut}
             onOpenPaymentFlow={p.handleOpenPaymentFlow}
             onPayFlowClosed={p.handlePayFlowClosed}
             payFlowOptions={p.payFlowOptions}
@@ -55,6 +58,14 @@ export default function PosPage() {
           />
         </>
       )}
+
+      <ShiftCashMovementModal
+        open={Boolean(p.cashMovement)}
+        direction={p.cashMovement || 'IN'}
+        shiftId={p.shift?.id}
+        onClose={() => p.setCashMovement(null)}
+        onSuccess={p.handleCashMovementSuccess}
+      />
 
       <PosReturnModal
         terminal

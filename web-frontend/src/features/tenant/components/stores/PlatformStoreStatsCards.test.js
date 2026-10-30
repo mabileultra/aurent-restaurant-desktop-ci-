@@ -26,7 +26,7 @@ describe('PlatformStoreStatsCards', () => {
 
     expect(html).toContain('Jami filiallar');
     expect(html).toContain('Faol filiallar');
-    expect(html).toContain('Kompaniyalar qamrovi');
+    expect(html).toContain('Kompaniyalar');
     expect(html).toContain('Nofaol filiallar');
 
     expect(html).toContain('12');

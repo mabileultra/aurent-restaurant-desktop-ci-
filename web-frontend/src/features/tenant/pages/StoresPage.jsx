@@ -162,6 +162,9 @@ export default function StoresPage({
         ) : showCompanySelect && p.viewMode === 'grouped' ? (
           <PlatformStoresGroupedView
             t={p.t}
+            byCompanyData={p.byCompanyData}
+            byCompanyLoading={p.byCompanyLoading}
+            byCompanyFetching={p.byCompanyFetching}
             stores={p.allStores}
             companies={p.companies}
             groups={p.groupedGroups}

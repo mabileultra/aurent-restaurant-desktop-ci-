@@ -10,6 +10,8 @@ export default function CashierPayColumn({
   total,
   onReturn,
   onDiscount,
+  onCashIn,
+  onCashOut,
   onConfirm,
   onOpenPaymentFlow,
   onClosePayment,
@@ -38,6 +40,8 @@ export default function CashierPayColumn({
             total={total}
             onReturn={onReturn}
             onDiscount={onDiscount}
+            onCashIn={onCashIn}
+            onCashOut={onCashOut}
             onConfirm={onConfirm}
             onOpenPaymentFlow={onOpenPaymentFlow}
             checkoutDisabled={checkoutDisabled}

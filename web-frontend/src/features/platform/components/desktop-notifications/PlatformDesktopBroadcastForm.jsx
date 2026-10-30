@@ -46,8 +46,9 @@ export default function PlatformDesktopBroadcastForm({ p }) {
     ? p.canSend
     : Boolean(currentTitle.trim() && currentBody.trim() && !p.sendPending && p.isCustomHoursValid !== false);
 
-  const sendBtnLabel = p.totalRegistersCount != null
-    ? t('platform.desktopNotifications.sendBtn', { count: p.totalRegistersCount })
+  const activeCount = p.activeRegistersCount ?? p.totalRegistersCount;
+  const sendBtnLabel = activeCount != null
+    ? t('platform.desktopNotifications.sendBtn', { count: activeCount })
     : t('platform.desktopNotifications.sendBtnAll', { defaultValue: 'Barcha kassalarga yuborish' });
 
   const kindRefs = {
@@ -149,8 +150,10 @@ export default function PlatformDesktopBroadcastForm({ p }) {
           </div>
           <div>
             <p className="text-xs font-bold text-slate-900 dark:text-white">
-              {p.totalRegistersCount != null
-                ? t('platform.desktopNotifications.registersCount', { count: p.totalRegistersCount })
+              {activeCount != null
+                ? `${t('platform.desktopNotifications.registersCount', { count: activeCount })}${
+                    p.onlineRegistersCount != null ? ` · ${t('platform.desktopNotifications.onlineCount', { defaultValue: `Hozir onlayn: ${p.onlineRegistersCount}` })}` : ''
+                  }`
                 : t('platform.desktopNotifications.registersCountUnknown', { defaultValue: 'Noma‘lum (barcha faol kassalar)' })}
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">

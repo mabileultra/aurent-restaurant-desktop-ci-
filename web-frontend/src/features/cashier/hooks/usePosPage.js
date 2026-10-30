@@ -31,6 +31,7 @@ export function usePosPage() {
   const [selectedLineId, setSelectedLineId] = useState(null);
   const [returnOpen, setReturnOpen] = useState(false);
   const [discountOpen, setDiscountOpen] = useState(false);
+  const [cashMovement, setCashMovement] = useState(null); // null | 'IN' | 'OUT'
   const { open: shiftModalOpen, openShift: openShiftModal } = useCashierShiftModal();
   const shiftAutoPromptedRef = useRef(false);
 
@@ -312,6 +313,27 @@ export function usePosPage() {
     [setCustomer, t]
   );
 
+  const handleCashIn = useCallback(() => {
+    if (!shiftIsOpen) {
+      toast.error(t('pos.shiftRequired', { defaultValue: 'Avval smenani oching' }));
+      return;
+    }
+    setCashMovement('IN');
+  }, [shiftIsOpen, t]);
+
+  const handleCashOut = useCallback(() => {
+    if (!shiftIsOpen) {
+      toast.error(t('pos.shiftRequired', { defaultValue: 'Avval smenani oching' }));
+      return;
+    }
+    setCashMovement('OUT');
+  }, [shiftIsOpen, t]);
+
+  const handleCashMovementSuccess = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    setCashMovement(null);
+  }, [qc, storeId]);
+
   return {
     t,
     storeId,
@@ -324,6 +346,12 @@ export function usePosPage() {
     setReturnOpen,
     discountOpen,
     setDiscountOpen,
+    cashMovement,
+    setCashMovement,
+    handleCashIn,
+    handleCashOut,
+    handleCashMovementSuccess,
+    shift,
     selectedLineId,
     setSelectedLineId,
     catalogProps,

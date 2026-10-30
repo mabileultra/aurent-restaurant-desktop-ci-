@@ -210,29 +210,21 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
             </button>
             <button
               type="button"
-              disabled
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500"
-              title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
+              onClick={() => p.handleExtend(item)}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750 transition-colors cursor-pointer"
             >
               <Clock size={15} />
-              <span>{t('platform.desktopNotifications.actionExtend')}</span>
-              <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-              </span>
+              <span>{t('platform.desktopNotifications.actionExtend24h', { defaultValue: 'Muddatni uzaytirish (+24 soat)' })}</span>
             </button>
           </div>
 
           <button
             type="button"
-            disabled
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500"
-            title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
+            onClick={() => p.handleRevokePrompt(item)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-red-50 py-2.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/40 transition-colors cursor-pointer"
           >
             <Trash2 size={15} />
-            <span>{t('platform.desktopNotifications.actionRevoke')}</span>
-            <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-              {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-            </span>
+            <span>{t('platform.desktopNotifications.actionRevoke', { defaultValue: 'Kassalardan olib tashlash' })}</span>
           </button>
         </div>
       </div>
