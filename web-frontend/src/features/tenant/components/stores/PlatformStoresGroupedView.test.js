@@ -286,7 +286,7 @@ describe('PlatformStoresGroupedView', () => {
   it('shows pagination for StoresPage serverPaged props (groups/totalGroups aliases)', () => {
     const groups = Array.from({ length: 10 }, (_, i) => ({
       id: i + 1,
-      name: `Kompaniya #${i + 1}`,
+      company: { id: i + 1, name: `Kompaniya #${i + 1}` },
       stores: [],
       total: 0,
       activeCount: 0,
