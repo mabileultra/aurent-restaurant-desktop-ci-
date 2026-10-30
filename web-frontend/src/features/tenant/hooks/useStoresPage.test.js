@@ -11,6 +11,8 @@ vi.mock('../../../api/store.api', () => ({
   storeApi: {
     getManaged: vi.fn(),
     getAll: vi.fn(),
+    getStats: vi.fn(),
+    getByCompany: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -94,5 +96,33 @@ describe('useStoresPage performance optimization', () => {
     // Stats are computed from totalElements
     expect(hookResult.totalStores).toBe(95);
     expect(hookResult.companiesCount).toBe(2);
+  });
+
+  it('calculates dynamic companiesCount when filtering or searching', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    let hookResult;
+    function Consumer() {
+      hookResult = useStoresPage({
+        showCompanySelect: true,
+        companies: [
+          { id: 1, name: 'Safia Bakery' },
+          { id: 2, name: 'Korzinka' },
+          { id: 3, name: 'Makro' },
+        ],
+      });
+      return React.createElement('div', null, hookResult.companiesCount);
+    }
+
+    renderToStaticMarkup(
+      React.createElement(QueryClientProvider, { client: queryClient },
+        React.createElement(Consumer)
+      )
+    );
+
+    // Initial total companies count when no search
+    expect(hookResult.companiesCount).toBe(3);
   });
 });

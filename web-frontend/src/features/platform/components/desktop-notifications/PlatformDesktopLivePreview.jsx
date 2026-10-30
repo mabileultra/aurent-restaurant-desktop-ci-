@@ -18,10 +18,8 @@ export default function PlatformDesktopLivePreview({ p }) {
   const displayTitle = previewTitle.trim() || t('platform.desktopNotifications.titlePlaceholder');
   const displayBody = previewBody.trim() || t('platform.desktopNotifications.bodyPlaceholder');
 
-  const isRuFilled = Boolean(p.titleRu.trim() && p.bodyRu.trim());
-
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-5">
+    <section className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 sm:space-y-5">
       {/* Header with Language Selector */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
         <h3 className="text-xs font-bold text-slate-900 dark:text-white">
@@ -124,21 +122,21 @@ export default function PlatformDesktopLivePreview({ p }) {
             </p>
           </div>
 
-          {/* Simulated Button */}
+          {/* Simulated Button (Localized to preview language: uz -> Tushunarli, ru -> Понятно) */}
           <div className="pt-1">
             {p.kind === 'ALERT' && (
               <div className="rounded-xl bg-[#a33719] py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                {t('platform.desktopNotifications.previewDismissBtn')}
+                {t('platform.desktopNotifications.previewDismissBtn', { lng: p.previewLang })}
               </div>
             )}
             {p.kind === 'UPDATE' && (
               <div className="rounded-xl bg-blue-600 py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                {t('platform.desktopNotifications.previewUpdateBtn')}
+                {t('platform.desktopNotifications.previewUpdateBtn', { lng: p.previewLang })}
               </div>
             )}
             {p.kind === 'MESSAGE' && (
               <div className="rounded-xl bg-slate-800 py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                {t('platform.desktopNotifications.previewCloseBtn')}
+                {t('platform.desktopNotifications.previewCloseBtn', { lng: p.previewLang })}
               </div>
             )}
           </div>
@@ -157,22 +155,12 @@ export default function PlatformDesktopLivePreview({ p }) {
         <div className="space-y-2 text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
           <div className="flex items-start gap-2">
             <Check size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <span>{t('platform.desktopNotifications.preSendCountCheck', { count: p.totalRegistersCount })}</span>
+            <span>
+              {p.totalRegistersCount != null
+                ? t('platform.desktopNotifications.preSendCountCheck', { count: p.totalRegistersCount })
+                : t('platform.desktopNotifications.sendBtnAll', { defaultValue: 'Barcha kassalarga yuborish' })}
+            </span>
           </div>
-
-          {isRuFilled ? (
-            <div className="flex items-start gap-2">
-              <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-              <span className="text-emerald-800 dark:text-emerald-300 font-medium">
-                {t('platform.desktopNotifications.preSendRuFilled')}
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-start gap-2 rounded-xl border border-amber-200/80 bg-amber-50/80 p-2.5 dark:border-amber-900/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200">
-              <Info size={14} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <span>{t('platform.desktopNotifications.preSendRuMissing')}</span>
-            </div>
-          )}
 
           <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400">
             <Info size={14} className="text-slate-400 shrink-0 mt-0.5" />

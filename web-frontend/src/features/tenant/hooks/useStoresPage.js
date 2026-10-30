@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { storeApi, platformBusinessTypeApi } from '../../../api';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 
 export function useStoresPage({ showCompanySelect = false, companyIdFilter, companies = [] } = {}) {
@@ -49,17 +50,19 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     ? (companyId ? Number(companyId) : undefined)
     : companyIdFilter;
 
+  const debouncedSearch = useDebouncedValue(search, 300);
+
   const queryParams = useMemo(
     () => ({
       page,
       size: pageSize,
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
       companyId: resolvedCompanyId,
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
       districtCode: districtCode || undefined,
     }),
-    [search, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
+    [debouncedSearch, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
   );
 
   const { data, isPending, isError, error, refetch } = useQuery({
@@ -136,6 +139,29 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     staleTime: 60_000,
   });
 
+  // Accurate filtered stores for grouped view
+  const filteredGroupedStores = useMemo(() => {
+    if (!isGroupedViewActive) return [];
+    const q = debouncedSearch.trim().toLowerCase();
+    const cIdNum = resolvedCompanyId ? Number(resolvedCompanyId) : null;
+    return allStores.filter((store) => {
+      if (cIdNum && Number(store.companyId) !== cIdNum) return false;
+      if (statusFilter === 'ACTIVE' && !store.active) return false;
+      if (statusFilter === 'INACTIVE' && store.active) return false;
+      if (businessType && store.businessType !== businessType) return false;
+      if (regionCode && store.regionCode !== regionCode) return false;
+      if (districtCode && store.districtCode !== districtCode) return false;
+      if (q) {
+        const matchName = store.name?.toLowerCase().includes(q);
+        const matchCode = store.code?.toLowerCase().includes(q);
+        const matchAddr = store.address?.toLowerCase().includes(q);
+        const matchComp = store.companyName?.toLowerCase().includes(q);
+        if (!matchName && !matchCode && !matchAddr && !matchComp) return false;
+      }
+      return true;
+    });
+  }, [isGroupedViewActive, debouncedSearch, allStores, resolvedCompanyId, statusFilter, businessType, regionCode, districtCode]);
+
   const rawRows = data?.content ?? [];
   const rows = useMemo(() => {
     if (statusFilter === 'ACTIVE') return rawRows.filter((r) => r.active);
@@ -146,15 +172,21 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const total = data?.totalElements ?? rows.length;
   const totalPages = data?.totalPages ?? 0;
 
-  // Scalable KPI calculations without downloading all stores
-  const totalStores = total;
+  // Scalable KPI calculations
+  const totalStores = isGroupedViewActive && allStores.length > 0
+    ? filteredGroupedStores.length
+    : total;
+
   const rawActive = rawRows.filter((s) => s.active).length;
   const rawInactive = rawRows.filter((s) => !s.active).length;
 
   let activeStores;
   let inactiveStores;
 
-  if (statusFilter === 'ACTIVE') {
+  if (isGroupedViewActive && allStores.length > 0) {
+    activeStores = filteredGroupedStores.filter((s) => s.active).length;
+    inactiveStores = filteredGroupedStores.filter((s) => !s.active).length;
+  } else if (statusFilter === 'ACTIVE') {
     activeStores = total;
     inactiveStores = Math.max(0, totalStores - activeStores);
   } else if (statusFilter === 'INACTIVE') {
@@ -168,9 +200,59 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     activeStores = Math.max(0, totalStores - inactiveStores);
   }
 
-  const companiesCount = resolvedCompanyId
-    ? (totalStores > 0 ? 1 : 0)
-    : (companies?.length || 0);
+  const companiesCount = useMemo(() => {
+    if (resolvedCompanyId) {
+      return totalStores > 0 ? 1 : 0;
+    }
+
+    const q = debouncedSearch.trim().toLowerCase();
+    const hasFilters = Boolean(
+      q || businessType || regionCode || districtCode || statusFilter !== 'ALL'
+    );
+
+    if (!hasFilters) {
+      return companies?.length || 0;
+    }
+
+    if (isGroupedViewActive && allStores.length > 0) {
+      const matchingCompanyIds = new Set();
+      filteredGroupedStores.forEach((store) => {
+        if (store.companyId) {
+          matchingCompanyIds.add(Number(store.companyId));
+        }
+      });
+
+      // Also include companies whose own name matches the search query
+      companies.forEach((comp) => {
+        if (q && comp.name?.toLowerCase().includes(q)) {
+          matchingCompanyIds.add(Number(comp.id));
+        }
+      });
+
+      return matchingCompanyIds.size;
+    }
+
+    if (q) {
+      const matchedFromList = companies.filter((c) =>
+        c.name?.toLowerCase().includes(q)
+      ).length;
+      if (matchedFromList > 0) return matchedFromList;
+    }
+
+    return companies?.length || 0;
+  }, [
+    resolvedCompanyId,
+    totalStores,
+    debouncedSearch,
+    businessType,
+    regionCode,
+    districtCode,
+    statusFilter,
+    isGroupedViewActive,
+    allStores.length,
+    filteredGroupedStores,
+    companies,
+  ]);
 
   const handleStatusFilterChange = (nextFilter) => {
     setStatusFilter(nextFilter);

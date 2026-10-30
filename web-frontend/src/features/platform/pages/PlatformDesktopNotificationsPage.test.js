@@ -27,11 +27,9 @@ const mockBaseHook = {
     if (key === 'platform.desktopNotifications.targetAll') return 'Barcha kassalar';
     if (key === 'platform.desktopNotifications.targetSelect') return 'Tanlab yuborish';
     if (key === 'platform.desktopNotifications.registersCount') return `${fallback?.count ?? 248} ta kassa`;
-    if (key === 'platform.desktopNotifications.targetGroupOutdated') return 'Eski versiyadagi kassalar (14 ta)';
-    if (key === 'platform.desktopNotifications.targetGroupCustom') return 'Muayyan filial kassalari (36 ta)';
+    if (key === 'platform.desktopNotifications.registersCountUnknown') return 'Noma\'lum (barcha faol kassalar)';
+    if (key === 'platform.desktopNotifications.comingSoon') return 'Tez kunda';
     if (key === 'platform.desktopNotifications.stepContent') return 'Xabar matni';
-    if (key === 'platform.desktopNotifications.langUz') return 'O\'zbekcha';
-    if (key === 'platform.desktopNotifications.langRu') return 'Русский';
     if (key === 'platform.desktopNotifications.badgeFilled') return 'To\'liq';
     if (key === 'platform.desktopNotifications.badgeEmpty') return 'Bo\'sh';
     if (key === 'platform.desktopNotifications.stepKind') return 'Turi';
@@ -39,8 +37,14 @@ const mockBaseHook = {
     if (key === 'platform.desktopNotifications.kindUpdate') return 'Yangilanish';
     if (key === 'platform.desktopNotifications.kindMessage') return 'Xabar';
     if (key === 'platform.desktopNotifications.stepSchedule') return 'Muddat va vaqt';
-    if (key === 'platform.desktopNotifications.sendBtn') return '248 ta kassaga yuborish';
+    if (key === 'platform.desktopNotifications.sendBtn') return `${fallback?.count ?? 248} ta kassaga yuborish`;
+    if (key === 'platform.desktopNotifications.sendBtnAll') return 'Barcha kassalarga yuborish';
     if (key === 'platform.desktopNotifications.livePreviewTitle') return 'Kassada ko\'rinishi';
+    if (key === 'platform.desktopNotifications.previewUz') return 'UZ ko\'rinishi';
+    if (key === 'platform.desktopNotifications.previewRu') return 'RU ko\'rinishi';
+    if (key === 'platform.desktopNotifications.previewDismissBtn') return fallback?.lng === 'ru' ? 'Понятно' : 'Tushunarli';
+    if (key === 'platform.desktopNotifications.previewUpdateBtn') return 'Ilovani yangilash';
+    if (key === 'platform.desktopNotifications.previewCloseBtn') return 'Yopish';
     if (key === 'platform.desktopNotifications.historyTitle') return 'Yuborilganlar';
     if (key === 'platform.desktopNotifications.colSent') return 'YUBORILGAN';
     if (key === 'platform.desktopNotifications.colKind') return 'TURI';
@@ -49,25 +53,24 @@ const mockBaseHook = {
     if (key === 'platform.desktopNotifications.colDelivered') return 'YETKAZILDI';
     if (key === 'platform.desktopNotifications.colRead') return 'O\'QILDI';
     if (key === 'platform.desktopNotifications.colStatus') return 'HOLAT';
-    if (key === 'platform.desktopNotifications.confirmModalTitle') return '248 ta kassaga yuborilsinmi?';
+    if (key === 'platform.desktopNotifications.untracked') return 'Kuzatilmagan';
+    if (key === 'platform.desktopNotifications.detailUntrackedHint')
+      return "Kassalarda hisoblagich kuzatilmagan (Server barcha faol kassalarga tarqatadi, alohida o'qish kvitansiyalari yuritilmaydi).";
+    if (key === 'platform.desktopNotifications.confirmModalTitle') return `${fallback?.count ?? 248} ta kassaga yuborilsinmi?`;
+    if (key === 'platform.desktopNotifications.confirmModalTitleAll') return 'Barcha kassalarga yuborilsinmi?';
     if (key === 'platform.desktopNotifications.confirmCancel') return 'Ortga, tahrirlash';
-    if (key === 'platform.desktopNotifications.confirmSubmit') return 'Ha, 248 ta kassaga yuborish';
-    if (key === 'platform.desktopNotifications.statDelivered') return 'Yetkazildi';
-    if (key === 'platform.desktopNotifications.statRead') return 'O\'qildi';
-    if (key === 'platform.desktopNotifications.statOffline') return 'Yetmagan';
-    if (key === 'platform.desktopNotifications.unreachedRegisters') return 'Yetmagan kassalar';
+    if (key === 'platform.desktopNotifications.confirmSubmit') return `Ha, ${fallback?.count ?? 248} ta kassaga yuborish`;
+    if (key === 'platform.desktopNotifications.confirmSubmitAll') return 'Ha, barcha kassalarga yuborish';
     if (key === 'platform.desktopNotifications.actionDuplicate') return 'Nusxa olib yangi xabar';
     if (key === 'platform.desktopNotifications.actionExtend') return 'Muddatni uzaytirish';
     if (key === 'platform.desktopNotifications.actionRevoke') return 'Kassalardan olib tashlash';
     return key;
   },
   i18n: { language: 'uz' },
-  langTab: 'uz',
-  setLangTab: vi.fn(),
-  previewLang: 'uz',
-  setPreviewLang: vi.fn(),
-  targetScope: 'ALL',
-  setTargetScope: vi.fn(),
+  title: 'Ertaga 02:00–03:00 da texnik ishlar',
+  setTitle: vi.fn(),
+  body: 'Bu vaqtda kassa oflayn rejimda ishlaydi.',
+  setBody: vi.fn(),
   titleUz: 'Ertaga 02:00–03:00 da texnik ishlar',
   setTitleUz: vi.fn(),
   bodyUz: 'Bu vaqtda kassa oflayn rejimda ishlaydi.',
@@ -76,6 +79,12 @@ const mockBaseHook = {
   setTitleRu: vi.fn(),
   bodyRu: '',
   setBodyRu: vi.fn(),
+  langTab: 'uz',
+  setLangTab: vi.fn(),
+  previewLang: 'uz',
+  setPreviewLang: vi.fn(),
+  targetScope: 'ALL',
+  setTargetScope: vi.fn(),
   kind: 'ALERT',
   setKind: vi.fn(),
   duration: '3d',
@@ -88,6 +97,8 @@ const mockBaseHook = {
   setNeedsConfirm: vi.fn(),
   totalRegistersCount: 248,
   draftSaved: true,
+  isDraftRestored: false,
+  handleDismissDraftNotice: vi.fn(),
   confirmModalOpen: false,
   setConfirmModalOpen: vi.fn(),
   selectedItemForDrawer: null,
@@ -104,10 +115,6 @@ const mockBaseHook = {
       kind: 'ALERT',
       title: 'Ertaga 02:00–03:00 da texnik ishlar',
       body: 'Bu vaqtda kassa oflayn rejimda ishlaydi.',
-      deliveredCount: 231,
-      totalCount: 248,
-      readCount: 187,
-      readPercent: 81,
       targetLabel: 'Barcha kassalar',
       status: 'ACTIVE',
     },
@@ -119,6 +126,7 @@ const mockBaseHook = {
   handleDuplicate: vi.fn(),
   handleRevoke: vi.fn(),
   handleExtend: vi.fn(),
+  executeBroadcast: vi.fn(),
   sendPending: false,
 };
 
@@ -145,11 +153,10 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Kimga');
     expect(html).toContain('248 ta kassa');
     expect(html).toContain('Barcha kassalar');
+    expect(html).toContain('Tez kunda');
 
-    // Step 2: Xabar matni & languages
+    // Step 2: Xabar matni
     expect(html).toContain('Xabar matni');
-    expect(html).toContain('O&#x27;zbekcha');
-    expect(html).toContain('Русский');
 
     // Step 3: Turi
     expect(html).toContain('Turi');
@@ -189,7 +196,22 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Ertaga 02:00–03:00 da texnik ishlar');
   });
 
-  it('renders slide-over detail drawer with delivery KPIs and offline registers', () => {
+  it('handles unknown total registers count gracefully in confirmation modal', () => {
+    const confirmProps = {
+      ...mockBaseHook,
+      confirmModalOpen: true,
+      totalRegistersCount: null,
+    };
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformDesktopConfirmModal, { p: confirmProps })
+    );
+
+    expect(html).toContain('Barcha kassalarga yuborilsinmi?');
+    expect(html).toContain('Ha, barcha kassalarga yuborish');
+    expect(html).toContain('Noma&#x27;lum');
+  });
+
+  it('renders slide-over detail drawer with honest untracked status', () => {
     const drawerProps = {
       ...mockBaseHook,
       selectedItemForDrawer: mockBaseHook.history[0],
@@ -199,44 +221,20 @@ describe('PlatformDesktopNotificationsPage', () => {
     );
 
     expect(html).toContain('Ertaga 02:00–03:00 da texnik ishlar');
-    expect(html).toContain('Yetkazildi');
-    expect(html).toContain('231');
-    expect(html).toContain('O&#x27;qildi');
-    expect(html).toContain('187');
-    expect(html).toContain('Yetmagan');
-    expect(html).toContain('Yetmagan kassalar');
-    expect(html).toContain('Mobile Ultra');
-    expect(html).toContain('Raimbobo Market');
-    expect(html).toContain('Farina Invest');
+    expect(html).toContain('Kuzatilmagan');
+    expect(html).toContain('Kassalarda hisoblagich kuzatilmagan');
     expect(html).toContain('Nusxa olib yangi xabar');
     expect(html).toContain('Muddatni uzaytirish');
     expect(html).toContain('Kassalardan olib tashlash');
   });
 
-  it('renders target selection groups when targetScope is SELECT', () => {
+  it('renders draft restored notice banner when isDraftRestored is true', () => {
     currentHookState = {
       ...mockBaseHook,
-      targetScope: 'SELECT',
-      targetGroup: 'OUTDATED',
-      totalRegistersCount: 14,
+      isDraftRestored: true,
     };
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
 
-    expect(html).toContain('Guruh:');
-    expect(html).toContain('14 ta kassa');
-  });
-
-  it('renders custom hours and schedule input when other/schedule are selected', () => {
-    currentHookState = {
-      ...mockBaseHook,
-      duration: 'other',
-      customHours: '48',
-      scheduleType: 'SCHEDULE',
-      scheduleTime: '2026-11-01T10:00',
-    };
-    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
-
-    expect(html).toContain('value="48"');
-    expect(html).toContain('type="datetime-local"');
+    expect(html).toContain('Qoralama tiklandi');
   });
 });

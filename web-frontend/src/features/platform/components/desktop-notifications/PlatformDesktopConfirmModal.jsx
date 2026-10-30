@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
-  Info,
   Send,
 } from 'lucide-react';
 
@@ -71,26 +71,27 @@ export default function PlatformDesktopConfirmModal({ p }) {
     }, 50);
   };
 
-  const handleAddTranslation = () => {
-    p.setConfirmModalOpen(false);
-    p.setLangTab('ru');
-    setTimeout(() => {
-      document.getElementById('broadcast-title-input')?.focus();
-    }, 100);
-  };
-
-  const activeTitle = p.titleUz.trim() || p.titleRu.trim();
-  const activeBody = p.bodyUz.trim() || p.bodyRu.trim();
-
-  const isUzFilled = Boolean(p.titleUz.trim() && p.bodyUz.trim());
-  const isRuFilled = Boolean(p.titleRu.trim() && p.bodyRu.trim());
+  const activeTitle = (p.title || p.titleUz || '').trim();
+  const activeBody = (p.body || p.bodyUz || '').trim();
 
   const isAlert = p.kind === 'ALERT';
   const isUpdate = p.kind === 'UPDATE';
 
-  return (
+  const modalTitle = p.totalRegistersCount != null
+    ? t('platform.desktopNotifications.confirmModalTitle', { count: p.totalRegistersCount })
+    : t('platform.desktopNotifications.confirmModalTitleAll', { defaultValue: 'Barcha kassalarga yuborilsinmi?' });
+
+  const targetLabel = p.totalRegistersCount != null
+    ? `${t('platform.desktopNotifications.targetAll')} · ${p.totalRegistersCount} ta`
+    : `${t('platform.desktopNotifications.targetAll')} · ${t('platform.desktopNotifications.registersCountUnknown', { defaultValue: 'Noma\'lum' })}`;
+
+  const submitBtnLabel = p.totalRegistersCount != null
+    ? t('platform.desktopNotifications.confirmSubmit', { count: p.totalRegistersCount })
+    : t('platform.desktopNotifications.confirmSubmitAll', { defaultValue: 'Ha, barcha kassalarga yuborish' });
+
+  const modalNode = (
     <div
-      className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-broadcast-title"
@@ -106,7 +107,7 @@ export default function PlatformDesktopConfirmModal({ p }) {
           </div>
           <div>
             <h3 id="confirm-broadcast-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              {t('platform.desktopNotifications.confirmModalTitle', { count: p.totalRegistersCount })}
+              {modalTitle}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {t('platform.desktopNotifications.confirmModalSubtitle')}
@@ -116,16 +117,16 @@ export default function PlatformDesktopConfirmModal({ p }) {
 
         {/* Summary Details Grid */}
         <div className="divide-y divide-slate-100 dark:divide-slate-800 border-y border-slate-100 dark:border-slate-800 text-xs">
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-2.5">
             <span className="text-slate-500 dark:text-slate-400">
               {t('platform.desktopNotifications.confirmLabelTarget')}
             </span>
             <span className="font-semibold text-slate-900 dark:text-white">
-              {t('platform.desktopNotifications.targetAll')} · {p.totalRegistersCount} ta
+              {targetLabel}
             </span>
           </div>
 
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-2.5">
             <span className="text-slate-500 dark:text-slate-400">
               {t('platform.desktopNotifications.confirmLabelKind')}
             </span>
@@ -151,33 +152,7 @@ export default function PlatformDesktopConfirmModal({ p }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between py-2">
-            <span className="text-slate-500 dark:text-slate-400">
-              {t('platform.desktopNotifications.confirmLabelLanguages')}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${
-                  isUzFilled
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'border-slate-200 bg-slate-100 text-slate-600'
-                }`}
-              >
-                O‘zbekcha · {isUzFilled ? 'to‘liq' : 'bo‘sh'}
-              </span>
-              <span
-                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${
-                  isRuFilled
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                }`}
-              >
-                Русский · {isRuFilled ? 'to‘liq' : 'bo‘sh'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-2.5">
             <span className="text-slate-500 dark:text-slate-400">
               {t('platform.desktopNotifications.confirmLabelExpires')}
             </span>
@@ -186,7 +161,7 @@ export default function PlatformDesktopConfirmModal({ p }) {
             </span>
           </div>
 
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-2.5">
             <span className="text-slate-500 dark:text-slate-400">
               {t('platform.desktopNotifications.confirmLabelSendTime')}
             </span>
@@ -208,23 +183,6 @@ export default function PlatformDesktopConfirmModal({ p }) {
             {activeBody}
           </p>
         </div>
-
-        {/* Russian Translation Warning Banner */}
-        {!isRuFilled && (
-          <div className="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 dark:border-amber-900/40 dark:bg-amber-950/20 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-300">
-            <Info size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              <span>{t('platform.desktopNotifications.confirmRuWarning')}</span>{' '}
-              <button
-                type="button"
-                onClick={handleAddTranslation}
-                className="font-bold text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400 inline cursor-pointer"
-              >
-                {t('platform.desktopNotifications.confirmAddTranslation')}
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Warning Footnote */}
         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -248,10 +206,15 @@ export default function PlatformDesktopConfirmModal({ p }) {
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-600/30 transition-all cursor-pointer disabled:opacity-50"
           >
             <Send size={15} />
-            <span>{t('platform.desktopNotifications.confirmSubmit', { count: p.totalRegistersCount })}</span>
+            <span>{submitBtnLabel}</span>
           </button>
         </div>
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalNode, document.body);
+  }
+  return modalNode;
 }

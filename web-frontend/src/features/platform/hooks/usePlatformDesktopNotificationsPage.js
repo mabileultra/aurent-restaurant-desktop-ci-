@@ -8,27 +8,31 @@ import { cashRegisterApi, platformDesktopNotificationsApi } from '../../../api';
 
 const DRAFT_STORAGE_KEY = 'aurent_desktop_notification_draft_v1';
 
+export function formatUzbekMonthLower(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(
+    /-(Oktabr|Yanvar|Fevral|Mart|Aprel|May|Iyun|Iyul|Avgust|Sentabr|Noyabr|Dekabr)\b/gi,
+    (m, month) => '-' + month.toLowerCase()
+  );
+}
+
 export function usePlatformDesktopNotificationsPage() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
-  // Language tab for composing message ('uz' | 'ru')
+  // Language tab ('uz' as active standard single composition mode)
   const [langTab, setLangTab] = useState('uz');
 
-  // Preview language for live cashier simulator ('uz' | 'ru')
+  // Preview language for live cashier monitor simulator ('uz' | 'ru')
   const [previewLang, setPreviewLang] = useState('uz');
 
-  // Target audience ('ALL' | 'SELECT')
+  // Target audience (Only 'ALL' is currently supported by backend)
   const [targetScope, setTargetScope] = useState('ALL');
-  const [targetGroup, setTargetGroup] = useState('OUTDATED'); // 'OUTDATED' | 'CUSTOM'
+  const [targetGroup, setTargetGroup] = useState('OUTDATED');
 
-  // Message fields in Uzbek
-  const [titleUz, setTitleUz] = useState('Ertaga 02:00–03:00 da texnik ishlar');
-  const [bodyUz, setBodyUz] = useState('Bu vaqtda kassa oflayn rejimda ishlaydi. Cheklar internet qaytgach avtomatik yuboriladi.');
-
-  // Message fields in Russian
-  const [titleRu, setTitleRu] = useState('');
-  const [bodyRu, setBodyRu] = useState('');
+  // Message fields
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
 
   // Kind of notification ('ALERT' = Muhim, 'UPDATE' = Yangilanish, 'MESSAGE' = Xabar)
   const [kind, setKind] = useState('ALERT');
@@ -37,12 +41,12 @@ export function usePlatformDesktopNotificationsPage() {
   const [duration, setDuration] = useState('3d');
   const [customHours, setCustomHours] = useState('72');
 
-  // Scheduling ('NOW' | 'SCHEDULE')
+  // Scheduling ('NOW' | 'SCHEDULE' - currently only NOW is supported)
   const [scheduleType, setScheduleType] = useState('NOW');
   const [scheduleTime, setScheduleTime] = useState('');
 
-  // Confirmation modal toggle & state
-  const [needsConfirm, setNeedsConfirm] = useState(true);
+  // Confirmation modal: confirmation is strictly mandatory
+  const needsConfirm = true;
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   // Drawer for sent item details
@@ -52,8 +56,9 @@ export function usePlatformDesktopNotificationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Auto-saved draft indicator
+  // Auto-saved draft & restored state
   const [draftSaved, setDraftSaved] = useState(true);
+  const [isDraftRestored, setIsDraftRestored] = useState(false);
   const draftTimerRef = useRef(null);
 
   // Restore draft on mount if available
@@ -62,18 +67,16 @@ export function usePlatformDesktopNotificationsPage() {
       const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.titleUz !== undefined) setTitleUz(parsed.titleUz);
-        if (parsed.bodyUz !== undefined) setBodyUz(parsed.bodyUz);
-        if (parsed.titleRu !== undefined) setTitleRu(parsed.titleRu);
-        if (parsed.bodyRu !== undefined) setBodyRu(parsed.bodyRu);
+        const restoredTitle = parsed.title || parsed.titleUz || '';
+        const restoredBody = parsed.body || parsed.bodyUz || '';
+        if (restoredTitle || restoredBody) {
+          setTitle(restoredTitle);
+          setBody(restoredBody);
+          setIsDraftRestored(true);
+        }
         if (parsed.kind) setKind(parsed.kind);
         if (parsed.duration) setDuration(parsed.duration);
         if (parsed.customHours) setCustomHours(parsed.customHours);
-        if (parsed.scheduleType) setScheduleType(parsed.scheduleType);
-        if (parsed.scheduleTime) setScheduleTime(parsed.scheduleTime);
-        if (parsed.targetScope) setTargetScope(parsed.targetScope);
-        if (parsed.targetGroup) setTargetGroup(parsed.targetGroup);
-        if (typeof parsed.needsConfirm === 'boolean') setNeedsConfirm(parsed.needsConfirm);
       }
     } catch {
       // ignore storage errors
@@ -86,23 +89,20 @@ export function usePlatformDesktopNotificationsPage() {
     clearTimeout(draftTimerRef.current);
     draftTimerRef.current = setTimeout(() => {
       try {
-        localStorage.setItem(
-          DRAFT_STORAGE_KEY,
-          JSON.stringify({
-            titleUz,
-            bodyUz,
-            titleRu,
-            bodyRu,
-            kind,
-            duration,
-            customHours,
-            scheduleType,
-            scheduleTime,
-            targetScope,
-            targetGroup,
-            needsConfirm,
-          })
-        );
+        if (!title.trim() && !body.trim()) {
+          localStorage.removeItem(DRAFT_STORAGE_KEY);
+        } else {
+          localStorage.setItem(
+            DRAFT_STORAGE_KEY,
+            JSON.stringify({
+              title,
+              body,
+              kind,
+              duration,
+              customHours,
+            })
+          );
+        }
         setDraftSaved(true);
       } catch {
         // ignore storage errors
@@ -110,29 +110,18 @@ export function usePlatformDesktopNotificationsPage() {
     }, 600);
 
     return () => clearTimeout(draftTimerRef.current);
-  }, [
-    titleUz,
-    bodyUz,
-    titleRu,
-    bodyRu,
-    kind,
-    duration,
-    customHours,
-    scheduleType,
-    scheduleTime,
-    targetScope,
-    targetGroup,
-    needsConfirm,
-  ]);
+  }, [title, body, kind, duration, customHours]);
 
-  // Total cash registers count query
+  // Total cash registers count query (handles 403 or unavailable by keeping count as null)
   const cashRegistersQuery = useQuery({
     queryKey: ['cash-registers-count-for-broadcast'],
     queryFn: () => cashRegisterApi.getAll({ size: 1 }).then((r) => r.data),
     staleTime: 60_000,
+    retry: false,
   });
 
-  const totalRegistersCount = Number(cashRegistersQuery.data?.totalElements) || 0;
+  const rawElements = Number(cashRegistersQuery.data?.totalElements);
+  const totalRegistersCount = cashRegistersQuery.isSuccess && rawElements > 0 ? rawElements : null;
 
   // History query
   const historyQuery = useQuery({
@@ -156,11 +145,12 @@ export function usePlatformDesktopNotificationsPage() {
     }
   }, [duration, customHours]);
 
-  // Formatted date when notification will expire
+  // Formatted date when notification will expire (formatted with lowercase month in uz)
   const visibleUntilFormatted = useMemo(() => {
     const targetDate = addHours(new Date(), expiresInHours);
     try {
-      return format(targetDate, 'd-MMMM, HH:mm', { locale: uz });
+      const raw = format(targetDate, 'd-MMMM, HH:mm', { locale: uz });
+      return formatUzbekMonthLower(raw);
     } catch {
       return '';
     }
@@ -170,11 +160,10 @@ export function usePlatformDesktopNotificationsPage() {
   const broadcastMutation = useMutation({
     mutationFn: (payload) => platformDesktopNotificationsApi.broadcast(payload).then((r) => r.data),
     onSuccess: () => {
-      toast.success(t('platform.desktopNotifications.sent'));
-      setTitleUz('');
-      setBodyUz('');
-      setTitleRu('');
-      setBodyRu('');
+      toast.success(t('platform.desktopNotifications.sent', { defaultValue: 'Bildirishnoma yuborildi' }));
+      setTitle('');
+      setBody('');
+      setIsDraftRestored(false);
       setConfirmModalOpen(false);
       try {
         localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -184,72 +173,41 @@ export function usePlatformDesktopNotificationsPage() {
       queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
     },
     onError: () => {
-      toast.error(t('platform.desktopNotifications.sendFailed'));
+      toast.error(t('platform.desktopNotifications.sendFailed', { defaultValue: 'Yuborib bo‘lmadi' }));
     },
   });
 
-  // Сервер шлёт всем кассам. Числа 14 и 36 в макете не используем.
-  const activeTargetCount = totalRegistersCount;
-
   // Handle send button click from form
   const handleInitiateSend = useCallback(() => {
-    const activeTitle = titleUz.trim() || titleRu.trim();
-    const activeBody = bodyUz.trim() || bodyRu.trim();
+    const activeTitle = title.trim();
+    const activeBody = body.trim();
     if (!activeTitle || !activeBody) {
-      toast.error(t('platform.desktopNotifications.validation'));
+      toast.error(t('platform.desktopNotifications.validation', { defaultValue: 'Sarlavha va matnni to‘ldiring' }));
       return;
     }
-
-    if (needsConfirm) {
-      setConfirmModalOpen(true);
-    } else {
-      executeBroadcast();
-    }
-  }, [titleUz, titleRu, bodyUz, bodyRu, needsConfirm, t]);
+    setConfirmModalOpen(true);
+  }, [title, body, t]);
 
   // Execute broadcast mutation
   const executeBroadcast = useCallback(() => {
-    if (scheduleType !== 'NOW') {
-      toast.error(t('platform.desktopNotifications.scheduleUnsupported', {
-        defaultValue: 'Отложенная отправка пока не поддерживается. Отправьте сразу.',
-      }));
-      return;
-    }
-    if (targetScope !== 'ALL') {
-      toast.error(t('platform.desktopNotifications.targetUnsupported', {
-        defaultValue: 'Выбор отдельных касс пока не поддерживается. Можно отправить только всем.',
-      }));
-      return;
-    }
-    const pickedTitle = langTab === 'ru' ? titleRu.trim() || titleUz.trim() : titleUz.trim() || titleRu.trim();
-    const pickedBody = langTab === 'ru' ? bodyRu.trim() || bodyUz.trim() : bodyUz.trim() || bodyRu.trim();
+    const activeTitle = title.trim();
+    const activeBody = body.trim();
+    if (!activeTitle || !activeBody) return;
+
     const payload = {
-      title: pickedTitle.slice(0, 200),
-      body: pickedBody.slice(0, 4000),
+      title: activeTitle.slice(0, 200),
+      body: activeBody.slice(0, 4000),
       kind,
       expiresInHours,
     };
     broadcastMutation.mutate(payload);
-  }, [
-    scheduleType,
-    targetScope,
-    langTab,
-    titleUz,
-    titleRu,
-    bodyUz,
-    bodyRu,
-    kind,
-    expiresInHours,
-    broadcastMutation,
-    t,
-  ]);
+  }, [title, body, kind, expiresInHours, broadcastMutation]);
 
-  // Clear form
+  // Clear form and stored draft
   const handleClear = useCallback(() => {
-    setTitleUz('');
-    setBodyUz('');
-    setTitleRu('');
-    setBodyRu('');
+    setTitle('');
+    setBody('');
+    setIsDraftRestored(false);
     try {
       localStorage.removeItem(DRAFT_STORAGE_KEY);
     } catch {
@@ -258,14 +216,20 @@ export function usePlatformDesktopNotificationsPage() {
     toast.success(t('common.cleared', { defaultValue: 'Tozalandi' }));
   }, [t]);
 
+  // Dismiss restored draft notice without clearing
+  const handleDismissDraftNotice = useCallback(() => {
+    setIsDraftRestored(false);
+  }, []);
+
   // Duplicate / copy sent item into form
   const handleDuplicate = useCallback(
     (item) => {
       if (!item) return;
-      setTitleUz(item.title || '');
-      setBodyUz(item.body || '');
+      setTitle(item.title || '');
+      setBody(item.body || '');
       if (item.kind) setKind(item.kind);
       setSelectedItemForDrawer(null);
+      setIsDraftRestored(false);
       toast.success(t('platform.desktopNotifications.actionDuplicate', { defaultValue: 'Nusxa olindi' }));
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => {
@@ -278,21 +242,21 @@ export function usePlatformDesktopNotificationsPage() {
   // Revoke / dismiss item from active registers
   const handleRevoke = useCallback(() => {
     toast.error(t('platform.desktopNotifications.revokeUnsupported', {
-      defaultValue: 'Снять уведомление с касс сервер пока не умеет.',
+      defaultValue: 'Xabarni kassalardan qaytarib olish serverda qo‘llab-quvvatlanmaydi.',
     }));
   }, [t]);
 
   const handleExtend = useCallback(() => {
     toast.error(t('platform.desktopNotifications.extendUnsupported', {
-      defaultValue: 'Продлить срок сервер пока не умеет.',
+      defaultValue: 'Muddatni uzaytirish serverda qo‘llab-quvvatlanmaydi.',
     }));
   }, [t]);
 
-  // Enriched history items with realistic status and delivery stats
+  // Enriched history items with realistic status without fake counts
   const enrichedHistory = useMemo(() => {
     const rawList = Array.isArray(historyQuery.data) ? historyQuery.data : [];
     const now = new Date();
-    const allLabel = t('platform.desktopNotifications.targetAll', { defaultValue: 'Все кассы' });
+    const allLabel = t('platform.desktopNotifications.targetAll', { defaultValue: 'Barcha kassalar' });
 
     return rawList.map((item) => {
       const created = item.createdAt ? new Date(item.createdAt) : null;
@@ -326,16 +290,22 @@ export function usePlatformDesktopNotificationsPage() {
     });
   }, [enrichedHistory, searchQuery, statusFilter]);
 
-  // Backward compatibility getters & setters for existing legacy components/tests
-  const title = langTab === 'uz' ? titleUz : titleRu;
-  const body = langTab === 'uz' ? bodyUz : bodyRu;
-  const setTitle = (val) => (langTab === 'uz' ? setTitleUz(val) : setTitleRu(val));
-  const setBody = (val) => (langTab === 'uz' ? setBodyUz(val) : setBodyRu(val));
-
   return {
     t,
     i18n,
     // Composing state
+    title,
+    setTitle,
+    body,
+    setBody,
+    titleUz: title,
+    setTitleUz: setTitle,
+    bodyUz: body,
+    setBodyUz: setBody,
+    titleRu: title,
+    setTitleRu: setTitle,
+    bodyRu: body,
+    setBodyRu: setBody,
     langTab,
     setLangTab,
     previewLang,
@@ -344,15 +314,7 @@ export function usePlatformDesktopNotificationsPage() {
     setTargetScope,
     targetGroup,
     setTargetGroup,
-    activeTargetCount,
-    titleUz,
-    setTitleUz,
-    bodyUz,
-    setBodyUz,
-    titleRu,
-    setTitleRu,
-    bodyRu,
-    setBodyRu,
+    activeTargetCount: totalRegistersCount,
     kind,
     setKind,
     duration,
@@ -365,10 +327,12 @@ export function usePlatformDesktopNotificationsPage() {
     setScheduleType,
     scheduleTime,
     setScheduleTime,
-    needsConfirm,
-    setNeedsConfirm,
+    needsConfirm: true,
+    setNeedsConfirm: () => {},
     draftSaved,
-    totalRegistersCount: activeTargetCount,
+    isDraftRestored,
+    handleDismissDraftNotice,
+    totalRegistersCount,
     allRegistersCount: totalRegistersCount,
 
     // Confirm Modal
@@ -398,10 +362,6 @@ export function usePlatformDesktopNotificationsPage() {
     sendPending: broadcastMutation.isPending,
 
     // Legacy compat
-    title,
-    setTitle,
-    body,
-    setBody,
     setExpiresInHours: (v) => setCustomHours(String(v)),
   };
 }

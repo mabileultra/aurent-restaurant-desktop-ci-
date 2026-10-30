@@ -18,7 +18,10 @@ function resolveLocale(lang) {
 function formatDateFull(iso, lang) {
   try {
     const d = new Date(iso);
-    return format(d, 'd-MMMM yyyy, HH:mm', { locale: resolveLocale(lang) });
+    const res = format(d, 'd-MMMM yyyy, HH:mm', { locale: resolveLocale(lang) });
+    return lang?.startsWith('uz')
+      ? res.replace(/-([A-ZА-ЯЁ][a-zа-яё]+)/g, (m, p1) => `-${p1.toLowerCase()}`)
+      : res;
   } catch {
     return '—';
   }
@@ -27,7 +30,8 @@ function formatDateFull(iso, lang) {
 function formatRelative(iso, lang) {
   try {
     const d = new Date(iso);
-    return formatDistanceToNow(d, { addSuffix: true, locale: resolveLocale(lang) });
+    const res = formatDistanceToNow(d, { addSuffix: true, locale: resolveLocale(lang) });
+    return res.replace(/^(?:taxminan|tahminan)\s+/i, '');
   } catch {
     return '';
   }
@@ -68,6 +72,7 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
               value={p.searchQuery}
               onChange={(e) => p.setSearchQuery(e.target.value)}
               placeholder={t('platform.desktopNotifications.searchPlaceholder')}
+              aria-label={t('platform.desktopNotifications.searchPlaceholder')}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2 pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white transition-all"
             />
           </div>
