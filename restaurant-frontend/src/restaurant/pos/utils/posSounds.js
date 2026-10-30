@@ -1,18 +1,19 @@
 /**
- * Optional POS beeps (Web Audio, no asset files).
- * Default off — enable via PosSoundToggle / setPosSoundsEnabled.
+ * POS beeps via Web Audio (no asset files).
+ * Default ON — turn off via PosSoundToggle («Без звука»).
  */
 
 const STORAGE_KEY = 'rst-pos-sounds-enabled';
 
 let audioCtx = null;
-let unlocked = false;
+let gestureHooked = false;
 
 export function isPosSoundsEnabled() {
   try {
-    return localStorage.getItem(STORAGE_KEY) === '1';
+    // Explicit off only; missing key → on (kitchen needs tin-tin without hunting a toggle).
+    return localStorage.getItem(STORAGE_KEY) !== '0';
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -33,28 +34,37 @@ function getCtx() {
   return audioCtx;
 }
 
-/** Browsers block audio until a user gesture — call from click/toggle. */
+/** Call from click/toggle — browsers block autoplay until a gesture. */
 export function unlockPosAudio() {
   const ctx = getCtx();
   if (!ctx) return;
   if (ctx.state === 'suspended') {
     ctx.resume().catch(() => {});
   }
-  unlocked = true;
+  hookGestureUnlock();
+}
+
+/** One-time: any tap/key resumes AudioContext after app restart. */
+export function hookGestureUnlock() {
+  if (gestureHooked || typeof window === 'undefined') return;
+  gestureHooked = true;
+  const resume = () => {
+    const ctx = getCtx();
+    if (ctx?.state === 'suspended') ctx.resume().catch(() => {});
+  };
+  window.addEventListener('pointerdown', resume, { capture: true, passive: true });
+  window.addEventListener('keydown', resume, { capture: true, passive: true });
 }
 
 const PATTERNS = {
-  /** New kitchen ticket */
   kitchen: [
     { f: 880, d: 0.09, g: 0.18 },
     { f: 1175, d: 0.12, g: 0.16, gap: 0.05 },
   ],
-  /** Payment / success */
   success: [
     { f: 523, d: 0.08, g: 0.14 },
     { f: 784, d: 0.12, g: 0.14, gap: 0.04 },
   ],
-  /** Error / block */
   error: [
     { f: 220, d: 0.16, g: 0.2 },
     { f: 185, d: 0.2, g: 0.18, gap: 0.06 },
@@ -75,18 +85,7 @@ function beep(ctx, { f, d, g }, when) {
   osc.stop(when + d + 0.02);
 }
 
-/**
- * @param {'kitchen'|'success'|'error'} kind
- */
-export function playPosSound(kind) {
-  if (!isPosSoundsEnabled()) return;
-  const ctx = getCtx();
-  if (!ctx) return;
-  if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {});
-  }
-  if (!unlocked && ctx.state !== 'running') return;
-
+function playSteps(ctx, kind) {
   const steps = PATTERNS[kind] || PATTERNS.success;
   let t = ctx.currentTime + 0.01;
   for (const step of steps) {
@@ -94,4 +93,21 @@ export function playPosSound(kind) {
     beep(ctx, step, t);
     t += step.d;
   }
+}
+
+/**
+ * @param {'kitchen'|'success'|'error'} kind
+ */
+export function playPosSound(kind) {
+  if (!isPosSoundsEnabled()) return;
+  hookGestureUnlock();
+  const ctx = getCtx();
+  if (!ctx) return;
+
+  const run = () => playSteps(ctx, kind);
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(run).catch(() => {});
+    return;
+  }
+  run();
 }

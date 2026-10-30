@@ -130,9 +130,16 @@ export function useKitchenPosPage() {
     if (!rows?.length) return undefined;
     let cancelled = false;
     printKitchenBoardTickets(rows, t, waiterNameById, workspace.storeId).then((printed) => {
-      if (cancelled || !printed?.errors?.length) return;
-      playPosSound('error');
-      toast.error(printed.errors[0]);
+      if (cancelled) return;
+      if (printed?.errors?.length) {
+        playPosSound('error');
+        toast.error(printed.errors[0]);
+        return;
+      }
+      // Tin-tin on speakers when this PC actually printed (printer buzzer may be absent).
+      if (printed?.mode === 'silent' || printed?.mode === 'partial') {
+        playPosSound('kitchen');
+      }
     }).catch((err) => {
       if (cancelled) return;
       playPosSound('error');

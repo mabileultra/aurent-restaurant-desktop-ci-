@@ -253,8 +253,8 @@ async function printPlainTicketEscpos(payload) {
           }
         }
         printer.newLine();
-        // Kitchen / station slips: double beep («тин-тин») then cut — sale path already beeps once.
-        beepAndCut(printer, 2, 2);
+        // Kitchen / station: tin-tin + BEL (+ DK pulse for external buzzer), then cut.
+        beepAndCut(printer, 2, 2, { pulseDrawer: true });
       },
       noPrinterHint: 'Принтер станции не выбран.',
     });
