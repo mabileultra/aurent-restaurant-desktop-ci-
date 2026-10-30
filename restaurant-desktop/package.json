@@ -1,8 +1,8 @@
 {
   "name": "aurent-restaurant-desktop",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "private": true,
-  "description": "Aurent Restaurant \u2014 local-first hall desktop (separate from Aurent Cashier)",
+  "description": "Aurent Restaurant — local-first hall desktop (separate from Aurent Cashier)",
   "main": "electron/main.js",
   "scripts": {
     "bundle-ui": "node scripts/bundle-ui.js",
