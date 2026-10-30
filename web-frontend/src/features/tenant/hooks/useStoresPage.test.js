@@ -25,6 +25,16 @@ vi.mock('../../../api/store.api', () => ({
 }));
 
 vi.mock('../../../api', () => ({
+  companyApi: {
+    getAll: vi.fn().mockResolvedValue({
+      data: {
+        content: [
+          { id: 101, name: 'Auto Company 1' },
+          { id: 102, name: 'Auto Company 2' },
+        ],
+      },
+    }),
+  },
   platformBusinessTypeApi: {
     list: vi.fn().mockResolvedValue({ data: [] }),
   },
@@ -137,5 +147,92 @@ describe('useStoresPage performance optimization', () => {
 
     // Initial total companies count when no search
     expect(hookResult.companiesCount).toBe(3);
+  });
+
+  it('uses authoritative server stats from storeApi.getStats when available', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    queryClient.setQueryData(['stores-manage', {
+      page: 0,
+      size: 14,
+      search: undefined,
+      companyId: undefined,
+      businessType: undefined,
+      regionCode: undefined,
+      districtCode: undefined,
+    }], {
+      content: [
+        { id: 10, name: 'Store A', active: true, companyId: 1 },
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      page: 0,
+      size: 14,
+    });
+
+    queryClient.setQueryData(['stores-stats', {
+      search: undefined,
+      status: undefined,
+      businessType: undefined,
+      regionCode: undefined,
+      companyId: undefined,
+    }], {
+      totalStores: 150,
+      activeStores: 130,
+      inactiveStores: 20,
+      companiesCount: 45,
+    });
+
+    let hookResult;
+    function Consumer() {
+      hookResult = useStoresPage({
+        showCompanySelect: true,
+        companies: [{ id: 1, name: 'Company 1' }],
+      });
+      return React.createElement('div', null, hookResult.totalStores);
+    }
+
+    renderToStaticMarkup(
+      React.createElement(QueryClientProvider, { client: queryClient },
+        React.createElement(Consumer)
+      )
+    );
+
+    expect(hookResult.totalStores).toBe(150);
+    expect(hookResult.activeStores).toBe(130);
+    expect(hookResult.inactiveStores).toBe(20);
+    expect(hookResult.companiesCount).toBe(45);
+  });
+
+  it('auto-fetches companies via companyApi.getAll when showCompanySelect is true and companies prop is omitted', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    queryClient.setQueryData(['stores-page-companies'], {
+      content: [
+        { id: 101, name: 'Auto Company 1' },
+        { id: 102, name: 'Auto Company 2' },
+      ],
+    });
+
+    let hookResult;
+    function Consumer() {
+      hookResult = useStoresPage({
+        showCompanySelect: true,
+      });
+      return React.createElement('div', null, hookResult.companies.length);
+    }
+
+    renderToStaticMarkup(
+      React.createElement(QueryClientProvider, { client: queryClient },
+        React.createElement(Consumer)
+      )
+    );
+
+    expect(hookResult.companies).toHaveLength(2);
+    expect(hookResult.companies[0].name).toBe('Auto Company 1');
   });
 });

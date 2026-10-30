@@ -100,4 +100,34 @@ describe('usePlatformDesktopNotificationsPage hook & utilities', () => {
     expect(capturedResult.canSend).toBe(false);
     expect(capturedResult.totalRegistersCount).toBe(null);
   });
+
+  it('populates totalRegistersCount and onlineRegistersCount from platformCashRegistersApi stats', () => {
+    let capturedResult = null;
+
+    function TestComponent() {
+      capturedResult = usePlatformDesktopNotificationsPage();
+      return React.createElement('div', null, capturedResult.totalRegistersCount);
+    }
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(['platform-cash-registers-stats'], {
+      totalRegisters: 42,
+      activeRegisters: 35,
+      inactiveRegisters: 7,
+      onlineRegisters: 18,
+    });
+
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(TestComponent)
+      )
+    );
+
+    expect(capturedResult.totalRegistersCount).toBe(42);
+    expect(capturedResult.onlineRegistersCount).toBe(18);
+  });
 });

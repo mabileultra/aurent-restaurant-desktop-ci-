@@ -2,11 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { X, FileText, Printer, Loader, DoorOpen, DoorClosed } from 'lucide-react';
+import { X, FileText, Printer, Loader, DoorOpen, DoorClosed, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cashierShiftApi } from '../../../services/api';
 import PosModalPortal from '../../../components/shared/PosModalPortal';
 import ShiftReportPrintBody from './ShiftReportPrintBody';
+import ShiftCashMovementModal from './ShiftCashMovementModal';
 import ThermalReportPrintPortal from '../../../components/shared/ThermalReportPrintPortal';
 import { useAuthStore } from '../../../store/authStore';
 import { useConnectivityStore } from '../../../store/connectivityStore';
@@ -49,6 +50,7 @@ export default function CashierShiftModal({
   const printAfterLoadRef = useRef(null);
   const openSeqRef = useRef(0);
   const [itemsPrintBusy, setItemsPrintBusy] = useState(false);
+  const [cashMovementDirection, setCashMovementDirection] = useState(null);
 
   const queuePrint = (data) => {
     setPrintToken((n) => n + 1);
@@ -281,6 +283,24 @@ export default function CashierShiftModal({
                 ) : null}
                 <button
                   type="button"
+                  className="pos-shift-action"
+                  disabled={busy || !sessionShift?.id}
+                  onClick={() => setCashMovementDirection('IN')}
+                >
+                  <ArrowDownLeft size={16} className="text-emerald-500" />
+                  {t('pos.cashInAction', { defaultValue: 'Pul kiritish' })}
+                </button>
+                <button
+                  type="button"
+                  className="pos-shift-action"
+                  disabled={busy || !sessionShift?.id}
+                  onClick={() => setCashMovementDirection('OUT')}
+                >
+                  <ArrowUpRight size={16} className="text-amber-500" />
+                  {t('pos.cashOutAction', { defaultValue: 'Pul yechish' })}
+                </button>
+                <button
+                  type="button"
                   className="pos-shift-action pos-shift-action--danger"
                   disabled={busy || !sessionShift?.id}
                   onClick={handleCloseShift}
@@ -326,6 +346,17 @@ export default function CashierShiftModal({
           </div>
         </div>
       </PosModalPortal>
+
+      <ShiftCashMovementModal
+        open={Boolean(cashMovementDirection)}
+        direction={cashMovementDirection ?? 'IN'}
+        shiftId={sessionShift?.id ?? shift?.id}
+        onClose={() => setCashMovementDirection(null)}
+        onSuccess={() => {
+          qc.invalidateQueries({ queryKey: ['shifts'] });
+          qc.invalidateQueries({ queryKey: ['my-sales'] });
+        }}
+      />
 
       <ThermalReportPrintPortal
         open={Boolean(printReport)}

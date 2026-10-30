@@ -245,9 +245,9 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Kuzatilmagan');
     expect(html).toContain('Kassir xabarni o&#x27;qigani hozircha kuzatilmaydi');
     expect(html).toContain('Nusxa olib yangi xabar');
-    expect(html).toContain('Muddatni uzaytirish');
+    expect(html).toContain('Muddatni uzaytirish (+24 soat)');
     expect(html).toContain('Kassalardan olib tashlash');
-    expect(html).toContain('Tez kunda');
+    expect(html).not.toContain('Tez kunda');
   });
 
   it('renders draft restored notice banner when isDraftRestored is true', () => {
@@ -337,5 +337,21 @@ describe('PlatformDesktopNotificationsPage', () => {
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
     expect(html).not.toContain('<select');
     expect(html).toContain('mock-base-select');
+  });
+
+  it('renders revoke confirmation dialog when revokeConfirmItem is non-null', () => {
+    currentHookState = {
+      ...mockBaseHook,
+      revokeConfirmItem: {
+        id: 'item-revoke-1',
+        title: 'Texnik tanaffus',
+        body: 'Kassalardan zudlik bilan olib tashlanadi',
+        kind: 'ALERT',
+      },
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+    expect(html).toContain('Xabarni kassalardan olib tashlash');
+    expect(html).toContain('Texnik tanaffus');
+    expect(html).toContain('Kassalardan zudlik bilan olib tashlanadi');
   });
 });

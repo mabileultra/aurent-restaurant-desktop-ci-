@@ -1,14 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  Clock,
-  Copy,
-  Info,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { Info } from 'lucide-react';
 import { formatUzbekDate } from './desktopNotificationFormatters';
-import { NotificationKindBadge, NotificationStatusBadge } from './DesktopNotificationBadges';
+import PlatformDesktopNotificationDrawerHeader from './PlatformDesktopNotificationDrawerHeader';
+import PlatformDesktopNotificationDrawerFooter from './PlatformDesktopNotificationDrawerFooter';
 
 export default function PlatformDesktopNotificationDetailDrawer({ p }) {
   const { t, i18n } = p;
@@ -31,6 +26,10 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
     }, 50);
 
     const handleKeyDown = (e) => {
+      if (p.revokeConfirmItem) {
+        return;
+      }
+
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -106,35 +105,13 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
         ref={drawerRef}
         className="relative z-10 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl border-l border-slate-200 dark:border-slate-800 dark:bg-slate-900 animate-in slide-in-from-right duration-200"
       >
-        {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <NotificationKindBadge kind={item.kind} t={t} size="sm" />
-              <NotificationStatusBadge status={item.status} t={t} size="sm" />
-            </div>
-
-            <button
-              ref={closeBtnRef}
-              type="button"
-              onClick={handleClose}
-              className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              aria-label={t('common.close', { defaultValue: 'Yopish' })}
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <h2
-            id="desktop-notif-drawer-title"
-            className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-3"
-          >
-            {item.title}
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {t('platform.desktopNotifications.drawerSentBy', { date: formattedCreated })}
-          </p>
-        </div>
+        <PlatformDesktopNotificationDrawerHeader
+          item={item}
+          formattedCreated={formattedCreated}
+          closeBtnRef={closeBtnRef}
+          onClose={handleClose}
+          t={t}
+        />
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
@@ -197,44 +174,7 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
           </div>
         </div>
 
-        {/* Sticky Action Footer */}
-        <div className="border-t border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 space-y-2 shrink-0">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => p.handleDuplicate(item)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750 transition-colors cursor-pointer"
-            >
-              <Copy size={15} />
-              <span>{t('platform.desktopNotifications.actionDuplicate')}</span>
-            </button>
-            <button
-              type="button"
-              disabled
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500"
-              title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-            >
-              <Clock size={15} />
-              <span>{t('platform.desktopNotifications.actionExtend')}</span>
-              <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-              </span>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            disabled
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500"
-            title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-          >
-            <Trash2 size={15} />
-            <span>{t('platform.desktopNotifications.actionRevoke')}</span>
-            <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-              {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-            </span>
-          </button>
-        </div>
+        <PlatformDesktopNotificationDrawerFooter item={item} p={p} t={t} />
       </div>
     </div>
   );

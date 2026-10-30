@@ -62,7 +62,7 @@ export default function PlatformStoresGroupedView(props) {
       <StoresGroupedToolbar
         t={t}
         total={ui.total}
-        branchCount={ui.branchCountOnPage}
+        branchCount={props.totalStores ?? ui.branchCountOnPage}
         allAreExpanded={ui.allAreExpanded}
         onExpandAll={ui.expandAll}
         onCollapseAll={ui.collapseAll}

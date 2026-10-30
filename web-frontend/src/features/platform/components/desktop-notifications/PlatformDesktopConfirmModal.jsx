@@ -78,17 +78,20 @@ export default function PlatformDesktopConfirmModal({ p }) {
 
   const isAlert = p.kind === 'ALERT';
   const isUpdate = p.kind === 'UPDATE';
+  const targetCount = p.activeRegistersCount ?? p.totalRegistersCount;
 
-  const modalTitle = p.totalRegistersCount != null
-    ? t('platform.desktopNotifications.confirmModalTitle', { count: p.totalRegistersCount })
+  const modalTitle = targetCount != null
+    ? t('platform.desktopNotifications.confirmModalTitle', { count: targetCount })
     : t('platform.desktopNotifications.confirmModalTitleAll', { defaultValue: 'Barcha kassalarga yuborilsinmi?' });
 
-  const targetLabel = p.totalRegistersCount != null
-    ? `${t('platform.desktopNotifications.targetAll')} · ${p.totalRegistersCount} ta`
+  const targetLabel = targetCount != null
+    ? `${t('platform.desktopNotifications.targetAll')} · ${targetCount} ta faol${
+        p.onlineRegistersCount != null ? ` (${t('platform.desktopNotifications.onlineShort', { defaultValue: 'onlayn' })}: ${p.onlineRegistersCount} ta)` : ''
+      }`
     : t('platform.desktopNotifications.registersCountUnknown', { defaultValue: 'Barcha faol kassalar' });
 
-  const submitBtnLabel = p.totalRegistersCount != null
-    ? t('platform.desktopNotifications.confirmSubmit', { count: p.totalRegistersCount })
+  const submitBtnLabel = targetCount != null
+    ? t('platform.desktopNotifications.confirmSubmit', { count: targetCount })
     : t('platform.desktopNotifications.confirmSubmitAll', { defaultValue: 'Ha, barcha kassalarga yuborish' });
 
   const modalNode = (

@@ -206,8 +206,8 @@ export default function PlatformDesktopLivePreview({ p }) {
           <div className="flex items-start gap-2">
             <Check size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <span>
-              {p.totalRegistersCount != null
-                ? t('platform.desktopNotifications.preSendCountCheck', { count: p.totalRegistersCount })
+              {(p.activeRegistersCount ?? p.totalRegistersCount) != null
+                ? t('platform.desktopNotifications.preSendCountCheck', { count: (p.activeRegistersCount ?? p.totalRegistersCount) })
                 : t('platform.desktopNotifications.sendBtnAll', { defaultValue: 'Barcha kassalarga yuborish' })}
             </span>
           </div>

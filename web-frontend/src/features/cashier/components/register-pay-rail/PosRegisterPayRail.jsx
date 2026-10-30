@@ -1,4 +1,4 @@
-import { Percent, RotateCcw } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Percent, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import NumericKeypad from '../NumericKeypad';
 import PosRegisterPayCashPanel from './PosRegisterPayCashPanel';
@@ -11,6 +11,8 @@ export default function PosRegisterPayRail({
   total,
   onReturn,
   onDiscount,
+  onCashIn,
+  onCashOut,
   onConfirm,
   onOpenPaymentFlow,
   checkoutDisabled,
@@ -86,6 +88,28 @@ export default function PosRegisterPayRail({
             <RotateCcw size={18} strokeWidth={2.25} aria-hidden />
             {t('pos.return')}
           </button>
+          {onCashIn && (
+            <button
+              type="button"
+              className="pos-register-pay-rail__tool pos-register-pay-rail__tool--cash-in"
+              onClick={onCashIn}
+              title={t('pos.cashIn', { defaultValue: 'Kirim' })}
+            >
+              <ArrowDownLeft size={18} strokeWidth={2.25} aria-hidden />
+              {t('pos.cashIn', { defaultValue: 'Kirim' })}
+            </button>
+          )}
+          {onCashOut && (
+            <button
+              type="button"
+              className="pos-register-pay-rail__tool pos-register-pay-rail__tool--cash-out"
+              onClick={onCashOut}
+              title={t('pos.cashOut', { defaultValue: 'Chiqim' })}
+            >
+              <ArrowUpRight size={18} strokeWidth={2.25} aria-hidden />
+              {t('pos.cashOut', { defaultValue: 'Chiqim' })}
+            </button>
+          )}
         </div>
       ) : null}
 

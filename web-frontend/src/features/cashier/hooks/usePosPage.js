@@ -15,6 +15,7 @@ import { usePosCheckout } from './pos/usePosCheckout';
 import { usePosSearchMarkAutoSubmit } from './pos/usePosSearchMarkAutoSubmit';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 import { usePharmacyIntegrationConfig } from '../../pharmacy-cashier/hooks/usePharmacyIntegrationConfig';
+import { useCashierCashMovement } from './useCashierCashMovement';
 
 export function usePosPage() {
   const { t } = useTranslation();
@@ -312,6 +313,14 @@ export function usePosPage() {
     [setCustomer, t]
   );
 
+  const {
+    cashMovement,
+    setCashMovement,
+    handleCashIn,
+    handleCashOut,
+    handleCashMovementSuccess,
+  } = useCashierCashMovement({ shiftIsOpen, storeId, t });
+
   return {
     t,
     storeId,
@@ -324,6 +333,12 @@ export function usePosPage() {
     setReturnOpen,
     discountOpen,
     setDiscountOpen,
+    cashMovement,
+    setCashMovement,
+    handleCashIn,
+    handleCashOut,
+    handleCashMovementSuccess,
+    shift,
     selectedLineId,
     setSelectedLineId,
     catalogProps,

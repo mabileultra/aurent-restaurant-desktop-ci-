@@ -2,18 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { shouldPrefetchCatalogPage } from './shouldPrefetchCatalogPage';
 
 describe('shouldPrefetchCatalogPage', () => {
-  it('prefetches the next pages after the first loaded', () => {
+  it('prefetches the next pages after the first loaded when budget allows', () => {
     expect(shouldPrefetchCatalogPage({
       enabled: true,
       pagesLoaded: 1,
       hasNextPage: true,
       isFetchingNextPage: false,
+      maxPrefetchPages: 3,
     })).toBe(true);
     expect(shouldPrefetchCatalogPage({
       enabled: true,
       pagesLoaded: 2,
       hasNextPage: true,
       isFetchingNextPage: false,
+      maxPrefetchPages: 3,
     })).toBe(true);
   });
 
@@ -29,7 +31,7 @@ describe('shouldPrefetchCatalogPage', () => {
   it('stops after the prefetch budget', () => {
     expect(shouldPrefetchCatalogPage({
       enabled: true,
-      pagesLoaded: 3,
+      pagesLoaded: 1,
       hasNextPage: true,
       isFetchingNextPage: false,
     })).toBe(false);

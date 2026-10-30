@@ -40,7 +40,7 @@ export default function PlatformStoreStatsCards({
     },
     {
       id: 'COMPANIES',
-      title: t('platform.statsCompaniesCovered', { defaultValue: 'Kompaniyalar qamrovi' }),
+      title: t('platform.statsCompaniesCovered', { defaultValue: 'Kompaniyalar' }),
       value: companiesCount,
       hint: t('platform.statsCompaniesCoveredDesc', { defaultValue: 'Tarmoq ijarachilari' }),
       icon: Building2,

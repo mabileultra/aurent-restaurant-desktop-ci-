@@ -373,6 +373,7 @@ export function usePharmacyPosPage() {
     cartHandlers,
     checkoutMutation,
     handleConfirmPayment,
+    shift,
     shiftIsOpen,
     handleReturnSuccess,
     handleDiscount,

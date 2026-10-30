@@ -389,4 +389,15 @@ describe('PlatformStoresGroupedView', () => {
     expect(html).toContain('Kompaniya #14');
     expect(html).toContain('id="company-group-14"');
   });
+
+  it('renders totalStores in toolbar instead of page branch count when totalStores is provided', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        totalStores: 106,
+      })
+    );
+
+    expect(html).toContain('106 ta filial');
+  });
 });

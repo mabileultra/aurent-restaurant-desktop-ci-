@@ -187,6 +187,8 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
                         onClose={() => setActiveMenuId((prev) => (prev === item.id ? null : prev))}
                         onViewDetails={() => p.setSelectedItemForDrawer(item)}
                         onDuplicate={() => p.handleDuplicate(item)}
+                        onExtend={() => p.handleExtend(item)}
+                        onRevoke={() => p.handleRevokePrompt(item)}
                         t={t}
                       />
                     </td>
@@ -240,6 +242,8 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
                       onClose={() => setActiveMenuId((prev) => (prev === `mobile-${item.id}` ? null : prev))}
                       onViewDetails={() => p.setSelectedItemForDrawer(item)}
                       onDuplicate={() => p.handleDuplicate(item)}
+                      onExtend={() => p.handleExtend(item)}
+                      onRevoke={() => p.handleRevokePrompt(item)}
                       t={t}
                     />
                   </div>
