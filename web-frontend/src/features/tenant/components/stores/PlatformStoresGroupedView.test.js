@@ -283,6 +283,32 @@ describe('PlatformStoresGroupedView', () => {
     expect(html).toContain('Sahifada:');
   });
 
+  it('shows pagination for StoresPage serverPaged props (groups/totalGroups aliases)', () => {
+    const groups = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      name: `Kompaniya #${i + 1}`,
+      stores: [],
+      total: 0,
+      activeCount: 0,
+      inactiveCount: 0,
+    }));
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        stores: [],
+        companies: [],
+        groups,
+        serverPaged: true,
+        totalGroups: 25,
+        page: 0,
+        pageSize: 10,
+      })
+    );
+
+    expect(html).toContain('Yozuvlar 1 – 10 / 25');
+    expect(html).toContain('Sahifada:');
+  });
+
   it('paginates company groups based on pageSize and only renders visible page slice', () => {
     const manyCompanies = Array.from({ length: 15 }, (_, i) => ({
       id: i + 1,

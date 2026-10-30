@@ -29,7 +29,12 @@ export default function PlatformStoresGroupedView(props) {
     openCreateForCompany,
   } = props;
 
-  const ui = usePlatformStoresGroupedUi(props);
+  const ui = usePlatformStoresGroupedUi({
+    ...props,
+    // StoresPage uses groups/totalGroups; hook expects server* names
+    serverGroups: props.groups ?? props.serverGroups,
+    serverTotalGroups: props.totalGroups ?? props.serverTotalGroups,
+  });
 
   const regionCodes = useMemo(
     () => (stores || []).map((r) => r.regionCode).filter(Boolean),
