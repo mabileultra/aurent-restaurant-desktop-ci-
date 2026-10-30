@@ -97,6 +97,7 @@ function sanitizePayloadForPrint(payload) {
     branding: sanitizeValue(payload?.branding, locale),
     labels: sanitizeValue(payload?.labels, locale),
     receiptFields: payload?.receiptFields,
+    receiptFieldStyles: payload?.receiptFieldStyles,
   };
 }
 

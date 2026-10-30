@@ -4,9 +4,14 @@ import { factoryPrintProfile, fieldStyle, fontCss } from './printProfileDefaults
 
 const HEADER_KEYS = new Set(['logo', 'storeName', 'address', 'phone', 'footer']);
 
-/** Guest bill and the fiscal check print a filled header even if that tab's box stayed off. */
+/**
+ * Guest bill header: schemaVersion ≥ 2 respects toggles.
+ * Older profiles keep legacy auto-on when text is filled (no deploy break).
+ */
 export function slipFieldStyle(profile, slipType, key) {
   const style = fieldStyle(profile, slipType, key);
+  const schema = Number(profile?.schemaVersion) || 1;
+  if (schema >= 2) return style;
   if (slipType === 'GUEST_BILL' && HEADER_KEYS.has(key) && headerValue(profile, key)) {
     return { ...style, on: true };
   }

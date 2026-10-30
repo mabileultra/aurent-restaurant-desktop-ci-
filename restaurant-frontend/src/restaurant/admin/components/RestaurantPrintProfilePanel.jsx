@@ -45,12 +45,17 @@ const FIELD_LABEL = {
   footer: 'rst.admin.printFieldFooter',
 };
 
-export default function RestaurantPrintProfilePanel({ storeId, t, onlySlip = null }) {
+export default function RestaurantPrintProfilePanel({
+  storeId,
+  t,
+  onlySlip = null,
+  initialSlip = null,
+}) {
   const slipTypes = onlySlip
     ? [onlySlip]
     : PRINT_SLIP_TYPES.filter((key) => key !== 'PICKUP_LABEL');
   const [profile, setProfile] = useState(factoryPrintProfile);
-  const [slipType, setSlipType] = useState(onlySlip || 'CANCEL');
+  const [slipType, setSlipType] = useState(onlySlip || initialSlip || 'GUEST_BILL');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -101,7 +106,10 @@ export default function RestaurantPrintProfilePanel({ storeId, t, onlySlip = nul
   const save = async () => {
     setSaving(true);
     try {
-      const res = await rstKitchenApi.savePrintProfile(storeId, profile);
+      const res = await rstKitchenApi.savePrintProfile(storeId, {
+        ...profile,
+        schemaVersion: 2,
+      });
       const next = res?.data?.profile || profile;
       setProfile(next);
       invalidateStorePrintProfile(storeId);

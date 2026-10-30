@@ -40,6 +40,7 @@ public final class StorePrintProfileDefaults {
 
     public static Map<String, Object> factory() {
         Map<String, Object> root = new LinkedHashMap<>();
+        root.put("schemaVersion", 2);
         root.put("logoDataUrl", "");
         root.put("logoMaxHeightMm", 22);
         root.put("storeName", "");
@@ -61,6 +62,7 @@ public final class StorePrintProfileDefaults {
         if (incoming == null || incoming.isEmpty()) {
             return base;
         }
+        copyNumber(incoming, base, "schemaVersion", 1, 99);
         copyString(incoming, base, "logoDataUrl");
         copyNumber(incoming, base, "logoMaxHeightMm", 8, 40);
         copyString(incoming, base, "storeName");
@@ -70,6 +72,10 @@ public final class StorePrintProfileDefaults {
         String font = stringVal(incoming.get("defaultFont"));
         if (FONT_IDS.contains(font)) {
             base.put("defaultFont", font);
+        }
+        // Old rows without schemaVersion stay at 1 (legacy guest-bill auto-on).
+        if (!incoming.containsKey("schemaVersion")) {
+            base.put("schemaVersion", 1);
         }
         Object slipsRaw = incoming.get("slips");
         if (!(slipsRaw instanceof Map<?, ?> inSlips)) {

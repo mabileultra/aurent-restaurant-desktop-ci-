@@ -1,63 +1,25 @@
 import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../../config/brand';
+import { receiptFieldStyleProps } from '../../receiptProfile/receiptFieldStyles';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
-import ReceiptQrCode from './ReceiptQrCode';
 import {
-  fmtMoneyCompact,
-  fmtQty,
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
-import { extractVatFromInclusive } from '../../utils/taxAmounts';
 import { cardTypeLabel } from '../../utils/salePaymentLabel';
-import { unitCodeFromLabel } from '../../utils/unitConfig';
 import {
   resolveFiscalReceiptMeta,
   resolveReceiptPaymentAmounts,
 } from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
-
-function lineVatRatePercent(item) {
-  const rate = item?.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
-  return Number.isFinite(rate) && rate > 0 ? rate : 0;
-}
-
-function lineVatAmount(item) {
-  const stored = Number(item?.taxAmount);
-  if (Number.isFinite(stored) && stored >= 0.001) return stored;
-  const rate = lineVatRatePercent(item);
-  const lineTotal = Number(item?.lineTotal) || 0;
-  return extractVatFromInclusive(lineTotal, rate);
-}
-
-function itemUnitPrice(item) {
-  const direct = Number(item?.unitPrice ?? item?.price ?? item?.sellingPrice);
-  if (Number.isFinite(direct) && direct > 0) return direct;
-  const qty = Number(item?.quantity) || 0;
-  const total = Number(item?.lineTotal) || 0;
-  return qty > 0 ? total / qty : total;
-}
-
-const PAYMENT_I18N = {
-  CASH: 'sales.paymentCash',
-  CARD: 'sales.paymentCard',
-  CASHLESS: 'sales.paymentCashless',
-  MPESA: 'sales.paymentMpesa',
-  MIXED: 'salesLedger.filters.mixed',
-};
-
-function Row({ label, value, bold = false }) {
-  return (
-    <div className={`receipt-row${bold ? ' receipt-row--bold' : ''}`}>
-      <span className="receipt-meta-label">{label}</span>
-      <span className="receipt-row__value">{value}</span>
-    </div>
-  );
-}
-
-function ReceiptDivider() {
-  return <div className="receipt-divider my-2 border-t border-dashed border-black" />;
-}
+import ReceiptQrCode from './ReceiptQrCode';
+import FiscalReceiptFiscalBlock from './FiscalReceiptFiscalBlock';
+import FiscalReceiptHeaderBlock from './FiscalReceiptHeaderBlock';
+import FiscalReceiptItemsBlock from './FiscalReceiptItemsBlock';
+import FiscalReceiptMetaBlock from './FiscalReceiptMetaBlock';
+import FiscalReceiptPaymentBlock from './FiscalReceiptPaymentBlock';
+import FiscalReceiptTotalsBlock from './FiscalReceiptTotalsBlock';
+import './fiscal-field-styles.css';
 
 export default function FiscalReceiptBody({
   sale,
@@ -67,11 +29,19 @@ export default function FiscalReceiptBody({
 }) {
   const { t } = useTranslation();
   const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
+  const fieldStyles = useTenantDisplayStore((s) => s.committed.receiptFieldStyles);
   const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
   const customCompanyName = useTenantDisplayStore((s) => s.committed.receiptCompanyName);
   const customCompanyAddress = useTenantDisplayStore((s) => s.committed.receiptCompanyAddress);
   const customCompanyPhone = useTenantDisplayStore((s) => s.committed.receiptCompanyPhone);
   const customStir = useTenantDisplayStore((s) => s.committed.receiptStir);
+  const fs = (key, extra = '') => {
+    const p = receiptFieldStyleProps(fieldStyles?.[key]);
+    return {
+      className: [extra, p.className].filter(Boolean).join(' '),
+      style: p.style,
+    };
+  };
 
   if (!sale) return null;
 
@@ -81,12 +51,15 @@ export default function FiscalReceiptBody({
     import.meta.env.VITE_COMPANY_NAME ||
     sale.storeName ||
     APP_NAME;
-  const companyAddress = header?.companyAddress || customCompanyAddress || import.meta.env.VITE_COMPANY_ADDRESS || '';
-  const companyPhone = header?.companyPhone || customCompanyPhone || import.meta.env.VITE_COMPANY_PHONE || '';
+  const companyAddress =
+    header?.companyAddress || customCompanyAddress || import.meta.env.VITE_COMPANY_ADDRESS || '';
+  const companyPhone =
+    header?.companyPhone || customCompanyPhone || import.meta.env.VITE_COMPANY_PHONE || '';
   const logoSrc = header?.logoDataUrl || receiptLogoDataUrl || '';
   const showLogo = Boolean(header?.logoDataUrl) || (isOn('logo') && Boolean(receiptLogoDataUrl));
   const showName = Boolean(header?.companyName) || isOn('companyName');
-  const showAddress = Boolean(header?.companyAddress) || (isOn('companyAddress') && Boolean(companyAddress));
+  const showAddress =
+    Boolean(header?.companyAddress) || (isOn('companyAddress') && Boolean(companyAddress));
   const showPhone = Boolean(header?.companyPhone) || (isOn('companyPhone') && Boolean(companyPhone));
   const stir = customStir || import.meta.env.VITE_COMPANY_STIR || import.meta.env.VITE_STIR || '';
   const { date, time } = splitDateTime(sale.createdAt);
@@ -99,38 +72,26 @@ export default function FiscalReceiptBody({
   const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
 
   const pay = resolveReceiptPaymentAmounts(sale);
-  const cashAmt = pay.cashAmt;
-  const cardAmt = pay.cardAmt;
-  const paidTotal = pay.paidTotal;
-  const change = pay.change;
-  const method = pay.method;
-  const total = Number(sale.totalAmount) || 0;
-  const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const cardTypeText = cardTypeLabel(sale.cardType, t);
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
-  const fmNumber = fiscalMeta.fmNumber;
-  const virtualRegister = fiscalMeta.virtualRegister;
-  const fiscalSign = fiscalMeta.fiscalSign;
-  const fiscalReceiptNo = fiscalMeta.fiscalReceiptNo;
+  const total = Number(sale.totalAmount) || 0;
 
   const vatRates = new Set(
     (sale.items ?? [])
       .map((i) => (i.taxRatePercent != null ? Number(i.taxRatePercent) : 12))
-      .filter((r) => r > 0)
+      .filter((r) => r > 0),
   );
   const vatRateLabel = vatRates.size === 1 ? `${[...vatRates][0].toFixed(0)}` : '—';
   const receiptTypeLabel = resolveFiscalReceiptTypeLabel(sale, t);
 
   const showHeader =
-    showLogo ||
-    showName ||
-    showAddress ||
-    showPhone ||
-    (isOn('stir') && stir);
+    showLogo || showName || showAddress || showPhone || (isOn('stir') && stir);
   const showMeta =
     isOn('dateTime') || isOn('receiptNo') || isOn('employee') || isOn('shift');
+  const showTotals =
+    isOn('service') || isOn('discounts') || isOn('grandTotal') || isOn('vatTotal');
 
   return (
     <div
@@ -138,201 +99,84 @@ export default function FiscalReceiptBody({
       className={`receipt-print-root min-w-0 max-w-full overflow-hidden ${className}`}
     >
       {showHeader ? (
-        <header className="receipt-section border-b border-dashed border-black pb-3 text-center">
-          {showLogo && logoSrc ? (
-            <img
-              src={logoSrc}
-              alt=""
-              className="receipt-logo mx-auto mb-2"
-              style={header?.logoMaxHeightMm ? { maxHeight: `${header.logoMaxHeightMm}mm` } : undefined}
-            />
-          ) : null}
-          {showName ? (
-            <p className="receipt-title break-words">{companyName}</p>
-          ) : null}
-          {showAddress && companyAddress ? (
-            <p className="receipt-subtitle mt-1 whitespace-pre-line break-words">{companyAddress}</p>
-          ) : null}
-          {showPhone && companyPhone ? (
-            <p className="receipt-subtitle mt-1 break-words">
-              {t('fiscalReceipt.phoneLabel')}: {companyPhone}
-            </p>
-          ) : null}
-          {isOn('stir') && stir ? (
-            <p className="receipt-subtitle mt-1">
-              {t('fiscalReceipt.stir')}: {stir}
-            </p>
-          ) : null}
-        </header>
+        <FiscalReceiptHeaderBlock
+          showLogo={showLogo}
+          logoSrc={logoSrc}
+          logoMaxHeightMm={header?.logoMaxHeightMm}
+          showName={showName}
+          companyName={companyName}
+          showAddress={showAddress}
+          companyAddress={companyAddress}
+          showPhone={showPhone}
+          companyPhone={companyPhone}
+          showStir={isOn('stir')}
+          stir={stir}
+          phoneLabel={t('fiscalReceipt.phoneLabel')}
+          stirLabel={t('fiscalReceipt.stir')}
+          fs={fs}
+        />
       ) : null}
 
       {showMeta ? (
-        <section className="receipt-section mt-2 space-y-0.5">
-          {isOn('dateTime') ? (
-            <div className="receipt-row">
-              <span>
-                <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
-                {time}
-              </span>
-              <span className="receipt-row__value">
-                <span className="receipt-meta-label">{t('fiscalReceipt.date')}: </span>
-                {date}
-              </span>
-            </div>
-          ) : null}
-          {isOn('receiptNo') ? (
-            <Row label={t('fiscalReceipt.receiptNoShort')} value={`№${sale.receiptNumber}`} />
-          ) : null}
-          {sale.originalReceiptNumber ? (
-            <Row
-              label={t('fiscalReceipt.originalReceiptNo')}
-              value={`№${sale.originalReceiptNumber}`}
-            />
-          ) : null}
-          {isOn('employee') && sale.cashierName ? (
-            <Row label={t('fiscalReceipt.employee')} value={sale.cashierName} />
-          ) : null}
-          {isOn('shift') ? <Row label={t('fiscalReceipt.shift')} value={shiftNo} /> : null}
-        </section>
+        <FiscalReceiptMetaBlock
+          isOn={isOn}
+          fs={fs}
+          time={time}
+          date={date}
+          receiptNumber={sale.receiptNumber}
+          originalReceiptNumber={sale.originalReceiptNumber}
+          cashierName={sale.cashierName}
+          shiftNo={shiftNo}
+          labels={{
+            time: t('fiscalReceipt.time'),
+            date: t('fiscalReceipt.date'),
+            receiptNo: t('fiscalReceipt.receiptNoShort'),
+            originalReceiptNo: t('fiscalReceipt.originalReceiptNo'),
+            employee: t('fiscalReceipt.employee'),
+            shift: t('fiscalReceipt.shift'),
+          }}
+        />
       ) : null}
 
       {isOn('items') ? (
-        <>
-          <ReceiptDivider />
-          <section className="receipt-section min-w-0">
-            <div className="receipt-items-table space-y-2.5">
-              {(sale.items ?? []).map((item, idx) => (
-                  <div key={idx} className="receipt-items-table__item border-b border-dotted border-black pb-2 last:border-0">
-                    <p className="receipt-items-table__name">{item.productName}</p>
-                    <p className="receipt-items-table__qtyline">
-                      {fmtQty(item.quantity, item.saleType, unitCodeFromLabel(item.unitOfMeasure))}
-                      {' * '}
-                      {fmtMoneyCompact(itemUnitPrice(item))}
-                      {' = '}
-                      {fmtMoneyCompact(item.lineTotal)}
-                    </p>
-                    {isOn('itemVatLine') ? (
-                      <div className="receipt-items-table__vat">
-                        <Row
-                          label={t('fiscalReceipt.vatLineShort', {
-                            rate: lineVatRatePercent(item).toFixed(0),
-                          })}
-                          value={fmtMoneyCompact(lineVatAmount(item))}
-                        />
-                      </div>
-                    ) : null}
-                    {isOn('itemIkpu') && item.ikpu ? (
-                      <p className="break-all receipt-secondary">
-                        {t('receipt.ikpuLine')}: {item.ikpu}
-                      </p>
-                    ) : null}
-                  </div>
-              ))}
-            </div>
-          </section>
-        </>
+        <FiscalReceiptItemsBlock items={sale.items} isOn={isOn} fs={fs} t={t} />
       ) : null}
 
-      {(isOn('discounts') || isOn('grandTotal') || isOn('vatTotal')) && (
-        <>
-          <ReceiptDivider />
-          <section className="receipt-section space-y-0.5">
-            {isOn('discounts') && Number(sale.lineDiscountTotal ?? 0) > 0 ? (
-              <Row
-                label={t('fiscalReceipt.lineDiscountsSum')}
-                value={fmtMoneyCompact(sale.lineDiscountTotal)}
-              />
-            ) : null}
-            {isOn('discounts') && Number(sale.orderDiscountAmount ?? 0) > 0 ? (
-              <Row
-                label={
-                  Number(sale.orderDiscountPercent ?? 0) > 0
-                    ? t('fiscalReceipt.orderDiscountPercent', { percent: sale.orderDiscountPercent })
-                    : t('fiscalReceipt.orderDiscountSum')
-                }
-                value={fmtMoneyCompact(sale.orderDiscountAmount)}
-              />
-            ) : null}
-            {isOn('discounts') && Number(sale.discountTotal) > 0 ? (
-              <Row
-                label={t('fiscalReceipt.discountsSum')}
-                value={fmtMoneyCompact(sale.discountTotal)}
-                bold
-              />
-            ) : null}
-            {isOn('grandTotal') ? (
-              <Row
-                label={t('fiscalReceipt.grandTotal')}
-                value={fmtMoneyCompact(sale.totalAmount)}
-                bold
-              />
-            ) : null}
-            {isOn('vatTotal') ? (
-              <Row
-                label={t('fiscalReceipt.vatTotalLine', { rate: vatRateLabel })}
-                value={fmtMoneyCompact(sale.taxTotal)}
-                bold
-              />
-            ) : null}
-          </section>
-        </>
-      )}
-
-      {isOn('payment') ? (
-        <>
-          <div className="receipt-divider my-2 border-t border-dotted border-black" />
-          <section className="receipt-section space-y-0.5">
-            <Row label={t('fiscalReceipt.paymentForm')} value={fmtMoneyCompact(paidTotal || total)} />
-            <Row label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
-            <Row
-              label={cardTypeText ? `${t('fiscalReceipt.plastic')} · ${cardTypeText}` : t('fiscalReceipt.plastic')}
-              value={fmtMoneyCompact(cardAmt)}
-            />
-            {method !== 'CASH' && method !== 'MIXED' && method !== 'CARD' && method !== 'CASHLESS' && method !== 'MPESA' ? (
-              <Row label={payLabel(method)} value={fmtMoneyCompact(total)} />
-            ) : null}
-            {change > 0 ? (
-              <Row label={t('receipt.change')} value={fmtMoneyCompact(change)} bold />
-            ) : null}
-          </section>
-        </>
+      {showTotals ? (
+        <FiscalReceiptTotalsBlock sale={sale} isOn={isOn} fs={fs} t={t} vatRateLabel={vatRateLabel} />
       ) : null}
 
-      {isOn('receiptType') ? (
-        <section className="receipt-section mt-1">
-          <Row label={t('fiscalReceipt.receiptType')} value={receiptTypeLabel} bold />
-        </section>
-      ) : null}
+      <FiscalReceiptPaymentBlock
+        isOn={isOn}
+        fs={fs}
+        t={t}
+        paidTotal={pay.paidTotal}
+        total={total}
+        cashAmt={pay.cashAmt}
+        cardAmt={pay.cardAmt}
+        cardTypeText={cardTypeText}
+        method={pay.method}
+        change={pay.change}
+      />
 
-      {isOn('fiscalBlock') ? (
-        <>
-          <div className="receipt-divider my-2 border-t border-dotted border-black" />
-          <section className="receipt-section space-y-1">
-            <p className="receipt-section-title">{t('fiscalReceipt.fiscalSection')}</p>
-            {fiscalReceiptNo ? (
-              <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
-            ) : null}
-            {fmNumber ? <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
-            {virtualRegister ? (
-              <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
-            ) : null}
-            <div className="receipt-row">
-              <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
-              <span className="receipt-fiscal-sign receipt-row__value">
-                {fiscalSign || '—'}
-              </span>
-            </div>
-          </section>
-        </>
-      ) : null}
+      <FiscalReceiptFiscalBlock
+        isOn={isOn}
+        fs={fs}
+        t={t}
+        fiscalReceiptNo={fiscalMeta.fiscalReceiptNo}
+        fmNumber={fiscalMeta.fmNumber}
+        virtualRegister={fiscalMeta.virtualRegister}
+        fiscalSign={fiscalMeta.fiscalSign}
+        receiptTypeLabel={receiptTypeLabel}
+      />
 
       {showQrBlock ? (
-        <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
+        <footer {...fs('qrCode', 'receipt-section mt-3 border-t border-dashed border-black pt-3')}>
           {qrValue ? <ReceiptQrCode value={qrValue} sizePx={200} /> : null}
         </footer>
       ) : null}
       {header?.footer ? (
-        <p className="receipt-subtitle mt-3 text-center break-words">{header.footer}</p>
+        <p {...fs('footer', 'receipt-subtitle mt-3 break-words')}>{header.footer}</p>
       ) : null}
     </div>
   );

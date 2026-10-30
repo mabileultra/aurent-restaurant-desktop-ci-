@@ -36,8 +36,9 @@ describe('applyPrintProfile defaults', () => {
     expect(ticketPrintOptions(profile, 'CANCEL').logoDataUrl).toBe('');
   });
 
-  it('prints a filled header on the guest bill even when that tab box is off', () => {
+  it('legacy guest bill auto-prints filled header when schemaVersion < 2', () => {
     const profile = factoryPrintProfile();
+    profile.schemaVersion = 1;
     profile.storeName = 'XAN BALIQ';
     profile.phone = '+998 90 000 00 00';
     profile.footer = 'Ждём снова';
@@ -59,5 +60,15 @@ describe('applyPrintProfile defaults', () => {
       'тело',
       'Ждём снова',
     ]);
+  });
+
+  it('schema v2 guest bill respects header toggles', () => {
+    const profile = factoryPrintProfile();
+    profile.schemaVersion = 2;
+    profile.storeName = 'XAN BALIQ';
+    profile.phone = '+998 90 000 00 00';
+    profile.slips.GUEST_BILL.fields.storeName.on = true;
+    profile.slips.GUEST_BILL.fields.phone.on = false;
+    expect(brandingLines(profile, 'GUEST_BILL')).toEqual(['XAN BALIQ']);
   });
 });

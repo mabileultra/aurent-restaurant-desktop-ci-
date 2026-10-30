@@ -1,4 +1,6 @@
 import { rstKitchenApi } from '../../api/kitchen.api';
+import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
+import { enrichPrintProfileFromCompany } from './enrichPrintProfileFromCompany';
 import { factoryPrintProfile } from './printProfileDefaults';
 
 /** Short TTL: admin can save a logo while POS still has an empty profile in memory. */
@@ -31,12 +33,15 @@ export async function loadStorePrintProfile(storeId) {
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.profile;
   try {
     const res = await rstKitchenApi.getPrintProfile(storeId);
-    const profile = res?.data?.profile || factoryPrintProfile();
+    const raw = res?.data?.profile || factoryPrintProfile();
+    const company = useTenantDisplayStore.getState().committed;
+    const profile = enrichPrintProfileFromCompany(raw, company);
     cache.set(key, { at: Date.now(), profile });
     return profile;
   } catch {
     // Do not cache failures — otherwise a transient error locks an empty logo forever.
-    return factoryPrintProfile();
+    const company = useTenantDisplayStore.getState().committed;
+    return enrichPrintProfileFromCompany(factoryPrintProfile(), company);
   }
 }
 

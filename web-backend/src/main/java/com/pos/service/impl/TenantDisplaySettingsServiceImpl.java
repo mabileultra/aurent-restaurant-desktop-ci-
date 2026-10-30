@@ -118,7 +118,9 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
             TextUtil.trimOrNull(payload.receiptStir()),
             payload.receiptFields(),
             payload.userFormFields(),
-            payload.printSettings()
+            payload.printSettings(),
+            payload.uiTheme(),
+            payload.receiptFieldStyles()
         );
     }
 
@@ -179,7 +181,7 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
         return new TenantDisplaySettingsPayload(
             null, null, null, null, null,
             null, null, null, null,
-            null, null, null
+            null, null, null, null, null
         );
     }
 

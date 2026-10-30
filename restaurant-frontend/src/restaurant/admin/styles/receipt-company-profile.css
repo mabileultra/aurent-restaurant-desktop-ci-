@@ -1,0 +1,214 @@
+.rst-receipt-company {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem 1.15rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: var(--rst-surface);
+}
+
+.rst-receipt-company__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.rst-receipt-company__field-label {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+}
+
+.rst-receipt-company__logo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.4rem;
+}
+
+.rst-receipt-company__logo-preview {
+  width: 72px;
+  height: 72px;
+  border: 1px dashed var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface-2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rst-receipt-company__logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.rst-receipt-company__logo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.rst-receipt-company__file {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-receipt-company__file input {
+  display: none;
+}
+
+.rst-receipt-company__logo-actions button {
+  min-height: 2.2rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-receipt-company__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--rst-muted);
+}
+
+.rst-receipt-company__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.rst-receipt-company__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+}
+
+.rst-receipt-company__field--wide {
+  grid-column: 1 / -1;
+}
+
+.rst-receipt-company__field input,
+.rst-receipt-company__field textarea {
+  font: inherit;
+  font-weight: 600;
+  color: var(--rst-ink);
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+}
+
+.rst-receipt-company__fields-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.15rem;
+}
+
+.rst-receipt-company__fields-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.rst-receipt-company__link {
+  border: none;
+  background: none;
+  color: var(--rst-brand, #059669);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.rst-receipt-company__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.rst-receipt-company__row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.4fr);
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 2.55rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+}
+
+.rst-receipt-company__row.is-off {
+  opacity: 0.55;
+}
+
+.rst-receipt-company__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .rst-receipt-company__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rst-receipt-company__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.rst-receipt-company__actions button {
+  min-height: 2.4rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-receipt-company__save {
+  background: var(--rst-brand, #059669) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.rst-receipt-company__save:disabled,
+.rst-receipt-company__actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .rst-receipt-company__grid {
+    grid-template-columns: 1fr;
+  }
+}
