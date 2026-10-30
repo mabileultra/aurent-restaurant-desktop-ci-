@@ -1,8 +1,10 @@
 package com.pos.integrations.platform.controller;
 
+import com.pos.dto.platform.internal.CashRegisterStatsResponse;
 import com.pos.dto.platform.internal.CompanyStoreCountResponse;
 import com.pos.dto.platform.internal.CompanyStoreCountsResponse;
 import com.pos.dto.platform.internal.CompanySyncRequest;
+import com.pos.service.platform.CashRegisterPlatformStatsService;
 import com.pos.service.platform.PlatformInternalService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.util.List;
 public class PlatformInternalController {
 
     private final PlatformInternalService platformInternalService;
+    private final CashRegisterPlatformStatsService cashRegisterPlatformStatsService;
 
     @GetMapping("/companies/{id}/store-count")
     public ResponseEntity<CompanyStoreCountResponse> storeCount(@PathVariable Integer id) {
@@ -41,5 +44,10 @@ public class PlatformInternalController {
     public ResponseEntity<Void> syncCompany(@RequestBody CompanySyncRequest request) {
         platformInternalService.syncCompany(request);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/cash-registers/stats")
+    public ResponseEntity<CashRegisterStatsResponse> cashRegisterStats() {
+        return ResponseEntity.ok(cashRegisterPlatformStatsService.stats());
     }
 }

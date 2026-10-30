@@ -4,11 +4,15 @@ import com.pos.config.openapi.StandardApiResponses;
 import com.pos.sales.dto.cashier.CashierShiftResponse;
 import com.pos.sales.dto.cashier.FinalizeZReportResponse;
 import com.pos.sales.dto.cashier.OpenCashierShiftRequest;
+import com.pos.sales.dto.cashier.ShiftCashMovementRequest;
+import com.pos.sales.dto.cashier.ShiftCashMovementResponse;
 import com.pos.sales.dto.cashier.ShiftReportResponse;
 import com.pos.sales.service.cashier.CashierShiftService;
+import com.pos.sales.service.cashier.ShiftCashMovementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +34,7 @@ import java.util.UUID;
 public class CashierShiftController {
 
     private final CashierShiftService cashierShiftService;
+    private final ShiftCashMovementService shiftCashMovementService;
 
     @GetMapping("/current")
     @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
@@ -73,6 +78,28 @@ public class CashierShiftController {
     @ApiResponse(responseCode = "200", description = "Z-отчёт сформирован")
     public ResponseEntity<FinalizeZReportResponse> finalizeZReport(@PathVariable UUID id) {
         return ResponseEntity.ok(cashierShiftService.finalizeZReport(id));
+    }
+
+    @PostMapping("/{id}/cash-in")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
+    @Operation(summary = "Внести наличные", description = "Cash-in: размен / внесение в кассу в открытой смене")
+    @ApiResponse(responseCode = "200", description = "Движение записано")
+    public ResponseEntity<ShiftCashMovementResponse> cashIn(
+        @PathVariable UUID id,
+        @Valid @RequestBody ShiftCashMovementRequest request
+    ) {
+        return ResponseEntity.ok(shiftCashMovementService.cashIn(id, request));
+    }
+
+    @PostMapping("/{id}/cash-out")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
+    @Operation(summary = "Изъять наличные", description = "Cash-out / инкассация в открытой смене")
+    @ApiResponse(responseCode = "200", description = "Движение записано")
+    public ResponseEntity<ShiftCashMovementResponse> cashOut(
+        @PathVariable UUID id,
+        @Valid @RequestBody ShiftCashMovementRequest request
+    ) {
+        return ResponseEntity.ok(shiftCashMovementService.cashOut(id, request));
     }
 
     @PostMapping("/{id}/close")

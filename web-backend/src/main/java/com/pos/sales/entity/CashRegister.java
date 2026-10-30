@@ -49,6 +49,9 @@ public class CashRegister {
     @Column(name = "last_seen_at")
     private Instant lastSeenAt;
 
+    @Column(name = "app_version", length = 64)
+    private String appVersion;
+
     /** ACTIVE — касса в работе (иконка «старт»), INACTIVE — выключена */
     @Column(name = "status", nullable = false, length = 20)
     private String status = "ACTIVE";

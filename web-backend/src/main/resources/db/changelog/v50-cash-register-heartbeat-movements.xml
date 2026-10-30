@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v50-cash-registers-app-version" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cash_registers" columnName="app_version"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="cash_registers">
+            <column name="app_version" type="varchar(64)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v50-shift-cash-movements" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="shift_cash_movements"/>
+            </not>
+        </preConditions>
+        <createTable tableName="shift_cash_movements">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="shift_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="direction" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="numeric(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note" type="varchar(500)"/>
+            <column name="created_by" type="uuid"/>
+            <column name="created_at" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="shift_cash_movements"
+            baseColumnNames="shift_id"
+            referencedTableName="cashier_shifts"
+            referencedColumnNames="id"
+            constraintName="fk_shift_cash_movements_shift"
+            onDelete="CASCADE"/>
+        <createIndex tableName="shift_cash_movements" indexName="idx_shift_cash_movements_shift">
+            <column name="shift_id"/>
+        </createIndex>
+        <createIndex tableName="shift_cash_movements" indexName="idx_shift_cash_movements_created">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

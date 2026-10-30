@@ -274,18 +274,36 @@ export function usePlatformDesktopNotificationsPage() {
     [t]
   );
 
-  // Revoke / dismiss item from active registers
-  const handleRevoke = useCallback(() => {
-    toast.error(t('platform.desktopNotifications.revokeUnsupported', {
-      defaultValue: 'Xabarni kassalardan qaytarib olish serverda qo‘llab-quvvatlanmaydi.',
-    }));
-  }, [t]);
+  const handleRevoke = useCallback(async () => {
+    if (!selectedItemForDrawer?.id) return;
+    try {
+      await platformDesktopNotificationsApi.revoke(selectedItemForDrawer.id);
+      toast.success(t('platform.desktopNotifications.revoked', {
+        defaultValue: 'Уведомление снято с касс',
+      }));
+      queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
+      setSelectedItemForDrawer(null);
+    } catch (e) {
+      toast.error(e.response?.data?.message ?? t('platform.desktopNotifications.revokeFailed', {
+        defaultValue: 'Не удалось снять уведомление',
+      }));
+    }
+  }, [selectedItemForDrawer, t, queryClient]);
 
-  const handleExtend = useCallback(() => {
-    toast.error(t('platform.desktopNotifications.extendUnsupported', {
-      defaultValue: 'Muddatni uzaytirish serverda qo‘llab-quvvatlanmaydi.',
-    }));
-  }, [t]);
+  const handleExtend = useCallback(async () => {
+    if (!selectedItemForDrawer?.id) return;
+    try {
+      await platformDesktopNotificationsApi.extend(selectedItemForDrawer.id, { expiresInHours: 24 });
+      toast.success(t('platform.desktopNotifications.extended', {
+        defaultValue: 'Срок уведомления продлён на 24 часа',
+      }));
+      queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
+    } catch (e) {
+      toast.error(e.response?.data?.message ?? t('platform.desktopNotifications.extendFailed', {
+        defaultValue: 'Не удалось продлить срок',
+      }));
+    }
+  }, [selectedItemForDrawer, t, queryClient]);
 
   // Enriched history items with realistic status without fake counts
   const enrichedHistory = useMemo(() => {

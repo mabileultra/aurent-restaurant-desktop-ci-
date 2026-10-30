@@ -2,10 +2,13 @@ package com.pos.sales.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.sales.dto.cashregister.CashRegisterDetailResponse;
+import com.pos.sales.dto.cashregister.CashRegisterHeartbeatRequest;
+import com.pos.sales.dto.cashregister.CashRegisterHeartbeatResponse;
 import com.pos.sales.dto.cashregister.CashRegisterRowResponse;
 import com.pos.sales.dto.cashregister.UpsertCashRegisterRequest;
 import com.pos.sales.dto.cashregister.CashTransferRowResponse;
 import com.pos.dto.shared.PageResponse;
+import com.pos.sales.service.CashRegisterHeartbeatService;
 import com.pos.sales.service.CashRegisterService;
 import com.pos.sales.service.CashTransferService;
 import com.pos.sales.service.export.CashTransferExportService;
@@ -41,6 +44,7 @@ import java.util.List;
 public class CashRegisterController {
 
     private final CashRegisterService cashRegisterService;
+    private final CashRegisterHeartbeatService cashRegisterHeartbeatService;
     private final CashTransferService cashTransferService;
     private final CashTransferExportService cashTransferExportService;
 
@@ -104,6 +108,17 @@ public class CashRegisterController {
         @Valid @RequestBody UpsertCashRegisterRequest request
     ) {
         return ResponseEntity.ok(cashRegisterService.update(id, request));
+    }
+
+    @PostMapping("/{id}/heartbeat")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
+    @Operation(summary = "Heartbeat кассы", description = "Онлайн-статус и версия приложения терминала")
+    @ApiResponse(responseCode = "200", description = "Heartbeat принят")
+    public ResponseEntity<CashRegisterHeartbeatResponse> heartbeat(
+        @PathVariable Long id,
+        @RequestBody(required = false) @Valid CashRegisterHeartbeatRequest request
+    ) {
+        return ResponseEntity.ok(cashRegisterHeartbeatService.heartbeat(id, request));
     }
 
     @GetMapping("/{id}")

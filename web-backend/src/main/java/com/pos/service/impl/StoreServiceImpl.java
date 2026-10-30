@@ -60,7 +60,18 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Cacheable(value = "stores", key = "@tenantCacheKeyResolver.stores()")
     public List<StoreResponse> listStores() {
+        return listStores(null);
+    }
+
+    @Override
+    public List<StoreResponse> listStores(Integer companyId) {
         User actor = tenantAccess.currentUser();
+        if (companyId != null) {
+            Integer scoped = tenantAccess.resolveScopedCompanyId(companyId);
+            tenantAccess.assertCanAccessCompany(scoped);
+            return storeRepository.findByCompanyIdOrderByNameAsc(scoped)
+                .stream().map(storeMapper::toResponse).toList();
+        }
         if (tenantAccess.isPlatformOperator()) {
             return storeRepository.findAll(Sort.by("name").ascending()).stream().map(storeMapper::toResponse).toList();
         }

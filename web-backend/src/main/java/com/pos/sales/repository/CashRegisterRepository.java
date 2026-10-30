@@ -100,4 +100,8 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
     boolean existsByDeviceIdAndIdNot(String deviceId, Long id);
 
     boolean existsByDeviceId(String deviceId);
+
+    long countByStatusIgnoreCase(String status);
+
+    long countByLastSeenAtAfter(java.time.Instant since);
 }

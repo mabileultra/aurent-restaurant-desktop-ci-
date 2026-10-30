@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="v49-clear-min-margin-percent" author="pos">
+        <comment>Allow any retail price: min markup % is no longer enforced</comment>
+        <sql>
+            UPDATE business_type_price_rules
+            SET rule_value = '0'
+            WHERE rule_key = 'price.minMarginPercent'
+              AND rule_value IS DISTINCT FROM '0';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -3,6 +3,7 @@ package com.pos.platform.service.impl;
 import com.pos.platform.dto.desktop.DesktopBroadcastCreateRequest;
 import com.pos.platform.dto.desktop.DesktopBroadcastListResponse;
 import com.pos.platform.dto.desktop.DesktopBroadcastResponse;
+import com.pos.platform.dto.desktop.DesktopBroadcastUpdateRequest;
 import com.pos.platform.entity.DesktopBroadcast;
 import com.pos.platform.entity.DesktopBroadcastRead;
 import com.pos.platform.entity.DesktopBroadcastReadId;
@@ -100,6 +101,39 @@ public class DesktopBroadcastServiceImpl implements DesktopBroadcastService {
             .id(id)
             .build();
         readRepository.save(read);
+    }
+
+    @Override
+    public void revoke(UUID broadcastId) {
+        DesktopBroadcast broadcast = broadcastRepository.findById(broadcastId)
+            .orElseThrow(() -> new ResourceNotFoundException("Broadcast not found"));
+        broadcast.setExpiresAt(Instant.now());
+        broadcastRepository.save(broadcast);
+        LogUtil.info(DesktopBroadcastServiceImpl.class, "Desktop broadcast revoked: id={}", broadcastId);
+    }
+
+    @Override
+    public DesktopBroadcastResponse extend(UUID broadcastId, DesktopBroadcastUpdateRequest request) {
+        if (request == null || (request.expiresAt() == null && request.expiresInHours() == null)) {
+            throw new BadRequestException("expiresAt or expiresInHours required");
+        }
+        DesktopBroadcast broadcast = broadcastRepository.findById(broadcastId)
+            .orElseThrow(() -> new ResourceNotFoundException("Broadcast not found"));
+        Instant nextExpiry = request.expiresAt() != null
+            ? request.expiresAt()
+            : Instant.now().plus(request.expiresInHours(), ChronoUnit.HOURS);
+        if (!nextExpiry.isAfter(Instant.now())) {
+            throw new BadRequestException("New expiry must be in the future");
+        }
+        broadcast.setExpiresAt(nextExpiry);
+        DesktopBroadcast saved = broadcastRepository.save(broadcast);
+        LogUtil.info(
+            DesktopBroadcastServiceImpl.class,
+            "Desktop broadcast extended: id={}, expiresAt={}",
+            broadcastId,
+            nextExpiry
+        );
+        return mapper.toResponse(saved);
     }
 
     private static String trimToNull(String value) {

@@ -12,6 +12,8 @@ public interface StoreService {
 
     List<StoreResponse> listStores();
 
+    List<StoreResponse> listStores(Integer companyId);
+
     PageResponse<StoreResponse> listManaged(
         String search,
         Integer companyId,
