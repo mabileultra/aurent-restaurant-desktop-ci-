@@ -342,23 +342,6 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
 
     if (
       !isRestaurantIngredient
-      && showSection('accounting')
-      && showSection('accountingCost')
-      && showSection('accountingSell')
-      && priceRulesConfig.minMarginPercent > 0
-      && submitValues.costPrice > 0
-      && submitValues.sellingPrice > 0
-    ) {
-      const margin = ((submitValues.sellingPrice - submitValues.costPrice) / submitValues.costPrice) * 100;
-      if (margin < priceRulesConfig.minMarginPercent) {
-        toast.error(
-          t('productCatalog.minMarginError', { percent: priceRulesConfig.minMarginPercent })
-        );
-        return;
-      }
-    }
-    if (
-      !isRestaurantIngredient
       && showSection('accountingDiscount')
       && submitValues.defaultDiscountPercent > priceRulesConfig.maxDiscountPercent
     ) {
