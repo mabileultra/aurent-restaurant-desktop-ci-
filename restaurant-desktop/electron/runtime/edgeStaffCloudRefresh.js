@@ -19,8 +19,8 @@ function mapStaffRows(staff, companyLoginCode) {
 }
 
 /**
- * While online: re-pull cloud staff and replace local roster (hashes + deactivate missing).
- * Keeps months-offline local auth in sync when the link is up — does not bypass local login path.
+ * While online: upsert cloud staff hashes into local roster (S3).
+ * replaceRoster=false — do not deactivate hall-only users created on the PC.
  */
 async function refreshStaffRosterFromCloud() {
   const session = getLiveCloudSession();
@@ -40,7 +40,7 @@ async function refreshStaffRosterFromCloud() {
       companyId,
       companyLoginCode,
       bootstrapSecret: secret,
-      replaceRoster: true,
+      replaceRoster: false,
       staff: mapStaffRows(staff, companyLoginCode),
     },
   });

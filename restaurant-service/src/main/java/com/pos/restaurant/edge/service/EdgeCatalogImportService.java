@@ -2,6 +2,7 @@ package com.pos.restaurant.edge.service;
 
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogImportRequest;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot;
+import com.pos.restaurant.edge.support.EdgeCatalogLww;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.CategoryRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.HallRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ItemRow;
@@ -208,7 +209,7 @@ public class EdgeCatalogImportService {
                   active = EXCLUDED.active,
                   service_percent = EXCLUDED.service_percent,
                   updated_at = EXCLUDED.updated_at
-                """,
+                """ + EdgeCatalogLww.whereNotOlderThan("floor_halls"),
                 row.id(),
                 snap.companyId(),
                 snap.storeId(),
@@ -216,8 +217,8 @@ public class EdgeCatalogImportService {
                 row.sortOrder(),
                 row.active(),
                 row.servicePercent() == null ? BigDecimal.ZERO : row.servicePercent(),
-                Timestamp.from(now),
-                Timestamp.from(now)
+                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
+                EdgeCatalogLww.bind(row.updatedAt())
             );
         }
         return rows.size();
@@ -250,7 +251,7 @@ public class EdgeCatalogImportService {
                   status = EXCLUDED.status,
                   active = EXCLUDED.active,
                   updated_at = EXCLUDED.updated_at
-                """,
+                """ + EdgeCatalogLww.whereNotOlderThan("floor_tables"),
                 row.id(),
                 row.hallId(),
                 snap.companyId(),
@@ -265,8 +266,8 @@ public class EdgeCatalogImportService {
                 row.height() <= 0 ? 80 : row.height(),
                 status,
                 row.active(),
-                Timestamp.from(now),
-                Timestamp.from(now)
+                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
+                EdgeCatalogLww.bind(row.updatedAt())
             );
         }
         return rows.size();
@@ -294,7 +295,7 @@ public class EdgeCatalogImportService {
                   sort_order = EXCLUDED.sort_order,
                   active = EXCLUDED.active,
                   updated_at = EXCLUDED.updated_at
-                """,
+                """ + EdgeCatalogLww.whereNotOlderThan("kitchen_stations"),
                 row.id(),
                 snap.companyId(),
                 snap.storeId(),
@@ -302,8 +303,8 @@ public class EdgeCatalogImportService {
                 name,
                 row.sortOrder(),
                 row.active(),
-                Timestamp.from(now),
-                Timestamp.from(now)
+                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
+                EdgeCatalogLww.bind(row.updatedAt())
             );
             n++;
         }
@@ -325,7 +326,8 @@ public class EdgeCatalogImportService {
                 row.active(),
                 row.autoPrint(),
                 row.printPrinterName(),
-                now
+                now,
+                row.updatedAt()
             );
             known.add(row.id());
         }
@@ -335,7 +337,7 @@ public class EdgeCatalogImportService {
             UUID catId = item.menuCategoryId();
             if (catId == null || known.contains(catId)) continue;
             String stubName = StringUtils.hasText(item.category()) ? item.category().trim() : "Раздел";
-            upsertCategoryRow(catId, snap.companyId(), snap.storeId(), stubName, 900, true, false, null, now);
+            upsertCategoryRow(catId, snap.companyId(), snap.storeId(), stubName, 900, true, false, null, now, null);
             known.add(catId);
         }
         return known.size();
@@ -350,7 +352,8 @@ public class EdgeCatalogImportService {
         boolean active,
         boolean autoPrint,
         String printPrinterName,
-        Instant now
+        Instant now,
+        Instant updatedAt
     ) {
         jdbc.update("""
             INSERT INTO menu_categories
@@ -365,7 +368,7 @@ public class EdgeCatalogImportService {
               auto_print = EXCLUDED.auto_print,
               print_printer_name = EXCLUDED.print_printer_name,
               updated_at = EXCLUDED.updated_at
-            """,
+            """ + EdgeCatalogLww.whereNotOlderThan("menu_categories"),
             id,
             companyId,
             storeId,
@@ -374,8 +377,8 @@ public class EdgeCatalogImportService {
             active,
             autoPrint,
             printPrinterName,
-            Timestamp.from(now),
-            Timestamp.from(now)
+            EdgeCatalogLww.createdOrNow(updatedAt, now),
+            EdgeCatalogLww.bind(updatedAt)
         );
     }
 
@@ -440,7 +443,7 @@ public class EdgeCatalogImportService {
                   marked_product = EXCLUDED.marked_product,
                   sort_order = EXCLUDED.sort_order,
                   updated_at = EXCLUDED.updated_at
-                """,
+                """ + EdgeCatalogLww.whereNotOlderThan("menu_items"),
                 row.id(),
                 snap.companyId(),
                 snap.storeId(),
@@ -470,8 +473,8 @@ public class EdgeCatalogImportService {
                 row.barcode(),
                 row.markedProduct(),
                 row.sortOrder(),
-                Timestamp.from(now),
-                Timestamp.from(now)
+                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
+                EdgeCatalogLww.bind(row.updatedAt())
             );
             n++;
         }
