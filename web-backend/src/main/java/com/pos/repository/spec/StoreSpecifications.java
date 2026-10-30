@@ -20,6 +20,17 @@ public final class StoreSpecifications {
         String regionCode,
         String districtCode
     ) {
+        return filter(search, companyId, businessType, regionCode, districtCode, null);
+    }
+
+    public static Specification<Store> filter(
+        String search,
+        Integer companyId,
+        String businessType,
+        String regionCode,
+        String districtCode,
+        String status
+    ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -55,10 +66,30 @@ public final class StoreSpecifications {
                 predicates.add(cb.equal(root.get("districtCode"), districtCode.trim()));
             }
 
+            Boolean active = parseActiveStatus(status);
+            if (active != null) {
+                predicates.add(cb.equal(root.get("active"), active));
+            }
+
             if (predicates.isEmpty()) {
                 return cb.conjunction();
             }
             return cb.and(predicates.toArray(Predicate[]::new));
         };
+    }
+
+    /** ACTIVE / INACTIVE / ALL (or null) → Boolean filter; ALL/null = no filter. */
+    public static Boolean parseActiveStatus(String status) {
+        if (!StringUtils.hasText(status)) {
+            return null;
+        }
+        String normalized = status.trim().toUpperCase();
+        if ("ACTIVE".equals(normalized)) {
+            return true;
+        }
+        if ("INACTIVE".equals(normalized)) {
+            return false;
+        }
+        return null;
     }
 }

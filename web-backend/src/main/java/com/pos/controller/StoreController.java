@@ -2,9 +2,12 @@ package com.pos.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.dto.shared.PageResponse;
+import com.pos.dto.store.CompanyStoreGroupResponse;
 import com.pos.dto.store.CreateStoreRequest;
 import com.pos.dto.store.StoreResponse;
+import com.pos.dto.store.StoreStatsResponse;
 import com.pos.dto.store.UpdateStoreRequest;
+import com.pos.service.StorePlatformQueryService;
 import com.pos.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,12 +31,45 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
+    private final StorePlatformQueryService storePlatformQueryService;
 
     @GetMapping
-    @Operation(summary = "Список магазинов", description = "Магазины, доступные текущему пользователю")
+    @Operation(summary = "Список магазинов", description = "Магазины, доступные текущему пользователю. companyId — ленивая подгрузка филиалов компании")
     @ApiResponse(responseCode = "200", description = "Список магазинов")
-    public List<StoreResponse> list() {
-        return storeService.listStores();
+    public List<StoreResponse> list(@RequestParam(required = false) Integer companyId) {
+        return storeService.listStores(companyId);
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
+    @Operation(summary = "KPI магазинов", description = "Агрегаты без полной выгрузки таблицы")
+    @ApiResponse(responseCode = "200", description = "Статистика")
+    public ResponseEntity<StoreStatsResponse> stats(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) Integer companyId
+    ) {
+        return ResponseEntity.ok(storePlatformQueryService.stats(
+            search, status, businessType, regionCode, companyId
+        ));
+    }
+
+    @GetMapping("/by-company")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
+    @Operation(summary = "Компании с числом филиалов", description = "Страница компаний без вложенных магазинов (филиалы — GET /stores?companyId=)")
+    @ApiResponse(responseCode = "200", description = "Список компаний")
+    public ResponseEntity<PageResponse<CompanyStoreGroupResponse>> listByCompany(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String regionCode,
+        @PageableDefault(size = 10) Pageable pageable
+    ) {
+        return ResponseEntity.ok(storePlatformQueryService.listByCompany(
+            search, status, businessType, regionCode, pageable
+        ));
     }
 
     @GetMapping("/manage")

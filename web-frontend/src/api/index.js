@@ -44,6 +44,7 @@ export { financeSyncApi } from './financeSync.api';
 export { platformModuleAccessApi } from './platform/moduleAccess.api';
 export { platformEmailApi } from './platform/email.api';
 export { platformDesktopNotificationsApi } from './platform/desktopNotifications.api';
+export { platformCashRegistersApi } from './platform/cashRegisters.api';
 export { platformSecurityApi } from './platform/security.api';
 export { platformAccountApi } from './platform/account.api';
 export { platformMonitoringApi } from './platform/monitoring.api';

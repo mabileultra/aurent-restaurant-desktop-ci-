@@ -1,5 +1,6 @@
 package com.pos.platform.client;
 
+import com.pos.platform.client.dto.CashRegisterStatsResponse;
 import com.pos.platform.client.dto.CompanyStoreCountMap;
 import com.pos.platform.client.dto.CompanyStoreCountResponse;
 import com.pos.platform.client.dto.CompanyStoreCountsResponse;
@@ -101,5 +102,26 @@ public class PosCoreClient {
             return Map.of();
         }
         return CompanyStoreCountMap.fromItems(response.items());
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public CashRegisterStatsResponse getCashRegisterStats() {
+        CashRegisterStatsResponse response = posCoreRestClient.get()
+            .uri("/internal/platform/cash-registers/stats")
+            .retrieve()
+            .body(CashRegisterStatsResponse.class);
+        return response != null
+            ? response
+            : new CashRegisterStatsResponse(0, 0, 0, 0);
+    }
+
+    public CashRegisterStatsResponse getCashRegisterStatsOrZero() {
+        try {
+            return getCashRegisterStats();
+        } catch (RuntimeException ex) {
+            LogUtil.warn(PosCoreClient.class, "Cash register stats unavailable: reason={}", ex.getMessage());
+            return new CashRegisterStatsResponse(0, 0, 0, 0);
+        }
     }
 }
