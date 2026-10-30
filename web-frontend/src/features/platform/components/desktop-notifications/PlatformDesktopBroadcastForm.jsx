@@ -10,7 +10,31 @@ import {
   Send,
 } from 'lucide-react';
 
-const KINDS = ['MESSAGE', 'UPDATE', 'ALERT'];
+const KIND_OPTIONS = [
+  {
+    id: 'MESSAGE',
+    icon: MessageSquare,
+    iconBg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300',
+    titleKey: 'platform.desktopNotifications.kindMessage',
+    descKey: 'platform.desktopNotifications.kindMessageDesc',
+  },
+  {
+    id: 'UPDATE',
+    icon: RefreshCw,
+    iconBg: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300',
+    titleKey: 'platform.desktopNotifications.kindUpdate',
+    descKey: 'platform.desktopNotifications.kindUpdateDesc',
+  },
+  {
+    id: 'ALERT',
+    icon: AlertTriangle,
+    iconBg: 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300',
+    titleKey: 'platform.desktopNotifications.kindAlert',
+    descKey: 'platform.desktopNotifications.kindAlertDesc',
+  },
+];
+
+const KINDS = KIND_OPTIONS.map((k) => k.id);
 
 export default function PlatformDesktopBroadcastForm({ p }) {
   const { t } = p;
@@ -202,122 +226,50 @@ export default function PlatformDesktopBroadcastForm({ p }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3" role="radiogroup" aria-label={t('platform.desktopNotifications.stepKind')}>
-          {/* Card: Xabar */}
-          <button
-            ref={kindRefs.MESSAGE}
-            type="button"
-            role="radio"
-            aria-checked={p.kind === 'MESSAGE'}
-            tabIndex={p.kind === 'MESSAGE' ? 0 : -1}
-            onClick={() => p.setKind('MESSAGE')}
-            onKeyDown={(e) => handleKindKeyDown(e, 'MESSAGE')}
-            className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
-              p.kind === 'MESSAGE'
-                ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
-                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-850'
-            }`}
-          >
-            <div className="flex items-start justify-between w-full">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
-                <MessageSquare size={16} />
-              </div>
-              <div
-                className={`h-4 w-4 rounded-full border flex items-center justify-center ${
-                  p.kind === 'MESSAGE'
-                    ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
+          {KIND_OPTIONS.map((item) => {
+            const Icon = item.icon;
+            const isSelected = p.kind === item.id;
+            return (
+              <button
+                key={item.id}
+                ref={kindRefs[item.id]}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                tabIndex={isSelected ? 0 : -1}
+                onClick={() => p.setKind(item.id)}
+                onKeyDown={(e) => handleKindKeyDown(e, item.id)}
+                className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
+                  isSelected
+                    ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
+                    : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-850'
                 }`}
               >
-                {p.kind === 'MESSAGE' && <Check size={11} strokeWidth={3} />}
-              </div>
-            </div>
-            <div className="mt-2.5 sm:mt-3">
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                {t('platform.desktopNotifications.kindMessage')}
-              </h4>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                {t('platform.desktopNotifications.kindMessageDesc')}
-              </p>
-            </div>
-          </button>
-
-          {/* Card: Yangilanish */}
-          <button
-            ref={kindRefs.UPDATE}
-            type="button"
-            role="radio"
-            aria-checked={p.kind === 'UPDATE'}
-            tabIndex={p.kind === 'UPDATE' ? 0 : -1}
-            onClick={() => p.setKind('UPDATE')}
-            onKeyDown={(e) => handleKindKeyDown(e, 'UPDATE')}
-            className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
-              p.kind === 'UPDATE'
-                ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
-                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-850'
-            }`}
-          >
-            <div className="flex items-start justify-between w-full">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
-                <RefreshCw size={16} />
-              </div>
-              <div
-                className={`h-4 w-4 rounded-full border flex items-center justify-center ${
-                  p.kind === 'UPDATE'
-                    ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
-                }`}
-              >
-                {p.kind === 'UPDATE' && <Check size={11} strokeWidth={3} />}
-              </div>
-            </div>
-            <div className="mt-2.5 sm:mt-3">
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                {t('platform.desktopNotifications.kindUpdate')}
-              </h4>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                {t('platform.desktopNotifications.kindUpdateDesc')}
-              </p>
-            </div>
-          </button>
-
-          {/* Card: Muhim */}
-          <button
-            ref={kindRefs.ALERT}
-            type="button"
-            role="radio"
-            aria-checked={p.kind === 'ALERT'}
-            tabIndex={p.kind === 'ALERT' ? 0 : -1}
-            onClick={() => p.setKind('ALERT')}
-            onKeyDown={(e) => handleKindKeyDown(e, 'ALERT')}
-            className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
-              p.kind === 'ALERT'
-                ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
-                : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-850'
-            }`}
-          >
-            <div className="flex items-start justify-between w-full">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
-                <AlertTriangle size={16} />
-              </div>
-              <div
-                className={`h-4 w-4 rounded-full border flex items-center justify-center ${
-                  p.kind === 'ALERT'
-                    ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
-                }`}
-              >
-                {p.kind === 'ALERT' && <Check size={11} strokeWidth={3} />}
-              </div>
-            </div>
-            <div className="mt-2.5 sm:mt-3">
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                {t('platform.desktopNotifications.kindAlert')}
-              </h4>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                {t('platform.desktopNotifications.kindAlertDesc')}
-              </p>
-            </div>
-          </button>
+                <div className="flex items-start justify-between w-full">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${item.iconBg}`}>
+                    <Icon size={16} />
+                  </div>
+                  <div
+                    className={`h-4 w-4 rounded-full border flex items-center justify-center ${
+                      isSelected
+                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
+                    }`}
+                  >
+                    {isSelected && <Check size={11} strokeWidth={3} />}
+                  </div>
+                </div>
+                <div className="mt-2.5 sm:mt-3">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                    {t(item.titleKey)}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                    {t(item.descKey)}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -1,42 +1,23 @@
-import React, { useState } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { ru, uz } from 'date-fns/locale';
+import React, { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import PlatformSelect from '../PlatformSelect';
 import PlatformDesktopRowMenu from './PlatformDesktopRowMenu';
-
-function resolveLocale(lang) {
-  return lang?.startsWith('uz') ? uz : ru;
-}
-
-function formatDateFull(iso, lang) {
-  try {
-    const d = new Date(iso);
-    const res = format(d, 'd-MMMM yyyy, HH:mm', { locale: resolveLocale(lang) });
-    return lang?.startsWith('uz')
-      ? res.replace(/-([A-ZА-ЯЁ][a-zа-яё]+)/g, (m, p1) => `-${p1.toLowerCase()}`)
-      : res;
-  } catch {
-    return '—';
-  }
-}
-
-function formatRelative(iso, lang) {
-  try {
-    const d = new Date(iso);
-    const res = formatDistanceToNow(d, { addSuffix: true, locale: resolveLocale(lang) });
-    return res.replace(/^(?:taxminan|tahminan)\s+/i, '');
-  } catch {
-    return '';
-  }
-}
+import { formatDateFull, formatRelative } from './desktopNotificationFormatters';
+import { NotificationKindBadge, NotificationStatusBadge } from './DesktopNotificationBadges';
 
 export default function PlatformDesktopNotificationsHistory({ p }) {
   const { t, i18n } = p;
   const [activeMenuId, setActiveMenuId] = useState(null);
 
-  const handleRowClick = (item) => {
-    p.setSelectedItemForDrawer(item);
-  };
+  const statusOptions = useMemo(
+    () => [
+      { value: 'ALL', label: t('platform.desktopNotifications.filterAll', { defaultValue: 'Barcha holatlar' }) },
+      { value: 'ACTIVE', label: t('platform.desktopNotifications.filterActive', { defaultValue: 'Faol' }) },
+      { value: 'SCHEDULED', label: t('platform.desktopNotifications.filterScheduled', { defaultValue: 'Rejalashtirilgan' }) },
+      { value: 'EXPIRED', label: t('platform.desktopNotifications.filterExpired', { defaultValue: 'Muddati tugagan' }) },
+    ],
+    [t]
+  );
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
@@ -68,18 +49,16 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
           </div>
 
           {/* Status Filter */}
-          <div className="relative">
-            <select
+          <div className="w-44 sm:w-48">
+            <PlatformSelect
+              options={statusOptions}
               value={p.statusFilter}
               onChange={(e) => p.setStatusFilter(e.target.value)}
-              className="appearance-none rounded-xl border border-slate-200 bg-slate-50/60 py-2 pl-3 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
-            >
-              <option value="ALL">{t('platform.desktopNotifications.filterAll')}</option>
-              <option value="ACTIVE">{t('platform.desktopNotifications.filterActive')}</option>
-              <option value="SCHEDULED">{t('platform.desktopNotifications.filterScheduled')}</option>
-              <option value="EXPIRED">{t('platform.desktopNotifications.filterExpired')}</option>
-            </select>
-            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              onValueChange={(val) => p.setStatusFilter(val)}
+              size="sm"
+              searchable={false}
+              ariaLabel={t('platform.desktopNotifications.filterStatus', { defaultValue: 'Holat bo‘yicha filtr' })}
+            />
           </div>
         </div>
       </div>
@@ -114,11 +93,6 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
               </tr>
             ) : (
               p.history.map((item) => {
-                const kindStr = item.kind || 'MESSAGE';
-                const isAlert = kindStr === 'ALERT';
-                const isUpdate = kindStr === 'UPDATE';
-                const isMessage = kindStr === 'MESSAGE';
-
                 const progressWidth =
                   item.deliveredCount && item.totalCount
                     ? Math.min(100, Math.round((item.deliveredCount / item.totalCount) * 100))
@@ -142,21 +116,7 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
 
                     {/* Kind Badge */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      {isAlert && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
-                          {t('platform.desktopNotifications.kindAlert')}
-                        </span>
-                      )}
-                      {isUpdate && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
-                          {t('platform.desktopNotifications.kindUpdate')}
-                        </span>
-                      )}
-                      {isMessage && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                          {t('platform.desktopNotifications.kindMessage')}
-                        </span>
-                      )}
+                      <NotificationKindBadge kind={item.kind} t={t} size="sm" />
                     </td>
 
                     {/* Message Preview */}
@@ -215,24 +175,7 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
 
                     {/* Status */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      {item.status === 'ACTIVE' && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          <span>{t('platform.desktopNotifications.statusActive')}</span>
-                        </span>
-                      )}
-                      {item.status === 'SCHEDULED' && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                          <span>{t('platform.desktopNotifications.statusScheduled')}</span>
-                        </span>
-                      )}
-                      {item.status === 'EXPIRED' && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                          <span>{t('platform.desktopNotifications.statusExpired')}</span>
-                        </span>
-                      )}
+                      <NotificationStatusBadge status={item.status} t={t} size="sm" />
                     </td>
 
                     {/* Action Dropdown Menu */}
@@ -266,63 +209,26 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
             {t('platform.desktopNotifications.historyEmpty')}
           </div>
         ) : (
-          p.history.map((item) => {
-            const kindStr = item.kind || 'MESSAGE';
-            const isAlert = kindStr === 'ALERT';
-            const isUpdate = kindStr === 'UPDATE';
-            const isMessage = kindStr === 'MESSAGE';
-
-            return (
-              <div
-                key={item.id}
-                role="button"
-                tabIndex={0}
-                aria-label={`${t('platform.desktopNotifications.drawerTitle')}: ${item.title}`}
-                onClick={() => handleRowClick(item)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleRowClick(item);
-                  }
-                }}
-                className="p-4 space-y-2.5 active:bg-slate-50 dark:active:bg-slate-800/60 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {isAlert && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
-                        {t('platform.desktopNotifications.kindAlert')}
-                      </span>
-                    )}
-                    {isUpdate && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
-                        {t('platform.desktopNotifications.kindUpdate')}
-                      </span>
-                    )}
-                    {isMessage && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                        {t('platform.desktopNotifications.kindMessage')}
-                      </span>
-                    )}
-                    {item.status === 'ACTIVE' && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span>{t('platform.desktopNotifications.statusActive')}</span>
-                      </span>
-                    )}
-                    {item.status === 'SCHEDULED' && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                        <span>{t('platform.desktopNotifications.statusScheduled')}</span>
-                      </span>
-                    )}
-                    {item.status === 'EXPIRED' && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                        <span>{t('platform.desktopNotifications.statusExpired')}</span>
-                      </span>
-                    )}
-                  </div>
+          p.history.map((item) => (
+            <div
+              key={item.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`${t('platform.desktopNotifications.drawerTitle')}: ${item.title}`}
+              onClick={() => handleRowClick(item)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleRowClick(item);
+                }
+              }}
+              className="p-4 space-y-2.5 active:bg-slate-50 dark:active:bg-slate-800/60 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <NotificationKindBadge kind={item.kind} t={t} size="xs" />
+                  <NotificationStatusBadge status={item.status} t={t} size="xs" />
+                </div>
                   <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                     <span className="text-[11px] text-slate-400">
                       {formatRelative(item.createdAt, i18n.language)}
@@ -355,9 +261,8 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
                   </span>
                 </div>
               </div>
-            );
-          })
-        )}
+            ))
+          )}
       </div>
 
       {/* Footnote */}

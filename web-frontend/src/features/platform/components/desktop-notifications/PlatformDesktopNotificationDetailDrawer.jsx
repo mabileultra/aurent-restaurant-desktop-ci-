@@ -7,24 +7,8 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ru, uz } from 'date-fns/locale';
-
-function resolveLocale(lang) {
-  return lang?.startsWith('uz') ? uz : ru;
-}
-
-function formatUzbekDate(iso, pattern, lang) {
-  try {
-    const d = new Date(iso);
-    const res = format(d, pattern, { locale: resolveLocale(lang) });
-    return lang?.startsWith('uz')
-      ? res.replace(/-([A-ZА-ЯЁ][a-zа-яё]+)/g, (m, p1) => `-${p1.toLowerCase()}`)
-      : res;
-  } catch {
-    return '—';
-  }
-}
+import { formatUzbekDate } from './desktopNotificationFormatters';
+import { NotificationKindBadge, NotificationStatusBadge } from './DesktopNotificationBadges';
 
 export default function PlatformDesktopNotificationDetailDrawer({ p }) {
   const { t, i18n } = p;
@@ -104,8 +88,6 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
     ? `${formatUzbekDate(item.expiresAt, expiresPattern, i18n.language)} gacha`
     : '—';
 
-  const isAlert = item.kind === 'ALERT';
-  const isUpdate = item.kind === 'UPDATE';
 
   const drawerNode = (
     <div
@@ -128,30 +110,8 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
         <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {isAlert && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
-                  {t('platform.desktopNotifications.kindAlert')}
-                </span>
-              )}
-              {isUpdate && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
-                  {t('platform.desktopNotifications.kindUpdate')}
-                </span>
-              )}
-              {!isAlert && !isUpdate && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                  {t('platform.desktopNotifications.kindMessage')}
-                </span>
-              )}
-
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span>
-                  {item.status === 'EXPIRED'
-                    ? t('platform.desktopNotifications.statusExpired')
-                    : t('platform.desktopNotifications.statusActive')}
-                </span>
-              </span>
+              <NotificationKindBadge kind={item.kind} t={t} size="sm" />
+              <NotificationStatusBadge status={item.status} t={t} size="sm" />
             </div>
 
             <button
@@ -229,7 +189,7 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
             <div className="flex items-center justify-between py-2.5">
               <span className="text-slate-500 dark:text-slate-400">Kassada</span>
               <span className="font-semibold text-slate-900 dark:text-white text-right max-w-[260px]">
-                {isAlert
+                {item.kind === 'ALERT'
                   ? 'Kassir yopmaguncha ekranda turadi'
                   : 'Qo‘ng‘iroqcha bildirishnomalarida chiqadi'}
               </span>

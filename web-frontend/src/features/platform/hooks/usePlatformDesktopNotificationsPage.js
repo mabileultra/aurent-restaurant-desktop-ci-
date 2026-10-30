@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { addHours, format } from 'date-fns';
-import { uz } from 'date-fns/locale';
+import { addHours } from 'date-fns';
 import { platformDesktopNotificationsApi } from '../../../api';
+import { formatUzbekDate } from '../components/desktop-notifications/desktopNotificationFormatters';
 
 const DRAFT_STORAGE_KEY = 'aurent_desktop_notification_draft_v1';
 
@@ -159,8 +159,7 @@ export function usePlatformDesktopNotificationsPage() {
       const targetDate = addHours(now, expiresInHours);
       const isDifferentYear = targetDate.getFullYear() !== now.getFullYear();
       const pattern = isDifferentYear ? 'd-MMMM yyyy, HH:mm' : 'd-MMMM, HH:mm';
-      const raw = format(targetDate, pattern, { locale: uz });
-      return formatUzbekMonthLower(raw);
+      return formatUzbekDate(targetDate, pattern, 'uz');
     } catch {
       return '';
     }

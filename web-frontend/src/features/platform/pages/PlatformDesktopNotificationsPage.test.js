@@ -13,6 +13,12 @@ vi.mock('../../../components/ui', () => ({
       React.createElement('p', null, subtitle),
       children
     ),
+  BaseSelect: ({ options, value, onChange, placeholder, 'aria-label': ariaLabel, className }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'mock-base-select', className },
+      React.createElement('span', null, options?.find((o) => o.value === value)?.label || placeholder || value)
+    ),
 }));
 
 const mockBaseHook = {
@@ -325,5 +331,11 @@ describe('PlatformDesktopNotificationsPage', () => {
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopConfirmModal, { p: modalProps }));
     expect(html).toContain('whitespace-nowrap');
     expect(html).toContain('flex items-center justify-end');
+  });
+
+  it('uses PlatformSelect for status filter and does not render raw select tags', () => {
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+    expect(html).not.toContain('<select');
+    expect(html).toContain('mock-base-select');
   });
 });
