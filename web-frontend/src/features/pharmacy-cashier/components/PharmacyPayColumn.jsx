@@ -9,6 +9,8 @@ export default function PharmacyPayColumn({
   total,
   onReturn,
   onDiscount,
+  onCashIn,
+  onCashOut,
   onConfirm,
   onOpenPaymentFlow,
   onClosePayment,
@@ -38,6 +40,8 @@ export default function PharmacyPayColumn({
             total={total}
             onReturn={onReturn}
             onDiscount={onDiscount}
+            onCashIn={onCashIn}
+            onCashOut={onCashOut}
             onConfirm={onConfirm}
             onOpenPaymentFlow={onOpenPaymentFlow}
             checkoutDisabled={checkoutDisabled}

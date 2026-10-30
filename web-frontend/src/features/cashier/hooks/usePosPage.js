@@ -15,6 +15,7 @@ import { usePosCheckout } from './pos/usePosCheckout';
 import { usePosSearchMarkAutoSubmit } from './pos/usePosSearchMarkAutoSubmit';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 import { usePharmacyIntegrationConfig } from '../../pharmacy-cashier/hooks/usePharmacyIntegrationConfig';
+import { useCashierCashMovement } from './useCashierCashMovement';
 
 export function usePosPage() {
   const { t } = useTranslation();
@@ -31,7 +32,6 @@ export function usePosPage() {
   const [selectedLineId, setSelectedLineId] = useState(null);
   const [returnOpen, setReturnOpen] = useState(false);
   const [discountOpen, setDiscountOpen] = useState(false);
-  const [cashMovement, setCashMovement] = useState(null); // null | 'IN' | 'OUT'
   const { open: shiftModalOpen, openShift: openShiftModal } = useCashierShiftModal();
   const shiftAutoPromptedRef = useRef(false);
 
@@ -313,26 +313,13 @@ export function usePosPage() {
     [setCustomer, t]
   );
 
-  const handleCashIn = useCallback(() => {
-    if (!shiftIsOpen) {
-      toast.error(t('pos.shiftRequired', { defaultValue: 'Avval smenani oching' }));
-      return;
-    }
-    setCashMovement('IN');
-  }, [shiftIsOpen, t]);
-
-  const handleCashOut = useCallback(() => {
-    if (!shiftIsOpen) {
-      toast.error(t('pos.shiftRequired', { defaultValue: 'Avval smenani oching' }));
-      return;
-    }
-    setCashMovement('OUT');
-  }, [shiftIsOpen, t]);
-
-  const handleCashMovementSuccess = useCallback(() => {
-    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
-    setCashMovement(null);
-  }, [qc, storeId]);
+  const {
+    cashMovement,
+    setCashMovement,
+    handleCashIn,
+    handleCashOut,
+    handleCashMovementSuccess,
+  } = useCashierCashMovement({ shiftIsOpen, storeId, t });
 
   return {
     t,

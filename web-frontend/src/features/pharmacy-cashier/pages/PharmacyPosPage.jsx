@@ -1,14 +1,21 @@
 import PosOrderDiscountModal from '../../cashier/components/PosOrderDiscountModal';
 import { PosReturnModal } from '../../../components/pos';
 import WeightEntryModal from '../../cashier/components/WeightEntryModal';
+import ShiftCashMovementModal from '../../cashier/components/ShiftCashMovementModal';
 import PharmacyQtyModal from '../components/PharmacyQtyModal';
 import PharmacyRegisterWorkspace from '../components/PharmacyRegisterWorkspace';
 import { usePharmacyPosPage } from '../hooks/usePharmacyPosPage';
+import { useCashierCashMovement } from '../../cashier/hooks/useCashierCashMovement';
 import { updatePharmacyCartLinePrice } from '../utils/pharmacyCartActions';
 import '../styles/pharmacy-cashier.css';
 
 export default function PharmacyPosPage() {
   const p = usePharmacyPosPage();
+  const cashMovement = useCashierCashMovement({
+    shiftIsOpen: p.shiftIsOpen,
+    storeId: p.storeId,
+    t: p.t,
+  });
 
   if (p.storeBlocked) {
     return (
@@ -54,10 +61,20 @@ export default function PharmacyPosPage() {
         shiftIsOpen={p.shiftIsOpen}
         onReturn={() => p.setReturnOpen(true)}
         onDiscount={p.handleDiscount}
+        onCashIn={cashMovement.handleCashIn}
+        onCashOut={cashMovement.handleCashOut}
         onOpenPaymentFlow={p.handleOpenPaymentFlow}
         onPayFlowClosed={p.handlePayFlowClosed}
         payFlowOptions={p.payFlowOptions}
         payFlowSession={p.payFlowSession}
+      />
+
+      <ShiftCashMovementModal
+        open={Boolean(cashMovement.cashMovement)}
+        direction={cashMovement.cashMovement || 'IN'}
+        shiftId={p.shift?.id}
+        onClose={() => cashMovement.setCashMovement(null)}
+        onSuccess={cashMovement.handleCashMovementSuccess}
       />
 
       <PosReturnModal

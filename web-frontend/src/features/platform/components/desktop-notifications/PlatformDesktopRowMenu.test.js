@@ -54,4 +54,20 @@ describe('PlatformDesktopRowMenu', () => {
     expect(html).not.toContain('Tez kunda');
     expect(html).not.toContain('disabled=""');
   });
+
+  it('disables extend and revoke actions when notification status is EXPIRED', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformDesktopRowMenu, {
+        ...defaultProps,
+        item: {
+          ...mockItem,
+          status: 'EXPIRED',
+        },
+        isOpen: true,
+      })
+    );
+
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('cursor-not-allowed opacity-50');
+  });
 });

@@ -2,14 +2,15 @@ import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { addHours } from 'date-fns';
 import { platformDesktopNotificationsApi, platformCashRegistersApi } from '../../../api';
-import { formatUzbekDate } from '../components/desktop-notifications/desktopNotificationFormatters';
 import {
   enrichDesktopNotificationHistory,
   filterDesktopNotificationHistory,
 } from './enrichDesktopNotificationHistory';
 import { useDesktopNotificationDraft } from './useDesktopNotificationDraft';
+import { useDesktopNotificationActions } from './useDesktopNotificationActions';
+import { useDesktopNotificationTiming } from './useDesktopNotificationTiming';
+import { useDesktopNotificationBroadcast } from './useDesktopNotificationBroadcast';
 
 export function formatUzbekMonthLower(str) {
   if (!str || typeof str !== 'string') return '';
@@ -34,8 +35,6 @@ export function usePlatformDesktopNotificationsPage() {
   const [customHours, setCustomHours] = useState('72');
   const [scheduleType, setScheduleType] = useState('NOW');
   const [scheduleTime, setScheduleTime] = useState('');
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [selectedItemForDrawer, setSelectedItemForDrawer] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
@@ -52,6 +51,15 @@ export function usePlatformDesktopNotificationsPage() {
     setCustomHours,
   });
 
+  const actions = useDesktopNotificationActions({
+    queryClient,
+    t,
+    setTitle,
+    setBody,
+    setKind,
+    draft,
+  });
+
   // Platform-wide cash registers stats (avoids tenant 403 on /api/v1/cash-registers)
   const registersStatsQuery = useQuery({
     queryKey: ['platform-cash-registers-stats'],
@@ -62,107 +70,26 @@ export function usePlatformDesktopNotificationsPage() {
   const totalRegistersCount = registersStatsQuery.data?.totalRegisters ?? null;
   const activeRegistersCount = registersStatsQuery.data?.activeRegisters ?? totalRegistersCount;
   const onlineRegistersCount = registersStatsQuery.data?.onlineRegisters ?? null;
-  const [revokeConfirmItem, setRevokeConfirmItem] = useState(null);
 
   const historyQuery = useQuery({
     queryKey: ['platform-desktop-notifications'],
     queryFn: () => platformDesktopNotificationsApi.list().then((r) => r.data),
   });
 
-  const isCustomHoursValid = useMemo(() => {
-    if (duration !== 'other') return true;
-    const trimmed = String(customHours ?? '').trim();
-    if (!trimmed) return false;
-    const num = Number(trimmed);
-    return Number.isInteger(num) && num >= 1 && num <= 720;
-  }, [duration, customHours]);
+  const { isCustomHoursValid, expiresInHours, visibleUntilFormatted } =
+    useDesktopNotificationTiming({ duration, customHours });
 
-  const expiresInHours = useMemo(() => {
-    switch (duration) {
-      case '1d':
-        return 24;
-      case '3d':
-        return 72;
-      case '1w':
-        return 168;
-      case 'other': {
-        const trimmed = String(customHours ?? '').trim();
-        if (!trimmed) return null;
-        const num = Number(trimmed);
-        return Number.isInteger(num) && num >= 1 && num <= 720 ? num : null;
-      }
-      default:
-        return 72;
-    }
-  }, [duration, customHours]);
-
-  const visibleUntilFormatted = useMemo(() => {
-    if (expiresInHours == null || !isCustomHoursValid) return '';
-    try {
-      const now = new Date();
-      const targetDate = addHours(now, expiresInHours);
-      const isDifferentYear = targetDate.getFullYear() !== now.getFullYear();
-      return formatUzbekDate(targetDate, isDifferentYear ? 'd-MMMM yyyy, HH:mm' : 'd-MMMM, HH:mm', 'uz');
-    } catch {
-      return '';
-    }
-  }, [expiresInHours, isCustomHoursValid]);
-
-  const broadcastMutation = useMutation({
-    mutationFn: (payload) => platformDesktopNotificationsApi.broadcast(payload).then((r) => r.data),
-    onSuccess: () => {
-      toast.success(t('platform.desktopNotifications.sent', { defaultValue: 'Bildirishnoma yuborildi' }));
-      setTitle('');
-      setBody('');
-      draft.setIsDraftRestored(false);
-      setConfirmModalOpen(false);
-      draft.clearDraftStorage();
-      queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
-    },
-    onError: () => {
-      toast.error(t('platform.desktopNotifications.sendFailed', { defaultValue: 'Yuborib bo‘lmadi' }));
-    },
+  const broadcast = useDesktopNotificationBroadcast({
+    t,
+    title,
+    setTitle,
+    body,
+    setBody,
+    kind,
+    expiresInHours,
+    isCustomHoursValid,
+    draft,
   });
-
-  const hasContent = Boolean(title.trim() && body.trim());
-  const canSend = hasContent && isCustomHoursValid && !broadcastMutation.isPending;
-  const sendDisabledReason = useMemo(() => {
-    if (!hasContent) {
-      return t('platform.desktopNotifications.sendDisabledHint', {
-        defaultValue: 'Yuborish uchun sarlavha va matnni kiriting',
-      });
-    }
-    if (!isCustomHoursValid) {
-      return t('platform.desktopNotifications.sendDisabledHoursHint', {
-        defaultValue: "Muddatni to'g'ri kiriting (1 dan 720 soatgacha)",
-      });
-    }
-    return null;
-  }, [hasContent, isCustomHoursValid, t]);
-
-  const handleInitiateSend = useCallback(() => {
-    if (!title.trim() || !body.trim()) {
-      toast.error(t('platform.desktopNotifications.validation', { defaultValue: 'Sarlavha va matnni to‘ldiring' }));
-      return;
-    }
-    if (!isCustomHoursValid || expiresInHours == null) {
-      toast.error(t('platform.desktopNotifications.customHoursError', {
-        defaultValue: "Muddat 1 dan 720 soatgacha (30 kun) oralig'ida bo'lishi kerak",
-      }));
-      return;
-    }
-    setConfirmModalOpen(true);
-  }, [title, body, isCustomHoursValid, expiresInHours, t]);
-
-  const executeBroadcast = useCallback(() => {
-    if (!title.trim() || !body.trim() || !isCustomHoursValid || expiresInHours == null) return;
-    broadcastMutation.mutate({
-      title: title.trim().slice(0, 200),
-      body: body.trim().slice(0, 4000),
-      kind,
-      expiresInHours,
-    });
-  }, [title, body, kind, expiresInHours, isCustomHoursValid, broadcastMutation]);
 
   const handleClear = useCallback(() => {
     setTitle('');
@@ -171,64 +98,6 @@ export function usePlatformDesktopNotificationsPage() {
     draft.clearDraftStorage();
     toast.success(t('common.cleared', { defaultValue: 'Tozalandi' }));
   }, [t, draft]);
-
-  const handleDuplicate = useCallback((item) => {
-    if (!item) return;
-    setTitle(item.title || '');
-    setBody(item.body || '');
-    if (item.kind) setKind(item.kind);
-    setSelectedItemForDrawer(null);
-    draft.setIsDraftRestored(false);
-    toast.success(t('platform.desktopNotifications.actionDuplicate', { defaultValue: 'Nusxa olindi' }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => document.getElementById('broadcast-title-input')?.focus(), 150);
-  }, [t, draft]);
-
-  const handleRevoke = useCallback(async (targetItem) => {
-    const item = targetItem ?? selectedItemForDrawer;
-    if (!item?.id) return;
-    try {
-      await platformDesktopNotificationsApi.revoke(item.id);
-      toast.success(t('platform.desktopNotifications.revoked', {
-        defaultValue: 'Xabar kassalardan olib tashlandi',
-      }));
-      queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
-      if (selectedItemForDrawer?.id === item.id) {
-        setSelectedItemForDrawer(null);
-      }
-    } catch (e) {
-      toast.error(e.response?.data?.message ?? t('platform.desktopNotifications.revokeFailed', {
-        defaultValue: 'Xabarni olib tashlab bo‘lmadi',
-      }));
-    }
-  }, [selectedItemForDrawer, t, queryClient]);
-
-  const handleRevokePrompt = useCallback((item) => {
-    setRevokeConfirmItem(item ?? selectedItemForDrawer);
-  }, [selectedItemForDrawer]);
-
-  const handleConfirmRevoke = useCallback(async () => {
-    if (!revokeConfirmItem?.id) return;
-    const itemToRevoke = revokeConfirmItem;
-    setRevokeConfirmItem(null);
-    await handleRevoke(itemToRevoke);
-  }, [revokeConfirmItem, handleRevoke]);
-
-  const handleExtend = useCallback(async (targetItem) => {
-    const item = targetItem ?? selectedItemForDrawer;
-    if (!item?.id) return;
-    try {
-      await platformDesktopNotificationsApi.extend(item.id, { expiresInHours: 24 });
-      toast.success(t('platform.desktopNotifications.extended', {
-        defaultValue: 'Xabar muddati 24 soatga uzaytirildi',
-      }));
-      queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
-    } catch (e) {
-      toast.error(e.response?.data?.message ?? t('platform.desktopNotifications.extendFailed', {
-        defaultValue: 'Muddatni uzaytirib bo‘lmadi',
-      }));
-    }
-  }, [selectedItemForDrawer, t, queryClient]);
 
   const enrichedHistory = useMemo(
     () => enrichDesktopNotificationHistory(
@@ -273,8 +142,8 @@ export function usePlatformDesktopNotificationsPage() {
     customHours,
     setCustomHours,
     isCustomHoursValid,
-    canSend,
-    sendDisabledReason,
+    canSend: broadcast.canSend,
+    sendDisabledReason: broadcast.sendDisabledReason,
     expiresInHours,
     visibleUntilFormatted,
     scheduleType,
@@ -292,19 +161,12 @@ export function usePlatformDesktopNotificationsPage() {
     onlineRegistersCount,
 
     // Confirm Modal
-    confirmModalOpen,
-    setConfirmModalOpen,
-    executeBroadcast,
+    confirmModalOpen: broadcast.confirmModalOpen,
+    setConfirmModalOpen: broadcast.setConfirmModalOpen,
+    executeBroadcast: broadcast.executeBroadcast,
 
-    // Revoke Confirm Modal
-    revokeConfirmItem,
-    setRevokeConfirmItem,
-    handleRevokePrompt,
-    handleConfirmRevoke,
+    ...actions,
 
-    // Detail Drawer
-    selectedItemForDrawer,
-    setSelectedItemForDrawer,
     searchQuery,
     setSearchQuery,
     statusFilter,
@@ -312,12 +174,9 @@ export function usePlatformDesktopNotificationsPage() {
     history: filteredHistory,
     totalHistoryCount: enrichedHistory.length,
     historyLoading: historyQuery.isLoading,
-    handleSend: handleInitiateSend,
+    handleSend: broadcast.handleInitiateSend,
     handleClear,
-    handleDuplicate,
-    handleRevoke,
-    handleExtend,
-    sendPending: broadcastMutation.isPending,
+    sendPending: broadcast.sendPending,
     setExpiresInHours: (v) => setCustomHours(String(v)),
   };
 }
