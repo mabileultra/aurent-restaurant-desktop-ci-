@@ -17,6 +17,7 @@ import {
 } from '../../shared/printProfile/applyPrintProfile';
 import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 import { styleKitchenDishBlock } from './kitchenDishLines';
+import { kitchenChannelTitlePrefix } from './kitchenPlaceLine';
 import { kitchenTicketMetaLines } from './ticketLayout';
 import { resolvePrintWaiterName } from './printWaiterNames';
 
@@ -177,9 +178,10 @@ export async function printKitchenTicket({
     });
   }
 
-  const title = voidSlip
+  const baseTitle = voidSlip
     ? (t?.('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ' }) || 'ОТКАЗ')
     : (t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек');
+  const title = `${kitchenChannelTitlePrefix(order?.channel, t)}${baseTitle}`;
   const resolvedWaiter = await resolveWaiterName(order, waiterName, waiterNameById);
   const meta = kitchenTicketMetaLines({
     order,
@@ -233,7 +235,9 @@ export async function printKitchenBoardTickets(tickets, t, waiterNameById, store
     groups.push({
       stationId: ticket.stationId,
       label: ticket.stationName || t?.('rst.kitchen.defaultStation', { defaultValue: 'Кухня' }) || 'Кухня',
-      title: t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек',
+      title: `${kitchenChannelTitlePrefix(ticket.channel, t)}${
+        t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек'
+      }`,
       meta: kitchenTicketMetaLines({
         order: ticket,
         waiterName: resolvedWaiter,

@@ -1,4 +1,5 @@
 import { EMPH_LINE_PREFIX, BOLD_LINE_PREFIX } from '../../pos/utils/ticketLayout';
+import { isKitchenChannelPlaceLine } from '../../pos/utils/kitchenPlaceLine';
 import { factoryPrintProfile, fieldStyle, fontCss } from './printProfileDefaults';
 
 const HEADER_KEYS = new Set(['logo', 'storeName', 'address', 'phone', 'footer']);
@@ -143,9 +144,24 @@ export function filterMetaLines(metaLines, profile, slipType) {
   lines.forEach((line, index) => {
     const text = String(line || '');
     if (!text) return;
+    // Takeaway / delivery mark must stay on station & category slips.
+    if (isKitchenChannelPlaceLine(text)) {
+      const hall = fieldStyle(profile, slipType, 'hallTable');
+      out.push(styleLine(text, { ...hall, on: true, bold: true, size: hall.size === 'sm' ? 'md' : hall.size }));
+      return;
+    }
     let key = 'time';
     if (index === 0) key = 'hallTable';
     else if (/официант|waiter/i.test(text)) key = 'waiter';
+    // Delivery phone / address sit between place and waiter — keep them with the channel.
+    else if (index > 0 && !/официант|waiter/i.test(text) && !/^\d{1,2}[./]/.test(text)
+      && !/\d{1,2}:\d{2}/.test(text)) {
+      const prev = String(lines[0] || '');
+      if (isKitchenChannelPlaceLine(prev)) {
+        out.push(styleLine(text, fieldStyle(profile, slipType, 'hallTable')));
+        return;
+      }
+    }
     const style = fieldStyle(profile, slipType, key);
     if (!style.on) return;
     out.push(styleLine(text, style));

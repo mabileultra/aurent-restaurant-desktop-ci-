@@ -1,4 +1,9 @@
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import {
+  formatKitchenPlaceLine,
+  kitchenChannelDetailLines,
+  normalizeKitchenHeader,
+} from './kitchenPlaceLine';
 
 /** Approximate ESC/POS width for 80mm; content still wraps on device. */
 export const TICKET_WIDTH = 32;
@@ -62,28 +67,6 @@ export function ticketStamp(iso) {
   return d.toLocaleString();
 }
 
-/** Check number already present (takeaway `#12` or `№12`). */
-function hasCheckNo(line, orderNo) {
-  const text = String(line || '');
-  if (orderNo != null && text.includes(`№${orderNo}`)) return true;
-  return /#\s*\d+/.test(text);
-}
-
-function checkNoMark(order) {
-  const no = order?.orderNo;
-  if (no == null || no === '' || no === '—') return '';
-  const n = Number(no);
-  if (!Number.isFinite(n) || n <= 0) return '';
-  return `№${n}`;
-}
-
-/** Place line plus the order check number so each new order prints a new №. */
-function withCheckNo(line, order) {
-  const mark = checkNoMark(order);
-  if (!mark || hasCheckNo(line, order?.orderNo)) return line;
-  return line ? `${line} · ${mark}` : mark;
-}
-
 /** Top of kitchen / auto-print slips: hall + table (or channel), check №, waiter, time. */
 export function kitchenTicketMetaLines({
   order,
@@ -92,32 +75,15 @@ export function kitchenTicketMetaLines({
   t,
   at,
 } = {}) {
-  const channel = order?.channel || 'DINE_IN';
-  let tableLine = header;
-  if (!tableLine) {
-    if (channel === 'TAKEAWAY') {
-      tableLine = `TAKEAWAY #${order?.orderNo || ''}`;
-    } else if (channel === 'DELIVERY') {
-      tableLine = `DELIVERY #${order?.orderNo || ''}`;
-    } else {
-      const code = order?.tableCode || '—';
-      const hall = order?.hallName || null;
-      tableLine = hall
-        ? (t?.('rst.order.ticketTitle', {
-          code,
-          hall,
-          defaultValue: `${hall} · Стол ${code}`,
-        }) || `${hall} · Стол ${code}`)
-        : (t?.('rst.order.tableHeading', {
-          code,
-          defaultValue: `Стол ${code}`,
-        }) || `Стол ${code}`);
-    }
-  }
-  tableLine = withCheckNo(tableLine, order);
+  const normalized = normalizeKitchenHeader(header, order, t);
+  const tableLine = normalized
+    || (header ? String(header).trim() : formatKitchenPlaceLine({ order, t }));
   const waiterLabel = t?.('rst.order.waiter', { defaultValue: 'Официант' }) || 'Официант';
-  const lines = [tableLine];
-  if (waiterName) lines.push(`${waiterLabel}: ${waiterName}`);
-  lines.push(ticketStamp(at));
+  const lines = [
+    tableLine,
+    ...kitchenChannelDetailLines(order),
+    waiterName ? `${waiterLabel}: ${waiterName}` : '',
+    ticketStamp(at),
+  ];
   return lines.filter(Boolean);
 }
