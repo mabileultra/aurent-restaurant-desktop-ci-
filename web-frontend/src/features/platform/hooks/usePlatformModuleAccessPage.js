@@ -1,30 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { companyApi, platformBusinessTypeApi, platformModuleAccessApi } from '../../../api';
-import { MODULE_ACCESS_GROUP_ORDER, MODULE_ACCESS_PLATFORM_FILTER, MODULE_ACCESS_USER_FILTER_LABELS, MODULE_ACCESS_USER_FILTERS } from '../constants';
+import { platformBusinessTypeApi, platformModuleAccessApi } from '../../../api';
+import {
+  MODULE_ACCESS_GROUP_ORDER,
+  MODULE_ACCESS_PLATFORM_FILTER,
+  MODULE_ACCESS_USER_FILTER_LABELS,
+  MODULE_ACCESS_USER_FILTERS,
+} from '../constants';
 import {
   buildTogglesFromDetail,
   catalogGroupFor,
-  extractApiError,
 } from '../utils/moduleAccessUtils';
-import {
-  filterModuleAccessUsers,
-  withCompanyNames,
-} from '../utils/moduleAccessUserFilters';
-import {
-  companyHasBusinessType,
-  filterModulesForBusinessType,
-  normalizeBusinessTypeCode,
-} from '../utils/moduleAccessByBusinessType';
+import { filterModulesForBusinessType, normalizeBusinessTypeCode } from '../utils/moduleAccessByBusinessType';
+import { loadCompaniesOptionsPage } from '../utils/loadCompaniesOptionsPage';
 import { isRoleAllowedForBusinessType } from '../utils/rolesByBusinessType';
 import { isPlatformAdminRole, isSuperAdminRole } from '../../../utils/platformRoles';
 import { useAuthStore } from '../../../store/authStore';
+import { useModuleAccessMutations } from './useModuleAccessMutations';
+import { useModuleAccessUsersQuery } from './useModuleAccessUsersQuery';
 
 export function usePlatformModuleAccessPage() {
   const { t } = useTranslation();
-  const qc = useQueryClient();
   const role = useAuthStore((s) => s.user?.role);
   const canManagePlatformStaff = isSuperAdminRole(role);
   const [companyId, setCompanyId] = useState('');
@@ -37,8 +35,9 @@ export function usePlatformModuleAccessPage() {
   const [moduleToggles, setModuleToggles] = useState({});
 
   const { data: companies = [] } = useQuery({
-    queryKey: ['companies-all'],
-    queryFn: () => companyApi.listAll().then((r) => r.data),
+    queryKey: ['companies-options', businessType || 'ALL'],
+    queryFn: () => loadCompaniesOptionsPage({ businessType }),
+    staleTime: 60_000,
   });
 
   const { data: businessTypes = [] } = useQuery({
@@ -54,9 +53,7 @@ export function usePlatformModuleAccessPage() {
 
   const catalogById = useMemo(() => {
     const map = {};
-    for (const row of catalog) {
-      map[row.id] = row.group;
-    }
+    for (const row of catalog) map[row.id] = row.group;
     return map;
   }, [catalog]);
 
@@ -68,51 +65,24 @@ export function usePlatformModuleAccessPage() {
     return map;
   }, [companies]);
 
-  const visibleCompanies = useMemo(() => {
-    if (!businessType) return companies;
-    return companies.filter((c) => companyHasBusinessType(c, businessType));
-  }, [companies, businessType]);
-
-  const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['platform-module-access-users'],
-    queryFn: () => platformModuleAccessApi.listUsers().then((r) => r.data),
+  const usersQuery = useModuleAccessUsersQuery({
+    companyId,
+    businessType,
+    userSearch,
+    userFilter,
+    canManagePlatformStaff,
   });
 
-  const namedUsers = useMemo(() => withCompanyNames(users, companies), [users, companies]);
-
-  const scopedUsers = useMemo(() => {
-    if (canManagePlatformStaff) return namedUsers;
-    return namedUsers.filter((user) => !isPlatformAdminRole(user.role));
-  }, [namedUsers, canManagePlatformStaff]);
-
-  const typedUsers = useMemo(() => {
-    if (!businessType) return scopedUsers;
-    return scopedUsers.filter((user) => {
+  const filteredUsers = useMemo(() => {
+    if (!businessType) return usersQuery.filteredUsers;
+    return usersQuery.filteredUsers.filter((user) => {
       if (isPlatformAdminRole(user.role)) return false;
-      const company = companyById.get(String(user.companyId ?? ''));
-      if (!companyHasBusinessType(company, businessType)) return false;
       return isRoleAllowedForBusinessType(user.role, businessType);
     });
-  }, [scopedUsers, businessType, companyById]);
+  }, [usersQuery.filteredUsers, businessType]);
 
-  const companyUsers = useMemo(
-    () => filterModuleAccessUsers(typedUsers, { companyId }),
-    [typedUsers, companyId]
-  );
-
-  const filteredUsers = useMemo(
-    () => filterModuleAccessUsers(typedUsers, { companyId, search: userSearch, filter: userFilter }),
-    [typedUsers, companyId, userSearch, userFilter]
-  );
-
-  const usersListResetKey = `${businessType}|${companyId}|${userFilter}|${userSearch}`;
-
-  const unconfiguredCount = useMemo(
-    () => companyUsers.filter((u) => !u.moduleAccessCustom).length,
-    [companyUsers]
-  );
-
-  const selectedUser = namedUsers.find((u) => u.userId === selectedUserId);
+  const selectedUser = filteredUsers.find((u) => u.userId === selectedUserId)
+    || usersQuery.filteredUsers.find((u) => u.userId === selectedUserId);
 
   const selectedCompany =
     companyById.get(String(companyId || ''))
@@ -136,12 +106,8 @@ export function usePlatformModuleAccessPage() {
 
   useEffect(() => {
     if (canManagePlatformStaff) return;
-    if (companyId === MODULE_ACCESS_PLATFORM_FILTER) {
-      setCompanyId('');
-    }
-    if (selectedUser && isPlatformAdminRole(selectedUser.role)) {
-      setSelectedUserId(null);
-    }
+    if (companyId === MODULE_ACCESS_PLATFORM_FILTER) setCompanyId('');
+    if (selectedUser && isPlatformAdminRole(selectedUser.role)) setSelectedUserId(null);
   }, [canManagePlatformStaff, companyId, selectedUser]);
 
   const visibleDetailModules = useMemo(
@@ -162,50 +128,15 @@ export function usePlatformModuleAccessPage() {
     }));
   }, [visibleDetailModules, catalogById]);
 
-  const saveMutation = useMutation({
-    mutationFn: (payload) => platformModuleAccessApi.updateUser(selectedUserId, payload),
-    onSuccess: () => {
-      setCustomAccess(true);
-      toast.success(t('platform.moduleAccess.saved'));
-      qc.invalidateQueries({ queryKey: ['platform-module-access-users'] });
-      qc.invalidateQueries({ queryKey: ['platform-module-access-detail', selectedUserId] });
-    },
-    onError: (e) => {
-      toast.error(extractApiError(e, t('platform.moduleAccess.saveFailed')));
-    },
-  });
-
-  const bulkSaveMutation = useMutation({
-    mutationFn: async ({ userIds, payload }) => {
-      for (const userId of userIds) {
-        await platformModuleAccessApi.updateUser(userId, payload);
-      }
-    },
-    onSuccess: (_data, { userIds }) => {
-      toast.success(t('platform.moduleAccess.bulkSaved', { count: userIds.length }));
-      qc.invalidateQueries({ queryKey: ['platform-module-access-users'] });
-      for (const userId of userIds) {
-        qc.invalidateQueries({ queryKey: ['platform-module-access-detail', userId] });
-      }
-    },
-    onError: (e) => toast.error(extractApiError(e, t('platform.moduleAccess.saveFailed'))),
-  });
-
-  const resetMutation = useMutation({
-    mutationFn: () => platformModuleAccessApi.resetUser(selectedUserId),
-    onSuccess: (res) => {
-      toast.success(t('platform.moduleAccess.resetDone'));
-      setCustomAccess(false);
-      setModuleToggles(buildTogglesFromDetail(res.data));
-      qc.invalidateQueries({ queryKey: ['platform-module-access-users'] });
-      qc.invalidateQueries({ queryKey: ['platform-module-access-detail', selectedUserId] });
-    },
-    onError: (e) => toast.error(extractApiError(e, t('platform.moduleAccess.saveFailed'))),
+  const { saveMutation, bulkSaveMutation, resetMutation, isSaving } = useModuleAccessMutations({
+    t,
+    selectedUserId,
+    setCustomAccess,
+    setModuleToggles,
   });
 
   const buildModulesPayload = () => {
     const modules = {};
-    // Preserve hidden (e.g. restaurant) modules from detail; only overwrite visible ones.
     for (const row of detail?.modules ?? []) {
       modules[row.id] = Object.prototype.hasOwnProperty.call(moduleToggles, row.id)
         ? !!moduleToggles[row.id]
@@ -219,8 +150,7 @@ export function usePlatformModuleAccessPage() {
 
   const buildSavePayload = () => {
     const modules = buildModulesPayload();
-    const hasAny = Object.values(modules).some(Boolean);
-    if (!hasAny) {
+    if (!Object.values(modules).some(Boolean)) {
       toast.error(t('platform.moduleAccess.needOne'));
       return null;
     }
@@ -248,7 +178,7 @@ export function usePlatformModuleAccessPage() {
       return;
     }
     const userIds = [...selectedUserIds].filter((userId) => {
-      const row = namedUsers.find((user) => user.userId === userId);
+      const row = filteredUsers.find((user) => user.userId === userId);
       return row?.role === selectedUser?.role;
     });
     if (userIds.length === 0) {
@@ -260,86 +190,53 @@ export function usePlatformModuleAccessPage() {
     bulkSaveMutation.mutate({ userIds, payload });
   };
 
-  const handleToggleModule = (moduleId, checked) => {
-    setCustomAccess(true);
-    setModuleToggles((prev) => ({ ...prev, [moduleId]: checked }));
-  };
-
-  const setAllModules = (enabled, groupFilter = null) => {
-    if (!visibleDetailModules.length) return;
-    setCustomAccess(true);
-    setModuleToggles((prev) => {
-      const next = { ...prev };
-      for (const row of visibleDetailModules) {
-        const group = catalogGroupFor(row.id, catalogById);
-        if (groupFilter && group !== groupFilter) continue;
-        next[row.id] = enabled;
-      }
-      return next;
-    });
-  };
-
-  const toggleUserSelection = (userId) => {
-    setSelectedUserIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(userId)) next.delete(userId);
-      else next.add(userId);
-      return next;
-    });
-  };
-
-  const handleSelectAllFilteredUsers = (checked) => {
-    setSelectedUserIds(checked ? new Set(filteredUsers.map((u) => u.userId)) : new Set());
-  };
-
-  const allFilteredSelected =
-    filteredUsers.length > 0 && filteredUsers.every((u) => selectedUserIds.has(u.userId));
-
-  const handleCompanyChange = (value) => {
-    setCompanyId(value);
-    setSelectedUserId(null);
-    setSelectedUserIds(new Set());
-  };
-
-  const handleBusinessTypeChange = (code) => {
-    setBusinessType(code || '');
-    setCompanyId('');
-    setSelectedUserId(null);
-    setSelectedUserIds(new Set());
-  };
-
-  const isSaving = saveMutation.isPending || resetMutation.isPending || bulkSaveMutation.isPending;
-
-  const filterOptions = useMemo(
-    () => MODULE_ACCESS_USER_FILTERS.map((key) => [key, t(MODULE_ACCESS_USER_FILTER_LABELS[key])]),
-    [t]
-  );
-
   return {
     t,
-    companies: visibleCompanies,
+    companies,
     companyId,
-    handleCompanyChange,
+    handleCompanyChange: (value) => {
+      setCompanyId(value);
+      setSelectedUserId(null);
+      setSelectedUserIds(new Set());
+    },
     includePlatformStaff: canManagePlatformStaff,
     businessType,
     businessTypes,
-    handleBusinessTypeChange,
+    handleBusinessTypeChange: (code) => {
+      setBusinessType(code || '');
+      setCompanyId('');
+      setSelectedUserId(null);
+      setSelectedUserIds(new Set());
+    },
     selectedCompanyBusinessType,
-    usersLoading,
+    usersLoading: usersQuery.usersLoading,
     filteredUsers,
-    usersListResetKey,
-    unconfiguredCount,
+    usersListResetKey: usersQuery.usersListResetKey,
+    usersHasMore: usersQuery.hasMore,
+    usersLoadMore: usersQuery.loadMore,
+    usersTotal: usersQuery.total,
+    unconfiguredCount: usersQuery.unconfiguredCount,
     userSearch,
     setUserSearch,
     userFilter,
     setUserFilter,
-    filterOptions,
+    filterOptions: MODULE_ACCESS_USER_FILTERS.map((key) => [key, t(MODULE_ACCESS_USER_FILTER_LABELS[key])]),
     selectedUserId,
     setSelectedUserId,
     selectedUserIds,
-    toggleUserSelection,
-    allFilteredSelected,
-    handleSelectAllFilteredUsers,
+    toggleUserSelection: (userId) => {
+      setSelectedUserIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(userId)) next.delete(userId);
+        else next.add(userId);
+        return next;
+      });
+    },
+    allFilteredSelected:
+      filteredUsers.length > 0 && filteredUsers.every((u) => selectedUserIds.has(u.userId)),
+    handleSelectAllFilteredUsers: (checked) => {
+      setSelectedUserIds(checked ? new Set(filteredUsers.map((u) => u.userId)) : new Set());
+    },
     selectedUser,
     detail,
     detailLoading,
@@ -347,8 +244,23 @@ export function usePlatformModuleAccessPage() {
     setCustomAccess,
     moduleToggles,
     groupedModules,
-    handleToggleModule,
-    setAllModules,
+    handleToggleModule: (moduleId, checked) => {
+      setCustomAccess(true);
+      setModuleToggles((prev) => ({ ...prev, [moduleId]: checked }));
+    },
+    setAllModules: (enabled, groupFilter = null) => {
+      if (!visibleDetailModules.length) return;
+      setCustomAccess(true);
+      setModuleToggles((prev) => {
+        const next = { ...prev };
+        for (const row of visibleDetailModules) {
+          const group = catalogGroupFor(row.id, catalogById);
+          if (groupFilter && group !== groupFilter) continue;
+          next[row.id] = enabled;
+        }
+        return next;
+      });
+    },
     handleBulkApply,
     handleSave,
     resetMutation,

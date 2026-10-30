@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { platformEmailApi, userApi } from '../../../api';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { EMAIL_BROADCAST_TYPE } from '../utils/emailUtils';
+
+const EMAIL_USERS_PAGE_SIZE = 100;
 
 export function usePlatformEmailPage() {
   const { t } = useTranslation();
@@ -15,26 +18,30 @@ export function usePlatformEmailPage() {
   const [previewSubject, setPreviewSubject] = useState('');
   const [templateType, setTemplateType] = useState(EMAIL_BROADCAST_TYPE);
   const [userSearch, setUserSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(userSearch.trim(), 300);
 
-  const { data: users = [], isPending: usersLoading } = useQuery({
-    queryKey: ['platform-email-users'],
-    queryFn: () => userApi.getAll().then((r) => r.data),
+  const { data: usersPage, isPending: usersLoading } = useQuery({
+    queryKey: ['platform-email-users', debouncedSearch],
+    queryFn: () => userApi.listManaged({
+      page: 0,
+      size: EMAIL_USERS_PAGE_SIZE,
+      search: debouncedSearch || undefined,
+      active: true,
+    }).then((r) => r.data),
+    placeholderData: keepPreviousData,
   });
+
+  const users = useMemo(() => {
+    const content = usersPage?.content;
+    return Array.isArray(content) ? content : [];
+  }, [usersPage]);
 
   const { data: templates = [], isError: templatesError } = useQuery({
     queryKey: ['platform-email-templates'],
     queryFn: () => platformEmailApi.templates().then((r) => r.data),
   });
 
-  const filteredUsers = useMemo(() => {
-    const q = userSearch.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((u) =>
-      [u.fullName, u.username, u.email, u.role, u.companyName]
-        .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q))
-    );
-  }, [users, userSearch]);
+  const filteredUsers = users;
 
   const activeTemplate = useMemo(
     () => templates.find((tpl) => tpl.type === templateType) ?? templates[0] ?? null,
@@ -150,6 +157,7 @@ export function usePlatformEmailPage() {
     setUserSearch,
     filteredUsers,
     usersLoading,
+    usersTotal: usersPage?.totalElements ?? filteredUsers.length,
     allVisibleSelected,
     handleSelectAllVisible,
     previewHtml,

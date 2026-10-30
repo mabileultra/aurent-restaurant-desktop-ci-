@@ -4,12 +4,15 @@ import com.pos.identity.dto.access.AdminModuleCatalogItem;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
+import com.pos.identity.dto.shared.PageResponse;
 import com.pos.identity.service.ModuleAccessService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,12 +44,19 @@ public class PlatformModuleAccessController {
     }
 
     @GetMapping("/users")
-    @Operation(summary = "Пользователи для доступа", description = "Сводка доступа к модулям. Без companyId — все компании, новые сверху")
-    @ApiResponse(responseCode = "200", description = "Список пользователей")
-    public ResponseEntity<List<UserModuleAccessSummary>> listUsers(
-        @RequestParam(required = false) Integer companyId
+    @Operation(summary = "Пользователи для доступа", description = "Страница пользователей; platformOnly=true — только staff платформы")
+    @ApiResponse(responseCode = "200", description = "Страница пользователей")
+    public ResponseEntity<PageResponse<UserModuleAccessSummary>> listUsers(
+        @RequestParam(required = false) Integer companyId,
+        @RequestParam(defaultValue = "false") boolean platformOnly,
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String accessFilter,
+        @RequestParam(required = false) String businessType,
+        @PageableDefault(size = 30) Pageable pageable
     ) {
-        return ResponseEntity.ok(moduleAccessService.listUsers(companyId));
+        return ResponseEntity.ok(moduleAccessService.listUsersPaged(
+            companyId, platformOnly, search, accessFilter, businessType, pageable
+        ));
     }
 
     @GetMapping("/users/{userId}")

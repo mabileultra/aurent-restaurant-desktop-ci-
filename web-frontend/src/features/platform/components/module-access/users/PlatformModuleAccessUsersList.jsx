@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import PlatformModuleAccessUserRow from './PlatformModuleAccessUserRow';
 
 export const MODULE_ACCESS_USERS_PAGE_SIZE = 30;
@@ -12,38 +12,34 @@ export default function PlatformModuleAccessUsersList({
   onSelectUser,
   selectedUserIds,
   onToggleUserSelection,
+  hasMore = false,
+  onLoadMore,
+  total,
 }) {
   const scrollRef = useRef(null);
   const sentinelRef = useRef(null);
-  const [visibleCount, setVisibleCount] = useState(MODULE_ACCESS_USERS_PAGE_SIZE);
 
   useEffect(() => {
-    setVisibleCount(MODULE_ACCESS_USERS_PAGE_SIZE);
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [listResetKey]);
 
-  const total = filteredUsers.length;
-  const visibleUsers = filteredUsers.slice(0, visibleCount);
-  const hasMore = visibleCount < total;
-
-  const loadMore = useCallback(() => {
-    setVisibleCount((prev) => Math.min(prev + MODULE_ACCESS_USERS_PAGE_SIZE, total));
-  }, [total]);
+  const shown = filteredUsers.length;
+  const totalCount = typeof total === 'number' ? total : shown;
 
   useEffect(() => {
-    if (!hasMore || usersLoading) return undefined;
+    if (!hasMore || usersLoading || !onLoadMore) return undefined;
     const node = sentinelRef.current;
     const root = scrollRef.current;
     if (!node || !root) return undefined;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) loadMore();
+        if (entries.some((entry) => entry.isIntersecting)) onLoadMore();
       },
       { root, rootMargin: '80px' },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, usersLoading, loadMore, visibleUsers.length]);
+  }, [hasMore, usersLoading, onLoadMore, shown]);
 
   return (
     <div
@@ -52,12 +48,12 @@ export default function PlatformModuleAccessUsersList({
     >
       {usersLoading ? (
         <p className="p-4 text-sm text-slate-500">{t('common.loading')}</p>
-      ) : total === 0 ? (
+      ) : shown === 0 ? (
         <p className="p-4 text-sm text-slate-500">{t('platform.noSearchResults')}</p>
       ) : (
         <>
           <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-            {visibleUsers.map((u) => (
+            {filteredUsers.map((u) => (
               <li key={u.userId} className="flex items-stretch">
                 <label className="flex items-center px-3">
                   <input
@@ -78,8 +74,8 @@ export default function PlatformModuleAccessUsersList({
           {hasMore ? <div ref={sentinelRef} className="h-1" aria-hidden /> : null}
           <p className="border-t border-slate-100 px-3 py-2 text-xs text-slate-500 dark:border-slate-800">
             {t('platform.moduleAccess.shownOfTotal', {
-              shown: visibleUsers.length,
-              total,
+              shown,
+              total: totalCount,
             })}
           </p>
         </>

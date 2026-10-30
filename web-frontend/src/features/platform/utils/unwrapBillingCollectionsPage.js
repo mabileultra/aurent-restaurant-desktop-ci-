@@ -19,5 +19,5 @@ export function unwrapBillingCollectionsPage(data) {
   };
 }
 
-/** Calendar / ledger enrichment: one large page, not the table default. */
-export const BILLING_COLLECTIONS_ENRICH_SIZE = 2000;
+/** Calendar / ledger enrichment: capped page, not unlimited /all. */
+export const BILLING_COLLECTIONS_ENRICH_SIZE = 500;

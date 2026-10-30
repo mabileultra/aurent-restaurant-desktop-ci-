@@ -116,8 +116,11 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
 
   const { data: companiesRaw = [] } = useQuery({
-    queryKey: ['companies-all'],
-    queryFn: () => companyApi.listAll().then((r) => r.data),
+    queryKey: ['companies-options', 'users-page'],
+    queryFn: async () => {
+      const { data } = await companyApi.getAll({ page: 0, size: 300 });
+      return Array.isArray(data) ? data : (data?.content ?? []);
+    },
     enabled: isPlatform,
     staleTime: 60_000,
   });

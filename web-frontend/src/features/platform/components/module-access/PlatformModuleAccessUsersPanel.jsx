@@ -21,6 +21,9 @@ export default function PlatformModuleAccessUsersPanel(props) {
     onBulkApply,
     bulkPending,
     bulkDisabled,
+    hasMore,
+    onLoadMore,
+    total,
   } = props;
 
   return (
@@ -44,6 +47,9 @@ export default function PlatformModuleAccessUsersPanel(props) {
         onSelectUser={onSelectUser}
         selectedUserIds={selectedUserIds}
         onToggleUserSelection={onToggleUserSelection}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        total={total}
       />
       <PlatformModuleAccessUsersBulkFooter
         t={t}

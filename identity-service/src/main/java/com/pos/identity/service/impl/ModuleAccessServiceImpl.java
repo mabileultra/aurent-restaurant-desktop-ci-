@@ -1,12 +1,11 @@
 package com.pos.identity.service.impl;
 
-import com.pos.identity.client.PosCoreClient;
-import com.pos.identity.client.dto.CompanyDto;
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessRow;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
+import com.pos.identity.dto.shared.PageResponse;
 import com.pos.identity.entity.User;
 import com.pos.identity.entity.UserModuleAccess;
 import com.pos.identity.entity.UserModuleAccessId;
@@ -18,18 +17,17 @@ import com.pos.identity.service.ModuleAccessService;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
-import com.pos.identity.service.support.TenantAccessSupport;
+import com.pos.identity.service.access.support.ModuleAccessUsersPager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,11 +36,10 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
     private final UserRepository userRepository;
     private final UserModuleAccessRepository userModuleAccessRepository;
-    private final PosCoreClient posCoreClient;
     private final ModuleAccessCatalog moduleAccessCatalog;
     private final ModuleAccessUserGate moduleAccessUserGate;
     private final ModuleAccessScopeResolver scopeResolver;
-    private final TenantAccessSupport tenantAccess;
+    private final ModuleAccessUsersPager moduleAccessUsersPager;
 
     @Override
     public List<AdminModuleCatalogItem> catalog() {
@@ -51,15 +48,19 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
     @Override
     public List<UserModuleAccessSummary> listUsers(Integer companyId) {
-        String companyName = companyId != null ? resolveCompanyName(companyId) : null;
-        Stream<User> tenantUsers = userRepository.findTenantUsersForModuleAccess(companyId).stream();
-        Stream<User> platformOperators = companyId == null && tenantAccess.isSuperAdmin()
-            ? userRepository.findPlatformOperatorsForModuleAccess().stream()
-            : Stream.empty();
-        return Stream.concat(tenantUsers, platformOperators)
-            .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
-            .map(user -> toSummary(user, companyName))
-            .toList();
+        return listUsersPaged(companyId, false, null, "all", null, Pageable.unpaged()).content();
+    }
+
+    @Override
+    public PageResponse<UserModuleAccessSummary> listUsersPaged(
+        Integer companyId,
+        boolean platformOnly,
+        String search,
+        String accessFilter,
+        String businessType,
+        Pageable pageable
+    ) {
+        return moduleAccessUsersPager.page(companyId, platformOnly, search, accessFilter, businessType, pageable);
     }
 
     @Override
@@ -187,24 +188,4 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
             .collect(Collectors.toMap(UserModuleAccess::getModuleKey, UserModuleAccess::isAllowed, (a, b) -> b));
     }
 
-    private UserModuleAccessSummary toSummary(User user, String companyName) {
-        return new UserModuleAccessSummary(
-            user.getId(),
-            user.getUsername(),
-            user.getFullName(),
-            user.getRole().getName(),
-            user.getCompanyId(),
-            user.getCompanyId() == null ? null : companyName,
-            user.isModuleAccessCustom(),
-            user.getCreatedAt()
-        );
-    }
-
-    private String resolveCompanyName(Integer companyId) {
-        if (companyId == null) {
-            return null;
-        }
-        CompanyDto company = posCoreClient.getCompanyById(companyId);
-        return company != null ? company.name() : null;
-    }
 }

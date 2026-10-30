@@ -138,9 +138,9 @@ export function useTaxAnalyticsPage() {
     connectionStatus: applied.connectionStatus || undefined,
     search: applied.search?.trim() || undefined,
     level: applied.level || undefined,
-    page: clientFilter ? 0 : page,
-    size: clientFilter ? 100 : PAGE_SIZE,
-  }), [overviewParams, applied, page, clientFilter]);
+    page,
+    size: PAGE_SIZE,
+  }), [overviewParams, applied, page]);
 
   const overviewQuery = useQuery({
     queryKey: ['tax-analytics-overview', overviewParams],
@@ -159,6 +159,7 @@ export function useTaxAnalyticsPage() {
     staleTime: 600_000,
   });
 
+  // Client-only metrics filter within the current server page — never inflate size to dump rows.
   const displayResults = useMemo(() => {
     const data = resultsQuery.data;
     if (!data) return undefined;
@@ -166,13 +167,10 @@ export function useTaxAnalyticsPage() {
     if (!clientFilter) {
       return { ...data, rows: filtered };
     }
-    const total = filtered.length;
-    const from = Math.min(page * PAGE_SIZE, total);
-    const to = Math.min(from + PAGE_SIZE, total);
     return {
       ...data,
-      rows: filtered.slice(from, to),
-      totalElements: total,
+      rows: filtered,
+      totalElements: filtered.length,
       size: PAGE_SIZE,
       page,
     };

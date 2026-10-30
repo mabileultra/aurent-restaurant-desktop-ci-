@@ -73,10 +73,9 @@ export function usePlatformCompaniesPage() {
   const isRefreshing = companiesQuery.isFetching && !firstLoad;
   const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
 
-  // Lightweight total stores count (requests only 1 item to obtain totalElements from PageResponse)
   const { data: storeCountData } = useQuery({
     queryKey: ['platform-stores-total-count'],
-    queryFn: () => storeApi.getManaged({ page: 0, size: 1 }).then((r) => r.data?.totalElements ?? 0).catch(() => 0),
+    queryFn: () => storeApi.getStats({}).then((r) => r.data?.totalStores ?? 0).catch(() => 0),
     staleTime: 60_000,
   });
 

@@ -22,6 +22,9 @@ export default function PlatformModuleAccessWorkspace({ p }) {
         onBulkApply={p.handleBulkApply}
         bulkPending={p.bulkSaveMutation.isPending}
         bulkDisabled={!p.selectedUserId || p.bulkSaveMutation.isPending || !p.customAccess}
+        hasMore={p.usersHasMore}
+        onLoadMore={p.usersLoadMore}
+        total={p.usersTotal}
       />
       <PlatformModuleAccessModulesPanel
         t={p.t}

@@ -14,7 +14,6 @@ import {
 } from '../utils/userFormModalUtils';
 import { asEntityList } from '../utils/companySelectOptions';
 import { normalizePhoneToE164 } from '../utils/phoneFormatUtils';
-import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
 import { resolveUserFormRoles } from '../../platform/utils/rolesByBusinessType';
 import { transliterateCyrillicToLatin } from '../../../utils/transliterateCyrillic';
 
@@ -90,15 +89,18 @@ export function useUserFormModal({
   };
 
   const { data: companiesRaw = [] } = useQuery({
-    queryKey: ['companies-all'],
-    queryFn: () => companyApi.listAll().then((r) => r.data),
+    queryKey: ['companies-options', 'user-form', businessTypeFilter || 'ALL'],
+    queryFn: async () => {
+      const { data } = await companyApi.getAll({
+        page: 0,
+        size: 300,
+        businessType: businessTypeFilter || undefined,
+      });
+      return Array.isArray(data) ? data : (data?.content ?? []);
+    },
     enabled: isPlatform && open,
   });
-  const companies = useMemo(() => {
-    const list = asEntityList(companiesRaw);
-    if (!isPlatform || !businessTypeFilter) return list;
-    return list.filter((company) => companyHasBusinessType(company, businessTypeFilter));
-  }, [companiesRaw, isPlatform, businessTypeFilter]);
+  const companies = useMemo(() => asEntityList(companiesRaw), [companiesRaw]);
 
   const { data: storesRaw, isLoading: storesLoading, isError: storesError } = useQuery({
     queryKey: isPlatform
