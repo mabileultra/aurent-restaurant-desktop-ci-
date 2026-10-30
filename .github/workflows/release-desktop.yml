@@ -1,0 +1,146 @@
+name: Release Desktop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop-electron/**'
+      - 'web-frontend/public/brand/**'
+      - 'downloads/desktop/**'
+      - 'deploy/publish-desktop.sh'
+      - '.github/workflows/release-desktop.yml'
+    tags:
+      - 'desktop-v*'
+  workflow_dispatch:
+    inputs:
+      skip_deploy:
+        description: 'Only build, do not upload to server'
+        required: false
+        default: false
+        type: boolean
+      manifest_only:
+        description: 'Only regenerate manifest.json on server (no rebuild)'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UPDATE_BASE_URL: ${{ secrets.DEPLOY_PUBLIC_URL || 'https://aurent.uz' }}
+  CI_DEPLOY_REPO: mabileultra/aurent-restaurant-desktop-ci-
+
+jobs:
+  build-win:
+    if: ${{ github.repository == 'mabileultra/aurent-restaurant-desktop-ci-' && inputs.manifest_only != true }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: desktop-electron/pnpm-lock.yaml
+
+      - name: Install & build (Windows)
+        working-directory: desktop-electron
+        env:
+          UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
+        run: |
+          pnpm install
+          pnpm run dist:win
+
+      - name: Setup SSH
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        shell: bash
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Upload Windows installers to server
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            'mkdir -p /opt/aurent-pos/downloads/desktop'
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            desktop-electron/dist/*.exe \
+            desktop-electron/dist/*.blockmap \
+            desktop-electron/dist/latest.yml \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/"
+
+      - name: Cleanup SSH key
+        if: always()
+        shell: bash
+        run: rm -f ~/.ssh/deploy_key
+
+  # Windows only — macOS runners queue forever on this org; hall PCs are Win.
+  publish-manifest:
+    needs: [build-win]
+    if: >-
+      always() &&
+      github.repository == 'mabileultra/aurent-restaurant-desktop-ci-' &&
+      (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
+      (inputs.manifest_only == true || needs.build-win.result == 'success') &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/desktop-v') || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Pull installers, write manifest, push back
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          mkdir -p desktop-electron/dist
+          VERSION="$(node -p "require('./desktop-electron/package.json').version")"
+          # Only pull current version + updater metadata (full * times out / cancels).
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/Aurent-Cashier-${VERSION}-*" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/latest.yml" \
+            desktop-electron/dist/ || true
+          bash deploy/publish-desktop.sh
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            downloads/desktop/manifest.json \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/manifest.json"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            'rm -f /opt/aurent-pos/downloads/desktop/Aurent-Cashier-Setup-*.exe /opt/aurent-pos/downloads/desktop/Aurent-Cashier-1.2.1-* || true'
+          echo "Desktop installers published on server"
+          cat downloads/desktop/manifest.json
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

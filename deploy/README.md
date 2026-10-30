@@ -1,9 +1,15 @@
 # Деплой Aurent POS
 
 ```
-push main → GitHub Actions → SSH → update.sh → deploy.sh → Docker
+push origin main  (Timur1019 — код для git pull на сервере)
+push mobile-ci main  (mabileultra — здесь живой Actions billing)
+  → Deploy Web Stack → SSH → update.sh → deploy.sh → Docker
 desktop-electron/** → Release Desktop → downloads/desktop/ на сервере
 ```
+
+Автодеплой только из **mabileultra/aurent-restaurant-desktop-ci-** (`mobile-ci`).
+На `Timur1019/postsystem` Actions выключены (лимит/биллинг) — пуш туда код кладёт,
+но CI не гоняет. Оба remote должны быть на одном SHA: `bash scripts/push-main-ci.sh`.
 
 На сервере вручную: `bash deploy/update.sh`.
 
@@ -45,7 +51,7 @@ cd /opt/aurent-pos
 bash deploy/update.sh
 ```
 
-Или merge в `main` → CI сам деплоит.
+Или: `bash scripts/push-main-ci.sh` → CI на mabileultra сам деплоит.
 
 ## Staging (проверка до production)
 
