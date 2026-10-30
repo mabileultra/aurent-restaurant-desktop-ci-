@@ -35,6 +35,7 @@ public class SecurityConfig {
                     "/edge/sync/**",
                     "/edge/live-export",
                     "/edge/live-import",
+                    "/edge/live-origin",
                     "/billing/**",
                     "/company-business-types"
                 ).permitAll()

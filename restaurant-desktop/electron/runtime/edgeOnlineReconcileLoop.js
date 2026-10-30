@@ -1,18 +1,27 @@
 const { probeHealth } = require('./health');
-const { refreshLiveFromCloud, pushLiveToCloud } = require('./edgeLiveSync');
+const {
+  refreshLiveFromCloud,
+  pushLiveToCloud,
+  getLastPushedOrigins,
+  getLiveCloudSession,
+} = require('./edgeLiveSync');
+const { probeLocalOrigins, originsNeedPush } = require('./edgeLiveOriginProbe');
 const { refreshStaffRosterFromCloud } = require('./edgeStaffCloudRefresh');
 const { refreshCatalogFromCloud } = require('./edgeCatalogCloudRefresh');
 const { refreshStockFromCloud } = require('./edgeStockCloudRefresh');
 const { getOutboxCounts, flushEdgeOutbox } = require('./edgeOutboxFlush');
 const { HEALTH_URL } = require('../config');
 
-/** Floor/kitchen live — ~5s while online; immediate on reconnect (Phase D). */
+/** Full live push/pull backup while online (Phase D). */
 const LIVE_SYNC_MS = 5_000;
+/** Cheap origin watch — push as soon as hall floor watermark grows (Stage 2). */
+const ORIGIN_PROBE_MS = 1_000;
 const STAFF_REFRESH_MS = 60_000;
 /** Menu/halls/stations — infrequent; heavy export (Phase E). */
 const CATALOG_REFRESH_MS = 15 * 60_000;
 /** Stock products + suppliers + stores (Phase F). */
 const STOCK_REFRESH_MS = 15 * 60_000;
+const LOOP_MS = 1_000;
 
 function probeCloudOnline() {
   return new Promise((resolve) => {
@@ -45,6 +54,7 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
   let syncInFlight = false;
   let lastLiveSyncAt = 0;
   let liveSyncInFlight = false;
+  let lastOriginProbeAt = 0;
   let lastStaffRefreshAt = 0;
   let staffRefreshInFlight = false;
   let lastCatalogRefreshAt = 0;
@@ -52,11 +62,35 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
   let lastStockRefreshAt = 0;
   let stockRefreshInFlight = false;
   let wasOnline = false;
+  let lastCloudProbeAt = 0;
+  let cachedOnline = false;
+
+  async function runLiveRound() {
+    if (liveSyncInFlight) return;
+    liveSyncInFlight = true;
+    lastLiveSyncAt = Date.now();
+    try {
+      await pushLiveToCloud();
+      await refreshLiveFromCloud();
+      publishStatus({ floorSyncedAt: Date.now() });
+    } catch {
+      /* next tick */
+    } finally {
+      liveSyncInFlight = false;
+    }
+  }
 
   const timer = setInterval(async () => {
     const lastStatus = typeof getLastStatus === 'function' ? getLastStatus() : {};
     const hit = await probeHealth(HEALTH_URL);
-    const online = await probeCloudOnline();
+
+    // Cloud probe is slower — cache ~4s so 1s loop stays light.
+    if (Date.now() - lastCloudProbeAt >= 4_000) {
+      lastCloudProbeAt = Date.now();
+      cachedOnline = await probeCloudOnline();
+    }
+    const online = cachedOnline;
+
     let pendingOutbox = lastStatus.pendingOutbox || 0;
     try {
       const counts = await getOutboxCounts();
@@ -64,7 +98,14 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     } catch {
       /* keep last */
     }
-    publishStatus({ serviceHealthy: hit.ok, pendingOutbox, online });
+    const session = getLiveCloudSession();
+    const liveSession = Boolean(session?.token && session.storeIds?.length);
+    publishStatus({
+      serviceHealthy: hit.ok,
+      pendingOutbox,
+      online,
+      liveSession,
+    });
 
     const justCameOnline = online && !wasOnline;
     wasOnline = online;
@@ -110,23 +151,31 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
       }
     }
 
+    // Stage 2: when local origin grows, push+pull immediately (not wait 5s).
+    if (
+      online
+      && liveSession
+      && !liveSyncInFlight
+      && Date.now() - lastOriginProbeAt >= ORIGIN_PROBE_MS
+    ) {
+      lastOriginProbeAt = Date.now();
+      try {
+        const origins = await probeLocalOrigins(session);
+        if (originsNeedPush(origins, getLastPushedOrigins())) {
+          await runLiveRound();
+        }
+      } catch {
+        /* next tick */
+      }
+    }
+
+    // Backup full live round (covers cloud→hall while hall idle).
     if (
       online
       && !liveSyncInFlight
       && (justCameOnline || Date.now() - lastLiveSyncAt >= LIVE_SYNC_MS)
     ) {
-      liveSyncInFlight = true;
-      lastLiveSyncAt = Date.now();
-      try {
-        // Hall SoT first, then pull (phones / other nodes). Same mutex as before.
-        await pushLiveToCloud();
-        await refreshLiveFromCloud();
-        publishStatus({ floorSyncedAt: Date.now() });
-      } catch {
-        /* next tick */
-      } finally {
-        liveSyncInFlight = false;
-      }
+      await runLiveRound();
     }
 
     // Phase E: catalog after reconnect, then every CATALOG_REFRESH_MS (quiet).
@@ -168,7 +217,7 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
         stockRefreshInFlight = false;
       }
     }
-  }, 5000);
+  }, LOOP_MS);
 
   return () => clearInterval(timer);
 }

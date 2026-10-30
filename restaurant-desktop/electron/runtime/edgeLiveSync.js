@@ -9,17 +9,8 @@ const {
 let liveCloudSession = null;
 let liveRefreshInFlight = false;
 let livePushInFlight = false;
-let sessionHydrated = false;
 /** Skip hall→cloud push while local origin watermark unchanged (still pull). */
 const lastPushedOriginByStore = new Map();
-
-function hydrateSessionOnce() {
-  if (sessionHydrated) return;
-  sessionHydrated = true;
-  if (!liveCloudSession) {
-    liveCloudSession = readLiveCloudSession();
-  }
-}
 
 function rememberLiveCloudSession({
   token,
@@ -32,7 +23,6 @@ function rememberLiveCloudSession({
     ? storeIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
     : [];
   if (!token || !ids.length) return;
-  sessionHydrated = true;
   liveCloudSession = {
     token,
     companyId: companyId == null ? null : Number(companyId),
@@ -51,7 +41,10 @@ function clearSession() {
 }
 
 function getLiveCloudSession() {
-  hydrateSessionOnce();
+  // Stage 4: re-read disk when memory empty (e.g. after 401 clear + new bootstrap file).
+  if (!liveCloudSession) {
+    liveCloudSession = readLiveCloudSession();
+  }
   return liveCloudSession;
 }
 
@@ -165,9 +158,14 @@ async function pushLiveToCloud() {
   }
 }
 
+function getLastPushedOrigins() {
+  return lastPushedOriginByStore;
+}
+
 module.exports = {
   rememberLiveCloudSession,
   getLiveCloudSession,
+  getLastPushedOrigins,
   refreshLiveFromCloud,
   pushLiveToCloud,
 };
