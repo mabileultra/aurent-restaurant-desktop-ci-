@@ -8,6 +8,7 @@ import com.pos.platform.dto.billing.BillingReportsResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
 import com.pos.platform.dto.billing.CompanyPaymentRowResponse;
 import com.pos.platform.dto.billing.GrantDeferralRequest;
+import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.service.BillingCollectionsService;
 import com.pos.platform.service.BillingDeferralService;
 import com.pos.platform.service.BillingReportsService;
@@ -16,6 +17,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -59,8 +62,8 @@ public class PlatformBillingCollectionsController {
     }
 
     @GetMapping("/companies")
-    @Operation(summary = "Компании с вычисленным состоянием оплаты")
-    public ResponseEntity<List<CompanyPaymentRowResponse>> companies(
+    @Operation(summary = "Компании с вычисленным состоянием оплаты (page)")
+    public ResponseEntity<PageResponse<CompanyPaymentRowResponse>> companies(
         @RequestParam(required = false) BillingPaymentState state,
         @RequestParam(defaultValue = "false") boolean newOnly,
         @RequestParam(required = false) UUID planId,
@@ -71,10 +74,12 @@ public class PlatformBillingCollectionsController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) List<Integer> ids,
         @RequestParam(required = false) String regionCode,
-        @RequestParam(required = false) String districtCode
+        @RequestParam(required = false) String districtCode,
+        @PageableDefault(size = 10) Pageable pageable
     ) {
-        return ResponseEntity.ok(collectionsService.list(
-            filter(state, newOnly, planId, method, search, dateField, from, to, ids, regionCode, districtCode)
+        return ResponseEntity.ok(collectionsService.listPaged(
+            filter(state, newOnly, planId, method, search, dateField, from, to, ids, regionCode, districtCode),
+            pageable
         ));
     }
 

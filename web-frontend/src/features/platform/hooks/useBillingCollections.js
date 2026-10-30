@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { platformBillingApi } from '../../../api';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import { unwrapBillingCollectionsPage } from '../utils/unwrapBillingCollectionsPage';
 
 export const COLLECTION_TABS = ['ALL', 'OVERDUE', 'DUE_SOON', 'ACTIVE', 'NEW', 'SUSPENDED'];
 export const PAYMENT_METHODS = ['CLICK', 'PAYME', 'BANK_TRANSFER', 'CASH', 'OTHER'];
@@ -23,6 +24,10 @@ function tabParams(tab) {
   return { state: tab };
 }
 
+function rowKey(row) {
+  return row?.billing?.companyId;
+}
+
 export function useBillingCollections() {
   const [tab, setTabState] = useState('ALL');
   const [planId, setPlanIdState] = useState('');
@@ -35,16 +40,16 @@ export function useBillingCollections() {
   const [districtCode, setDistrictCodeState] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [selectedMap, setSelectedMap] = useState(() => new Map());
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
   const resetPage = (setter) => (value) => {
     setter(value);
     setPage(0);
-    setSelectedIds(new Set());
+    setSelectedMap(new Map());
   };
 
-  const params = useMemo(() => ({
+  const filterParams = useMemo(() => ({
     ...tabParams(tab),
     planId: planId || undefined,
     method: method || undefined,
@@ -56,6 +61,11 @@ export function useBillingCollections() {
     districtCode: districtCode || undefined,
   }), [tab, planId, method, debouncedSearch, dateField, from, to, regionCode, districtCode]);
 
+  const params = useMemo(
+    () => ({ ...filterParams, page, size: pageSize }),
+    [filterParams, page, pageSize]
+  );
+
   const overviewQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'overview'],
     queryFn: () => platformBillingApi.collectionsOverview().then((r) => r.data),
@@ -63,13 +73,15 @@ export function useBillingCollections() {
 
   const rowsQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'companies', params],
-    queryFn: () => platformBillingApi.collectionsCompanies(params).then((r) => r.data),
-    placeholderData: (prev) => prev,
+    queryFn: () => platformBillingApi.collectionsCompanies(params).then((r) => unwrapBillingCollectionsPage(r.data)),
+    placeholderData: keepPreviousData,
   });
 
   const upcomingQ = useQuery({
-    queryKey: [COLLECTIONS_QUERY_KEY, 'companies', { state: 'DUE_SOON' }],
-    queryFn: () => platformBillingApi.collectionsCompanies({ state: 'DUE_SOON' }).then((r) => r.data),
+    queryKey: [COLLECTIONS_QUERY_KEY, 'companies', { state: 'DUE_SOON', page: 0, size: 50 }],
+    queryFn: () => platformBillingApi
+      .collectionsCompanies({ state: 'DUE_SOON', page: 0, size: 50 })
+      .then((r) => unwrapBillingCollectionsPage(r.data).content),
     enabled: false,
   });
 
@@ -78,26 +90,47 @@ export function useBillingCollections() {
     [upcomingQ.data],
   );
 
-  const rows = rowsQ.data || [];
-  const pagedRows = useMemo(
-    () => rows.slice(page * pageSize, page * pageSize + pageSize),
-    [rows, page, pageSize],
-  );
+  const pageData = rowsQ.data;
+  const pagedRows = pageData?.content ?? [];
+  const total = pageData?.totalElements ?? 0;
+  const totalPages = pageData?.totalPages ?? 0;
 
-  const pageIds = pagedRows.map((r) => r.billing.companyId);
-  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
-  const toggleSelect = (id) => setSelectedIds((prev) => {
-    const next = new Set(prev);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    return next;
-  });
-  const toggleSelectPage = () => setSelectedIds((prev) => {
-    const next = new Set(prev);
-    pageIds.forEach((id) => (allPageSelected ? next.delete(id) : next.add(id)));
-    return next;
-  });
-  const selectedRows = rows.filter((r) => selectedIds.has(r.billing.companyId));
+  const selectedIds = useMemo(() => new Set(selectedMap.keys()), [selectedMap]);
+  const selectedRows = useMemo(() => [...selectedMap.values()], [selectedMap]);
+
+  const pageIds = pagedRows.map((r) => rowKey(r)).filter((id) => id != null);
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedMap.has(id));
+
+  const toggleSelect = (rowOrId) => {
+    const id = typeof rowOrId === 'object' ? rowKey(rowOrId) : rowOrId;
+    if (id == null) return;
+    setSelectedMap((prev) => {
+      const next = new Map(prev);
+      if (next.has(id)) next.delete(id);
+      else {
+        const row = typeof rowOrId === 'object'
+          ? rowOrId
+          : pagedRows.find((r) => rowKey(r) === id);
+        if (row) next.set(id, row);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectPage = () => {
+    setSelectedMap((prev) => {
+      const next = new Map(prev);
+      if (allPageSelected) {
+        pageIds.forEach((id) => next.delete(id));
+      } else {
+        pagedRows.forEach((row) => {
+          const id = rowKey(row);
+          if (id != null) next.set(id, row);
+        });
+      }
+      return next;
+    });
+  };
 
   const overview = overviewQ.data;
   const tabCount = (key) => overview?.[TAB_COUNT_FIELD[key]] ?? null;
@@ -126,7 +159,7 @@ export function useBillingCollections() {
       setRegionCodeState(nextRegion || '');
       setDistrictCodeState(nextDistrict || '');
       setPage(0);
-      setSelectedIds(new Set());
+      setSelectedMap(new Map());
     },
     resetFilters: () => {
       setPlanIdState('');
@@ -137,20 +170,21 @@ export function useBillingCollections() {
       setRegionCodeState('');
       setDistrictCodeState('');
       setPage(0);
-      setSelectedIds(new Set());
+      setSelectedMap(new Map());
     },
-    params,
+    params: filterParams,
     selectedIds,
     selectedRows,
     allPageSelected,
     toggleSelect,
     toggleSelectPage,
-    clearSelection: () => setSelectedIds(new Set()),
+    clearSelection: () => setSelectedMap(new Map()),
     upcoming,
     upcomingLoading: upcomingQ.isLoading,
-    rows,
+    rows: pagedRows,
     pagedRows,
-    total: rows.length,
+    total,
+    totalPages,
     loading: rowsQ.isLoading,
     isError: rowsQ.isError,
     error: rowsQ.error,

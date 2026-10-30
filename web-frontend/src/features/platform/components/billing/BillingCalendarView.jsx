@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { platformBillingApi } from '../../../../api';
 import { COLLECTIONS_QUERY_KEY } from '../../hooks/useBillingCollections';
+import {
+  BILLING_COLLECTIONS_ENRICH_SIZE,
+  unwrapBillingCollectionsPage,
+} from '../../utils/unwrapBillingCollectionsPage';
 import BillingCalendarKpis from './BillingCalendarKpis';
 import BillingCalendarToolbar from './BillingCalendarToolbar';
 import BillingCalendarGrid from './BillingCalendarGrid';
@@ -57,7 +61,9 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
   // 2. Fetch all companies for metadata enrichment (balance, plan, region, phone)
   const companiesQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'companies', 'calendar-enrichment'],
-    queryFn: () => platformBillingApi.collectionsCompanies({}).then((r) => r.data || []),
+    queryFn: () => platformBillingApi
+      .collectionsCompanies({ page: 0, size: BILLING_COLLECTIONS_ENRICH_SIZE })
+      .then((r) => unwrapBillingCollectionsPage(r.data).content),
     staleTime: 60_000,
   });
 

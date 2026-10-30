@@ -5,6 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { platformBillingApi } from '../../../api';
 import { formatMoneyInputDigits, parseMoneyInput } from '../../billing/utils/parseMoneyInput';
 import { shiftIsoDate, toIsoDate } from '../components/BillingPeriodCalendar';
+import {
+  BILLING_COLLECTIONS_ENRICH_SIZE,
+  unwrapBillingCollectionsPage,
+} from '../utils/unwrapBillingCollectionsPage';
 import { COLLECTIONS_QUERY_KEY, useBillingCollections } from './useBillingCollections';
 import { useBillingCollectionActions } from './useBillingCollectionActions';
 
@@ -73,7 +77,9 @@ export function usePlatformBillingPage() {
 
   const allCompaniesQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'companies', 'all'],
-    queryFn: () => platformBillingApi.collectionsCompanies({}).then((r) => r.data),
+    queryFn: () => platformBillingApi
+      .collectionsCompanies({ page: 0, size: BILLING_COLLECTIONS_ENRICH_SIZE })
+      .then((r) => unwrapBillingCollectionsPage(r.data).content),
     enabled: paymentModalOpen,
   });
 

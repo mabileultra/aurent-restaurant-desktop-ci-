@@ -4,6 +4,8 @@ import com.pos.platform.domain.BillingPaymentMethod;
 import com.pos.platform.domain.BillingPaymentState;
 import com.pos.platform.dto.billing.BillingCollectionsOverviewResponse;
 import com.pos.platform.dto.billing.CompanyPaymentRowResponse;
+import com.pos.platform.dto.shared.PageResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +17,11 @@ public interface BillingCollectionsService {
 
     BillingCollectionsOverviewResponse overview();
 
+    /** Full filtered list (export / reports). */
     List<CompanyPaymentRowResponse> list(Filter filter);
+
+    /** Table page for UI — do not send the full filtered set to the browser. */
+    PageResponse<CompanyPaymentRowResponse> listPaged(Filter filter, Pageable pageable);
 
     record Filter(
         BillingPaymentState state,

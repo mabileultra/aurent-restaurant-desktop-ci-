@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, CalendarClock, Download, Plus, Search } from 'lucide-react';
 import { platformBillingApi } from '../../../../api';
 import { COLLECTIONS_QUERY_KEY } from '../../hooks/useBillingCollections';
+import {
+  BILLING_COLLECTIONS_ENRICH_SIZE,
+  unwrapBillingCollectionsPage,
+} from '../../utils/unwrapBillingCollectionsPage';
 import { STATE_TONE, dueHint, initials } from './billingCollectionsUi';
 
 export default function BillingActionableLedger({ t, money, p }) {
@@ -16,7 +20,9 @@ export default function BillingActionableLedger({ t, money, p }) {
   // Fetch all companies to identify overdue and due soon
   const listQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'companies', 'actionable-ledger'],
-    queryFn: () => platformBillingApi.collectionsCompanies({}).then((r) => r.data || []),
+    queryFn: () => platformBillingApi
+      .collectionsCompanies({ page: 0, size: BILLING_COLLECTIONS_ENRICH_SIZE })
+      .then((r) => unwrapBillingCollectionsPage(r.data).content),
     staleTime: 60_000,
   });
 

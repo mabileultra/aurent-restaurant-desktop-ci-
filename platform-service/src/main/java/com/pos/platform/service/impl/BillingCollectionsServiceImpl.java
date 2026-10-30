@@ -6,6 +6,7 @@ import com.pos.platform.domain.BillingTopUpStatus;
 import com.pos.platform.dto.billing.BillingCollectionsOverviewResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
 import com.pos.platform.dto.billing.CompanyPaymentRowResponse;
+import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.entity.BillingLedgerEntry;
 import com.pos.platform.entity.Company;
 import com.pos.platform.repository.BillingLedgerRepository;
@@ -16,6 +17,7 @@ import com.pos.platform.service.CompanyBillingAccountService;
 import com.pos.platform.service.support.BillingPaymentStateResolver;
 import com.pos.platform.service.support.BillingTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +101,12 @@ public class BillingCollectionsServiceImpl implements BillingCollectionsService 
             .filter(r -> filter.districtCode() == null || filter.districtCode().isBlank()
                 || filter.districtCode().equals(r.districtCode()))
             .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<CompanyPaymentRowResponse> listPaged(Filter filter, Pageable pageable) {
+        return PageResponse.slice(list(filter), pageable);
     }
 
     private static boolean inRange(CompanyPaymentRowResponse row, Filter filter) {
