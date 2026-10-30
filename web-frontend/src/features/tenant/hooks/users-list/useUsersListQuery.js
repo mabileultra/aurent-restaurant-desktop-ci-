@@ -75,9 +75,19 @@ export function useUsersListQuery({
     retry: 2,
   });
 
+  const isDebouncing = Boolean(search && search !== debouncedSearch);
+  const firstLoad = query.isPending && !query.data;
+  const isRefreshing = (query.isFetching && !firstLoad) || isDebouncing;
+  const displayPage = typeof query.data?.number === 'number' ? query.data.number : page;
+
   return {
     page: query.data ?? EMPTY_PAGE,
-    isLoading: query.isLoading,
+    isLoading: firstLoad,
+    firstLoad,
+    isRefreshing,
+    isFetching: query.isFetching,
+    isDebouncing,
+    displayPage,
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,

@@ -127,11 +127,14 @@ export default function PlatformCompaniesPage() {
       <PlatformCompaniesTable
         t={p.t}
         isPending={p.isPending}
+        isRefreshing={p.isRefreshing}
+        showOverlay={p.showRefreshingOverlay}
         isError={p.isError}
         error={p.error}
         onRetry={p.refetch}
         rows={p.rows}
         page={p.page}
+        displayPage={p.displayPage}
         pageSize={p.pageSize}
         total={p.total}
         totalPages={p.totalPages}

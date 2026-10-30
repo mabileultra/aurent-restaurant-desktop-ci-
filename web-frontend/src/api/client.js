@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { normalizeCompanyLoginCode } from '../utils/authLogin';
 import { forceAuthReLogin } from '../utils/authSessionExpiry';
 import { isPublicAppPath } from '../utils/publicAppPaths';
-import { isApiNetworkError } from '../utils/apiNetworkError';
+import { isApiNetworkError, notifyNetworkOffline, notifyNetworkOnline } from '../utils/apiNetworkError';
 import {
   markApiUnreachable,
   refreshConnectivityStatus,
@@ -11,6 +11,7 @@ import {
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
 
 let connectivityRefreshTimer;
+let isAppMarkedOffline = false;
 
 function scheduleConnectivityRefreshFromApi() {
   if (!isDesktopOfflineBridge()) return;
@@ -50,21 +51,27 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     scheduleConnectivityRefreshFromApi();
+    if (isAppMarkedOffline) {
+      isAppMarkedOffline = false;
+      notifyNetworkOnline();
+    }
     return response;
   },
   async (error) => {
     const original = error.config;
     const status = error.response?.status;
-    if (
-      isDesktopOfflineBridge() &&
-      (status === 502 || status === 503 || status === 504 || isApiNetworkError(error))
-    ) {
-      markApiUnreachable();
-      scheduleConnectivityRefreshFromApi();
+    const isNetworkOrProxyFail =
+      status === 502 || status === 503 || status === 504 || isApiNetworkError(error);
+
+    if (isNetworkOrProxyFail) {
+      isAppMarkedOffline = true;
+      notifyNetworkOffline(error);
+      if (isDesktopOfflineBridge()) {
+        markApiUnreachable();
+        scheduleConnectivityRefreshFromApi();
+      }
     }
-    const hasStoredToken = Boolean(useAuthStore.getState().token);
-    const shouldAttemptRefresh =
-      !original._retry && (status === 401 || (status === 403 && hasStoredToken));
+    const shouldAttemptRefresh = !original._retry && status === 401;
 
     if (
       isDesktopOfflineBridge() &&

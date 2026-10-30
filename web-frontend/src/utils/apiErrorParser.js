@@ -9,7 +9,11 @@ export function buildErrorReferenceCode(status, error) {
   if (error?.response?.data?.traceId) return String(error.response.data.traceId).slice(0, 10);
   if (error?.response?.headers?.['x-request-id']) return String(error.response.headers['x-request-id']).slice(0, 10);
 
-  const prefix = status ? `ERR-${status}` : 'ERR-NET';
+  const prefix = status
+    ? `ERR-${status}`
+    : isApiNetworkError(error)
+    ? 'ERR-NET'
+    : 'ERR-UI';
   const str = String(error?.message || error?.config?.url || Date.now());
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -149,6 +153,13 @@ export function parseApiError(error, customFallback) {
     });
   }
 
+  const isClientError = Boolean(
+    error &&
+    !isNetwork &&
+    !status &&
+    (error instanceof Error || error?.name || !error?.config)
+  );
+
   return {
     message,
     status,
@@ -158,6 +169,7 @@ export function parseApiError(error, customFallback) {
     isNetwork,
     isAuth,
     isForbidden,
+    isClientError,
   };
 }
 

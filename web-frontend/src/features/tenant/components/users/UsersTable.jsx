@@ -18,6 +18,7 @@ import TablePagination from '../../../../components/shared/TablePagination';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import { USER_ROLE_BADGE } from '../../constants';
 import { canDeleteUser } from '../../utils/userDeletePolicy';
+import { Spinner } from '../../../../components/ui';
 
 function formatSimpleDate(val) {
   if (!val) return '—';
@@ -38,8 +39,11 @@ export default function UsersTable({
   t,
   isPlatform,
   isLoading,
+  isRefreshing = false,
+  showOverlay = false,
   pageRows = [],
   page,
+  displayPage,
   pageSize,
   total,
   totalPages,
@@ -68,6 +72,7 @@ export default function UsersTable({
   hasInactiveSelected = true,
   hasActiveSelected = true,
 }) {
+  const effectivePage = typeof displayPage === 'number' ? displayPage : page;
   const colSpan = 6;
   const regionCodes = pageRows
     .map((u) => u.regionCode || companyById?.get?.(String(u.companyId ?? ''))?.regionCode)
@@ -102,7 +107,18 @@ export default function UsersTable({
 
   return (
     <div className="relative">
-      <div className="admin-table-shell overflow-hidden rounded-2xl bg-white shadow-2xs dark:bg-slate-900">
+      <div className="admin-table-shell overflow-hidden rounded-2xl bg-white shadow-2xs dark:bg-slate-900 relative">
+        {/* Indeterminate purple progress line during background refetching */}
+        {isRefreshing && (
+          <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-purple-100 dark:bg-purple-950 overflow-hidden rounded-t-2xl">
+            <div className="h-full bg-purple-600 animate-pulse w-full motion-reduce:animate-none" />
+          </div>
+        )}
+
+        {/* Anti-flicker delayed overlay spinner (appears only if request persists > 250ms, holds >= 400ms) */}
+        {showOverlay && (
+          <Spinner overlay size="sm" text={t('common.loading')} />
+        )}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm table-fixed border-collapse min-w-[760px]">
             <thead>
@@ -208,14 +224,35 @@ export default function UsersTable({
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {isLoading ? (
-                <tr>
-                  <td colSpan={colSpan} className="px-4 py-12 text-center text-slate-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                      <span>{t('common.loading')}</span>
-                    </div>
-                  </td>
-                </tr>
+                Array.from({ length: Math.min(pageSize || 10, 10) }).map((_, idx) => (
+                  <tr key={`user-skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
+                    <td className="w-12 px-3 py-3.5 text-center">
+                      <div className="h-4 w-4 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700/60 shrink-0" />
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+                          <div className="h-3 w-20 rounded bg-slate-100 dark:bg-slate-800" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="h-5 w-20 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="space-y-1.5">
+                        <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700/60" />
+                        <div className="h-3 w-16 rounded bg-slate-100 dark:bg-slate-800" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                    </td>
+                    <td className="w-12 px-3 py-3.5" />
+                  </tr>
+                ))
               ) : pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={colSpan} className="px-4 py-12 text-center text-slate-500">
@@ -433,9 +470,21 @@ export default function UsersTable({
 
         {/* Mobile card-based view (<sm) */}
         <div className="sm:hidden p-3 space-y-3">
-          {pageRows.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div key={`user-card-skeleton-${idx}`} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 animate-pulse">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+                    <div className="h-3 w-20 rounded bg-slate-100 dark:bg-slate-800" />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : pageRows.length === 0 ? (
             <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
-              {isLoading ? t('common.loading') : t('platform.noSearchResults')}
+              {t('platform.noSearchResults')}
             </div>
           ) : (
             pageRows.map((user) => {
@@ -578,6 +627,7 @@ export default function UsersTable({
 
         <TablePagination
           page={page}
+          displayPage={effectivePage}
           pageSize={pageSize}
           total={total}
           totalPages={totalPages}

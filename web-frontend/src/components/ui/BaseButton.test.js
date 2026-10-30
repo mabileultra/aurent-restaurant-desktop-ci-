@@ -19,8 +19,8 @@ describe('BaseButton', () => {
       React.createElement(BaseButton, { variant: 'primary', loading: true }, 'Saqlash')
     );
     expect(html).toContain('disabled=""');
-    expect(html).toContain('animate-spin');
-    expect(html).toContain('animate-pulse');
-    expect(html).toContain('text-white');
+    expect(html).toContain('role="status"');
+    expect(html).toContain('aur-sp');
+    expect(html).toContain('aur-sp--white');
   });
 });

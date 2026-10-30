@@ -124,7 +124,7 @@ describe('UsersTable', () => {
       })
     );
 
-    expect(html).toContain('Yuklanmoqda...');
+    expect(html).toContain('animate-pulse');
   });
 
   it('renders empty search message when pageRows is empty', () => {
@@ -191,5 +191,32 @@ describe('UsersTable', () => {
     expect(html).not.toContain('· SAM · SAM_CITY');
     // Login code has shrink-0 and is separate
     expect(html).toContain('#9001');
+  });
+
+  it('renders skeleton rows when isLoading is true to prevent layout shift', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(UsersTable, { ...defaultProps, isLoading: true })
+    );
+
+    expect(html).toContain('animate-pulse');
+    expect(html).not.toContain('Ali Valiyev');
+  });
+
+  it('renders purple top progress line when isRefreshing is true while keeping user rows visible', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(UsersTable, { ...defaultProps, isRefreshing: true })
+    );
+
+    expect(html).toContain('bg-purple-600 animate-pulse');
+    expect(html).toContain('Ali Valiyev');
+  });
+
+  it('renders overlay spinner when showOverlay is true without unmounting user rows', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(UsersTable, { ...defaultProps, showOverlay: true })
+    );
+
+    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('Ali Valiyev');
   });
 });

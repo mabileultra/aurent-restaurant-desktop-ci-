@@ -21,11 +21,18 @@ export default function PlatformErrorState({
   const { t } = useTranslation();
 
   const parsed = error ? parseApiError(error) : null;
+  const isClientError = Boolean(
+    parsed?.isClientError ||
+    (error && !parsed?.isNetwork && !parsed?.status && (error instanceof Error || error?.name))
+  );
+
   const displayTitle = title || (
     parsed?.isNetwork
       ? t('errors.networkTitle', { defaultValue: 'Tarmoq xatosi' })
       : parsed?.isForbidden
       ? t('errors.forbiddenTitle', { defaultValue: 'Ruxsat cheklangan' })
+      : isClientError
+      ? t('errors.clientErrorTitle', { defaultValue: 'Sahifada xatolik yuz berdi' })
       : t('errors.loadFailedTitle', { defaultValue: 'Ma’lumotlarni yuklab bo‘lmadi' })
   );
 

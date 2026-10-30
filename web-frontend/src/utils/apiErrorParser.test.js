@@ -19,6 +19,9 @@ describe('apiErrorParser', () => {
     const codeNet = buildErrorReferenceCode(null, { message: 'Network Error' });
     expect(codeNet).toMatch(/^#ERR-NET-[0-9A-F]{4}$/);
 
+    const codeUi = buildErrorReferenceCode(null, new ReferenceError("Cannot access 'x' before initialization"));
+    expect(codeUi).toMatch(/^#ERR-UI-[0-9A-F]{4}$/);
+
     // Uses server referenceId if provided
     const withRef = buildErrorReferenceCode(500, { response: { data: { referenceId: 'REF-999' } } });
     expect(withRef).toBe('REF-999');

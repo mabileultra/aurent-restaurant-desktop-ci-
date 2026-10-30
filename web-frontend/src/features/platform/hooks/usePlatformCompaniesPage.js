@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { companyApi } from '../../../api/company.api';
 import { storeApi } from '../../../api/store.api';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
 import { platformBusinessTypeApi } from '../../../api';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import { useDelayedLoading } from '../../../hooks/useDelayedLoading';
 
 export const PLATFORM_COMPANY_PAGE_SIZE = 14;
 export const PLATFORM_COMPANY_PAGE_SIZE_OPTIONS = [10, 14, 20, 50];
@@ -40,6 +42,8 @@ export function usePlatformCompaniesPage() {
   const [form, setForm] = useState(emptyForm);
   const [menuId, setMenuId] = useState(null);
 
+  const debouncedSearch = useDebouncedValue(search, 300);
+
   const handleStatusFilterChange = (next) => {
     setStatusFilter(next);
     setPage(0);
@@ -49,19 +53,25 @@ export function usePlatformCompaniesPage() {
     () => ({
       page,
       size: pageSize,
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
       districtCode: districtCode || undefined,
       active: statusFilter === 'ALL' ? undefined : statusFilter === 'ACTIVE',
     }),
-    [page, pageSize, search, businessType, regionCode, districtCode, statusFilter]
+    [page, pageSize, debouncedSearch, businessType, regionCode, districtCode, statusFilter]
   );
 
-  const { data, isPending, isError, error, refetch } = useQuery({
+  const companiesQuery = useQuery({
     queryKey: ['companies', params],
     queryFn: () => companyApi.getAll(params).then((r) => r.data),
+    placeholderData: keepPreviousData,
   });
+
+  const { data, error } = companiesQuery;
+  const firstLoad = companiesQuery.isPending && !data;
+  const isRefreshing = companiesQuery.isFetching && !firstLoad;
+  const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
 
   // Lightweight total stores count (requests only 1 item to obtain totalElements from PageResponse)
   const { data: storeCountData } = useQuery({
@@ -71,7 +81,7 @@ export function usePlatformCompaniesPage() {
   });
 
   // If table is filtered by search or geography, retain baseline total companies count with size: 1
-  const isFiltered = Boolean(search.trim() || businessType || regionCode || districtCode);
+  const isFiltered = Boolean(debouncedSearch.trim() || businessType || regionCode || districtCode);
   const { data: baselineCount } = useQuery({
     queryKey: ['companies-baseline-count'],
     queryFn: () => companyApi.getAll({ page: 0, size: 1 }).then((r) => r.data?.totalElements ?? 0).catch(() => 0),
@@ -184,8 +194,10 @@ export function usePlatformCompaniesPage() {
 
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
-  const fromN = total === 0 ? 0 : page * pageSize + 1;
-  const toN = Math.min((page + 1) * pageSize, total);
+  // If data has number, it represents the page index of the rows currently in memory
+  const displayPage = typeof data?.number === 'number' ? data.number : page;
+  const fromN = total === 0 ? 0 : displayPage * pageSize + 1;
+  const toN = Math.min((displayPage + 1) * pageSize, total);
 
   // Scalable KPI calculations without fetching full datasets into browser memory
   const totalCompanies = isFiltered ? (baselineCount ?? total) : total;
@@ -340,6 +352,7 @@ export function usePlatformCompaniesPage() {
     regionCode,
     districtCode,
     page,
+    displayPage,
     pageSize,
     setPage,
     setPageSize: handlePageSizeChange,
@@ -349,10 +362,13 @@ export function usePlatformCompaniesPage() {
     menuId,
     setMenuId,
     rows,
-    isPending,
-    isError,
+    firstLoad,
+    isRefreshing,
+    showRefreshingOverlay,
+    isPending: firstLoad,
+    isError: companiesQuery.isError,
     error,
-    refetch,
+    refetch: companiesQuery.refetch,
     errorMessage: error?.response?.data?.message ?? t('common.loadError'),
     total,
     totalPages,

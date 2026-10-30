@@ -13,7 +13,7 @@ export default function PlatformStoreStatsCards({
 }) {
   const activePercent = totalStores > 0
     ? Math.round((activeStores / totalStores) * 100)
-    : 100;
+    : (isPending ? 0 : 100);
 
   const cards = [
     {
@@ -30,7 +30,9 @@ export default function PlatformStoreStatsCards({
       id: 'ACTIVE',
       title: t('platform.statsActiveBranches', { defaultValue: 'Faol filiallar' }),
       value: activeStores,
-      hint: `${activePercent}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`,
+      hint: totalStores > 0
+        ? `${activePercent}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`
+        : t('platform.statsBranchesDesc', { defaultValue: 'Barcha savdo nuqtalari' }),
       icon: CheckCircle2,
       iconColor: 'text-emerald-600 dark:text-emerald-400',
       iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60',
