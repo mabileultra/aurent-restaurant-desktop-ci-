@@ -79,7 +79,8 @@ app:
       import-pool:
         core-pool-size: ${PHARMACY_IMPORT_CORE:8}
         max-pool-size: ${PHARMACY_IMPORT_MAX:8}
-        queue-capacity: ${PHARMACY_IMPORT_QUEUE:100}
+        # Large invoices (200–1000 lines) enqueue one task per row during match/confirm.
+        queue-capacity: ${PHARMACY_IMPORT_QUEUE:2000}
         thread-name-prefix: pharm-import-
       catalog:
         core-pool-size: ${PHARMACY_CATALOG_CORE:4}

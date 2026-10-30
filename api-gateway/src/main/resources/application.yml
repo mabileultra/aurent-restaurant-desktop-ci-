@@ -11,7 +11,8 @@ spring:
   application:
     name: api-gateway
   codec:
-    max-in-memory-size: 16MB
+    # Pharmacy Excel import match/confirm can exceed 16MB on 500–1000-line invoices.
+    max-in-memory-size: 64MB
   cloud:
     gateway:
       httpclient:

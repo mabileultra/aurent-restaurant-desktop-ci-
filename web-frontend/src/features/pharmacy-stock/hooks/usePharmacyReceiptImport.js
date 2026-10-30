@@ -12,6 +12,7 @@ import {
   applyPharmacyImportRoleChange,
   buildPharmacyImportRoleMap,
 } from '../utils/pharmacyImportRoleMap';
+import { runPharmacyImportMatchChunks } from '../utils/runPharmacyImportMatchChunks';
 
 const ROLE_KEYS = [
   'SKIP', 'NAME', 'MANUFACTURER', 'COUNTRY', 'QTY', 'BATCH', 'EXPIRY',
@@ -89,11 +90,15 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     }
     setBusy(true);
     try {
-      const { data } = await pharmacyWarehouseApi.importMatch(receiptId, {
-        roles: mapped,
+      const data = await runPharmacyImportMatchChunks({
         rows: parse?.rows ?? [],
+        roles: mapped,
         useFinalSums,
-        uzInvoiceDocumentId: invoiceId || parse?.uzInvoiceDocumentId || undefined,
+        invoiceId: invoiceId || parse?.uzInvoiceDocumentId || null,
+        matchRequest: async (body) => {
+          const res = await pharmacyWarehouseApi.importMatch(receiptId, body);
+          return res.data;
+        },
       });
       setInvoiceId(data.uzInvoiceDocumentId || invoiceId);
       setInvoiceAlreadyImported(Boolean(data.invoiceAlreadyImported));

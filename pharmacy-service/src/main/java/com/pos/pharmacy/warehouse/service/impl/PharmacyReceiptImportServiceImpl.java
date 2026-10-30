@@ -102,9 +102,13 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
         boolean blocked = matchSupport.isImportedOnAnotherReceipt(companyId, receipt, invoiceId);
         List<List<String>> rows = request.rows() != null ? request.rows() : List.of();
+        int rowOffset = request.rowOffset() != null ? Math.max(0, request.rowOffset()) : 0;
+        int skuHorizon = request.totalRows() != null && request.totalRows() > 0
+            ? request.totalRows()
+            : rowOffset + rows.size();
         Set<String> savedSkus = blocked
             ? Set.of()
-            : matchSupport.savedInvoiceSkus(companyId, invoiceId, rows.size());
+            : matchSupport.savedInvoiceSkus(companyId, invoiceId, skuHorizon);
         Map<String, Integer> roles = PharmacyImportRoleMap.normalize(
             request.roles(),
             PharmacyImportRoleMap.rowWidth(rows)
@@ -114,7 +118,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             : new BigDecimal("20");
         List<Supplier<PharmacyImportMatchItem>> tasks = new ArrayList<>(rows.size());
         for (int i = 0; i < rows.size(); i++) {
-            final int rowIndex = i;
+            final int rowIndex = rowOffset + i;
             final List<String> row = rows.get(i);
             final boolean rowDuplicate = blocked || skuAlreadySaved(savedSkus, invoiceId, rowIndex);
             tasks.add(() -> mapRow(
