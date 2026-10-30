@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Junk from public-form smoke tests: name/phone "e", sample@email.tst -->
+    <changeSet id="v12-001-purge-test-site-leads" author="platform">
+        <sql>
+            DELETE FROM site_leads
+            WHERE lower(coalesce(email, '')) = 'sample@email.tst'
+               OR (lower(name) = 'e' AND lower(phone) = 'e');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

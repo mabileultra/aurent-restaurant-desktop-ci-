@@ -6,10 +6,10 @@ import com.pos.platform.dto.site.SiteLeadResponse;
 import com.pos.platform.dto.site.UpdateSiteLeadRequest;
 import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.entity.SiteLead;
-import com.pos.platform.exception.BadRequestException;
 import com.pos.platform.exception.ResourceNotFoundException;
 import com.pos.platform.repository.SiteLeadRepository;
 import com.pos.platform.service.SiteLeadService;
+import com.pos.platform.support.SiteLeadPhoneNormalizer;
 import com.pos.platform.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +30,7 @@ public class SiteLeadServiceImpl implements SiteLeadService {
     public SiteLeadResponse createPublic(CreateSiteLeadRequest request) {
         SiteLead lead = SiteLead.builder()
             .name(TextUtil.trimOrNull(request.name()))
-            .phone(normalizePhone(request.phone()))
+            .phone(SiteLeadPhoneNormalizer.normalize(request.phone()))
             .email(TextUtil.trimOrNull(request.email()))
             .leadType(request.leadType())
             .source(TextUtil.trimOrNull(request.source()))
@@ -68,17 +68,18 @@ public class SiteLeadServiceImpl implements SiteLeadService {
         return SiteLeadResponse.from(siteLeadRepository.save(lead));
     }
 
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        if (!siteLeadRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Lead not found");
+        }
+        siteLeadRepository.deleteById(id);
+    }
+
     private SiteLead requireLead(UUID id) {
         return siteLeadRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Lead not found"));
-    }
-
-    private static String normalizePhone(String phone) {
-        String trimmed = phone != null ? phone.trim() : "";
-        if (trimmed.isEmpty()) {
-            throw new BadRequestException("Phone is required");
-        }
-        return trimmed;
     }
 
     private static String normalizeLocale(String locale) {

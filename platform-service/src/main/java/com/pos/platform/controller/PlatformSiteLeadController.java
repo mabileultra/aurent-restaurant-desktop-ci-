@@ -10,9 +10,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +39,7 @@ public class PlatformSiteLeadController {
     public ResponseEntity<PageResponse<SiteLeadResponse>> list(
         @RequestParam(required = false) SiteLeadStatus status,
         @RequestParam(required = false) String search,
-        @PageableDefault(size = 20, sort = "createdAt") Pageable pageable
+        @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(siteLeadService.list(status, search, pageable));
     }
@@ -55,5 +57,12 @@ public class PlatformSiteLeadController {
         @Valid @RequestBody UpdateSiteLeadRequest request
     ) {
         return ResponseEntity.ok(siteLeadService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Удалить заявку")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        siteLeadService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

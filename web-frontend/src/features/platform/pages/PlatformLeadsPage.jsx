@@ -49,7 +49,9 @@ export default function PlatformLeadsPage() {
         onNoteChange={p.setEditNote}
         onClose={p.closeDetail}
         onSave={p.saveDetail}
+        onDelete={p.deleteDetail}
         isSaving={p.isSaving}
+        isDeleting={p.isDeleting}
       />
     </PageLayout>
   );
