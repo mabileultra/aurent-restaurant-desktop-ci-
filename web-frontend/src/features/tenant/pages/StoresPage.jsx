@@ -164,6 +164,10 @@ export default function StoresPage({
             t={p.t}
             stores={p.allStores}
             companies={p.companies}
+            groups={p.groupedGroups}
+            serverPaged
+            totalGroups={p.totalGroups}
+            loadingBranchIds={p.loadingBranchIds}
             companyId={p.companyId}
             expandedIds={p.expandedCompanyIds}
             onExpandedIdsChange={p.setExpandedCompanyIds}

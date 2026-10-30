@@ -9,10 +9,14 @@ globalThis.React = React;
 
 vi.mock('../../../api/store.api', () => ({
   storeApi: {
-    getManaged: vi.fn(),
-    getAll: vi.fn(),
-    getStats: vi.fn(),
-    getByCompany: vi.fn(),
+    getManaged: vi.fn().mockResolvedValue({ data: { content: [], totalElements: 0, totalPages: 0 } }),
+    getAll: vi.fn().mockResolvedValue({ data: [] }),
+    getStats: vi.fn().mockResolvedValue({
+      data: { totalStores: 95, activeStores: 80, inactiveStores: 15, companiesCount: 2 },
+    }),
+    getByCompany: vi.fn().mockResolvedValue({
+      data: { content: [], totalElements: 0, totalPages: 0, size: 10, number: 0 },
+    }),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -51,28 +55,39 @@ describe('useStoresPage performance optimization', () => {
     vi.clearAllMocks();
   });
 
-  it('does NOT call storeApi.getAll on standard table page view', () => {
+  it('does NOT load all branches until accordion expand (grouped lazy load)', () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
 
-    queryClient.setQueryData(['stores-manage', {
-      page: 0,
-      size: 14,
+    queryClient.setQueryData(['stores-stats', {
       search: undefined,
-      companyId: undefined,
+      status: undefined,
       businessType: undefined,
       regionCode: undefined,
-      districtCode: undefined,
+      companyId: undefined,
+    }], {
+      totalStores: 95,
+      activeStores: 80,
+      inactiveStores: 15,
+      companiesCount: 2,
+    });
+
+    queryClient.setQueryData(['stores-by-company', {
+      page: 0,
+      size: 10,
+      search: undefined,
+      status: undefined,
+      businessType: undefined,
+      regionCode: undefined,
     }], {
       content: [
-        { id: 10, name: 'Store A', active: true, companyId: 1 },
-        { id: 11, name: 'Store B', active: false, companyId: 1 },
+        { companyId: 1, companyName: 'Company 1', storeCount: 2, activeStoreCount: 1 },
       ],
-      totalElements: 95,
-      totalPages: 7,
-      page: 0,
-      size: 14,
+      totalElements: 2,
+      totalPages: 1,
+      size: 10,
+      number: 0,
     });
 
     let hookResult;
@@ -90,12 +105,8 @@ describe('useStoresPage performance optimization', () => {
       )
     );
 
-    // CRITICAL: storeApi.getAll must NOT be called for standard table view
+    // CRITICAL: branches stay unloaded until company accordion opens
     expect(storeApi.getAll).not.toHaveBeenCalled();
-    // Backend stats endpoint is preferred when available
-    expect(storeApi.getStats).toHaveBeenCalled();
-
-    // Fallback KPI from totalElements / companies until stats resolve
     expect(hookResult.totalStores).toBe(95);
     expect(hookResult.companiesCount).toBe(2);
   });

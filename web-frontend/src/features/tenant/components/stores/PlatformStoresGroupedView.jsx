@@ -27,6 +27,11 @@ export default function PlatformStoresGroupedView({
   t,
   stores = [],
   companies = [],
+  /** Prebuilt groups from /stores/by-company + lazy branches (server-paged). */
+  groups: serverGroups = null,
+  serverPaged = false,
+  totalGroups: serverTotalGroups = 0,
+  loadingBranchIds = null,
   companyId = '',
   focusCompanyId = '',
   search = '',
@@ -130,8 +135,12 @@ export default function PlatformStoresGroupedView({
     );
   };
 
-  // 1. Filter stores by search, businessType, region, district, statusFilter, companyId
+  // Client-side path (tests / legacy): filter + group from full stores list.
+  // Server path: parent passes groups from /stores/by-company + lazy branches.
   const filteredStores = useMemo(() => {
+    if (serverGroups) {
+      return serverGroups.flatMap((g) => g.stores || []);
+    }
     const q = search.trim().toLowerCase();
     const cIdNum = companyId ? Number(companyId) : null;
     return stores.filter((store) => {
@@ -151,14 +160,16 @@ export default function PlatformStoresGroupedView({
       }
       return true;
     });
-  }, [stores, companyId, search, businessType, regionCode, districtCode, statusFilter]);
+  }, [serverGroups, stores, companyId, search, businessType, regionCode, districtCode, statusFilter]);
 
-  // 2. Group filtered stores by company
   const companyGroups = useMemo(() => {
+    if (serverGroups) {
+      return serverGroups;
+    }
+
     const companyMap = new Map();
     const cIdNum = companyId ? Number(companyId) : null;
 
-    // Seed with all companies if available so we have rich company metadata
     companies.forEach((comp) => {
       companyMap.set(Number(comp.id), {
         company: comp,
@@ -166,7 +177,6 @@ export default function PlatformStoresGroupedView({
       });
     });
 
-    // Bucket filtered stores
     const orphanStores = [];
     filteredStores.forEach((store) => {
       const cId = store.companyId ? Number(store.companyId) : null;
@@ -182,14 +192,12 @@ export default function PlatformStoresGroupedView({
       }
     });
 
-    // Build list: only include companies that either have stores, or when no search/filters active
     const groups = [];
     const hasFilters = Boolean(
       search || businessType || regionCode || districtCode || statusFilter !== 'ALL' || companyId
     );
 
     companyMap.forEach((entry, cId) => {
-      // If companyId filter is active, only include that specific company
       if (cIdNum && cId !== cIdNum) return;
 
       if (entry.stores.length > 0 || !hasFilters || (cIdNum && cId === cIdNum)) {
@@ -207,7 +215,6 @@ export default function PlatformStoresGroupedView({
       }
     });
 
-    // Sort: companies with most branches first, then alphabetically (natural numeric)
     groups.sort((a, b) => {
       if (b.total !== a.total) return b.total - a.total;
       return (a.company.name || '').localeCompare(b.company.name || '', undefined, { numeric: true });
@@ -225,7 +232,7 @@ export default function PlatformStoresGroupedView({
     }
 
     return groups;
-  }, [filteredStores, companies, companyId, search, businessType, regionCode, districtCode, statusFilter, t]);
+  }, [serverGroups, filteredStores, companies, companyId, search, businessType, regionCode, districtCode, statusFilter, t]);
 
   // UX Rule: If user is actively searching or filtering, auto-expand matches!
   // If viewing whole directory (100+ companies), keep collapsed by default to avoid infinite scroll.
@@ -271,14 +278,19 @@ export default function PlatformStoresGroupedView({
     }
   }, [targetFocusId, companyGroups, pageSize, page, setPage]);
 
-  const total = companyGroups.length;
-  const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 1;
+  const total = serverPaged ? serverTotalGroups : companyGroups.length;
+  const totalPages = serverPaged
+    ? Math.max(1, pageSize > 0 ? Math.ceil(total / pageSize) : 1)
+    : (pageSize > 0 ? Math.ceil(total / pageSize) : 1);
   const safePage = page >= totalPages ? Math.max(0, totalPages - 1) : Math.max(0, page);
 
   const pagedGroups = useMemo(() => {
+    if (serverPaged) {
+      return companyGroups;
+    }
     const start = safePage * pageSize;
     return companyGroups.slice(start, start + pageSize);
-  }, [companyGroups, safePage, pageSize]);
+  }, [serverPaged, companyGroups, safePage, pageSize]);
 
   // Auto-scroll and highlight targetFocusId
   useEffect(() => {
@@ -412,7 +424,11 @@ export default function PlatformStoresGroupedView({
             {t('platform.companiesNetworkTitle', { defaultValue: 'Kompaniyalar tarmog‘i' })}
           </span>
           <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono font-semibold text-xs border border-slate-200/80 dark:border-slate-700">
-            {companyGroups.length} ta kompaniya • {filteredStores.length} ta filial
+            {total} ta kompaniya •{' '}
+            {serverPaged
+              ? companyGroups.reduce((sum, g) => sum + (Number(g.total) || 0), 0)
+              : filteredStores.length}{' '}
+            ta filial
           </span>
         </div>
 
@@ -549,7 +565,11 @@ export default function PlatformStoresGroupedView({
               {/* Sub-list of Branches (When Expanded) */}
               {isExpanded && (
                 <div className="bg-white dark:bg-slate-900">
-                  {group.stores.length === 0 ? (
+                  {group.stores.length === 0 && loadingBranchIds?.has?.(group.id) ? (
+                    <div className="p-8 flex justify-center">
+                      <Spinner size="sm" text={t('common.loading')} />
+                    </div>
+                  ) : group.stores.length === 0 ? (
                     <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
                       <p>{t('platform.groupedEmptyCompany', { defaultValue: 'Ushbu kompaniyada hozircha filiallar yo‘q' })}</p>
                       {typeof group.id === 'number' && (

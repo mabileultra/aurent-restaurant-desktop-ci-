@@ -7,6 +7,7 @@ import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { useDelayedLoading } from '../../../hooks/useDelayedLoading';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useStoresPlatformStats } from './useStoresPlatformStats';
+import { useStoresGroupedQuery } from './useStoresGroupedQuery';
 
 export function useStoresPage({ showCompanySelect = false, companyIdFilter, companies = [] } = {}) {
   const { t } = useTranslation();
@@ -67,16 +68,19 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     [debouncedSearch, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
   );
 
+  const isGroupedViewActive = Boolean(showCompanySelect && viewMode === 'grouped');
+
   const storesQuery = useQuery({
     queryKey: ['stores-manage', queryParams],
     queryFn: () => storeApi.getManaged(queryParams).then((r) => r.data),
     placeholderData: keepPreviousData,
+    enabled: !isGroupedViewActive,
   });
 
   const { data, error } = storesQuery;
-  const firstLoad = storesQuery.isPending && !data;
-  const isRefreshing = storesQuery.isFetching && !firstLoad;
-  const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
+  const tableFirstLoadBase = storesQuery.isPending && !data;
+  const tableRefreshingBase = storesQuery.isFetching && !tableFirstLoadBase;
+  const showRefreshingOverlay = useDelayedLoading(tableRefreshingBase, { delay: 250, minDuration: 400 });
 
   const { data: businessTypes = [] } = useQuery({
     queryKey: ['platform-business-types-options'],
@@ -94,6 +98,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       qc.invalidateQueries({ queryKey: ['stores-all'] });
       qc.invalidateQueries({ queryKey: ['stores-stats'] });
       qc.invalidateQueries({ queryKey: ['stores-by-company'] });
+      qc.invalidateQueries({ queryKey: ['stores-company-branches'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -113,6 +118,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       qc.invalidateQueries({ queryKey: ['stores-all'] });
       qc.invalidateQueries({ queryKey: ['stores-stats'] });
       qc.invalidateQueries({ queryKey: ['stores-by-company'] });
+      qc.invalidateQueries({ queryKey: ['stores-company-branches'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -131,6 +137,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       qc.invalidateQueries({ queryKey: ['stores-all'] });
       qc.invalidateQueries({ queryKey: ['stores-stats'] });
       qc.invalidateQueries({ queryKey: ['stores-by-company'] });
+      qc.invalidateQueries({ queryKey: ['stores-company-branches'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -143,8 +150,6 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onError: (e) => toast.error(e.response?.data?.message ?? t('stores.deleteFailed')),
   });
 
-  const isGroupedViewActive = Boolean(showCompanySelect && viewMode === 'grouped');
-
   const { stats } = useStoresPlatformStats({
     enabled: showCompanySelect,
     search: debouncedSearch,
@@ -154,39 +159,22 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     companyId: resolvedCompanyId,
   });
 
-  // Grouped view: load branches (optionally scoped by companyId). Prefer API stats for KPI.
-  const { data: allStores = [] } = useQuery({
-    queryKey: ['stores-all', resolvedCompanyId],
-    queryFn: () =>
-      storeApi.getAll(resolvedCompanyId ? { companyId: resolvedCompanyId } : undefined)
-        .then((r) => r.data || []),
+  const groupedQuery = useStoresGroupedQuery({
     enabled: isGroupedViewActive,
-    placeholderData: keepPreviousData,
-    staleTime: 60_000,
+    page: groupedPage,
+    pageSize: groupedPageSize,
+    search: debouncedSearch,
+    statusFilter,
+    businessType,
+    regionCode,
+    companyId: resolvedCompanyId,
+    companies,
+    expandedIds: expandedCompanyIds,
   });
 
-  // Accurate filtered stores for grouped view
-  const filteredGroupedStores = useMemo(() => {
-    if (!isGroupedViewActive) return [];
-    const q = debouncedSearch.trim().toLowerCase();
-    const cIdNum = resolvedCompanyId ? Number(resolvedCompanyId) : null;
-    return allStores.filter((store) => {
-      if (cIdNum && Number(store.companyId) !== cIdNum) return false;
-      if (statusFilter === 'ACTIVE' && !store.active) return false;
-      if (statusFilter === 'INACTIVE' && store.active) return false;
-      if (businessType && store.businessType !== businessType) return false;
-      if (regionCode && store.regionCode !== regionCode) return false;
-      if (districtCode && store.districtCode !== districtCode) return false;
-      if (q) {
-        const matchName = store.name?.toLowerCase().includes(q);
-        const matchCode = store.code?.toLowerCase().includes(q);
-        const matchAddr = store.address?.toLowerCase().includes(q);
-        const matchComp = store.companyName?.toLowerCase().includes(q);
-        if (!matchName && !matchCode && !matchAddr && !matchComp) return false;
-      }
-      return true;
-    });
-  }, [isGroupedViewActive, debouncedSearch, allStores, resolvedCompanyId, statusFilter, businessType, regionCode, districtCode]);
+  const allStores = groupedQuery.allLoadedStores;
+  const groupedGroups = groupedQuery.groups;
+  const loadingBranchIds = groupedQuery.loadingBranchIds;
 
   const rawRows = data?.content ?? [];
   const rows = useMemo(() => {
@@ -212,13 +200,6 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     activeStores = stats.activeStores ?? 0;
     inactiveStores = stats.inactiveStores ?? 0;
     companiesCount = stats.companiesCount ?? 0;
-  } else if (isGroupedViewActive && allStores.length > 0) {
-    totalStores = filteredGroupedStores.length;
-    activeStores = filteredGroupedStores.filter((s) => s.active).length;
-    inactiveStores = filteredGroupedStores.filter((s) => !s.active).length;
-    companiesCount = resolvedCompanyId
-      ? (totalStores > 0 ? 1 : 0)
-      : new Set(filteredGroupedStores.map((s) => Number(s.companyId)).filter(Boolean)).size;
   } else {
     totalStores = total;
     if (statusFilter === 'ACTIVE') {
@@ -238,6 +219,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       ? (totalStores > 0 ? 1 : 0)
       : (companies?.length || 0);
   }
+
+  const pageFirstLoad = isGroupedViewActive ? groupedQuery.firstLoad : tableFirstLoadBase;
+  const pageRefreshing = isGroupedViewActive ? groupedQuery.isRefreshing : tableRefreshingBase;
+  const pageOverlay = isGroupedViewActive ? groupedQuery.showOverlay : showRefreshingOverlay;
 
   const handleStatusFilterChange = (nextFilter) => {
     setStatusFilter(nextFilter);
@@ -334,15 +319,17 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     rows,
     total,
     totalPages,
-    firstLoad,
-    isRefreshing,
-    showRefreshingOverlay,
+    firstLoad: pageFirstLoad,
+    isRefreshing: pageRefreshing,
+    showRefreshingOverlay: pageOverlay,
     displayPage,
-    isPending: firstLoad,
-    isError: storesQuery.isError,
-    error,
-    refetch: storesQuery.refetch,
-    errorMessage,
+    isPending: pageFirstLoad,
+    isError: isGroupedViewActive ? groupedQuery.isError : storesQuery.isError,
+    error: isGroupedViewActive ? groupedQuery.error : error,
+    refetch: isGroupedViewActive ? undefined : storesQuery.refetch,
+    errorMessage: isGroupedViewActive
+      ? (groupedQuery.error?.response?.data?.message ?? groupedQuery.error?.message)
+      : errorMessage,
     showCompanySelect,
     companies,
     businessTypes,
@@ -368,6 +355,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     viewMode,
     setViewMode,
     allStores,
+    groupedGroups,
+    loadingBranchIds,
     expandedCompanyIds,
     setExpandedCompanyIds,
     hasUserToggledGrouped,
@@ -376,6 +365,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     setGroupedPage,
     groupedPageSize,
     setGroupedPageSize,
+    totalGroups: groupedQuery.totalGroups,
     pharmacyIntegrationStore,
     openPharmacyIntegration,
     closePharmacyIntegration,
