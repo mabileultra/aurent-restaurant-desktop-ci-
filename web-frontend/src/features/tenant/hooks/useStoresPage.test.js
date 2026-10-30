@@ -92,8 +92,10 @@ describe('useStoresPage performance optimization', () => {
 
     // CRITICAL: storeApi.getAll must NOT be called for standard table view
     expect(storeApi.getAll).not.toHaveBeenCalled();
+    // Backend stats endpoint is preferred when available
+    expect(storeApi.getStats).toHaveBeenCalled();
 
-    // Stats are computed from totalElements
+    // Fallback KPI from totalElements / companies until stats resolve
     expect(hookResult.totalStores).toBe(95);
     expect(hookResult.companiesCount).toBe(2);
   });

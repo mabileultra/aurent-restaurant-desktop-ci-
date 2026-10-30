@@ -6,6 +6,7 @@ import { storeApi, platformBusinessTypeApi } from '../../../api';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { useDelayedLoading } from '../../../hooks/useDelayedLoading';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
+import { useStoresPlatformStats } from './useStoresPlatformStats';
 
 export function useStoresPage({ showCompanySelect = false, companyIdFilter, companies = [] } = {}) {
   const { t } = useTranslation();
@@ -91,6 +92,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
       qc.invalidateQueries({ queryKey: ['stores-all'] });
+      qc.invalidateQueries({ queryKey: ['stores-stats'] });
+      qc.invalidateQueries({ queryKey: ['stores-by-company'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -108,6 +111,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
       qc.invalidateQueries({ queryKey: ['stores-all'] });
+      qc.invalidateQueries({ queryKey: ['stores-stats'] });
+      qc.invalidateQueries({ queryKey: ['stores-by-company'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -124,6 +129,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
       qc.invalidateQueries({ queryKey: ['stores-all'] });
+      qc.invalidateQueries({ queryKey: ['stores-stats'] });
+      qc.invalidateQueries({ queryKey: ['stores-by-company'] });
       qc.invalidateQueries({ predicate: (q) => {
         const key = q.queryKey;
         return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
@@ -138,10 +145,21 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
 
   const isGroupedViewActive = Boolean(showCompanySelect && viewMode === 'grouped');
 
-  // Only download all stores if user explicitly activates the grouped view accordion
+  const { stats } = useStoresPlatformStats({
+    enabled: showCompanySelect,
+    search: debouncedSearch,
+    statusFilter,
+    businessType,
+    regionCode,
+    companyId: resolvedCompanyId,
+  });
+
+  // Grouped view: load branches (optionally scoped by companyId). Prefer API stats for KPI.
   const { data: allStores = [] } = useQuery({
     queryKey: ['stores-all', resolvedCompanyId],
-    queryFn: () => storeApi.getAll().then((r) => r.data || []),
+    queryFn: () =>
+      storeApi.getAll(resolvedCompanyId ? { companyId: resolvedCompanyId } : undefined)
+        .then((r) => r.data || []),
     enabled: isGroupedViewActive,
     placeholderData: keepPreviousData,
     staleTime: 60_000,
@@ -181,87 +199,45 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const totalPages = data?.totalPages ?? 0;
   const displayPage = typeof data?.number === 'number' ? data.number : page;
 
-  // Scalable KPI calculations
-  const totalStores = isGroupedViewActive && allStores.length > 0
-    ? filteredGroupedStores.length
-    : total;
-
   const rawActive = rawRows.filter((s) => s.active).length;
   const rawInactive = rawRows.filter((s) => !s.active).length;
 
+  let totalStores;
   let activeStores;
   let inactiveStores;
+  let companiesCount;
 
-  if (isGroupedViewActive && allStores.length > 0) {
+  if (stats) {
+    totalStores = stats.totalStores ?? 0;
+    activeStores = stats.activeStores ?? 0;
+    inactiveStores = stats.inactiveStores ?? 0;
+    companiesCount = stats.companiesCount ?? 0;
+  } else if (isGroupedViewActive && allStores.length > 0) {
+    totalStores = filteredGroupedStores.length;
     activeStores = filteredGroupedStores.filter((s) => s.active).length;
     inactiveStores = filteredGroupedStores.filter((s) => !s.active).length;
-  } else if (statusFilter === 'ACTIVE') {
-    activeStores = total;
-    inactiveStores = Math.max(0, totalStores - activeStores);
-  } else if (statusFilter === 'INACTIVE') {
-    inactiveStores = total;
-    activeStores = Math.max(0, totalStores - inactiveStores);
-  } else if (total <= rawRows.length) {
-    activeStores = rawActive;
-    inactiveStores = rawInactive;
+    companiesCount = resolvedCompanyId
+      ? (totalStores > 0 ? 1 : 0)
+      : new Set(filteredGroupedStores.map((s) => Number(s.companyId)).filter(Boolean)).size;
   } else {
-    inactiveStores = rawInactive;
-    activeStores = Math.max(0, totalStores - inactiveStores);
+    totalStores = total;
+    if (statusFilter === 'ACTIVE') {
+      activeStores = total;
+      inactiveStores = Math.max(0, totalStores - activeStores);
+    } else if (statusFilter === 'INACTIVE') {
+      inactiveStores = total;
+      activeStores = Math.max(0, totalStores - inactiveStores);
+    } else if (total <= rawRows.length) {
+      activeStores = rawActive;
+      inactiveStores = rawInactive;
+    } else {
+      inactiveStores = rawInactive;
+      activeStores = Math.max(0, totalStores - inactiveStores);
+    }
+    companiesCount = resolvedCompanyId
+      ? (totalStores > 0 ? 1 : 0)
+      : (companies?.length || 0);
   }
-
-  const companiesCount = useMemo(() => {
-    if (resolvedCompanyId) {
-      return totalStores > 0 ? 1 : 0;
-    }
-
-    const q = debouncedSearch.trim().toLowerCase();
-    const hasFilters = Boolean(
-      q || businessType || regionCode || districtCode || statusFilter !== 'ALL'
-    );
-
-    if (!hasFilters) {
-      return companies?.length || 0;
-    }
-
-    if (isGroupedViewActive && allStores.length > 0) {
-      const matchingCompanyIds = new Set();
-      filteredGroupedStores.forEach((store) => {
-        if (store.companyId) {
-          matchingCompanyIds.add(Number(store.companyId));
-        }
-      });
-
-      // Also include companies whose own name matches the search query
-      companies.forEach((comp) => {
-        if (q && comp.name?.toLowerCase().includes(q)) {
-          matchingCompanyIds.add(Number(comp.id));
-        }
-      });
-
-      return matchingCompanyIds.size;
-    }
-
-    if (q) {
-      const matchedFromList = companies.filter((c) =>
-        c.name?.toLowerCase().includes(q)
-      ).length;
-      if (matchedFromList > 0) return matchedFromList;
-    }
-
-    return companies?.length || 0;
-  }, [
-    resolvedCompanyId,
-    totalStores,
-    debouncedSearch,
-    businessType,
-    regionCode,
-    districtCode,
-    statusFilter,
-    isGroupedViewActive,
-    allStores.length,
-    filteredGroupedStores,
-    companies,
-  ]);
 
   const handleStatusFilterChange = (nextFilter) => {
     setStatusFilter(nextFilter);
