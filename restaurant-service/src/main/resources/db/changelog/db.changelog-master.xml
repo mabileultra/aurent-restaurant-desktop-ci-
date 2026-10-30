@@ -56,6 +56,13 @@
     <include file="db/changelog/v49-edge-warehouse.xml"/>
     <include file="db/changelog/v50-edge-suppliers.xml"/>
     <include file="db/changelog/v51-edge-autonomy-gaps.xml"/>
+    <include file="db/changelog/v52-pickup-labels.xml"/>
+    <include file="db/changelog/v53-store-floor-revision.xml"/>
+    <include file="db/changelog/v54-menu-photos.xml"/>
+    <include file="db/changelog/v56-pos-hot-path-indexes.xml"/>
+    <include file="db/changelog/v57-edge-admin-parity.xml"/>
+    <include file="db/changelog/v58-edge-stores-phone.xml"/>
+    <include file="db/changelog/v59-payment-one-per-order.xml"/>
 
 </databaseChangeLog>
 

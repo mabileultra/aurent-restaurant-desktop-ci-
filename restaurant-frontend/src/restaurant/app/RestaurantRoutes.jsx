@@ -13,6 +13,7 @@ import MenuAdminPage from '../admin/pages/MenuAdminPage';
 import MenuCategoriesAdminPage from '../admin/pages/MenuCategoriesAdminPage';
 import StationsAdminPage from '../admin/pages/StationsAdminPage';
 import PrintersAdminPage from '../admin/pages/PrintersAdminPage';
+import PickupLabelsAdminPage from '../admin/pages/PickupLabelsAdminPage';
 import ModifiersAdminPage from '../admin/pages/ModifiersAdminPage';
 import RecipesAdminPage from '../admin/pages/RecipesAdminPage';
 import ShiftsAdminPage from '../admin/pages/ShiftsAdminPage';
@@ -30,6 +31,7 @@ import RstStockFlowScope from '../admin/components/RstStockFlowScope';
 import RestaurantFloorPosPage from '../pos/pages/RestaurantFloorPosPage';
 import RestaurantCashierPosPage from '../pos/cashier/pages/RestaurantCashierPosPage';
 import RestaurantKitchenPage from '../pos/pages/RestaurantKitchenPage';
+import CustomerDisplayPage from '../customer-display/pages/CustomerDisplayPage';
 import RestaurantCashierGuard from './RestaurantCashierGuard';
 import RstCatalogProductsPage from '../admin/pages/RstCatalogProductsPage';
 import RstCategoriesPage from '../admin/pages/RstCategoriesPage';
@@ -91,6 +93,14 @@ export const restaurantRoutes = (
       )}
     />
     <Route
+      path="customer-display"
+      element={(
+        <BillingAccessGuard>
+          <CustomerDisplayPage />
+        </BillingAccessGuard>
+      )}
+    />
+    <Route
       path="admin"
       element={(
         <RestaurantAdminGuard>
@@ -105,6 +115,7 @@ export const restaurantRoutes = (
       <Route path="menu-categories" element={<MenuCategoriesAdminPage />} />
       <Route path="stations" element={<StationsAdminPage />} />
       <Route path="printers" element={<PrintersAdminPage />} />
+      <Route path="pickup-labels" element={<PickupLabelsAdminPage />} />
       <Route path="modifiers" element={<ModifiersAdminPage />} />
       <Route
         path="stock"

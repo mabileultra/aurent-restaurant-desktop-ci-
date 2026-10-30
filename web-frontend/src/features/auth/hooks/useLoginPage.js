@@ -12,6 +12,7 @@ import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
+import { prefetchAppHome } from '../../../utils/prefetchAppHome';
 
 async function resolvePostLoginPath(role, businessPayload) {
   return resolveAppHomePath(role, businessPayload?.defaultTypeCode);
@@ -43,7 +44,9 @@ export function useLoginPage() {
         return;
       }
       const path = await resolvePostLoginPath(user?.role, businessPayload);
-      if (!cancelled) navigate(path, { replace: true });
+      if (cancelled) return;
+      prefetchAppHome(path);
+      navigate(path, { replace: true });
     })();
     return () => { cancelled = true; };
   }, [hasHydrated, token, user, navigate]);
@@ -87,6 +90,7 @@ export function useLoginPage() {
 
       toast.success(t('login.welcome', { name: profile.fullName }));
       const path = await resolvePostLoginPath(profile.role, businessPayload);
+      prefetchAppHome(path);
       navigate(path, { replace: true });
     } catch (err) {
       const apiMsg = err.response?.data?.message;

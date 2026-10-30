@@ -11,6 +11,7 @@ export { storeApi } from './store.api';
 export { companyApi } from './company.api';
 export { geoApi } from './geo.api';
 export { taxAnalyticsApi } from './taxAnalytics.api';
+export { taxAnalyticsCompaniesApi } from './taxAnalyticsCompanies.api';
 export { userApi } from './user.api';
 export { businessConfigApi } from './businessConfig.api';
 export { cashRegisterApi } from './cashRegister.api';

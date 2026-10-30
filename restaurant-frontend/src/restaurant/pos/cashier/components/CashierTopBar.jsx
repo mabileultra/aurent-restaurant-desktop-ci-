@@ -5,6 +5,7 @@ import { BaseButton } from '../../../../components/ui';
 import { logoutAndResetSession } from '../../../../utils/authSession';
 import { CASHIER_HEADER_TABS } from '../utils/cashierNav';
 import CashierNavLookup from './CashierNavLookup';
+import CashierQuickSaleButton from './CashierQuickSaleButton';
 import PosEnterMobileButton from '../../pos-mobile/components/PosEnterMobileButton';
 import WaiterMobileHeaderActions from '../../waiter-mobile/components/WaiterMobileHeaderActions';
 import '../styles/cashier-shell.css';
@@ -22,11 +23,16 @@ export default function CashierTopBar({
   showExitMobile = false,
   onExitMobile,
   compactActions = false,
-  /** Full-order desktop: MenuPicker portals search here. */
+  /** Full-order desktop: Menu catalog search portal. */
   showMenuSearch = false,
   roleLabel = '',
   shift = null,
   shiftOpenLabel = null,
+  storeId = null,
+  quickSaleEnabled = false,
+  onQuickSaleOpened,
+  customerDisplayEnabled = false,
+  onOpenCustomerDisplay,
   t,
 }) {
   return (
@@ -38,6 +44,7 @@ export default function CashierTopBar({
           disabledKeys={disabledTabs}
           shift={shift}
           shiftOpenLabel={shiftOpenLabel}
+          storeId={storeId}
           t={t}
         />
       ) : null}
@@ -80,6 +87,13 @@ export default function CashierTopBar({
               {t(item.labelKey)}
             </button>
           ))}
+          <CashierQuickSaleButton
+            enabled={quickSaleEnabled}
+            storeId={storeId}
+            shift={shift}
+            onOpened={onQuickSaleOpened}
+            t={t}
+          />
         </div>
       ) : null}
 
@@ -99,8 +113,18 @@ export default function CashierTopBar({
           <>
             {canAdmin ? (
               <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
-                <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
+                <BaseButton type="button" variant="primary">{t('rst.pos.toAdmin')}</BaseButton>
               </Link>
+            ) : null}
+            {customerDisplayEnabled && typeof onOpenCustomerDisplay === 'function' ? (
+              <BaseButton
+                type="button"
+                variant="ghost"
+                className="rst-cashier-top__cfd"
+                onClick={onOpenCustomerDisplay}
+              >
+                {t('rst.cfd.open')}
+              </BaseButton>
             ) : null}
             <RestaurantThemeSwitch />
             <LanguageSwitcher variant="rst" />

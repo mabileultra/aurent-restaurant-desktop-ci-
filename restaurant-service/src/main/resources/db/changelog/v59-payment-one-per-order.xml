@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- One successful payment row per order — closes the concurrent double-pay race. -->
+    <changeSet id="v59-dedupe-floor-order-payments" author="aurent">
+        <sql>
+            DELETE FROM floor_order_payments keep
+            USING floor_order_payments newer
+            WHERE keep.order_id = newer.order_id
+              AND keep.paid_at &lt; newer.paid_at;
+
+            DELETE FROM floor_order_payments keep
+            USING floor_order_payments twin
+            WHERE keep.order_id = twin.order_id
+              AND keep.paid_at = twin.paid_at
+              AND keep.id::text &gt; twin.id::text;
+        </sql>
+    </changeSet>
+
+    <changeSet id="v59-uq-floor-order-payments-order" author="aurent">
+        <sql>
+            DROP INDEX IF EXISTS idx_floor_order_payments_order;
+            CREATE UNIQUE INDEX uq_floor_order_payments_order
+                ON floor_order_payments (order_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -23,6 +23,8 @@ describe('apiNetworkError utility', () => {
     expect(isApiNetworkError({ message: 'Network Error' })).toBe(true);
     expect(isApiNetworkError({ request: {}, response: null })).toBe(true);
     expect(isApiNetworkError({ response: { status: 400 } })).toBe(false);
+    expect(isApiNetworkError({ code: 'ERR_CANCELED' })).toBe(false);
+    expect(isApiNetworkError({ name: 'CanceledError' })).toBe(false);
   });
 
   it('detects gateway and proxy network outage responses (502, 503, 504, ENOTFOUND)', () => {

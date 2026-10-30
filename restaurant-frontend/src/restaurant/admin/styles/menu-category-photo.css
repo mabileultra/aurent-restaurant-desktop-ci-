@@ -1,0 +1,55 @@
+.rst-admin-form__grid .rst-admin-field--full {
+  grid-column: 1 / -1;
+}
+
+.rst-cat-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: var(--rst-surface-2);
+}
+
+.rst-cat-photo .rst-admin-field__hint {
+  margin: 0;
+}
+
+.rst-cat-photo__pick {
+  max-width: 28rem;
+}
+
+.rst-cat-photo__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: 28rem;
+}
+
+.rst-cat-photo__img {
+  width: 5.5rem;
+  height: 3.6rem;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-bg);
+  flex-shrink: 0;
+}
+
+.rst-cat-photo__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.rst-cat-photo__meta strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}

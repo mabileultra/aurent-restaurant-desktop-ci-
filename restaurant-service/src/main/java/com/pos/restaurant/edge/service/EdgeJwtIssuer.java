@@ -1,6 +1,7 @@
 package com.pos.restaurant.edge.service;
 
 import com.pos.restaurant.edge.entity.EdgeStaff;
+import com.pos.shared.access.ModuleVisibility;
 import com.pos.shared.jwt.JwtClaimNames;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -35,6 +36,7 @@ public class EdgeJwtIssuer {
         claims.put(JwtClaimNames.COMPANY_ID, staff.getCompanyId());
         claims.put(JwtClaimNames.ROLES, List.of(staff.getRole()));
         claims.put(JwtClaimNames.CAN_REQUEST_BILL, staff.isCanRequestBill());
+        claims.put(JwtClaimNames.CAN_PRINT_PICKUP_LABEL, allowsPickupLabel(staff));
         long now = System.currentTimeMillis();
         return Jwts.builder()
             .claims(claims)
@@ -43,5 +45,10 @@ public class EdgeJwtIssuer {
             .expiration(new Date(now + expirationMs))
             .signWith(key)
             .compact();
+    }
+
+    private static boolean allowsPickupLabel(EdgeStaff staff) {
+        String modules = staff.getAllowedModulesJson();
+        return modules != null && modules.contains(ModuleVisibility.RESTAURANT_PICKUP_LABEL);
     }
 }

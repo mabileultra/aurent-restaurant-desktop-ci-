@@ -86,6 +86,17 @@ class TasnifOnkmValidationClientTest {
     }
 
     @Test
+    void unauthorizedIsUnavailable() {
+        server.expect(requestTo(URL)).andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"success\":false,\"message\":\"Invalid username or password\"}"));
+
+        MarkingValidationResponse res = client.validate(request());
+        assertThat(res.status()).isEqualTo(Status.UNAVAILABLE);
+        assertThat(res.code()).isEqualTo("HTTP_401");
+    }
+
+    @Test
     void serverErrorIsUnavailable() {
         server.expect(requestTo(URL)).andRespond(withServerError());
 

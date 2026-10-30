@@ -113,9 +113,11 @@ async function run() {
     assert.ok(byBarcode);
     assert.equal(Number(byBarcode.id), 101);
 
-    const found = await localDb.searchProducts({ q: 'Товар', limit: 10 });
+    const found = await localDb.searchProducts({ search: 'товар', limit: 10 });
     assert.ok(Array.isArray(found));
     assert.ok(found.some((p) => Number(p.id) === 101));
+    const missed = await localDb.searchProducts({ search: 'неттакого', limit: 10 });
+    assert.ok(!missed.some((p) => Number(p.id) === 101));
   });
 
   await test('SQLite: смена + completeLocalCheckout', async () => {

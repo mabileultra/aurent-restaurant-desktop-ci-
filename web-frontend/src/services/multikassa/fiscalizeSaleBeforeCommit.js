@@ -13,7 +13,7 @@ import {
 import { FISCAL_STATUS } from './multikassaConstants';
 import { isOfdCheckUrl } from '../../utils/ofdQrUrl';
 import { logFiscal } from '../desktop/activityLog';
-import { assertOnkmMarking } from '../fiscal/shared/assertOnkmMarking';
+import { assertOnkmMarking } from '../../features/marking/onkm';
 
 function buildIdempotencyKey({ shiftId, clientSaleId }) {
   if (clientSaleId) return `sale:${clientSaleId}`;
@@ -113,6 +113,7 @@ export async function fiscalizeSaleBeforeCommit({
   }
 
   try {
+    // Порт ONKM: Multikassa не читает коды Tasnif, только пропускает / стопит / soft.
     await assertOnkmMarking({
       cashRegisterId: capabilities.cashRegisterId,
       cartItems: fiscalItems,
@@ -121,11 +122,9 @@ export async function fiscalizeSaleBeforeCommit({
       errorPrefix: 'MULTIKASSA',
     });
   } catch (err) {
-    if (err?.soft) {
-      logFiscal(`Маркировка UNAVAILABLE → PENDING: ${err.message}`, null, 'warn');
-      return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
-    }
-    throw err;
+    if (!err?.soft) throw err;
+    // 401/таймаут Tasnif не отменяет чек ФМ: иначе продажа есть, а QR нет.
+    logFiscal(`Маркировка UNAVAILABLE, чек идёт в Multikassa: ${err.message}`, null, 'warn');
   }
 
   const body = buildSaleOperationBody({

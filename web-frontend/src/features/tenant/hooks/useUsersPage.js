@@ -3,12 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { companyApi, platformBusinessTypeApi, storeApi, userApi } from '../../../api';
+import { companyApi, platformBusinessTypeApi, userApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
-import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
-import { isRoleAllowedForBusinessType } from '../../platform/utils/rolesByBusinessType';
 import { asEntityList } from '../utils/companySelectOptions';
 import { transliterateCyrillicToLatin } from '../../../utils/transliterateCyrillic';
+import { useUsersListQuery } from './users-list/useUsersListQuery';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -87,30 +86,32 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   }, [setSearchParams]);
 
   const {
-    data: usersRaw = [],
+    page: usersPage,
     isLoading,
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: isPlatform ? ['users', 'platform'] : tenantKey('users'),
-    queryFn: () => userApi.getAll().then((r) => r.data),
-    enabled: isPlatform || tenantReady,
-    staleTime: 60_000,
-    retry: 2,
+  } = useUsersListQuery({
+    isPlatform,
+    tenantReady,
+    tenantKey,
+    page,
+    pageSize,
+    search,
+    companyId,
+    businessType,
+    regionCode,
+    districtCode,
+    roleFilter,
+    statusFilter,
+    sortField,
+    sortDirection,
   });
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
     queryFn: () => companyApi.listAll().then((r) => r.data),
     enabled: isPlatform,
-    staleTime: 60_000,
-  });
-
-  const { data: storesRaw = [] } = useQuery({
-    queryKey: isPlatform ? ['stores', 'platform-users'] : tenantKey('stores'),
-    queryFn: () => storeApi.getAll().then((r) => r.data ?? []),
-    enabled: isPlatform || tenantReady,
     staleTime: 60_000,
   });
 
@@ -121,9 +122,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     enabled: isPlatform,
   });
 
-  const users = useMemo(() => asEntityList(usersRaw), [usersRaw]);
   const companies = useMemo(() => asEntityList(companiesRaw), [companiesRaw]);
-  const stores = useMemo(() => asEntityList(storesRaw), [storesRaw]);
 
   const companyById = useMemo(() => {
     const map = new Map();
@@ -134,100 +133,31 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     return map;
   }, [companies]);
 
-  const storeById = useMemo(() => {
-    const map = new Map();
-    stores.forEach((store) => {
-      if (store?.id == null) return;
-      map.set(String(store.id), store);
-    });
-    return map;
-  }, [stores]);
-
-  const displayUsers = useMemo(() => users.map((user) => {
+  const pageRows = useMemo(() => (usersPage.content ?? []).map((user) => {
     const company = companyById.get(String(user.companyId ?? ''));
-    const rawStoreIds = Array.isArray(user.storeIds)
-      ? user.storeIds
-      : Array.isArray(user.stores)
-        ? user.stores.map((s) => (s && typeof s === 'object' ? s.id : s))
-        : (user.storeId != null ? [user.storeId] : []);
-    const fromApiNames = Array.isArray(user.storeNames)
-      ? user.storeNames.filter(Boolean)
-      : [];
-    const fromIds = rawStoreIds
-      .map((id) => storeById.get(String(id))?.name)
-      .filter(Boolean);
-    const storeNames = fromApiNames.length ? fromApiNames : fromIds;
+    const storeIds = Array.isArray(user.storeIds) ? user.storeIds : [];
+    const storeNames = Array.isArray(user.storeNames) ? user.storeNames.filter(Boolean) : [];
     return {
       ...user,
-      storeIds: rawStoreIds,
+      storeIds,
+      storeNames,
       companyName: user.companyName || company?.name || '',
       companyLoginCode: user.companyLoginCode || company?.loginCode || '',
-      regionCode: company?.regionCode || '',
-      districtCode: company?.districtCode || '',
-      storeNames,
+      regionCode: user.regionCode || company?.regionCode || '',
+      districtCode: user.districtCode || company?.districtCode || '',
     };
-  }), [users, companyById, storeById]);
+  }), [usersPage, companyById]);
 
-  // Scoped context users (filtered by company, business type, region, search)
-  const contextUsers = useMemo(() => {
-    const rawQ = search.trim().toLowerCase();
-    const latinQ = rawQ ? transliterateCyrillicToLatin(rawQ).toLowerCase() : '';
-
-    return displayUsers.filter((user) => {
-      if (businessType) {
-        const company = companyById.get(String(user.companyId ?? ''));
-        if (!companyHasBusinessType(company, businessType)) return false;
-        if (!isRoleAllowedForBusinessType(user.role, businessType)) return false;
-      }
-
-      if (companyId && String(user.companyId ?? '') !== String(companyId)) return false;
-      if (regionCode && String(user.regionCode || '') !== regionCode) return false;
-      if (districtCode && String(user.districtCode || '') !== districtCode) return false;
-
-      if (!rawQ) return true;
-
-      const haystack = [
-        user.fullName,
-        user.username,
-        user.email,
-        user.phone,
-        user.role,
-        user.companyName,
-        user.companyLoginCode,
-        ...(user.storeNames ?? []),
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-
-      return haystack.includes(rawQ) || (latinQ && haystack.includes(latinQ));
-    });
-  }, [displayUsers, search, businessType, companyId, regionCode, districtCode, companyById]);
-
-  // Synchronized counts reflecting active scope
-  const totalUsers = contextUsers.length;
-  const activeUsers = useMemo(() => contextUsers.filter((u) => u.active).length, [contextUsers]);
-  const inactiveUsers = useMemo(() => contextUsers.filter((u) => !u.active).length, [contextUsers]);
-  const adminUsers = useMemo(() => contextUsers.filter((u) => MANAGEMENT_ROLES.includes(u.role)).length, [contextUsers]);
-  const staffUsers = useMemo(() => contextUsers.filter((u) => STAFF_ROLES.includes(u.role)).length, [contextUsers]);
-
-  // Counts for the segmented status tabs (Barchasi / Faol / Nofaol), respecting the active role filter
-  const roleScopedUsers = useMemo(() => {
-    if (!roleFilter || roleFilter === 'ALL') return contextUsers;
-    return contextUsers.filter((user) => {
-      if (roleFilter === 'MANAGEMENT') {
-        return MANAGEMENT_ROLES.includes(user.role);
-      }
-      if (roleFilter === 'STAFF') {
-        return STAFF_ROLES.includes(user.role);
-      }
-      return user.role === roleFilter;
-    });
-  }, [contextUsers, roleFilter]);
-
-  const tabTotalUsers = roleScopedUsers.length;
-  const tabActiveUsers = useMemo(() => roleScopedUsers.filter((u) => u.active).length, [roleScopedUsers]);
-  const tabInactiveUsers = useMemo(() => roleScopedUsers.filter((u) => !u.active).length, [roleScopedUsers]);
+  const totalUsers = Number(usersPage.totalUsers) || 0;
+  const activeUsers = Number(usersPage.activeUsers) || 0;
+  const inactiveUsers = Number(usersPage.inactiveUsers) || 0;
+  const adminUsers = Number(usersPage.adminUsers) || 0;
+  const staffUsers = Number(usersPage.staffUsers) || 0;
+  const tabTotalUsers = Number(usersPage.tabTotalUsers) || 0;
+  const tabActiveUsers = Number(usersPage.tabActiveUsers) || 0;
+  const tabInactiveUsers = Number(usersPage.tabInactiveUsers) || 0;
+  const total = Number(usersPage.totalElements) || 0;
+  const totalPages = Math.max(1, Number(usersPage.totalPages) || 1);
 
   const { mutate: toggleUser } = useMutation({
     mutationFn: (id) => userApi.toggle(id),
@@ -251,65 +181,6 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
       toast.error(err?.response?.data?.message ?? t('users.deleteFailed'));
     },
   });
-
-  const filteredUsers = useMemo(() => {
-    return contextUsers.filter((user) => {
-      if (statusFilter === 'ACTIVE' && !user.active) return false;
-      if (statusFilter === 'INACTIVE' && user.active) return false;
-
-      if (roleFilter && roleFilter !== 'ALL') {
-        if (roleFilter === 'MANAGEMENT') {
-          if (!MANAGEMENT_ROLES.includes(user.role)) return false;
-        } else if (roleFilter === 'STAFF') {
-          if (!STAFF_ROLES.includes(user.role)) return false;
-        } else if (user.role !== roleFilter) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [contextUsers, statusFilter, roleFilter]);
-
-  const sortedUsers = useMemo(() => {
-    const list = [...filteredUsers];
-    if (!sortField) return list;
-
-    list.sort((a, b) => {
-      if (sortField === 'fullName') {
-        return compareUserFullName(a, b, sortDirection);
-      }
-
-      let valA = a[sortField];
-      let valB = b[sortField];
-
-      if (sortField === 'company') {
-        valA = a.companyName || '';
-        valB = b.companyName || '';
-      } else if (sortField === 'role') {
-        valA = a.role || '';
-        valB = b.role || '';
-      } else if (sortField === 'status') {
-        valA = a.active ? 1 : 0;
-        valB = b.active ? 1 : 0;
-      } else if (sortField === 'createdAt') {
-        valA = a.createdAt || '';
-        valB = b.createdAt || '';
-      }
-
-      const cmp = String(valA ?? '').localeCompare(String(valB ?? ''), undefined, { numeric: true, sensitivity: 'base' });
-      return sortDirection === 'asc' ? cmp : -cmp;
-    });
-
-    return list;
-  }, [filteredUsers, sortField, sortDirection]);
-
-  const total = sortedUsers.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
-  const pageRows = useMemo(() => {
-    const start = page * pageSize;
-    return sortedUsers.slice(start, start + pageSize);
-  }, [sortedUsers, page, pageSize]);
 
   const setPage = useCallback((nextPage) => {
     updateParams((p) => {
@@ -423,16 +294,16 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     setSelectedUserIds(new Set());
   }, []);
 
-  const isAllMatchingSelected = sortedUsers.length > 0 && selectedUserIds.size === sortedUsers.length && sortedUsers.every((u) => selectedUserIds.has(String(u.id)));
+  const isAllMatchingSelected = pageRows.length > 0 && selectedUserIds.size === pageRows.length && pageRows.every((u) => selectedUserIds.has(String(u.id)));
 
   const handleSelectAllMatching = useCallback(() => {
-    setSelectedUserIds(new Set(sortedUsers.map((u) => String(u.id))));
-  }, [sortedUsers]);
+    setSelectedUserIds(new Set(pageRows.map((u) => String(u.id))));
+  }, [pageRows]);
 
   const selectedUsersList = useMemo(() => {
     if (!selectedUserIds.size) return [];
-    return sortedUsers.filter((u) => selectedUserIds.has(String(u.id)));
-  }, [sortedUsers, selectedUserIds]);
+    return pageRows.filter((u) => selectedUserIds.has(String(u.id)));
+  }, [pageRows, selectedUserIds]);
 
   const hasInactiveSelected = useMemo(
     () => selectedUsersList.some((u) => !u.active),
@@ -446,7 +317,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const handleBulkToggleActive = useCallback(async (targetActive) => {
     const ids = Array.from(selectedUserIds);
     if (!ids.length) return;
-    const usersToToggle = sortedUsers.filter(
+    const usersToToggle = pageRows.filter(
       (u) => selectedUserIds.has(String(u.id)) && Boolean(u.active) !== Boolean(targetActive)
     );
     if (!usersToToggle.length) {
@@ -462,10 +333,10 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     } catch {
       toast.error(t('users.bulkUpdateFailed', { defaultValue: 'Ommaviy yangilashda xatolik yuz berdi' }));
     }
-  }, [selectedUserIds, sortedUsers, qc, t]);
+  }, [selectedUserIds, pageRows, qc, t]);
 
   const handleExportSelectedCsv = useCallback(() => {
-    const targetUsers = sortedUsers.filter((u) => selectedUserIds.has(String(u.id)));
+    const targetUsers = pageRows.filter((u) => selectedUserIds.has(String(u.id)));
     if (!targetUsers.length) return;
 
     const headers = ['ID', 'FIO', 'Login', 'Telefon', 'Email', 'Rol', 'Kompaniya', 'Filiallar', 'Holat', 'Yaratilgan'];
@@ -506,7 +377,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast.success(t('users.csvExported', { count: targetUsers.length, defaultValue: `${targetUsers.length} ta foydalanuvchi CSV formatida yuklab olindi` }));
-  }, [sortedUsers, selectedUserIds, t]);
+  }, [pageRows, selectedUserIds, t]);
 
   const openCreate = () => setFormMode('create');
   const openEdit = (user) => setFormMode({ type: 'edit', user });
@@ -542,10 +413,10 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const subtitle = isLoading
     ? t('common.loading')
-    : t('common.systemUsers', { count: users.length });
+    : t('common.systemUsers', { count: total });
 
   const searchSuffix = !isLoading && hasActiveFilters
-    ? ` · ${t('platform.searchResults', { count: sortedUsers.length })}`
+    ? ` · ${t('platform.searchResults', { count: total })}`
     : '';
 
   return {

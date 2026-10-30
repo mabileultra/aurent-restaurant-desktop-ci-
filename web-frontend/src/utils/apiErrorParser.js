@@ -96,7 +96,7 @@ export function parseApiError(error, customFallback) {
   const isAuth = status === 401;
   const isForbidden = status === 403;
 
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+  if (isNetwork && typeof navigator !== 'undefined' && navigator.onLine === false) {
     message = i18n.t('errors.wifiOffline', {
       defaultValue: 'Internet aloqasi uzildi. Wi-Fi yoki tarmoq ulanishini tekshiring.',
     });

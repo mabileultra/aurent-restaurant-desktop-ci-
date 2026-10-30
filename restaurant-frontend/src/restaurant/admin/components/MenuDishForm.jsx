@@ -2,10 +2,11 @@ import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import IngredientTasnifSearch from '../../../features/catalog/components/products/IngredientTasnifSearch';
 import { useIngredientTasnifSearch } from '../../../features/catalog/hooks/useIngredientTasnifSearch';
 import '../../../features/catalog/styles/ingredient-tasnif-search.css';
+import RstMenuImage from '../../shared/components/RstMenuImage';
 import RstModal from '../../shared/components/RstModal';
 import PortionAmountField from './PortionAmountField';
 
-export default function MenuDishForm({ p }) {
+export default function MenuDishForm({ p, photosEnabled = true }) {
   const tasnif = useIngredientTasnifSearch({
     form: p.form,
     patchForm: (patch) => p.setForm((prev) => ({ ...prev, ...patch })),
@@ -188,33 +189,35 @@ export default function MenuDishForm({ p }) {
       </div>
 
       <div className="rst-modal-form__grid rst-menu-modal__extra">
-        <div className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.dishImage')}</span>
-          <label className="rst-file">
-            <input
-              className="rst-file__input"
-              type="file"
-              accept="image/*"
-              onChange={(e) => p.onImageFile(e.target.files?.[0])}
-            />
-            <span className="rst-file__btn">{p.t('rst.admin.chooseFile')}</span>
-            <span className="rst-file__name">
-              {p.form.imageName || p.t('rst.admin.noFileSelected')}
-            </span>
-          </label>
-          {p.form.imageUrl ? (
-            <div className="rst-file__preview-wrap">
-              <img src={p.form.imageUrl} alt="" className="rst-file__preview" />
-              <BaseButton
-                type="button"
-                variant="ghost"
-                onClick={() => p.setForm({ ...p.form, imageUrl: '', imageName: '' })}
-              >
-                {p.t('rst.admin.clearImage')}
-              </BaseButton>
-            </div>
-          ) : null}
-        </div>
+        {photosEnabled ? (
+          <div className="rst-admin-field">
+            <span className="rst-admin-field__label">{p.t('rst.admin.dishImage')}</span>
+            <label className="rst-file">
+              <input
+                className="rst-file__input"
+                type="file"
+                accept="image/*"
+                onChange={(e) => p.onImageFile(e.target.files?.[0])}
+              />
+              <span className="rst-file__btn">{p.t('rst.admin.chooseFile')}</span>
+              <span className="rst-file__name">
+                {p.form.imageName || p.t('rst.admin.noFileSelected')}
+              </span>
+            </label>
+            {p.form.imageUrl ? (
+              <div className="rst-file__preview-wrap">
+                <RstMenuImage imageUrl={p.form.imageUrl} className="rst-file__preview" />
+                <BaseButton
+                  type="button"
+                  variant="ghost"
+                  onClick={() => p.setForm({ ...p.form, imageUrl: '', imageName: '' })}
+                >
+                  {p.t('rst.admin.clearImage')}
+                </BaseButton>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('rst.admin.modifierGroups')}</span>

@@ -1,0 +1,11 @@
+---
+description: Pharmacy product card suggestions must not download the catalog
+globs: web-frontend/src/features/pharmacy-stock/**/*.{js,jsx},pharmacy-service/src/main/java/com/pos/pharmacy/catalog/**/*.java
+alwaysApply: false
+---
+
+# Pharmacy catalog suggestions
+
+The product card datalist (manufacturer, dosage form, ATC) comes from `GET /pharmacy/products/suggestions`. That query returns at most 200 distinct attribute values per field for the current company.
+
+Do not restore `fetchAllPharmacyProductPages` or walk every product page to fill those lists. A full catalog in the browser freezes the admin.

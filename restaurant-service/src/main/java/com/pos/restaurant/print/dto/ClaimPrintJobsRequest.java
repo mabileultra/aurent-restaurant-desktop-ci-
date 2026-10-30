@@ -12,6 +12,8 @@ public record ClaimPrintJobsRequest(
     boolean kitchenSend,
     /** Cashier receipt printer — claims ORDER_CANCEL slips. */
     boolean orderCancel,
+    /** Label printer on this desktop — claims PICKUP_LABEL slips. */
+    boolean pickupLabel,
     Integer limit,
     /** Category printers whose local lane is full or cooling down after an error — skip their slips. */
     List<String> busyPrinters,
@@ -27,6 +29,18 @@ public record ClaimPrintJobsRequest(
         List<String> busyPrinters,
         Integer perPrinterLimit
     ) {
-        this(printerNames, guestBill, kitchenSend, false, limit, busyPrinters, perPrinterLimit);
+        this(printerNames, guestBill, kitchenSend, false, false, limit, busyPrinters, perPrinterLimit);
+    }
+
+    public ClaimPrintJobsRequest(
+        List<String> printerNames,
+        boolean guestBill,
+        boolean kitchenSend,
+        boolean orderCancel,
+        Integer limit,
+        List<String> busyPrinters,
+        Integer perPrinterLimit
+    ) {
+        this(printerNames, guestBill, kitchenSend, orderCancel, false, limit, busyPrinters, perPrinterLimit);
     }
 }

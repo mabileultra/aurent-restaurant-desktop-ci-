@@ -65,6 +65,7 @@ export default function RestaurantPrinterSettings({
     const next = {
       receiptPrinterName: saved?.receiptPrinterName || '',
       labelPrinterName: saved?.labelPrinterName || '',
+      labelPrinterMode: saved?.labelPrinterMode === 'tspl' ? 'tspl' : 'driver',
       billPrinterName: saved?.billPrinterName || '',
       stationPrinters: saved?.stationPrinters || {},
     };
@@ -86,6 +87,7 @@ export default function RestaurantPrinterSettings({
         applySettings({
           receiptPrinterName: '',
           labelPrinterName: '',
+          labelPrinterMode: 'driver',
           billPrinterName: '',
           stationPrinters: {},
         });
@@ -138,6 +140,7 @@ export default function RestaurantPrinterSettings({
         sortOrder: category.sortOrder ?? 100,
         autoPrint: true,
         printPrinterName: name,
+        imageUrl: category.imageUrl || null,
       });
       await qc.invalidateQueries({ queryKey: ['rst-menu-categories-admin', storeId] });
       await qc.invalidateQueries({ queryKey: ['rst-menu-categories', storeId] });

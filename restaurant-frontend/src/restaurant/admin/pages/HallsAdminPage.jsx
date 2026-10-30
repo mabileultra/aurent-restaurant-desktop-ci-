@@ -34,6 +34,25 @@ export default function HallsAdminPage() {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
   }
 
+  if (!p.workspace.storeId) {
+    return <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>;
+  }
+
+  if (p.isLoading) {
+    return <div className="rst-empty">{p.t('common.loading')}</div>;
+  }
+
+  if (p.isError) {
+    return (
+      <div className="rst-notice">
+        <p className="mb-2">{p.t('rst.admin.hallsLoadFailed', { defaultValue: 'Не удалось загрузить залы' })}</p>
+        <BaseButton type="button" onClick={() => p.refetch()}>
+          {p.t('common.retry', { defaultValue: 'Повторить' })}
+        </BaseButton>
+      </div>
+    );
+  }
+
   return (
     <section className="rst-halls">
       <div className="rst-halls__toolbar">
@@ -91,7 +110,11 @@ export default function HallsAdminPage() {
       {p.halls.length > 0 ? (
         <FloorHallTabs halls={p.halls} selectedHallId={p.selectedHall?.id} onSelect={p.setSelectedHallId} />
       ) : (
-        <div className="rst-empty">{p.t('rst.floor.selectHall')}</div>
+        <div className="rst-empty">
+          {p.t('rst.admin.hallsEmpty', {
+            defaultValue: 'Залов пока нет. Создайте зал — всё хранится локально на этом ПК.',
+          })}
+        </div>
       )}
 
       {p.selectedHall ? (

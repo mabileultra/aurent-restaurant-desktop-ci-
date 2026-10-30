@@ -1,0 +1,17 @@
+---
+description: Admin/platform cascade load — shell first, page later
+globs: "**/ShellOutlet.jsx,**/AppShellLayout.jsx,**/SuperAdminLayout.jsx,**/prefetchAppHome.js,**/RouteFallback.jsx,**/useLoginPage.js"
+alwaysApply: false
+---
+
+# Admin shell cascade load
+
+## Intent
+
+After login, show **stable shell** (sidebar + header) immediately; lazy page content loads inside `ShellOutlet` with `ShellPageSkeleton`. Do not blank the whole app on page chunk load.
+
+## Do not regress
+
+1. Keep nested `<Suspense>` in `ShellOutlet` around admin/platform `Outlet` — never rely only on root `AppRoutes` Suspense for page chunks (that flashes away the sidebar).
+2. Prefetch home chunk via `prefetchAppHome(path)` before post-login `navigate`.
+3. Do not put heavy page imports into layout modules (layouts stay eager/light).

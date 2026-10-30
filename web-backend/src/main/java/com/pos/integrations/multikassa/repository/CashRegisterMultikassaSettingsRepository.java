@@ -18,8 +18,9 @@ public interface CashRegisterMultikassaSettingsRepository
         INSERT INTO cash_register_multikassa_settings AS s
             (cash_register_id, enabled, base_url, require_before_sale, print_fiscal_qr, updated_at)
         VALUES
-            (:registerId, FALSE, :baseUrl, COALESCE(:requireBefore, FALSE), COALESCE(:printQr, TRUE), NOW())
+            (:registerId, COALESCE(:enabled, FALSE), :baseUrl, COALESCE(:requireBefore, FALSE), COALESCE(:printQr, TRUE), NOW())
         ON CONFLICT (cash_register_id) DO UPDATE SET
+            enabled = COALESCE(:enabled, s.enabled),
             print_fiscal_qr = COALESCE(:printQr, s.print_fiscal_qr),
             require_before_sale = COALESCE(:requireBefore, s.require_before_sale),
             updated_at = NOW()
@@ -28,6 +29,7 @@ public interface CashRegisterMultikassaSettingsRepository
         @Param("registerId") Long registerId,
         @Param("baseUrl") String baseUrl,
         @Param("printQr") Boolean printQr,
-        @Param("requireBefore") Boolean requireBefore
+        @Param("requireBefore") Boolean requireBefore,
+        @Param("enabled") Boolean enabled
     );
 }

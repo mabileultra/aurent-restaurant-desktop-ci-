@@ -11,6 +11,7 @@ public record StockDashboardResponse(
     BigDecimal writeOffCostEstimate,
     long currentStockUnits,
     BigDecimal currentStockCostEstimate,
+    BigDecimal currentStockRetailEstimate,
     long lowStockSkuCount,
     List<StockDashboardDayPoint> dailyBreakdown
 ) {

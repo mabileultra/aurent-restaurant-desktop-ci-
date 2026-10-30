@@ -36,6 +36,9 @@ class ModuleVisibilityTest {
         assertFalse(ModuleVisibility.visible("scalesPlu", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantFloor", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantRequestBill", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("restaurantPickupLabel", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("restaurantCustomerDisplay", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("restaurantQuickSale", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantPos", "PHARMACY"));
     }
 
@@ -46,6 +49,9 @@ class ModuleVisibilityTest {
         assertTrue(ModuleVisibility.visible("restaurantFloor", businessType));
         assertTrue(ModuleVisibility.visible("restaurantPos", businessType));
         assertTrue(ModuleVisibility.visible("restaurantRequestBill", businessType));
+        assertTrue(ModuleVisibility.visible("restaurantPickupLabel", businessType));
+        assertTrue(ModuleVisibility.visible("restaurantCustomerDisplay", businessType));
+        assertTrue(ModuleVisibility.visible("restaurantQuickSale", businessType));
         assertTrue(ModuleVisibility.visible("categories", businessType));
         assertFalse(ModuleVisibility.visible("products", businessType));
         assertFalse(ModuleVisibility.visible("scalesPlu", businessType));
@@ -57,6 +63,9 @@ class ModuleVisibilityTest {
         assertFalse(ModuleVisibility.allowsRestaurant("CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantKitchen", "CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantRequestBill", "CLOTHING"));
+        assertFalse(ModuleVisibility.visible("restaurantPickupLabel", "CLOTHING"));
+        assertFalse(ModuleVisibility.visible("restaurantCustomerDisplay", "CLOTHING"));
+        assertFalse(ModuleVisibility.visible("restaurantQuickSale", "CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantPos", "CLOTHING"));
         assertTrue(ModuleVisibility.visible("products", "CLOTHING"));
         assertTrue(ModuleVisibility.visible("cashierPos", "CLOTHING"));

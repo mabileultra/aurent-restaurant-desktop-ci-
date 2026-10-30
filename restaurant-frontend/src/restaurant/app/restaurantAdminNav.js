@@ -70,6 +70,7 @@ export const RST_ADMIN_NAV_GROUPS = [
     key: 'system',
     items: [
       { to: '/rst/admin/printers', key: 'printers', enabled: true },
+      { to: '/rst/admin/pickup-labels', key: 'pickupLabels', enabled: true, module: 'restaurantPickupLabel' },
       { to: '/rst/admin/stores', key: 'stores', enabled: true, adminOnly: true },
       { to: '/rst/admin/integrations', key: 'integrations', enabled: true, adminOnly: true },
       { to: '/rst/admin/billing', key: 'billing', enabled: true, adminOnly: true },
@@ -95,11 +96,15 @@ export function findRstAdminNav(pathname) {
   return hits.reduce((best, item) => (item.to.length > best.to.length ? item : best));
 }
 
-export function visibleRstAdminNavGroups(role) {
+export function visibleRstAdminNavGroups(role, hasModule) {
   return RST_ADMIN_NAV_GROUPS
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.adminOnly || role === 'ADMIN'),
+      items: group.items.filter((item) => {
+        if (item.adminOnly && role !== 'ADMIN') return false;
+        if (item.module && typeof hasModule === 'function' && !hasModule(item.module)) return false;
+        return true;
+      }),
     }))
     .filter((group) => group.items.length > 0);
 }

@@ -12,6 +12,7 @@ import com.pos.platform.entity.BillingLedgerEntry;
 import com.pos.platform.entity.BillingPaymentIntent;
 import com.pos.platform.entity.BillingPlan;
 import com.pos.platform.entity.BillingTopUpRequest;
+import com.pos.platform.entity.Company;
 import com.pos.platform.entity.CompanyBilling;
 
 import java.math.BigDecimal;
@@ -103,6 +104,36 @@ public final class BillingMapper {
             req.getReviewNote(),
             req.getReviewedAt(),
             req.getCreatedAt()
+        );
+    }
+
+    public static CompanyBillingResponse emptyCompany(Company company) {
+        return emptyCompany(company, company != null ? company.getId() : null);
+    }
+
+    public static CompanyBillingResponse emptyCompany(Company company, Integer companyId) {
+        return new CompanyBillingResponse(
+            companyId,
+            company != null ? company.getName() : null,
+            null,
+            null,
+            null,
+            null,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BillingAccountStatus.ACTIVE,
+            false,
+            true,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "UZS",
+            null,
+            null
         );
     }
 

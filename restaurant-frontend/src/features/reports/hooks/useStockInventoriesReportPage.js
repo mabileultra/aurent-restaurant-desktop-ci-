@@ -1,16 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { warehouseApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
 import { useReportStores } from './useReportStores';
+import { useWorkspaceBoundStoreFilter } from './useWorkspaceBoundStoreFilter';
 
 /** Operational inventories list from warehouse DB (not reporting facts). */
 export function useStockInventoriesReportPage() {
   const { from, to, setFrom, setTo, rangeEnabled } = useReportDateRange(29);
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_DEFAULT);
-  const [storeId, setStoreId] = useState('');
+  const { storeId, handleStoreChange } = useWorkspaceBoundStoreFilter(resetPage);
   const { data: stores = [] } = useReportStores();
 
   const params = useMemo(
@@ -35,11 +36,6 @@ export function useStockInventoriesReportPage() {
     enabled: rangeEnabled,
     placeholderData: keepPreviousData,
   });
-
-  const handleStoreChange = (value) => {
-    setStoreId(value);
-    resetPage();
-  };
 
   return {
     from,

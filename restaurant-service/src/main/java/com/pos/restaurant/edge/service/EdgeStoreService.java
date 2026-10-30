@@ -39,6 +39,15 @@ public class EdgeStoreService {
     }
 
     @Transactional(readOnly = true)
+    public EdgeStoreResponse requireForCompany(Integer id) {
+        Integer companyId = tenantSupport.requireCompanyId();
+        EdgeStore row = storeRepository.findById(id)
+            .filter((s) -> companyId.equals(s.getCompanyId()))
+            .orElseThrow(() -> new BusinessException("Store not found"));
+        return toResponse(row);
+    }
+
+    @Transactional(readOnly = true)
     public List<Integer> listAllIds() {
         return storeRepository.findAll().stream().map(EdgeStore::getId).toList();
     }
@@ -141,6 +150,7 @@ public class EdgeStoreService {
         if (address != null) {
             row.setAddress(address);
         }
+        // phone is edge-local (manage CRUD); cloud bootstrap leaves it untouched
         String type = StringUtils.hasText(businessType) ? businessType.trim().toUpperCase() : row.getBusinessType();
         if (!StringUtils.hasText(type)) {
             type = "RESTAURANT";
@@ -151,6 +161,13 @@ public class EdgeStoreService {
     }
 
     private EdgeStoreResponse toResponse(EdgeStore row) {
+        // Blank/UNIVERSAL breaks FE restaurantStores filter → admin dashboard/halls look "empty" offline.
+        String type = StringUtils.hasText(row.getBusinessType())
+            ? row.getBusinessType().trim().toUpperCase()
+            : "RESTAURANT";
+        if ("UNIVERSAL".equals(type) || "GROCERY".equals(type) || "RETAIL".equals(type)) {
+            type = "RESTAURANT";
+        }
         return new EdgeStoreResponse(
             row.getId(),
             row.getName(),
@@ -158,11 +175,11 @@ public class EdgeStoreService {
             row.getAddress(),
             null,
             null,
-            null,
+            row.getPhone(),
             row.getCompanyId(),
             null,
             null,
-            row.getBusinessType(),
+            type,
             row.isActive()
         );
     }

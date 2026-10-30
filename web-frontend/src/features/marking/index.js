@@ -33,7 +33,13 @@ export {
 export { assessMarkLifecycle } from './markLifecycle';
 
 export { inspectMarkPunched, assertCartMarksNotPunched } from './inspectMarkPunched';
-export { inspectMarkCirculation } from './inspectMarkCirculation';
+export {
+  inspectMarkCirculation,
+  assertOnkmMarking,
+  validateFiscalMarking,
+  buildMarkingValidationProducts,
+  MARKING_VALIDATION_STATUS,
+} from './onkm';
 export {
   lookupProductByMarkingGtin,
   lookupTasnifIdentity,

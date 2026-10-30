@@ -1,5 +1,6 @@
 package com.pos.taxanalytics.repository;
 
+import com.pos.taxanalytics.support.TaxAnalyticsConnectedSql;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,16 +22,6 @@ public class TaxAnalyticsQueryRepository {
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
-    /** Connected = Multikassa enabled on any register (FiscalDrive join deferred until that migration ships). */
-    private static final String CONNECTED_SQL = """
-        SELECT DISTINCT s.company_id
-        FROM stores s
-        JOIN cash_registers cr ON cr.store_id = s.id
-        JOIN cash_register_multikassa_settings mk
-            ON mk.cash_register_id = cr.id AND mk.enabled = TRUE
-        WHERE s.company_id IS NOT NULL
-        """;
-
     private final JdbcTemplate jdbc;
 
     public long countCompanies() {
@@ -39,7 +30,7 @@ public class TaxAnalyticsQueryRepository {
     }
 
     public long countConnectedCompanies() {
-        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM (" + CONNECTED_SQL + ") x", Long.class);
+        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM (" + TaxAnalyticsConnectedSql.SQL + ") x", Long.class);
         return n == null ? 0L : n;
     }
 
@@ -141,7 +132,7 @@ public class TaxAnalyticsQueryRepository {
         StringBuilder sql = new StringBuilder("""
             WITH connected AS (
             """);
-        sql.append(CONNECTED_SQL);
+        sql.append(TaxAnalyticsConnectedSql.SQL);
         sql.append("""
             ),
             turnover AS (
@@ -218,7 +209,7 @@ public class TaxAnalyticsQueryRepository {
         StringBuilder sql = new StringBuilder("""
             WITH connected AS (
             """);
-        sql.append(CONNECTED_SQL);
+        sql.append(TaxAnalyticsConnectedSql.SQL);
         sql.append("""
             )
             SELECT COUNT(*) FROM companies c
@@ -262,7 +253,7 @@ public class TaxAnalyticsQueryRepository {
         boolean filterRegion = regionCode != null && !regionCode.isBlank();
 
         StringBuilder sql = new StringBuilder();
-        sql.append("WITH connected AS ( ").append(CONNECTED_SQL).append(" ), ");
+        sql.append("WITH connected AS ( ").append(TaxAnalyticsConnectedSql.SQL).append(" ), ");
         sql.append("companies_geo AS ( ");
         sql.append("SELECT c.id, ").append(groupCol).append(" AS geo_code, ");
         sql.append("CASE WHEN conn.company_id IS NOT NULL THEN 1 ELSE 0 END AS is_connected ");

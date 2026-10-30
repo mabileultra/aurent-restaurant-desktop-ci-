@@ -1,3 +1,5 @@
+import { BaseButton } from '../../../../../components/ui';
+
 export default function ProductImportModalFooter({
   step,
   setStep,
@@ -7,45 +9,41 @@ export default function ProductImportModalFooter({
   canImport,
   allDuplicates,
   importing,
+  mode,
   t,
 }) {
   return (
-    <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
-      {step === 'preview' && (
-        <button
+    <>
+      {step === 'preview' ? (
+        <BaseButton
           type="button"
+          variant="secondary"
+          className="mr-auto"
           onClick={() => setStep('setup')}
-          className="admin-btn-secondary mr-auto px-4 py-2 text-sm"
         >
           {t('products.import.back')}
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={onClose}
-        className="admin-btn-secondary px-4 py-2 text-sm"
-      >
+        </BaseButton>
+      ) : null}
+      <BaseButton type="button" variant="secondary" onClick={onClose}>
         {t('products.import.close')}
-      </button>
+      </BaseButton>
       {step === 'setup' ? (
-        <button
-          type="button"
-          onClick={pickFile}
-          className="admin-btn-primary px-4 py-2 text-sm"
-        >
+        <BaseButton type="button" variant="primary" onClick={pickFile}>
           {t('products.import.pickFile')}
-        </button>
+        </BaseButton>
       ) : (
-        <button
+        <BaseButton
           type="button"
+          variant="primary"
           onClick={runImport}
           disabled={!canImport || importing || allDuplicates}
           title={allDuplicates ? t('products.import.invoiceAllDuplicates') : undefined}
-          className="admin-btn-primary px-4 py-2 text-sm"
         >
-          {importing ? '…' : t('products.import.confirmImport')}
-        </button>
+          {importing
+            ? '…'
+            : t(mode === 'AS_RECEIPT' ? 'products.import.confirmReceipt' : 'products.import.confirmImport')}
+        </BaseButton>
       )}
-    </div>
+    </>
   );
 }

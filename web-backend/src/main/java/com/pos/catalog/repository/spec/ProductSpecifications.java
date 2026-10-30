@@ -5,7 +5,9 @@ import com.pos.catalog.entity.ProductAttribute;
 import com.pos.catalog.entity.ProductBarcode;
 import com.pos.catalog.entity.ProductStorePrice;
 import com.pos.domain.businessconfig.BusinessTypeCodes;
+import com.pos.shared.text.CatalogSearchFold;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -16,7 +18,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public final class ProductSpecifications {
@@ -66,29 +67,28 @@ public final class ProductSpecifications {
             String q = search != null ? search.trim() : "";
             if (StringUtils.hasText(q)) {
                 query.distinct(true);
-                String like = "%" + q.toLowerCase() + "%";
                 Join<Product, ProductBarcode> extras = root.join("extraBarcodes", JoinType.LEFT);
-                var name = cb.like(cb.lower(root.get("name")), like);
-                var sku = cb.like(cb.lower(root.get("sku")), like);
+                var name = containsFolded(cb, root.get("name"), q);
+                var sku = containsFolded(cb, root.get("sku"), q);
                 var description = cb.and(
                     cb.isNotNull(root.get("description")),
-                    cb.like(cb.lower(root.get("description")), like)
+                    containsFolded(cb, root.get("description"), q)
                 );
                 var unitOfMeasure = cb.and(
                     cb.isNotNull(root.get("unitOfMeasure")),
-                    cb.like(cb.lower(root.get("unitOfMeasure")), like)
+                    containsFolded(cb, root.get("unitOfMeasure"), q)
                 );
                 var bc = cb.and(
                     cb.isNotNull(root.get("barcode")),
-                    cb.like(cb.lower(root.get("barcode")), like)
+                    containsFolded(cb, root.get("barcode"), q)
                 );
                 var extraBc = cb.and(
                     cb.isNotNull(extras.get("barcode")),
-                    cb.like(cb.lower(extras.get("barcode")), like)
+                    containsFolded(cb, extras.get("barcode"), q)
                 );
                 var ikpu = cb.and(
                     cb.isNotNull(root.get("ikpu")),
-                    cb.like(cb.lower(root.get("ikpu")), like)
+                    containsFolded(cb, root.get("ikpu"), q)
                 );
                 Subquery<Long> attrSearch = query.subquery(Long.class);
                 Root<ProductAttribute> attrRoot = attrSearch.from(ProductAttribute.class);
@@ -96,7 +96,7 @@ public final class ProductSpecifications {
                 attrSearch.where(
                     cb.equal(attrRoot.get("productId"), root.get("id")),
                     cb.isNotNull(attrRoot.get("valueText")),
-                    cb.like(cb.lower(attrRoot.get("valueText")), like)
+                    containsFolded(cb, attrRoot.get("valueText"), q)
                 );
                 parts.add(cb.or(name, sku, description, unitOfMeasure, bc, extraBc, ikpu, cb.exists(attrSearch)));
             }
@@ -186,26 +186,25 @@ public final class ProductSpecifications {
             if (StringUtils.hasText(q)) {
                 query.distinct(true);
                 Join<Product, ProductBarcode> extras = root.join("extraBarcodes", JoinType.LEFT);
-                String[] tokens = q.toLowerCase(Locale.ROOT).split("\\s+");
+                String[] tokens = q.split("\\s+");
                 List<Predicate> andTokens = new ArrayList<>();
                 for (String token : tokens) {
                     if (!StringUtils.hasText(token)) {
                         continue;
                     }
-                    String like = "%" + token + "%";
-                    var name = cb.like(cb.lower(root.get("name")), like);
-                    var sku = cb.like(cb.lower(root.get("sku")), like);
+                    var name = containsFolded(cb, root.get("name"), token);
+                    var sku = containsFolded(cb, root.get("sku"), token);
                     var bc = cb.and(
                         cb.isNotNull(root.get("barcode")),
-                        cb.like(cb.lower(root.get("barcode")), like)
+                        containsFolded(cb, root.get("barcode"), token)
                     );
                     var extraBc = cb.and(
                         cb.isNotNull(extras.get("barcode")),
-                        cb.like(cb.lower(extras.get("barcode")), like)
+                        containsFolded(cb, extras.get("barcode"), token)
                     );
                     var ikpu = cb.and(
                         cb.isNotNull(root.get("ikpu")),
-                        cb.like(cb.lower(root.get("ikpu")), like)
+                        containsFolded(cb, root.get("ikpu"), token)
                     );
                     andTokens.add(cb.or(name, sku, bc, extraBc, ikpu));
                 }
@@ -221,15 +220,15 @@ public final class ProductSpecifications {
             if (StringUtils.hasText(barcodeContains)) {
                 // LEFT JOIN + DISTINCT: correlated EXISTS в count-запросе Spring Data иногда даёт 500 на Hibernate 6
                 query.distinct(true);
-                String bcLike = "%" + barcodeContains.trim().toLowerCase() + "%";
+                String barcodeToken = barcodeContains.trim();
                 Join<Product, ProductBarcode> extras = root.join("extraBarcodes", JoinType.LEFT);
                 var primaryLike = cb.and(
                     cb.isNotNull(root.get("barcode")),
-                    cb.like(cb.lower(root.get("barcode")), bcLike)
+                    containsFolded(cb, root.get("barcode"), barcodeToken)
                 );
                 var extraLike = cb.and(
                     cb.isNotNull(extras.get("barcode")),
-                    cb.like(cb.lower(extras.get("barcode")), bcLike)
+                    containsFolded(cb, extras.get("barcode"), barcodeToken)
                 );
                 parts.add(cb.or(primaryLike, extraLike));
             }
@@ -238,6 +237,21 @@ public final class ProductSpecifications {
 
             return cb.and(parts.toArray(new Predicate[0]));
         };
+    }
+
+    private static Expression<String> folded(CriteriaBuilder cb, Expression<String> value) {
+        return cb.function(
+            "translate",
+            String.class,
+            value,
+            cb.literal(CatalogSearchFold.FROM),
+            cb.literal(CatalogSearchFold.TO)
+        );
+    }
+
+    private static Predicate containsFolded(CriteriaBuilder cb, Expression<String> column, String token) {
+        Expression<String> pattern = cb.concat("%", cb.concat(folded(cb, cb.literal(token)), "%"));
+        return cb.like(folded(cb, column), pattern);
     }
 
     private static void addBusinessTypeFilter(
@@ -340,7 +354,8 @@ public final class ProductSpecifications {
                     parts.add(cb.equal(root.get("sku"), sku.trim()));
                 }
                 if (StringUtils.hasText(nameIgnoreCase)) {
-                    parts.add(cb.equal(cb.lower(root.get("name")), nameIgnoreCase.trim().toLowerCase()));
+                    String name = nameIgnoreCase.trim();
+                    parts.add(cb.equal(folded(cb, root.get("name")), folded(cb, cb.literal(name))));
                 }
                 if (StringUtils.hasText(barcode)) {
                     parts.add(cb.equal(root.get("barcode"), barcode.trim()));

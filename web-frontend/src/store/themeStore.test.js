@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Setup node-compatible mocks for document and localStorage
 class LocalStorageMock {
   constructor() {
     this.store = {};
@@ -71,85 +70,45 @@ describe('themeStore', () => {
   });
 
   describe('readAdminTheme', () => {
-    it('returns light by default when localStorage is empty', () => {
+    it('returns light by default', () => {
       expect(readAdminTheme()).toBe('light');
     });
 
-    it('returns saved value from localStorage', () => {
+    it('migrates legacy dark/system to light', () => {
       localStorage.setItem(ADMIN_THEME_STORAGE_KEY, 'dark');
-      expect(readAdminTheme()).toBe('dark');
-
-      localStorage.setItem(ADMIN_THEME_STORAGE_KEY, 'system');
-      expect(readAdminTheme()).toBe('system');
-    });
-
-    it('ignores invalid values and falls back to light', () => {
-      localStorage.setItem(ADMIN_THEME_STORAGE_KEY, 'invalid-theme');
       expect(readAdminTheme()).toBe('light');
+      expect(localStorage.getItem(ADMIN_THEME_STORAGE_KEY)).toBe('light');
     });
   });
 
   describe('resolveEffectiveAdminTheme', () => {
-    it('resolves light and dark directly', () => {
+    it('always resolves light', () => {
       expect(resolveEffectiveAdminTheme('light')).toBe('light');
-      expect(resolveEffectiveAdminTheme('dark')).toBe('dark');
-    });
-
-    it('resolves system theme based on matchMedia', () => {
-      // Mock matchMedia returning false for dark
-      window.matchMedia = vi.fn().mockImplementation((query) => ({
-        matches: query.includes('dark') ? false : true,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      }));
+      expect(resolveEffectiveAdminTheme('dark')).toBe('light');
       expect(resolveEffectiveAdminTheme('system')).toBe('light');
-
-      // Mock matchMedia returning true for dark
-      window.matchMedia = vi.fn().mockImplementation((query) => ({
-        matches: query.includes('dark') ? true : false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      }));
-      expect(resolveEffectiveAdminTheme('system')).toBe('dark');
     });
   });
 
   describe('syncRootTheme', () => {
-    it('applies light theme to documentElement', () => {
-      syncRootTheme('light');
+    it('applies light admin theme even if dark requested', () => {
+      syncRootTheme('dark');
       expect(document.documentElement.classList.contains('dark')).toBe(false);
       expect(document.documentElement.classList.contains('app-theme--admin')).toBe(true);
       expect(document.documentElement.style.colorScheme).toBe('light');
-    });
-
-    it('applies dark theme to documentElement', () => {
-      syncRootTheme('dark');
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(document.documentElement.classList.contains('app-theme--admin')).toBe(true);
-      expect(document.documentElement.style.colorScheme).toBe('dark');
+      expect(localStorage.getItem(ADMIN_THEME_STORAGE_KEY)).toBe('light');
     });
   });
 
   describe('useAdminThemeStore', () => {
-    it('updates theme in store and localStorage', () => {
+    it('keeps light and ignores dark setTheme', () => {
       useAdminThemeStore.getState().setTheme('dark');
-      expect(useAdminThemeStore.getState().theme).toBe('dark');
-      expect(useAdminThemeStore.getState().effectiveTheme).toBe('dark');
-      expect(localStorage.getItem(ADMIN_THEME_STORAGE_KEY)).toBe('dark');
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-
-      useAdminThemeStore.getState().setTheme('light');
       expect(useAdminThemeStore.getState().theme).toBe('light');
       expect(useAdminThemeStore.getState().effectiveTheme).toBe('light');
-      expect(localStorage.getItem(ADMIN_THEME_STORAGE_KEY)).toBe('light');
       expect(document.documentElement.classList.contains('dark')).toBe(false);
     });
 
-    it('toggles theme between light and dark', () => {
+    it('toggleTheme is no-op', () => {
       useAdminThemeStore.getState().setTheme('light');
-      useAdminThemeStore.getState().toggleTheme();
-      expect(useAdminThemeStore.getState().theme).toBe('dark');
-
       useAdminThemeStore.getState().toggleTheme();
       expect(useAdminThemeStore.getState().theme).toBe('light');
     });
@@ -160,14 +119,12 @@ describe('themeStore', () => {
       syncRestaurantTheme();
       expect(document.documentElement.classList.contains('rst-theme')).toBe(true);
       expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(document.documentElement.style.colorScheme).toBe('dark');
     });
 
-    it('syncPublicTheme applies app-theme--public and light', () => {
+    it('syncPublicTheme applies light public theme', () => {
       syncPublicTheme();
       expect(document.documentElement.classList.contains('app-theme--public')).toBe(true);
       expect(document.documentElement.classList.contains('dark')).toBe(false);
-      expect(document.documentElement.style.colorScheme).toBe('light');
     });
   });
 });

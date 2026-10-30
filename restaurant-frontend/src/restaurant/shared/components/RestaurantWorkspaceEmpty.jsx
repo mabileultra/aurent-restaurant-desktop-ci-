@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { BaseButton } from '../../../components/ui';
 import { getMainAppUrl } from '../../../config/mainAppUrl';
 import { useAuthStore } from '../../../store/authStore';
+import { isDesktopPrinter } from '../../pos/utils/desktopPrinters';
 import './restaurant-workspace-empty.css';
 
 /**
  * Empty / pick state when POS or kitchen has no restaurant branch yet.
+ * On hall desktop stay local — do not send cashiers to the cloud main app.
  */
 export default function RestaurantWorkspaceEmpty({
   t,
@@ -15,9 +17,11 @@ export default function RestaurantWorkspaceEmpty({
 }) {
   const role = useAuthStore((s) => s.user?.role);
   const canManageStores = role === 'ADMIN' || role === 'SUPER_ADMIN';
+  const canManageStaff = canManageStores || role === 'MANAGER';
+  const desktop = isDesktopPrinter();
   const mainApp = getMainAppUrl();
-  const storesUrl = `${mainApp}/stores`;
-  const usersUrl = `${mainApp}/users`;
+  const storesUrl = desktop ? '/rst/admin/stores' : `${mainApp}/stores`;
+  const usersUrl = desktop ? '/rst/admin/staff' : `${mainApp}/users`;
 
   let title = t('rst.floor.noStore');
   let hint = t('rst.floor.noStoreHint');
@@ -25,6 +29,12 @@ export default function RestaurantWorkspaceEmpty({
     <Link className="rst-workspace-empty__link" to="/rst/admin/stores">
       {t('rst.admin.storesTitle')}
     </Link>
+  ) : desktop ? (
+    <p className="rst-workspace-empty__hint mb-0">
+      {t('rst.floor.askAdminOffline', {
+        defaultValue: 'Обратитесь к администратору — точка настраивается на этом ПК.',
+      })}
+    </p>
   ) : (
     <a className="rst-workspace-empty__link" href={storesUrl} target="_blank" rel="noreferrer">
       {t('rst.floor.openStoresOnMain')}
@@ -63,7 +73,17 @@ export default function RestaurantWorkspaceEmpty({
   } else if (workspace.noStaffStores) {
     title = t('rst.floor.noStaffStoreTitle');
     hint = t('rst.floor.noStaffStoreHint');
-    actions = (
+    actions = canManageStaff && desktop ? (
+      <Link className="rst-workspace-empty__link" to="/rst/admin/staff">
+        {t('rst.nav.staff')}
+      </Link>
+    ) : desktop ? (
+      <p className="rst-workspace-empty__hint mb-0">
+        {t('rst.floor.askAdminOffline', {
+          defaultValue: 'Обратитесь к администратору — точка настраивается на этом ПК.',
+        })}
+      </p>
+    ) : (
       <a className="rst-workspace-empty__link" href={usersUrl} target="_blank" rel="noreferrer">
         {t('rst.floor.openUsersOnMain')}
       </a>

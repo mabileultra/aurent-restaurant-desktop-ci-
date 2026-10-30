@@ -1,0 +1,161 @@
+.rst-menu-import-modal .rst-coming__text {
+  margin: 0 0 0.75rem;
+}
+
+.rst-menu-import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.rst-menu-import__file {
+  display: none;
+}
+
+.rst-menu-import__meta {
+  margin: 0 0 0.65rem;
+  color: var(--rst-muted);
+  font-size: 0.8rem;
+}
+
+.rst-menu-import__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.rst-menu-import__option input {
+  margin-top: 0.15rem;
+}
+
+.rst-menu-import__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .rst-menu-import__workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rst-menu-import__table-wrap {
+  max-height: 26rem;
+  overflow: auto;
+  border: 1px solid var(--rst-border, #e5e7eb);
+  border-radius: 0.5rem;
+}
+
+.rst-menu-import__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.rst-menu-import__table th,
+.rst-menu-import__table td {
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid var(--rst-border, #e5e7eb);
+  text-align: left;
+  vertical-align: top;
+}
+
+.rst-menu-import__table th {
+  position: sticky;
+  top: 0;
+  background: var(--rst-surface, #fff);
+  z-index: 1;
+}
+
+.rst-menu-import__table tbody tr {
+  cursor: pointer;
+}
+
+.rst-menu-import__table tbody tr:hover {
+  background: rgb(255 122 26 / 0.06);
+}
+
+.rst-menu-import__table tbody tr.is-selected {
+  background: rgb(255 122 26 / 0.12);
+}
+
+.rst-menu-import__table .is-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-menu-import__table .is-err {
+  color: #b42318;
+}
+
+.rst-menu-import__editor {
+  border: 1px solid var(--rst-border, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  max-height: 26rem;
+  overflow: auto;
+  background: var(--rst-surface, #fff);
+}
+
+.rst-menu-import__editor-empty {
+  border: 1px dashed var(--rst-border, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  color: var(--rst-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.rst-menu-import__editor-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.rst-menu-import__editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.65rem;
+}
+
+.rst-menu-import__editor-full {
+  grid-column: 1 / -1;
+}
+
+.rst-menu-import__photo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+.rst-menu-import__photo .rst-menu-image {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 0.45rem;
+  overflow: hidden;
+}
+
+.rst-menu-import__photo .rst-menu-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rst-menu-import__tasnif-meta {
+  margin: 0.65rem 0 0;
+  font-size: 0.78rem;
+  color: var(--rst-muted);
+}
+
+.rst-menu-import__progress {
+  margin: 0.5rem 0 0;
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+}

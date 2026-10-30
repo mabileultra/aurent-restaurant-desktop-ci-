@@ -100,7 +100,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         WHERE id IN (
             SELECT id FROM (
                 SELECT slip.id, slip.created_at
-                FROM unnest(ARRAY[:printers]) AS printer(name)
+                FROM unnest(CAST(:printers AS text[])) AS printer_name
                 CROSS JOIN LATERAL (
                     SELECT id, created_at
                     FROM restaurant_print_jobs
@@ -109,13 +109,13 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                       AND status = 'PENDING'
                       AND created_at > :since
                       AND kind IN ('CATEGORY_SLIP', 'CATEGORY_BATCH')
-                      AND lower(coalesce(CAST(payload AS json)->>'printerName', '')) = printer.name
+                      AND lower(coalesce(CAST(payload AS json)->>'printerName', '')) = printer_name
                     ORDER BY created_at ASC
                     LIMIT :perLane
                     FOR UPDATE SKIP LOCKED
                 ) slip
                 WHERE :hasPrinters = 1
-                  AND printer.name NOT IN (:busyPrinters)
+                  AND printer_name NOT IN (:busyPrinters)
                 UNION ALL
                 SELECT id, created_at FROM (
                     SELECT id, created_at
@@ -128,6 +128,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                         (:guestBill = 1 AND kind = 'GUEST_BILL')
                         OR (:orderCancel = 1 AND kind = 'ORDER_CANCEL')
                         OR (:kitchenSend = 1 AND kind = 'KITCHEN_SEND')
+                        OR (:pickupLabel = 1 AND kind = 'PICKUP_LABEL')
                       )
                     ORDER BY created_at ASC
                     LIMIT :batch
@@ -149,6 +150,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("guestBill") int guestBill,
         @Param("orderCancel") int orderCancel,
         @Param("kitchenSend") int kitchenSend,
+        @Param("pickupLabel") int pickupLabel,
         @Param("hasPrinters") int hasPrinters,
         @Param("printers") Collection<String> printers,
         @Param("busyPrinters") Collection<String> busyPrinters

@@ -1,6 +1,7 @@
 package com.pos.restaurant.payment.support;
 
 import com.pos.restaurant.exception.BusinessException;
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderItemStatus;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
@@ -35,7 +36,8 @@ public class BillEligibilityPolicy {
     }
 
     public void assertCanPay(FloorOrder order, BigDecimal due, BigDecimal amount) {
-        if (order.getStatus() != OrderStatus.BILLING) {
+        boolean walkIn = order.getChannel() == OrderChannel.TAKEAWAY && order.getStatus() == OrderStatus.OPEN;
+        if (order.getStatus() != OrderStatus.BILLING && !walkIn) {
             throw new BusinessException("Request the bill before taking payment");
         }
         if (due.compareTo(BigDecimal.ZERO) <= 0) {

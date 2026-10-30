@@ -104,5 +104,6 @@ export function useShiftsAdminPage() {
     pageSizeOptions: SHIFTS_PAGE_SIZE_OPTIONS,
     isLoading: (workspace.storeId == null && workspace.isLoading) || shiftsQuery.isLoading,
     isError: shiftsQuery.isError,
+    refetch: shiftsQuery.refetch,
   };
 }

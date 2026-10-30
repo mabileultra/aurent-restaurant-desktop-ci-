@@ -9,7 +9,6 @@ import com.pos.platform.dto.billing.AssignCompanyPlanRequest;
 import com.pos.platform.dto.billing.BillingAccessResponse;
 import com.pos.platform.dto.billing.BillingOverviewResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
-import com.pos.platform.dto.billing.GrantDeferralRequest;
 import com.pos.platform.entity.Company;
 import com.pos.platform.entity.CompanyBilling;
 import com.pos.platform.exception.BadRequestException;
@@ -17,45 +16,40 @@ import com.pos.platform.exception.ResourceNotFoundException;
 import com.pos.platform.repository.BillingTopUpRequestRepository;
 import com.pos.platform.repository.CompanyBillingRepository;
 import com.pos.platform.repository.CompanyRepository;
-import com.pos.platform.service.BillingDeferralService;
 import com.pos.platform.service.BillingLedgerService;
 import com.pos.platform.service.BillingPlanService;
 import com.pos.platform.service.CompanyBillingAccountService;
+import com.pos.platform.service.support.BillingAccessCache;
+import com.pos.platform.service.support.BillingAccessNoticeResolver;
+import com.pos.platform.service.support.BillingChargeEngine;
 import com.pos.platform.service.support.BillingMapper;
 import com.pos.platform.service.support.BillingMoney;
 import com.pos.platform.service.support.BillingTenantSupport;
-import com.pos.platform.service.support.BillingTime;
-import com.pos.platform.service.support.BillingAccessCache;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountService, BillingDeferralService {
+public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountService {
 
+    private final BillingAccessNoticeResolver noticeResolver;
+    private final BillingChargeEngine chargeEngine;
     private final CompanyBillingRepository companyBillingRepository;
     private final CompanyRepository companyRepository;
     private final BillingTopUpRequestRepository topUpRepository;
     private final BillingPlanService planService;
     private final BillingLedgerService ledgerService;
     private final BillingAccessCache accessCache;
-
-    @Value("${app.billing.grace-days:3}")
-    private int graceDays;
 
     @Override
     @Transactional(readOnly = true)
@@ -89,7 +83,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
                 || (c.getName() != null && c.getName().toLowerCase(Locale.ROOT).contains(q)))
             .map(company -> {
                 CompanyBilling billing = byCompany.get(company.getId());
-                return billing != null ? BillingMapper.toCompany(billing) : emptyBilling(company);
+                return billing != null ? BillingMapper.toCompany(billing) : BillingMapper.emptyCompany(company);
             })
             .filter(b -> {
                 if (status == null) {
@@ -130,12 +124,12 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         if (request.billingEnabled() != null) {
             billing.setBillingEnabled(request.billingEnabled());
         }
-        applyChargeStart(billing, request.periodStartOn());
+        chargeEngine.applyChargeStart(billing, request.periodStartOn());
         if (billing.getStatus() == null || billing.getStatus() == BillingAccountStatus.BLOCKED) {
             billing.setStatus(BillingAccountStatus.ACTIVE);
             billing.setGraceUntil(null);
         }
-        applyDueCharges(billing, Instant.now());
+        chargeEngine.applyDueCharges(billing, Instant.now());
         CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
         accessCache.evict(companyId);
         return saved;
@@ -162,7 +156,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         } else {
             ledgerService.record(billing, delta, BillingLedgerType.ADJUST, description);
         }
-        refreshAccessStatus(billing, Instant.now());
+        chargeEngine.refreshAccessStatus(billing, Instant.now());
         CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
         accessCache.evict(companyId);
         return saved;
@@ -179,7 +173,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             billing.setStatus(BillingAccountStatus.ACTIVE);
             billing.setGraceUntil(null);
             if (billing.getPaidUntil() == null || billing.getPaidUntil().isBefore(Instant.now())) {
-                advancePeriod(billing, Instant.now());
+                chargeEngine.advancePeriod(billing, Instant.now());
             }
         }
         CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
@@ -193,18 +187,35 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         Integer companyId = BillingTenantSupport.requireCompanyId();
         return companyBillingRepository.findDetailedByCompanyId(companyId)
             .map(BillingMapper::toCompany)
-            .orElseGet(() -> emptyBilling(companyRepository.findById(companyId).orElse(null), companyId));
+            .orElseGet(() -> BillingMapper.emptyCompany(
+                companyRepository.findById(companyId).orElse(null),
+                companyId
+            ));
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = BillingAccessCache.CACHE_NAME, key = "#companyId")
     public BillingAccessResponse accessForCompany(Integer companyId) {
-        return companyBillingRepository.findById(companyId)
+        Instant now = Instant.now();
+        return companyBillingRepository.findDetailedByCompanyId(companyId)
             .map(b -> {
                 boolean enabled = b.isBillingEnabled();
                 boolean allowed = !enabled || b.getStatus() != BillingAccountStatus.BLOCKED;
-                return new BillingAccessResponse(companyId, enabled, allowed, b.getStatus());
+                BillingAccessNoticeResolver.Notice notice = allowed
+                    ? noticeResolver.resolve(b, now)
+                    : BillingAccessNoticeResolver.Notice.none();
+                return new BillingAccessResponse(
+                    companyId,
+                    enabled,
+                    allowed,
+                    b.getStatus(),
+                    notice.required(),
+                    notice.kind(),
+                    notice.nextChargeAt(),
+                    notice.graceUntil(),
+                    notice.graceDaysLeft()
+                );
             })
             .orElseGet(() -> new BillingAccessResponse(companyId, false, true, BillingAccountStatus.ACTIVE));
     }
@@ -222,6 +233,21 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         return ensureBillingRow(companyId);
     }
 
+    @Override
+    public void refreshAccessStatus(CompanyBilling billing, Instant now) {
+        chargeEngine.refreshAccessStatus(billing, now);
+    }
+
+    @Override
+    public int applyDueCharges(CompanyBilling billing, Instant now) {
+        return chargeEngine.applyDueCharges(billing, now);
+    }
+
+    @Override
+    public void advancePeriod(CompanyBilling billing, Instant from) {
+        chargeEngine.advancePeriod(billing, from);
+    }
+
     private CompanyBilling ensureBillingRow(Integer companyId) {
         if (companyId == null) {
             throw new BadRequestException("Company id is required");
@@ -237,195 +263,8 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             });
     }
 
-    @Override
-    public void refreshAccessStatus(CompanyBilling billing, Instant now) {
-        if (!billing.isBillingEnabled()) {
-            billing.setStatus(BillingAccountStatus.ACTIVE);
-            return;
-        }
-        if (billing.getStatus() == BillingAccountStatus.BLOCKED) {
-            BigDecimal total = BillingMapper.monthlyTotal(billing);
-            if (billing.getBalance().compareTo(total) >= 0) {
-                billing.setStatus(BillingAccountStatus.ACTIVE);
-                billing.setGraceUntil(null);
-                applyDueCharges(billing, now);
-            }
-            return;
-        }
-        if (billing.getStatus() == BillingAccountStatus.GRACE) {
-            BigDecimal total = BillingMapper.monthlyTotal(billing);
-            if (billing.getBalance().compareTo(total) >= 0) {
-                billing.setStatus(BillingAccountStatus.ACTIVE);
-                billing.setGraceUntil(null);
-                applyDueCharges(billing, now);
-            }
-        }
-    }
-
-    @Override
-    public int applyDueCharges(CompanyBilling billing, Instant now) {
-        if (!billing.isBillingEnabled() || !billing.isAutoChargeEnabled()) {
-            return 0;
-        }
-        if (billing.getStatus() == BillingAccountStatus.BLOCKED) {
-            return 0;
-        }
-        int charged = 0;
-        for (int i = 0; i < BillingTime.MAX_CATCH_UP_PERIODS; i++) {
-            Instant due = billing.getNextChargeAt();
-            if (due == null || due.isAfter(now)) {
-                break;
-            }
-            BigDecimal total = BillingMapper.monthlyTotal(billing);
-            if (total.signum() <= 0) {
-                advanceFromDue(billing, due);
-                billing.setStatus(BillingAccountStatus.ACTIVE);
-                billing.setGraceUntil(null);
-                break;
-            }
-            if (billing.getBalance().compareTo(total) >= 0) {
-                String planName = billing.getPlan() != null ? billing.getPlan().getName() : "тариф";
-                ledgerService.record(
-                    billing,
-                    total.negate(),
-                    BillingLedgerType.CHARGE,
-                    "Ежемесячное списание: " + planName
-                );
-                advanceFromDue(billing, due);
-                billing.setStatus(BillingAccountStatus.ACTIVE);
-                billing.setGraceUntil(null);
-                charged++;
-                continue;
-            }
-            enterGraceOrBlock(billing, now);
-            break;
-        }
-        return charged;
-    }
-
-    @Override
-    public void advancePeriod(CompanyBilling billing, Instant from) {
-        Instant base = billing.getNextChargeAt() != null && !billing.getNextChargeAt().isAfter(from)
-            ? billing.getNextChargeAt()
-            : from;
-        advanceFromDue(billing, base);
-    }
-
-    private void applyChargeStart(CompanyBilling billing, LocalDate periodStartOn) {
-        Instant now = Instant.now();
-        if (periodStartOn == null) {
-            if (billing.getNextChargeAt() == null) {
-                billing.setNextChargeAt(now);
-                billing.setPaidUntil(now.plus(BillingTime.PERIOD_DAYS, ChronoUnit.DAYS));
-            }
-            return;
-        }
-        boolean periodChanged = !Objects.equals(periodStartOn, billing.getPeriodStartOn())
-            || billing.getNextChargeAt() == null;
-        billing.setPeriodStartOn(periodStartOn);
-        if (!periodChanged) {
-            return;
-        }
-        Instant start = BillingTime.startOfDay(periodStartOn);
-        billing.setNextChargeAt(start);
-        if (start.isAfter(now)) {
-            billing.setPaidUntil(start);
-        } else {
-            billing.setPaidUntil(start.plus(BillingTime.PERIOD_DAYS, ChronoUnit.DAYS));
-        }
-    }
-
-    private void advanceFromDue(CompanyBilling billing, Instant due) {
-        Instant next = due.plus(BillingTime.PERIOD_DAYS, ChronoUnit.DAYS);
-        billing.setNextChargeAt(next);
-        billing.setPaidUntil(next);
-    }
-
-    private void enterGraceOrBlock(CompanyBilling billing, Instant now) {
-        if (billing.getStatus() != BillingAccountStatus.GRACE
-            && billing.getStatus() != BillingAccountStatus.BLOCKED) {
-            billing.setStatus(BillingAccountStatus.GRACE);
-            billing.setGraceUntil(later(now.plus(Math.max(graceDays, 0), ChronoUnit.DAYS), billing.getDeferredUntil()));
-            return;
-        }
-        Instant blockAfter = later(billing.getGraceUntil(), billing.getDeferredUntil());
-        if (blockAfter != null && now.isAfter(blockAfter)) {
-            billing.setStatus(BillingAccountStatus.BLOCKED);
-        }
-    }
-
-    private static Instant later(Instant a, Instant b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        return a.isAfter(b) ? a : b;
-    }
-
-    @Override
-    @Transactional
-    public CompanyBillingResponse grantDeferral(Integer companyId, GrantDeferralRequest request) {
-        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
-            .orElseGet(() -> requireOrCreateBilling(companyId));
-        Instant until = BillingTime.startOfDay(request.until().plusDays(1));
-        billing.setDeferredUntil(until);
-        billing.setDeferralReason(request.reason() != null && !request.reason().isBlank() ? request.reason().trim() : null);
-        if (billing.getStatus() == BillingAccountStatus.BLOCKED || billing.getStatus() == BillingAccountStatus.GRACE) {
-            billing.setStatus(BillingAccountStatus.GRACE);
-            billing.setGraceUntil(until);
-        }
-        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
-        accessCache.evict(companyId);
-        return saved;
-    }
-
-    @Override
-    @Transactional
-    public CompanyBillingResponse cancelDeferral(Integer companyId) {
-        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
-            .orElseThrow(() -> new ResourceNotFoundException("Биллинг для компании не настроен"));
-        Instant now = Instant.now();
-        billing.setDeferredUntil(null);
-        billing.setDeferralReason(null);
-        if (billing.getStatus() == BillingAccountStatus.GRACE
-            && billing.getGraceUntil() != null && billing.getGraceUntil().isAfter(now)) {
-            billing.setGraceUntil(now);
-        }
-        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
-        accessCache.evict(companyId);
-        return saved;
-    }
-
     private Company requireCompany(Integer companyId) {
         return companyRepository.findById(companyId)
             .orElseThrow(() -> new ResourceNotFoundException("Компания не найдена"));
-    }
-
-    private static CompanyBillingResponse emptyBilling(Company company) {
-        return emptyBilling(company, company.getId());
-    }
-
-    private static CompanyBillingResponse emptyBilling(Company company, Integer companyId) {
-        return new CompanyBillingResponse(
-            companyId,
-            company != null ? company.getName() : null,
-            null,
-            null,
-            null,
-            null,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            BillingAccountStatus.ACTIVE,
-            false,
-            true,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            "UZS",
-            null,
-            null
-        );
     }
 }

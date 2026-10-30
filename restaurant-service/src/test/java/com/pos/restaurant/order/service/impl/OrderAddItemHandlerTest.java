@@ -160,7 +160,7 @@ class OrderAddItemHandlerTest {
             UUID.randomUUID(), 1, null, null, null, 2, OrderStatus.OPEN, null,
             1, 1, 0, null, null, null, null, null, null, null, null, null,
             BigDecimal.ZERO, null, null, null, BigDecimal.ZERO, null, null, 0,
-            List.of(), List.of(), List.of()
+            List.of(), List.of(), List.of(), null
         );
     }
 }

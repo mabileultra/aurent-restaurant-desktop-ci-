@@ -29,6 +29,7 @@ export const rstOrderApi = {
   removeItem: (orderId, itemId) => api.delete(rst(`/orders/${orderId}/items/${itemId}`)),
   cancel: (orderId) => api.post(rst(`/orders/${orderId}/cancel`)),
   sendToKitchen: (orderId) => api.post(rst(`/orders/${orderId}/send-to-kitchen`)),
+  reprintPickupLabel: (orderId) => api.post(rst(`/orders/${orderId}/pickup-label`)),
   requestBill: (orderId) => api.post(rst(`/orders/${orderId}/bill`)),
   pay: (orderId, data) => api.post(rst(`/orders/${orderId}/pay`), data),
   refund: (orderId) => api.post(rst(`/orders/${orderId}/refund`)),

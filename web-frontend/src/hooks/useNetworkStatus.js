@@ -4,16 +4,19 @@ import {
   AURENT_NETWORK_OFFLINE_EVENT,
   AURENT_NETWORK_ONLINE_EVENT,
 } from '../utils/apiNetworkError';
+import { probeReachable } from './probeReachable';
+
+const OFFLINE_CONFIRM_MS = 15_000;
+const OFFLINE_PROBE_GAP_MS = 4_000;
 
 /**
- * Enterprise hook for tracking browser network connectivity.
+ * Enterprise hook for tracking browser network connectivity and React Query sync.
  * - Tracks online / offline window events
- * - Syncs with TanStack React Query onlineManager
+ * - Probes the server before confirming offline to prevent false positives
  * - Listens to global Aurent API network failure/recovery events
- * - Auto-probes periodically during offline state for instant recovery
- * - Tracks `wasOffline` ONLY when truly transitioning from offline to online
- * - Automatically hides "tiklandi" banner after a short period without annoying flashes
- * - Provides active connection probing via `checkConnection()`
+ * - Syncs with TanStack React Query onlineManager
+ * - Tracks `wasOffline` only when truly transitioning from offline to online
+ * - Automatically hides reconnected banner after autoDismissOnlineAfterMs
  */
 export function useNetworkStatus(options = {}) {
   const { probeUrl = '/favicon.svg', autoDismissOnlineAfterMs = 3500 } = options;
@@ -32,6 +35,8 @@ export function useNetworkStatus(options = {}) {
   const [reconnectedAt, setReconnectedAt] = useState(null);
   const isOnlineRef = useRef(initialOnline);
   const autoDismissTimerRef = useRef(null);
+  const confirmTokenRef = useRef(0);
+  const confirmTimerRef = useRef(null);
 
   const clearDismissTimer = useCallback(() => {
     if (autoDismissTimerRef.current) {
@@ -40,73 +45,78 @@ export function useNetworkStatus(options = {}) {
     }
   }, []);
 
-  const handleOnline = useCallback(() => {
-    const previouslyOffline = !isOnlineRef.current;
-    isOnlineRef.current = true;
-    setIsOnline(true);
-    onlineManager.setOnline(true);
+  const clearConfirmTimer = useCallback(() => {
+    if (confirmTimerRef.current) {
+      clearTimeout(confirmTimerRef.current);
+      confirmTimerRef.current = null;
+    }
+  }, []);
 
-    // ONLY show reconnected banner if user was truly offline before!
-    if (previouslyOffline) {
+  const publishOnline = useCallback(
+    (next) => {
+      const prev = isOnlineRef.current;
+      isOnlineRef.current = next;
+      setIsOnline(next);
+      onlineManager.setOnline(next);
+      if (prev === next) return;
+      if (!next) {
+        clearDismissTimer();
+        setWasOffline(false);
+        return;
+      }
       setWasOffline(true);
       setReconnectedAt(Date.now());
-
       clearDismissTimer();
       if (autoDismissOnlineAfterMs > 0) {
         autoDismissTimerRef.current = setTimeout(() => {
           setWasOffline(false);
         }, autoDismissOnlineAfterMs);
       }
-    }
-  }, [autoDismissOnlineAfterMs, clearDismissTimer]);
+    },
+    [autoDismissOnlineAfterMs, clearDismissTimer],
+  );
+
+  const handleOnline = useCallback(() => {
+    confirmTokenRef.current += 1;
+    clearConfirmTimer();
+    publishOnline(true);
+  }, [clearConfirmTimer, publishOnline]);
 
   const handleOffline = useCallback(() => {
-    isOnlineRef.current = false;
-    clearDismissTimer();
-    setIsOnline(false);
-    onlineManager.setOnline(false);
-    // While offline, we are in offline mode, not reconnected mode
-    setWasOffline(false);
-  }, [clearDismissTimer]);
+    const token = confirmTokenRef.current + 1;
+    confirmTokenRef.current = token;
+    const started = Date.now();
 
-  // Active probe to confirm connection against server or lightweight endpoint
+    const tick = async () => {
+      if (confirmTokenRef.current !== token) return;
+      const ok = await probeReachable(probeUrl);
+      if (confirmTokenRef.current !== token) return;
+      if (ok) {
+        if (!isOnlineRef.current) publishOnline(true);
+        return;
+      }
+      if (Date.now() - started >= OFFLINE_CONFIRM_MS) {
+        publishOnline(false);
+        return;
+      }
+      confirmTimerRef.current = window.setTimeout(tick, OFFLINE_PROBE_GAP_MS);
+    };
+
+    clearConfirmTimer();
+    confirmTimerRef.current = window.setTimeout(tick, 1_000);
+  }, [clearConfirmTimer, probeUrl, publishOnline]);
+
   const checkConnection = useCallback(async () => {
     setIsChecking(true);
-    try {
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        handleOffline();
-        setIsChecking(false);
-        return false;
-      }
-
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timeoutId = setTimeout(() => {
-        if (controller) controller.abort();
-      }, 3500);
-
-      // Lightweight probe: /favicon.svg is served directly by Nginx with 0 load
-      const res = await fetch(`${probeUrl}?_t=${Date.now()}`, {
-        method: 'HEAD',
-        cache: 'no-store',
-        signal: controller ? controller.signal : undefined,
-      }).catch(() => null);
-
-      clearTimeout(timeoutId);
-
-      const reachable = Boolean(res && res.status > 0);
-      if (reachable) {
-        handleOnline();
-      } else {
-        handleOffline();
-      }
-      setIsChecking(false);
-      return reachable;
-    } catch {
-      handleOffline();
-      setIsChecking(false);
-      return false;
+    const reachable = await probeReachable(probeUrl);
+    if (reachable) {
+      handleOnline();
+    } else {
+      publishOnline(false);
     }
-  }, [handleOnline, handleOffline, probeUrl]);
+    setIsChecking(false);
+    return reachable;
+  }, [handleOnline, probeUrl, publishOnline]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -118,7 +128,6 @@ export function useNetworkStatus(options = {}) {
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
         handleOffline();
       } else if (!isOnlineRef.current) {
-        // Only probe if currently in offline state to verify if connection returned
         checkConnection();
       }
     };
@@ -130,10 +139,10 @@ export function useNetworkStatus(options = {}) {
     window.addEventListener('focus', onWindowFocus);
     document.addEventListener('visibilitychange', onWindowFocus);
 
-    // Initial sync with TanStack Query
-    onlineManager.setOnline(initialOnline);
+    onlineManager.setOnline(isOnlineRef.current);
 
     return () => {
+      confirmTokenRef.current += 1;
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener(AURENT_NETWORK_OFFLINE_EVENT, onCustomOffline);
@@ -141,8 +150,9 @@ export function useNetworkStatus(options = {}) {
       window.removeEventListener('focus', onWindowFocus);
       document.removeEventListener('visibilitychange', onWindowFocus);
       clearDismissTimer();
+      clearConfirmTimer();
     };
-  }, [handleOnline, handleOffline, checkConnection, clearDismissTimer, initialOnline]);
+  }, [handleOnline, handleOffline, checkConnection, clearDismissTimer, clearConfirmTimer]);
 
   // Periodic background probe ONLY while offline to automatically restore when connection is back
   useEffect(() => {

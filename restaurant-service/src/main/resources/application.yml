@@ -2,6 +2,12 @@ server:
   port: ${RESTAURANT_SERVER_PORT:8087}
   servlet:
     context-path: /api/v1
+  # ~2k concurrent waiters on one JVM: more accept threads, DB pool still the real limiter
+  tomcat:
+    threads:
+      max: ${TOMCAT_MAX_THREADS:300}
+      min-spare: ${TOMCAT_MIN_SPARE:25}
+    accept-count: ${TOMCAT_ACCEPT_COUNT:200}
 
 spring:
   application:
@@ -11,8 +17,9 @@ spring:
     username: ${RESTAURANT_DB_USERNAME:restaurant_user}
     password: ${RESTAURANT_DB_PASSWORD:restaurant_password}
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: ${RESTAURANT_HIKARI_MAX_POOL:40}
+      minimum-idle: ${RESTAURANT_HIKARI_MIN_IDLE:10}
+      connection-timeout: ${RESTAURANT_HIKARI_CONNECTION_TIMEOUT_MS:5000}
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
@@ -50,15 +57,16 @@ app:
       cloud-sync-url: ${RESTAURANT_CLOUD_SYNC_URL:}
       cloud-sync-token: ${RESTAURANT_CLOUD_SYNC_TOKEN:}
     redis:
+      # Prod compose turns this on — menu/floor cache shared, survives GC spikes
       enabled: ${RESTAURANT_REDIS_ENABLED:false}
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       database: ${RESTAURANT_REDIS_DB:2}
-      connect-timeout-ms: ${RESTAURANT_REDIS_CONNECT_TIMEOUT_MS:100}
-      command-timeout-ms: ${RESTAURANT_REDIS_COMMAND_TIMEOUT_MS:100}
+      connect-timeout-ms: ${RESTAURANT_REDIS_CONNECT_TIMEOUT_MS:200}
+      command-timeout-ms: ${RESTAURANT_REDIS_COMMAND_TIMEOUT_MS:200}
       menu-ttl-seconds: ${RESTAURANT_REDIS_MENU_TTL_SECONDS:600}
-      floor-ttl-seconds: ${RESTAURANT_REDIS_FLOOR_TTL_SECONDS:3}
+      floor-ttl-seconds: ${RESTAURANT_REDIS_FLOOR_TTL_SECONDS:5}
       kitchen-board-ttl-seconds: ${RESTAURANT_REDIS_KITCHEN_BOARD_TTL_SECONDS:30}
 
 springdoc:

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- POS menu list: company+store+active+available (posOnly=true). -->
+    <changeSet id="rst-056-menu-pos-list-index" author="pos">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_menu_items_pos_list
+                ON menu_items (company_id, store_id, sort_order, name)
+                WHERE active = true AND available = true;
+        </sql>
+    </changeSet>
+
+    <!-- Counter / channel lists: store + channel + status + opened. -->
+    <changeSet id="rst-056-orders-channel-status-index" author="pos">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_floor_orders_store_channel_status
+                ON floor_orders (company_id, store_id, channel, status, opened_at DESC);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

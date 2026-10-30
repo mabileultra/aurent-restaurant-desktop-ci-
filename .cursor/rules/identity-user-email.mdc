@@ -1,0 +1,17 @@
+---
+description: User email must pass EmailAddressRules before it is stored
+globs: identity-service/src/main/java/com/pos/identity/dto/user/**/*.java,identity-service/src/main/java/com/pos/identity/dto/auth/RegisterRequest.java,identity-service/src/main/java/com/pos/identity/dto/platform/security/CreatePlatformSuperAdminRequest.java,identity-service/src/main/java/com/pos/identity/service/user/impl/UserCreateHandler.java,identity-service/src/main/java/com/pos/identity/service/user/impl/UserUpdateHandler.java,identity-service/src/main/java/com/pos/identity/service/auth/impl/AuthLoginServiceImpl.java,identity-service/src/main/java/com/pos/identity/service/impl/PlatformSuperAdminServiceImpl.java,identity-service/src/main/java/com/pos/identity/util/EmailAddressRules.java
+alwaysApply: false
+---
+
+# User email format
+
+## Intent
+
+A stored user email is a real address: local part, domain, and a letter TLD of at least 2 characters. `jgi@ghi.com` is valid. `user@localhost`, `a@b.c`, blanks, and `a..b@x.com` are not.
+
+## Do not regress
+
+1. Create, update, register, and platform-staff create call `EmailAddressRules.require` after trim/lowercase. Do not persist `UserLoginUtil.normalizeEmail` alone.
+2. DTO email fields use `@Pattern(regexp = EmailAddressRules.PATTERN)`. Do not rely on Jakarta `@Email` — it treats `""` as valid and allows a domain without a TLD.
+3. Login lookup stays normalize-only. A bad login email is a failed login, not a validation error.

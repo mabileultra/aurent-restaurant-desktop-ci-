@@ -80,7 +80,7 @@ export function useKitchenPosPage() {
       stationFilter !== 'all' ? { stationId: stationFilter } : undefined,
     ).then((r) => r.data),
     enabled: workspace.storeId != null && kitchenBoardEnabled,
-    refetchInterval: kitchenBoardEnabled ? 5_000 : false,
+    refetchInterval: kitchenBoardEnabled ? 8_000 : false,
   });
 
   const staffQuery = useQuery({
@@ -181,6 +181,11 @@ export function useKitchenPosPage() {
     shift: shiftQuery.data ?? null,
     isLoading: (workspace.storeId == null && workspace.isLoading) || ticketsQuery.isLoading,
     isError: ticketsQuery.isError,
+    refetch: () => {
+      ticketsQuery.refetch();
+      stationsQuery.refetch();
+      kitchenBoardQuery.refetch();
+    },
     canAdvance,
     canAdmin: user?.role === 'ADMIN' || user?.role === 'MANAGER',
     kitchenBoardEnabled,

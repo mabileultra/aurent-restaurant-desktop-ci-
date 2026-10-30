@@ -19,6 +19,8 @@ export function expandMarkedFiscalItems(items) {
       productMark: mark,
       markCode: mark,
       productLabel: mark,
+      // Иначе validation-onkm шлёт на каждую пачку все КМ строки (аптека: 3 марки → amount 1).
+      productMarks: [mark],
     }));
   });
 }

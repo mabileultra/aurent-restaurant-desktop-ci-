@@ -489,5 +489,13 @@ export function useRecipesAdminPage() {
       });
       setActiveLineIndex(null);
     },
+    isLoading: (workspace.storeId == null && workspace.isLoading)
+      || dishesQuery.isLoading
+      || recipesQuery.isLoading,
+    isError: dishesQuery.isError || recipesQuery.isError,
+    refetch: () => {
+      dishesQuery.refetch();
+      recipesQuery.refetch();
+    },
   };
 }

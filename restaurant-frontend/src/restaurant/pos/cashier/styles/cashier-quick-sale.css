@@ -1,0 +1,25 @@
+.rst-cashier-quick {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--rst-accent, #c4a574);
+  border-radius: 999px;
+  background: var(--rst-accent, #c4a574);
+  color: #1a140c;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.rst-cashier-quick:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.rst-cashier-quick:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

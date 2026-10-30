@@ -22,6 +22,7 @@ const {
   reloadCashierLogin,
 } = require('./session/cashierSession');
 const { attachDesktopNavigationGuard } = require('./navigation/desktopNavigationGuard');
+const { createWindowOpenHandler } = require('./navigation/windowOpenPolicy');
 const { createCashierUiSession } = require('./ui/cashierUiSession');
 const { attachLoadFailureFallback } = require('./ui/loadFailureFallback');
 
@@ -261,10 +262,9 @@ function createWindow(start) {
 
   attachDesktopNavigationGuard(mainWindow, refreshDesktopConfig);
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
-    return { action: 'deny' };
-  });
+  mainWindow.webContents.setWindowOpenHandler(
+    createWindowOpenHandler(() => mainWindow),
+  );
 }
 
 async function handleOpenServerSettings() {

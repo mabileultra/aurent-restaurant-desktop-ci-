@@ -24,7 +24,7 @@ public class MenuItemResponseFactory {
             base.stationId(),
             base.menuCategoryId(),
             base.category(),
-            base.imageUrl(),
+            listSafeImageUrl(base.id(), base.imageUrl()),
             base.description(),
             base.prepMinutes(),
             base.portionGrams(),
@@ -41,5 +41,20 @@ public class MenuItemResponseFactory {
             base.barcode(),
             base.markedProduct()
         );
+    }
+
+    /**
+     * Inline data-URI photos blow list payloads to multi‑MB (POS hangs / gateway 500).
+     * Replace them with a light ref; POS loads bytes from GET /rst/menu-items/{id}/image.
+     */
+    static String listSafeImageUrl(java.util.UUID itemId, String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        String trimmed = imageUrl.trim();
+        if (trimmed.regionMatches(true, 0, "data:", 0, 5)) {
+            return itemId == null ? null : MenuItemImageRef.forItem(itemId);
+        }
+        return trimmed;
     }
 }

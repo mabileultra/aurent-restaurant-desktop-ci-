@@ -4,7 +4,7 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot;
 
 import java.util.List;
 
-/** Strip heavy catalog fields — live sync only needs floor / kitchen / payments. */
+/** Strip heavy catalog fields. Halls and tables stay so service percent reaches an open desktop. */
 public final class LiveFloorSlice {
 
     private LiveFloorSlice() {}
@@ -15,8 +15,8 @@ public final class LiveFloorSlice {
             full.companyId(),
             full.storeId(),
             full.companyLoginCode(),
-            List.of(),
-            List.of(),
+            full.halls() == null ? List.of() : full.halls(),
+            full.tables() == null ? List.of() : full.tables(),
             List.of(),
             List.of(),
             List.of(),
@@ -33,10 +33,12 @@ public final class LiveFloorSlice {
             full.openOrderItemModifiers(),
             full.kitchenTickets(),
             full.kitchenTicketLines(),
-            null,
-            null,
-            null,
-            full.orderPayments()
+            // Closed history for offline hall reports (not only open floor).
+            full.closedOrders() == null ? List.of() : full.closedOrders(),
+            full.closedOrderItems() == null ? List.of() : full.closedOrderItems(),
+            full.closedOrderItemModifiers() == null ? List.of() : full.closedOrderItemModifiers(),
+            full.orderPayments(),
+            full.floorRevision()
         );
     }
 }

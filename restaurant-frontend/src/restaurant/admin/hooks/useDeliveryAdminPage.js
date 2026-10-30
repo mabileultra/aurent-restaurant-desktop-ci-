@@ -65,11 +65,12 @@ export function useDeliveryAdminPage() {
     openedTo: applied.createdTo || undefined,
   }), [page, pageSize, applied]);
 
-  const { data, isPending, isError, error } = useQuery({
+  const deliveryQuery = useQuery({
     queryKey: ['rst-delivery', workspace.storeId, queryParams],
     queryFn: () => rstOrderApi.search(workspace.storeId, queryParams).then((r) => r.data),
     enabled: workspace.storeId != null,
   });
+  const { data, isPending, isError, error } = deliveryQuery;
 
   const staffQuery = useQuery({
     queryKey: ['rst-delivery-staff', workspace.storeId],
@@ -195,6 +196,7 @@ export function useDeliveryAdminPage() {
     loading: isPending,
     isError,
     error,
+    refetch: () => deliveryQuery.refetch(),
     page,
     pageSize,
     pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,

@@ -14,12 +14,11 @@ import com.pos.restaurant.recipe.service.RecipeConsumePublicationService;
 import com.pos.restaurant.recipe.support.RecipeExplosion;
 import com.pos.restaurant.revenue.domain.RevenueOutboxChannel;
 import com.pos.restaurant.revenue.entity.RevenueOutbox;
+import com.pos.restaurant.revenue.service.RevenueOutboxDispatchService;
 import com.pos.restaurant.revenue.service.RevenueOutboxService;
 import com.pos.restaurant.revenue.support.RestaurantSaleCompletedFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,6 +35,7 @@ public class RecipeConsumePublicationServiceImpl implements RecipeConsumePublica
     private final RecipeLineRepository recipeLineRepository;
     private final RecipeExplosion recipeExplosion;
     private final RevenueOutboxService outboxService;
+    private final RevenueOutboxDispatchService outboxDispatchService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -81,16 +81,7 @@ public class RecipeConsumePublicationServiceImpl implements RecipeConsumePublica
             "rst-stock:" + order.getId(),
             writeJson(payload)
         );
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            outboxService.trySend(row.getId());
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                outboxService.trySend(row.getId());
-            }
-        });
+        outboxDispatchService.dispatchAfterCommit(row.getId());
     }
 
     private String writeJson(Object value) {

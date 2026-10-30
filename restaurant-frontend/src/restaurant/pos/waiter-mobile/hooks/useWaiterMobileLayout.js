@@ -8,26 +8,21 @@ import {
 
 const MOBILE_SHELL_ROLES = new Set(['WAITER', 'ADMIN', 'MANAGER']);
 
-function isDesktopElectronShell() {
-  return typeof window !== 'undefined' && Boolean(
-    window.aurentRestaurant?.isDesktop || window.desktopCashier?.isDesktop,
-  );
-}
-
 /**
- * Compact waiter shell: auto on phone-narrow screens, or forced via header icon.
- * Never on Electron / short landscape POS terminals (~1000×500).
+ * Compact waiter shell: auto below desktop width (1024), or forced via header icon.
+ * Short landscape POS terminals stay on the desktop floor UI.
  */
 export function useWaiterMobileLayout() {
   const role = useAuthStore((s) => s.user?.role);
-  const { compact, posTerminal } = useViewportProfile();
+  const { compact, desktop, posTerminal } = useViewportProfile();
   const [forceMobile, setForceMobileState] = useState(
     () => readWaiterMobilePrefs().forceMobile,
   );
 
   const canUse = MOBILE_SHELL_ROLES.has(String(role || '').toUpperCase());
-  const lockDesktop = isDesktopElectronShell() || posTerminal;
-  const enabled = canUse && !lockDesktop && (compact || forceMobile);
+  const autoMobile = !desktop;
+  const lockDesktop = posTerminal;
+  const enabled = canUse && !lockDesktop && (autoMobile || forceMobile);
 
   const setForceMobile = useCallback((next) => {
     const value = Boolean(next);
@@ -47,7 +42,7 @@ export function useWaiterMobileLayout() {
     /** Show desktop→mobile icon next to languages. */
     showEnterMobile: canUse && !enabled && !lockDesktop,
     /** Show leave-mobile in profile when user forced it (or on wide + mobile). */
-    showExitMobile: canUse && enabled && (forceMobile || !compact),
+    showExitMobile: canUse && enabled && (forceMobile || desktop),
     enterMobile,
     exitMobile,
     setForceMobile,

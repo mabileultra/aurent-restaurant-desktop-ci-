@@ -59,6 +59,10 @@ public class FloorOrder {
     @Column(name = "order_no", nullable = false)
     private int orderNo;
 
+    /** Daily cafe handoff number for the open shift. Null until first kitchen send with the module. */
+    @Column(name = "pickup_no")
+    private Integer pickupNo;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
     @Builder.Default

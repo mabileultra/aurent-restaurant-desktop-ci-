@@ -1,0 +1,43 @@
+---
+description: Hard limits — one concern per file; split before growing God files (FE + BE + desktop)
+alwaysApply: true
+---
+
+# File size & one concern
+
+## Limits (soft → hard)
+
+| Layer | Soft max | Hard max — must split before merge |
+|---|---|---|
+| JS/JSX/Vue/TS module or composable | ~200 lines | **300** |
+| Electron `runtime/*.js` | ~200 | **300** |
+| Java service / support / handler | ~250 | **300** |
+| Java controller | ~150 | **200** |
+| CSS/SCSS per concern | ~250 | **400** |
+
+Facade/orchestrator files that only wire imports may stay short; **do not** park domain logic in them.
+
+## Must
+
+- **One file = one responsibility** (bootstrap catalog ≠ live sync ≠ stock report ≠ PIN).
+- New logic → **new sibling file** under the same package/folder; import from a thin facade if callers need one entry.
+- Backend: `service` + `support/` / dedicated `*Writer` / `*ReportService` — no 500-line `*ServiceImpl`.
+- Frontend: page hook ≠ API ≠ UI component ≠ CSS of another feature.
+- When editing a file already over soft max, **split first**, then change behavior.
+
+## Must NOT
+
+- Append another feature into an already-large file («ещё чуть-чуть сюда»).
+- Leave dead old monolith next to the split — delete/replace the old blob.
+- Put unrelated CSS or helpers into one dump file.
+
+## Restaurant desktop example
+
+```
+edgeHttp.js              # request/base URLs
+edgeLiveSync.js          # push/pull floor
+edgeBootstrapCatalog.js  # catalog only
+edgeBootstrapStock.js
+edgeBootstrapAdmin.js    # categories + cash registers
+edgeAuthBootstrap.js     # thin facade only
+```

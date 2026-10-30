@@ -1,0 +1,8 @@
+.pickup-label-settings {
+  margin-bottom: 1.25rem;
+}
+
+.pickup-label-settings .rst-admin-field__hint {
+  display: block;
+  margin-top: 0.35rem;
+}

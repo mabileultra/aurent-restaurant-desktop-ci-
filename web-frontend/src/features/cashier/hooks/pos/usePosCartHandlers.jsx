@@ -192,7 +192,9 @@ export function usePosCartHandlers({
           return true;
         }
         if (resolved.status === 'ok' && resolved.product) {
-          toast.success(t('pos.markingInCirculation'), { id: 'pos-marking-scan' });
+          if (resolved.circulation === 'in-circulation') {
+            toast.success(t('pos.markingInCirculation'), { id: 'pos-marking-scan' });
+          }
           addMarkedScanToCart(resolved.product);
           setSearch('');
           return true;

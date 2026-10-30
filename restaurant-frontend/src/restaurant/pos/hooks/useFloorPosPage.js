@@ -27,15 +27,17 @@ import { useFloorPosMutations } from './useFloorPosMutations';
 import { useRestaurantAslMarking } from './useRestaurantAslMarking';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
+import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
+import { useMenuImageShiftPreload } from '../../shared/hooks/useMenuImageShiftPreload';
 
-const COUNTER_STALE_MS = 15_000;
-const FLOOR_STALE_MS = 8_000;
-const SHIFT_STALE_MS = 20_000;
-const MENU_STALE_MS = 10 * 60_000;
-const ORDER_STALE_MS = 3_000;
+/** Tuned for ~2k concurrent POS on one API: less chatter, still snappy enough. */
+const COUNTER_STALE_MS = 20_000;
+const FLOOR_STALE_MS = 10_000;
+const SHIFT_STALE_MS = 30_000;
+const MENU_STALE_MS = 15 * 60_000;
+const ORDER_STALE_MS = 4_000;
 /** Fallback if revision poll misses; primary sync is useStoreFloorSync (~2s watermark). */
-const FLOOR_POLL_MS = 20_000;
-const ORDER_POLL_MS = 12_000;
+const ORDER_POLL_MS = 18_000;
 
 function draftOrderFromTable(table) {
   if (!table) return null;
@@ -111,8 +113,7 @@ export function useFloorPosPage() {
     },
     enabled: storeId != null && (onFloor || !!activeOrderId),
     staleTime: FLOOR_STALE_MS,
-    // Keep polling on the board even when a ticket is open (phone / other POS edits).
-    refetchInterval: onFloor || activeOrderId ? FLOOR_POLL_MS : false,
+    refetchInterval: false,
     refetchOnWindowFocus: true,
   });
   const counterQuery = useQuery({
@@ -120,7 +121,7 @@ export function useFloorPosPage() {
     queryFn: () => rstOrderApi.listActive(storeId, channel).then((r) => r.data),
     enabled: storeId != null && !!channel && !activeOrderId,
     staleTime: COUNTER_STALE_MS,
-    refetchInterval: 10_000,
+    refetchInterval: 15_000,
     refetchOnWindowFocus: true,
   });
   const shiftQuery = useQuery({
@@ -131,7 +132,7 @@ export function useFloorPosPage() {
     },
     enabled: storeId != null,
     staleTime: SHIFT_STALE_MS,
-    refetchInterval: 30_000,
+    refetchInterval: 45_000,
   });
   const menuQuery = useQuery({
     queryKey: ['rst-menu-pos', storeId],
@@ -140,7 +141,7 @@ export function useFloorPosPage() {
     },
     enabled: storeId != null,
     staleTime: MENU_STALE_MS,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000,
     refetchOnWindowFocus: true,
   });
   const floorHalls = floorQuery.data?.halls;
@@ -563,6 +564,14 @@ export function useFloorPosPage() {
     );
   };
 
+  const menuPhotos = useMenuPhotos(storeId);
+  useMenuImageShiftPreload({
+    shiftId: shift?.id ?? null,
+    menuItems: menuQuery.data,
+    photosEnabled: menuPhotos.enabled,
+    payPending: m.payMutation.isPending,
+  });
+
   return {
     t, user, workspace, access,
     posMode, changePosMode, channel,
@@ -583,11 +592,18 @@ export function useFloorPosPage() {
     isLoading: (workspace.storeId == null && workspace.isLoading)
       || (onFloor ? floorQuery.isLoading : counterQuery.isLoading),
     isError: onFloor ? floorQuery.isError : counterQuery.isError,
+    refetch: () => {
+      if (onFloor) return floorQuery.refetch();
+      return counterQuery.refetch();
+    },
     handleTableClick, handleAddItem, handleComposeFamily,
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,
     handleRemoveItem,
     removeItemMutation: m.removeItemMutation, cancelMutation: m.cancelMutation,
-    sendKitchenMutation: m.sendKitchenMutation, billMutation: m.billMutation,
+    sendKitchenMutation: m.sendKitchenMutation,
+    reprintPickupMutation: m.reprintPickupMutation,
+    canReprintPickup: hasModule('restaurantPickupLabel'),
+    billMutation: m.billMutation,
     discountMutation: m.discountMutation,
     payMutation: m.payMutation,
     paidReceipt, closePaidReceipt: () => setPaidReceipt(null),

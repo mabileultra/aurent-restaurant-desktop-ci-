@@ -8,6 +8,7 @@ import com.pos.restaurant.payment.entity.FloorOrderPayment;
 import com.pos.restaurant.revenue.domain.RevenueOutboxChannel;
 import com.pos.restaurant.revenue.entity.RevenueOutbox;
 import com.pos.restaurant.revenue.service.RestaurantRefundPublicationService;
+import com.pos.restaurant.revenue.service.RevenueOutboxDispatchService;
 import com.pos.restaurant.revenue.service.RevenueOutboxService;
 import com.pos.restaurant.revenue.support.RestaurantRefundPayloadFactory;
 import com.pos.restaurant.revenue.support.RestaurantSaleCompletedFactory;
@@ -15,8 +16,6 @@ import com.pos.shared.event.SaleCompletedEvent;
 import com.pos.shared.kafka.KafkaTopics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.UUID;
 public class RestaurantRefundPublicationServiceImpl implements RestaurantRefundPublicationService {
 
     private final RevenueOutboxService outboxService;
+    private final RevenueOutboxDispatchService outboxDispatchService;
     private final RestaurantSaleCompletedFactory saleCompletedFactory;
     private final ObjectMapper objectMapper;
 
@@ -59,21 +59,8 @@ public class RestaurantRefundPublicationServiceImpl implements RestaurantRefundP
             "rst-refund:" + returnEventId,
             writeJson(RestaurantRefundPayloadFactory.fromPaidOrder(order, payment, returnEventId, refundAmount))
         );
-        scheduleSend(saleRow.getId());
-        scheduleSend(financeRow.getId());
-    }
-
-    private void scheduleSend(UUID outboxId) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            outboxService.trySend(outboxId);
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                outboxService.trySend(outboxId);
-            }
-        });
+        outboxDispatchService.dispatchAfterCommit(saleRow.getId());
+        outboxDispatchService.dispatchAfterCommit(financeRow.getId());
     }
 
     private String writeJson(Object value) {

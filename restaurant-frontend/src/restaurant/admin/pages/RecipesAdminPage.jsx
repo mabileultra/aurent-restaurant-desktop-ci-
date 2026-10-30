@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RstMenuImage from '../../shared/components/RstMenuImage';
+import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import MenuDishFilters from '../components/MenuDishFilters';
 import RecipeFoodCostSummary from '../components/RecipeFoodCostSummary';
 import RecipeWizardModal from '../components/RecipeWizardModal';
@@ -15,15 +18,19 @@ import '../styles/tech-card.css';
 
 export default function RecipesAdminPage() {
   const p = useRecipesAdminPage();
-
-  if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
-  }
+  const photos = useMenuPhotos(p.workspace.storeId);
 
   const selectedDish = p.selectedDish;
   const stockProductsPath = '/rst/admin/stock/products?create=1';
 
   return (
+    <AdminWorkspaceGate
+      t={p.t}
+      workspace={p.workspace}
+      isLoading={p.isLoading}
+      isError={p.isError}
+      onRetry={p.refetch}
+    >
     <section className="rst-tech">
       <div className="rst-halls__toolbar">
         <div>
@@ -55,13 +62,15 @@ export default function RecipesAdminPage() {
                   className={`rst-tech__dish${p.selectedId === dish.id ? ' is-active' : ''}`}
                   onClick={() => p.setSelectedId(dish.id)}
                 >
-                  <div className="rst-tech__dish-media">
-                    {dish.imageUrl ? (
-                      <img src={dish.imageUrl} alt="" />
-                    ) : (
-                      <div className="rst-tech__dish-media-empty">{p.t('rst.admin.noPhoto')}</div>
-                    )}
-                  </div>
+                  {photos.enabled ? (
+                    <div className="rst-tech__dish-media">
+                      {dish.imageUrl ? (
+                        <RstMenuImage imageUrl={dish.imageUrl} />
+                      ) : (
+                        <div className="rst-tech__dish-media-empty">{p.t('rst.admin.noPhoto')}</div>
+                      )}
+                    </div>
+                  ) : null}
                   <div className="rst-tech__dish-body">
                     <strong>{dish.name}</strong>
                     <span>
@@ -252,7 +261,8 @@ export default function RecipesAdminPage() {
         </div>
       </div>
 
-      <RecipeWizardModal p={p} />
+      <RecipeWizardModal p={p} photosEnabled={photos.enabled} />
     </section>
+    </AdminWorkspaceGate>
   );
 }

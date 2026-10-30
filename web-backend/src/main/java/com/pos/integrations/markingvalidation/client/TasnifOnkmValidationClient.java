@@ -40,6 +40,13 @@ public class TasnifOnkmValidationClient implements MarkingValidationClient {
             return MarkingValidationResponse.unavailable("UNREACHABLE", "Сервис проверки маркировки недоступен");
         }
 
+        if (outcome.status() == 401 || outcome.status() == 403) {
+            LogUtil.warn(TasnifOnkmValidationClient.class, "validation-onkm auth failed: status={}", outcome.status());
+            return MarkingValidationResponse.unavailable(
+                "HTTP_" + outcome.status(),
+                "Сервис проверки маркировки ответил ошибкой"
+            );
+        }
         OnkmValidationResponse body = outcome.body();
         if (body == null || body.success() == null) {
             LogUtil.warn(TasnifOnkmValidationClient.class, "validation-onkm unexpected response: status={}", outcome.status());

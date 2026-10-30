@@ -79,7 +79,8 @@ public class OrderResponseAssembler {
             items.size(),
             List.of(),
             List.of(),
-            List.of()
+            List.of(),
+            order.getPickupNo()
         );
     }
 
@@ -136,7 +137,8 @@ public class OrderResponseAssembler {
             itemResponses.size(),
             itemResponses,
             linked,
-            history
+            history,
+            order.getPickupNo()
         );
     }
 

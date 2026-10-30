@@ -20,6 +20,7 @@ import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAccess';
 import { logoutAndResetSession, resetClientSessionState } from '../../../utils/authSession';
 import { normalizePin, PIN_MAX } from '../utils/cashierPinUtils';
+import { clearPersistedRestaurantStoreId } from '../../../restaurant/shared/hooks/usePersistedRestaurantStoreId';
 
 const PIN_ROLES = new Set(['MANAGER', 'CASHIER', 'WAITER', 'COOK']);
 const ADMIN_PASSWORD_ROLES = new Set(['ADMIN', 'MANAGER', 'SUPER_ADMIN']);
@@ -165,9 +166,18 @@ export function useCashierPinLoginPage() {
   );
 
   // Save as soon as 5 digits are valid — not only after PIN/admin login.
+  // Drop branch pick from another company so POS does not query an empty menu.
+  const prevCompanyCodeRef = useRef(normalizedCompanyCode);
+  useEffect(() => {
+    clearPersistedRestaurantStoreId();
+  }, []);
   useEffect(() => {
     if (!normalizedCompanyCode) return;
     persistCompanyLoginCode(normalizedCompanyCode);
+    if (prevCompanyCodeRef.current && prevCompanyCodeRef.current !== normalizedCompanyCode) {
+      clearPersistedRestaurantStoreId();
+    }
+    prevCompanyCodeRef.current = normalizedCompanyCode;
   }, [normalizedCompanyCode]);
 
   const loadRoster = useCallback(async (loginCode, { force = false } = {}) => {

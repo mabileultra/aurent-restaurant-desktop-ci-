@@ -28,15 +28,20 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
           AND (:active IS NULL OR p.active = :active)
           AND (
             :search IS NULL OR :search = ''
-            OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(COALESCE(p.barcode, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+            OR FUNCTION('translate', p.name, :foldFrom, :foldTo)
+              LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+            OR FUNCTION('translate', p.sku, :foldFrom, :foldTo)
+              LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+            OR FUNCTION('translate', COALESCE(p.barcode, ''), :foldFrom, :foldTo)
+              LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
           )
         ORDER BY p.name
         """)
     Page<Product> search(
         @Param("companyId") Integer companyId,
         @Param("search") String search,
+        @Param("foldFrom") String foldFrom,
+        @Param("foldTo") String foldTo,
         @Param("active") Boolean active,
         Pageable pageable
     );

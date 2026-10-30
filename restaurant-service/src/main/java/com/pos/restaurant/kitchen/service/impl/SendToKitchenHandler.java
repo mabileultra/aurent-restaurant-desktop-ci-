@@ -16,6 +16,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.order.support.WeightSaleSupport;
+import com.pos.restaurant.pickup.service.PickupLabelService;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.print.support.PrintJobPayloads;
 import com.pos.restaurant.settings.service.KitchenBoardService;
@@ -43,6 +44,7 @@ public class SendToKitchenHandler {
     private final OrderResponseAssembler assembler;
     private final KitchenBoardService kitchenBoardService;
     private final PrintJobPublisher printJobPublisher;
+    private final PickupLabelService pickupLabelService;
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
@@ -104,7 +106,9 @@ public class SendToKitchenHandler {
             }
             printJobPublisher.categorySlipsForPending(order, fired, qtyByItem);
         }
-        return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
+        List<FloorOrderItem> latest = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
+        pickupLabelService.assignAndEnqueue(order, latest);
+        return assembler.toResponse(order, latest);
     }
 
     private static BigDecimal pendingQty(FloorOrderItem item) {

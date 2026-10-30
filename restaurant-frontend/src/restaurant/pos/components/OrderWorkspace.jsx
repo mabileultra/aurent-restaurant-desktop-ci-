@@ -3,12 +3,14 @@ import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
 import { shortWaiterName } from '../utils/floorPosDerivations';
-import MenuPicker from './MenuPicker';
+import { buildCategoryByMenuId } from '../utils/orderLineCategoryTone';
+import MenuCatalogBoard from './MenuCatalogBoard';
 import CancelReceiptPreview from './CancelReceiptPreview';
 import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
 import RstConfirmDialog from './RstConfirmDialog';
 import '../styles/order-workspace.css';
+import '../styles/menu-catalog-board.css';
 
 function useLiveClock() {
   const [now, setNow] = useState(() => Date.now());
@@ -33,6 +35,9 @@ export default function OrderWorkspace({
   onRemove,
   onCancel,
   onSendKitchen,
+  onReprintPickup,
+  reprintingPickup,
+  canReprintPickup,
   onRequestBill,
   onPay,
   onDiscount,
@@ -94,13 +99,10 @@ export default function OrderWorkspace({
     return map;
   }, [order.items]);
 
-  const categoryByMenuId = useMemo(() => {
-    const map = {};
-    for (const item of menuItems || []) {
-      if (item?.id != null) map[item.id] = item.category || '';
-    }
-    return map;
-  }, [menuItems]);
+  const categoryByMenuId = useMemo(
+    () => buildCategoryByMenuId(menuItems),
+    [menuItems],
+  );
 
   const activeLines = (order.items ?? []).filter((line) => (
     line.itemStatus !== 'CANCELLED' && (Number(line.quantity) || 0) > 0
@@ -136,8 +138,8 @@ export default function OrderWorkspace({
   };
 
   return (
-    <div className="rst-order">
-      <section className="rst-order__catalog">
+    <div className="rst-order rst-order--board">
+      <div className="rst-order__board-head">
         <div className="rst-order__context">
           {hideBack ? null : (
             <button type="button" className="rst-order__back" onClick={onBack}>
@@ -161,20 +163,20 @@ export default function OrderWorkspace({
             <span>LIVE</span>
           </div>
         </div>
+      </div>
 
-        <MenuPicker
-          items={menuItems}
-          onAdd={onAddItem}
-          onComposeFamily={onComposeFamily}
-          t={t}
-          qtyByMenuId={qtyByMenuId}
-        />
-        {billing ? (
+      <MenuCatalogBoard
+        items={menuItems}
+        qtyByMenuId={qtyByMenuId}
+        onAdd={onAddItem}
+        onComposeFamily={onComposeFamily}
+        t={t}
+        billingNote={billing ? (
           <p className="rst-order__billing-note">
             {newCount > 0 ? t('rst.order.billingHintUnsent') : t('rst.order.billingHint')}
           </p>
         ) : null}
-      </section>
+      />
 
       <aside className="rst-order__ticket">
         <div className="rst-order__ticket-head">
@@ -182,6 +184,7 @@ export default function OrderWorkspace({
             <div className="rst-order__ticket-kicker">
               TICKET #{order.orderNo}
               {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
+              {order.pickupNo ? ` · ${t('rst.order.pickupNo', { no: order.pickupNo })}` : ''}
             </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
             <p className="rst-order__ticket-waiter">
@@ -285,6 +288,16 @@ export default function OrderWorkspace({
               disabled={sendingKitchen}
             >
               {t('rst.order.sendKitchenKds')}
+            </button>
+          ) : null}
+          {footerVariant !== 'waiter' && canReprintPickup && order.pickupNo ? (
+            <button
+              type="button"
+              className="rst-order__kds"
+              onClick={onReprintPickup}
+              disabled={reprintingPickup}
+            >
+              {t('rst.order.reprintPickup')}
             </button>
           ) : null}
 

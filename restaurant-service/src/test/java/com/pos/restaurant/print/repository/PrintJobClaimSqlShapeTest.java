@@ -26,6 +26,7 @@ class PrintJobClaimSqlShapeTest {
             int.class, // guestBill
             int.class, // orderCancel
             int.class, // kitchenSend
+            int.class, // pickupLabel
             int.class, // hasPrinters
             java.util.Collection.class,
             java.util.Collection.class
@@ -34,5 +35,8 @@ class PrintJobClaimSqlShapeTest {
         assertThat(sql).containsIgnoringCase("CAST(payload AS json)");
         assertThat(sql).doesNotContain("payload::json");
         assertThat(sql).doesNotContain("payload:json");
+        // Hibernate expands ARRAY[:printers] into ROW records → Postgres 42601 without typed unnest.
+        assertThat(sql).containsIgnoringCase("unnest(CAST(:printers AS text[]))");
+        assertThat(sql).doesNotContain("unnest(ARRAY[:printers])");
     }
 }

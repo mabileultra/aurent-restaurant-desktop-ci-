@@ -13,6 +13,7 @@ import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.menu.support.MenuCategoryLookup;
 import com.pos.restaurant.menu.support.MenuItemFiscalApplier;
+import com.pos.restaurant.menu.support.MenuItemImageRef;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +62,10 @@ public class MenuItemUpdateHandler {
         );
         item.setMenuCategoryId(category.id());
         item.setCategory(category.name());
-        item.setImageUrl(blankToNull(request.imageUrl()));
+        // List API may echo aurent-menu-img:{id}; never persist that marker over the real photo.
+        if (request.imageUrl() == null || !MenuItemImageRef.isRef(request.imageUrl())) {
+            item.setImageUrl(blankToNull(request.imageUrl()));
+        }
         item.setDescription(blankToNull(request.description()));
         item.setPrepMinutes(normalizePrep(request.prepMinutes()));
         BigDecimal portionAmount = resolvePortionAmount(request);

@@ -109,15 +109,10 @@ function main() {
 
   const preferredVersion = readPackageVersion();
   const winName = pickBest(dist, /\.exe$/i, preferredVersion);
-  const macName =
-    pickBest(dist, /mac-universal\.dmg$/i, preferredVersion)
-    || pickBest(dist, /mac-x64\.dmg$/i, preferredVersion)
-    || pickBest(dist, /\.dmg$/i, preferredVersion);
   const zipName = pickBest(dist, /\.zip$/i, preferredVersion);
 
   const fileVersion =
     parseSemver(winName || '')?.raw
-    || parseSemver(macName || '')?.raw
     || parseSemver(zipName || '')?.raw
     || preferredVersion
     || '0.0.0';
@@ -128,13 +123,12 @@ function main() {
   };
 
   if (winName) manifest.windows = buildEntry(dist, winName);
-  if (macName) manifest.mac = buildEntry(dist, macName);
   if (zipName) manifest.zip = buildEntry(dist, zipName);
 
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   console.log(`manifest → ${out} (v${manifest.version})`);
-  console.log(`  win=${winName || '-'} mac=${macName || '-'} zip=${zipName || '-'}`);
+  console.log(`  win=${winName || '-'} zip=${zipName || '-'}`);
 }
 
 main();

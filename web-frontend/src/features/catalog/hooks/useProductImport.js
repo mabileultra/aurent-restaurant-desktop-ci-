@@ -12,6 +12,7 @@ import {
   sliceImportPage,
 } from '../utils/productImportPagination';
 import { verifyProductImportRowsTasnif } from '../utils/verifyProductImportTasnif';
+import { bumpImportQty } from '../../../utils/productImportQty';
 import {
   applyMarkup,
   buildEditableRows,
@@ -24,7 +25,7 @@ import {
 
 export function useProductImport(onClose) {
   const { t, i18n } = useTranslation();
-  const [mode, setMode] = useState('AS_FILE');
+  const [mode, setMode] = useState('TO_CATALOG');
   const [source, setSource] = useState('UZ_INVOICE');
   const [step, setStep] = useState('setup');
   const [preview, setPreview] = useState(null);
@@ -35,6 +36,9 @@ export function useProductImport(onClose) {
   const [defaultCategoryId, setDefaultCategoryId] = useState('');
   const [defaultStoreId, setDefaultStoreId] = useState('');
   const [defaultStorageLocation, setDefaultStorageLocation] = useState('');
+  const [supplierId, setSupplierId] = useState('');
+  const [paymentType, setPaymentType] = useState('CASH');
+  const [receiptNotes, setReceiptNotes] = useState('');
   const [editable, setEditable] = useState({});
   const [visibleColumns, setVisibleColumns] = useState(() => loadProductImportColumnVisibility());
   const [tasnifByRow, setTasnifByRow] = useState({});
@@ -199,6 +203,17 @@ export function useProductImport(onClose) {
     });
   };
 
+  const setRowQuantity = (rowNum, direction) => {
+    const row = (preview?.rows ?? []).find((r) => r.rowNum === rowNum);
+    setEditable((prev) => ({
+      ...prev,
+      [rowNum]: {
+        ...prev[rowNum],
+        quantity: bumpImportQty(prev[rowNum]?.quantity, row, direction),
+      },
+    }));
+  };
+
   const setRowPrice = (rowNum, raw) => {
     const parsed = parseMoneyInput(raw);
     setEditable((prev) => ({
@@ -319,8 +334,13 @@ export function useProductImport(onClose) {
 
   const runImport = async () => {
     if (!pendingFile) return;
-    if (canImport && !defaultStoreId) {
-      toast.error(t('products.import.storeRequired'));
+    // Магазин нужен только для прихода. Количество строки уходит в приход или в начальный остаток каталога.
+    if (canImport && mode === 'AS_RECEIPT' && !defaultStoreId) {
+      toast.error(t('products.import.storeRequiredReceipt'));
+      return;
+    }
+    if (canImport && mode === 'AS_RECEIPT' && paymentType === 'CREDIT' && !supplierId) {
+      toast.error(t('stockReports.receiptCreditNeedsSupplier'));
       return;
     }
     setImporting(true);
@@ -343,6 +363,8 @@ export function useProductImport(onClose) {
         if (ed.packageCode) payload.packageCode = String(ed.packageCode).trim();
         if (ed.markedProduct != null) payload.markedProduct = Boolean(ed.markedProduct);
         if (ed.ikpuStatus) payload.ikpuStatus = String(ed.ikpuStatus).trim();
+        const qty = Number(ed.quantity);
+        if (Number.isFinite(qty) && qty >= 0) payload.quantity = qty;
         return payload;
       });
 
@@ -353,6 +375,9 @@ export function useProductImport(onClose) {
       defaultCategoryId: defaultCategoryId ? Number(defaultCategoryId) : null,
       defaultStoreId: defaultStoreId ? Number(defaultStoreId) : null,
       defaultStorageLocation: defaultStorageLocation.trim() || null,
+      supplierId: mode === 'AS_RECEIPT' && supplierId ? supplierId : null,
+      paymentType: mode === 'AS_RECEIPT' ? paymentType : null,
+      receiptNotes: mode === 'AS_RECEIPT' && receiptNotes.trim() ? receiptNotes.trim() : null,
       rows: rowOverrides,
     };
 
@@ -363,8 +388,10 @@ export function useProductImport(onClose) {
       const errs = Array.isArray(data?.errors) ? data.errors : [];
 
       if (created > 0) {
-        const msg =
-          skipped > 0
+        const receiptNo = data?.receiptNumber;
+        const msg = receiptNo
+          ? t('products.import.receiptDone', { no: receiptNo })
+          : skipped > 0
             ? t('products.import.importPartial', { created, skipped })
             : `${t('products.import.done')} · ${t('products.import.created')}: ${created}`;
         toast.success(msg);
@@ -414,6 +441,12 @@ export function useProductImport(onClose) {
     setDefaultStoreId,
     defaultStorageLocation,
     setDefaultStorageLocation,
+    supplierId,
+    setSupplierId,
+    paymentType,
+    setPaymentType,
+    receiptNotes,
+    setReceiptNotes,
     editable,
     rows: pageSlice.pageRows,
     allRows: rows,
@@ -445,6 +478,7 @@ export function useProductImport(onClose) {
     applyDefaultStoreToAll,
     applyDefaultLocationToAll,
     refreshPreview,
+    setRowQuantity,
     setRowPrice,
     setRowCategory,
     setRowStore,

@@ -1,7 +1,8 @@
 package com.pos.restaurant.order.service.impl;
 
-import com.pos.restaurant.config.RestaurantHotCache;
+import com.pos.restaurant.floor.revision.FloorRevisionBump;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.security.RestaurantTenantContext;
 import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
@@ -67,13 +68,20 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final OrderAssignWaiterHandler assignWaiterHandler;
     private final OrderTransferTableHandler transferTableHandler;
     private final OrderMergeTablesHandler mergeTablesHandler;
-    private final RestaurantHotCache hotCache;
+    private final FloorRevisionBump floorRevision;
 
     private OrderResponse touchFloor(OrderResponse response) {
-        if (response != null) {
-            hotCache.evictFloor(response.storeId());
+        if (response != null && onFloorTile(response)) {
+            floorRevision.bump(RestaurantTenantContext.getCompanyId(), response.storeId());
         }
         return response;
+    }
+
+    private static boolean onFloorTile(OrderResponse response) {
+        if (response.tableId() != null) {
+            return true;
+        }
+        return response.linkedTables() != null && !response.linkedTables().isEmpty();
     }
 
     @Override
@@ -178,25 +186,25 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Override
     @Transactional
     public OrderResponse updateDeliveryDetails(UUID orderId, UpdateDeliveryDetailsRequest request) {
-        return touchFloor(updateDeliveryDetailsHandler.handle(orderId, request));
+        return updateDeliveryDetailsHandler.handle(orderId, request);
     }
 
     @Override
     @Transactional
     public OrderResponse updateDeliveryStatus(UUID orderId, UpdateDeliveryStatusRequest request) {
-        return touchFloor(updateDeliveryStatusHandler.handle(orderId, request));
+        return updateDeliveryStatusHandler.handle(orderId, request);
     }
 
     @Override
     @Transactional
     public OrderResponse updateDiscount(UUID orderId, UpdateOrderDiscountRequest request) {
-        return touchFloor(updateDiscountHandler.handle(orderId, request));
+        return updateDiscountHandler.handle(orderId, request);
     }
 
     @Override
     @Transactional
     public OrderResponse assignWaiter(UUID orderId, AssignWaiterRequest request) {
-        return touchFloor(assignWaiterHandler.handle(orderId, request));
+        return assignWaiterHandler.handle(orderId, request);
     }
 
     @Override
@@ -232,8 +240,11 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Override
     @Transactional
     public void cancel(UUID orderId) {
-        Integer storeId = orderLookup.require(orderId).getStoreId();
+        FloorOrder order = orderLookup.require(orderId);
+        boolean onTile = order.getTable() != null;
         cancelHandler.handle(orderId);
-        hotCache.evictFloor(storeId);
+        if (onTile) {
+            floorRevision.bump(order.getCompanyId(), order.getStoreId());
+        }
     }
 }

@@ -161,6 +161,7 @@ export function useStoresAdminPage() {
     rows,
     isLoading: listQuery.isLoading,
     isError: listQuery.isError,
+    refetch: listQuery.refetch,
     modal,
     setModal,
     openCreate,

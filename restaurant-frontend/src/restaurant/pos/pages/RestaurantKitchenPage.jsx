@@ -4,8 +4,8 @@ import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
 import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspaceEmpty';
-import PosZoomControls from '../components/PosZoomControls';
 import KitchenTicketCard from '../components/KitchenTicketCard';
+import PosLoadRetry from '../components/PosLoadRetry';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import PosSoundToggle from '../components/PosSoundToggle';
@@ -93,7 +93,7 @@ export default function RestaurantKitchenPage() {
     );
   }
 
-  if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
+  if (p.workspace.noAssignment || p.workspace.multipleAssignment || p.workspace.storeId == null) {
     return (
       <RestaurantWorkspaceEmpty
         t={p.t}
@@ -123,10 +123,9 @@ export default function RestaurantKitchenPage() {
         <div className="rst-pos__actions">
           {p.canAdmin ? (
             <Link to="/rst/admin/dashboard">
-              <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
+              <BaseButton type="button" variant="primary">{p.t('rst.pos.toAdmin')}</BaseButton>
             </Link>
           ) : null}
-          {mobile.enabled ? null : <PosZoomControls zoom={zoom} t={p.t} />}
           <PosSoundToggle t={p.t} />
           <RestaurantThemeSwitch />
           <LanguageSwitcher variant="rst" />
@@ -182,7 +181,9 @@ export default function RestaurantKitchenPage() {
           </div>
         </div>
 
-        {p.isError ? <div className="rst-notice">{p.t('rst.kitchen.loadFailed')}</div> : null}
+        {p.isError ? (
+          <PosLoadRetry t={p.t} messageKey="rst.kitchen.loadFailed" onRetry={p.refetch} />
+        ) : null}
 
         {(p.stations?.length > 0) ? (
           <div className="rst-kds-stations" role="tablist" aria-label={p.t('rst.kitchen.stationsFilter', { defaultValue: 'Станции' })}>

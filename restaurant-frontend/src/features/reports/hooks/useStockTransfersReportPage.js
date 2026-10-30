@@ -1,19 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { warehouseApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
 import { useReportStores } from './useReportStores';
+import { useRestaurantWorkspaceStore } from '../../../restaurant/shared/hooks/useRestaurantWorkspaceStore';
 
 /** Operational transfers list from warehouse DB (not reporting facts). */
 export function useStockTransfersReportPage() {
   const { from, to, setFrom, setTo, rangeEnabled } = useReportDateRange(29);
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_DEFAULT);
+  const workspace = useRestaurantWorkspaceStore();
   const [fromStoreId, setFromStoreId] = useState('');
   const [toStoreId, setToStoreId] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const { data: stores = [] } = useReportStores();
+
+  useEffect(() => {
+    if (workspace.storeId != null) setFromStoreId(String(workspace.storeId));
+  }, [workspace.storeId]);
 
   const params = useMemo(
     () => ({

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 public record ProductImportConfirmRequest(
     String strategy,
@@ -14,6 +15,12 @@ public record ProductImportConfirmRequest(
     Integer defaultStoreId,
     /** Расположение на складе для всех новых позиций, если в файле/строке не задано. */
     String defaultStorageLocation,
+    /** Поставщик прихода (только AS_RECEIPT). */
+    UUID supplierId,
+    /** CASH | CREDIT — как в обычном приходе. */
+    String paymentType,
+    /** Комментарий к приходу; если пусто — «Импорт …». */
+    String receiptNotes,
     @Valid List<ImportRowConfirm> rows
 ) {
     public record ImportRowConfirm(
@@ -26,7 +33,9 @@ public record ProductImportConfirmRequest(
         String barcode,
         String packageCode,
         Boolean markedProduct,
-        String ikpuStatus
+        String ikpuStatus,
+        /** Количество строки. Пусто — берётся из файла. */
+        @DecimalMin("0") BigDecimal quantity
     ) {
     }
 }

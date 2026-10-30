@@ -3,13 +3,17 @@ package com.pos.restaurant.menu.controller;
 import com.pos.restaurant.menu.dto.CreateMenuVariantRequest;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
 import com.pos.restaurant.menu.dto.SaveMenuItemRequest;
+import com.pos.restaurant.menu.service.MenuItemImageService;
 import com.pos.restaurant.menu.service.MenuItemService;
+import com.pos.restaurant.menu.support.MenuItemDataUriParser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +36,7 @@ import java.util.UUID;
 public class MenuItemController {
 
     private final MenuItemService menuItemService;
+    private final MenuItemImageService menuItemImageService;
 
     @GetMapping("/stores/{storeId}/menu-items")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
@@ -52,6 +57,17 @@ public class MenuItemController {
         @Valid @RequestBody SaveMenuItemRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(menuItemService.create(storeId, request));
+    }
+
+    @GetMapping("/menu-items/{itemId}/image")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
+    @Operation(summary = "Фото блюда (отдельно от списка — список не тащит base64)")
+    public ResponseEntity<byte[]> image(@PathVariable UUID itemId) {
+        MenuItemDataUriParser.Parsed image = menuItemImageService.getImage(itemId);
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
+            .contentType(MediaType.parseMediaType(image.contentType()))
+            .body(image.bytes());
     }
 
     @PutMapping("/menu-items/{itemId}")

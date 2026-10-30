@@ -1,6 +1,6 @@
 import '../../../../styles/catalog/product-import.css';
+import { BaseModal } from '../../../../components/ui';
 import { useProductImport } from '../../hooks/useProductImport';
-import ProductImportModalHeader from './import/ProductImportModalHeader';
 import ProductImportModalFooter from './import/ProductImportModalFooter';
 import ProductImportSetupStep from './import/ProductImportSetupStep';
 import ProductImportPreviewStep from './import/ProductImportPreviewStep';
@@ -9,75 +9,15 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
   const imp = useProductImport(onClose);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3">
-      <div className="product-import-modal flex flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-        <ProductImportModalHeader title={imp.t('products.import.title')} onClose={onClose} />
-
-        <div className="product-import-modal__body min-h-0 flex-1 overflow-y-auto p-4">
-          {imp.step === 'setup' && (
-            <ProductImportSetupStep
-              t={imp.t}
-              source={imp.source}
-              setSource={imp.setSource}
-              mode={imp.mode}
-              setMode={imp.setMode}
-            />
-          )}
-
-          {imp.step === 'preview' && imp.preview && (
-            <ProductImportPreviewStep
-              t={imp.t}
-              preview={imp.preview}
-              rows={imp.rows}
-              allRows={imp.allRows}
-              allDuplicates={imp.allDuplicates}
-              markupInput={imp.markupInput}
-              onMarkupInputChange={imp.onMarkupInputChange}
-              onMarkupInputBlur={imp.onMarkupInputBlur}
-              applyMarkupPreset={imp.applyMarkupPreset}
-              applyMarkupToAll={imp.applyMarkupToAll}
-              defaultCategoryId={imp.defaultCategoryId}
-              setDefaultCategoryId={imp.setDefaultCategoryId}
-              applyDefaultCategoryToAll={imp.applyDefaultCategoryToAll}
-              categories={categories}
-              defaultStoreId={imp.defaultStoreId}
-              setDefaultStoreId={imp.setDefaultStoreId}
-              applyDefaultStoreToAll={imp.applyDefaultStoreToAll}
-              stores={stores}
-              defaultStorageLocation={imp.defaultStorageLocation}
-              setDefaultStorageLocation={imp.setDefaultStorageLocation}
-              applyDefaultLocationToAll={imp.applyDefaultLocationToAll}
-              refreshPreview={imp.refreshPreview}
-              editable={imp.editable}
-              setRowPrice={imp.setRowPrice}
-              setRowCategory={imp.setRowCategory}
-              setRowStore={imp.setRowStore}
-              setRowStorageLocation={imp.setRowStorageLocation}
-              setRowBarcode={imp.setRowBarcode}
-              setRowIkpu={imp.setRowIkpu}
-              setRowMarkedProduct={imp.setRowMarkedProduct}
-              visibleColumns={imp.visibleColumns}
-              toggleColumn={imp.toggleColumn}
-              tasnifByRow={imp.tasnifByRow}
-              tasnifFilter={imp.tasnifFilter}
-              setTasnifFilter={imp.setTasnifFilter}
-              verifyingTasnif={imp.verifyingTasnif}
-              verifyProgress={imp.verifyProgress}
-              runTasnifVerify={imp.runTasnifVerify}
-              page={imp.page}
-              totalPages={imp.totalPages}
-              pageSize={imp.pageSize}
-              pageFrom={imp.pageFrom}
-              pageTo={imp.pageTo}
-              setPage={imp.setPage}
-              setPageSize={imp.setPageSize}
-              filteredCount={imp.filteredCount}
-            />
-          )}
-
-          <input ref={imp.fileRef} type="file" className="hidden" accept=".xlsx,.xls,.json,.pdf,application/pdf" onChange={imp.onFile} />
-        </div>
-
+    <BaseModal
+      open
+      title={imp.t('products.import.title')}
+      onClose={onClose}
+      size="full"
+      className="product-import-modal"
+      bodyClassName="product-import-modal__body"
+      footerClassName="product-import-modal__footer"
+      footer={(
         <ProductImportModalFooter
           step={imp.step}
           setStep={imp.setStep}
@@ -87,9 +27,87 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
           canImport={imp.canImport}
           allDuplicates={imp.allDuplicates}
           importing={imp.importing}
+          mode={imp.mode}
           t={imp.t}
         />
-      </div>
-    </div>
+      )}
+    >
+      {imp.step === 'setup' && (
+        <ProductImportSetupStep
+          t={imp.t}
+          source={imp.source}
+          setSource={imp.setSource}
+          mode={imp.mode}
+          setMode={imp.setMode}
+        />
+      )}
+
+      {imp.step === 'preview' && imp.preview && (
+        <ProductImportPreviewStep
+          t={imp.t}
+          mode={imp.mode}
+          preview={imp.preview}
+          rows={imp.rows}
+          allRows={imp.allRows}
+          allDuplicates={imp.allDuplicates}
+          markupInput={imp.markupInput}
+          onMarkupInputChange={imp.onMarkupInputChange}
+          onMarkupInputBlur={imp.onMarkupInputBlur}
+          applyMarkupPreset={imp.applyMarkupPreset}
+          applyMarkupToAll={imp.applyMarkupToAll}
+          defaultCategoryId={imp.defaultCategoryId}
+          setDefaultCategoryId={imp.setDefaultCategoryId}
+          applyDefaultCategoryToAll={imp.applyDefaultCategoryToAll}
+          categories={categories}
+          defaultStoreId={imp.defaultStoreId}
+          setDefaultStoreId={imp.setDefaultStoreId}
+          applyDefaultStoreToAll={imp.applyDefaultStoreToAll}
+          stores={stores}
+          supplierId={imp.supplierId}
+          setSupplierId={imp.setSupplierId}
+          paymentType={imp.paymentType}
+          setPaymentType={imp.setPaymentType}
+          receiptNotes={imp.receiptNotes}
+          setReceiptNotes={imp.setReceiptNotes}
+          defaultStorageLocation={imp.defaultStorageLocation}
+          setDefaultStorageLocation={imp.setDefaultStorageLocation}
+          applyDefaultLocationToAll={imp.applyDefaultLocationToAll}
+          refreshPreview={imp.refreshPreview}
+          editable={imp.editable}
+          setRowQuantity={imp.setRowQuantity}
+          setRowPrice={imp.setRowPrice}
+          setRowCategory={imp.setRowCategory}
+          setRowStore={imp.setRowStore}
+          setRowStorageLocation={imp.setRowStorageLocation}
+          setRowBarcode={imp.setRowBarcode}
+          setRowIkpu={imp.setRowIkpu}
+          setRowMarkedProduct={imp.setRowMarkedProduct}
+          visibleColumns={imp.visibleColumns}
+          toggleColumn={imp.toggleColumn}
+          tasnifByRow={imp.tasnifByRow}
+          tasnifFilter={imp.tasnifFilter}
+          setTasnifFilter={imp.setTasnifFilter}
+          verifyingTasnif={imp.verifyingTasnif}
+          verifyProgress={imp.verifyProgress}
+          runTasnifVerify={imp.runTasnifVerify}
+          page={imp.page}
+          totalPages={imp.totalPages}
+          pageSize={imp.pageSize}
+          pageFrom={imp.pageFrom}
+          pageTo={imp.pageTo}
+          setPage={imp.setPage}
+          setPageSize={imp.setPageSize}
+          filteredCount={imp.filteredCount}
+        />
+      )}
+
+      <input
+        ref={imp.fileRef}
+        type="file"
+        className="hidden"
+        accept=".xlsx,.xls,.json,.pdf,application/pdf"
+        onChange={imp.onFile}
+      />
+    </BaseModal>
   );
 }

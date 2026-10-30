@@ -3,6 +3,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useRestaurantStores } from '../../../hooks/useRestaurantStores';
 import { usePersistedRestaurantStoreId } from './usePersistedRestaurantStoreId';
+import { resolveRestaurantPickableStores } from '../utils/resolveRestaurantPickableStores';
 
 /**
  * Resolves which restaurant/canteen branch the current user works in.
@@ -40,15 +41,33 @@ export function useRestaurantWorkspaceStore() {
   }, [isFloorStaff, isCook, assignedRestaurantStores, assignedIds, restaurantStores]);
 
   const staffUsesAssignment = isFloorStaff || isCook;
-  const pickableStores = staffUsesAssignment ? staffPool : restaurantStores;
-  const storesLoading = staffUsesAssignment ? (cashier.storeLoading || isLoading) : isLoading;
+  const pickableStores = useMemo(
+    () => resolveRestaurantPickableStores({
+      restaurantStores,
+      assignedIds,
+      staffUsesAssignment,
+      staffPool,
+    }),
+    [restaurantStores, assignedIds, staffUsesAssignment, staffPool],
+  );
+  // Single JWT assignment is enough to open floor/menu/admin — do not block on store list.
+  const soleAssignedId = assignedIds.length === 1 ? assignedIds[0] : null;
+  const storesLoading = soleAssignedId != null
+    ? false
+    : (staffUsesAssignment ? (cashier.storeLoading || isLoading) : isLoading);
 
   const effectiveStoreId = useMemo(() => {
     const picked = Number(pickedStoreId);
     const pickedId = Number.isFinite(picked) && picked > 0 ? picked : null;
     const pickedInList = pickedId != null && pickableStores.some((s) => Number(s.id) === pickedId);
-    // Start page queries with the last branch immediately; do not wait for the store list.
-    if (storesLoading && pickedId != null) return pickedId;
+    const pickedInAssignment = pickedId != null
+      && (assignedIds.length === 0 || assignedIds.includes(pickedId));
+
+    // One assigned branch: start POS/admin queries immediately from JWT.
+    if (soleAssignedId != null) return soleAssignedId;
+
+    // Optimistic last branch only when it cannot belong to another company/user.
+    if (storesLoading && pickedId != null && pickedInAssignment) return pickedId;
     if (pickedInList) return pickedId;
     if (staffUsesAssignment) {
       if (staffPool.length === 1) return Number(staffPool[0].id);
@@ -60,9 +79,11 @@ export function useRestaurantWorkspaceStore() {
     if (restaurantStores.length === 1) return Number(restaurantStores[0].id);
     return null;
   }, [
+    soleAssignedId,
     storesLoading,
     pickedStoreId,
     pickableStores,
+    assignedIds,
     staffUsesAssignment,
     staffPool,
     cashier.storeId,
@@ -89,7 +110,11 @@ export function useRestaurantWorkspaceStore() {
     return null;
   }, [pickableStores, effectiveStoreId, staffUsesAssignment, cashier.storeId, cashier.storeName]);
 
-  const noCompanyRestaurants = !isLoading && restaurantStores.length === 0;
+  // Admin: empty /stores alone is not "no assignment" if JWT already has storeIds (edge offline).
+  const noCompanyRestaurants = !isLoading
+    && restaurantStores.length === 0
+    && assignedIds.length === 0
+    && !staffUsesAssignment;
   const noStaffStores = staffUsesAssignment && !isLoading && staffPool.length === 0 && assignedIds.length === 0;
   const staffStoresWrongType = staffUsesAssignment
     && !isLoading

@@ -19,6 +19,8 @@ import {
   PlatformLeadsPage,
   PlatformBillingPage,
   PlatformAnalyticsPage,
+  PlatformCompanyAnalyticsPage,
+  PlatformCompanyAnalyticsDetailPage,
 } from './lazyPages';
 
 function guarded(page, sectionName) {
@@ -55,5 +57,7 @@ export const platformRoutes = (
     <Route path="leads" element={guarded(<PlatformLeadsPage />, 'platform-leads')} />
     <Route path="billing" element={guarded(<PlatformBillingPage />, 'platform-billing')} />
     <Route path="analytics" element={guarded(<PlatformAnalyticsPage />, 'platform-analytics')} />
+    <Route path="analytics/companies" element={guarded(<PlatformCompanyAnalyticsPage />, 'platform-analytics-companies')} />
+    <Route path="analytics/companies/:companyId" element={guarded(<PlatformCompanyAnalyticsDetailPage />, 'platform-analytics-company')} />
   </Route>
 );

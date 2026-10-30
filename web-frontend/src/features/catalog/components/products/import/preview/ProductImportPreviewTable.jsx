@@ -10,6 +10,7 @@ import {
 } from '../../../../../../utils/productImportUtils';
 import { productImportStatusBadge } from '../../../../utils/productImportStatusBadge';
 import ProductImportNameCell from '../ProductImportNameCell';
+import ProductImportQtyStepper from './ProductImportQtyStepper';
 import ProductImportMarkingCell from './ProductImportMarkingCell';
 import ProductImportTasnifCell from './ProductImportTasnifCell';
 
@@ -21,6 +22,7 @@ export default function ProductImportPreviewTable({
   stores,
   visibleColumns,
   tasnifByRow,
+  setRowQuantity,
   setRowPrice,
   setRowCategory,
   setRowStore,
@@ -82,6 +84,7 @@ export default function ProductImportPreviewTable({
                         categories,
                         stores,
                         tasnif,
+                        setRowQuantity,
                         setRowPrice,
                         setRowCategory,
                         setRowStore,
@@ -154,6 +157,17 @@ function renderCell(ctx) {
         />
       );
     case 'qty':
+      if (isNew && ed) {
+        return (
+          <ProductImportQtyStepper
+            value={ed.quantity}
+            minusLabel={t('products.import.qtyMinus')}
+            plusLabel={t('products.import.qtyPlus')}
+            onMinus={() => ctx.setRowQuantity(r.rowNum, -1)}
+            onPlus={() => ctx.setRowQuantity(r.rowNum, 1)}
+          />
+        );
+      }
       return formatQty(r.quantity);
     case 'unit':
       return r.unitOfMeasure || '—';

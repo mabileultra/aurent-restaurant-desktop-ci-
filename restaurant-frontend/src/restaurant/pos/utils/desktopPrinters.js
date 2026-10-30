@@ -51,6 +51,7 @@ export function getDesktopPrinterSettings() {
     return Promise.resolve({
       receiptPrinterName: '',
       labelPrinterName: '',
+      labelPrinterMode: 'driver',
       billPrinterName: '',
       stationPrinters: {},
     });
@@ -74,12 +75,25 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-export function printTicketHtml(html, printerName) {
+export function printRawLabel(printerName, bytes) {
+  const desk = printerBridge();
+  if (typeof desk?.printRaw !== 'function') {
+    return Promise.reject(new Error('TSPL недоступен в этой сборке'));
+  }
+  return desk.printRaw({ printerName, bytes });
+}
+
+export function printTicketHtml(html, printerName, opts = {}) {
   const desk = printerBridge();
   if (typeof desk?.printTicketHtml !== 'function') {
     return Promise.reject(new Error('Печать недоступна в этой сборке'));
   }
-  return desk.printTicketHtml({ html, printerName });
+  return desk.printTicketHtml({
+    html,
+    printerName,
+    paperWmm: opts.paperWmm,
+    paperHmm: opts.paperHmm,
+  });
 }
 
 /**

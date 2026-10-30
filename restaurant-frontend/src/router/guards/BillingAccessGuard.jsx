@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import { isRestaurantDesktop } from '../../utils/restaurantDesktop';
+import BillingPaymentNoticeOverlay from '../../features/billing/BillingPaymentNoticeOverlay';
+import { useBillingPaymentNotice } from '../../features/billing/useBillingPaymentNotice';
 
 const RETAIL_BILLING = '/billing';
 const RESTAURANT_BILLING = '/rst/admin/billing';
@@ -18,16 +20,22 @@ function billingHomeFor(pathname) {
 
 /**
  * Если оплата компании заблокирована — пускаем только на billing (админ) или показываем стоп-экран.
+ * При GRACE / сроке оплаты — мягкое напоминание 3×/день (не блокирует работу).
  */
 export default function BillingAccessGuard({ children }) {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
+  const hallPc = isRestaurantDesktop();
 
   // Hall PC has no cloud billing — never block or 401-loop after login.
-  if (isRestaurantDesktop()) return children;
-
-  const enabled = Boolean(isAuthenticated() && user && user.role !== 'SUPER_ADMIN' && user.role !== 'PLATFORM_ADMIN');
+  const enabled = Boolean(
+    !hallPc
+    && isAuthenticated()
+    && user
+    && user.role !== 'SUPER_ADMIN'
+    && user.role !== 'PLATFORM_ADMIN',
+  );
 
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-billing-access', user?.companyId || user?.id],
@@ -37,13 +45,48 @@ export default function BillingAccessGuard({ children }) {
     retry: 1,
   });
 
-  if (!enabled) return children;
+  const companyId = user?.companyId ?? user?.id;
+  const onBillingPage = isBillingPath(location.pathname);
+  const noticeRequired = Boolean(
+    enabled
+    && !isLoading
+    && data?.billingEnabled
+    && data?.accessAllowed
+    && data?.paymentNoticeRequired
+    && !onBillingPage,
+  );
+
+  const { visible, dismiss } = useBillingPaymentNotice({
+    enabled: noticeRequired,
+    companyId,
+    noticeRequired,
+  });
+
+  if (hallPc || !enabled) return children;
   if (isLoading) return children;
 
-  const blocked = data?.billingEnabled && data?.accessAllowed === false;
-  if (!blocked) return children;
+  const noticeOverlay = (
+    <BillingPaymentNoticeOverlay
+      open={visible}
+      onClose={dismiss}
+      isAdmin={user?.role === 'ADMIN'}
+      billingPath={billingHomeFor(location.pathname)}
+      noticeKind={data?.noticeKind}
+      graceDaysLeft={data?.graceDaysLeft}
+    />
+  );
 
-  if (user?.role === 'ADMIN' && isBillingPath(location.pathname)) return children;
+  const blocked = data?.billingEnabled && data?.accessAllowed === false;
+  if (!blocked) {
+    return (
+      <>
+        {children}
+        {noticeOverlay}
+      </>
+    );
+  }
+
+  if (user?.role === 'ADMIN' && onBillingPage) return children;
   if (user?.role === 'ADMIN') {
     return <Navigate to={billingHomeFor(location.pathname)} replace />;
   }

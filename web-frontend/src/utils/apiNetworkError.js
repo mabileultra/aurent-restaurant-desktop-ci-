@@ -1,6 +1,13 @@
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
 
+function isRequestCanceled(error) {
+  const code = error?.code;
+  const name = error?.name;
+  return code === 'ERR_CANCELED' || name === 'CanceledError' || name === 'AbortError';
+}
+
 export function isApiNetworkError(error) {
+  if (isRequestCanceled(error)) return false;
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
   if (!error) return false;
   const code = error.code;

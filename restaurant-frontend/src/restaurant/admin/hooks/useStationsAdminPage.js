@@ -126,5 +126,7 @@ export function useStationsAdminPage() {
       setForm(emptyForm());
     },
     isLoading: (workspace.storeId == null && workspace.isLoading) || stationsQuery.isLoading,
+    isError: stationsQuery.isError,
+    refetch: () => stationsQuery.refetch(),
   };
 }

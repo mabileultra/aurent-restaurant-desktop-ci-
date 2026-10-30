@@ -12,6 +12,7 @@ import { prefetchPrintWaiterRoster, seedPrintWaiterRoster } from '../utils/print
 import { createPrintRelayLeader } from '../utils/printRelayLeader';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 import { playPosSound } from '../utils/posSounds';
+import { popMenuImageBusy, pushMenuImageBusy } from '../../shared/utils/menuImageLoadQueue';
 
 const POLL_MS = 300;
 const CAPS_TIMEOUT_MS = 2500;
@@ -104,6 +105,7 @@ async function loadClaimCapabilities() {
   const fromSettings = [
     settings?.billPrinterName,
     settings?.receiptPrinterName,
+    settings?.labelPrinterName,
     ...Object.values(settings?.stationPrinters || {}),
   ]
     .map((name) => String(name || '').trim())
@@ -115,8 +117,9 @@ async function loadClaimCapabilities() {
     || String(settings?.billPrinterName || '').trim(),
   );
   const kitchenSend = Object.values(settings?.stationPrinters || {}).some((name) => String(name || '').trim());
+  const pickupLabel = Boolean(String(settings?.labelPrinterName || '').trim());
   const printerNames = [...new Set([...fromOs, ...fromSettings])];
-  return { printerNames, guestBill, orderCancel, kitchenSend };
+  return { printerNames, guestBill, orderCancel, kitchenSend, pickupLabel };
 }
 
 function capsReady(caps) {
@@ -124,6 +127,7 @@ function capsReady(caps) {
     caps?.guestBill
     || caps?.orderCancel
     || caps?.kitchenSend
+    || caps?.pickupLabel
     || caps?.printerNames?.length,
   );
 }
@@ -153,7 +157,13 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const storeIdRef = useRef(storeId);
   storeIdRef.current = storeId;
   const warnedMissingRef = useRef(new Set());
-  const capsRef = useRef({ printerNames: [], guestBill: false, orderCancel: false, kitchenSend: false });
+  const capsRef = useRef({
+    printerNames: [],
+    guestBill: false,
+    orderCancel: false,
+    kitchenSend: false,
+    pickupLabel: false,
+  });
 
   useEffect(() => {
     if (storeId == null) return;
@@ -328,6 +338,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
         outcome = { ack: false, release: true, mode: 'error' };
       }
       inFlight.delete(job.id);
+      popMenuImageBusy();
       if (printerKey) {
         const left = (perPrinter.get(printerKey) || 1) - 1;
         if (left > 0) perPrinter.set(printerKey, left);
@@ -389,6 +400,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
               continue;
             }
             inFlight.add(job.id);
+            pushMenuImageBusy();
             runJob(job);
           }
         } while (pendingFlushRef.current && !cancelled);

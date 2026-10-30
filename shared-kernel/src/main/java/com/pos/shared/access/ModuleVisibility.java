@@ -9,6 +9,9 @@ import java.util.Set;
 public final class ModuleVisibility {
 
     public static final String RESTAURANT_REQUEST_BILL = "restaurantRequestBill";
+    public static final String RESTAURANT_PICKUP_LABEL = "restaurantPickupLabel";
+    public static final String RESTAURANT_CUSTOMER_DISPLAY = "restaurantCustomerDisplay";
+    public static final String RESTAURANT_QUICK_SALE = "restaurantQuickSale";
 
     private static final Set<String> RESTAURANT_KEYS = Set.of(
         "restaurantFloor",
@@ -16,7 +19,10 @@ public final class ModuleVisibility {
         "restaurantDelivery",
         "restaurantKitchen",
         "restaurantPos",
-        RESTAURANT_REQUEST_BILL
+        RESTAURANT_REQUEST_BILL,
+        RESTAURANT_PICKUP_LABEL,
+        RESTAURANT_CUSTOMER_DISPLAY,
+        RESTAURANT_QUICK_SALE
     );
 
     private static final Set<String> GROCERY_CATALOG_KEYS = Set.of(

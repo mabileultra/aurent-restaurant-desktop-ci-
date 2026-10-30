@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
 import RestaurantPrinterSettings from '../components/RestaurantPrinterSettings';
 import RestaurantPrintProfilePanel from '../components/RestaurantPrintProfilePanel';
 import '../../shared/styles/rst-blocks.css';
@@ -33,36 +34,40 @@ export default function PrintersAdminPage() {
     enabled: workspace.storeId != null,
   });
   const kitchenBoardEnabled = boardQuery.data?.enabled !== false;
-
-  if (workspace.noAssignment) {
-    return <div className="rst-notice">{t('rst.floor.noStore')}</div>;
-  }
+  const isLoading = stationsQuery.isLoading || categoriesQuery.isLoading || boardQuery.isLoading;
+  const isError = stationsQuery.isError || categoriesQuery.isError || boardQuery.isError;
 
   return (
-    <section className="rst-stations">
-      <div className="rst-halls__toolbar">
-        <div>
-          <h1 className="rst-coming__title">{t('rst.admin.printersTitle')}</h1>
-          <p className="rst-coming__text mb-0">{t('rst.admin.printersHint')}</p>
+    <AdminWorkspaceGate
+      t={t}
+      workspace={workspace}
+      isLoading={isLoading && !stations.length}
+      isError={isError}
+      onRetry={() => {
+        stationsQuery.refetch();
+        categoriesQuery.refetch();
+        boardQuery.refetch();
+      }}
+    >
+      <section className="rst-stations">
+        <div className="rst-halls__toolbar">
+          <div>
+            <h1 className="rst-coming__title">{t('rst.admin.printersTitle')}</h1>
+            <p className="rst-coming__text mb-0">{t('rst.admin.printersHint')}</p>
+          </div>
         </div>
-      </div>
-      {workspace.isLoading && workspace.storeId == null ? null : !workspace.storeId ? (
-        <div className="rst-notice">{t('rst.admin.selectStore')}</div>
-      ) : (
-        <>
-          <RestaurantPrinterSettings
-            stations={stations}
-            categories={autoPrintCategories}
-            storeId={workspace.storeId}
-            kitchenBoardEnabled={kitchenBoardEnabled}
-            t={t}
-          />
-          <RestaurantPrintProfilePanel
-            storeId={workspace.storeId}
-            t={t}
-          />
-        </>
-      )}
-    </section>
+        <RestaurantPrinterSettings
+          stations={stations}
+          categories={autoPrintCategories}
+          storeId={workspace.storeId}
+          kitchenBoardEnabled={kitchenBoardEnabled}
+          t={t}
+        />
+        <RestaurantPrintProfilePanel
+          storeId={workspace.storeId}
+          t={t}
+        />
+      </section>
+    </AdminWorkspaceGate>
   );
 }

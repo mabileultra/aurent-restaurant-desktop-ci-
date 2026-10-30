@@ -8,7 +8,7 @@ public record EdgeStoreResponse(
     String address,
     String regionCode,
     String districtCode,
-    String phone,
+    String phone, // may be set for edge-created rows
     Integer companyId,
     String companyName,
     Integer businessTypeId,

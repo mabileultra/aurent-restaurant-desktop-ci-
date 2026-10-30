@@ -3,9 +3,11 @@ package com.pos.restaurant.order.repository;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +20,11 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
 
     @Query("select o from FloorOrder o left join fetch o.table left join fetch o.shift where o.id = :id and o.companyId = :companyId")
     Optional<FloorOrder> findByIdAndCompanyId(@Param("id") UUID id, @Param("companyId") Integer companyId);
+
+    /** Row lock for pay — no JOIN FETCH so Postgres locks only floor_orders. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from FloorOrder o where o.id = :id and o.companyId = :companyId")
+    Optional<FloorOrder> findByIdAndCompanyIdForUpdate(@Param("id") UUID id, @Param("companyId") Integer companyId);
 
     boolean existsByTableIdAndStatusIn(Integer tableId, Collection<OrderStatus> statuses);
 
@@ -113,33 +120,8 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
     @Query("select coalesce(max(o.orderNo), 0) from FloorOrder o where o.storeId = :storeId")
     int findMaxOrderNo(@Param("storeId") Integer storeId);
 
-    long countByShiftIdAndStatusIn(UUID shiftId, Collection<OrderStatus> statuses);
+    @Query("select coalesce(max(o.pickupNo), 0) from FloorOrder o where o.shift.id = :shiftId")
+    int findMaxPickupNoByShiftId(@Param("shiftId") UUID shiftId);
 
-    /**
-     * Lightweight activity watermark for cross-device sync (phone → cashier / monitor).
-     * Milliseconds since epoch of the latest order / open-order line / table change.
-     */
-    @Query(value = """
-        select cast(extract(epoch from greatest(
-          coalesce(
-            (select max(o.updated_at) from floor_orders o
-             where o.company_id = :companyId and o.store_id = :storeId),
-            timestamptz 'epoch'),
-          coalesce(
-            (select max(i.updated_at) from floor_order_items i
-             inner join floor_orders o on o.id = i.order_id
-             where o.company_id = :companyId and o.store_id = :storeId
-               and o.status in ('OPEN', 'BILLING')),
-            timestamptz 'epoch'),
-          coalesce(
-            (select max(t.updated_at) from floor_tables t
-             inner join floor_halls h on h.id = t.hall_id
-             where h.company_id = :companyId and h.store_id = :storeId),
-            timestamptz 'epoch')
-        )) * 1000 as bigint)
-        """, nativeQuery = true)
-    Long findFloorRevisionMillis(
-        @Param("companyId") Integer companyId,
-        @Param("storeId") Integer storeId
-    );
+    long countByShiftIdAndStatusIn(UUID shiftId, Collection<OrderStatus> statuses);
 }

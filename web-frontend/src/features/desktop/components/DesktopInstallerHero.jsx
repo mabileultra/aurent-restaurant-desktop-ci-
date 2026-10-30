@@ -1,15 +1,11 @@
 import { CheckCircle2 } from 'lucide-react';
 import DesktopProductCard from './DesktopProductCard';
-import { isArm64OnlyMacInstaller, isLikelyIntelMac } from '../utils/installerPlatformHint';
 
 export default function DesktopInstallerHero({
   t,
   cashier,
   restaurant,
 }) {
-  const macArm64Only = isArm64OnlyMacInstaller(cashier.manifest);
-  const showIntelMacWarning = macArm64Only && isLikelyIntelMac();
-
   return (
     <section className="installer-hero">
       <div className="installer-hero__inner">
@@ -55,16 +51,9 @@ export default function DesktopInstallerHero({
               isLoading={restaurant.isLoading}
               isError={restaurant.isError}
               unavailableText={t('installer.restaurantComingSoon')}
-              showMac={false}
             />
           </div>
         </div>
-
-        {showIntelMacWarning ? (
-          <p className="installer-hero__meta installer-hero__meta--warn" role="status">
-            {t('installer.macIntelUnsupported')}
-          </p>
-        ) : null}
       </div>
     </section>
   );

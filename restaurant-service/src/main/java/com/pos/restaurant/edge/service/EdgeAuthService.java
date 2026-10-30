@@ -452,7 +452,7 @@ public class EdgeAuthService {
             staff.getCompanyLoginCode(),
             readIntList(staff.getStoreIdsJson()),
             readStringList(staff.getAllowedModulesJson()),
-            false
+            StringUtils.hasText(staff.getAllowedModulesJson())
         );
     }
 

@@ -2,18 +2,21 @@ import { create } from 'zustand';
 
 export const ADMIN_THEME_STORAGE_KEY = 'app-admin-theme';
 
-/** @typedef {'light' | 'dark' | 'system'} AdminThemePreference */
-/** @typedef {'light' | 'dark'} EffectiveTheme */
+/** @typedef {'light'} AdminThemePreference */
+/** @typedef {'light'} EffectiveTheme */
 
 /**
- * Reads admin theme preference from localStorage.
+ * Admin shell is light-only (no dark/system toggle).
+ * Clears legacy dark preference from storage.
  * @returns {AdminThemePreference}
  */
 export function readAdminTheme() {
   try {
     if (typeof localStorage !== 'undefined' && localStorage != null) {
       const val = localStorage.getItem(ADMIN_THEME_STORAGE_KEY);
-      if (val === 'light' || val === 'dark' || val === 'system') return val;
+      if (val === 'dark' || val === 'system') {
+        localStorage.setItem(ADMIN_THEME_STORAGE_KEY, 'light');
+      }
     }
   } catch {
     /* ignore */
@@ -22,31 +25,31 @@ export function readAdminTheme() {
 }
 
 /**
- * Resolves effective theme ('light' | 'dark') based on preference and system OS setting.
- * @param {AdminThemePreference} [pref]
+ * @param {string} [_pref]
  * @returns {EffectiveTheme}
  */
-export function resolveEffectiveAdminTheme(pref) {
-  const p = pref || readAdminTheme();
-  if (p === 'system') {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  }
-  return p === 'dark' ? 'dark' : 'light';
+export function resolveEffectiveAdminTheme(_pref) {
+  return 'light';
 }
 
 /**
- * Synchronizes document root (<html> and <body>) with the chosen admin theme.
- * @param {AdminThemePreference} [pref]
+ * Synchronizes document root for admin shell — always light.
+ * @param {string} [_pref]
  */
-export function syncRootTheme(pref) {
+export function syncRootTheme(_pref) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  const effective = resolveEffectiveAdminTheme(pref);
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(ADMIN_THEME_STORAGE_KEY, 'light');
+    }
+  } catch {
+    /* ignore */
+  }
 
   root.classList.remove(
+    'dark',
     'rst-theme',
     'cashier-theme--light',
     'cashier-theme--dark',
@@ -54,69 +57,38 @@ export function syncRootTheme(pref) {
     'app-theme--public',
   );
   root.classList.add('app-theme--admin');
-
-  if (effective === 'dark') {
-    root.classList.add('dark');
-    root.style.colorScheme = 'dark';
-    root.style.backgroundColor = '#0b1210';
-    if (document.body) {
-      document.body.style.backgroundColor = '#0b1210';
-      document.body.style.color = '#f1f5f9';
-    }
-  } else {
-    root.classList.remove('dark');
-    root.style.colorScheme = 'light';
-    root.style.backgroundColor = '#f1f5f9';
-    if (document.body) {
-      document.body.style.backgroundColor = '#f1f5f9';
-      document.body.style.color = '#0f172a';
-    }
+  root.style.colorScheme = 'light';
+  root.style.backgroundColor = '#f1f5f9';
+  if (document.body) {
+    document.body.style.backgroundColor = '#f1f5f9';
+    document.body.style.color = '#0f172a';
   }
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute('content', effective === 'dark' ? '#0b1210' : '#f1f5f9');
+    meta.setAttribute('content', '#f1f5f9');
   }
 }
 
 /**
- * Reactive Zustand store for Admin Theme preference.
+ * Kept for compatibility; admin theme is fixed to light.
  */
-export const useAdminThemeStore = create((set, get) => ({
-  theme: readAdminTheme(),
-  effectiveTheme: resolveEffectiveAdminTheme(readAdminTheme()),
-  setTheme: (nextTheme) => {
-    if (nextTheme !== 'light' && nextTheme !== 'dark' && nextTheme !== 'system') return;
+export const useAdminThemeStore = create((set) => ({
+  theme: 'light',
+  effectiveTheme: 'light',
+  setTheme: () => {
     try {
-      localStorage.setItem(ADMIN_THEME_STORAGE_KEY, nextTheme);
+      localStorage.setItem(ADMIN_THEME_STORAGE_KEY, 'light');
     } catch {
       /* ignore */
     }
-    const effective = resolveEffectiveAdminTheme(nextTheme);
-    set({ theme: nextTheme, effectiveTheme: effective });
-    syncRootTheme(nextTheme);
+    set({ theme: 'light', effectiveTheme: 'light' });
+    syncRootTheme('light');
   },
   toggleTheme: () => {
-    const current = get().theme;
-    const effective = resolveEffectiveAdminTheme(current);
-    const next = effective === 'dark' ? 'light' : 'dark';
-    get().setTheme(next);
+    /* no-op: admin is light-only */
   },
 }));
-
-// Setup system media query listener once in browser
-if (typeof window !== 'undefined' && window.matchMedia) {
-  const mql = window.matchMedia('(prefers-color-scheme: dark)');
-  const handleSystemChange = () => {
-    const current = useAdminThemeStore.getState().theme;
-    if (current === 'system') {
-      const effective = resolveEffectiveAdminTheme('system');
-      useAdminThemeStore.setState({ effectiveTheme: effective });
-      syncRootTheme('system');
-    }
-  };
-  mql.addEventListener?.('change', handleSystemChange);
-}
 
 /** Restaurant OS — тёмная оболочка + Tailwind dark: для встроенных Aurent UI. */
 export function syncRestaurantTheme() {

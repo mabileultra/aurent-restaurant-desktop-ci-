@@ -144,6 +144,7 @@ export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
     canRequestBill: openLike
       && hasBillable
       && (boardOn ? !hasNew : true),
-    canPay: order?.status === 'BILLING',
+    canPay: order?.status === 'BILLING'
+      || (order?.channel === 'TAKEAWAY' && openLike && hasBillable),
   };
 }

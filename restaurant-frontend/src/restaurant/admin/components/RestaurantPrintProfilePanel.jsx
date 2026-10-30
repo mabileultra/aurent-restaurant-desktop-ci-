@@ -29,6 +29,7 @@ const SLIP_LABEL = {
   GUEST_BILL: 'rst.admin.printSlipGuestBill',
   KITCHEN: 'rst.admin.printSlipKitchen',
   SHIFT_ITEMS: 'rst.admin.printSlipShift',
+  PICKUP_LABEL: 'rst.admin.printSlipPickup',
 };
 
 const FIELD_LABEL = {
@@ -45,9 +46,12 @@ const FIELD_LABEL = {
   footer: 'rst.admin.printFieldFooter',
 };
 
-export default function RestaurantPrintProfilePanel({ storeId, t }) {
+export default function RestaurantPrintProfilePanel({ storeId, t, onlySlip = null }) {
+  const slipTypes = onlySlip
+    ? [onlySlip]
+    : PRINT_SLIP_TYPES.filter((key) => key !== 'PICKUP_LABEL');
   const [profile, setProfile] = useState(factoryPrintProfile);
-  const [slipType, setSlipType] = useState('CANCEL');
+  const [slipType, setSlipType] = useState(onlySlip || 'CANCEL');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -256,7 +260,7 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
       </div>
 
       <div className="rst-print-profile__slip-tabs" role="tablist">
-        {PRINT_SLIP_TYPES.map((key) => (
+        {slipTypes.map((key) => (
           <button
             key={key}
             type="button"

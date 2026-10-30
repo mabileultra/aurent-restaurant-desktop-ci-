@@ -2,6 +2,7 @@ import { Outlet, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { BaseButton } from '../../components/ui';
 import LanguageSwitcher from '../../components/shared/LanguageSwitcher';
@@ -22,9 +23,10 @@ import '../admin/styles/rst-billing.css';
 export default function RestaurantAdminLayout() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const { hasModule } = useModuleAccess();
   const { businessType } = useCompanyBusinessType();
   const restaurantOnly = isRestaurantWorldBusiness(businessType);
-  const groups = visibleRstAdminNavGroups(user?.role);
+  const groups = visibleRstAdminNavGroups(user?.role, hasModule);
   const workspace = useRestaurantWorkspaceStore();
   const kitchenBoardQuery = useQuery({
     queryKey: ['rst-kitchen-board', workspace.storeId],

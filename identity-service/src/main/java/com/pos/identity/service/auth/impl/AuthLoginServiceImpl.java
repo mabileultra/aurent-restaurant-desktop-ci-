@@ -23,6 +23,7 @@ import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.service.support.UserLookupSupport;
 import com.pos.identity.service.support.UserSyncSupport;
 import com.pos.identity.util.CompanyLoginCodeUtil;
+import com.pos.identity.util.EmailAddressRules;
 import com.pos.identity.util.UserLoginUtil;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -55,9 +56,8 @@ public class AuthLoginServiceImpl implements AuthLoginService {
         if (userLookup.exists(UserSpecifications.lookup().platformOnly().usernameIgnoreCase(username))) {
             throw new BadRequestException("Username already taken");
         }
-        if (userLookup.exists(
-            UserSpecifications.lookup().platformOnly().emailIgnoreCase(UserLoginUtil.normalizeEmail(request.email()))
-        )) {
+        String email = EmailAddressRules.require(request.email());
+        if (userLookup.exists(UserSpecifications.lookup().platformOnly().emailIgnoreCase(email))) {
             throw new BadRequestException("Email already registered");
         }
 
@@ -66,7 +66,7 @@ public class AuthLoginServiceImpl implements AuthLoginService {
 
         User user = User.builder()
             .username(username)
-            .email(UserLoginUtil.normalizeEmail(request.email()))
+            .email(email)
             .password(passwordEncoder.encode(request.password()))
             .fullName(request.fullName())
             .role(role)

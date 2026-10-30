@@ -2,15 +2,20 @@ package com.pos.identity.controller;
 
 import com.pos.identity.dto.auth.EdgeStaffExportResponse;
 import com.pos.identity.dto.user.CreateUserRequest;
+import com.pos.identity.dto.user.ManagedUserPage;
 import com.pos.identity.dto.user.UpdateUserRequest;
+import com.pos.identity.dto.user.UserListCriteria;
 import com.pos.identity.dto.user.UserResponse;
 import com.pos.identity.service.UserService;
 import com.pos.identity.service.auth.EdgeStaffExportService;
+import com.pos.identity.service.user.UserListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,6 +40,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final UserListService userListService;
     private final EdgeStaffExportService edgeStaffExportService;
 
     @GetMapping
@@ -43,6 +49,29 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "Список пользователей")
     public ResponseEntity<List<UserResponse>> list() {
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/manage")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'MANAGER')")
+    @Operation(summary = "Постраничный список пользователей")
+    @ApiResponse(responseCode = "200", description = "Страница пользователей")
+    public ResponseEntity<ManagedUserPage> listManaged(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String searchAlt,
+        @RequestParam(required = false) Integer companyId,
+        @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String role,
+        @RequestParam(required = false) Boolean active,
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(userListService.list(
+            new UserListCriteria(
+                search, searchAlt, companyId, businessType, regionCode, districtCode, role, active
+            ),
+            pageable
+        ));
     }
 
     @GetMapping("/edge-staff-export")

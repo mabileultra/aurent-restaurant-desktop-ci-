@@ -8,6 +8,7 @@ export const rstMenuApi = {
   update: (itemId, data) => api.put(rst(`/menu-items/${itemId}`), data),
   createVariant: (itemId, data) => api.post(rst(`/menu-items/${itemId}/variants`), data),
   deactivate: (itemId) => api.delete(rst(`/menu-items/${itemId}`)),
+  getImageBlob: (itemId) => api.get(rst(`/menu-items/${itemId}/image`), { responseType: 'blob' }).then((r) => r.data),
   listCategories: (storeId, activeOnly = false) =>
     api.get(rst(`/stores/${storeId}/menu-categories`), { params: { activeOnly } }),
   createCategory: (storeId, data) => api.post(rst(`/stores/${storeId}/menu-categories`), data),

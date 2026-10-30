@@ -8,6 +8,7 @@ import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspac
 import BookingWorkspace from '../../shared/components/BookingWorkspace';
 import FloorTableGrid from '../components/FloorTableGrid';
 import FloorPosModals from '../components/FloorPosModals';
+import PosLoadRetry from '../components/PosLoadRetry';
 import OrderWorkspace from '../components/OrderWorkspace';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
@@ -219,7 +220,9 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
 
   return (
     <>
-      {p.isError ? <div className="rst-notice">{p.t('rst.floor.loadFailed')}</div> : null}
+      {p.isError ? (
+        <PosLoadRetry t={p.t} messageKey="rst.floor.loadFailed" onRetry={p.refetch} />
+      ) : null}
       {mobile ? (
         <WaiterMobileFloorBoard
           {...boardProps}
@@ -282,6 +285,9 @@ function buildOrderWorkspaceProps(p) {
     canSendKitchen: !draft && p.canSendKitchen,
     sendingKitchen: p.sendKitchenMutation.isPending,
     onSendKitchen: draft ? undefined : () => p.sendKitchenMutation.mutate(),
+    canReprintPickup: !draft && p.canReprintPickup && !!order.pickupNo,
+    reprintingPickup: p.reprintPickupMutation?.isPending,
+    onReprintPickup: draft ? undefined : () => p.reprintPickupMutation?.mutate(),
     canRequestBill: !draft && p.canRequestBill,
     canPay: false,
     onRequestBill: draft ? undefined : () => p.billMutation.mutate(),
@@ -330,7 +336,7 @@ export default function RestaurantFloorPosPage() {
     );
   }
 
-  if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
+  if (p.workspace.noAssignment || p.workspace.multipleAssignment || p.workspace.storeId == null) {
     return (
       <RestaurantWorkspaceEmpty
         t={p.t}
@@ -396,7 +402,7 @@ export default function RestaurantFloorPosPage() {
             <>
               {p.canAdmin ? (
                 <Link to="/rst/admin/dashboard">
-                  <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
+                  <BaseButton type="button" variant="primary">{p.t('rst.pos.toAdmin')}</BaseButton>
                 </Link>
               ) : null}
               <PosSoundToggle t={p.t} />

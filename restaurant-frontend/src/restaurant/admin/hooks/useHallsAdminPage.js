@@ -212,5 +212,7 @@ export function useHallsAdminPage() {
     arrangeMutation,
     moveTableMutation,
     isLoading: (workspace.storeId == null && workspace.isLoading) || floorQuery.isLoading,
+    isError: floorQuery.isError,
+    refetch: () => floorQuery.refetch(),
   };
 }

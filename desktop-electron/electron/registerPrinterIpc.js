@@ -26,6 +26,19 @@ function registerPrinterIpc() {
   ipcMain.handle('desktop:print-ticket-html', (_e, payload) =>
     printTicketHtml(payload || {}),
   );
+  /** RAW bytes to a Windows queue (TSPL pickup labels over USB, same as Restaurant desktop). */
+  ipcMain.handle('desktop:print-raw', async (_e, payload) => {
+    const { printRawBuffer } = require('./printers/win-raw-print.cjs');
+    const name = String(payload?.printerName || '').trim();
+    if (!name) throw new Error('Принтер не выбран');
+    const raw = payload?.bytes;
+    const buffer = Buffer.isBuffer(raw)
+      ? raw
+      : raw instanceof Uint8Array
+        ? Buffer.from(raw)
+        : Buffer.from(String(raw || ''), 'utf8');
+    return printRawBuffer(name, buffer);
+  });
 
   ipcMain.handle('desktop:open-printer-picker', async () => {
     await showPrinterPickerWindow(getMainWindow(), { kind: 'receipt' });

@@ -18,12 +18,12 @@ import com.pos.restaurant.floor.service.FloorQueryService;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
-import com.pos.restaurant.order.entity.FloorOrderItem;
+import com.pos.restaurant.floor.revision.FloorRevisionStore;
+import com.pos.restaurant.floor.support.FloorTileNumbers;
+import com.pos.restaurant.floor.support.FloorTileSummaryReader;
 import com.pos.restaurant.order.entity.FloorOrderTableLink;
-import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
 import com.pos.restaurant.order.repository.FloorOrderTableLinkRepository;
-import com.pos.restaurant.order.support.OrderTotals;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -46,20 +46,23 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     private final FloorTableMapper tableMapper;
     private final FloorTenantSupport tenantSupport;
     private final FloorOrderRepository orderRepository;
-    private final FloorOrderItemRepository itemRepository;
     private final FloorOrderTableLinkRepository linkRepository;
     private final FloorReservationRepository reservationRepository;
-    private final OrderTotals orderTotals;
+    private final FloorTileSummaryReader tileSummaryReader;
+    private final FloorRevisionStore floorRevisionStore;
 
     @Override
     public FloorRevisionResponse getRevision(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
-        Long millis = orderRepository.findFloorRevisionMillis(companyId, storeId);
-        return new FloorRevisionResponse(storeId, millis == null ? 0L : millis);
+        return new FloorRevisionResponse(storeId, floorRevisionStore.readRevision(companyId, storeId));
     }
 
     @Override
-    @Cacheable(cacheNames = RestaurantCacheNames.FLOOR, key = "#storeId")
+    @Cacheable(
+        cacheNames = RestaurantCacheNames.FLOOR,
+        key = "T(com.pos.restaurant.security.RestaurantTenantContext).getCompanyId() + ':' + #storeId",
+        sync = true
+    )
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<OrderStatus> activeStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);
@@ -81,10 +84,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
             .map(FloorOrder::getId)
             .distinct()
             .toList();
-        Map<UUID, List<FloorOrderItem>> itemsByOrder = orderIds.isEmpty()
-            ? Map.of()
-            : itemRepository.findByOrderIdInOrdered(orderIds).stream()
-                .collect(Collectors.groupingBy(item -> item.getOrder().getId()));
+        Map<UUID, FloorTileNumbers> tilesByOrder = tileSummaryReader.load(orderIds);
 
         Map<UUID, List<String>> linkedCodesByOrder = new HashMap<>();
         for (FloorOrderTableLink link : links) {
@@ -128,7 +128,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                             );
                         List<FloorOrder> ordersHere = openOrders.getOrDefault(table.getId(), List.of());
                         List<ActiveOrderSummary> summaries = ordersHere.stream()
-                            .map(row -> toSummary(row, itemsByOrder, linkedCodesByOrder))
+                            .map(row -> toSummary(row, tilesByOrder, linkedCodesByOrder))
                             .toList();
                         ActiveOrderSummary first = summaries.isEmpty() ? null : summaries.get(0);
                         return new TableResponse(
@@ -178,10 +178,10 @@ public class FloorQueryServiceImpl implements FloorQueryService {
 
     private ActiveOrderSummary toSummary(
         FloorOrder order,
-        Map<UUID, List<FloorOrderItem>> itemsByOrder,
+        Map<UUID, FloorTileNumbers> tilesByOrder,
         Map<UUID, List<String>> linkedCodesByOrder
     ) {
-        List<FloorOrderItem> items = itemsByOrder.getOrDefault(order.getId(), List.of());
+        FloorTileNumbers tile = tilesByOrder.getOrDefault(order.getId(), FloorTileNumbers.empty());
         return new ActiveOrderSummary(
             order.getId(),
             order.getOrderNo(),
@@ -189,8 +189,8 @@ public class FloorQueryServiceImpl implements FloorQueryService {
             order.getGuestCount(),
             order.getAdultCount(),
             order.getChildrenCount(),
-            orderTotals.billable(items),
-            items.size(),
+            tile.subtotal(),
+            tile.linesCount(),
             order.getWaiterUserId(),
             order.getOpenedAt(),
             linkedCodesByOrder.getOrDefault(order.getId(), List.of())

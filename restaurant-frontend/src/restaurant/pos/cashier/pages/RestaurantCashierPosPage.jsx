@@ -7,6 +7,7 @@ import OrderWorkspace from '../../components/OrderWorkspace';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
 import CashDrawerModal from '../../components/shift/CashDrawerModal';
 import PosHardwareBar from '../../components/PosHardwareBar';
+import PosLoadRetry from '../../components/PosLoadRetry';
 import { usePosUiScale } from '../../hooks/usePosUiScale';
 import { useCashierPosPage } from '../hooks/useCashierPosPage';
 import CashierTopBar from '../components/CashierTopBar';
@@ -85,6 +86,17 @@ export default function RestaurantCashierPosPage() {
     );
   }
 
+  if (p.workspace.storeId == null) {
+    return (
+      <RestaurantWorkspaceEmpty
+        t={p.t}
+        workspace={p.workspace}
+        zoomStyle={zoom.rootStyle}
+        onLogout={() => logoutAndResetSession()}
+      />
+    );
+  }
+
   const showFull = p.showFullOrder;
   const order = p.orderForUi;
   const hallName = p.isDraftOrder ? p.draftHallName : p.orderHallName;
@@ -113,6 +125,9 @@ export default function RestaurantCashierPosPage() {
     canSendKitchen: !p.isDraftOrder && p.canSendKitchen,
     sendingKitchen: p.sendKitchenMutation.isPending,
     onSendKitchen: p.isDraftOrder ? undefined : () => p.sendKitchenMutation.mutate(),
+    canReprintPickup: !p.isDraftOrder && p.canReprintPickup && !!order.pickupNo,
+    reprintingPickup: p.reprintPickupMutation?.isPending,
+    onReprintPickup: p.isDraftOrder ? undefined : () => p.reprintPickupMutation?.mutate(),
     canRequestBill: !p.isDraftOrder && p.canRequestBill,
     canPay: !p.isDraftOrder && p.canPay,
     onRequestBill: p.isDraftOrder ? undefined : () => p.billMutation.mutate(),
@@ -150,6 +165,9 @@ export default function RestaurantCashierPosPage() {
 
   return (
     <div className={rootClass} style={zoom.rootStyle}>
+      {p.isError ? (
+        <PosLoadRetry t={p.t} messageKey="rst.floor.loadFailed" onRetry={p.refetch} />
+      ) : null}
       {mobileOrderOpen ? null : (
         <CashierTopBar
           storeName={p.workspace.storeName}
@@ -174,6 +192,11 @@ export default function RestaurantCashierPosPage() {
           roleLabel={p.t(`roles.${user?.role || 'CASHIER'}`, { defaultValue: p.t('roles.CASHIER') })}
           shift={p.shift}
           shiftOpenLabel={p.shiftOpenLabel}
+          storeId={p.workspace.storeId}
+          quickSaleEnabled={p.quickSaleEnabled}
+          onQuickSaleOpened={p.onQuickSaleOpened}
+          customerDisplayEnabled={p.customerDisplayEnabled}
+          onOpenCustomerDisplay={p.openCustomerDisplay}
           t={p.t}
         />
       )}
@@ -198,7 +221,9 @@ export default function RestaurantCashierPosPage() {
         )}
       </div>
 
-      {showFull || mobile.enabled ? null : <PosHardwareBar t={p.t} />}
+      {showFull || mobile.enabled ? null : (
+        <PosHardwareBar t={p.t} halls={p.halls} shift={p.shift} />
+      )}
       {mobile.enabled && !showFull ? (
         <CashierMobileNavSheet
           tab={p.tab}

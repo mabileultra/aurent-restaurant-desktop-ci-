@@ -40,5 +40,6 @@ public record OrderResponse(
     int linesCount,
     List<OrderItemResponse> items,
     List<LinkedTableResponse> linkedTables,
-    List<WaiterHistoryEntryResponse> waiterHistory
+    List<WaiterHistoryEntryResponse> waiterHistory,
+    Integer pickupNo
 ) {}

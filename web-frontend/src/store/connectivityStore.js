@@ -17,91 +17,14 @@ import {
 import { resolvePosRoute } from '../services/pos/posRouteResolver';
 import { isOfflineFirstDesktop } from '../services/offline/offlineFirstFlag';
 import { logConnectivity, logError } from '../services/desktop/activityLog';
+import {
+  resetConnectivityStabilizer,
+  stabilizeApiOnline,
+} from './connectivityStabilizer';
 
-/** Online — после трёх подряд успешных probe; offline — после двух сбоев. */
-const ONLINE_RECOVERY_STREAK = 3;
-/** Offline — после двух подряд неудачных probe (меньше мигания полоски). */
-const OFFLINE_FAILURE_STREAK = 2;
 const CONNECTIVITY_POLL_MS = 5_000;
-/** После 502/таймаута API не переключаться обратно в online сразу (probe может мигать). */
-const API_UNREACHABLE_COOLDOWN_MS = 20_000;
-/** После ухода в offline не принимать «online» от browser event без серии probe. */
-const OFFLINE_HOLD_MS = 8_000;
-let stableApiOnline = null;
-let onlineRecoveryStreak = 0;
-let offlineFailureStreak = 0;
-let apiUnreachableUntil = 0;
-let offlineSinceMs = 0;
 
-export function resetConnectivityStabilizer() {
-  stableApiOnline = null;
-  onlineRecoveryStreak = 0;
-  offlineFailureStreak = 0;
-  apiUnreachableUntil = 0;
-  offlineSinceMs = 0;
-}
-
-function stabilizeApiOnline(rawOnline) {
-  const browserOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
-  if (browserOffline) {
-    apiUnreachableUntil = Date.now() + API_UNREACHABLE_COOLDOWN_MS;
-    stableApiOnline = false;
-    onlineRecoveryStreak = 0;
-    offlineFailureStreak = OFFLINE_FAILURE_STREAK;
-    if (!offlineSinceMs) offlineSinceMs = Date.now();
-    return false;
-  }
-
-  // Successful main-process probe clears cooldown so reconnect is not stuck.
-  if (rawOnline) {
-    if (offlineSinceMs && Date.now() - offlineSinceMs < OFFLINE_HOLD_MS) {
-      // Короткий «online» сразу после обрыва — часто ложный (Wi‑Fi без интернета).
-      onlineRecoveryStreak = 0;
-      stableApiOnline = false;
-      return false;
-    }
-    apiUnreachableUntil = 0;
-  } else if (Date.now() < apiUnreachableUntil) {
-    stableApiOnline = false;
-    onlineRecoveryStreak = 0;
-    offlineFailureStreak = 0;
-    return false;
-  }
-
-  if (!rawOnline) {
-    offlineFailureStreak += 1;
-    if (stableApiOnline === false) {
-      onlineRecoveryStreak = 0;
-      if (!offlineSinceMs) offlineSinceMs = Date.now();
-      return false;
-    }
-    if (offlineFailureStreak >= OFFLINE_FAILURE_STREAK) {
-      stableApiOnline = false;
-      onlineRecoveryStreak = 0;
-      if (!offlineSinceMs) offlineSinceMs = Date.now();
-      return false;
-    }
-    return true;
-  }
-
-  offlineFailureStreak = 0;
-  if (stableApiOnline === null) {
-    stableApiOnline = rawOnline;
-    onlineRecoveryStreak = rawOnline ? 1 : 0;
-    if (stableApiOnline) offlineSinceMs = 0;
-    return stableApiOnline;
-  }
-  if (!stableApiOnline) {
-    onlineRecoveryStreak += 1;
-    if (onlineRecoveryStreak >= ONLINE_RECOVERY_STREAK) {
-      stableApiOnline = true;
-      offlineSinceMs = 0;
-    }
-    return stableApiOnline;
-  }
-  offlineSinceMs = 0;
-  return true;
-}
+export { resetConnectivityStabilizer };
 
 function connectivityFields(state) {
   return {
@@ -263,37 +186,17 @@ export function hasLocalPosCatalog(state = useConnectivityStore.getState(), stor
 }
 
 export function markApiUnreachable() {
-  const state = useConnectivityStore.getState();
-  apiUnreachableUntil = Date.now() + API_UNREACHABLE_COOLDOWN_MS;
-  stableApiOnline = false;
-  onlineRecoveryStreak = 0;
-  offlineFailureStreak = OFFLINE_FAILURE_STREAK;
-  if (!offlineSinceMs) offlineSinceMs = Date.now();
-  if (!state.apiOnline && state.offlineMode) return;
-  useConnectivityStore.getState().applyStatus({ apiOnline: false, offlineMode: true });
+  useConnectivityStore.getState().applyStatus({ apiOnline: false });
 }
 
 /** Использовать после успешного запроса к API (bootstrap/sync), если probe ещё не обновился. */
 export function markApiReachable() {
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-    return;
-  }
-  apiUnreachableUntil = 0;
-  useConnectivityStore.getState().applyStatus({ apiOnline: true, offlineMode: false });
-}
-
-function applyBrowserOfflineHint() {
-  if (typeof navigator === 'undefined' || navigator.onLine) return;
-  markApiUnreachable();
+  useConnectivityStore.getState().applyStatus({ apiOnline: true });
 }
 
 export async function refreshConnectivityStatus() {
-  applyBrowserOfflineHint();
   try {
     const status = await offlineGetStatus();
-    if (status?.apiOnline) {
-      // Не сбрасываем cooldown здесь — stabilizeApiOnline сам решает после hold.
-    }
     useConnectivityStore.getState().applyStatus(status);
     return status;
   } catch {
@@ -305,8 +208,6 @@ export async function refreshConnectivityStatus() {
 }
 
 function onBrowserOnline() {
-  // macOS часто шлёт «online» при Wi‑Fi без интернета — только перепроверяем probe.
-  offlineFailureStreak = 0;
   refreshConnectivityStatus();
 }
 
@@ -317,7 +218,6 @@ function onWindowFocusRefreshConnectivity() {
 
 export function startConnectivityWatcher() {
   if (refreshTimer) return;
-  applyBrowserOfflineHint();
   refreshConnectivityStatus();
   refreshTimer = setInterval(refreshConnectivityStatus, CONNECTIVITY_POLL_MS);
   unsubscribeConnectivity = subscribeOfflineConnectivity((payload) => {
@@ -327,7 +227,6 @@ export function startConnectivityWatcher() {
     browserConnectivityBound = true;
     window.addEventListener('online', onBrowserOnline);
     window.addEventListener('offline', () => {
-      applyBrowserOfflineHint();
       refreshConnectivityStatus();
     });
     window.addEventListener('focus', onWindowFocusRefreshConnectivity);
@@ -352,8 +251,7 @@ export function useShouldUseOfflinePos() {
   const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
   const user = useAuthStore((s) => s.user);
   if (!isDesktopOfflineBridge()) return false;
-  const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-  const offlineLike = forceOfflineMode || offlineMode || !apiOnline || browserOffline;
+  const offlineLike = forceOfflineMode || offlineMode || !apiOnline;
   if (!offlineLike) return false;
   // Until auth hydrates, still skip online POS fetches (avoids aurent.uz spam / black screen).
   if (!user) return true;

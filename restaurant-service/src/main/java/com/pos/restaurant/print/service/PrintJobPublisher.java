@@ -38,6 +38,33 @@ public class PrintJobPublisher {
     private final KitchenBoardService kitchenBoardService;
     private final ObjectMapper objectMapper;
 
+    public void pickupLabel(FloorOrder order, List<FloorOrderItem> items) {
+        if (order == null || order.getPickupNo() == null || order.getPickupNo() <= 0) {
+            return;
+        }
+        String channel = order.getChannel() == null ? OrderChannel.DINE_IN.name() : order.getChannel().name();
+        String printedAt = java.time.Instant.now().toString();
+        List<FloorOrderItem> rows = items == null ? List.of() : items;
+        if (rows.isEmpty()) {
+            enqueue(order, PrintJobKind.PICKUP_LABEL, new PrintJobPayloads.PickupLabel(
+                order.getId(), order.getPickupNo(), channel, printedAt, List.of()
+            ));
+            return;
+        }
+        for (FloorOrderItem item : rows) {
+            enqueue(order, PrintJobKind.PICKUP_LABEL, new PrintJobPayloads.PickupLabel(
+                order.getId(),
+                order.getPickupNo(),
+                channel,
+                printedAt,
+                List.of(new PrintJobPayloads.PickupLine(
+                    item.getName(),
+                    item.getQuantity() == null ? BigDecimal.ONE : item.getQuantity()
+                ))
+            ));
+        }
+    }
+
     public void guestBill(FloorOrder order) {
         enqueue(order, PrintJobKind.GUEST_BILL, new PrintJobPayloads.GuestBill(
             order.getId(),

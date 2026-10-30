@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import { useShouldUseOfflinePos } from '../../store/connectivityStore';
+import BillingPaymentNoticeOverlay from '../../features/billing/BillingPaymentNoticeOverlay';
+import { useBillingPaymentNotice } from '../../features/billing/useBillingPaymentNotice';
 
 const RETAIL_BILLING = '/billing';
 const RESTAURANT_BILLING = '/rst/admin/billing';
@@ -18,6 +20,7 @@ function billingHomeFor(pathname) {
 
 /**
  * Если оплата компании заблокирована — пускаем только на billing (админ) или показываем стоп-экран.
+ * При GRACE / сроке оплаты — мягкое напоминание 3×/день (не блокирует работу).
  */
 export default function BillingAccessGuard({ children }) {
   const { t } = useTranslation();
@@ -42,13 +45,48 @@ export default function BillingAccessGuard({ children }) {
     retry: skipOnline ? false : 1,
   });
 
+  const companyId = user?.companyId ?? user?.id;
+  const onBillingPage = isBillingPath(location.pathname);
+  const noticeRequired = Boolean(
+    enabled
+    && !isLoading
+    && data?.billingEnabled
+    && data?.accessAllowed
+    && data?.paymentNoticeRequired
+    && !onBillingPage,
+  );
+
+  const { visible, dismiss } = useBillingPaymentNotice({
+    enabled: noticeRequired,
+    companyId,
+    noticeRequired,
+  });
+
+  const noticeOverlay = (
+    <BillingPaymentNoticeOverlay
+      open={visible}
+      onClose={dismiss}
+      isAdmin={user?.role === 'ADMIN'}
+      billingPath={billingHomeFor(location.pathname)}
+      noticeKind={data?.noticeKind}
+      graceDaysLeft={data?.graceDaysLeft}
+    />
+  );
+
   if (!enabled) return children;
   if (isLoading) return children;
 
   const blocked = data?.billingEnabled && data?.accessAllowed === false;
-  if (!blocked) return children;
+  if (!blocked) {
+    return (
+      <>
+        {children}
+        {noticeOverlay}
+      </>
+    );
+  }
 
-  if (user?.role === 'ADMIN' && isBillingPath(location.pathname)) return children;
+  if (user?.role === 'ADMIN' && onBillingPage) return children;
   if (user?.role === 'ADMIN') {
     return <Navigate to={billingHomeFor(location.pathname)} replace />;
   }

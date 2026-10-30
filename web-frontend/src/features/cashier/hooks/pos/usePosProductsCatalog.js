@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { keepPreviousData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ALL_CATEGORY_ID } from '../usePosCatalogPanel';
-import { markApiUnreachable, useConnectivityStore } from '../../../../store/connectivityStore';
+import { useConnectivityStore } from '../../../../store/connectivityStore';
 import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import {
   posFetchCategories,
@@ -47,15 +47,6 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
     }
     prevCatalogModeRef.current = catalogMode;
   }, [catalogMode, storeId, qc]);
-
-  useEffect(() => {
-    if (!isDesktopOfflineBridge() || typeof window === 'undefined') return undefined;
-    const onBrowserOffline = () => {
-      markApiUnreachable();
-    };
-    window.addEventListener('offline', onBrowserOffline);
-    return () => window.removeEventListener('offline', onBrowserOffline);
-  }, []);
 
   const {
     data: categories = [],

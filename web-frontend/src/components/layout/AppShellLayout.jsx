@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
+import ShellOutlet from '../shared/ShellOutlet';
 import AppSidebar from './AppSidebar';
 import AppTopHeader from './AppTopHeader';
 import {
@@ -226,7 +227,7 @@ export default function AppShellLayout() {
         />
         <main className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 print:!bg-white print:p-4">
           <BillingAccessGuard>
-            <Outlet />
+            <ShellOutlet />
           </BillingAccessGuard>
         </main>
       </div>

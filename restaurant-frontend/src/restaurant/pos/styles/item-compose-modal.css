@@ -1,5 +1,42 @@
 .rst-item-compose {
   width: min(520px, 100%);
+  max-height: min(88dvh, 820px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.rst-item-compose__head {
+  flex-shrink: 0;
+  padding-bottom: 0.15rem;
+}
+
+.rst-item-compose__head .rst-modal__title {
+  margin-bottom: 0.45rem;
+}
+
+.rst-item-compose__head .rst-modal__text {
+  margin-bottom: 0.65rem;
+}
+
+.rst-item-compose__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 0.15rem;
+  margin-right: -0.05rem;
+  padding-bottom: 0.35rem;
+}
+
+.rst-item-compose__actions {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.85rem 0 1.1rem;
+  border-top: 1px solid var(--rst-line);
+  background: var(--rst-surface);
 }
 
 .rst-item-compose__addons {
@@ -141,7 +178,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.25rem;
 }
 
 .rst-item-compose__note span {
@@ -157,7 +194,9 @@
 }
 
 .rst-item-compose__error {
-  margin: 0 0 0.75rem;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.35rem 0 0;
   color: #fca5a5;
   font-size: 0.9rem;
   font-weight: 650;

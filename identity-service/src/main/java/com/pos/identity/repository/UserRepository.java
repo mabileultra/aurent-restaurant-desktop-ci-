@@ -85,4 +85,10 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     );
 
     long count();
+
+    @Query("""
+        select distinct u.id from User u join u.storeIds sid
+        where sid in :storeIds
+        """)
+    List<UUID> findIdsHavingStoreIds(@Param("storeIds") Collection<Integer> storeIds);
 }
