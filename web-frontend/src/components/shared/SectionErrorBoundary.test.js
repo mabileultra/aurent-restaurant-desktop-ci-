@@ -46,7 +46,8 @@ describe('SectionErrorBoundary', () => {
     const html = renderToStaticMarkup(rendered);
 
     expect(html).toContain('role="alert"');
-    expect(html).toContain('Ma’lumotlarni yuklab bo‘lmadi');
+    expect(html).toContain('Sahifada xatolik yuz berdi');
+    expect(html).toContain('#ERR-UI-');
   });
 
   it('renders custom function fallback if provided', () => {

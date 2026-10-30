@@ -97,8 +97,11 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
     ? formatUzbekDate(item.createdAt, 'd-MMMM yyyy, HH:mm', i18n.language)
     : '—';
 
+  const targetYear = item.expiresAt ? new Date(item.expiresAt).getFullYear() : null;
+  const currentYear = new Date().getFullYear();
+  const expiresPattern = targetYear && targetYear !== currentYear ? 'd-MMMM yyyy, HH:mm' : 'd-MMMM, HH:mm';
   const formattedExpires = item.expiresAt
-    ? `${formatUzbekDate(item.expiresAt, 'd-MMMM, HH:mm', i18n.language)} gacha`
+    ? `${formatUzbekDate(item.expiresAt, expiresPattern, i18n.language)} gacha`
     : '—';
 
   const isAlert = item.kind === 'ALERT';
@@ -184,7 +187,7 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                 {t('platform.desktopNotifications.detailUntrackedHint', {
-                  defaultValue: "Kassalarda hisoblagich kuzatilmagan (Server barcha faol kassalarga tarqatadi, alohida o'qish kvitansiyalari yuritilmaydi).",
+                  defaultValue: "Kassir xabarni o'qigani hozircha kuzatilmaydi (Server barcha faol kassalarga tarqatadi).",
                 })}
               </p>
             </div>
@@ -247,21 +250,29 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
             </button>
             <button
               type="button"
-              onClick={() => p.handleExtend(item)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750 transition-colors cursor-pointer"
+              disabled
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500"
+              title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
             >
               <Clock size={15} />
               <span>{t('platform.desktopNotifications.actionExtend')}</span>
+              <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
+              </span>
             </button>
           </div>
 
           <button
             type="button"
-            onClick={() => p.handleRevoke(item)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50/50 py-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+            disabled
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500"
+            title={t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
           >
             <Trash2 size={15} />
             <span>{t('platform.desktopNotifications.actionRevoke')}</span>
+            <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+              {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
+            </span>
           </button>
         </div>
       </div>

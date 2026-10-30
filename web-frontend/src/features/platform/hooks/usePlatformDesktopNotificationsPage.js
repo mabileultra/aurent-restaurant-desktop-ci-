@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { addHours, format } from 'date-fns';
 import { uz } from 'date-fns/locale';
-import { cashRegisterApi, platformDesktopNotificationsApi } from '../../../api';
+import { platformDesktopNotificationsApi } from '../../../api';
 
 const DRAFT_STORAGE_KEY = 'aurent_desktop_notification_draft_v1';
 
@@ -34,8 +34,8 @@ export function usePlatformDesktopNotificationsPage() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
-  // Kind of notification ('ALERT' = Muhim, 'UPDATE' = Yangilanish, 'MESSAGE' = Xabar)
-  const [kind, setKind] = useState('ALERT');
+  // Kind of notification ('MESSAGE' = Xabar, 'UPDATE' = Yangilanish, 'ALERT' = Muhim)
+  const [kind, setKind] = useState('MESSAGE');
 
   // Display duration on cashier ('1d', '3d', '1w', 'other')
   const [duration, setDuration] = useState('3d');
@@ -112,22 +112,24 @@ export function usePlatformDesktopNotificationsPage() {
     return () => clearTimeout(draftTimerRef.current);
   }, [title, body, kind, duration, customHours]);
 
-  // Total cash registers count query (handles 403 or unavailable by keeping count as null)
-  const cashRegistersQuery = useQuery({
-    queryKey: ['cash-registers-count-for-broadcast'],
-    queryFn: () => cashRegisterApi.getAll({ size: 1 }).then((r) => r.data),
-    staleTime: 60_000,
-    retry: false,
-  });
-
-  const rawElements = Number(cashRegistersQuery.data?.totalElements);
-  const totalRegistersCount = cashRegistersQuery.isSuccess && rawElements > 0 ? rawElements : null;
+  // Super admin does not have permission to tenant /api/v1/cash-registers (avoiding 403).
+  // Total registers count remains null until dedicated platform count endpoint is added on backend.
+  const totalRegistersCount = null;
 
   // History query
   const historyQuery = useQuery({
     queryKey: ['platform-desktop-notifications'],
     queryFn: () => platformDesktopNotificationsApi.list().then((r) => r.data),
   });
+
+  // Validate custom hours (strictly 1 to 720 hours)
+  const isCustomHoursValid = useMemo(() => {
+    if (duration !== 'other') return true;
+    const trimmed = String(customHours ?? '').trim();
+    if (!trimmed) return false;
+    const num = Number(trimmed);
+    return Number.isInteger(num) && num >= 1 && num <= 720;
+  }, [duration, customHours]);
 
   // Calculate duration in hours
   const expiresInHours = useMemo(() => {
@@ -138,23 +140,31 @@ export function usePlatformDesktopNotificationsPage() {
         return 72;
       case '1w':
         return 168;
-      case 'other':
-        return Number(customHours) || 72;
+      case 'other': {
+        const trimmed = String(customHours ?? '').trim();
+        if (!trimmed) return null;
+        const num = Number(trimmed);
+        return Number.isInteger(num) && num >= 1 && num <= 720 ? num : null;
+      }
       default:
         return 72;
     }
   }, [duration, customHours]);
 
-  // Formatted date when notification will expire (formatted with lowercase month in uz)
+  // Formatted date when notification will expire (includes year if target year differs from current year)
   const visibleUntilFormatted = useMemo(() => {
-    const targetDate = addHours(new Date(), expiresInHours);
+    if (expiresInHours == null || !isCustomHoursValid) return '';
     try {
-      const raw = format(targetDate, 'd-MMMM, HH:mm', { locale: uz });
+      const now = new Date();
+      const targetDate = addHours(now, expiresInHours);
+      const isDifferentYear = targetDate.getFullYear() !== now.getFullYear();
+      const pattern = isDifferentYear ? 'd-MMMM yyyy, HH:mm' : 'd-MMMM, HH:mm';
+      const raw = format(targetDate, pattern, { locale: uz });
       return formatUzbekMonthLower(raw);
     } catch {
       return '';
     }
-  }, [expiresInHours]);
+  }, [expiresInHours, isCustomHoursValid]);
 
   // Broadcast mutation
   const broadcastMutation = useMutation({
@@ -177,6 +187,23 @@ export function usePlatformDesktopNotificationsPage() {
     },
   });
 
+  const hasContent = Boolean(title.trim() && body.trim());
+  const canSend = hasContent && isCustomHoursValid && !broadcastMutation.isPending;
+
+  const sendDisabledReason = useMemo(() => {
+    if (!hasContent) {
+      return t('platform.desktopNotifications.sendDisabledHint', {
+        defaultValue: 'Yuborish uchun sarlavha va matnni kiriting',
+      });
+    }
+    if (!isCustomHoursValid) {
+      return t('platform.desktopNotifications.sendDisabledHoursHint', {
+        defaultValue: "Muddatni to'g'ri kiriting (1 dan 720 soatgacha)",
+      });
+    }
+    return null;
+  }, [hasContent, isCustomHoursValid, t]);
+
   // Handle send button click from form
   const handleInitiateSend = useCallback(() => {
     const activeTitle = title.trim();
@@ -185,14 +212,23 @@ export function usePlatformDesktopNotificationsPage() {
       toast.error(t('platform.desktopNotifications.validation', { defaultValue: 'Sarlavha va matnni to‘ldiring' }));
       return;
     }
+    if (!isCustomHoursValid || expiresInHours == null) {
+      toast.error(
+        t('platform.desktopNotifications.customHoursError', {
+          defaultValue: "Muddat 1 dan 720 soatgacha (30 kun) oralig'ida bo'lishi kerak",
+        })
+      );
+      return;
+    }
     setConfirmModalOpen(true);
-  }, [title, body, t]);
+  }, [title, body, isCustomHoursValid, expiresInHours, t]);
 
   // Execute broadcast mutation
   const executeBroadcast = useCallback(() => {
     const activeTitle = title.trim();
     const activeBody = body.trim();
     if (!activeTitle || !activeBody) return;
+    if (!isCustomHoursValid || expiresInHours == null) return;
 
     const payload = {
       title: activeTitle.slice(0, 200),
@@ -201,7 +237,7 @@ export function usePlatformDesktopNotificationsPage() {
       expiresInHours,
     };
     broadcastMutation.mutate(payload);
-  }, [title, body, kind, expiresInHours, broadcastMutation]);
+  }, [title, body, kind, expiresInHours, isCustomHoursValid, broadcastMutation]);
 
   // Clear form and stored draft
   const handleClear = useCallback(() => {
@@ -321,6 +357,9 @@ export function usePlatformDesktopNotificationsPage() {
     setDuration,
     customHours,
     setCustomHours,
+    isCustomHoursValid,
+    canSend,
+    sendDisabledReason,
     expiresInHours,
     visibleUntilFormatted,
     scheduleType,

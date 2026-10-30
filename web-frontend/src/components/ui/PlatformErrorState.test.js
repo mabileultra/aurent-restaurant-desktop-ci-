@@ -42,4 +42,17 @@ describe('PlatformErrorState', () => {
     expect(html).toContain('Tizimda nosozlik aniqlandi');
     expect(html).toContain('href="/support"');
   });
+
+  it('renders Sahifada xatolik yuz berdi and #ERR-UI- code for client runtime errors', () => {
+    const runtimeErr = new ReferenceError("Cannot access 'broadcastMutation' before initialization");
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformErrorState, {
+        error: runtimeErr,
+      })
+    );
+
+    expect(html).toContain('Sahifada xatolik yuz berdi');
+    expect(html).toContain('#ERR-UI-');
+    expect(html).not.toContain('#ERR-NET-');
+  });
 });

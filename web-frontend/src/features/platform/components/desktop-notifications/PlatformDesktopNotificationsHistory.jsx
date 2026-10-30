@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
-import {
-  ChevronDown,
-  Copy,
-  ExternalLink,
-  Eye,
-  MoreVertical,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ru, uz } from 'date-fns/locale';
+import PlatformDesktopRowMenu from './PlatformDesktopRowMenu';
 
 function resolveLocale(lang) {
   return lang?.startsWith('uz') ? uz : ru;
@@ -45,11 +38,6 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
     p.setSelectedItemForDrawer(item);
   };
 
-  const handleMenuToggle = (e, id) => {
-    e.stopPropagation();
-    setActiveMenuId((prev) => (prev === id ? null : id));
-  };
-
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
       {/* Table Header Controls */}
@@ -59,7 +47,9 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
             {t('platform.desktopNotifications.historyTitle')}
           </h3>
           <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300">
-            {p.totalHistoryCount}
+            {p.history.length === p.totalHistoryCount
+              ? p.totalHistoryCount
+              : `${p.history.length} / ${p.totalHistoryCount}`}
           </span>
         </div>
 
@@ -94,8 +84,8 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
         </div>
       </div>
 
-      {/* Table Content */}
-      <div className="overflow-x-auto min-h-[160px]">
+      {/* Table Content (Desktop) */}
+      <div className="hidden md:block overflow-x-auto min-h-[160px]">
         <table className="w-full text-left text-xs min-w-[760px]">
           <thead className="bg-slate-50/75 dark:bg-slate-850/75 text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-slate-800">
             <tr>
@@ -246,58 +236,16 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
                     </td>
 
                     {/* Action Dropdown Menu */}
-                    <td className="py-3.5 px-3 text-right whitespace-nowrap relative" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={(e) => handleMenuToggle(e, item.id)}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                        aria-label="Amallar"
-                        aria-haspopup="menu"
-                        aria-expanded={activeMenuId === item.id}
-                      >
-                        <MoreVertical size={16} />
-                      </button>
-
-                      {activeMenuId === item.id && (
-                        <div
-                          className="absolute right-3 top-10 z-30 w-48 rounded-xl bg-white p-1 shadow-xl border border-slate-200 dark:bg-slate-850 dark:border-slate-750 text-left animate-in fade-in zoom-in-95 duration-100"
-                          role="menu"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveMenuId(null);
-                              p.setSelectedItemForDrawer(item);
-                            }}
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors"
-                          >
-                            <Eye size={14} className="text-slate-400" />
-                            <span>{t('platform.desktopNotifications.drawerTitle')}</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveMenuId(null);
-                              p.handleDuplicate(item);
-                            }}
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors"
-                          >
-                            <Copy size={14} className="text-slate-400" />
-                            <span>{t('platform.desktopNotifications.actionDuplicate')}</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveMenuId(null);
-                              p.handleRevoke(item);
-                            }}
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                            <span>{t('platform.desktopNotifications.actionRevoke')}</span>
-                          </button>
-                        </div>
-                      )}
+                    <td className="py-3.5 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <PlatformDesktopRowMenu
+                        item={item}
+                        isOpen={activeMenuId === item.id}
+                        onToggle={() => setActiveMenuId((prev) => (prev === item.id ? null : item.id))}
+                        onClose={() => setActiveMenuId((prev) => (prev === item.id ? null : prev))}
+                        onViewDetails={() => p.setSelectedItemForDrawer(item)}
+                        onDuplicate={() => p.handleDuplicate(item)}
+                        t={t}
+                      />
                     </td>
                   </tr>
                 );
@@ -305,6 +253,111 @@ export default function PlatformDesktopNotificationsHistory({ p }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card List View (Touch-first, no horizontal scroll) */}
+      <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {p.historyLoading ? (
+          <div className="py-8 text-center text-xs text-slate-400">
+            {t('common.loading')}
+          </div>
+        ) : p.history.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400">
+            {t('platform.desktopNotifications.historyEmpty')}
+          </div>
+        ) : (
+          p.history.map((item) => {
+            const kindStr = item.kind || 'MESSAGE';
+            const isAlert = kindStr === 'ALERT';
+            const isUpdate = kindStr === 'UPDATE';
+            const isMessage = kindStr === 'MESSAGE';
+
+            return (
+              <div
+                key={item.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`${t('platform.desktopNotifications.drawerTitle')}: ${item.title}`}
+                onClick={() => handleRowClick(item)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(item);
+                  }
+                }}
+                className="p-4 space-y-2.5 active:bg-slate-50 dark:active:bg-slate-800/60 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {isAlert && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
+                        {t('platform.desktopNotifications.kindAlert')}
+                      </span>
+                    )}
+                    {isUpdate && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+                        {t('platform.desktopNotifications.kindUpdate')}
+                      </span>
+                    )}
+                    {isMessage && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                        {t('platform.desktopNotifications.kindMessage')}
+                      </span>
+                    )}
+                    {item.status === 'ACTIVE' && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span>{t('platform.desktopNotifications.statusActive')}</span>
+                      </span>
+                    )}
+                    {item.status === 'SCHEDULED' && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                        <span>{t('platform.desktopNotifications.statusScheduled')}</span>
+                      </span>
+                    )}
+                    {item.status === 'EXPIRED' && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                        <span>{t('platform.desktopNotifications.statusExpired')}</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-[11px] text-slate-400">
+                      {formatRelative(item.createdAt, i18n.language)}
+                    </span>
+                    <PlatformDesktopRowMenu
+                      item={item}
+                      isOpen={activeMenuId === `mobile-${item.id}`}
+                      onToggle={() => setActiveMenuId((prev) => (prev === `mobile-${item.id}` ? null : `mobile-${item.id}`))}
+                      onClose={() => setActiveMenuId((prev) => (prev === `mobile-${item.id}` ? null : prev))}
+                      onViewDetails={() => p.setSelectedItemForDrawer(item)}
+                      onDuplicate={() => p.handleDuplicate(item)}
+                      t={t}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
+                    {item.title}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                    {item.body}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
+                  <span>{item.targetLabel || t('platform.desktopNotifications.targetAll')}</span>
+                  <span className="font-medium text-slate-400">
+                    {formatDateFull(item.createdAt, i18n.language)}
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Footnote */}

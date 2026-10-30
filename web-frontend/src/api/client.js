@@ -71,9 +71,7 @@ api.interceptors.response.use(
         scheduleConnectivityRefreshFromApi();
       }
     }
-    const hasStoredToken = Boolean(useAuthStore.getState().token);
-    const shouldAttemptRefresh =
-      !original._retry && (status === 401 || (status === 403 && hasStoredToken));
+    const shouldAttemptRefresh = !original._retry && status === 401;
 
     if (
       isDesktopOfflineBridge() &&

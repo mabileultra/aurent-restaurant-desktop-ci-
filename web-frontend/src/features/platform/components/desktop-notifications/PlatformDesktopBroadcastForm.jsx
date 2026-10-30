@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   AlertTriangle,
   Bell,
@@ -10,17 +10,45 @@ import {
   Send,
 } from 'lucide-react';
 
+const KINDS = ['MESSAGE', 'UPDATE', 'ALERT'];
+
 export default function PlatformDesktopBroadcastForm({ p }) {
   const { t } = p;
 
   const currentTitle = p.title || '';
   const currentBody = p.body || '';
 
-  const canSend = Boolean(currentTitle.trim() && currentBody.trim() && !p.sendPending);
+  const canSend = p.canSend != null
+    ? p.canSend
+    : Boolean(currentTitle.trim() && currentBody.trim() && !p.sendPending && p.isCustomHoursValid !== false);
 
   const sendBtnLabel = p.totalRegistersCount != null
     ? t('platform.desktopNotifications.sendBtn', { count: p.totalRegistersCount })
     : t('platform.desktopNotifications.sendBtnAll', { defaultValue: 'Barcha kassalarga yuborish' });
+
+  const kindRefs = {
+    MESSAGE: useRef(null),
+    UPDATE: useRef(null),
+    ALERT: useRef(null),
+  };
+
+  const handleKindKeyDown = (e, currentKind) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const currentIndex = KINDS.indexOf(currentKind);
+      const nextIndex = (currentIndex + 1) % KINDS.length;
+      const nextKind = KINDS[nextIndex];
+      p.setKind(nextKind);
+      kindRefs[nextKind]?.current?.focus();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const currentIndex = KINDS.indexOf(currentKind);
+      const nextIndex = (currentIndex - 1 + KINDS.length) % KINDS.length;
+      const nextKind = KINDS[nextIndex];
+      p.setKind(nextKind);
+      kindRefs[nextKind]?.current?.focus();
+    }
+  };
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 sm:space-y-6">
@@ -176,10 +204,13 @@ export default function PlatformDesktopBroadcastForm({ p }) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3" role="radiogroup" aria-label={t('platform.desktopNotifications.stepKind')}>
           {/* Card: Xabar */}
           <button
+            ref={kindRefs.MESSAGE}
             type="button"
             role="radio"
             aria-checked={p.kind === 'MESSAGE'}
+            tabIndex={p.kind === 'MESSAGE' ? 0 : -1}
             onClick={() => p.setKind('MESSAGE')}
+            onKeyDown={(e) => handleKindKeyDown(e, 'MESSAGE')}
             className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
               p.kind === 'MESSAGE'
                 ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
@@ -212,10 +243,13 @@ export default function PlatformDesktopBroadcastForm({ p }) {
 
           {/* Card: Yangilanish */}
           <button
+            ref={kindRefs.UPDATE}
             type="button"
             role="radio"
             aria-checked={p.kind === 'UPDATE'}
+            tabIndex={p.kind === 'UPDATE' ? 0 : -1}
             onClick={() => p.setKind('UPDATE')}
+            onKeyDown={(e) => handleKindKeyDown(e, 'UPDATE')}
             className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
               p.kind === 'UPDATE'
                 ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
@@ -248,10 +282,13 @@ export default function PlatformDesktopBroadcastForm({ p }) {
 
           {/* Card: Muhim */}
           <button
+            ref={kindRefs.ALERT}
             type="button"
             role="radio"
             aria-checked={p.kind === 'ALERT'}
+            tabIndex={p.kind === 'ALERT' ? 0 : -1}
             onClick={() => p.setKind('ALERT')}
+            onKeyDown={(e) => handleKindKeyDown(e, 'ALERT')}
             className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
               p.kind === 'ALERT'
                 ? 'border-emerald-600 bg-white ring-1 ring-emerald-600 shadow-xs dark:border-emerald-500 dark:bg-slate-850'
@@ -325,17 +362,44 @@ export default function PlatformDesktopBroadcastForm({ p }) {
             </div>
 
             {p.duration === 'other' && (
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="number"
-                  min="1"
-                  max="720"
-                  value={p.customHours}
-                  onChange={(e) => p.setCustomHours(e.target.value)}
-                  placeholder={t('platform.desktopNotifications.customHoursPlaceholder', { defaultValue: 'Masalan: 48' })}
-                  className="w-28 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-850 dark:text-white"
-                />
-                <span className="text-xs text-slate-500 dark:text-slate-400">soat</span>
+              <div className="space-y-1.5 pt-1">
+                <label
+                  htmlFor="desktop-custom-hours-input"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  {t('platform.desktopNotifications.customHoursLabel', { defaultValue: 'Muddat (soatda)' })}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="desktop-custom-hours-input"
+                    type="number"
+                    min="1"
+                    max="720"
+                    value={p.customHours}
+                    onChange={(e) => p.setCustomHours(e.target.value)}
+                    placeholder={t('platform.desktopNotifications.customHoursPlaceholder', { defaultValue: 'Masalan: 48' })}
+                    aria-label={t('platform.desktopNotifications.customHoursLabel', { defaultValue: 'Muddat (soatda)' })}
+                    aria-invalid={p.isCustomHoursValid === false}
+                    aria-describedby={p.isCustomHoursValid === false ? 'desktop-custom-hours-error' : undefined}
+                    className={`w-28 rounded-xl border bg-white px-3 py-1.5 text-xs text-slate-900 outline-none transition-all dark:bg-slate-850 dark:text-white ${
+                      p.isCustomHoursValid === false
+                        ? 'border-rose-500 focus:ring-1 focus:ring-rose-500/30'
+                        : 'border-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 dark:border-slate-700'
+                    }`}
+                  />
+                  <span className="text-xs text-slate-500 dark:text-slate-400">soat</span>
+                </div>
+                {p.isCustomHoursValid === false && (
+                  <p
+                    id="desktop-custom-hours-error"
+                    role="alert"
+                    className="text-[11px] font-medium text-rose-600 dark:text-rose-400"
+                  >
+                    {t('platform.desktopNotifications.customHoursError', {
+                      defaultValue: "Muddat 1 dan 720 soatgacha (30 kun) oralig'ida bo'lishi kerak",
+                    })}
+                  </p>
+                )}
               </div>
             )}
 
@@ -381,24 +445,33 @@ export default function PlatformDesktopBroadcastForm({ p }) {
         </div>
       </div>
 
-      {/* Footer controls: Checkbox removed (confirmation is strictly required) */}
-      <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 pt-3 sm:pt-4 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={p.handleClear}
-          className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-750 transition-colors cursor-pointer"
-        >
-          {t('platform.desktopNotifications.clearBtn')}
-        </button>
-        <button
-          type="button"
-          onClick={p.handleSend}
-          disabled={!canSend}
-          className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Bell size={15} />
-          <span>{sendBtnLabel}</span>
-        </button>
+      {/* Footer controls: Responsive layout and disabled reason hint */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:pt-4 dark:border-slate-800">
+        <div className="min-h-[1.25rem]">
+          {!canSend && p.sendDisabledReason && (
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+              {p.sendDisabledReason}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2.5">
+          <button
+            type="button"
+            onClick={p.handleClear}
+            className="w-full sm:w-auto rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-750 transition-colors cursor-pointer text-center"
+          >
+            {t('platform.desktopNotifications.clearBtn')}
+          </button>
+          <button
+            type="button"
+            onClick={p.handleSend}
+            disabled={!canSend}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-normal text-center"
+          >
+            <Bell size={15} className="shrink-0" />
+            <span>{sendBtnLabel}</span>
+          </button>
+        </div>
       </div>
     </section>
   );

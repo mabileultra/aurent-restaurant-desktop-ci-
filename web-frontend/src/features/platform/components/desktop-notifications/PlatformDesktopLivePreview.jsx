@@ -15,8 +15,19 @@ export default function PlatformDesktopLivePreview({ p }) {
   const previewTitle = isUzPreview ? p.titleUz : p.titleRu || p.titleUz;
   const previewBody = isUzPreview ? p.bodyUz : p.bodyRu || p.bodyUz;
 
-  const displayTitle = previewTitle.trim() || t('platform.desktopNotifications.titlePlaceholder');
-  const displayBody = previewBody.trim() || t('platform.desktopNotifications.bodyPlaceholder');
+  const hasTitle = Boolean(previewTitle?.trim());
+  const hasBody = Boolean(previewBody?.trim());
+
+  const displayTitle = hasTitle
+    ? previewTitle.trim()
+    : t('platform.desktopNotifications.titleEmptyFallback', { defaultValue: 'Sarlavha' });
+  const displayBody = hasBody
+    ? previewBody.trim()
+    : t('platform.desktopNotifications.bodyEmptyFallback', { defaultValue: 'Xabar matni kiritilmagan...' });
+
+  const isAlert = p.kind === 'ALERT';
+  const isUpdate = p.kind === 'UPDATE';
+  const isMessage = p.kind === 'MESSAGE';
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 sm:space-y-5">
@@ -61,8 +72,8 @@ export default function PlatformDesktopLivePreview({ p }) {
             <span className="text-xs font-bold tracking-tight">Aurent Kassa</span>
           </div>
           <div className="flex items-center gap-2.5 text-[11px] text-slate-300">
-            <div className="relative flex items-center">
-              <Bell size={13} className="text-slate-300" />
+            <div className={`relative flex items-center p-1 rounded ${!isAlert ? 'bg-slate-800 text-white ring-1 ring-emerald-500/50' : 'text-slate-300'}`}>
+              <Bell size={13} className={!isAlert ? 'text-emerald-400' : 'text-slate-300'} />
               <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white">
                 1
               </span>
@@ -88,59 +99,98 @@ export default function PlatformDesktopLivePreview({ p }) {
           </div>
         </div>
 
-        {/* Backdrop Tint */}
-        <div className="absolute inset-0 pt-9 bg-slate-950/60 backdrop-blur-[1px]" />
+        {/* Case 1: ALERT (Centered Cashier Pop-up Modal with full backdrop blur) */}
+        {isAlert && (
+          <>
+            <div className="absolute inset-0 pt-9 bg-slate-950/60 backdrop-blur-[1px]" />
+            <div className="relative z-10 m-auto w-full max-w-[270px] sm:max-w-[290px] rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-center space-y-3 animate-in zoom-in-95 duration-200">
+              <div className="flex justify-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/70 dark:text-amber-400">
+                  <AlertTriangle size={20} />
+                </div>
+              </div>
 
-        {/* Centered Cashier Alert Pop-up Modal */}
-        <div className="relative z-10 m-auto w-full max-w-[270px] sm:max-w-[290px] rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-center space-y-3 animate-in zoom-in-95 duration-200">
-          {/* Kind Icon Badge */}
-          <div className="flex justify-center">
-            {p.kind === 'ALERT' && (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/70 dark:text-amber-400">
-                <AlertTriangle size={20} />
+              <div className="space-y-1">
+                <h4
+                  className={`text-xs sm:text-sm leading-snug break-words ${
+                    hasTitle ? 'font-bold text-slate-900 dark:text-white' : 'font-normal italic text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {displayTitle}
+                </h4>
+                <p
+                  className={`text-[11px] leading-relaxed break-words line-clamp-4 ${
+                    hasBody ? 'text-slate-600 dark:text-slate-300' : 'italic text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {displayBody}
+                </p>
               </div>
-            )}
-            {p.kind === 'UPDATE' && (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/70 dark:text-blue-400">
-                <RefreshCw size={20} />
+
+              <div className="pt-1">
+                <div className="rounded-xl bg-[#a33719] py-2 px-3 text-xs font-semibold text-white shadow-xs">
+                  {t('platform.desktopNotifications.previewDismissBtn', { lng: p.previewLang })}
+                </div>
               </div>
-            )}
-            {p.kind === 'MESSAGE' && (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/70 dark:text-emerald-400">
-                <Bell size={20} />
+            </div>
+          </>
+        )}
+
+        {/* Case 2: MESSAGE or UPDATE (Top-right Bell Notification Flyout Toast) */}
+        {!isAlert && (
+          <div className="absolute top-10 right-2.5 z-20 w-[240px] sm:w-[260px] rounded-2xl bg-white p-3.5 shadow-2xl border border-slate-200 dark:bg-slate-900 dark:border-slate-750 text-left space-y-2 animate-in slide-in-from-top-2 duration-150">
+            {/* Flyout Card Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {isUpdate ? (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/70 dark:text-blue-400">
+                    <RefreshCw size={13} />
+                  </div>
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/70 dark:text-emerald-400">
+                    <Bell size={13} />
+                  </div>
+                )}
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  {isUpdate ? t('platform.desktopNotifications.kindUpdate') : t('platform.desktopNotifications.kindMessage')}
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400">14:30</span>
+            </div>
+
+            {/* Flyout Content */}
+            <div className="space-y-0.5">
+              <h4
+                className={`text-xs leading-snug break-words ${
+                  hasTitle ? 'font-bold text-slate-900 dark:text-white' : 'font-normal italic text-slate-400 dark:text-slate-500'
+                }`}
+              >
+                {displayTitle}
+              </h4>
+              <p
+                className={`text-[11px] leading-relaxed break-words line-clamp-3 ${
+                  hasBody ? 'text-slate-600 dark:text-slate-300' : 'italic text-slate-400 dark:text-slate-500'
+                }`}
+              >
+                {displayBody}
+              </p>
+            </div>
+
+            {/* Flyout Footer */}
+            {isUpdate ? (
+              <div className="pt-1.5 flex justify-end">
+                <div className="rounded-lg bg-blue-600 py-1 px-2.5 text-[11px] font-semibold text-white shadow-xs">
+                  {t('platform.desktopNotifications.previewUpdateBtn', { lng: p.previewLang })}
+                </div>
+              </div>
+            ) : (
+              <div className="pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                <span>{isUzPreview ? "Qo'ng'iroqcha ro'yxatida" : 'В списке уведомлений'}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">● {isUzPreview ? 'Yangi' : 'Новое'}</span>
               </div>
             )}
           </div>
-
-          {/* Title & Body */}
-          <div className="space-y-1">
-            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-snug break-words">
-              {displayTitle}
-            </h4>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed break-words line-clamp-4">
-              {displayBody}
-            </p>
-          </div>
-
-          {/* Simulated Button (Localized to preview language: uz -> Tushunarli, ru -> Понятно) */}
-          <div className="pt-1">
-            {p.kind === 'ALERT' && (
-              <div className="rounded-xl bg-[#a33719] py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                {t('platform.desktopNotifications.previewDismissBtn', { lng: p.previewLang })}
-              </div>
-            )}
-            {p.kind === 'UPDATE' && (
-              <div className="rounded-xl bg-blue-600 py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                {t('platform.desktopNotifications.previewUpdateBtn', { lng: p.previewLang })}
-              </div>
-            )}
-            {p.kind === 'MESSAGE' && (
-              <div className="rounded-xl bg-slate-800 py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                {t('platform.desktopNotifications.previewCloseBtn', { lng: p.previewLang })}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Empty bottom space spacer */}
         <div className="h-2 z-10" />

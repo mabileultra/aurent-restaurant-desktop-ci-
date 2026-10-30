@@ -27,7 +27,15 @@ const mockBaseHook = {
     if (key === 'platform.desktopNotifications.targetAll') return 'Barcha kassalar';
     if (key === 'platform.desktopNotifications.targetSelect') return 'Tanlab yuborish';
     if (key === 'platform.desktopNotifications.registersCount') return `${fallback?.count ?? 248} ta kassa`;
-    if (key === 'platform.desktopNotifications.registersCountUnknown') return 'Noma\'lum (barcha faol kassalar)';
+    if (key === 'platform.desktopNotifications.registersCountUnknown') return 'Barcha faol kassalar';
+    if (key === 'platform.desktopNotifications.customHoursError')
+      return "Muddat 1 dan 720 soatgacha (30 kun) oralig'ida bo'lishi kerak";
+    if (key === 'platform.desktopNotifications.sendDisabledHint')
+      return 'Yuborish uchun sarlavha va matnni kiriting';
+    if (key === 'platform.desktopNotifications.sendDisabledHoursHint')
+      return "Muddatni to'g'ri kiriting (1 dan 720 soatgacha)";
+    if (key === 'platform.desktopNotifications.titleEmptyFallback') return 'Sarlavha';
+    if (key === 'platform.desktopNotifications.bodyEmptyFallback') return 'Xabar matni kiritilmagan...';
     if (key === 'platform.desktopNotifications.comingSoon') return 'Tez kunda';
     if (key === 'platform.desktopNotifications.stepContent') return 'Xabar matni';
     if (key === 'platform.desktopNotifications.badgeFilled') return 'To\'liq';
@@ -55,7 +63,7 @@ const mockBaseHook = {
     if (key === 'platform.desktopNotifications.colStatus') return 'HOLAT';
     if (key === 'platform.desktopNotifications.untracked') return 'Kuzatilmagan';
     if (key === 'platform.desktopNotifications.detailUntrackedHint')
-      return "Kassalarda hisoblagich kuzatilmagan (Server barcha faol kassalarga tarqatadi, alohida o'qish kvitansiyalari yuritilmaydi).";
+      return "Kassir xabarni o'qigani hozircha kuzatilmaydi (Server barcha faol kassalarga tarqatadi).";
     if (key === 'platform.desktopNotifications.confirmModalTitle') return `${fallback?.count ?? 248} ta kassaga yuborilsinmi?`;
     if (key === 'platform.desktopNotifications.confirmModalTitleAll') return 'Barcha kassalarga yuborilsinmi?';
     if (key === 'platform.desktopNotifications.confirmCancel') return 'Ortga, tahrirlash';
@@ -85,10 +93,15 @@ const mockBaseHook = {
   setPreviewLang: vi.fn(),
   targetScope: 'ALL',
   setTargetScope: vi.fn(),
-  kind: 'ALERT',
+  kind: 'MESSAGE',
   setKind: vi.fn(),
   duration: '3d',
   setDuration: vi.fn(),
+  customHours: '72',
+  setCustomHours: vi.fn(),
+  isCustomHoursValid: true,
+  canSend: true,
+  sendDisabledReason: null,
   expiresInHours: 72,
   visibleUntilFormatted: '1-noyabr, 14:30',
   scheduleType: 'NOW',
@@ -112,7 +125,7 @@ const mockBaseHook = {
       id: '1',
       createdAt: '2026-10-28T18:10:00Z',
       expiresAt: '2026-10-31T18:10:00Z',
-      kind: 'ALERT',
+      kind: 'MESSAGE',
       title: 'Ertaga 02:00–03:00 da texnik ishlar',
       body: 'Bu vaqtda kassa oflayn rejimda ishlaydi.',
       targetLabel: 'Barcha kassalar',
@@ -139,6 +152,8 @@ vi.mock('../hooks/usePlatformDesktopNotificationsPage', () => ({
 import PlatformDesktopNotificationsPage from './PlatformDesktopNotificationsPage';
 import PlatformDesktopConfirmModal from '../components/desktop-notifications/PlatformDesktopConfirmModal';
 import PlatformDesktopNotificationDetailDrawer from '../components/desktop-notifications/PlatformDesktopNotificationDetailDrawer';
+import PlatformDesktopLivePreview from '../components/desktop-notifications/PlatformDesktopLivePreview';
+import PlatformDesktopBroadcastForm from '../components/desktop-notifications/PlatformDesktopBroadcastForm';
 
 describe('PlatformDesktopNotificationsPage', () => {
   it('renders complete page structure with form, live preview, and history table', () => {
@@ -208,7 +223,7 @@ describe('PlatformDesktopNotificationsPage', () => {
 
     expect(html).toContain('Barcha kassalarga yuborilsinmi?');
     expect(html).toContain('Ha, barcha kassalarga yuborish');
-    expect(html).toContain('Noma&#x27;lum');
+    expect(html).toContain('Barcha faol kassalar');
   });
 
   it('renders slide-over detail drawer with honest untracked status', () => {
@@ -222,10 +237,11 @@ describe('PlatformDesktopNotificationsPage', () => {
 
     expect(html).toContain('Ertaga 02:00–03:00 da texnik ishlar');
     expect(html).toContain('Kuzatilmagan');
-    expect(html).toContain('Kassalarda hisoblagich kuzatilmagan');
+    expect(html).toContain('Kassir xabarni o&#x27;qigani hozircha kuzatilmaydi');
     expect(html).toContain('Nusxa olib yangi xabar');
     expect(html).toContain('Muddatni uzaytirish');
     expect(html).toContain('Kassalardan olib tashlash');
+    expect(html).toContain('Tez kunda');
   });
 
   it('renders draft restored notice banner when isDraftRestored is true', () => {
@@ -236,5 +252,78 @@ describe('PlatformDesktopNotificationsPage', () => {
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
 
     expect(html).toContain('Qoralama tiklandi');
+  });
+
+  it('renders live preview flyout for MESSAGE and centered modal for ALERT', () => {
+    // MESSAGE kind: bell flyout toast
+    const messageProps = {
+      ...mockBaseHook,
+      kind: 'MESSAGE',
+    };
+    const messageHtml = renderToStaticMarkup(
+      React.createElement(PlatformDesktopLivePreview, { p: messageProps })
+    );
+    expect(messageHtml).toContain('Qo&#x27;ng&#x27;iroqcha ro&#x27;yxatida');
+    expect(messageHtml).not.toContain('Tushunarli');
+
+    // ALERT kind: centered modal with dismiss button
+    const alertProps = {
+      ...mockBaseHook,
+      kind: 'ALERT',
+    };
+    const alertHtml = renderToStaticMarkup(
+      React.createElement(PlatformDesktopLivePreview, { p: alertProps })
+    );
+    expect(alertHtml).toContain('Tushunarli');
+  });
+
+  it('displays validation error and disables send button when custom hours is invalid', () => {
+    const invalidProps = {
+      ...mockBaseHook,
+      duration: 'other',
+      customHours: '0',
+      isCustomHoursValid: false,
+      canSend: false,
+      sendDisabledReason: "Muddatni to'g'ri kiriting (1 dan 720 soatgacha)",
+    };
+    const formHtml = renderToStaticMarkup(
+      React.createElement(PlatformDesktopBroadcastForm, { p: invalidProps })
+    );
+    expect(formHtml).toContain('Muddat 1 dan 720 soatgacha (30 kun) oralig&#x27;ida bo&#x27;lishi kerak');
+    expect(formHtml).toContain('Muddatni to&#x27;g&#x27;ri kiriting (1 dan 720 soatgacha)');
+    expect(formHtml).toContain('disabled');
+    expect(formHtml).toContain('id="desktop-custom-hours-input"');
+    expect(formHtml).toContain('for="desktop-custom-hours-input"');
+    expect(formHtml).toContain('aria-describedby="desktop-custom-hours-error"');
+  });
+
+  it('renders accessible mobile cards with role button and tabindex', () => {
+    const historyProps = {
+      ...mockBaseHook,
+      history: [
+        {
+          id: 'card-1',
+          title: 'Mobil xabar',
+          body: 'Kassalar uchun test',
+          kind: 'MESSAGE',
+          status: 'ACTIVE',
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      totalHistoryCount: 1,
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+    expect(html).toContain('role="button"');
+    expect(html).toContain('tabindex="0"');
+  });
+
+  it('renders confirmation modal buttons with whitespace-nowrap in single row container', () => {
+    const modalProps = {
+      ...mockBaseHook,
+      confirmModalOpen: true,
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopConfirmModal, { p: modalProps }));
+    expect(html).toContain('whitespace-nowrap');
+    expect(html).toContain('flex items-center justify-end');
   });
 });
