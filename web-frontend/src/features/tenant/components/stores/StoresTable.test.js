@@ -88,12 +88,28 @@ describe('StoresTable', () => {
     expect(html).toContain('—');
   });
 
-  it('renders loading spinner when isPending is true', () => {
+  it('renders skeleton rows when isPending is true to prevent layout shift', () => {
     const html = renderToStaticMarkup(
       React.createElement(StoresTable, { ...defaultProps, isPending: true })
     );
-    expect(html).toContain('animate-spin');
+    expect(html).toContain('animate-pulse');
     expect(html).not.toContain('404 Toys');
+  });
+
+  it('renders top progress line when isRefreshing is true while keeping rows visible', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(StoresTable, { ...defaultProps, isRefreshing: true })
+    );
+    expect(html).toContain('bg-emerald-500 animate-pulse');
+    expect(html).toContain('404 Toys');
+  });
+
+  it('renders overlay spinner when showOverlay is true without unmounting rows', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(StoresTable, { ...defaultProps, showOverlay: true })
+    );
+    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('404 Toys');
   });
 
   it('renders empty message when rows is empty', () => {

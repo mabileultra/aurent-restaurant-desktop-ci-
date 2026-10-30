@@ -15,8 +15,11 @@ import { Spinner } from '../../../../components/ui';
 export default function StoresTable({
   t,
   isPending,
+  isRefreshing = false,
+  showOverlay = false,
   rows,
   page,
+  displayPage,
   pageSize,
   total,
   totalPages,
@@ -32,6 +35,7 @@ export default function StoresTable({
   onSelectStore,
 }) {
   const colSpan = showCompany ? 11 : 10;
+  const effectivePage = typeof displayPage === 'number' ? displayPage : page;
   const regionCodes = rows.map((r) => r.regionCode).filter(Boolean);
   const { regionName, districtName, empty } = useGeoNameLookup(regionCodes);
 
@@ -45,7 +49,18 @@ export default function StoresTable({
   };
 
   return (
-    <div className="admin-table-shell">
+    <div className="admin-table-shell relative">
+      {/* Indeterminate emerald progress line during background refetching */}
+      {isRefreshing && (
+        <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
+          <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
+        </div>
+      )}
+
+      {/* Anti-flicker delayed overlay spinner (appears only if request persists > 250ms, holds >= 400ms) */}
+      {showOverlay && (
+        <Spinner overlay size="sm" text={t('common.loading')} />
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -70,11 +85,46 @@ export default function StoresTable({
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {isPending ? (
-              <tr>
-                <td colSpan={colSpan} className="px-4 py-12 text-center text-slate-500">
-                  <Spinner size="md" text={t('common.loading')} />
-                </td>
-              </tr>
+              Array.from({ length: Math.min(pageSize || 10, 10) }).map((_, idx) => (
+                <tr key={`store-skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
+                  <td className="w-12 px-3 py-3 text-center">
+                    <div className="h-4 w-5 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="w-16 px-3 py-3 text-center">
+                    <div className="h-4 w-8 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700/60 shrink-0" />
+                      <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+                    </div>
+                  </td>
+                  {showCompany && (
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700/60" />
+                    </td>
+                  )}
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-5 w-12 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="w-12 px-4 py-3" />
+                </tr>
+              ))
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
@@ -92,7 +142,7 @@ export default function StoresTable({
                     onClick={() => onSelectStore?.(row)}
                     className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
                   >
-                    <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
+                    <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
                     
                     {/* Filial nomi + Avatar badge */}
                     <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
@@ -203,6 +253,7 @@ export default function StoresTable({
 
       <TablePagination
         page={page}
+        displayPage={effectivePage}
         pageSize={pageSize}
         total={total}
         totalPages={totalPages}

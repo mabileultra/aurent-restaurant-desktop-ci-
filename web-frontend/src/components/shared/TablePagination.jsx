@@ -21,6 +21,7 @@ function buildPageButtons(totalPages, page) {
 
 export default function TablePagination({
   page,
+  displayPage,
   pageSize,
   total,
   totalPages: totalPagesProp,
@@ -32,8 +33,9 @@ export default function TablePagination({
   const { t } = useTranslation();
 
   const totalPages = totalPagesProp ?? (pageSize > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1);
-  const from = total === 0 ? 0 : page * pageSize + 1;
-  const to = Math.min((page + 1) * pageSize, total);
+  const activeDisplayPage = typeof displayPage === 'number' ? displayPage : page;
+  const from = total === 0 ? 0 : activeDisplayPage * pageSize + 1;
+  const to = Math.min((activeDisplayPage + 1) * pageSize, total);
 
   const pageButtons = useMemo(() => buildPageButtons(totalPages, page), [totalPages, page]);
   const showEllipsisBefore = totalPages > 5 && pageButtons.length > 0 && pageButtons[0] > 0;

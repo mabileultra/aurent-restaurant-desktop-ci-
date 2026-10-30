@@ -2,25 +2,12 @@ import AppBootPlaceholder from '../components/shared/AppBootPlaceholder';
 import { isCashierPinLoginPath } from '../utils/isCashierPinLoginPath';
 
 /**
- * Внешний Suspense: PIN — светлый boot; admin/platform обычно ловятся
- * ShellOutlet (сайдбар не гаснет). Сюда попадаем только если грузится сам layout-chunk.
+ * Suspense fallback during lazy route chunk loading.
+ * Ensures no blank white screens or dark voids appear during navigation.
  */
 export default function RouteFallback() {
   if (isCashierPinLoginPath()) {
-    return <AppBootPlaceholder label="" />;
+    return <AppBootPlaceholder label="" tone="light" />;
   }
-  const path = typeof window !== 'undefined' ? window.location.pathname : '';
-  if (
-    path.startsWith('/platform')
-    || path.startsWith('/dashboard')
-    || path.startsWith('/finance')
-    || path.startsWith('/pharm')
-    || path.startsWith('/products')
-    || path.startsWith('/stock')
-    || path.startsWith('/reports')
-    || path.startsWith('/billing')
-  ) {
-    return <AppBootPlaceholder label="Aurent…" tone="light" />;
-  }
-  return null;
+  return <AppBootPlaceholder label="Aurent…" />;
 }

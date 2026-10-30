@@ -12,9 +12,11 @@ export default function PlatformCompanyStatsCards({
   onStoresClick,
   isPending = false,
 }) {
-  const activePercent = totalCompanies > 0
-    ? Math.round((activeCompanies / totalCompanies) * 100)
-    : 100;
+  const activeHint = isPending
+    ? t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })
+    : totalCompanies > 0
+      ? `${Math.round((activeCompanies / totalCompanies) * 100)}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`
+      : `0% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`;
 
   const cards = [
     {
@@ -31,7 +33,7 @@ export default function PlatformCompanyStatsCards({
       id: 'ACTIVE',
       title: t('platform.statsActive', { defaultValue: 'Faol kompaniyalar' }),
       value: activeCompanies,
-      hint: `${activePercent}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`,
+      hint: activeHint,
       icon: CheckCircle2,
       iconColor: 'text-emerald-600 dark:text-emerald-400',
       iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60',

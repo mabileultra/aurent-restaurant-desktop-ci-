@@ -179,6 +179,8 @@ export default function StoresPage({
             districtCode={p.districtCode}
             statusFilter={p.statusFilter}
             isPending={p.isPending}
+            isRefreshing={p.isRefreshing}
+            showOverlay={p.showRefreshingOverlay}
             menuId={p.menuId}
             onMenuOpenChange={p.setMenuId}
             onEdit={p.openEdit}
@@ -192,8 +194,11 @@ export default function StoresPage({
           <StoresTable
             t={p.t}
             isPending={p.isPending}
+            isRefreshing={p.isRefreshing}
+            showOverlay={p.showRefreshingOverlay}
             rows={p.rows}
             page={p.page}
+            displayPage={p.displayPage}
             pageSize={p.pageSize}
             total={p.total}
             totalPages={p.totalPages}

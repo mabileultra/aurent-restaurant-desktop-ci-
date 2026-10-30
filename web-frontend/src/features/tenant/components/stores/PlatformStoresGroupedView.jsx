@@ -35,6 +35,8 @@ export default function PlatformStoresGroupedView({
   districtCode = '',
   statusFilter = 'ALL',
   isPending = false,
+  isRefreshing = false,
+  showOverlay = false,
   expandedIds: controlledExpandedIds,
   onExpandedIdsChange,
   hasUserToggled: controlledHasUserToggled,
@@ -347,8 +349,25 @@ export default function PlatformStoresGroupedView({
 
   if (isPending) {
     return (
-      <div className="py-16 text-center text-slate-500 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-        <Spinner size="md" text={t('common.loading')} />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 animate-pulse">
+          <div className="h-4 w-48 rounded bg-slate-200 dark:bg-slate-700/60" />
+          <div className="h-6 w-24 rounded-lg bg-slate-100 dark:bg-slate-800" />
+        </div>
+        {Array.from({ length: 4 }).map((_, idx) => (
+          <div key={`grouped-skeleton-${idx}`} className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700/60" />
+                <div className="space-y-2">
+                  <div className="h-4 w-40 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <div className="h-3 w-24 rounded bg-slate-100 dark:bg-slate-800" />
+                </div>
+              </div>
+              <div className="h-6 w-16 rounded-full bg-slate-100 dark:bg-slate-800" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -370,7 +389,19 @@ export default function PlatformStoresGroupedView({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 relative">
+      {/* Indeterminate emerald progress line during background refetching */}
+      {isRefreshing && (
+        <div className="absolute -top-1 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden rounded-full">
+          <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
+        </div>
+      )}
+
+      {/* Anti-flicker delayed overlay spinner (appears only if request persists > 250ms, holds >= 400ms) */}
+      {showOverlay && (
+        <Spinner overlay size="sm" text={t('common.loading')} />
+      )}
+
       {/* Group Toolbar: Section Title + Counter + Prominent Expand/Collapse Button */}
       <div
         id="stores-grouped-toolbar"

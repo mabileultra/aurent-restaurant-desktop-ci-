@@ -102,7 +102,7 @@ describe('PlatformCompaniesTable', () => {
     expect(html).toContain('common.inactive');
   });
 
-  it('renders loading state when isPending is true', () => {
+  it('renders skeleton rows when isPending is true to prevent layout shift', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompaniesTable, {
         ...defaultProps,
@@ -110,11 +110,35 @@ describe('PlatformCompaniesTable', () => {
       })
     );
 
-    expect(html).toContain('common.loading');
+    expect(html).toContain('animate-pulse');
     expect(html).not.toContain('Supermarket Avesta');
   });
 
-  it('renders empty state when rows is empty', () => {
+  it('renders top progress line when isRefreshing is true while keeping rows visible', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompaniesTable, {
+        ...defaultProps,
+        isRefreshing: true,
+      })
+    );
+
+    expect(html).toContain('bg-emerald-500 animate-pulse');
+    expect(html).toContain('Supermarket Avesta');
+  });
+
+  it('renders overlay spinner when showOverlay is true without unmounting rows', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompaniesTable, {
+        ...defaultProps,
+        showOverlay: true,
+      })
+    );
+
+    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('Supermarket Avesta');
+  });
+
+  it('renders empty state when rows is empty and not pending', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompaniesTable, {
         ...defaultProps,
@@ -126,15 +150,23 @@ describe('PlatformCompaniesTable', () => {
     expect(html).toContain('common.noData');
   });
 
-  it('renders error state when isError is true', () => {
+  it('numbers rows and range by displayPage during page transition when previous data is visible', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompaniesTable, {
         ...defaultProps,
-        isError: true,
-        error: new Error('Failed to load companies'),
+        page: 1, // Target page requested
+        displayPage: 0, // Currently visible data is still page 0
+        pageSize: 14,
+        total: 28,
+        totalPages: 2,
+        isRefreshing: true,
       })
     );
 
-    expect(html).not.toContain('Supermarket Avesta');
+    // Row numbers must be 1 and 2 (from displayPage 0), NOT 15 and 16
+    expect(html).toContain('>1</td>');
+    expect(html).toContain('>2</td>');
+    expect(html).not.toContain('>15</td>');
+    expect(html).not.toContain('>16</td>');
   });
 });

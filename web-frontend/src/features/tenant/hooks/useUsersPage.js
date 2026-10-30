@@ -7,6 +7,7 @@ import { companyApi, platformBusinessTypeApi, userApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { asEntityList } from '../utils/companySelectOptions';
 import { transliterateCyrillicToLatin } from '../../../utils/transliterateCyrillic';
+import { useDelayedLoading } from '../../../hooks/useDelayedLoading';
 import { useUsersListQuery } from './users-list/useUsersListQuery';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -88,6 +89,10 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const {
     page: usersPage,
     isLoading,
+    firstLoad,
+    isRefreshing,
+    isDebouncing,
+    displayPage,
     isError,
     error,
     refetch,
@@ -107,6 +112,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     sortField,
     sortDirection,
   });
+
+  const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
@@ -459,6 +466,11 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     tabActiveUsers,
     tabInactiveUsers,
     isLoading,
+    firstLoad,
+    isRefreshing,
+    isDebouncing,
+    showRefreshingOverlay,
+    displayPage,
     isError,
     error,
     refetch,

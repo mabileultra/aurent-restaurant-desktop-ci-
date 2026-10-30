@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { storeApi, platformBusinessTypeApi } from '../../../api';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import { useDelayedLoading } from '../../../hooks/useDelayedLoading';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 
 export function useStoresPage({ showCompanySelect = false, companyIdFilter, companies = [] } = {}) {
@@ -65,10 +66,16 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     [debouncedSearch, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
   );
 
-  const { data, isPending, isError, error, refetch } = useQuery({
+  const storesQuery = useQuery({
     queryKey: ['stores-manage', queryParams],
     queryFn: () => storeApi.getManaged(queryParams).then((r) => r.data),
+    placeholderData: keepPreviousData,
   });
+
+  const { data, error } = storesQuery;
+  const firstLoad = storesQuery.isPending && !data;
+  const isRefreshing = storesQuery.isFetching && !firstLoad;
+  const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
 
   const { data: businessTypes = [] } = useQuery({
     queryKey: ['platform-business-types-options'],
@@ -136,6 +143,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     queryKey: ['stores-all', resolvedCompanyId],
     queryFn: () => storeApi.getAll().then((r) => r.data || []),
     enabled: isGroupedViewActive,
+    placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
 
@@ -171,6 +179,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
 
   const total = data?.totalElements ?? rows.length;
   const totalPages = data?.totalPages ?? 0;
+  const displayPage = typeof data?.number === 'number' ? data.number : page;
 
   // Scalable KPI calculations
   const totalStores = isGroupedViewActive && allStores.length > 0
@@ -349,10 +358,14 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     rows,
     total,
     totalPages,
-    isPending,
-    isError,
+    firstLoad,
+    isRefreshing,
+    showRefreshingOverlay,
+    displayPage,
+    isPending: firstLoad,
+    isError: storesQuery.isError,
     error,
-    refetch,
+    refetch: storesQuery.refetch,
     errorMessage,
     showCompanySelect,
     companies,

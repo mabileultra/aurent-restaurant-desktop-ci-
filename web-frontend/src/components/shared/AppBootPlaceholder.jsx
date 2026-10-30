@@ -6,16 +6,15 @@ import Spinner from '../ui/Spinner';
 /** Placeholder while auth / desktop API bootstrap — never leave a blank dark void. */
 export default function AppBootPlaceholder({ label = 'Aurent…', tone }) {
   const pinLogin = isCashierPinLoginPath();
-  const resolvedTone = tone || (pinLogin ? 'pin' : 'dark');
+  const isDocDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const resolvedTone = tone || (pinLogin ? 'light' : (isDocDark ? 'dark' : 'light'));
+
+  const toneClass = resolvedTone === 'dark'
+    ? 'app-boot-placeholder--dark'
+    : 'app-boot-placeholder--light';
 
   return (
-    <div
-      className={`app-boot-placeholder ${
-        resolvedTone === 'pin' || resolvedTone === 'light'
-          ? 'app-boot-placeholder--pin'
-          : 'app-boot-placeholder--dark'
-      }`}
-    >
+    <div className={`app-boot-placeholder ${toneClass}`}>
       <Spinner size="xl" text={label} variant="emerald" />
     </div>
   );

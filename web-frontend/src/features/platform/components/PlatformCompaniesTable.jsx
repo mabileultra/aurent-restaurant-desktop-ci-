@@ -17,11 +17,14 @@ import {
 export default function PlatformCompaniesTable({
   t,
   isPending,
+  isRefreshing = false,
+  showOverlay = false,
   isError = false,
   error = null,
   onRetry,
   rows = [],
   page = 0,
+  displayPage,
   pageSize = 14,
   total = 0,
   totalPages = 1,
@@ -34,6 +37,7 @@ export default function PlatformCompaniesTable({
   onSelectCompany,
 }) {
   const [copiedId, setCopiedId] = useState(null);
+  const effectivePage = typeof displayPage === 'number' ? displayPage : page;
   const safeTotalPages = Math.max(
     totalPages || 0,
     pageSize > 0 && total > 0 ? Math.ceil(total / pageSize) : 1
@@ -53,7 +57,19 @@ export default function PlatformCompaniesTable({
   };
 
   return (
-    <div className="admin-table-shell">
+    <div className="admin-table-shell relative">
+      {/* Indeterminate emerald progress line during background refetching */}
+      {isRefreshing && (
+        <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
+          <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
+        </div>
+      )}
+
+      {/* Anti-flicker delayed overlay spinner (appears only if request persists > 250ms, holds >= 400ms) */}
+      {showOverlay && (
+        <Spinner overlay size="sm" text={t('common.loading')} />
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -74,11 +90,44 @@ export default function PlatformCompaniesTable({
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {isPending ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-slate-500">
-                  <Spinner size="md" text={t('common.loading')} />
-                </td>
-              </tr>
+              /* Full-height skeleton rows preventing table height collapse on initial load */
+              Array.from({ length: Math.min(pageSize || 14, 14) }).map((_, idx) => (
+                <tr key={`skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
+                  <td className="w-12 px-3 py-3 text-center">
+                    <div className="h-4 w-5 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700/60 shrink-0" />
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+                        <div className="h-3 w-20 rounded bg-slate-100 dark:bg-slate-800" />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                      <div className="h-3 w-16 rounded bg-slate-100 dark:bg-slate-800" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-5 w-16 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-5 w-12 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-5 w-20 rounded-md bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                  <td className="w-12 px-4 py-3 text-center">
+                    <div className="h-6 w-6 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                  </td>
+                </tr>
+              ))
             ) : isError ? (
               <tr>
                 <td colSpan={9} className="px-4 py-8">
@@ -114,7 +163,7 @@ export default function PlatformCompaniesTable({
                     onClick={() => onSelectCompany?.(row)}
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors group"
                   >
-                    <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
+                    <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
 
                     {/* Company Identity (Avatar + Name + STIR / Phone) */}
                     <td className="px-4 py-3">
@@ -249,6 +298,7 @@ export default function PlatformCompaniesTable({
 
       <TablePagination
         page={page}
+        displayPage={effectivePage}
         pageSize={pageSize}
         total={total}
         totalPages={safeTotalPages}

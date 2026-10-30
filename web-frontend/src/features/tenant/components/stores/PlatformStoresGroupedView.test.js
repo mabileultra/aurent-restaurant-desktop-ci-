@@ -175,7 +175,7 @@ describe('PlatformStoresGroupedView', () => {
     expect(html).toContain('Filiallar topilmadi');
   });
 
-  it('renders loading spinner when isPending is true', () => {
+  it('renders skeleton cards when isPending is true to prevent layout shift', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformStoresGroupedView, {
         ...defaultProps,
@@ -183,8 +183,32 @@ describe('PlatformStoresGroupedView', () => {
       })
     );
 
-    expect(html).toContain('animate-spin');
+    expect(html).toContain('animate-pulse');
     expect(html).not.toContain('EVOS Fast Food');
+  });
+
+  it('renders top progress line when isRefreshing is true while keeping company groups visible', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        isRefreshing: true,
+      })
+    );
+
+    expect(html).toContain('bg-emerald-500 animate-pulse');
+    expect(html).toContain('EVOS Fast Food');
+  });
+
+  it('renders overlay spinner when showOverlay is true without unmounting company groups', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformStoresGroupedView, {
+        ...defaultProps,
+        showOverlay: true,
+      })
+    );
+
+    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('EVOS Fast Food');
   });
 
   it('filters by companyId and isolates selected company and its branches', () => {

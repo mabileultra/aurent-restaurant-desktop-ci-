@@ -10,10 +10,16 @@
 
 .app-boot-placeholder--dark {
   background: #0c1018;
-  color: #94a3b8;
+  color: #cbd5e1;
 }
 
+.app-boot-placeholder--light {
+  background: #f8fafc;
+  color: #334155;
+}
+
+/* Backward compatibility for pin */
 .app-boot-placeholder--pin {
   background: #f8fafc;
-  color: #64748b;
+  color: #334155;
 }
