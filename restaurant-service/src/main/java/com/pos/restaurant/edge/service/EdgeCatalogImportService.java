@@ -2,7 +2,7 @@ package com.pos.restaurant.edge.service;
 
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogImportRequest;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot;
-import com.pos.restaurant.edge.support.EdgeCatalogLww;
+import com.pos.restaurant.edge.support.EdgeCatalogStructureWriter;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.CategoryRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.HallRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ItemRow;
@@ -70,6 +70,7 @@ import java.util.UUID;
 public class EdgeCatalogImportService {
 
     private final JdbcTemplate jdbc;
+    private final EdgeCatalogStructureWriter structureWriter;
     private final FloorHallRepository hallRepository;
     private final KitchenStationRepository stationRepository;
     private final MenuCategoryRepository categoryRepository;
@@ -100,11 +101,12 @@ public class EdgeCatalogImportService {
             }
         }
 
-        int halls = upsertHalls(snap);
-        int tables = upsertTables(snap);
-        int stations = upsertStations(snap);
-        int categories = upsertCategories(snap);
-        int items = upsertItems(snap);
+        Map<String, Object> structure = structureWriter.applyStructure(snap);
+        int halls = intCount(structure.get("halls"));
+        int tables = intCount(structure.get("tables"));
+        int stations = intCount(structure.get("stations"));
+        int categories = intCount(structure.get("categories"));
+        int items = intCount(structure.get("items"));
         int groups = upsertModifierGroups(snap);
         int options = upsertModifierOptions(snap);
         int links = upsertModifierLinks(snap);
@@ -163,6 +165,11 @@ public class EdgeCatalogImportService {
         return result;
     }
 
+    private static int intCount(Object v) {
+        if (v instanceof Number n) return n.intValue();
+        return 0;
+    }
+
     @Transactional(readOnly = true)
     public boolean hasCatalog(Integer companyId, Integer storeId) {
         if (companyId == null || storeId == null) {
@@ -190,295 +197,6 @@ public class EdgeCatalogImportService {
         if (halls != null && halls > 0) return true;
         Integer items = jdbc.queryForObject("SELECT COUNT(*) FROM menu_items", Integer.class);
         return items != null && items > 0;
-    }
-
-    private int upsertHalls(EdgeCatalogSnapshot snap) {
-        List<HallRow> rows = snap.halls() == null ? List.of() : snap.halls();
-        Instant now = Instant.now();
-        for (HallRow row : rows) {
-            if (row.id() == null) continue;
-            jdbc.update("""
-                INSERT INTO floor_halls
-                  (id, company_id, store_id, name, sort_order, active, service_percent, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (id) DO UPDATE SET
-                  company_id = EXCLUDED.company_id,
-                  store_id = EXCLUDED.store_id,
-                  name = EXCLUDED.name,
-                  sort_order = EXCLUDED.sort_order,
-                  active = EXCLUDED.active,
-                  service_percent = EXCLUDED.service_percent,
-                  updated_at = EXCLUDED.updated_at
-                """ + EdgeCatalogLww.whereNotOlderThan("floor_halls"),
-                row.id(),
-                snap.companyId(),
-                snap.storeId(),
-                row.name(),
-                row.sortOrder(),
-                row.active(),
-                row.servicePercent() == null ? BigDecimal.ZERO : row.servicePercent(),
-                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
-                EdgeCatalogLww.bind(row.updatedAt())
-            );
-        }
-        return rows.size();
-    }
-
-    private int upsertTables(EdgeCatalogSnapshot snap) {
-        List<TableRow> rows = snap.tables() == null ? List.of() : snap.tables();
-        Instant now = Instant.now();
-        for (TableRow row : rows) {
-            if (row.id() == null || row.hallId() == null) continue;
-            // Keep cloud status (OCCUPIED/WAITING_PAYMENT/…) — open orders are imported after.
-            String status = StringUtils.hasText(row.status()) ? row.status().trim() : "FREE";
-            jdbc.update("""
-                INSERT INTO floor_tables
-                  (id, hall_id, company_id, store_id, code, label, seat_count, service_percent,
-                   pos_x, pos_y, width, height, status, active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (id) DO UPDATE SET
-                  hall_id = EXCLUDED.hall_id,
-                  company_id = EXCLUDED.company_id,
-                  store_id = EXCLUDED.store_id,
-                  code = EXCLUDED.code,
-                  label = EXCLUDED.label,
-                  seat_count = EXCLUDED.seat_count,
-                  service_percent = EXCLUDED.service_percent,
-                  pos_x = EXCLUDED.pos_x,
-                  pos_y = EXCLUDED.pos_y,
-                  width = EXCLUDED.width,
-                  height = EXCLUDED.height,
-                  status = EXCLUDED.status,
-                  active = EXCLUDED.active,
-                  updated_at = EXCLUDED.updated_at
-                """ + EdgeCatalogLww.whereNotOlderThan("floor_tables"),
-                row.id(),
-                row.hallId(),
-                snap.companyId(),
-                snap.storeId(),
-                row.code(),
-                row.label(),
-                row.seatCount(),
-                row.servicePercent(),
-                row.posX(),
-                row.posY(),
-                row.width() <= 0 ? 80 : row.width(),
-                row.height() <= 0 ? 80 : row.height(),
-                status,
-                row.active(),
-                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
-                EdgeCatalogLww.bind(row.updatedAt())
-            );
-        }
-        return rows.size();
-    }
-
-    private int upsertStations(EdgeCatalogSnapshot snap) {
-        // JDBC: Menu/Kitchen entities use @GeneratedValue(UUID) — JPA save() would mint new ids
-        // and break FK links from the cloud snapshot.
-        List<StationRow> rows = snap.stations() == null ? List.of() : snap.stations();
-        Instant now = Instant.now();
-        int n = 0;
-        for (StationRow row : rows) {
-            if (row.id() == null) continue;
-            String code = StringUtils.hasText(row.code()) ? row.code().trim() : ("S" + row.id().toString().substring(0, 8));
-            String name = StringUtils.hasText(row.name()) ? row.name().trim() : code;
-            jdbc.update("""
-                INSERT INTO kitchen_stations
-                  (id, company_id, store_id, code, name, sort_order, active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (id) DO UPDATE SET
-                  company_id = EXCLUDED.company_id,
-                  store_id = EXCLUDED.store_id,
-                  code = EXCLUDED.code,
-                  name = EXCLUDED.name,
-                  sort_order = EXCLUDED.sort_order,
-                  active = EXCLUDED.active,
-                  updated_at = EXCLUDED.updated_at
-                """ + EdgeCatalogLww.whereNotOlderThan("kitchen_stations"),
-                row.id(),
-                snap.companyId(),
-                snap.storeId(),
-                code,
-                name,
-                row.sortOrder(),
-                row.active(),
-                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
-                EdgeCatalogLww.bind(row.updatedAt())
-            );
-            n++;
-        }
-        return n;
-    }
-
-    private int upsertCategories(EdgeCatalogSnapshot snap) {
-        List<CategoryRow> rows = snap.categories() == null ? List.of() : snap.categories();
-        Instant now = Instant.now();
-        Set<UUID> known = new HashSet<>();
-        for (CategoryRow row : rows) {
-            if (row.id() == null) continue;
-            upsertCategoryRow(
-                row.id(),
-                snap.companyId(),
-                snap.storeId(),
-                StringUtils.hasText(row.name()) ? row.name().trim() : "Раздел",
-                row.sortOrder(),
-                row.active(),
-                row.autoPrint(),
-                row.printPrinterName(),
-                now,
-                row.updatedAt()
-            );
-            known.add(row.id());
-        }
-        // Orphan item → category FKs (deleted/moved categories on cloud)
-        List<ItemRow> items = snap.items() == null ? List.of() : snap.items();
-        for (ItemRow item : items) {
-            UUID catId = item.menuCategoryId();
-            if (catId == null || known.contains(catId)) continue;
-            String stubName = StringUtils.hasText(item.category()) ? item.category().trim() : "Раздел";
-            upsertCategoryRow(catId, snap.companyId(), snap.storeId(), stubName, 900, true, false, null, now, null);
-            known.add(catId);
-        }
-        return known.size();
-    }
-
-    private void upsertCategoryRow(
-        UUID id,
-        Integer companyId,
-        Integer storeId,
-        String name,
-        int sortOrder,
-        boolean active,
-        boolean autoPrint,
-        String printPrinterName,
-        Instant now,
-        Instant updatedAt
-    ) {
-        jdbc.update("""
-            INSERT INTO menu_categories
-              (id, company_id, store_id, name, sort_order, active, auto_print, print_printer_name, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (id) DO UPDATE SET
-              company_id = EXCLUDED.company_id,
-              store_id = EXCLUDED.store_id,
-              name = EXCLUDED.name,
-              sort_order = EXCLUDED.sort_order,
-              active = EXCLUDED.active,
-              auto_print = EXCLUDED.auto_print,
-              print_printer_name = EXCLUDED.print_printer_name,
-              updated_at = EXCLUDED.updated_at
-            """ + EdgeCatalogLww.whereNotOlderThan("menu_categories"),
-            id,
-            companyId,
-            storeId,
-            name,
-            sortOrder,
-            active,
-            autoPrint,
-            printPrinterName,
-            EdgeCatalogLww.createdOrNow(updatedAt, now),
-            EdgeCatalogLww.bind(updatedAt)
-        );
-    }
-
-    private int upsertItems(EdgeCatalogSnapshot snap) {
-        List<ItemRow> rows = snap.items() == null ? List.of() : snap.items();
-        Instant now = Instant.now();
-        Set<UUID> stationIds = new HashSet<>();
-        if (snap.stations() != null) {
-            for (StationRow s : snap.stations()) {
-                if (s != null && s.id() != null) stationIds.add(s.id());
-            }
-        }
-        int n = 0;
-        for (ItemRow row : rows) {
-            if (row.id() == null || !StringUtils.hasText(row.name())) continue;
-            UUID stationId = row.stationId() != null && stationIds.contains(row.stationId())
-                ? row.stationId()
-                : null;
-            String itemType = parseEnum(MenuItemType.class, row.itemType(), MenuItemType.DISH).name();
-            MenuPortionUnit portionUnit = parseEnum(MenuPortionUnit.class, row.portionUnit(), null);
-            jdbc.update("""
-                INSERT INTO menu_items (
-                  id, company_id, store_id, item_type, name, sku, price, tax_rate, active, available,
-                  station_id, category, menu_category_id, image_url, description, prep_minutes,
-                  portion_grams, portion_amount, portion_unit, portion_label, variant_group_id, tags,
-                  ikpu, package_code, unit_of_measure, unit_measure_code, barcode, marked_product,
-                  sort_order, created_at, updated_at
-                ) VALUES (
-                  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?, ?, ?,
-                  ?, ?, ?
-                )
-                ON CONFLICT (id) DO UPDATE SET
-                  company_id = EXCLUDED.company_id,
-                  store_id = EXCLUDED.store_id,
-                  item_type = EXCLUDED.item_type,
-                  name = EXCLUDED.name,
-                  sku = EXCLUDED.sku,
-                  price = EXCLUDED.price,
-                  tax_rate = EXCLUDED.tax_rate,
-                  active = EXCLUDED.active,
-                  available = EXCLUDED.available,
-                  station_id = EXCLUDED.station_id,
-                  category = EXCLUDED.category,
-                  menu_category_id = EXCLUDED.menu_category_id,
-                  image_url = EXCLUDED.image_url,
-                  description = EXCLUDED.description,
-                  prep_minutes = EXCLUDED.prep_minutes,
-                  portion_grams = EXCLUDED.portion_grams,
-                  portion_amount = EXCLUDED.portion_amount,
-                  portion_unit = EXCLUDED.portion_unit,
-                  portion_label = EXCLUDED.portion_label,
-                  variant_group_id = EXCLUDED.variant_group_id,
-                  tags = EXCLUDED.tags,
-                  ikpu = EXCLUDED.ikpu,
-                  package_code = EXCLUDED.package_code,
-                  unit_of_measure = EXCLUDED.unit_of_measure,
-                  unit_measure_code = EXCLUDED.unit_measure_code,
-                  barcode = EXCLUDED.barcode,
-                  marked_product = EXCLUDED.marked_product,
-                  sort_order = EXCLUDED.sort_order,
-                  updated_at = EXCLUDED.updated_at
-                """ + EdgeCatalogLww.whereNotOlderThan("menu_items"),
-                row.id(),
-                snap.companyId(),
-                snap.storeId(),
-                itemType,
-                row.name().trim(),
-                row.sku(),
-                row.price() == null ? BigDecimal.ZERO : row.price(),
-                row.taxRate() == null ? BigDecimal.ZERO : row.taxRate(),
-                row.active(),
-                row.available(),
-                stationId,
-                row.category(),
-                row.menuCategoryId(),
-                row.imageUrl(),
-                row.description(),
-                row.prepMinutes(),
-                row.portionGrams(),
-                row.portionAmount(),
-                portionUnit == null ? null : portionUnit.name(),
-                row.portionLabel(),
-                row.variantGroupId(),
-                row.tags(),
-                row.ikpu(),
-                row.packageCode(),
-                row.unitOfMeasure(),
-                row.unitMeasureCode(),
-                row.barcode(),
-                row.markedProduct(),
-                row.sortOrder(),
-                EdgeCatalogLww.createdOrNow(row.updatedAt(), now),
-                EdgeCatalogLww.bind(row.updatedAt())
-            );
-            n++;
-        }
-        return n;
     }
 
     private int upsertModifierGroups(EdgeCatalogSnapshot snap) {
