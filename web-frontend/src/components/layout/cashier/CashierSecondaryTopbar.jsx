@@ -6,7 +6,6 @@ import CashierPosTopbarCashier from './CashierPosTopbarCashier';
 
 export default function CashierSecondaryTopbar({
   t,
-  displayAppName,
   isDesktopApp: _isDesktopApp,
   storeName,
   shiftOpenBadge,
@@ -21,10 +20,7 @@ export default function CashierSecondaryTopbar({
     <header className="cashier-topbar cashier-topbar--pos cashier-topbar--compact">
       <div className="cashier-topbar__row cashier-topbar__row--main">
         <div className="cashier-topbar__brand-block">
-          <CashierDesktopMenu appName={displayAppName()} />
-          <span className="cashier-topbar__pro-badge" title={t('pos.proBadge')}>
-            {t('pos.proBadge')}
-          </span>
+          <CashierDesktopMenu />
           <span className="cashier-topbar__brand-divider d-none d-md-inline" aria-hidden />
           <div className="cashier-topbar__terminal-strip d-none d-md-flex">
             <CashierTopbarTerminalMeta

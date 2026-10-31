@@ -1,12 +1,11 @@
 import { useCashierUiScale } from '../../../../features/cashier/hooks/useCashierUiScale';
 import CashierZoomControls from '../../../../features/cashier/components/CashierZoomControls';
-import OfflineStatusDock from '../../../../features/cashier/components/OfflineStatusDock';
 import { useOfflineDockBadge } from '../../../../features/cashier/hooks/useOfflineDockBadge';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 
 /**
- * Right side of bottom dock: zoom + compact онлайн/офлайн.
- * Offline toggle and catalog refresh live in Aurent desktop menu.
+ * Right side of bottom dock: zoom (+ pharmacy KKM).
+ * Offline status lives in Aurent desktop menu — not in the dock.
  */
 export default function CashierBottomNavAside({ t }) {
   const zoom = useCashierUiScale();
@@ -26,7 +25,6 @@ export default function CashierBottomNavAside({ t }) {
           {t('pharmacyCashier.bottom.kkm')}
         </span>
       ) : null}
-      <OfflineStatusDock status={status} />
     </div>
   );
 }

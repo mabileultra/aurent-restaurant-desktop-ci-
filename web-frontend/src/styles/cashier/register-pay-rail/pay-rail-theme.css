@@ -64,6 +64,14 @@
   --pay-tool-return-bg: #fef2f2;
   --pay-tool-return-border: #fca5a5;
   --pay-tool-return-fg: #b91c1c;
+  --pay-tool-cash-in-bg: #ecfdf5;
+  --pay-tool-cash-in-border: #6ee7b7;
+  --pay-tool-cash-in-fg: #047857;
+  --pay-tool-cash-in-icon-bg: rgb(16 185 129 / 0.16);
+  --pay-tool-cash-out-bg: #fffbeb;
+  --pay-tool-cash-out-border: #fcd34d;
+  --pay-tool-cash-out-fg: #b45309;
+  --pay-tool-cash-out-icon-bg: rgb(245 158 11 / 0.16);
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail {
@@ -129,4 +137,12 @@
   --pay-tool-return-bg: rgb(248 113 113 / 0.12);
   --pay-tool-return-border: rgb(248 113 113 / 0.45);
   --pay-tool-return-fg: var(--pos-danger, #f87171);
+  --pay-tool-cash-in-bg: rgb(16 185 129 / 0.14);
+  --pay-tool-cash-in-border: rgb(52 211 153 / 0.45);
+  --pay-tool-cash-in-fg: #6ee7b7;
+  --pay-tool-cash-in-icon-bg: rgb(16 185 129 / 0.22);
+  --pay-tool-cash-out-bg: rgb(245 158 11 / 0.12);
+  --pay-tool-cash-out-border: rgb(251 191 36 / 0.45);
+  --pay-tool-cash-out-fg: #fbbf24;
+  --pay-tool-cash-out-icon-bg: rgb(245 158 11 / 0.2);
 }

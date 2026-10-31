@@ -89,52 +89,48 @@ export default function ShiftCashMovementModal({
     }
   };
 
+  const modalClass = [
+    'cashier-cash-move-modal',
+    isCashIn ? 'cashier-cash-move-modal--in' : 'cashier-cash-move-modal--out',
+  ].join(' ');
+
   return (
     <PosModalPortal open={open} onClose={onClose}>
       <div
-        className="pos-pay-modal pos-pay-modal--shift-terminal w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+        className={modalClass}
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="shift-cash-movement-title"
       >
-        <header className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div
-              className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                isCashIn
-                  ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400'
-                  : 'bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400'
-              }`}
-            >
-              {isCashIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+        <header className="cashier-cash-move-modal__head">
+          <div className="cashier-cash-move-modal__head-main">
+            <div className="cashier-cash-move-modal__icon" aria-hidden="true">
+              {isCashIn ? <ArrowDownLeft size={22} /> : <ArrowUpRight size={22} />}
             </div>
-            <div>
-              <h2 id="shift-cash-movement-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+            <div className="cashier-cash-move-modal__head-text">
+              <h2 id="shift-cash-movement-title" className="cashier-cash-move-modal__title">
                 {title}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+              <p className="cashier-cash-move-modal__hint">{hint}</p>
             </div>
           </div>
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+            className="cashier-cash-move-modal__close"
             onClick={onClose}
             aria-label={t('common.close')}
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </header>
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <div>
-            <label
-              htmlFor="shift-cash-amount"
-              className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
-            >
+        <form onSubmit={handleSubmit} className="cashier-cash-move-modal__form">
+          <div className="cashier-cash-move-modal__field">
+            <label htmlFor="shift-cash-amount" className="cashier-cash-move-modal__label">
               {t('pos.cashMovementAmount', { defaultValue: 'Summa (so‘m)' })}
             </label>
-            <div className="relative">
+            <div className="cashier-cash-move-modal__amount-wrap">
               <input
                 id="shift-cash-amount"
                 type="number"
@@ -144,44 +140,40 @@ export default function ShiftCashMovementModal({
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
                 placeholder="0"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-lg font-semibold text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+                className="cashier-cash-move-modal__input"
               />
               {numericAmount > 0 && (
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400">
+                <div className="cashier-cash-move-modal__amount-hint">
                   {fmtMoney(numericAmount)} so‘m
                 </div>
               )}
             </div>
 
-            {/* Quick preset buttons */}
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="cashier-cash-move-modal__presets">
               {QUICK_AMOUNTS.map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => handleAddQuickAmount(preset)}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/80 transition-colors"
+                  className="cashier-cash-move-modal__preset"
                 >
                   +{fmtMoney(preset)}
                 </button>
               ))}
-              {amountStr && (
+              {amountStr ? (
                 <button
                   type="button"
                   onClick={() => setAmountStr('')}
-                  className="rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400 transition-colors"
+                  className="cashier-cash-move-modal__preset cashier-cash-move-modal__preset--clear"
                 >
                   {t('common.clear', { defaultValue: 'Tozalash' })}
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="shift-cash-note"
-              className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1"
-            >
+          <div className="cashier-cash-move-modal__field">
+            <label htmlFor="shift-cash-note" className="cashier-cash-move-modal__label">
               {t('pos.cashMovementNote', { defaultValue: 'Izoh (ixtiyoriy)' })}
             </label>
             <input
@@ -195,31 +187,27 @@ export default function ShiftCashMovementModal({
                   ? t('pos.cashInNotePlaceholder', { defaultValue: 'Masalan: Kassa uchun razmen' })
                   : t('pos.cashOutNotePlaceholder', { defaultValue: 'Masalan: Bankka inkassatsiya' })
               }
-              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+              className="cashier-cash-move-modal__input cashier-cash-move-modal__input--note"
             />
           </div>
 
-          <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+          <div className="cashier-cash-move-modal__actions">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="min-h-[44px] rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+              className="cashier-cash-move-modal__btn cashier-cash-move-modal__btn--ghost"
             >
               {t('common.cancel', { defaultValue: 'Bekor qilish' })}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || numericAmount <= 0}
-              className={`min-h-[44px] inline-flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors ${
-                isCashIn
-                  ? 'bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 dark:disabled:bg-emerald-800'
-                  : 'bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 dark:disabled:bg-amber-800'
-              }`}
+              className="cashier-cash-move-modal__btn cashier-cash-move-modal__btn--primary"
             >
               {isSubmitting ? (
                 <>
-                  <Loader size={16} className="animate-spin" />
+                  <Loader size={18} className="cashier-cash-move-modal__spin" />
                   <span>{t('common.saving', { defaultValue: 'Saqlanmoqda...' })}</span>
                 </>
               ) : (
