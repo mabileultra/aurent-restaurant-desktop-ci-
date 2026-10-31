@@ -4,9 +4,13 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
+import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.errorcode.PharmacySqlConstraintError;
 import com.pos.pharmacy.security.PharmacyTenantContext;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -17,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /** Параллельно создаёт карточки из строк фактуры, не теряя компанию запроса. */
 @Component
@@ -63,15 +68,7 @@ public class PharmacyImportProductWriter {
                 ids.add(futures.get(i).join());
             } catch (RuntimeException ex) {
                 futures.forEach(future -> future.cancel(true));
-                Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-                if (cause instanceof PharmacyException pharmacyException) {
-                    throw pharmacyException;
-                }
-                PharmacyImportConfirmItem item = items.get(i);
-                throw new IllegalStateException(
-                    "Строка " + (item.rowIndex() + 1) + " («" + item.excelName() + "»): " + cause.getMessage(),
-                    cause
-                );
+                throw mapWriteFailure(items.get(i), unwrap(ex));
             }
         }
         return ids;
@@ -90,11 +87,28 @@ public class PharmacyImportProductWriter {
             String sku = productFactory.sku(invoiceId, item);
             return productRepository.findByCompanyIdAndSku(companyId, sku)
                 .map(product -> applyRetail(product, item))
-                .orElseGet(() -> pharmacyProductService.create(
-                    productFactory.request(item, storeId, invoiceId, companyId)
-                ).id());
+                .orElseGet(() -> createOrReuse(item, storeId, invoiceId, companyId, sku));
         } finally {
             PharmacyTenantContext.clear();
+        }
+    }
+
+    /** Параллельный create гоняет unique(sku): при гонке берём уже созданную карточку. */
+    private UUID createOrReuse(
+        PharmacyImportConfirmItem item,
+        Integer storeId,
+        String invoiceId,
+        Integer companyId,
+        String sku
+    ) {
+        try {
+            return pharmacyProductService.create(
+                productFactory.request(item, storeId, invoiceId, companyId)
+            ).id();
+        } catch (DataIntegrityViolationException ex) {
+            return productRepository.findByCompanyIdAndSku(companyId, sku)
+                .map(product -> applyRetail(product, item))
+                .orElseThrow(() -> ex);
         }
     }
 
@@ -106,16 +120,16 @@ public class PharmacyImportProductWriter {
             product.setSellingPrice(item.retailPrice());
         }
         if (item.vatPercent() != null) {
-            product.setTaxRate(item.vatPercent());
+            product.setTaxRate(PharmacyDbFieldLimits.vatPercent(item.vatPercent()));
         }
         if (item.markedProduct()) {
             product.setMarkedProduct(true);
         }
         if (StringUtils.hasText(item.packageCode())) {
-            product.setPackageCode(item.packageCode().trim());
+            product.setPackageCode(PharmacyDbFieldLimits.packageCode(item.packageCode()));
         }
         if (StringUtils.hasText(item.ikpuStatus())) {
-            product.setIkpuStatus(item.ikpuStatus().trim());
+            product.setIkpuStatus(PharmacyDbFieldLimits.ikpuStatus(item.ikpuStatus()));
         }
         if (item.prescriptionRequired() != null) {
             Map<String, String> attrs = new LinkedHashMap<>(
@@ -129,5 +143,29 @@ public class PharmacyImportProductWriter {
             productAttributeService.saveAttributes(product.getId(), attrs);
         }
         return productRepository.save(product).getId();
+    }
+
+    private static Throwable unwrap(Throwable error) {
+        Throwable current = error;
+        int depth = 0;
+        while (current instanceof CompletionException && current.getCause() != null && depth < 8) {
+            current = current.getCause();
+            depth++;
+        }
+        return current != null ? current : error;
+    }
+
+    private static RuntimeException mapWriteFailure(PharmacyImportConfirmItem item, Throwable cause) {
+        if (cause instanceof PharmacyException pharmacyException) {
+            return pharmacyException;
+        }
+        if (cause instanceof DataIntegrityViolationException integrity) {
+            return PharmacyErrors.of(PharmacySqlConstraintError.of(integrity));
+        }
+        String detail = cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
+        return new IllegalStateException(
+            "Строка " + (item.rowIndex() + 1) + " («" + item.excelName() + "»): " + detail,
+            cause
+        );
     }
 }

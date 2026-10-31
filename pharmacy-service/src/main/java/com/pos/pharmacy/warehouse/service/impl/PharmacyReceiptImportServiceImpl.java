@@ -12,6 +12,7 @@ import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyReceiptImportService;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.config.PharmacyExecutorNames;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import com.pos.pharmacy.support.PharmacyParallelTasks;
 import com.pos.pharmacy.warehouse.support.*;
 import com.pos.pharmacy.util.ProductImportParseUtil;
@@ -144,7 +145,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             );
         }
         if (!StringUtils.hasText(receipt.getInvoiceNumber()) && StringUtils.hasText(invoiceId)) {
-            receipt.setInvoiceNumber(invoiceId);
+            receipt.setInvoiceNumber(PharmacyDbFieldLimits.invoiceNumber(invoiceId));
             stockReceiptRepository.save(receipt);
         }
         Integer storeId = receipt.getStoreId();

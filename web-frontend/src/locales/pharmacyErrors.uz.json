@@ -39,6 +39,7 @@
   "PHARM_RECEIPT_NUMBER_TAKEN": "Kirim raqami band. Sahifani yangilang va hujjatni qayta yarating.",
   "PHARM_RECEIPT_LINE_HAS_LOT": "Qatorni o‘chirib bo‘lmaydi: undan partiya yaratilgan. Sahifani yangilang va qayta urinib ko‘ring.",
   "PHARM_RECEIPT_SAVE_FAILED": "Hujjatni saqlab bo‘lmadi. Qayta urinib ko‘ring.",
+  "PHARM_RECEIPT_VALUE_TOO_LONG": "Qiymat juda uzun (seriya, shtrixkod, IKPU yoki qadoq kodi). Qatorlarni tekshirib qayta urinib ko‘ring.",
   "PHARM_IMPORT_INVOICE_DUPLICATE": "Bu hisob-faktura allaqachon import qilingan",
   "PHARM_IMPORT_NO_QTY_LINES": "Miqdori bor qatorlar yo‘q. «Miqdor» ustunini va sotish narxini belgilang, so‘ng importni takrorlang.",
   "PHARM_MARK_EMPTY": "Ro‘yxatga olish uchun markirovka kodlari yo‘q",

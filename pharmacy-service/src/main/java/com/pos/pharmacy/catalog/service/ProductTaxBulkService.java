@@ -40,6 +40,14 @@ public class ProductTaxBulkService {
     }
 
     static BigDecimal taxRate(BigDecimal value) {
-        return value == null ? new BigDecimal("12") : value.setScale(2, RoundingMode.HALF_UP);
+        if (value == null) {
+            return new BigDecimal("12");
+        }
+        BigDecimal scaled = value.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal max = new BigDecimal("999.99");
+        if (scaled.abs().compareTo(max) > 0) {
+            return scaled.signum() < 0 ? max.negate() : max;
+        }
+        return scaled;
     }
 }

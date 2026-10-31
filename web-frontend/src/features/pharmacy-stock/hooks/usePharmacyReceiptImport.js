@@ -13,6 +13,7 @@ import {
   buildPharmacyImportRoleMap,
 } from '../utils/pharmacyImportRoleMap';
 import { runPharmacyImportMatchChunks } from '../utils/runPharmacyImportMatchChunks';
+import { runPharmacyImportConfirmChunks } from '../utils/runPharmacyImportConfirmChunks';
 
 const ROLE_KEYS = [
   'SKIP', 'NAME', 'MANUFACTURER', 'COUNTRY', 'QTY', 'BATCH', 'EXPIRY',
@@ -155,16 +156,15 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     setBusy(true);
     try {
       const body = withQty.map(toPharmacyImportConfirmItem);
-      const chunkSize = 80;
-      for (let i = 0; i < body.length; i += chunkSize) {
-        const chunk = body.slice(i, i + chunkSize);
-        await pharmacyWarehouseApi.importConfirm(receiptId, {
-          uzInvoiceDocumentId: invoiceId || undefined,
-          items: chunk,
-        });
-        const savedIds = chunk.map((item) => item.rowIndex);
-        setItems((prev) => prev.filter((item) => !savedIds.includes(item.rowIndex)));
-      }
+      await runPharmacyImportConfirmChunks({
+        items: body,
+        invoiceId: invoiceId || parse?.uzInvoiceDocumentId || null,
+        confirmRequest: (payload) => pharmacyWarehouseApi.importConfirm(receiptId, payload),
+        onChunkSaved: (chunk) => {
+          const savedIds = new Set(chunk.map((item) => item.rowIndex));
+          setItems((prev) => prev.filter((item) => !savedIds.has(item.rowIndex)));
+        },
+      });
       savePendingImportMarks(receiptId, withQty);
       const hasMarks = withQty.some((item) => Array.isArray(item.markCodes) && item.markCodes.length > 0);
       toast.success(

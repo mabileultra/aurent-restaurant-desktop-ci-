@@ -4,6 +4,7 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
@@ -76,7 +77,9 @@ public class PharmacyReceiptSupport {
 
     public void revalueLine(StockReceiptLine line, BigDecimal vatPercent, BigDecimal markupPercent) {
         BigDecimal purchase = PharmacyReceiptPricing.scaleMoney(line.getPurchasePrice());
-        BigDecimal vat = vatPercent != null ? vatPercent : PharmacyReceiptPricing.nullToZero(line.getVatPercent());
+        BigDecimal vat = PharmacyDbFieldLimits.vatPercent(
+            vatPercent != null ? vatPercent : PharmacyReceiptPricing.nullToZero(line.getVatPercent())
+        );
         BigDecimal purchaseWithVat = PharmacyReceiptPricing.withVat(purchase, vat);
         line.setVatPercent(vat);
         line.setPurchasePriceWithVat(purchaseWithVat);
@@ -84,15 +87,18 @@ public class PharmacyReceiptSupport {
             BigDecimal retail = line.getRetailPrice() != null
                 ? PharmacyReceiptPricing.scaleMoney(line.getRetailPrice())
                 : PharmacyReceiptPricing.scaleMoney(line.getUnitSellingPrice());
-            line.setMarkupPercent(PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail));
+            line.setMarkupPercent(PharmacyDbFieldLimits.markupPercent(
+                PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail)
+            ));
             return;
         }
-        BigDecimal retail = PharmacyReceiptPricing.retailFromMarkup(purchaseWithVat, markupPercent);
+        BigDecimal cappedMarkup = PharmacyDbFieldLimits.markupPercent(markupPercent);
+        BigDecimal retail = PharmacyReceiptPricing.retailFromMarkup(purchaseWithVat, cappedMarkup);
         BigDecimal unitsInPack = line.getUnitsInPack() != null && line.getUnitsInPack().compareTo(BigDecimal.ZERO) > 0
             ? line.getUnitsInPack()
             : BigDecimal.ONE;
         BigDecimal quantity = line.getQuantity() != null ? line.getQuantity() : BigDecimal.ZERO;
-        line.setMarkupPercent(markupPercent);
+        line.setMarkupPercent(cappedMarkup);
         line.setRetailPrice(retail);
         line.setUnitRetailPrice(PharmacyReceiptPricing.unitPrice(retail, unitsInPack));
         line.setUnitSellingPrice(retail);
@@ -122,16 +128,20 @@ public class PharmacyReceiptSupport {
         requirePositive(quantity);
         BigDecimal unitsInPack = resolveUnitsInPack(product, req.unitsInPack());
         BigDecimal purchase = PharmacyReceiptPricing.scaleMoney(req.purchasePrice());
-        BigDecimal vat = req.vatPercent() != null ? req.vatPercent() : BigDecimal.ZERO;
+        BigDecimal vat = PharmacyDbFieldLimits.vatPercent(
+            req.vatPercent() != null ? req.vatPercent() : BigDecimal.ZERO
+        );
         BigDecimal purchaseWithVat = req.purchasePriceWithVat() != null
             ? PharmacyReceiptPricing.scaleMoney(req.purchasePriceWithVat())
             : PharmacyReceiptPricing.withVat(purchase, vat);
         BigDecimal retail = req.retailPrice() != null
             ? PharmacyReceiptPricing.scaleMoney(req.retailPrice())
             : PharmacyReceiptPricing.scaleMoney(req.unitSellingPrice());
-        BigDecimal markup = req.markupPercent() != null
-            ? req.markupPercent()
-            : PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail);
+        BigDecimal markup = PharmacyDbFieldLimits.markupPercent(
+            req.markupPercent() != null
+                ? req.markupPercent()
+                : PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail)
+        );
         BigDecimal unitRetail = req.unitRetailPrice() != null
             ? PharmacyReceiptPricing.scaleMoney(req.unitRetailPrice())
             : PharmacyReceiptPricing.unitPrice(retail, unitsInPack);
@@ -208,10 +218,6 @@ public class PharmacyReceiptSupport {
 
     /** Колонка stock_receipt_lines.batch_number — varchar(80). Длинную серию режем, иначе падает весь импорт. */
     public static String batchOrNull(String value) {
-        String trimmed = trimToNull(value);
-        if (trimmed == null || trimmed.length() <= 80) {
-            return trimmed;
-        }
-        return trimmed.substring(0, 80);
+        return PharmacyDbFieldLimits.batchNumber(value);
     }
 }

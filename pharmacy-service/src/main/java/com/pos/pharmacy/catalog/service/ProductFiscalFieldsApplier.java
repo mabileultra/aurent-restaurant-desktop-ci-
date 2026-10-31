@@ -2,6 +2,7 @@ package com.pos.pharmacy.catalog.service;
 
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.entity.Product;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -11,13 +12,13 @@ public class ProductFiscalFieldsApplier {
 
     public void apply(Product product, UpdateProductRequest req) {
         if (req.ikpu() != null) {
-            product.setIkpu(trimToNull(req.ikpu()));
+            product.setIkpu(PharmacyDbFieldLimits.ikpu(req.ikpu()));
         }
         if (req.ikpuStatus() != null) {
-            product.setIkpuStatus(trimToNull(req.ikpuStatus()));
+            product.setIkpuStatus(PharmacyDbFieldLimits.ikpuStatus(req.ikpuStatus()));
         }
         if (req.packageCode() != null) {
-            product.setPackageCode(trimToNull(req.packageCode()));
+            product.setPackageCode(PharmacyDbFieldLimits.packageCode(req.packageCode()));
         }
         if (req.unitOfMeasure() != null) {
             product.setUnitOfMeasure(trimToNull(req.unitOfMeasure()));

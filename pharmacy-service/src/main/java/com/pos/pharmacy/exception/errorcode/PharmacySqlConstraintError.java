@@ -21,6 +21,15 @@ public final class PharmacySqlConstraintError {
         if (text.contains("stock_receipts_receipt_number_key")) {
             return PharmacyReceiptErrors.PHARM_RECEIPT_NUMBER_TAKEN;
         }
+        if (text.contains("uq_pharm_products_company_sku") || text.contains("products_company_id_sku")) {
+            return PharmacyReceiptErrors.PHARM_RECEIPT_SAVE_FAILED;
+        }
+        if (text.contains("numeric field overflow") || text.contains("numeric value out of range")) {
+            return PharmacyReceiptErrors.PHARM_RECEIPT_AMOUNT_TOO_LARGE;
+        }
+        if (text.contains("value too long for type character varying")) {
+            return PharmacyReceiptErrors.PHARM_RECEIPT_VALUE_TOO_LONG;
+        }
         return PharmacyReceiptErrors.PHARM_RECEIPT_SAVE_FAILED;
     }
 
