@@ -19,13 +19,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ActivityEventAssembler {
 
-    private final AnalyticsQuerySupport queries;
+    private final AnalyticsPaymentQuerySupport paymentQueries;
+    private final AnalyticsOrderQuerySupport orderQueries;
+    private final AnalyticsFloorQuerySupport floorQueries;
 
     @Transactional(readOnly = true)
     public List<ActivityEventResponse> assemble(Integer companyId, Integer storeId, Instant from, Instant to) {
         List<ActivityEventResponse> events = new ArrayList<>();
 
-        for (FloorOrderPayment payment : queries.recentPayments(companyId, storeId, from, to)) {
+        for (FloorOrderPayment payment : paymentQueries.recentPayments(companyId, storeId, from, to)) {
             events.add(new ActivityEventResponse(
                 payment.getPaidAt(),
                 "PAYMENT",
@@ -36,7 +38,7 @@ public class ActivityEventAssembler {
             ));
         }
 
-        for (FloorOrder order : queries.recentOrders(companyId, storeId, from, to)) {
+        for (FloorOrder order : orderQueries.recentOrders(companyId, storeId, from, to)) {
             events.add(new ActivityEventResponse(
                 order.getOpenedAt(),
                 "ORDER_OPEN",
@@ -67,7 +69,7 @@ public class ActivityEventAssembler {
             }
         }
 
-        for (RestaurantShift shift : queries.recentShifts(companyId, storeId, from, to)) {
+        for (RestaurantShift shift : floorQueries.recentShifts(companyId, storeId, from, to)) {
             events.add(new ActivityEventResponse(
                 shift.getOpenedAt(),
                 "SHIFT_OPEN",
@@ -88,7 +90,7 @@ public class ActivityEventAssembler {
             }
         }
 
-        for (FloorReservation reservation : queries.recentReservations(companyId, storeId, from, to)) {
+        for (FloorReservation reservation : floorQueries.recentReservations(companyId, storeId, from, to)) {
             events.add(new ActivityEventResponse(
                 reservation.getCreatedAt(),
                 "RESERVATION",
@@ -101,7 +103,6 @@ public class ActivityEventAssembler {
 
         return events.stream()
             .sorted(Comparator.comparing(ActivityEventResponse::at).reversed())
-            .limit(100)
             .toList();
     }
 }

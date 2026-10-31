@@ -1,6 +1,7 @@
 package com.pos.restaurant.menu.service.impl;
 
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.floor.support.StoreTenantSupport;
 import com.pos.restaurant.kitchen.support.KitchenStationLookup;
 import com.pos.restaurant.menu.domain.MenuItemType;
 import com.pos.restaurant.menu.domain.MenuPortionUnit;
@@ -12,6 +13,7 @@ import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.menu.support.MenuCategoryLookup;
 import com.pos.restaurant.menu.support.MenuItemFiscalApplier;
+import com.pos.restaurant.menu.support.MenuItemImageLimits;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class MenuItemCreateHandler {
     private final MenuItemRepository itemRepository;
     private final MenuItemMapper itemMapper;
     private final FloorTenantSupport tenantSupport;
+    private final StoreTenantSupport storeTenantSupport;
     private final KitchenStationLookup stationLookup;
     private final MenuCategoryLookup categoryLookup;
     private final MenuItemModifierBinder modifierBinder;
@@ -35,6 +38,7 @@ public class MenuItemCreateHandler {
 
     @Transactional
     public MenuItemResponse handle(Integer storeId, SaveMenuItemRequest request) {
+        storeTenantSupport.requireStore(storeId);
         Integer companyId = tenantSupport.requireCompanyId();
         MenuCategoryLookup.Resolved category = categoryLookup.resolveOptional(
             request.menuCategoryId(), companyId, storeId
@@ -42,6 +46,7 @@ public class MenuItemCreateHandler {
         BigDecimal portionAmount = resolvePortionAmount(request);
         MenuPortionUnit portionUnit = resolvePortionUnit(request);
         MenuPortionFormat.requireWeightWithinLimit(portionAmount, portionUnit);
+        MenuItemImageLimits.assertDataUriIfPresent(request.imageUrl());
         MenuItem saved = itemRepository.save(MenuItem.builder()
             .companyId(companyId)
             .storeId(storeId)

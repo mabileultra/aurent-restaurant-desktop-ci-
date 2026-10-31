@@ -50,4 +50,16 @@ public interface WaiterCommissionSettingRepository extends JpaRepository<WaiterC
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId
     );
+
+    /** One round-trip for pay hot-path: store default + optional waiter override. */
+    @Query("""
+        select s from WaiterCommissionSetting s
+        where s.companyId = :companyId and s.storeId = :storeId
+          and (s.userId is null or s.userId = :userId)
+        """)
+    List<WaiterCommissionSetting> findDefaultAndOverride(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("userId") UUID userId
+    );
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { customRangeIso, dashboardQueryParams } from '../../src/restaurant/admin/utils/dashboardPeriod.js';
 import { resolveDashboardQuickActions } from '../../src/restaurant/admin/utils/dashboardQuickActions.js';
 import { formatPctDelta, formatAbsDelta } from '../../src/restaurant/admin/utils/dashboardFormat.js';
+import { toDashboardViewModel } from '../../src/restaurant/admin/utils/dashboardViewModel.js';
 
 describe('dashboardPeriod', () => {
   it('defaults custom without dates to today', () => {
@@ -42,5 +43,29 @@ describe('dashboardFormat', () => {
 
   it('formats absolute delta', () => {
     expect(formatAbsDelta(12)).toBe('↑ 12');
+  });
+});
+
+describe('dashboardViewModel', () => {
+  it('flattens nested finance/ops/live blocks', () => {
+    const view = toDashboardViewModel({
+      periodKey: 'TODAY',
+      from: 'a',
+      to: 'b',
+      finance: { revenue: 100, guests: 4, byHour: [{ hour: 10 }] },
+      ops: { shiftOpen: true, freeTables: 2 },
+      live: {
+        tables: [{ tableCode: 'A1' }],
+        kitchenQueue: [{ orderNo: 1 }],
+        recentOrders: [{ orderNo: 9 }],
+      },
+    });
+    expect(view.revenue).toBe(100);
+    expect(view.guests).toBe(4);
+    expect(view.shiftOpen).toBe(true);
+    expect(view.liveTables).toEqual([{ tableCode: 'A1' }]);
+    expect(view.kitchenQueue).toEqual([{ orderNo: 1 }]);
+    expect(view.recentOrders).toEqual([{ orderNo: 9 }]);
+    expect(view.byHour).toEqual([{ hour: 10 }]);
   });
 });

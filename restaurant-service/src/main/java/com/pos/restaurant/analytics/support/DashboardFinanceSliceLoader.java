@@ -1,8 +1,8 @@
 package com.pos.restaurant.analytics.support;
 
+import com.pos.restaurant.analytics.dto.DashboardFinanceBlock;
 import com.pos.restaurant.analytics.dto.DishSalesRow;
 import com.pos.restaurant.analytics.dto.HourSalesRow;
-import com.pos.restaurant.payment.domain.PaymentMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,52 +16,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DashboardFinanceSliceLoader {
 
-    public record FinanceSlice(
-        BigDecimal revenue,
-        BigDecimal previousRevenue,
-        BigDecimal revenueDeltaPct,
-        BigDecimal cashAmount,
-        BigDecimal cardAmount,
-        long closedOrders,
-        long previousClosedOrders,
-        long closedOrdersDelta,
-        long cancelledOrders,
-        long guests,
-        BigDecimal averageCheck,
-        BigDecimal previousAverageCheck,
-        BigDecimal averageCheckDeltaPct,
-        List<HourSalesRow> byHour,
-        List<DishSalesRow> byDish
-    ) {
-    }
-
-    private final AnalyticsQuerySupport queries;
+    private final AnalyticsPaymentTotalsSupport paymentTotals;
+    private final AnalyticsPaymentQuerySupport paymentQueries;
+    private final AnalyticsOrderQuerySupport orderQueries;
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    public FinanceSlice load(
+    public DashboardFinanceBlock load(
         Integer companyId,
         Integer storeId,
         AnalyticsPeriodResolver.Period period,
         AnalyticsPeriodResolver.Period previous
     ) {
-        BigDecimal revenue = queries.sumPayments(companyId, storeId, period.from(), period.to());
-        BigDecimal previousRevenue = queries.sumPayments(companyId, storeId, previous.from(), previous.to());
-        BigDecimal cash = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CASH, period.from(), period.to());
-        BigDecimal card = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CARD, period.from(), period.to())
-            .add(queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CASHLESS, period.from(), period.to()));
-        long closed = queries.countClosedOrders(companyId, storeId, period.from(), period.to());
-        long previousClosed = queries.countClosedOrders(companyId, storeId, previous.from(), previous.to());
-        long cancelled = queries.countCancelledInRange(companyId, storeId, period.from(), period.to());
-        long guests = queries.sumGuestsClosed(companyId, storeId, period.from(), period.to());
-        BigDecimal avg = averageCheck(revenue, closed);
+        AnalyticsPaymentTotalsSupport.Totals current = paymentTotals.load(
+            companyId, storeId, period.from(), period.to()
+        );
+        BigDecimal previousRevenue = paymentQueries.sumPayments(
+            companyId, storeId, previous.from(), previous.to()
+        );
+        long closed = orderQueries.countClosedOrders(companyId, storeId, period.from(), period.to());
+        long previousClosed = orderQueries.countClosedOrders(
+            companyId, storeId, previous.from(), previous.to()
+        );
+        long cancelled = orderQueries.countCancelledInRange(companyId, storeId, period.from(), period.to());
+        long guests = orderQueries.sumGuestsClosed(companyId, storeId, period.from(), period.to());
+        BigDecimal avg = averageCheck(current.revenue(), closed);
         BigDecimal previousAvg = averageCheck(previousRevenue, previousClosed);
+        List<HourSalesRow> byHour = DashboardSalesRowMapper.hours(
+            paymentQueries.salesByHour(companyId, storeId, period.from(), period.to())
+        );
+        List<DishSalesRow> byDish = DashboardSalesRowMapper.dishes(
+            orderQueries.salesByDish(companyId, storeId, period.from(), period.to())
+        );
 
-        return new FinanceSlice(
-            revenue,
+        return new DashboardFinanceBlock(
+            current.revenue(),
             previousRevenue,
-            DashboardDeltaMath.percentDelta(revenue, previousRevenue),
-            cash,
-            card,
+            DashboardDeltaMath.percentDelta(current.revenue(), previousRevenue),
+            current.cashAmount(),
+            current.cardAmount(),
             closed,
             previousClosed,
             DashboardDeltaMath.absoluteDelta(closed, previousClosed),
@@ -70,8 +62,8 @@ public class DashboardFinanceSliceLoader {
             avg,
             previousAvg,
             DashboardDeltaMath.percentDelta(avg, previousAvg),
-            DashboardSalesRowMapper.hours(queries.salesByHour(companyId, storeId, period.from(), period.to())),
-            DashboardSalesRowMapper.dishes(queries.salesByDish(companyId, storeId, period.from(), period.to()))
+            byHour,
+            byDish
         );
     }
 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Drop duplicate active names (keep oldest) so unique index can apply. -->
+    <changeSet id="rst-062-dedupe-menu-category-active-names" author="pos">
+        <sql>
+            UPDATE menu_categories c
+            SET active = false,
+                updated_at = NOW()
+            WHERE c.active = true
+              AND c.id IN (
+                SELECT id FROM (
+                    SELECT id,
+                           ROW_NUMBER() OVER (
+                             PARTITION BY company_id, store_id, lower(name)
+                             ORDER BY created_at ASC, id ASC
+                           ) AS rn
+                    FROM menu_categories
+                    WHERE active = true
+                ) ranked
+                WHERE rn > 1
+              );
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-062-ux-menu-categories-active-name" author="pos">
+        <sql>
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_menu_categories_active_name
+                ON menu_categories (company_id, store_id, lower(name))
+                WHERE active = true;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,10 +1,15 @@
 package com.pos.restaurant.analytics.support;
 
+import com.pos.restaurant.analytics.dto.DashboardFinanceBlock;
+import com.pos.restaurant.analytics.dto.DashboardLiveBlock;
+import com.pos.restaurant.analytics.dto.DashboardOpsBlock;
 import com.pos.restaurant.analytics.dto.DashboardResponse;
+import com.pos.restaurant.config.RestaurantExecutorNames;
 import com.pos.shared.log.LogUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -24,7 +29,7 @@ public class DashboardParallelComposer {
         DashboardFinanceSliceLoader financeLoader,
         DashboardOpsSliceLoader opsLoader,
         DashboardLiveSnapshotBuilder liveBuilder,
-        @Qualifier("dashboardExecutor") Executor dashboardExecutor
+        @Qualifier(RestaurantExecutorNames.DASHBOARD) Executor dashboardExecutor
     ) {
         this.financeLoader = financeLoader;
         this.opsLoader = opsLoader;
@@ -35,25 +40,35 @@ public class DashboardParallelComposer {
     public DashboardResponse compose(
         Integer companyId,
         Integer storeId,
+        String periodKey,
         AnalyticsPeriodResolver.Period period,
-        AnalyticsPeriodResolver.Period previous
+        AnalyticsPeriodResolver.Period previous,
+        Integer hallId,
+        UUID waiterUserId
     ) {
-        CompletableFuture<DashboardFinanceSliceLoader.FinanceSlice> financeFuture = CompletableFuture.supplyAsync(
+        CompletableFuture<DashboardFinanceBlock> financeFuture = CompletableFuture.supplyAsync(
             () -> financeLoader.load(companyId, storeId, period, previous),
             dashboardExecutor
         );
-        CompletableFuture<DashboardOpsSliceLoader.OpsSlice> opsFuture = CompletableFuture.supplyAsync(
+        CompletableFuture<DashboardOpsBlock> opsFuture = CompletableFuture.supplyAsync(
             () -> opsLoader.load(companyId, storeId),
             dashboardExecutor
         );
-        CompletableFuture<DashboardLiveSnapshotBuilder.LiveSnapshot> liveFuture = CompletableFuture.supplyAsync(
-            () -> liveBuilder.build(companyId, storeId),
+        CompletableFuture<DashboardLiveBlock> liveFuture = CompletableFuture.supplyAsync(
+            () -> liveBuilder.build(companyId, storeId, hallId, waiterUserId),
             dashboardExecutor
         );
 
         try {
             CompletableFuture.allOf(financeFuture, opsFuture, liveFuture).join();
-            return merge(period, financeFuture.join(), opsFuture.join(), liveFuture.join());
+            return new DashboardResponse(
+                periodKey,
+                period.from(),
+                period.to(),
+                financeFuture.join(),
+                opsFuture.join(),
+                liveFuture.join()
+            );
         } catch (RuntimeException ex) {
             LogUtil.error(
                 DashboardParallelComposer.class,
@@ -62,54 +77,5 @@ public class DashboardParallelComposer {
             );
             throw ex;
         }
-    }
-
-    private static DashboardResponse merge(
-        AnalyticsPeriodResolver.Period period,
-        DashboardFinanceSliceLoader.FinanceSlice finance,
-        DashboardOpsSliceLoader.OpsSlice ops,
-        DashboardLiveSnapshotBuilder.LiveSnapshot live
-    ) {
-        return new DashboardResponse(
-            period.from(),
-            period.to(),
-            finance.revenue(),
-            finance.previousRevenue(),
-            finance.revenueDeltaPct(),
-            finance.cashAmount(),
-            finance.cardAmount(),
-            finance.closedOrders(),
-            finance.previousClosedOrders(),
-            finance.closedOrdersDelta(),
-            ops.openOrders(),
-            finance.cancelledOrders(),
-            finance.averageCheck(),
-            finance.previousAverageCheck(),
-            finance.averageCheckDeltaPct(),
-            finance.guests(),
-            ops.occupiedTables(),
-            ops.freeTables(),
-            ops.waitingPaymentTables(),
-            ops.reservedTables(),
-            ops.blockedTables(),
-            ops.totalTables(),
-            ops.kitchenNew(),
-            ops.kitchenPreparing(),
-            ops.kitchenReady(),
-            ops.kitchenWaiting(),
-            ops.reservationsActive(),
-            ops.shiftOpen(),
-            ops.shiftRevenue(),
-            ops.shiftSaleCount(),
-            false,
-            null,
-            null,
-            null,
-            finance.byHour(),
-            finance.byDish(),
-            live.tables(),
-            live.kitchen(),
-            live.recentOrders()
-        );
     }
 }

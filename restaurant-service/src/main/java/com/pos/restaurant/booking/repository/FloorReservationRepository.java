@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -18,17 +17,14 @@ public interface FloorReservationRepository extends JpaRepository<FloorReservati
         select r from FloorReservation r
         join fetch r.table t
         join fetch t.hall
-        where r.companyId = :companyId and r.storeId = :storeId
-          and r.reservedAt between :from and :to
-        order by r.reservedAt asc
+        where r.id = :id and r.companyId = :companyId
         """)
-    List<FloorReservation> findByStoreAndRange(
-        @Param("companyId") Integer companyId,
-        @Param("storeId") Integer storeId,
-        @Param("from") Instant from,
-        @Param("to") Instant to
+    Optional<FloorReservation> findByIdAndCompanyId(
+        @Param("id") UUID id,
+        @Param("companyId") Integer companyId
     );
 
+    /** Active bookings for floor tiles (PENDING/CONFIRMED). */
     @Query("""
         select r from FloorReservation r
         join fetch r.table t
@@ -41,17 +37,6 @@ public interface FloorReservationRepository extends JpaRepository<FloorReservati
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId,
         @Param("statuses") Collection<ReservationStatus> statuses
-    );
-
-    @Query("""
-        select r from FloorReservation r
-        join fetch r.table t
-        join fetch t.hall
-        where r.id = :id and r.companyId = :companyId
-        """)
-    Optional<FloorReservation> findByIdAndCompanyId(
-        @Param("id") UUID id,
-        @Param("companyId") Integer companyId
     );
 
     boolean existsByTableIdAndStatusIn(Integer tableId, Collection<ReservationStatus> statuses);

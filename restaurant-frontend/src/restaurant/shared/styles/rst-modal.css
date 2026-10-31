@@ -26,6 +26,8 @@
 }
 
 .base-modal--rst .base-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 1.15rem 1.2rem 0.35rem;
 }
 

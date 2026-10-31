@@ -1,6 +1,9 @@
 package com.pos.restaurant.booking.controller;
 
+import com.pos.restaurant.booking.domain.ReservationStatus;
 import com.pos.restaurant.booking.dto.BookingTableOptionResponse;
+import com.pos.restaurant.booking.dto.ReservationListFilter;
+import com.pos.restaurant.booking.dto.ReservationListResponse;
 import com.pos.restaurant.booking.dto.ReservationResponse;
 import com.pos.restaurant.booking.dto.SaveReservationRequest;
 import com.pos.restaurant.booking.service.FloorReservationService;
@@ -44,13 +47,22 @@ public class FloorReservationController {
     @GetMapping("/stores/{storeId}/reservations")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
     @Operation(summary = "Список броней")
-    public List<ReservationResponse> list(
+    public ReservationListResponse list(
         @PathVariable Integer storeId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
-        @RequestParam(defaultValue = "false") boolean activeOnly
+        @RequestParam(defaultValue = "false") boolean activeOnly,
+        @RequestParam(required = false) ReservationStatus status,
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
     ) {
-        return reservationService.list(storeId, from, to, activeOnly);
+        return reservationService.list(
+            storeId,
+            new ReservationListFilter(from, to, activeOnly, status, search),
+            page,
+            size
+        );
     }
 
     @GetMapping("/reservations/{reservationId}")

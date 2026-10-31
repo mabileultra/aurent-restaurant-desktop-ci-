@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
@@ -28,6 +29,7 @@ public class EdgeWhStockOps {
 
     public void increase(EdgeProduct p, BigDecimal qty) {
         p.setStockQty(EdgeWhMaps.nz(p.getStockQty()).add(qty));
+        p.setUpdatedAt(Instant.now());
         productRepository.save(p);
     }
 
@@ -36,11 +38,13 @@ public class EdgeWhStockOps {
             throw new BusinessException("Insufficient stock: " + p.getName());
         }
         p.setStockQty(p.getStockQty().subtract(qty));
+        p.setUpdatedAt(Instant.now());
         productRepository.save(p);
     }
 
     public void setQty(EdgeProduct p, BigDecimal qty) {
         p.setStockQty(qty);
+        p.setUpdatedAt(Instant.now());
         productRepository.save(p);
     }
 

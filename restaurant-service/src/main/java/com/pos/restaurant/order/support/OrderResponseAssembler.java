@@ -5,6 +5,7 @@ import com.pos.restaurant.kitchen.entity.KitchenStation;
 import com.pos.restaurant.kitchen.repository.KitchenStationRepository;
 import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
+import com.pos.restaurant.menu.support.MenuVariantFiscalLookup;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.LinkedTableResponse;
 import com.pos.restaurant.order.dto.OrderItemModifierResponse;
@@ -36,6 +37,7 @@ public class OrderResponseAssembler {
     private final FloorOrderWaiterHistoryRepository waiterHistoryRepository;
     private final KitchenStationRepository stationRepository;
     private final OrderTotals orderTotals;
+    private final MenuVariantFiscalLookup variantFiscalLookup;
 
     public OrderResponse toResponse(FloorOrder order, List<FloorOrderItem> items) {
         return toResponse(order, items, List.of());
@@ -90,8 +92,17 @@ public class OrderResponseAssembler {
             : modifierRepository.findByOrderItemIdIn(items.stream().map(FloorOrderItem::getId).toList()).stream()
                 .collect(Collectors.groupingBy(mod -> mod.getOrderItem().getId()));
         Map<UUID, String> stationNames = stationNamesFor(order.getCompanyId(), items);
+        Map<UUID, MenuVariantFiscalLookup.FiscalFields> fiscalDonors = variantFiscalLookup.donorsByGroup(
+            order.getCompanyId(),
+            items.stream().map(FloorOrderItem::getMenuItem).filter(Objects::nonNull).toList()
+        );
         List<OrderItemResponse> itemResponses = items.stream()
-            .map(item -> toItem(item, modifiers.getOrDefault(item.getId(), List.of()), stationNames))
+            .map(item -> toItem(
+                item,
+                modifiers.getOrDefault(item.getId(), List.of()),
+                stationNames,
+                fiscalDonors
+            ))
             .toList();
         OrderChannel channel = order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel();
         Integer tableId = order.getTable() == null ? null : order.getTable().getId();
@@ -143,7 +154,7 @@ public class OrderResponseAssembler {
     }
 
     public OrderItemResponse toItem(FloorOrderItem item, List<FloorOrderItemModifier> modifiers) {
-        return toItem(item, modifiers, Map.of());
+        return toItem(item, modifiers, Map.of(), Map.of());
     }
 
     public OrderItemResponse toItem(
@@ -151,10 +162,20 @@ public class OrderResponseAssembler {
         List<FloorOrderItemModifier> modifiers,
         Map<UUID, String> stationNames
     ) {
+        return toItem(item, modifiers, stationNames, Map.of());
+    }
+
+    public OrderItemResponse toItem(
+        FloorOrderItem item,
+        List<FloorOrderItemModifier> modifiers,
+        Map<UUID, String> stationNames,
+        Map<UUID, MenuVariantFiscalLookup.FiscalFields> fiscalDonors
+    ) {
         MenuItem menu = item.getMenuItem();
         UUID menuItemId = menu == null ? null : menu.getId();
         UUID stationId = item.getStationId();
         String stationName = stationId == null ? null : stationNames.get(stationId);
+        MenuVariantFiscalLookup.FiscalFields fiscal = variantFiscalLookup.resolve(menu, fiscalDonors);
         return new OrderItemResponse(
             item.getId(),
             menuItemId,
@@ -174,12 +195,12 @@ public class OrderResponseAssembler {
             modifiers.stream()
                 .map(mod -> new OrderItemModifierResponse(mod.getId(), mod.getName(), mod.getPriceDelta()))
                 .toList(),
-            menu == null ? null : menu.getIkpu(),
-            menu == null ? null : menu.getPackageCode(),
-            menu == null ? null : menu.getUnitOfMeasure(),
-            menu == null ? null : menu.getUnitMeasureCode(),
-            menu == null ? null : menu.getBarcode(),
-            menu != null && menu.isMarkedProduct()
+            fiscal.ikpu(),
+            fiscal.packageCode(),
+            fiscal.unitOfMeasure(),
+            fiscal.unitMeasureCode(),
+            fiscal.barcode(),
+            fiscal.markedProduct()
         );
     }
 

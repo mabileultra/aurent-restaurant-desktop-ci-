@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Receipt journal / sales summary: filter payments by store period via order join. -->
+    <changeSet id="rst-061-payment-journal-period-index" author="pos">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_floor_order_payments_paid_order
+                ON floor_order_payments (order_id, paid_at DESC);
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-061-orders-closed-period-index" author="pos">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_floor_orders_store_status_closed
+                ON floor_orders (company_id, store_id, status, closed_at DESC);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

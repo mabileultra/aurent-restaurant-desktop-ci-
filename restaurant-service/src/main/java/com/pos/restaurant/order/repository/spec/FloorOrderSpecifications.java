@@ -49,12 +49,13 @@ public final class FloorOrderSpecifications {
                 preds.add(cb.lessThan(root.get("openedAt"), openedTo));
             }
             if (q != null && !q.isBlank()) {
-                String like = "%" + q.trim().toLowerCase(Locale.ROOT) + "%";
+                String term = q.trim().toLowerCase(Locale.ROOT);
+                String like = "%" + escapeLike(term) + "%";
                 preds.add(cb.or(
-                    cb.like(cb.lower(cb.coalesce(root.get("clientName"), "")), like),
-                    cb.like(cb.lower(cb.coalesce(root.get("clientPhone"), "")), like),
-                    cb.like(cb.lower(cb.coalesce(root.get("deliveryAddress"), "")), like),
-                    cb.like(root.get("orderNo").as(String.class), "%" + q.trim() + "%")
+                    cb.like(cb.lower(cb.coalesce(root.get("clientName"), "")), like, '\\'),
+                    cb.like(cb.lower(cb.coalesce(root.get("clientPhone"), "")), like, '\\'),
+                    cb.like(cb.lower(cb.coalesce(root.get("deliveryAddress"), "")), like, '\\'),
+                    cb.like(root.get("orderNo").as(String.class), "%" + escapeLike(q.trim()) + "%", '\\')
                 ));
             }
 
@@ -64,5 +65,9 @@ public final class FloorOrderSpecifications {
             }
             return cb.and(preds.toArray(Predicate[]::new));
         };
+    }
+
+    static String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

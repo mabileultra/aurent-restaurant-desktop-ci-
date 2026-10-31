@@ -4,6 +4,7 @@ import com.pos.restaurant.analytics.dto.ActivityEventResponse;
 import com.pos.restaurant.analytics.dto.DashboardResponse;
 import com.pos.restaurant.analytics.dto.SalesReportResponse;
 import com.pos.restaurant.analytics.service.RestaurantAnalyticsService;
+import com.pos.shared.api.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/rst")
@@ -33,9 +34,11 @@ public class RestaurantAnalyticsController {
         @PathVariable Integer storeId,
         @RequestParam(required = false, defaultValue = "TODAY") String period,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+        @RequestParam(required = false) Integer hallId,
+        @RequestParam(required = false) UUID waiterUserId
     ) {
-        return analyticsService.dashboard(storeId, period, from, to);
+        return analyticsService.dashboard(storeId, period, from, to, hallId, waiterUserId);
     }
 
     @GetMapping("/stores/{storeId}/reports/sales")
@@ -51,12 +54,16 @@ public class RestaurantAnalyticsController {
 
     @GetMapping("/stores/{storeId}/activity")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Журнал активности")
-    public List<ActivityEventResponse> activity(
+    @Operation(summary = "Журнал активности (page/size)")
+    public PageResponse<ActivityEventResponse> activity(
         @PathVariable Integer storeId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) String search
     ) {
-        return analyticsService.activity(storeId, from, to);
+        return analyticsService.activity(storeId, from, to, page, size, type, search);
     }
 }

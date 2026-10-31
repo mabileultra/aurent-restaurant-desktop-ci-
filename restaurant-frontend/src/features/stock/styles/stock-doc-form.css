@@ -3,7 +3,8 @@
   flex-direction: column;
   gap: 1rem;
   max-height: min(70vh, 640px);
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
   padding-bottom: 0.5rem;
 }
 
@@ -37,6 +38,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
+  flex-shrink: 0;
   padding: 1rem;
   border-radius: 14px;
   border: 1px solid var(--rst-line, #e2e8f0);
@@ -65,6 +67,11 @@
 }
 
 .rst-stock-doc-lines {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   border-radius: 14px;
   border: 1px solid var(--rst-line, #e2e8f0);
   background: var(--rst-surface, #fff);
@@ -76,6 +83,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-shrink: 0;
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--rst-line, #e2e8f0);
 }
@@ -95,7 +103,11 @@
 }
 
 .rst-stock-doc-lines__scroll {
-  overflow-x: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: min(48vh, 420px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .rst-stock-doc-lines__table {

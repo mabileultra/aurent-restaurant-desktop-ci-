@@ -17,7 +17,7 @@ export const AUDIT_TYPE_FILTERS = [
   'RESERVATION',
 ];
 
-const DEFAULT_PAGE_SIZE = 14;
+const DEFAULT_PAGE_SIZE = 20;
 
 function toDateInput(date) {
   const d = date instanceof Date ? date : new Date(date);
@@ -78,8 +78,12 @@ export function useAuditAdminPage() {
     return {
       from: Number.isNaN(from.getTime()) ? undefined : from.toISOString(),
       to: Number.isNaN(to.getTime()) ? undefined : to.toISOString(),
+      page,
+      size: pageSize,
+      type: filters.type === 'all' ? undefined : filters.type,
+      search: filters.search.trim() || undefined,
     };
-  }, [filters.fromDate, filters.toDate]);
+  }, [filters.fromDate, filters.toDate, filters.type, filters.search, page, pageSize]);
 
   const activityQuery = useQuery({
     queryKey: ['rst-activity', workspace.storeId, params],
@@ -89,23 +93,10 @@ export function useAuditAdminPage() {
     placeholderData: keepPreviousData,
   });
 
-  const filtered = useMemo(() => {
-    const list = Array.isArray(activityQuery.data) ? activityQuery.data : [];
-    const q = filters.search.trim().toLowerCase();
-    return list.filter((event) => {
-      if (filters.type !== 'all' && event.type !== filters.type) return false;
-      if (!q) return true;
-      const typeLabel = t(`rst.audit.type_${event.type}`, { defaultValue: event.type }).toLowerCase();
-      const detail = String(formatActivity(t, event) ?? '').toLowerCase();
-      const raw = String(event.summary ?? '').toLowerCase();
-      return typeLabel.includes(q) || detail.includes(q) || raw.includes(q);
-    });
-  }, [activityQuery.data, filters.search, filters.type, t]);
-
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
-  const safePage = Math.min(page, totalPages - 1);
-  const rows = filtered.slice(safePage * pageSize, safePage * pageSize + pageSize);
+  const rows = activityQuery.data?.content ?? [];
+  const total = activityQuery.data?.totalElements ?? 0;
+  const totalPages = Math.max(1, activityQuery.data?.totalPages || Math.ceil(total / pageSize) || 1);
+  const safePage = activityQuery.data?.number ?? Math.min(page, totalPages - 1);
 
   return {
     t,

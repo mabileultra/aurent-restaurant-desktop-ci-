@@ -93,8 +93,17 @@ public class EdgeProduct {
     private Instant updatedAt;
 
     @PrePersist
+    void prePersist() {
+        if (updatedAt == null) {
+            updatedAt = Instant.now();
+        }
+    }
+
     @PreUpdate
-    void touch() {
-        updatedAt = Instant.now();
+    void preUpdate() {
+        /* Callers set updatedAt for LWW; warehouse ops bump explicitly. */
+        if (updatedAt == null) {
+            updatedAt = Instant.now();
+        }
     }
 }

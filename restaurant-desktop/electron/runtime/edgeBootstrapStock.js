@@ -43,6 +43,7 @@ async function bootstrapStockFromCloud({
         unitMeasureCode: p.unitMeasureCode,
         markedProduct: Boolean(p.markedProduct),
         active: p.active !== false,
+        updatedAt: p.updatedAt || null,
       });
     }
     totalPages = Number(data?.totalPages || 1);

@@ -170,6 +170,7 @@ class ProductCreateHandlerTest {
             null,
             true,
             Instant.now(),
+            Instant.now(),
             null,
             null,
             null,

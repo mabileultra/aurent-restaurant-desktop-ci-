@@ -88,10 +88,11 @@ export default function ReceiptJournalPanel({ storeId, storeName, fromDate, toDa
   const userName = (id) => (id ? nameById.get(String(id)) || String(id).slice(0, 8) : '—');
 
   const data = journalQuery.data;
-  const rows = data?.rows ?? [];
+  const rows = data?.content ?? data?.rows ?? [];
   const total = data?.totalElements ?? 0;
   const totals = data?.totals;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
+  const totalPages = Math.max(1, data?.totalPages || Math.ceil(total / pageSize) || 1);
+  const staffLabel = (name, id) => name || userName(id);
   const colSpan = 10;
 
   const cards = totals
@@ -222,8 +223,8 @@ export default function ReceiptJournalPanel({ storeId, storeName, fromDate, toDa
                     </>
                   ) : (
                     <>
-                      <td>{userName(row.waiterUserId)}</td>
-                      <td>{userName(row.cashierUserId)}</td>
+                      <td>{staffLabel(row.waiterName, row.waiterUserId)}</td>
+                      <td>{staffLabel(row.cashierName, row.cashierUserId)}</td>
                       <td>
                         {receiptMethodLabel(row.method, t)}
                         {row.cardType ? <small className="rst-journal__sub"> {row.cardType}</small> : null}

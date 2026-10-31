@@ -2,6 +2,7 @@ package com.pos.restaurant.menu.service.impl;
 
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.floor.support.StoreTenantSupport;
 import com.pos.restaurant.menu.domain.MenuPortionUnit;
 import com.pos.restaurant.menu.dto.CreateMenuVariantRequest;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
@@ -10,6 +11,7 @@ import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.menu.support.MenuItemFiscalApplier;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
+import com.pos.restaurant.menu.support.MenuVariantFiscalSync;
 import com.pos.restaurant.modifier.entity.MenuItemModifierLink;
 import com.pos.restaurant.modifier.repository.MenuItemModifierLinkRepository;
 import com.pos.restaurant.modifier.support.MenuItemModifierBinder;
@@ -30,15 +32,18 @@ public class MenuItemCreateVariantHandler {
     private final MenuItemRepository itemRepository;
     private final MenuItemMapper itemMapper;
     private final FloorTenantSupport tenantSupport;
+    private final StoreTenantSupport storeTenantSupport;
     private final MenuItemModifierLinkRepository linkRepository;
     private final MenuItemModifierBinder modifierBinder;
     private final MenuItemFiscalApplier fiscalApplier;
+    private final MenuVariantFiscalSync variantFiscalSync;
 
     @Transactional
     public MenuItemResponse handle(UUID sourceItemId, CreateMenuVariantRequest request) {
         Integer companyId = tenantSupport.requireCompanyId();
         MenuItem source = itemRepository.findByIdAndCompanyId(sourceItemId, companyId)
             .orElseThrow(() -> new NotFoundException("Menu item not found: " + sourceItemId));
+        storeTenantSupport.requireStore(companyId, source.getStoreId());
 
         UUID groupId = source.getVariantGroupId();
         if (groupId == null) {
@@ -83,6 +88,8 @@ public class MenuItemCreateVariantHandler {
             .build());
         fiscalApplier.copyFrom(saved, source);
         saved = itemRepository.save(saved);
+        // Backfill older size siblings that were saved without ИКПУ.
+        variantFiscalSync.syncGroupFrom(saved);
 
         List<UUID> groupIds = linkRepository.findByMenuItemId(source.getId()).stream()
             .map(MenuItemModifierLink::getGroupId)

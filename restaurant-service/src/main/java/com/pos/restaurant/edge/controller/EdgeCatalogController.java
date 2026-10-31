@@ -7,6 +7,7 @@ import com.pos.restaurant.edge.service.EdgeCatalogExportService;
 import com.pos.restaurant.edge.service.EdgeCatalogImportService;
 import com.pos.restaurant.edge.service.EdgeStockBootstrapService;
 import com.pos.restaurant.edge.service.EdgeStoreService;
+import com.pos.restaurant.edge.support.EdgeStockLocalExporter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,6 +32,7 @@ public class EdgeCatalogController {
     private final ObjectProvider<EdgeCatalogImportService> importService;
     private final ObjectProvider<EdgeStockBootstrapService> stockBootstrapService;
     private final ObjectProvider<EdgeStoreService> edgeStoreService;
+    private final ObjectProvider<EdgeStockLocalExporter> stockLocalExporter;
 
     @GetMapping("/rst/edge/catalog-export")
     @Operation(summary = "Export store catalog snapshot for restaurant-desktop bootstrap (cloud)")
@@ -59,6 +61,19 @@ public class EdgeCatalogController {
             return ResponseEntity.badRequest().body(Map.of("message", "Edge mode is not enabled"));
         }
         return ResponseEntity.ok(stock.importProducts(request));
+    }
+
+    @GetMapping("/edge/stock-export")
+    @Operation(summary = "Export local stock rows for cloud ingest (S4)")
+    public ResponseEntity<Map<String, Object>> exportStock(
+        @RequestParam Integer companyId,
+        @RequestParam Integer storeId
+    ) {
+        EdgeStockLocalExporter exporter = stockLocalExporter.getIfAvailable();
+        if (exporter == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Edge mode is not enabled"));
+        }
+        return ResponseEntity.ok(exporter.exportForStore(companyId, storeId));
     }
 
     @GetMapping("/edge/bootstrap/status")

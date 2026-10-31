@@ -13,8 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,41 +33,32 @@ public class EdgeStockBootstrapService {
         if (request.companyId() == null || request.storeId() == null) {
             throw new BusinessException("companyId and storeId required");
         }
-        long existing = productRepository.countByCompanyIdAndStoreId(request.companyId(), request.storeId());
-        if (existing == 0
+        long existingCount = productRepository.countByCompanyIdAndStoreId(request.companyId(), request.storeId());
+        if (existingCount == 0
             && StringUtils.hasText(bootstrapSecret)
             && !bootstrapSecret.equals(String.valueOf(request.bootstrapSecret()))) {
             throw new BusinessException("Invalid bootstrap secret");
         }
         int saved = 0;
+        int skipped = 0;
         for (ProductRow row : request.products()) {
-            if (row == null || row.id() == null || !StringUtils.hasText(row.name())) continue;
-            EdgeProduct e = productRepository
-                .findByIdAndCompanyIdAndStoreId(row.id(), request.companyId(), request.storeId())
-                .orElseGet(EdgeProduct::new);
-            e.setId(row.id());
-            e.setCompanyId(request.companyId());
-            e.setStoreId(request.storeId());
-            e.setSku(row.sku());
-            e.setName(row.name().trim());
-            e.setBarcode(row.barcode());
-            e.setUnitCode(row.unitCode());
-            e.setTaxRate(nz(row.taxRate()));
-            e.setCostPrice(nz(row.costPrice()));
-            e.setSellingPrice(nz(row.sellingPrice()));
-            e.setStockQty(row.stockQuantity() == null ? BigDecimal.ZERO : row.stockQuantity());
-            e.setLowStockAlert(row.lowStockAlert() == null ? 0 : row.lowStockAlert());
-            e.setIkpu(row.ikpu());
-            e.setPackageCode(row.packageCode());
-            e.setUnitOfMeasure(row.unitOfMeasure());
-            e.setUnitMeasureCode(row.unitMeasureCode());
-            e.setMarkedProduct(Boolean.TRUE.equals(row.markedProduct()));
-            e.setActive(row.active() == null || row.active());
+            if (row == null || row.id() == null || !StringUtils.hasText(row.name())) {
+                continue;
+            }
+            Optional<EdgeProduct> found = productRepository
+                .findByIdAndCompanyIdAndStoreId(row.id(), request.companyId(), request.storeId());
+            if (found.isPresent() && isLocalNewer(found.get().getUpdatedAt(), row.updatedAt())) {
+                skipped++;
+                continue;
+            }
+            EdgeProduct e = found.orElseGet(EdgeProduct::new);
+            applyRow(e, request.companyId(), request.storeId(), row);
             productRepository.save(e);
             saved++;
         }
         Map<String, Object> out = new HashMap<>();
         out.put("saved", saved);
+        out.put("skipped", skipped);
         out.put("hasStock", productRepository.countByCompanyIdAndStoreId(request.companyId(), request.storeId()) > 0);
         return out;
     }
@@ -73,6 +66,35 @@ public class EdgeStockBootstrapService {
     @Transactional(readOnly = true)
     public boolean hasAnyStock() {
         return productRepository.count() > 0;
+    }
+
+    private static void applyRow(EdgeProduct e, Integer companyId, Integer storeId, ProductRow row) {
+        e.setId(row.id());
+        e.setCompanyId(companyId);
+        e.setStoreId(storeId);
+        e.setSku(row.sku());
+        e.setName(row.name().trim());
+        e.setBarcode(row.barcode());
+        e.setUnitCode(row.unitCode());
+        e.setTaxRate(nz(row.taxRate()));
+        e.setCostPrice(nz(row.costPrice()));
+        e.setSellingPrice(nz(row.sellingPrice()));
+        e.setStockQty(row.stockQuantity() == null ? BigDecimal.ZERO : row.stockQuantity());
+        e.setLowStockAlert(row.lowStockAlert() == null ? 0 : row.lowStockAlert());
+        e.setIkpu(row.ikpu());
+        e.setPackageCode(row.packageCode());
+        e.setUnitOfMeasure(row.unitOfMeasure());
+        e.setUnitMeasureCode(row.unitMeasureCode());
+        e.setMarkedProduct(Boolean.TRUE.equals(row.markedProduct()));
+        e.setActive(row.active() == null || row.active());
+        e.setUpdatedAt(row.updatedAt() != null ? row.updatedAt() : Instant.now());
+    }
+
+    private static boolean isLocalNewer(Instant local, Instant incoming) {
+        if (local == null || incoming == null) {
+            return false;
+        }
+        return local.isAfter(incoming);
     }
 
     private static BigDecimal nz(BigDecimal v) {

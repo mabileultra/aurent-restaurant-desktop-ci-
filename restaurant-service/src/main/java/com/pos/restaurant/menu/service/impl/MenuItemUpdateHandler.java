@@ -4,6 +4,7 @@ import com.pos.restaurant.kitchen.support.KitchenStationLookup;
 import com.pos.restaurant.modifier.support.MenuItemModifierBinder;
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.floor.support.StoreTenantSupport;
 import com.pos.restaurant.menu.domain.MenuItemType;
 import com.pos.restaurant.menu.domain.MenuPortionUnit;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
@@ -13,8 +14,10 @@ import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.menu.support.MenuCategoryLookup;
 import com.pos.restaurant.menu.support.MenuItemFiscalApplier;
+import com.pos.restaurant.menu.support.MenuItemImageLimits;
 import com.pos.restaurant.menu.support.MenuItemImageRef;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
+import com.pos.restaurant.menu.support.MenuVariantFiscalSync;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,16 +34,19 @@ public class MenuItemUpdateHandler {
     private final MenuItemRepository itemRepository;
     private final MenuItemMapper itemMapper;
     private final FloorTenantSupport tenantSupport;
+    private final StoreTenantSupport storeTenantSupport;
     private final KitchenStationLookup stationLookup;
     private final MenuCategoryLookup categoryLookup;
     private final MenuItemModifierBinder modifierBinder;
     private final MenuItemFiscalApplier fiscalApplier;
+    private final MenuVariantFiscalSync variantFiscalSync;
 
     @Transactional
     public MenuItemResponse handle(UUID itemId, SaveMenuItemRequest request) {
         Integer companyId = tenantSupport.requireCompanyId();
         MenuItem item = itemRepository.findByIdAndCompanyId(itemId, companyId)
             .orElseThrow(() -> new NotFoundException("Menu item not found: " + itemId));
+        storeTenantSupport.requireStore(companyId, item.getStoreId());
         item.setName(request.name().trim());
         item.setSku(blankToNull(request.sku()));
         item.setPrice(request.price().setScale(2, RoundingMode.HALF_UP));
@@ -64,6 +70,7 @@ public class MenuItemUpdateHandler {
         item.setCategory(category.name());
         // List API may echo aurent-menu-img:{id}; never persist that marker over the real photo.
         if (request.imageUrl() == null || !MenuItemImageRef.isRef(request.imageUrl())) {
+            MenuItemImageLimits.assertDataUriIfPresent(request.imageUrl());
             item.setImageUrl(blankToNull(request.imageUrl()));
         }
         item.setDescription(blankToNull(request.description()));
@@ -77,6 +84,7 @@ public class MenuItemUpdateHandler {
         item.setPortionLabel(blankToNull(request.portionLabel()));
         item.setTags(normalizeTags(request.tags()));
         fiscalApplier.apply(item, request);
+        variantFiscalSync.syncGroupFrom(item);
         modifierBinder.replace(itemId, companyId, item.getStoreId(), request.modifierGroupIds());
         LogUtil.info(MenuItemUpdateHandler.class, "Menu item updated: id={}", itemId);
         return itemMapper.toResponse(item);

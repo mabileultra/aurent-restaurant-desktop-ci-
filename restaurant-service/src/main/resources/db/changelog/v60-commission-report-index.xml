@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Waiter commission report / orders: closed DINE_IN with snapshot commission. -->
+    <changeSet id="rst-060-floor-orders-commission-report-index" author="pos">
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_floor_orders_commission_report
+                ON floor_orders (company_id, store_id, channel, status, closed_at, waiter_user_id)
+                WHERE commission_amount IS NOT NULL AND waiter_user_id IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

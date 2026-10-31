@@ -8,10 +8,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface EdgeProductRepository extends JpaRepository<EdgeProduct, EdgeProductId> {
+
+    List<EdgeProduct> findByCompanyIdAndStoreId(Integer companyId, Integer storeId);
 
     Page<EdgeProduct> findByCompanyIdAndStoreIdAndActiveTrue(Integer companyId, Integer storeId, Pageable pageable);
 

@@ -1,6 +1,8 @@
 package com.pos.restaurant.menu.service.impl;
 
+import com.pos.restaurant.config.RestaurantHotCache;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.floor.support.StoreTenantSupport;
 import com.pos.restaurant.menu.dto.MenuCategoryResponse;
 import com.pos.restaurant.menu.dto.SaveMenuCategoryRequest;
 import com.pos.restaurant.menu.mapper.MenuCategoryMapper;
@@ -21,12 +23,15 @@ public class MenuCategoryServiceImpl implements MenuCategoryService {
     private final MenuCategoryRepository categoryRepository;
     private final MenuCategoryMapper categoryMapper;
     private final FloorTenantSupport tenantSupport;
+    private final StoreTenantSupport storeTenantSupport;
     private final MenuCategoryCreateHandler createHandler;
     private final MenuCategoryUpdateHandler updateHandler;
     private final MenuCategoryDeactivateHandler deactivateHandler;
+    private final RestaurantHotCache hotCache;
 
     @Override
     public List<MenuCategoryResponse> list(Integer storeId, boolean activeOnly) {
+        storeTenantSupport.requireStore(storeId);
         Integer companyId = tenantSupport.requireCompanyId();
         var rows = activeOnly
             ? categoryRepository.findByCompanyIdAndStoreIdAndActiveTrueOrderBySortOrderAscNameAsc(companyId, storeId)
@@ -37,18 +42,23 @@ public class MenuCategoryServiceImpl implements MenuCategoryService {
     @Override
     @Transactional
     public MenuCategoryResponse create(Integer storeId, SaveMenuCategoryRequest request) {
-        return createHandler.handle(storeId, request);
+        MenuCategoryResponse created = createHandler.handle(storeId, request);
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), storeId);
+        return created;
     }
 
     @Override
     @Transactional
     public MenuCategoryResponse update(UUID categoryId, SaveMenuCategoryRequest request) {
-        return updateHandler.handle(categoryId, request);
+        MenuCategoryResponse updated = updateHandler.handle(categoryId, request);
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), updated.storeId());
+        return updated;
     }
 
     @Override
     @Transactional
     public void deactivate(UUID categoryId) {
-        deactivateHandler.handle(categoryId);
+        Integer storeId = deactivateHandler.handle(categoryId);
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), storeId);
     }
 }

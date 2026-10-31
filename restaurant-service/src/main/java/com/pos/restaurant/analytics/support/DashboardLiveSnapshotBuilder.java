@@ -1,6 +1,7 @@
 package com.pos.restaurant.analytics.support;
 
 import com.pos.restaurant.analytics.dto.DashboardKitchenLiveRow;
+import com.pos.restaurant.analytics.dto.DashboardLiveBlock;
 import com.pos.restaurant.analytics.dto.DashboardRecentOrderRow;
 import com.pos.restaurant.analytics.dto.DashboardTableLiveRow;
 import com.pos.restaurant.kitchen.domain.KitchenTicketStatus;
@@ -17,37 +18,43 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class DashboardLiveSnapshotBuilder {
 
-    private final AnalyticsQuerySupport queries;
+    private static final int RECENT_ORDER_LIMIT = 8;
+
+    private final AnalyticsOrderQuerySupport orderQueries;
+    private final AnalyticsFloorQuerySupport floorQueries;
     private final FloorOrderItemRepository itemRepository;
     private final OrderTotals orderTotals;
-
-    public record LiveSnapshot(
-        List<DashboardTableLiveRow> tables,
-        List<DashboardKitchenLiveRow> kitchen,
-        List<DashboardRecentOrderRow> recentOrders
-    ) {
-    }
+    private final AnalyticsStaffNameResolver staffNameResolver;
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    public LiveSnapshot build(Integer companyId, Integer storeId) {
+    public DashboardLiveBlock build(
+        Integer companyId,
+        Integer storeId,
+        Integer hallId,
+        UUID waiterUserId
+    ) {
         Instant now = Instant.now();
-        return new LiveSnapshot(
-            buildLiveTables(companyId, storeId, now),
-            buildKitchenQueue(companyId, storeId, now),
-            buildRecentOrders(companyId, storeId)
-        );
+        List<DashboardTableLiveRow> tables = buildLiveTables(companyId, storeId, hallId, now);
+        List<DashboardKitchenLiveRow> kitchen = buildKitchenQueue(companyId, storeId, now);
+        List<DashboardRecentOrderRow> recentOrders = buildRecentOrders(companyId, storeId, waiterUserId);
+        return new DashboardLiveBlock(tables, kitchen, recentOrders);
     }
 
-    private List<DashboardTableLiveRow> buildLiveTables(Integer companyId, Integer storeId, Instant now) {
+    private List<DashboardTableLiveRow> buildLiveTables(
+        Integer companyId, Integer storeId, Integer hallId, Instant now
+    ) {
         List<DashboardTableLiveRow> rows = new ArrayList<>();
-        for (FloorOrder order : queries.openTableOrders(companyId, storeId)) {
+        for (FloorOrder order : orderQueries.openTableOrders(companyId, storeId, hallId)) {
             List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId());
             BigDecimal amount = orderTotals.billable(items);
             long minutes = minutesBetween(order.getOpenedAt(), now);
@@ -55,14 +62,17 @@ public class DashboardLiveSnapshotBuilder {
                 ? order.getTable().getStatus().name()
                 : order.getStatus().name();
             String code = order.getTable() != null ? order.getTable().getCode() : "—";
-            rows.add(new DashboardTableLiveRow(code, amount, minutes, status));
+            Integer rowHallId = order.getTable() != null && order.getTable().getHall() != null
+                ? order.getTable().getHall().getId()
+                : null;
+            rows.add(new DashboardTableLiveRow(rowHallId, code, amount, minutes, status));
         }
         return rows;
     }
 
     private List<DashboardKitchenLiveRow> buildKitchenQueue(Integer companyId, Integer storeId, Instant now) {
         List<DashboardKitchenLiveRow> rows = new ArrayList<>();
-        for (Object[] row : queries.kitchenQueueRows(companyId, storeId)) {
+        for (Object[] row : floorQueries.kitchenQueueRows(companyId, storeId)) {
             int orderNo = ((Number) row[0]).intValue();
             String tableCode = row[1] == null ? "—" : String.valueOf(row[1]);
             Instant sentAt = (Instant) row[2];
@@ -72,9 +82,23 @@ public class DashboardLiveSnapshotBuilder {
         return rows;
     }
 
-    private List<DashboardRecentOrderRow> buildRecentOrders(Integer companyId, Integer storeId) {
+    private List<DashboardRecentOrderRow> buildRecentOrders(
+        Integer companyId, Integer storeId, UUID waiterUserId
+    ) {
+        List<FloorOrder> orders = orderQueries.recentOrdersAnyStatus(
+            companyId, storeId, waiterUserId, RECENT_ORDER_LIMIT
+        );
+        Set<UUID> waiterIds = new HashSet<>();
+        for (FloorOrder order : orders) {
+            UUID waiter = order.getWaiterUserId() != null ? order.getWaiterUserId() : order.getOpenedByUserId();
+            if (waiter != null) {
+                waiterIds.add(waiter);
+            }
+        }
+        Map<UUID, String> names = staffNameResolver.namesByIds(waiterIds);
+
         List<DashboardRecentOrderRow> rows = new ArrayList<>();
-        for (FloorOrder order : queries.recentOrdersAnyStatus(companyId, storeId, 8)) {
+        for (FloorOrder order : orders) {
             List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId());
             BigDecimal amount = orderTotals.billable(items);
             String tableCode = order.getTable() != null ? order.getTable().getCode() : "—";
@@ -83,6 +107,7 @@ public class DashboardLiveSnapshotBuilder {
                 order.getOrderNo(),
                 tableCode,
                 waiter == null ? null : waiter.toString(),
+                waiter == null ? null : names.get(waiter),
                 amount,
                 order.getStatus().name()
             ));
