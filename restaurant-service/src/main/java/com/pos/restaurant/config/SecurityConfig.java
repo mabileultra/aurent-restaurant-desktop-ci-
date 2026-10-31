@@ -1,6 +1,7 @@
 package com.pos.restaurant.config;
 
 import com.pos.restaurant.security.JwtAuthenticationFilter;
+import com.pos.restaurant.security.RestaurantInboundApiKeyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final RestaurantInboundApiKeyFilter inboundApiKeyFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,6 +29,7 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/internal/rst/**").permitAll()
                 // Edge local auth (only beans exist when app.restaurant.edge.enabled=true)
                 .requestMatchers(
                     "/auth/**",
@@ -59,6 +62,7 @@ public class SecurityConfig {
                 ).authenticated()
                 .anyRequest().denyAll()
             )
+            .addFilterBefore(inboundApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }

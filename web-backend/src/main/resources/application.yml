@@ -87,7 +87,10 @@ app:
     connect-timeout-ms: 5000
     read-timeout-ms: 15000
   restaurant:
+    base-url: ${RESTAURANT_SERVICE_URL:http://localhost:8087/api/v1}
     internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
+    connect-timeout-ms: 3000
+    read-timeout-ms: 8000
   cache:
     window-months: 2
     refresh-cron: "0 0 1 * * *"

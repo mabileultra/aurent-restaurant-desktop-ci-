@@ -11,5 +11,10 @@ import org.springframework.stereotype.Component;
 @Setter
 public class RestaurantInternalProperties {
 
+    /** Inbound key (restaurant → pos stock consume). Same secret used outbound for store mirror. */
     private String internalApiKey = "pos-internal-dev-key-change-in-prod";
+
+    private String baseUrl = "http://localhost:8087/api/v1";
+    private int connectTimeoutMs = 3000;
+    private int readTimeoutMs = 8000;
 }

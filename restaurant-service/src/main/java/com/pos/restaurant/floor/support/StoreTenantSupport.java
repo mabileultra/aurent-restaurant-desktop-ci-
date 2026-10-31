@@ -24,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Store-scoped tenant gate: store ∈ company, then user may access that store.
  * Successful checks are cached briefly so menu/floor hot paths do not hit DB on every request.
+ *
+ * <p>On cloud, {@code edge_stores} is often empty (filled only by desktop bootstrap).
+ * Then we accept the store if hall/menu/settings already exist for company+store.
  */
 @Component
 public class StoreTenantSupport {
@@ -34,6 +37,7 @@ public class StoreTenantSupport {
     private final EdgeStoreRepository storeRepository;
     private final EdgeStaffRepository staffRepository;
     private final FloorTenantSupport tenantSupport;
+    private final RestaurantStorePresence storePresence;
     /** company|store|role|user → authorized store snapshot */
     private final Cache<String, EdgeStore> accessCache = Caffeine.newBuilder()
         .maximumSize(50_000)
@@ -43,11 +47,13 @@ public class StoreTenantSupport {
     public StoreTenantSupport(
         EdgeStoreRepository storeRepository,
         EdgeStaffRepository staffRepository,
-        FloorTenantSupport tenantSupport
+        FloorTenantSupport tenantSupport,
+        RestaurantStorePresence storePresence
     ) {
         this.storeRepository = storeRepository;
         this.staffRepository = staffRepository;
         this.tenantSupport = tenantSupport;
+        this.storePresence = storePresence;
     }
 
     public EdgeStore requireStore(Integer storeId) {
@@ -71,9 +77,22 @@ public class StoreTenantSupport {
 
     private EdgeStore loadAuthorized(Integer companyId, Integer storeId) {
         EdgeStore store = storeRepository.findByIdAndCompanyId(storeId, companyId)
-            .orElseThrow(() -> new NotFoundException("Store not found: " + storeId));
+            .orElseGet(() -> cloudPresenceStore(companyId, storeId));
         assertUserMayAccess(storeId);
         return store;
+    }
+
+    private EdgeStore cloudPresenceStore(Integer companyId, Integer storeId) {
+        if (!storePresence.existsForCompany(companyId, storeId)) {
+            throw new NotFoundException("Store not found: " + storeId);
+        }
+        return EdgeStore.builder()
+            .id(storeId)
+            .companyId(companyId)
+            .name("Store #" + storeId)
+            .businessType("RESTAURANT")
+            .active(true)
+            .build();
     }
 
     private void assertUserMayAccess(Integer storeId) {

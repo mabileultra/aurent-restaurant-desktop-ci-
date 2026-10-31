@@ -13,6 +13,7 @@ import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.mapper.StoreMapper;
 import com.pos.client.crm.CrmOutboundClient;
+import com.pos.integrations.restaurant.support.RestaurantStoreMirrorNotifier;
 import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.repository.StockInventoryRepository;
@@ -56,6 +57,7 @@ public class StoreServiceImpl implements StoreService {
     private final CrmOutboundClient crmOutboundClient;
     private final StoreBusinessTypeResolver storeBusinessTypeResolver;
     private final GeoLocationSupport geoLocationSupport;
+    private final RestaurantStoreMirrorNotifier restaurantStoreMirrorNotifier;
 
     @Override
     @Cacheable(value = "stores", key = "@tenantCacheKeyResolver.stores()")
@@ -144,6 +146,7 @@ public class StoreServiceImpl implements StoreService {
             .build();
         Store saved = storeRepository.save(store);
         LogUtil.info(StoreServiceImpl.class, "Store created: id={}, name={}", saved.getId(), saved.getName());
+        restaurantStoreMirrorNotifier.afterSave(saved);
         return storeMapper.toResponse(saved);
     }
 
@@ -181,7 +184,9 @@ public class StoreServiceImpl implements StoreService {
         }
 
         LogUtil.info(StoreServiceImpl.class, "Store updated: id={}", id);
-        return storeMapper.toResponse(storeRepository.save(store));
+        Store saved = storeRepository.save(store);
+        restaurantStoreMirrorNotifier.afterSave(saved);
+        return storeMapper.toResponse(saved);
     }
 
     @Override
@@ -193,6 +198,7 @@ public class StoreServiceImpl implements StoreService {
         store.setActive(!store.isActive());
         Store saved = storeRepository.save(store);
         LogUtil.info(StoreServiceImpl.class, "Store active toggled: id={}, active={}", id, saved.isActive());
+        restaurantStoreMirrorNotifier.afterSave(saved);
         return storeMapper.toResponse(saved);
     }
 
@@ -205,6 +211,7 @@ public class StoreServiceImpl implements StoreService {
         assertDeletable(id);
         storeRepository.delete(store);
         LogUtil.info(StoreServiceImpl.class, "Store deleted: id={}, name={}", id, store.getName());
+        restaurantStoreMirrorNotifier.afterDelete(id);
     }
 
     private void assertDeletable(Integer storeId) {

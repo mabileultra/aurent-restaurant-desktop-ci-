@@ -27,6 +27,7 @@ class StoreTenantSupportTest {
     @Mock private EdgeStoreRepository storeRepository;
     @Mock private EdgeStaffRepository staffRepository;
     @Mock private FloorTenantSupport tenantSupport;
+    @Mock private RestaurantStorePresence storePresence;
     @InjectMocks private StoreTenantSupport support;
 
     @AfterEach
@@ -37,6 +38,7 @@ class StoreTenantSupportTest {
     @Test
     void rejectsStoreOfOtherCompany() {
         when(storeRepository.findByIdAndCompanyId(2, 1)).thenReturn(Optional.empty());
+        when(storePresence.existsForCompany(1, 2)).thenReturn(false);
         assertThatThrownBy(() -> support.requireStore(1, 2))
             .isInstanceOf(NotFoundException.class);
     }
@@ -47,6 +49,14 @@ class StoreTenantSupportTest {
         EdgeStore store = EdgeStore.builder().id(5).companyId(1).name("A").businessType("RESTAURANT").active(true).build();
         when(storeRepository.findByIdAndCompanyId(5, 1)).thenReturn(Optional.of(store));
         assertThat(support.requireStore(1, 5).getId()).isEqualTo(5);
+    }
+
+    @Test
+    void cloudAllowsStoreWhenEdgeRowMissingButCatalogPresent() {
+        RestaurantTenantContext.set(1, UUID.randomUUID(), "ADMIN");
+        when(storeRepository.findByIdAndCompanyId(55, 1)).thenReturn(Optional.empty());
+        when(storePresence.existsForCompany(1, 55)).thenReturn(true);
+        assertThat(support.requireStore(1, 55).getId()).isEqualTo(55);
     }
 
     @Test
