@@ -1,35 +1,39 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import {
-  CASHIER_UI_SCALE_DEFAULT,
-  CASHIER_UI_SCALE_MAX,
-  CASHIER_UI_SCALE_MIN,
-  CASHIER_UI_SCALE_STEP,
-  clampCashierUiScale,
-} from '../utils/cashierUiScale';
+  CASHIER_UI_FACTOR_DEFAULT,
+  CASHIER_UI_FACTOR_STEP,
+  clampCashierUiFactor,
+  resolveCashierEffectiveScale,
+} from '../utils/cashierUiScaleFactor';
 import { resolveCashierZoomBox } from '../utils/resolveCashierZoomBox';
 import { useViewportInnerSize } from './useViewportInnerSize';
 
-const STORAGE_KEY = 'cashier-pos-ui-scale';
+/* v4: UI 100% = идеал монитора; ± крутит factor поверх базы */
+const STORAGE_KEY = 'cashier-pos-ui-scale-v4';
 
-function readStoredScale() {
+function readStoredFactor() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw == null) return CASHIER_UI_SCALE_DEFAULT;
-    return clampCashierUiScale(raw);
+    if (raw == null) return CASHIER_UI_FACTOR_DEFAULT;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && parsed.factor != null) {
+      return clampCashierUiFactor(parsed.factor);
+    }
+    return clampCashierUiFactor(raw);
   } catch {
-    return CASHIER_UI_SCALE_DEFAULT;
+    return CASHIER_UI_FACTOR_DEFAULT;
   }
 }
 
-function persistScale(value) {
+function persistFactor(factor) {
   try {
-    localStorage.setItem(STORAGE_KEY, String(value));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ factor }));
   } catch {
-    /* ignore quota / private mode */
+    /* ignore */
   }
 }
 
-let currentScale = readStoredScale();
+let currentFactor = readStoredFactor();
 const listeners = new Set();
 
 function subscribe(listener) {
@@ -38,38 +42,46 @@ function subscribe(listener) {
 }
 
 function getSnapshot() {
-  return currentScale;
+  return currentFactor;
 }
 
-function setScale(next) {
-  const value = clampCashierUiScale(typeof next === 'function' ? next(currentScale) : next);
-  if (value === currentScale) return;
-  currentScale = value;
-  persistScale(value);
+function setFactor(next) {
+  const value = clampCashierUiFactor(
+    typeof next === 'function' ? next(currentFactor) : next
+  );
+  if (value === currentFactor) return;
+  currentFactor = value;
+  persistFactor(currentFactor);
   listeners.forEach((listener) => listener());
 }
 
 /**
- * Shared UI scale for cashier shell + bottom-dock controls.
- * Must be a singleton — two useState instances previously desynced zoom.
+ * Shared UI scale: monitor base × user factor.
+ * Percent in dock is always relative (100% = ideal for this screen).
  */
 export function useCashierUiScale() {
-  const scale = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const factor = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   const viewport = useViewportInnerSize();
-  const zoomBox = useMemo(
-    () => resolveCashierZoomBox(scale, viewport.width, viewport.height),
-    [scale, viewport.height, viewport.width]
+
+  const resolved = useMemo(
+    () => resolveCashierEffectiveScale(factor, viewport.height, viewport.width),
+    [factor, viewport.height, viewport.width]
   );
 
-  const zoomIn = useCallback(() => setScale((s) => s + CASHIER_UI_SCALE_STEP), []);
-  const zoomOut = useCallback(() => setScale((s) => s - CASHIER_UI_SCALE_STEP), []);
-  const reset = useCallback(() => setScale(CASHIER_UI_SCALE_DEFAULT), []);
+  const zoomBox = useMemo(
+    () => resolveCashierZoomBox(resolved.scale, viewport.width, viewport.height),
+    [resolved.scale, viewport.height, viewport.width]
+  );
+
+  const zoomIn = useCallback(() => setFactor((f) => f + CASHIER_UI_FACTOR_STEP), []);
+  const zoomOut = useCallback(() => setFactor((f) => f - CASHIER_UI_FACTOR_STEP), []);
+  const reset = useCallback(() => setFactor(CASHIER_UI_FACTOR_DEFAULT), []);
 
   return {
-    scale,
-    percent: Math.round(scale * 100),
-    canZoomIn: scale < CASHIER_UI_SCALE_MAX - 1e-9,
-    canZoomOut: scale > CASHIER_UI_SCALE_MIN + 1e-9,
+    scale: resolved.scale,
+    percent: resolved.percent,
+    canZoomIn: resolved.canZoomIn,
+    canZoomOut: resolved.canZoomOut,
     zoomIn,
     zoomOut,
     reset,
