@@ -10,3 +10,4 @@ globs: web-frontend/src/features/cashier/**,desktop-electron/electron/offline/**
 2. Поиск по Enter в загруженном списке сверяет весь `barcodes` (`findProductBarcode`).
 3. Офлайн-поиск SQLite (`searchProducts`) ищет и по `product_barcodes`.
 4. Весовую этикетку (код не из `barcodes`) не подставлять как штрихкод товара.
+5. Скан EAN-13 (напр. `8801046877388`): `posBarcodeCandidates` / backend `ProductBarcodeScanVariants` перебирают 13 / 12 / `0`+13; `posFetchProductByBarcode` на **404 возвращает null**, а не бросает — иначе кандидаты не доходят.

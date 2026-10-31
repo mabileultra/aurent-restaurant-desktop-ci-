@@ -151,11 +151,18 @@ export async function posFetchProductByBarcode(storeId, barcode, { catalogKind }
   const pharmacy = catalogKind === 'pharmacy';
   return withRemoteFallback(
     storeId,
-    () =>
-      (pharmacy
-        ? pharmacyWarehouseApi.getByBarcode(trimmed, storeId)
-        : productApi.getByBarcode(trimmed, storeId)
-      ).then((r) => r.data),
+    async () => {
+      try {
+        const res = await (pharmacy
+          ? pharmacyWarehouseApi.getByBarcode(trimmed, storeId)
+          : productApi.getByBarcode(trimmed, storeId));
+        return res.data;
+      } catch (err) {
+        // 404 → null, чтобы касса могла перебрать GTIN/EAN-кандидаты
+        if (err?.response?.status === 404) return null;
+        throw err;
+      }
+    },
     () => offlineGetProductByBarcode(trimmed),
   );
 }

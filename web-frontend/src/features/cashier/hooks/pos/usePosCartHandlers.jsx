@@ -2,7 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { posFetchProductByBarcode } from '../../../../services/pos/posDataRouter';
-import { findProductBarcode, withScannedBarcode } from '../../utils/productBarcodeMatch';
+import { findProductBarcode, findProductByIkpu, withScannedBarcode } from '../../utils/productBarcodeMatch';
+import { posBarcodeCandidates } from '../../utils/posBarcodeCandidates';
 import { scalesApi } from '../../../../api/scales.api';
 import { decodeWeightBarcode } from '../../../scales/utils/weightBarcode';
 import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner';
@@ -336,13 +337,7 @@ export function usePosCartHandlers({
           }
         }
 
-        const digits = trimmed.replace(/\D/g, '');
-        const barcodeCandidates = [trimmed];
-        if (digits && digits !== trimmed) barcodeCandidates.push(digits);
-        // EAN-13 со check digit, в карточке часто лежит 12 цифр без контрольной
-        if (digits.length === 13) barcodeCandidates.push(digits.slice(0, 12));
-
-        for (const code of barcodeCandidates) {
+        for (const code of posBarcodeCandidates(trimmed)) {
           const product = await posFetchProductByBarcode(storeId, code);
           if (product) {
             addProductToCart(withScannedBarcode(product, code));
@@ -395,8 +390,10 @@ export function usePosCartHandlers({
     }
     const lower = q.toLowerCase();
     const byBarcode = products.find((p) => findProductBarcode(p, q));
+    const byIkpu = products.find((p) => findProductByIkpu(p, q));
     const exact =
       (byBarcode && withScannedBarcode(byBarcode, q)) ||
+      byIkpu ||
       products.find((p) => p.sku?.toLowerCase() === lower) ||
       products.find((p) => p.name?.toLowerCase() === lower);
     addProductToCart(exact ?? products[0]);
