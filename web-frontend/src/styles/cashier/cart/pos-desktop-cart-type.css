@@ -1,0 +1,76 @@
+/*
+ * POS desktop — чек: имя / цена / шапка крупно и чётко.
+ * Специфичность выше density + pos-profiles (там 0.69–0.81rem).
+ */
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register {
+  --pos-density-cart-head-font: 0.875rem;
+  --pos-density-cart-name: 1.125rem;
+  --pos-density-cart-sku: 0.8125rem;
+  --pos-density-cart-money: 1.1875rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__head
+  .pos-cart-table__col {
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__sku {
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__price-btn,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__price-btn span,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__price-input,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__sum {
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--name,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--price,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--sum {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}

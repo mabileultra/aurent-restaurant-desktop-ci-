@@ -124,15 +124,15 @@
   }
 }
 
-/* ── POS desktop: типографика чека (без cqi) ── */
+/* ── POS desktop: типографика чека — токены (не хардкод; финал в pos-desktop-cart-type) ── */
 .cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__name {
-  font-size: 0.8125rem;
+  font-size: var(--pos-density-cart-name, 1.125rem);
 }
 
 .cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__price-btn,
 .cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__price-btn span,
 .cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__sum {
-  font-size: 0.9375rem;
+  font-size: var(--pos-density-cart-money, 1.1875rem);
 }
 
 .cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-order-panel__head {
