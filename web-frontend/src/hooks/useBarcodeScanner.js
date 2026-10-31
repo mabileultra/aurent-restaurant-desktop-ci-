@@ -6,6 +6,14 @@ const INTER_CHAR_MS = 80;
 const BUFFER_RESET_MS = 200;
 /** Пауза между символами BT-сканера на POS часто > 80 мс. Ждём конец ввода в поле, не обрывок буфера. */
 const DEDICATED_IDLE_MS = 500;
+/** Чистый EAN/цифры — короче idle (сканер часто без Enter). КМ/GS1 оставляем 500. */
+const DEDICATED_DIGIT_IDLE_MS = 160;
+
+function dedicatedIdleMsForBuffer(buffer) {
+  const t = String(buffer || '').trim();
+  if (/^\d{8,14}$/.test(t)) return DEDICATED_DIGIT_IDLE_MS;
+  return DEDICATED_IDLE_MS;
+}
 
 function fieldLooksLikeScan(value) {
   const t = String(value || '').trim();
@@ -165,7 +173,9 @@ export function useBarcodeScanner({
       buffer += e.key;
 
       if (resetTimer) clearTimeout(resetTimer);
-      const idleMs = onDedicatedBarcode ? DEDICATED_IDLE_MS : BUFFER_RESET_MS;
+      const idleMs = onDedicatedBarcode
+        ? dedicatedIdleMsForBuffer(buffer)
+        : BUFFER_RESET_MS;
       resetTimer = setTimeout(() => {
         const input = barcodeInputRef?.current;
         const dedicatedActive = Boolean(input && document.activeElement === input);

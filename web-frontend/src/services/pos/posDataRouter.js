@@ -149,6 +149,15 @@ export async function posFetchProductByBarcode(storeId, barcode, { catalogKind }
   const trimmed = String(barcode || '').trim();
   if (!trimmed) return null;
   const pharmacy = catalogKind === 'pharmacy';
+  // Electron: сначала локальный каталог — скан не ждёт сеть при попадании.
+  if (isDesktopOfflineBridge()) {
+    try {
+      const local = await offlineGetProductByBarcode(trimmed);
+      if (local) return local;
+    } catch {
+      /* fall through to route */
+    }
+  }
   return withRemoteFallback(
     storeId,
     async () => {
