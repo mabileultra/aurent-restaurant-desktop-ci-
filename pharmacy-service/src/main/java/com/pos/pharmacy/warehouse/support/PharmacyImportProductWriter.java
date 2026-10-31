@@ -113,6 +113,10 @@ public class PharmacyImportProductWriter {
     }
 
     private UUID applyRetail(Product product, PharmacyImportConfirmItem item) {
+        // Повторный импорт по SKU не должен оставлять карточку выключенной — касса фильтрует activeOnly.
+        if (!product.isActive()) {
+            product.setActive(true);
+        }
         if (item.purchasePrice() != null) {
             product.setCostPrice(item.purchasePrice());
         }

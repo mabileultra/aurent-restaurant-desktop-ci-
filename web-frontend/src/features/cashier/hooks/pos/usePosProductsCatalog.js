@@ -96,7 +96,8 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
     retry: catalogMode === 'offline' ? false : 1,
     staleTime: catalogMode === 'offline' ? Infinity : 30_000,
     placeholderData: keepPreviousData,
-    refetchOnWindowFocus: false,
+    // Аптека: после прихода в другой вкладке список иначе «залипает» (refetchOnWindowFocus был false).
+    refetchOnWindowFocus: catalogKind === 'pharmacy' && catalogMode === 'online',
   });
 
   const products = productsPages?.pages.flatMap((page) => page?.content ?? []) ?? [];

@@ -20,6 +20,7 @@ import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
 import { usePharmacyHotkeys } from './usePharmacyHotkeys';
 import { usePharmacyFefoEnrichment } from './usePharmacyFefoEnrichment';
 import { usePharmacyBarcodeCacheWarm } from './usePharmacyBarcodeCacheWarm';
+import { usePharmacyCatalogChangedRefresh } from './usePharmacyCatalogChangedRefresh';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -61,6 +62,7 @@ export function usePharmacyPosPage() {
   const ensureCheckNo = useCartStore((s) => s.ensureCheckNo);
 
   const catalog = usePosProductsCatalog({ storeId, catalogKind: 'pharmacy' });
+  usePharmacyCatalogChangedRefresh(storeId);
   const { products: fefoProducts } = usePharmacyFefoEnrichment(storeId, catalog.products);
   usePharmacyBarcodeCacheWarm(storeId, catalog.products);
   const integration = usePharmacyIntegrationConfig(storeId);
