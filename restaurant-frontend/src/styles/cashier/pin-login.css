@@ -210,7 +210,7 @@
 
 .cashier-pin-login--roster-light .cashier-pin-login__company-chip {
   border-color: rgb(15 23 42 / 0.12);
-  background: #fff;
+  background: #F8F2EC;
   color: #334155;
 }
 
@@ -228,7 +228,7 @@
 
 .cashier-pin-login--roster-light .cashier-pin-login__company-popover {
   border-color: #e2e8f0;
-  background: #fff;
+  background: #F8F2EC;
 }
 
 .cashier-pin-login--roster-light .cashier-pin-login__company-label {
@@ -237,7 +237,7 @@
 
 .cashier-pin-login--roster-light .cashier-pin-login__company-input {
   border-color: #e2e8f0;
-  background: #fff;
+  background: #F8F2EC;
   color: #0f172a;
 }
 
@@ -245,7 +245,7 @@
   width: 100%;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
-  background: #fff;
+  background: #F8F2EC;
   padding: 1.25rem;
   box-shadow: 0 4px 24px rgb(15 23 42 / 0.06);
 }
@@ -316,7 +316,7 @@
   padding: 0;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
-  background: #fff;
+  background: #F8F2EC;
   font-size: 1.35rem;
   font-weight: 600;
   color: #0f172a;

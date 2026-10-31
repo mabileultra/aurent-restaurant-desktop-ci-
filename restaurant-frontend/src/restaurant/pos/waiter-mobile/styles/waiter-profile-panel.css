@@ -327,12 +327,12 @@
 }
 
 html.rst-theme--light .rst-waiter-profile__sheet {
-  background: #f7f8fb;
+  background: #EFE6DD;
   box-shadow: 0 -12px 36px rgb(15 23 42 / 0.14);
 }
 
 html.rst-theme--light .rst-waiter-profile__card {
-  background: #fff;
+  background: #F8F2EC;
 }
 
 html.rst-theme--light .rst-waiter-profile__logout {

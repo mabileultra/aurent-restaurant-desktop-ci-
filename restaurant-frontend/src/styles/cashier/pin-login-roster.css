@@ -509,7 +509,7 @@
 /* Theme toggle on login: keep photo/chrome; only staff + PIN cards change */
 .cashier-pin-login--roster-light .cashier-pin-roster__card {
   border-color: transparent;
-  background: #fff;
+  background: #F8F2EC;
   color: #0f172a;
   box-shadow: 0 12px 36px rgb(0 0 0 / 0.28);
 }
@@ -529,7 +529,7 @@
 }
 
 .cashier-pin-login--roster-light .cashier-pin-roster__pin-card {
-  background: #fff;
+  background: #F8F2EC;
   color: #0f172a;
   box-shadow: 0 18px 48px rgb(0 0 0 / 0.28);
 }

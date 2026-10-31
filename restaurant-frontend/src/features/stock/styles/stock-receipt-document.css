@@ -28,7 +28,7 @@
   margin-top: 0.15rem;
   border: 1px solid var(--rst-line, #e2e8f0);
   border-radius: 10px;
-  background: var(--rst-surface, #fff);
+  background: var(--rst-surface, #F8F2EC);
   color: var(--rst-ink, #0f172a);
   cursor: pointer;
 }
@@ -112,7 +112,7 @@
   padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1px solid var(--rst-line, #e2e8f0);
-  background: var(--rst-surface, #fff);
+  background: var(--rst-surface, #F8F2EC);
 }
 
 .rst-stock-receipt-doc__footer > div:first-child {

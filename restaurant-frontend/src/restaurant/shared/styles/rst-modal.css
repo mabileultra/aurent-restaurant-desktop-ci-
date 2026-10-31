@@ -123,12 +123,12 @@
 }
 
 html.rst-theme.rst-theme--light .base-modal {
-  --rst-surface: #ffffff;
-  --rst-surface-2: #f3f5f8;
+  --rst-surface: #F8F2EC;
+  --rst-surface-2: #F0E8E0;
   --rst-ink: #12151c;
   --rst-muted: #5c6578;
   --rst-line: #e3e7ee;
-  background: #ffffff !important;
+  background: #F8F2EC !important;
   color: #12151c;
   border-color: #e3e7ee;
 }
@@ -137,7 +137,7 @@ html.rst-theme.rst-theme--light .base-modal .base-modal__header,
 html.rst-theme.rst-theme--light .base-modal .base-modal__body,
 html.rst-theme.rst-theme--light .base-modal .base-modal__footer,
 html.rst-theme.rst-theme--light .base-modal .rst-modal-form {
-  background: #ffffff !important;
+  background: #F8F2EC !important;
   color: #12151c !important;
   border-color: #e3e7ee;
 }
@@ -170,7 +170,7 @@ html.rst-theme.rst-theme--light .base-modal .rst-stock-tr__stores,
 html.rst-theme.rst-theme--light .base-modal .rst-stock-tr__lines,
 html.rst-theme.rst-theme--light .base-modal .rst-stock-prd__output,
 html.rst-theme.rst-theme--light .base-modal .rst-stock-prd__inputs {
-  background: #f3f5f8 !important;
+  background: #F0E8E0 !important;
   color: #12151c !important;
   border-color: #e3e7ee !important;
 }

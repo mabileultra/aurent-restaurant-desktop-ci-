@@ -46,7 +46,7 @@
   overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--rst-border, #2a2a2a);
-  background: #fff;
+  background: var(--rst-surface, #F8F2EC);
   box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
   color: #111;
 }
@@ -111,7 +111,7 @@
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
   border: 1px solid #cbd5e1;
-  background: #fff;
+  background: var(--rst-surface, #F8F2EC);
   color: #334155;
   font-size: 0.8rem;
   font-weight: 600;
@@ -139,7 +139,7 @@
 
 .rst-receipt-modal__btn--danger {
   border-color: #b91c1c;
-  background: #fff;
+  background: var(--rst-surface, #F8F2EC);
   color: #b91c1c;
 }
 
@@ -165,7 +165,7 @@
 .rst-receipt-modal__body {
   overflow: auto;
   padding: 1rem 1.15rem;
-  background: #fff;
+  background: var(--rst-surface, #F8F2EC);
 }
 
 @media print {

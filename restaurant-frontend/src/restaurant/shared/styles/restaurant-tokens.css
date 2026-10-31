@@ -393,10 +393,10 @@ html.rst-theme .dark\:text-emerald-400 {
 /* Light theme: page, panels, text, lines. Accent and status colors stay. */
 html.rst-theme.rst-theme--light,
 html.rst-theme.rst-theme--light .rst-app {
-  --rst-bg: #ffffff;
-  --rst-bg-deep: #f4f6f8;
-  --rst-surface: #ffffff;
-  --rst-surface-2: #f3f5f8;
+  --rst-bg: #F8F2EC;
+  --rst-bg-deep: #EFE6DD;
+  --rst-surface: #F8F2EC;
+  --rst-surface-2: #F0E8E0;
   --rst-ink: #12151c;
   --rst-muted: #5c6578;
   --rst-line: #e3e7ee;
@@ -406,7 +406,7 @@ html.rst-theme.rst-theme--light .rst-app {
   --color-text: #12151c;
   --color-muted: #5c6578;
   --color-border: #e3e7ee;
-  --color-surface: #ffffff;
-  --color-surface-muted: #f3f5f8;
+  --color-surface: #F8F2EC;
+  --color-surface-muted: #F0E8E0;
   --color-money: #12151c;
 }

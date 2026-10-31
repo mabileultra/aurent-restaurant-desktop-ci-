@@ -18,7 +18,7 @@
   line-height: 1.35;
   border: 1px solid var(--rst-line, #e2e8f0);
   border-radius: 10px;
-  background: var(--rst-surface-2, #f8fafc);
+  background: var(--rst-surface-2, #F0E8E0);
   color: var(--rst-ink, #0f172a);
 }
 
@@ -42,7 +42,7 @@
   padding: 1rem;
   border-radius: 14px;
   border: 1px solid var(--rst-line, #e2e8f0);
-  background: var(--rst-surface, #fff);
+  background: var(--rst-surface, #F8F2EC);
 }
 
 .rst-stock-doc-meta__link {
@@ -74,7 +74,7 @@
   min-height: 0;
   border-radius: 14px;
   border: 1px solid var(--rst-line, #e2e8f0);
-  background: var(--rst-surface, #fff);
+  background: var(--rst-surface, #F8F2EC);
   overflow: hidden;
 }
 
@@ -159,7 +159,7 @@
   padding: 0.4rem 0.6rem;
   border-radius: 8px;
   border: 1px solid var(--rst-line, #e2e8f0);
-  background: var(--rst-surface-2, #f8fafc);
+  background: var(--rst-surface-2, #F0E8E0);
   color: var(--rst-ink, #0f172a);
 }
 

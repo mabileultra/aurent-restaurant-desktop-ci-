@@ -106,7 +106,7 @@
 }
 
 html.rst-theme--light .rst-theme-switch__menu {
-  background: var(--rst-surface, #ffffff);
+  background: var(--rst-surface, #F8F2EC);
   border-color: var(--rst-line, #cfd4dc);
   box-shadow: 0 12px 28px rgb(15 23 42 / 0.14);
 }
@@ -261,7 +261,7 @@ html.rst-theme--light .rst-theme-switch__option:hover {
 html.rst-theme--light .rst-lang-switch__menu,
 html.rst-theme--light .cashier-lang-switch__menu,
 html.rst-theme--light .public-lang-switch__menu {
-  background: var(--rst-surface, #ffffff);
+  background: var(--rst-surface, #F8F2EC);
   border-color: var(--rst-line, #cfd4dc);
   box-shadow: 0 12px 28px rgb(15 23 42 / 0.14);
 }

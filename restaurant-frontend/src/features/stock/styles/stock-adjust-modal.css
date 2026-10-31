@@ -87,7 +87,7 @@
   border: 1px solid var(--rst-line);
   border-radius: 10px;
   padding: 0.55rem 0.7rem;
-  background: var(--rst-bg, #fff);
+  background: var(--rst-bg, #F8F2EC);
   color: var(--rst-text);
   font: inherit;
 }
