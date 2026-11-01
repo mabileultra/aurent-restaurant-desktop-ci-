@@ -13,6 +13,8 @@ export function useDesktopNotificationBroadcast({
   expiresInHours,
   isCustomHoursValid,
   draft,
+  targeting,
+  timing,
 }) {
   const queryClient = useQueryClient();
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -29,6 +31,7 @@ export function useDesktopNotificationBroadcast({
       draft.setIsDraftRestored(false);
       setConfirmModalOpen(false);
       draft.clearDraftStorage();
+      targeting?.clearTargetSelection?.();
       queryClient.invalidateQueries({ queryKey: ['platform-desktop-notifications'] });
     },
     onError: () => {
@@ -39,7 +42,9 @@ export function useDesktopNotificationBroadcast({
   });
 
   const hasContent = Boolean(title.trim() && body.trim());
-  const canSend = hasContent && isCustomHoursValid && !broadcastMutation.isPending;
+  const hasValidTarget = targeting ? targeting.hasValidTarget : true;
+  const isScheduleValid = timing ? timing.isScheduleValid : true;
+  const canSend = hasContent && isCustomHoursValid && hasValidTarget && isScheduleValid && !broadcastMutation.isPending;
 
   const sendDisabledReason = useMemo(() => {
     if (!hasContent) {
@@ -52,8 +57,18 @@ export function useDesktopNotificationBroadcast({
         defaultValue: "Muddatni to'g'ri kiriting (1 dan 720 soatgacha)",
       });
     }
+    if (!hasValidTarget) {
+      return t('platform.desktopNotifications.noTargetSelectedError', {
+        defaultValue: 'Kamida bitta kompaniya yoki filialni tanlang',
+      });
+    }
+    if (!isScheduleValid) {
+      return t('platform.desktopNotifications.scheduleInvalidError', {
+        defaultValue: "Rejalashtirilgan vaqtni to'g'ri (kelajakdagi vaqt) tanlang",
+      });
+    }
     return null;
-  }, [hasContent, isCustomHoursValid, t]);
+  }, [hasContent, isCustomHoursValid, hasValidTarget, isScheduleValid, t]);
 
   const handleInitiateSend = useCallback(() => {
     if (!title.trim() || !body.trim()) {
@@ -72,18 +87,40 @@ export function useDesktopNotificationBroadcast({
       );
       return;
     }
+    if (!hasValidTarget) {
+      toast.error(
+        t('platform.desktopNotifications.noTargetSelectedError', {
+          defaultValue: 'Kamida bitta kompaniya yoki filialni tanlang',
+        })
+      );
+      return;
+    }
+    if (!isScheduleValid) {
+      toast.error(
+        t('platform.desktopNotifications.scheduleInvalidError', {
+          defaultValue: "Rejalashtirilgan vaqtni to'g'ri (kelajakdagi vaqt) tanlang",
+        })
+      );
+      return;
+    }
     setConfirmModalOpen(true);
-  }, [title, body, isCustomHoursValid, expiresInHours, t]);
+  }, [title, body, isCustomHoursValid, expiresInHours, hasValidTarget, isScheduleValid, t]);
 
   const executeBroadcast = useCallback(() => {
-    if (!title.trim() || !body.trim() || !isCustomHoursValid || expiresInHours == null) return;
+    if (!title.trim() || !body.trim() || !isCustomHoursValid || expiresInHours == null || !isScheduleValid) return;
+    const isSelect = targeting?.targetScope === 'SELECT';
     broadcastMutation.mutate({
       title: title.trim().slice(0, 200),
       body: body.trim().slice(0, 4000),
       kind,
       expiresInHours,
+      targetType: isSelect ? targeting.targetType : 'ALL',
+      companyIds: isSelect && targeting.targetType === 'COMPANIES' ? targeting.selectedCompanyIds : undefined,
+      storeIds: isSelect && targeting.targetType === 'STORES' ? targeting.selectedStoreIds : undefined,
+      scheduleType: timing?.scheduleType || 'NOW',
+      scheduledAt: timing?.scheduledAtIso || null,
     });
-  }, [title, body, kind, expiresInHours, isCustomHoursValid, broadcastMutation]);
+  }, [title, body, kind, expiresInHours, isCustomHoursValid, isScheduleValid, targeting, timing, broadcastMutation]);
 
   return {
     confirmModalOpen,

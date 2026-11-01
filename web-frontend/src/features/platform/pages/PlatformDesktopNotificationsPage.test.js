@@ -174,7 +174,7 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Kimga');
     expect(html).toContain('248 ta kassa');
     expect(html).toContain('Barcha kassalar');
-    expect(html).toContain('Tez kunda');
+    expect(html).toContain('Tanlab yuborish');
 
     // Step 2: Xabar matni
     expect(html).toContain('Xabar matni');

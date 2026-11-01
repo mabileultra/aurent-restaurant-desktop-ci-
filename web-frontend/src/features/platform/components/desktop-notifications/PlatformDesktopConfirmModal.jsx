@@ -1,11 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  AlertTriangle,
-  Bell,
-  RefreshCw,
-  Send,
-} from 'lucide-react';
+import { AlertTriangle, Bell, RefreshCw, Send } from 'lucide-react';
+import PlatformDesktopConfirmModalSummary from './PlatformDesktopConfirmModalSummary';
 
 export default function PlatformDesktopConfirmModal({ p }) {
   const { t } = p;
@@ -13,7 +9,6 @@ export default function PlatformDesktopConfirmModal({ p }) {
   const cancelBtnRef = useRef(null);
   const lastActiveElementRef = useRef(null);
 
-  // Manage body scroll lock and focus trap
   useEffect(() => {
     if (!p.confirmModalOpen) return;
 
@@ -21,7 +16,6 @@ export default function PlatformDesktopConfirmModal({ p }) {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Focus initial button
     const timer = setTimeout(() => {
       cancelBtnRef.current?.focus();
     }, 50);
@@ -78,21 +72,41 @@ export default function PlatformDesktopConfirmModal({ p }) {
 
   const isAlert = p.kind === 'ALERT';
   const isUpdate = p.kind === 'UPDATE';
+  const isSelect = p.targetScope === 'SELECT';
   const targetCount = p.activeRegistersCount ?? p.totalRegistersCount;
 
-  const modalTitle = targetCount != null
-    ? t('platform.desktopNotifications.confirmModalTitle', { count: targetCount })
-    : t('platform.desktopNotifications.confirmModalTitleAll', { defaultValue: 'Barcha kassalarga yuborilsinmi?' });
+  let modalTitle;
+  let targetLabel;
+  let submitBtnLabel;
 
-  const targetLabel = targetCount != null
-    ? `${t('platform.desktopNotifications.targetAll')} · ${targetCount} ta faol${
-        p.onlineRegistersCount != null ? ` (${t('platform.desktopNotifications.onlineShort', { defaultValue: 'onlayn' })}: ${p.onlineRegistersCount} ta)` : ''
-      }`
-    : t('platform.desktopNotifications.registersCountUnknown', { defaultValue: 'Barcha faol kassalar' });
+  if (isSelect) {
+    const isCompanies = p.targetType === 'COMPANIES';
+    const count = isCompanies ? p.selectedCompanyIds?.length || 0 : p.selectedStoreIds?.length || 0;
+    modalTitle = t('platform.desktopNotifications.confirmModalTitleSelected', {
+      count,
+      defaultValue: `Tanlangan ${count} ta ob'ektga yuborilsinmi?`,
+    });
+    targetLabel = isCompanies
+      ? `${t('platform.desktopNotifications.targetTypeCompanies', { defaultValue: "Kompaniyalar bo'yicha" })}: ${count} ta`
+      : `${t('platform.desktopNotifications.targetTypeStores', { defaultValue: "Filiallar bo'yicha" })}: ${count} ta`;
+    submitBtnLabel = t('platform.desktopNotifications.confirmSubmitSelected', {
+      defaultValue: 'Ha, tanlanganlarga yuborish',
+    });
+  } else {
+    modalTitle = targetCount != null
+      ? t('platform.desktopNotifications.confirmModalTitle', { count: targetCount })
+      : t('platform.desktopNotifications.confirmModalTitleAll', { defaultValue: 'Barcha kassalarga yuborilsinmi?' });
 
-  const submitBtnLabel = targetCount != null
-    ? t('platform.desktopNotifications.confirmSubmit', { count: targetCount })
-    : t('platform.desktopNotifications.confirmSubmitAll', { defaultValue: 'Ha, barcha kassalarga yuborish' });
+    targetLabel = targetCount != null
+      ? `${t('platform.desktopNotifications.targetAll')} · ${targetCount} ta faol${
+          p.onlineRegistersCount != null ? ` (${t('platform.desktopNotifications.onlineShort', { defaultValue: 'onlayn' })}: ${p.onlineRegistersCount} ta)` : ''
+        }`
+      : t('platform.desktopNotifications.registersCountUnknown', { defaultValue: 'Barcha faol kassalar' });
+
+    submitBtnLabel = targetCount != null
+      ? t('platform.desktopNotifications.confirmSubmit', { count: targetCount })
+      : t('platform.desktopNotifications.confirmSubmitAll', { defaultValue: 'Ha, barcha kassalarga yuborish' });
+  }
 
   const modalNode = (
     <div
@@ -105,7 +119,6 @@ export default function PlatformDesktopConfirmModal({ p }) {
         ref={modalRef}
         className="w-full max-w-lg sm:max-w-xl rounded-2xl bg-white p-5 sm:p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 animate-in zoom-in-95 duration-150"
       >
-        {/* Modal Header */}
         <div className="flex items-start gap-3.5">
           {isAlert && (
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
@@ -132,81 +145,18 @@ export default function PlatformDesktopConfirmModal({ p }) {
           </div>
         </div>
 
-        {/* Summary Details Grid */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800 border-y border-slate-100 dark:border-slate-800 text-xs">
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-slate-500 dark:text-slate-400">
-              {t('platform.desktopNotifications.confirmLabelTarget')}
-            </span>
-            <span className="font-semibold text-slate-900 dark:text-white">
-              {targetLabel}
-            </span>
-          </div>
+        <PlatformDesktopConfirmModalSummary
+          t={t}
+          targetLabel={targetLabel}
+          isAlert={isAlert}
+          isUpdate={isUpdate}
+          visibleUntilFormatted={p.visibleUntilFormatted}
+          scheduleType={p.scheduleType}
+          scheduledFormatted={p.scheduledFormatted}
+          activeTitle={activeTitle}
+          activeBody={activeBody}
+        />
 
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-slate-500 dark:text-slate-400">
-              {t('platform.desktopNotifications.confirmLabelKind')}
-            </span>
-            <div className="flex items-center gap-1.5">
-              {isAlert && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
-                  {t('platform.desktopNotifications.kindAlert')}
-                </span>
-              )}
-              {isUpdate && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
-                  {t('platform.desktopNotifications.kindUpdate')}
-                </span>
-              )}
-              {!isAlert && !isUpdate && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                  {t('platform.desktopNotifications.kindMessage')}
-                </span>
-              )}
-              <span className="text-slate-600 dark:text-slate-400 text-[11px]">
-                {isAlert ? 'kassir yopmaguncha ekranda turadi' : 'bildirishnomalarda chiqadi'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-slate-500 dark:text-slate-400">
-              {t('platform.desktopNotifications.confirmLabelExpires')}
-            </span>
-            <span className="font-semibold text-slate-900 dark:text-white">
-              {p.visibleUntilFormatted} gacha
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-slate-500 dark:text-slate-400">
-              {t('platform.desktopNotifications.confirmLabelSendTime')}
-            </span>
-            <span className="font-semibold text-slate-900 dark:text-white">
-              {p.scheduleType === 'NOW' ? 'Hozir' : 'Rejalashtirilgan'}
-            </span>
-          </div>
-        </div>
-
-        {/* Message Preview Box */}
-        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-850 space-y-1">
-          <p className="text-[11px] font-semibold text-slate-400">
-            {t('platform.desktopNotifications.confirmCashierPreview')}
-          </p>
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-            {activeTitle}
-          </h4>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
-            {activeBody}
-          </p>
-        </div>
-
-        {/* Warning Footnote */}
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-          {t('platform.desktopNotifications.confirmFootnote')}
-        </p>
-
-        {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2 sm:gap-3 pt-2">
           <button
             ref={cancelBtnRef}
@@ -230,8 +180,7 @@ export default function PlatformDesktopConfirmModal({ p }) {
     </div>
   );
 
-  if (typeof document !== 'undefined' && document.body) {
-    return createPortal(modalNode, document.body);
-  }
-  return modalNode;
+  return typeof document !== 'undefined' && document.body
+    ? createPortal(modalNode, document.body)
+    : modalNode;
 }

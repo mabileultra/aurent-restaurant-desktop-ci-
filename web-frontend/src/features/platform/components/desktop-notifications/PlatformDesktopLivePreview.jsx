@@ -2,11 +2,10 @@ import React from 'react';
 import {
   AlertTriangle,
   Bell,
-  Check,
   CheckCircle2,
-  Info,
   RefreshCw,
 } from 'lucide-react';
+import PlatformDesktopLivePreviewChecklist from './PlatformDesktopLivePreviewChecklist';
 
 export default function PlatformDesktopLivePreview({ p }) {
   const { t } = p;
@@ -17,17 +16,11 @@ export default function PlatformDesktopLivePreview({ p }) {
 
   const hasTitle = Boolean(previewTitle?.trim());
   const hasBody = Boolean(previewBody?.trim());
-
-  const displayTitle = hasTitle
-    ? previewTitle.trim()
-    : t('platform.desktopNotifications.titleEmptyFallback', { defaultValue: 'Sarlavha' });
-  const displayBody = hasBody
-    ? previewBody.trim()
-    : t('platform.desktopNotifications.bodyEmptyFallback', { defaultValue: 'Xabar matni kiritilmagan...' });
+  const displayTitle = hasTitle ? previewTitle.trim() : t('platform.desktopNotifications.titleEmptyFallback', { defaultValue: 'Sarlavha' });
+  const displayBody = hasBody ? previewBody.trim() : t('platform.desktopNotifications.bodyEmptyFallback', { defaultValue: 'Xabar matni kiritilmagan...' });
 
   const isAlert = p.kind === 'ALERT';
   const isUpdate = p.kind === 'UPDATE';
-  const isMessage = p.kind === 'MESSAGE';
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 sm:space-y-5">
@@ -82,14 +75,12 @@ export default function PlatformDesktopLivePreview({ p }) {
           </div>
         </div>
 
-        {/* Blurred Simulated POS Background (Shelves / Catalog / Cart silhouette) */}
+        {/* Blurred Simulated POS Background */}
         <div className="absolute inset-0 pt-9 p-3 flex gap-3 opacity-25 filter blur-[2px] pointer-events-none">
           <div className="flex-1 space-y-2">
             <div className="h-6 w-full rounded bg-slate-700" />
             <div className="grid grid-cols-3 gap-2 pt-1">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-14 rounded-lg bg-slate-800" />
-              ))}
+              {[...Array(6)].map((_, i) => <div key={i} className="h-14 rounded-lg bg-slate-800" />)}
             </div>
           </div>
           <div className="w-28 rounded-lg bg-slate-800 p-2 space-y-1.5">
@@ -197,31 +188,7 @@ export default function PlatformDesktopLivePreview({ p }) {
       </div>
 
       {/* Pre-Send Summary Checklist Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2.5 text-xs">
-        <h4 className="font-bold text-slate-900 dark:text-white">
-          {t('platform.desktopNotifications.preSendTitle')}
-        </h4>
-
-        <div className="space-y-2 text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
-          <div className="flex items-start gap-2">
-            <Check size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <span>
-              {(p.activeRegistersCount ?? p.totalRegistersCount) != null
-                ? t('platform.desktopNotifications.preSendCountCheck', { count: (p.activeRegistersCount ?? p.totalRegistersCount) })
-                : t('platform.desktopNotifications.sendBtnAll', { defaultValue: 'Barcha kassalarga yuborish' })}
-            </span>
-          </div>
-
-          <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400">
-            <Info size={14} className="text-slate-400 shrink-0 mt-0.5" />
-            <span>
-              {p.kind === 'ALERT' && t('platform.desktopNotifications.preSendAlertNote')}
-              {p.kind === 'UPDATE' && t('platform.desktopNotifications.preSendUpdateNote')}
-              {p.kind === 'MESSAGE' && t('platform.desktopNotifications.preSendMessageNote')}
-            </span>
-          </div>
-        </div>
-      </div>
+      <PlatformDesktopLivePreviewChecklist p={p} />
     </section>
   );
 }
