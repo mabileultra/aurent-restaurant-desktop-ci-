@@ -108,36 +108,38 @@ export default function HallsAdminPage() {
       </div>
 
       <form
-        className="rst-admin-board-card rst-halls__foreign-card"
+        className="rst-halls__foreign-card"
         onSubmit={(e) => {
           e.preventDefault();
           p.setAllowForeignTableOrders(!p.allowForeignTableOrders);
         }}
       >
-        <div>
-          <h2 className="rst-coming__title">
+        <div className="rst-halls__foreign-card-copy">
+          <h2 className="rst-halls__foreign-card-title">
             {p.t('rst.admin.foreignTableOrdersTitle', {
               defaultValue: 'Чужие открытые столы',
             })}
           </h2>
-          <p className="rst-coming__text">
+          <p className="rst-halls__foreign-card-hint">
             {p.t('rst.admin.foreignTableOrdersHint', {
               defaultValue: 'Если выключено — официант бьёт товар только на своих открытых столах. Чужой стол остаётся у владельца.',
             })}
           </p>
         </div>
-        <span
-          className={`rst-admin-board-card__status${p.allowForeignTableOrders ? ' is-on' : ' is-off'}`}
-        >
-          {p.allowForeignTableOrders
-            ? p.t('rst.admin.foreignTableOrdersOn', { defaultValue: 'Разрешено' })
-            : p.t('rst.admin.foreignTableOrdersOff', { defaultValue: 'Запрещено' })}
-        </span>
-        <BaseButton type="submit" disabled={p.foreignTableOrdersSaving}>
-          {p.allowForeignTableOrders
-            ? p.t('rst.admin.foreignTableOrdersTurnOff', { defaultValue: 'Запретить чужие столы' })
-            : p.t('rst.admin.foreignTableOrdersTurnOn', { defaultValue: 'Разрешить чужие столы' })}
-        </BaseButton>
+        <div className="rst-halls__foreign-card-actions">
+          <span
+            className={`rst-halls__foreign-card-status${p.allowForeignTableOrders ? ' is-on' : ' is-off'}`}
+          >
+            {p.allowForeignTableOrders
+              ? p.t('rst.admin.foreignTableOrdersOn', { defaultValue: 'Разрешено' })
+              : p.t('rst.admin.foreignTableOrdersOff', { defaultValue: 'Запрещено' })}
+          </span>
+          <BaseButton type="submit" variant="ghost" disabled={p.foreignTableOrdersSaving}>
+            {p.allowForeignTableOrders
+              ? p.t('rst.admin.foreignTableOrdersTurnOff', { defaultValue: 'Запретить' })
+              : p.t('rst.admin.foreignTableOrdersTurnOn', { defaultValue: 'Разрешить' })}
+          </BaseButton>
+        </div>
       </form>
 
       {p.halls.length > 0 ? (
