@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v13-001-desktop-broadcast-targeting" author="platform">
+        <addColumn tableName="desktop_broadcasts">
+            <column name="target_type" type="VARCHAR(32)" defaultValue="ALL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scheduled_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="desktop_broadcasts" indexName="idx_desktop_broadcasts_scheduled">
+            <column name="status"/>
+            <column name="scheduled_at"/>
+        </createIndex>
+
+        <createTable tableName="desktop_broadcast_companies">
+            <column name="broadcast_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="desktop_broadcast_companies"
+            columnNames="broadcast_id, company_id"
+            constraintName="pk_desktop_broadcast_companies"/>
+        <addForeignKeyConstraint
+            baseTableName="desktop_broadcast_companies"
+            baseColumnNames="broadcast_id"
+            referencedTableName="desktop_broadcasts"
+            referencedColumnNames="id"
+            constraintName="fk_broadcast_companies_broadcast"
+            onDelete="CASCADE"/>
+
+        <createTable tableName="desktop_broadcast_stores">
+            <column name="broadcast_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="desktop_broadcast_stores"
+            columnNames="broadcast_id, store_id"
+            constraintName="pk_desktop_broadcast_stores"/>
+        <addForeignKeyConstraint
+            baseTableName="desktop_broadcast_stores"
+            baseColumnNames="broadcast_id"
+            referencedTableName="desktop_broadcasts"
+            referencedColumnNames="id"
+            constraintName="fk_broadcast_stores_broadcast"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -3,6 +3,8 @@ package com.pos.controller;
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.client.platform.PlatformDesktopClient;
 import com.pos.dto.desktop.DesktopBroadcastListResponse;
+import com.pos.entity.Store;
+import com.pos.entity.User;
 import com.pos.security.CurrentUserProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,8 +36,13 @@ public class CashierDesktopNotificationController {
     @Operation(summary = "Непрочитанные уведомления", description = "Сообщения от платформы и администратора")
     @ApiResponse(responseCode = "200", description = "Список непрочитанных уведомлений")
     public ResponseEntity<DesktopBroadcastListResponse> unread() {
+        User user = currentUserProvider.requireCurrentUser();
+        Integer companyId = user.getCompany() != null ? user.getCompany().getId() : null;
+        List<Integer> storeIds = user.getStores() == null
+            ? List.of()
+            : user.getStores().stream().map(Store::getId).toList();
         return ResponseEntity.ok(
-            platformDesktopClient.listUnread(currentUserProvider.requireCurrentUser().getId())
+            platformDesktopClient.listUnread(user.getId(), companyId, storeIds)
         );
     }
 

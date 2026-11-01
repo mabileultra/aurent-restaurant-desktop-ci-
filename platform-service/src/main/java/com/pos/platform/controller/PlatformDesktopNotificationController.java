@@ -40,7 +40,10 @@ public class PlatformDesktopNotificationController {
     }
 
     @PostMapping("/broadcast")
-    @Operation(summary = "Отправить уведомление", description = "Рассылка сообщения всем desktop-кассам")
+    @Operation(
+        summary = "Отправить уведомление",
+        description = "Рассылка на desktop-кассы: ALL / COMPANIES / STORES, NOW или SCHEDULED"
+    )
     @ApiResponse(responseCode = "200", description = "Уведомление создано")
     public ResponseEntity<DesktopBroadcastResponse> broadcast(
         @Valid @RequestBody DesktopBroadcastCreateRequest request

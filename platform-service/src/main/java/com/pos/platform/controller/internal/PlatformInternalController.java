@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -44,8 +46,18 @@ public class PlatformInternalController {
     }
 
     @GetMapping("/desktop-notifications/unread")
-    public ResponseEntity<DesktopBroadcastListResponse> unread(@RequestParam UUID userId) {
-        return ResponseEntity.ok(desktopBroadcastService.listUnreadForUser(userId));
+    public ResponseEntity<DesktopBroadcastListResponse> unread(
+        @RequestParam UUID userId,
+        @RequestParam(required = false) Integer companyId,
+        @RequestParam(required = false) Collection<Integer> storeIds
+    ) {
+        return ResponseEntity.ok(
+            desktopBroadcastService.listUnreadForUser(
+                userId,
+                companyId,
+                storeIds != null ? storeIds : List.of()
+            )
+        );
     }
 
     @PostMapping("/desktop-notifications/{id}/read")

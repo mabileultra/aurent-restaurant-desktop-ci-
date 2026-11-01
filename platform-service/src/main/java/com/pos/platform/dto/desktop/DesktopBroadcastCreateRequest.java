@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
+import java.util.List;
+
 public record DesktopBroadcastCreateRequest(
     @NotBlank @Size(max = 200) String title,
     @NotBlank @Size(max = 4000) String body,
@@ -12,6 +15,13 @@ public record DesktopBroadcastCreateRequest(
     Integer priority,
     @Size(max = 100) String actionLabel,
     @Size(max = 500) String actionUrl,
-    Integer expiresInHours
+    Integer expiresInHours,
+    /** ALL | COMPANIES | STORES — null/blank → ALL */
+    String targetType,
+    List<Integer> companyIds,
+    List<Integer> storeIds,
+    /** NOW | SCHEDULED — null/blank → NOW */
+    String scheduleType,
+    Instant scheduledAt
 ) {
 }

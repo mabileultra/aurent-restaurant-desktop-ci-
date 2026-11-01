@@ -7,6 +7,7 @@ import com.pos.platform.dto.desktop.DesktopBroadcastUpdateRequest;
 import com.pos.platform.entity.DesktopBroadcast;
 import com.pos.platform.entity.DesktopBroadcastRead;
 import com.pos.platform.entity.DesktopBroadcastReadId;
+import com.pos.platform.entity.DesktopBroadcastStatus;
 import com.pos.platform.exception.BadRequestException;
 import com.pos.platform.exception.ResourceNotFoundException;
 import com.pos.platform.mapper.DesktopBroadcastMapper;
@@ -14,6 +15,7 @@ import com.pos.platform.repository.DesktopBroadcastReadRepository;
 import com.pos.platform.repository.DesktopBroadcastRepository;
 import com.pos.platform.security.PlatformTenantContext;
 import com.pos.platform.service.DesktopBroadcastService;
+import com.pos.platform.service.support.DesktopBroadcastCreateSupport;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +35,7 @@ public class DesktopBroadcastServiceImpl implements DesktopBroadcastService {
     private final DesktopBroadcastRepository broadcastRepository;
     private final DesktopBroadcastReadRepository readRepository;
     private final DesktopBroadcastMapper mapper;
+    private final DesktopBroadcastCreateSupport createSupport;
 
     @Override
     public DesktopBroadcastResponse broadcast(DesktopBroadcastCreateRequest request) {
@@ -40,28 +44,15 @@ public class DesktopBroadcastServiceImpl implements DesktopBroadcastService {
             throw new BadRequestException("Access denied");
         }
 
-        Instant expiresAt = null;
-        if (request.expiresInHours() != null && request.expiresInHours() > 0) {
-            expiresAt = Instant.now().plus(request.expiresInHours(), ChronoUnit.HOURS);
-        }
-
-        DesktopBroadcast broadcast = DesktopBroadcast.builder()
-            .title(request.title().trim())
-            .body(request.body().trim())
-            .kind(request.kind())
-            .priority(request.priority() != null ? request.priority() : 0)
-            .actionLabel(trimToNull(request.actionLabel()))
-            .actionUrl(trimToNull(request.actionUrl()))
-            .createdBy(adminId)
-            .expiresAt(expiresAt)
-            .build();
-
+        DesktopBroadcast broadcast = createSupport.build(request, adminId);
         DesktopBroadcast saved = broadcastRepository.save(broadcast);
         LogUtil.info(
             DesktopBroadcastServiceImpl.class,
-            "Desktop broadcast created: id={}, kind={}, by={}",
+            "Desktop broadcast created: id={}, kind={}, target={}, status={}, by={}",
             saved.getId(),
             saved.getKind(),
+            saved.getTargetType(),
+            saved.getStatus(),
             adminId
         );
         return mapper.toResponse(saved);
@@ -69,9 +60,18 @@ public class DesktopBroadcastServiceImpl implements DesktopBroadcastService {
 
     @Override
     @Transactional(readOnly = true)
-    public DesktopBroadcastListResponse listUnreadForUser(UUID userId) {
+    public DesktopBroadcastListResponse listUnreadForUser(
+        UUID userId,
+        Integer companyId,
+        Collection<Integer> storeIds
+    ) {
+        Collection<Integer> safeStoreIds = (storeIds == null || storeIds.isEmpty())
+            ? List.of(-1)
+            : storeIds;
+        boolean hasStores = storeIds != null && !storeIds.isEmpty();
+
         List<DesktopBroadcastResponse> items = broadcastRepository
-            .findUnreadForUser(userId, Instant.now())
+            .findUnreadForUser(userId, companyId, safeStoreIds, hasStores, Instant.now())
             .stream()
             .map(mapper::toResponse)
             .toList();
@@ -108,6 +108,7 @@ public class DesktopBroadcastServiceImpl implements DesktopBroadcastService {
         DesktopBroadcast broadcast = broadcastRepository.findById(broadcastId)
             .orElseThrow(() -> new ResourceNotFoundException("Broadcast not found"));
         broadcast.setExpiresAt(Instant.now());
+        broadcast.setStatus(DesktopBroadcastStatus.ACTIVE);
         broadcastRepository.save(broadcast);
         LogUtil.info(DesktopBroadcastServiceImpl.class, "Desktop broadcast revoked: id={}", broadcastId);
     }
@@ -136,11 +137,16 @@ public class DesktopBroadcastServiceImpl implements DesktopBroadcastService {
         return mapper.toResponse(saved);
     }
 
-    private static String trimToNull(String value) {
-        if (value == null) {
-            return null;
+    @Override
+    public int activateDueBroadcasts() {
+        int activated = broadcastRepository.activateDueBroadcasts(Instant.now());
+        if (activated > 0) {
+            LogUtil.info(
+                DesktopBroadcastServiceImpl.class,
+                "Desktop scheduled broadcasts activated: count={}",
+                activated
+            );
         }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return activated;
     }
 }

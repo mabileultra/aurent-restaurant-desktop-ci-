@@ -3,6 +3,7 @@ package com.pos.dto.desktop;
 import com.pos.entity.DesktopBroadcastKind;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record DesktopBroadcastResponse(
@@ -15,6 +16,11 @@ public record DesktopBroadcastResponse(
     String actionUrl,
     Instant createdAt,
     Instant expiresAt,
-    boolean read
+    boolean read,
+    String targetType,
+    String status,
+    Instant scheduledAt,
+    List<Integer> companyIds,
+    List<Integer> storeIds
 ) {
 }

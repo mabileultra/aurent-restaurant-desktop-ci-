@@ -17,5 +17,6 @@
     <include file="db/changelog/v10-billing-deferral.xml"/>
     <include file="db/changelog/v11-geo-soato.xml"/>
     <include file="db/changelog/v12-purge-test-site-leads.xml"/>
+    <include file="db/changelog/v13-desktop-broadcast-targeting.xml"/>
 
 </databaseChangeLog>

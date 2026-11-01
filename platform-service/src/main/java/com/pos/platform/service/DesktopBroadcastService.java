@@ -5,6 +5,7 @@ import com.pos.platform.dto.desktop.DesktopBroadcastListResponse;
 import com.pos.platform.dto.desktop.DesktopBroadcastResponse;
 import com.pos.platform.dto.desktop.DesktopBroadcastUpdateRequest;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,11 @@ public interface DesktopBroadcastService {
 
     DesktopBroadcastResponse broadcast(DesktopBroadcastCreateRequest request);
 
-    DesktopBroadcastListResponse listUnreadForUser(UUID userId);
+    DesktopBroadcastListResponse listUnreadForUser(
+        UUID userId,
+        Integer companyId,
+        Collection<Integer> storeIds
+    );
 
     List<DesktopBroadcastResponse> listRecentForPlatform();
 
@@ -22,4 +27,7 @@ public interface DesktopBroadcastService {
     void revoke(UUID broadcastId);
 
     DesktopBroadcastResponse extend(UUID broadcastId, DesktopBroadcastUpdateRequest request);
+
+    /** Activate SCHEDULED broadcasts whose scheduledAt has passed. */
+    int activateDueBroadcasts();
 }

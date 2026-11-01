@@ -7,7 +7,9 @@ import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriBuilder;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,12 +23,13 @@ public class PlatformDesktopClient {
 
     @CircuitBreaker(name = PLATFORM_SERVICE, fallbackMethod = "listUnreadFallback")
     @Retry(name = PLATFORM_SERVICE)
-    public DesktopBroadcastListResponse listUnread(UUID userId) {
+    public DesktopBroadcastListResponse listUnread(
+        UUID userId,
+        Integer companyId,
+        Collection<Integer> storeIds
+    ) {
         return platformRestClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/internal/platform/desktop-notifications/unread")
-                .queryParam("userId", userId)
-                .build())
+            .uri(uriBuilder -> buildUnreadUri(uriBuilder, userId, companyId, storeIds))
             .retrieve()
             .body(DesktopBroadcastListResponse.class);
     }
@@ -43,8 +46,35 @@ public class PlatformDesktopClient {
             .toBodilessEntity();
     }
 
+    private static java.net.URI buildUnreadUri(
+        UriBuilder uriBuilder,
+        UUID userId,
+        Integer companyId,
+        Collection<Integer> storeIds
+    ) {
+        uriBuilder
+            .path("/internal/platform/desktop-notifications/unread")
+            .queryParam("userId", userId);
+        if (companyId != null) {
+            uriBuilder.queryParam("companyId", companyId);
+        }
+        if (storeIds != null) {
+            for (Integer storeId : storeIds) {
+                if (storeId != null) {
+                    uriBuilder.queryParam("storeIds", storeId);
+                }
+            }
+        }
+        return uriBuilder.build();
+    }
+
     @SuppressWarnings("unused")
-    private DesktopBroadcastListResponse listUnreadFallback(UUID userId, Throwable ex) {
+    private DesktopBroadcastListResponse listUnreadFallback(
+        UUID userId,
+        Integer companyId,
+        Collection<Integer> storeIds,
+        Throwable ex
+    ) {
         LogUtil.warn(
             PlatformDesktopClient.class,
             "Desktop notifications unread fallback userId={}: {}",

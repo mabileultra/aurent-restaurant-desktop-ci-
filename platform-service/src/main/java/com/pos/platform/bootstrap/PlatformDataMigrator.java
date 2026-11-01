@@ -129,8 +129,11 @@ public class PlatformDataMigrator implements ApplicationRunner {
         for (Map<String, Object> row : rows) {
             targetJdbc.update(
                 """
-                INSERT INTO desktop_broadcasts (id, title, body, kind, priority, action_label, action_url, created_by, created_at, expires_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO desktop_broadcasts (
+                    id, title, body, kind, priority, action_label, action_url,
+                    created_by, created_at, expires_at, target_type, status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ALL', 'ACTIVE')
                 ON CONFLICT (id) DO NOTHING
                 """,
                 row.get("id"),
