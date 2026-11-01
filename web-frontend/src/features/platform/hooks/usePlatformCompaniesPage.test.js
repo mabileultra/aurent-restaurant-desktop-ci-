@@ -102,4 +102,47 @@ describe('usePlatformCompaniesPage performance optimization', () => {
     expect(hookResult.totalCompanies).toBe(42);
     expect(hookResult.totalStores).toBe(128);
   });
+
+  it('synchronizes KPI counts and percentages when filtered by search', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    queryClient.setQueryData(['companies', {
+      page: 0,
+      size: 14,
+      search: undefined,
+      businessType: undefined,
+      regionCode: undefined,
+      districtCode: undefined,
+      active: undefined,
+    }], {
+      content: Array.from({ length: 9 }, (_, i) => ({
+        id: i + 1,
+        name: `Market ${i + 1}`,
+        active: true,
+        storeCount: 1,
+      })),
+      totalElements: 9,
+      totalPages: 1,
+      page: 0,
+      size: 14,
+    });
+
+    let hookResult;
+    function Consumer() {
+      hookResult = usePlatformCompaniesPage();
+      return React.createElement('div', null, hookResult.totalCompanies);
+    }
+
+    renderToStaticMarkup(
+      React.createElement(QueryClientProvider, { client: queryClient },
+        React.createElement(Consumer)
+      )
+    );
+
+    expect(hookResult.totalCompanies).toBe(9);
+    expect(hookResult.activeCompanies).toBe(9);
+    expect(hookResult.inactiveCompanies).toBe(0);
+  });
 });

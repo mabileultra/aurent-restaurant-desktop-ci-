@@ -5,6 +5,14 @@ export function resolveLocale(lang) {
   return lang?.startsWith('uz') ? uz : ru;
 }
 
+export function formatUzbekMonthLower(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(
+    /-(Oktabr|Yanvar|Fevral|Mart|Aprel|May|Iyun|Iyul|Avgust|Sentabr|Noyabr|Dekabr)\b/gi,
+    (_m, month) => '-' + month.toLowerCase()
+  );
+}
+
 export function formatUzbekDate(iso, pattern, lang) {
   try {
     const d = new Date(iso);

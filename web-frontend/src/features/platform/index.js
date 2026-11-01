@@ -1,5 +1,6 @@
 export { default as PlatformCompaniesPage } from './pages/PlatformCompaniesPage';
 export { default as PlatformModuleAccessPage } from './pages/PlatformModuleAccessPage';
+export { default as PlatformModuleAccessV2Page } from './pages/PlatformModuleAccessV2Page';
 export { default as PlatformMonitoringPage } from './pages/PlatformMonitoringPage';
 export { default as PlatformEmailPage } from './pages/PlatformEmailPage';
 export { default as PlatformDesktopNotificationsPage } from './pages/PlatformDesktopNotificationsPage';
@@ -14,3 +15,7 @@ export { usePlatformBusinessTypesPage } from './hooks/usePlatformBusinessTypesPa
 export { usePlatformEmailPage } from './hooks/usePlatformEmailPage';
 export { usePlatformSecurityPage } from './hooks/usePlatformSecurityPage';
 export { usePlatformAccountPage } from './hooks/usePlatformAccountPage';
+
+export { default as PlatformTimePicker } from './components/PlatformTimePicker';
+export { default as PlatformDatePicker } from './components/PlatformDatePicker';
+export { default as PlatformSelect } from './components/PlatformSelect';

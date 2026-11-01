@@ -1,24 +1,17 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { platformDesktopNotificationsApi, platformCashRegistersApi } from '../../../api';
-import {
-  enrichDesktopNotificationHistory,
-  filterDesktopNotificationHistory,
-} from './enrichDesktopNotificationHistory';
 import { useDesktopNotificationDraft } from './useDesktopNotificationDraft';
 import { useDesktopNotificationActions } from './useDesktopNotificationActions';
 import { useDesktopNotificationTiming } from './useDesktopNotificationTiming';
 import { useDesktopNotificationBroadcast } from './useDesktopNotificationBroadcast';
+import { useDesktopNotificationTargeting } from './useDesktopNotificationTargeting';
+import { useDesktopNotificationStats } from './useDesktopNotificationStats';
+import { useDesktopNotificationHistoryList } from './useDesktopNotificationHistoryList';
+import { formatUzbekMonthLower } from '../components/desktop-notifications/desktopNotificationFormatters';
 
-export function formatUzbekMonthLower(str) {
-  if (!str || typeof str !== 'string') return '';
-  return str.replace(
-    /-(Oktabr|Yanvar|Fevral|Mart|Aprel|May|Iyun|Iyul|Avgust|Sentabr|Noyabr|Dekabr)\b/gi,
-    (m, month) => '-' + month.toLowerCase()
-  );
-}
+export { formatUzbekMonthLower };
 
 export function usePlatformDesktopNotificationsPage() {
   const { t, i18n } = useTranslation();
@@ -26,7 +19,6 @@ export function usePlatformDesktopNotificationsPage() {
 
   const [langTab, setLangTab] = useState('uz');
   const [previewLang, setPreviewLang] = useState('uz');
-  const [targetScope, setTargetScope] = useState('ALL');
   const [targetGroup, setTargetGroup] = useState('OUTDATED');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -34,9 +26,12 @@ export function usePlatformDesktopNotificationsPage() {
   const [duration, setDuration] = useState('3d');
   const [customHours, setCustomHours] = useState('72');
   const [scheduleType, setScheduleType] = useState('NOW');
-  const [scheduleTime, setScheduleTime] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('09:00');
+
+  const targeting = useDesktopNotificationTargeting();
+  const stats = useDesktopNotificationStats();
+  const historyList = useDesktopNotificationHistoryList({ t });
 
   const draft = useDesktopNotificationDraft({
     title,
@@ -49,6 +44,24 @@ export function usePlatformDesktopNotificationsPage() {
     setDuration,
     customHours,
     setCustomHours,
+    targetScope: targeting.targetScope,
+    setTargetScope: targeting.setTargetScope,
+    targetType: targeting.targetType,
+    setTargetType: targeting.setTargetType,
+    selectedCompanyIds: targeting.selectedCompanyIds,
+    setSelectedCompanyIds: targeting.setSelectedCompanyIds,
+    selectedStoreIds: targeting.selectedStoreIds,
+    setSelectedStoreIds: targeting.setSelectedStoreIds,
+    selectedCompanies: targeting.selectedCompanies,
+    setSelectedCompanies: targeting.setSelectedCompanies,
+    selectedStores: targeting.selectedStores,
+    setSelectedStores: targeting.setSelectedStores,
+    scheduleType,
+    setScheduleType,
+    scheduleDate,
+    setScheduleDate,
+    scheduleTime,
+    setScheduleTime,
   });
 
   const actions = useDesktopNotificationActions({
@@ -60,24 +73,13 @@ export function usePlatformDesktopNotificationsPage() {
     draft,
   });
 
-  // Platform-wide cash registers stats (avoids tenant 403 on /api/v1/cash-registers)
-  const registersStatsQuery = useQuery({
-    queryKey: ['platform-cash-registers-stats'],
-    queryFn: () => platformCashRegistersApi.getStats().then((r) => r.data).catch(() => null),
-    staleTime: 60_000,
+  const timing = useDesktopNotificationTiming({
+    duration,
+    customHours,
+    scheduleType,
+    scheduleDate,
+    scheduleTime,
   });
-
-  const totalRegistersCount = registersStatsQuery.data?.totalRegisters ?? null;
-  const activeRegistersCount = registersStatsQuery.data?.activeRegisters ?? totalRegistersCount;
-  const onlineRegistersCount = registersStatsQuery.data?.onlineRegisters ?? null;
-
-  const historyQuery = useQuery({
-    queryKey: ['platform-desktop-notifications'],
-    queryFn: () => platformDesktopNotificationsApi.list().then((r) => r.data),
-  });
-
-  const { isCustomHoursValid, expiresInHours, visibleUntilFormatted } =
-    useDesktopNotificationTiming({ duration, customHours });
 
   const broadcast = useDesktopNotificationBroadcast({
     t,
@@ -86,30 +88,29 @@ export function usePlatformDesktopNotificationsPage() {
     body,
     setBody,
     kind,
-    expiresInHours,
-    isCustomHoursValid,
+    expiresInHours: timing.expiresInHours,
+    isCustomHoursValid: timing.isCustomHoursValid,
     draft,
+    targeting,
+    timing: { ...timing, scheduleType },
   });
 
   const handleClear = useCallback(() => {
     setTitle('');
     setBody('');
+    setKind('MESSAGE');
+    setDuration('3d');
+    setCustomHours('72');
+    targeting.setTargetScope('ALL');
+    targeting.setTargetType('COMPANIES');
+    targeting.clearTargetSelection();
+    setScheduleType('NOW');
+    setScheduleDate('');
+    setScheduleTime('09:00');
     draft.setIsDraftRestored(false);
     draft.clearDraftStorage();
     toast.success(t('common.cleared', { defaultValue: 'Tozalandi' }));
-  }, [t, draft]);
-
-  const enrichedHistory = useMemo(
-    () => enrichDesktopNotificationHistory(
-      historyQuery.data,
-      t('platform.desktopNotifications.targetAll', { defaultValue: 'Barcha kassalar' })
-    ),
-    [historyQuery.data, t]
-  );
-  const filteredHistory = useMemo(
-    () => filterDesktopNotificationHistory(enrichedHistory, searchQuery, statusFilter),
-    [enrichedHistory, searchQuery, statusFilter]
-  );
+  }, [t, draft, targeting]);
 
   return {
     t,
@@ -130,35 +131,42 @@ export function usePlatformDesktopNotificationsPage() {
     setLangTab,
     previewLang,
     setPreviewLang,
-    targetScope,
-    setTargetScope,
     targetGroup,
     setTargetGroup,
-    activeTargetCount: totalRegistersCount,
+    activeTargetCount: stats.totalRegistersCount,
     kind,
     setKind,
     duration,
     setDuration,
     customHours,
     setCustomHours,
-    isCustomHoursValid,
+    isCustomHoursValid: timing.isCustomHoursValid,
     canSend: broadcast.canSend,
     sendDisabledReason: broadcast.sendDisabledReason,
-    expiresInHours,
-    visibleUntilFormatted,
+    expiresInHours: timing.expiresInHours,
+    visibleUntilFormatted: timing.visibleUntilFormatted,
     scheduleType,
     setScheduleType,
+    scheduleDate,
+    setScheduleDate,
     scheduleTime,
     setScheduleTime,
+    isScheduleValid: timing.isScheduleValid,
+    isScheduleInFuture: timing.isScheduleInFuture,
+    scheduledAtIso: timing.scheduledAtIso,
+    scheduledFormatted: timing.scheduledFormatted,
     needsConfirm: true,
     setNeedsConfirm: () => {},
     draftSaved: draft.draftSaved,
     isDraftRestored: draft.isDraftRestored,
     handleDismissDraftNotice: draft.handleDismissDraftNotice,
-    activeRegistersCount,
-    totalRegistersCount,
-    allRegistersCount: activeRegistersCount,
-    onlineRegistersCount,
+    activeRegistersCount: stats.activeRegistersCount,
+    totalRegistersCount: stats.totalRegistersCount,
+    allRegistersCount: stats.activeRegistersCount,
+    onlineRegistersCount: stats.onlineRegistersCount,
+
+    // Spread targeting
+    ...targeting,
 
     // Confirm Modal
     confirmModalOpen: broadcast.confirmModalOpen,
@@ -166,14 +174,8 @@ export function usePlatformDesktopNotificationsPage() {
     executeBroadcast: broadcast.executeBroadcast,
 
     ...actions,
+    ...historyList,
 
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    history: filteredHistory,
-    totalHistoryCount: enrichedHistory.length,
-    historyLoading: historyQuery.isLoading,
     handleSend: broadcast.handleInitiateSend,
     handleClear,
     sendPending: broadcast.sendPending,

@@ -15,6 +15,7 @@ export const PlatformCompaniesPage = lazy(() => import('../features/platform/pag
 export const PlatformStoresPage = lazy(() => import('../features/tenant/pages/PlatformStoresPage'));
 export const PlatformUsersPage = lazy(() => import('../features/tenant/pages/PlatformUsersPage'));
 export const PlatformModuleAccessPage = lazy(() => import('../features/platform/pages/PlatformModuleAccessPage'));
+export const PlatformModuleAccessV2Page = lazy(() => import('../features/platform/pages/PlatformModuleAccessV2Page'));
 export const PlatformMonitoringPage = lazy(() => import('../features/platform/pages/PlatformMonitoringPage'));
 export const PlatformEmailPage = lazy(() => import('../features/platform/pages/PlatformEmailPage'));
 export const PlatformDesktopNotificationsPage = lazy(() => import('../features/platform/pages/PlatformDesktopNotificationsPage'));

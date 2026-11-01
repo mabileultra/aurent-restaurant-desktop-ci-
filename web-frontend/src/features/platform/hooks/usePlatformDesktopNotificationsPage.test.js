@@ -130,4 +130,29 @@ describe('usePlatformDesktopNotificationsPage hook & utilities', () => {
     expect(capturedResult.totalRegistersCount).toBe(42);
     expect(capturedResult.onlineRegistersCount).toBe(18);
   });
+
+  it('exposes targeting state with default ALL scope', () => {
+    let capturedResult = null;
+    function TestComponent() {
+      capturedResult = usePlatformDesktopNotificationsPage();
+      return React.createElement('div', null, capturedResult.targetScope);
+    }
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(TestComponent)
+      )
+    );
+
+    expect(capturedResult.targetScope).toBe('ALL');
+    expect(capturedResult.hasValidTarget).toBe(true);
+    expect(typeof capturedResult.toggleCompanyId).toBe('function');
+    expect(typeof capturedResult.toggleStoreId).toBe('function');
+  });
 });

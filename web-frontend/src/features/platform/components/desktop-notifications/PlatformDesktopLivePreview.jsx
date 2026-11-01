@@ -1,12 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
-  AlertTriangle,
   Bell,
-  Check,
-  CheckCircle2,
-  Info,
   RefreshCw,
 } from 'lucide-react';
+import PlatformDesktopLivePreviewChecklist from './PlatformDesktopLivePreviewChecklist';
+import PlatformDesktopLivePreviewAlert from './PlatformDesktopLivePreviewAlert';
 
 export default function PlatformDesktopLivePreview({ p }) {
   const { t } = p;
@@ -17,17 +15,21 @@ export default function PlatformDesktopLivePreview({ p }) {
 
   const hasTitle = Boolean(previewTitle?.trim());
   const hasBody = Boolean(previewBody?.trim());
-
-  const displayTitle = hasTitle
-    ? previewTitle.trim()
-    : t('platform.desktopNotifications.titleEmptyFallback', { defaultValue: 'Sarlavha' });
-  const displayBody = hasBody
-    ? previewBody.trim()
-    : t('platform.desktopNotifications.bodyEmptyFallback', { defaultValue: 'Xabar matni kiritilmagan...' });
+  const displayTitle = hasTitle ? previewTitle.trim() : t('platform.desktopNotifications.titleEmptyFallback', { defaultValue: 'Sarlavha' });
+  const displayBody = hasBody ? previewBody.trim() : t('platform.desktopNotifications.bodyEmptyFallback', { defaultValue: 'Xabar matni kiritilmagan...' });
 
   const isAlert = p.kind === 'ALERT';
   const isUpdate = p.kind === 'UPDATE';
-  const isMessage = p.kind === 'MESSAGE';
+
+  const liveClockTime = useMemo(() => {
+    try {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    } catch {
+      return '12:00';
+    }
+  }, []);
+  const messageTime = p.scheduleType === 'SCHEDULED' && p.scheduleTime ? p.scheduleTime : liveClockTime;
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 sm:space-y-5">
@@ -78,18 +80,16 @@ export default function PlatformDesktopLivePreview({ p }) {
                 1
               </span>
             </div>
-            <span className="font-mono text-slate-400">14:30</span>
+            <span className="font-mono text-slate-400">{liveClockTime}</span>
           </div>
         </div>
 
-        {/* Blurred Simulated POS Background (Shelves / Catalog / Cart silhouette) */}
+        {/* Blurred Simulated POS Background */}
         <div className="absolute inset-0 pt-9 p-3 flex gap-3 opacity-25 filter blur-[2px] pointer-events-none">
           <div className="flex-1 space-y-2">
             <div className="h-6 w-full rounded bg-slate-700" />
             <div className="grid grid-cols-3 gap-2 pt-1">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-14 rounded-lg bg-slate-800" />
-              ))}
+              {[...Array(6)].map((_, i) => <div key={i} className="h-14 rounded-lg bg-slate-800" />)}
             </div>
           </div>
           <div className="w-28 rounded-lg bg-slate-800 p-2 space-y-1.5">
@@ -99,41 +99,16 @@ export default function PlatformDesktopLivePreview({ p }) {
           </div>
         </div>
 
-        {/* Case 1: ALERT (Centered Cashier Pop-up Modal with full backdrop blur) */}
+        {/* Case 1: ALERT (Centered Cashier Pop-up Modal) */}
         {isAlert && (
-          <>
-            <div className="absolute inset-0 pt-9 bg-slate-950/60 backdrop-blur-[1px]" />
-            <div className="relative z-10 m-auto w-full max-w-[270px] sm:max-w-[290px] rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-center space-y-3 animate-in zoom-in-95 duration-200">
-              <div className="flex justify-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/70 dark:text-amber-400">
-                  <AlertTriangle size={20} />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <h4
-                  className={`text-xs sm:text-sm leading-snug break-words ${
-                    hasTitle ? 'font-bold text-slate-900 dark:text-white' : 'font-normal italic text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  {displayTitle}
-                </h4>
-                <p
-                  className={`text-[11px] leading-relaxed break-words line-clamp-4 ${
-                    hasBody ? 'text-slate-600 dark:text-slate-300' : 'italic text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  {displayBody}
-                </p>
-              </div>
-
-              <div className="pt-1">
-                <div className="rounded-xl bg-[#a33719] py-2 px-3 text-xs font-semibold text-white shadow-xs">
-                  {t('platform.desktopNotifications.previewDismissBtn', { lng: p.previewLang })}
-                </div>
-              </div>
-            </div>
-          </>
+          <PlatformDesktopLivePreviewAlert
+            displayTitle={displayTitle}
+            displayBody={displayBody}
+            hasTitle={hasTitle}
+            hasBody={hasBody}
+            previewLang={p.previewLang}
+            t={t}
+          />
         )}
 
         {/* Case 2: MESSAGE or UPDATE (Top-right Bell Notification Flyout Toast) */}
@@ -155,7 +130,7 @@ export default function PlatformDesktopLivePreview({ p }) {
                   {isUpdate ? t('platform.desktopNotifications.kindUpdate') : t('platform.desktopNotifications.kindMessage')}
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400">14:30</span>
+              <span className="text-[10px] text-slate-400">{messageTime}</span>
             </div>
 
             {/* Flyout Content */}
@@ -192,36 +167,12 @@ export default function PlatformDesktopLivePreview({ p }) {
           </div>
         )}
 
-        {/* Empty bottom space spacer */}
-        <div className="h-2 z-10" />
+        {/* Empty Bottom Placeholder */}
+        <div />
       </div>
 
-      {/* Pre-Send Summary Checklist Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2.5 text-xs">
-        <h4 className="font-bold text-slate-900 dark:text-white">
-          {t('platform.desktopNotifications.preSendTitle')}
-        </h4>
-
-        <div className="space-y-2 text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
-          <div className="flex items-start gap-2">
-            <Check size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <span>
-              {(p.activeRegistersCount ?? p.totalRegistersCount) != null
-                ? t('platform.desktopNotifications.preSendCountCheck', { count: (p.activeRegistersCount ?? p.totalRegistersCount) })
-                : t('platform.desktopNotifications.sendBtnAll', { defaultValue: 'Barcha kassalarga yuborish' })}
-            </span>
-          </div>
-
-          <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400">
-            <Info size={14} className="text-slate-400 shrink-0 mt-0.5" />
-            <span>
-              {p.kind === 'ALERT' && t('platform.desktopNotifications.preSendAlertNote')}
-              {p.kind === 'UPDATE' && t('platform.desktopNotifications.preSendUpdateNote')}
-              {p.kind === 'MESSAGE' && t('platform.desktopNotifications.preSendMessageNote')}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* Pre-send checklist summary */}
+      <PlatformDesktopLivePreviewChecklist p={p} />
     </section>
   );
 }
