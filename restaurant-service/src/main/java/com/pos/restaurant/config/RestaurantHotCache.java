@@ -56,4 +56,14 @@ public class RestaurantHotCache {
             cache.evict(companyId + ":" + storeId);
         }
     }
+
+    public void evictForeignTableOrders(Integer companyId, Integer storeId) {
+        if (companyId == null || storeId == null) {
+            return;
+        }
+        Cache cache = cacheManager.getCache(RestaurantCacheNames.FOREIGN_TABLE_ORDERS);
+        if (cache != null) {
+            cache.evict(companyId + ":" + storeId);
+        }
+    }
 }

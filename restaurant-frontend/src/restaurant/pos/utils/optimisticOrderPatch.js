@@ -111,6 +111,12 @@ export function optimisticAddItem(order, menuItem, { note, modifierOptionIds, qu
     modifiers: [],
     note: lineNote,
     sortOrder: items.length,
+    ikpu: menuItem.ikpu || null,
+    packageCode: menuItem.packageCode || null,
+    unitOfMeasure: menuItem.unitOfMeasure || null,
+    unitMeasureCode: menuItem.unitMeasureCode || null,
+    barcode: menuItem.barcode || null,
+    markedProduct: Boolean(menuItem.markedProduct),
   });
   return withSubtotal(base, items);
 }

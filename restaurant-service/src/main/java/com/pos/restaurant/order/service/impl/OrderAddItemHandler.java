@@ -27,6 +27,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.order.support.ServiceChargeSupport;
 import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.order.support.WeightSaleSupport;
@@ -62,10 +63,12 @@ public class OrderAddItemHandler {
     private final OrderLinkedTablesSupport linkedTables;
     private final TableSeatSync tableSeatSync;
     private final ServiceChargeSupport serviceChargeSupport;
+    private final OrderWaiterMutationGate waiterMutationGate;
 
     @Transactional
     public OrderResponse handle(UUID orderId, AddOrderItemRequest request) {
         FloorOrder order = orderLookup.requireActive(orderId);
+        waiterMutationGate.assertCanMutate(order);
         reopenIfBilling(order);
         Integer companyId = tenantSupport.requireCompanyId();
         MenuItem menuItem = menuItemRepository.findByIdAndCompanyId(request.menuItemId(), companyId)

@@ -12,6 +12,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,7 @@ class OrderUpdateItemHandlerTest {
     @Mock private OrderResponseAssembler assembler;
     @Mock private FloorTenantSupport tenantSupport;
     @Mock private PrintJobPublisher printJobPublisher;
+    @Mock private OrderWaiterMutationGate waiterMutationGate;
 
     @InjectMocks
     private OrderUpdateItemHandler handler;

@@ -84,6 +84,7 @@ public class MenuItemUpdateHandler {
         item.setPortionLabel(blankToNull(request.portionLabel()));
         item.setTags(normalizeTags(request.tags()));
         fiscalApplier.apply(item, request);
+        itemRepository.saveAndFlush(item);
         variantFiscalSync.syncGroupFrom(item);
         modifierBinder.replace(itemId, companyId, item.getStoreId(), request.modifierGroupIds());
         LogUtil.info(MenuItemUpdateHandler.class, "Menu item updated: id={}", itemId);

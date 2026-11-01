@@ -79,6 +79,8 @@ public class RestaurantRedisCacheConfig {
             RestaurantCacheNames.FLOOR,
             base.entryTtl(Duration.ofSeconds(Math.max(1, properties.getFloorTtlSeconds()))),
             RestaurantCacheNames.KITCHEN_BOARD,
+            base.entryTtl(Duration.ofSeconds(Math.max(5, properties.getKitchenBoardTtlSeconds()))),
+            RestaurantCacheNames.FOREIGN_TABLE_ORDERS,
             base.entryTtl(Duration.ofSeconds(Math.max(5, properties.getKitchenBoardTtlSeconds())))
         );
 

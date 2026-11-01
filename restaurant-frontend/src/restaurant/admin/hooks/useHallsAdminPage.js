@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstFloorApi } from '../../api/floor.api';
+import { rstForeignTableOrdersApi } from '../../api/foreignTableOrders.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import {
   findFreeGridSlot,
@@ -39,6 +40,25 @@ export function useHallsAdminPage() {
     queryKey: ['rst-floor', workspace.storeId],
     queryFn: () => rstFloorApi.getFloorSnapshot(workspace.storeId).then((r) => r.data),
     enabled: workspace.storeId != null,
+  });
+
+  const foreignTableQuery = useQuery({
+    queryKey: ['rst-foreign-table-orders', workspace.storeId],
+    queryFn: () => rstForeignTableOrdersApi.get(workspace.storeId).then((r) => r.data),
+    enabled: workspace.storeId != null,
+  });
+
+  const foreignTableMutation = useMutation({
+    mutationFn: (allowed) => rstForeignTableOrdersApi
+      .setAllowed(workspace.storeId, allowed)
+      .then((r) => r.data),
+    onSuccess: (data) => {
+      qc.setQueryData(['rst-foreign-table-orders', workspace.storeId], data);
+      toast.success(t('rst.admin.foreignTableOrdersSaved', {
+        defaultValue: 'Настройка чужих столов сохранена',
+      }));
+    },
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const halls = floorQuery.data?.halls ?? [];
@@ -214,5 +234,8 @@ export function useHallsAdminPage() {
     isLoading: (workspace.storeId == null && workspace.isLoading) || floorQuery.isLoading,
     isError: floorQuery.isError,
     refetch: () => floorQuery.refetch(),
+    allowForeignTableOrders: foreignTableQuery.data?.allowed !== false,
+    foreignTableOrdersSaving: foreignTableMutation.isPending,
+    setAllowForeignTableOrders: (allowed) => foreignTableMutation.mutate(allowed),
   };
 }

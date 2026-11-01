@@ -45,6 +45,14 @@ public class RestaurantStoreSetting {
     @Builder.Default
     private boolean menuPhotosEnabled = true;
 
+    /**
+     * When false, a WAITER may mutate only orders where they are {@code waiterUserId}.
+     * ADMIN / MANAGER / CASHIER are never restricted by this flag.
+     */
+    @Column(name = "allow_foreign_table_orders", nullable = false)
+    @Builder.Default
+    private boolean allowForeignTableOrders = true;
+
     /** JSON print profile (logo, fonts, per-slip field styles). Null = factory defaults. */
     @Column(name = "print_profile_json", columnDefinition = "TEXT")
     private String printProfileJson;

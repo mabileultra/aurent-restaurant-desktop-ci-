@@ -1,0 +1,24 @@
+---
+description: Waiter cannot punch items on another waiter's open table when store setting is off
+globs:
+  - restaurant-service/**/OrderWaiterMutationGate*
+  - restaurant-service/**/ForeignTableOrder*
+  - restaurant-frontend/**/canWaiterMutateOrder*
+  - restaurant-frontend/**/HallsAdmin*
+  - restaurant-frontend/**/useFloorPosPage*
+---
+
+# Foreign table orders (waiters)
+
+## Rule
+
+Store setting `allow_foreign_table_orders` (default **true**):
+
+- **true** — any waiter may add/change/send items on any open order (current behaviour).
+- **false** — a **WAITER** may mutate only orders where `waiterUserId` is themselves. Table stays open for the owner. ADMIN / MANAGER / CASHIER are never blocked.
+
+## Do not regress
+
+1. Gate on add / update / remove item and send-to-kitchen via `OrderWaiterMutationGate` (`FOREIGN_TABLE_ORDER_FORBIDDEN`).
+2. Halls admin toggle + floor UI toast `rst.order.foreignTableForbidden`.
+3. Edge catalog `StoreSettingRow.allowForeignTableOrders` — null means true on import.

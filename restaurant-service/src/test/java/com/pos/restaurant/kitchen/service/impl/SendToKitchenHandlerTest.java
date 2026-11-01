@@ -14,6 +14,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.pickup.service.PickupLabelService;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.print.support.PrintJobPayloads;
@@ -49,6 +50,7 @@ class SendToKitchenHandlerTest {
     @Mock private KitchenBoardService kitchenBoardService;
     @Mock private PrintJobPublisher printJobPublisher;
     @Mock private PickupLabelService pickupLabelService;
+    @Mock private OrderWaiterMutationGate waiterMutationGate;
 
     @InjectMocks
     private SendToKitchenHandler handler;

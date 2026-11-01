@@ -9,6 +9,7 @@ export default function PlatformModuleAccessToolbar({
   companies,
   companyId,
   onCompanyChange,
+  onCompanySearchChange,
   businessTypes,
   businessType,
   onBusinessTypeChange,
@@ -29,6 +30,7 @@ export default function PlatformModuleAccessToolbar({
           companies={companies}
           companyId={companyId}
           onChange={onCompanyChange}
+          onSearchQueryChange={onCompanySearchChange}
           includePlatformStaff={includePlatformStaff}
         />
       )}

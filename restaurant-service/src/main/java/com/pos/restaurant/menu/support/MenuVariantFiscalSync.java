@@ -14,6 +14,7 @@ import java.util.UUID;
  * Fiscal (Tasnif) fields are shared across size variants of one dish.
  * New variants already copy on create; this keeps siblings in sync on update
  * and backfills rows that were saved without ИКПУ.
+ * Never propagates a blank ИКПУ over siblings that already have one.
  */
 @Component
 @RequiredArgsConstructor
@@ -31,19 +32,25 @@ public class MenuVariantFiscalSync {
             source.getCompanyId(),
             groupId
         );
-        if (siblings.size() <= 1) {
+        if (siblings.isEmpty()) {
+            return;
+        }
+        MenuItem donor = resolveDonor(source, siblings);
+        if (donor == null) {
             return;
         }
         List<MenuItem> dirty = new ArrayList<>();
-        for (MenuItem sibling : siblings) {
-            if (sibling.getId().equals(source.getId())) {
+        for (MenuItem member : siblings) {
+            if (sameFiscal(member, donor)) {
                 continue;
             }
-            if (sameFiscal(sibling, source)) {
-                continue;
-            }
-            fiscalApplier.copyFrom(sibling, source);
-            dirty.add(sibling);
+            fiscalApplier.copyFrom(member, donor);
+            dirty.add(member);
+        }
+        if (!siblings.stream().anyMatch(m -> m.getId().equals(source.getId()))
+            && !sameFiscal(source, donor)) {
+            fiscalApplier.copyFrom(source, donor);
+            dirty.add(source);
         }
         if (dirty.isEmpty()) {
             return;
@@ -51,11 +58,31 @@ public class MenuVariantFiscalSync {
         itemRepository.saveAll(dirty);
         LogUtil.info(
             MenuVariantFiscalSync.class,
-            "Synced fiscal to variant siblings: groupId={}, sourceId={}, updated={}",
+            "Synced fiscal to variant siblings: groupId={}, donorId={}, updated={}",
             groupId,
-            source.getId(),
+            donor.getId(),
             dirty.size()
         );
+    }
+
+    /**
+     * Prefer the trigger row when it has ИКПУ; otherwise any sibling that still has it
+     * (repairs sizes wiped by a partial update that omitted fiscal fields).
+     */
+    private static MenuItem resolveDonor(MenuItem source, List<MenuItem> siblings) {
+        if (hasIkpu(source)) {
+            return source;
+        }
+        for (MenuItem sibling : siblings) {
+            if (hasIkpu(sibling)) {
+                return sibling;
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasIkpu(MenuItem item) {
+        return item != null && item.getIkpu() != null && !item.getIkpu().isBlank();
     }
 
     private static boolean sameFiscal(MenuItem a, MenuItem b) {

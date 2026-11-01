@@ -210,7 +210,8 @@ public class EdgeCatalogExportService {
                 s.getId(),
                 s.isKitchenBoardEnabled(),
                 s.getPrintProfileJson(),
-                s.isMenuPhotosEnabled()
+                s.isMenuPhotosEnabled(),
+                s.isAllowForeignTableOrders()
             ))
             .orElse(null);
 

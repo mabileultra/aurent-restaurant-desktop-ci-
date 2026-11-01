@@ -12,6 +12,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.order.support.WeightSaleSupport;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +35,12 @@ public class OrderUpdateItemHandler {
     private final OrderResponseAssembler assembler;
     private final FloorTenantSupport tenantSupport;
     private final PrintJobPublisher printJobPublisher;
+    private final OrderWaiterMutationGate waiterMutationGate;
 
     @Transactional
     public OrderResponse handle(UUID orderId, UUID itemId, UpdateOrderItemRequest request) {
         FloorOrder order = orderLookup.requireActive(orderId);
+        waiterMutationGate.assertCanMutate(order);
         FloorOrderItem item = itemRepository.findByIdAndOrderId(itemId, orderId)
             .orElseThrow(() -> new NotFoundException("Order item not found: " + itemId));
 

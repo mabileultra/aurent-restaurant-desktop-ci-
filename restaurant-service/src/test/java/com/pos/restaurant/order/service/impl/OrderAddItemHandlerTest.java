@@ -19,6 +19,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.order.support.ServiceChargeSupport;
 import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.print.service.PrintJobPublisher;
@@ -60,6 +61,7 @@ class OrderAddItemHandlerTest {
     @Mock private OrderLinkedTablesSupport linkedTables;
     @Mock private TableSeatSync tableSeatSync;
     @Mock private ServiceChargeSupport serviceChargeSupport;
+    @Mock private OrderWaiterMutationGate waiterMutationGate;
 
     @InjectMocks
     private OrderAddItemHandler handler;

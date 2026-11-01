@@ -7,7 +7,9 @@ function companyOptionLabel(t, company) {
   const normalized = !code || code === 'RETAIL' ? 'UNIVERSAL' : code;
   const typeLabel = t(`productTemplates.businessTypes.${normalized}`, normalized);
   const name = company.name || `#${company.id}`;
-  return `${name} · ${typeLabel}`;
+  const login = company.loginCode ? String(company.loginCode) : '';
+  const withCode = login ? `${name} (${login})` : name;
+  return `${withCode} · ${typeLabel}`;
 }
 
 export default function PlatformModuleAccessCompanySelect({
@@ -15,11 +17,12 @@ export default function PlatformModuleAccessCompanySelect({
   companies,
   companyId,
   onChange,
+  onSearchQueryChange,
   includePlatformStaff = true,
 }) {
   const companyOptions = buildCompanySelectOptions(companies, {
     emptyLabel: t('platform.moduleAccess.allCompanies'),
-    includeLoginCode: false,
+    includeLoginCode: true,
   }).map((option) => {
     if (!option.value) return option;
     const company = companies.find((c) => String(c.id) === String(option.value));
@@ -48,6 +51,7 @@ export default function PlatformModuleAccessCompanySelect({
       label={t('platform.moduleAccess.company')}
       value={companyId}
       onChange={(e) => onChange(e.target.value)}
+      onSearchQueryChange={onSearchQueryChange}
       placeholder={t('platform.moduleAccess.allCompanies')}
       searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
       options={options}

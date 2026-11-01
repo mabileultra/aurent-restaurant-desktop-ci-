@@ -14,10 +14,10 @@ import {
   catalogGroupFor,
 } from '../utils/moduleAccessUtils';
 import { filterModulesForBusinessType, normalizeBusinessTypeCode } from '../utils/moduleAccessByBusinessType';
-import { loadCompaniesOptionsPage } from '../utils/loadCompaniesOptionsPage';
 import { isRoleAllowedForBusinessType } from '../utils/rolesByBusinessType';
 import { isPlatformAdminRole, isSuperAdminRole } from '../../../utils/platformRoles';
 import { useAuthStore } from '../../../store/authStore';
+import { useModuleAccessCompaniesOptions } from './useModuleAccessCompaniesOptions';
 import { useModuleAccessMutations } from './useModuleAccessMutations';
 import { useModuleAccessUsersQuery } from './useModuleAccessUsersQuery';
 
@@ -34,11 +34,10 @@ export function usePlatformModuleAccessPage() {
   const [customAccess, setCustomAccess] = useState(false);
   const [moduleToggles, setModuleToggles] = useState({});
 
-  const { data: companies = [] } = useQuery({
-    queryKey: ['companies-options', businessType || 'ALL'],
-    queryFn: () => loadCompaniesOptionsPage({ businessType }),
-    staleTime: 60_000,
-  });
+  const {
+    companies,
+    setCompanySearch,
+  } = useModuleAccessCompaniesOptions({ businessType, companyId });
 
   const { data: businessTypes = [] } = useQuery({
     queryKey: ['platform-business-types-options'],
@@ -199,6 +198,7 @@ export function usePlatformModuleAccessPage() {
       setSelectedUserId(null);
       setSelectedUserIds(new Set());
     },
+    handleCompanySearchChange: setCompanySearch,
     includePlatformStaff: canManagePlatformStaff,
     businessType,
     businessTypes,

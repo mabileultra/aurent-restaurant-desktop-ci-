@@ -15,6 +15,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.order.support.WeightSaleSupport;
 import com.pos.restaurant.pickup.service.PickupLabelService;
 import com.pos.restaurant.print.service.PrintJobPublisher;
@@ -45,10 +46,12 @@ public class SendToKitchenHandler {
     private final KitchenBoardService kitchenBoardService;
     private final PrintJobPublisher printJobPublisher;
     private final PickupLabelService pickupLabelService;
+    private final OrderWaiterMutationGate waiterMutationGate;
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
         FloorOrder order = orderLookup.requireActive(orderId);
+        waiterMutationGate.assertCanMutate(order);
         boolean kitchenBoard = kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId());
         List<FloorOrderItem> allItems = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
         List<PendingFire> pending = allItems.stream()

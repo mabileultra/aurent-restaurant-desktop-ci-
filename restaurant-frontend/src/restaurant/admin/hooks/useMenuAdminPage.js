@@ -12,6 +12,7 @@ import {
   formatPortionAmountDisplay,
   parsePortionAmountInput,
 } from '../../shared/utils/portionAmountInput';
+import { resolveMenuVariantFiscal } from '../utils/menuVariantFiscalFields';
 
 const emptyForm = () => ({
   name: '',
@@ -269,6 +270,8 @@ export function useMenuAdminPage() {
 
       if (editingVariantId) {
         const current = items.find((row) => row.id === editingVariantId) || variantSource;
+        // Size editor omits Tasnif inputs — must keep/share ИКПУ or update clears it.
+        const fiscal = resolveMenuVariantFiscal(current, variantFamily);
         return rstMenuApi.update(editingVariantId, {
           name: current.name,
           sku,
@@ -287,6 +290,7 @@ export function useMenuAdminPage() {
           portionLabel,
           tags: current.tags || null,
           modifierGroupIds: current.modifierGroupIds ?? [],
+          ...fiscal,
         });
       }
 

@@ -37,6 +37,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     size = 'md',
     emptyValue = '',
     searchable = true,
+    onSearchQueryChange,
   },
   forwardedRef
 ) {
@@ -66,6 +67,7 @@ const BaseSelect = forwardRef(function BaseSelect(
       currentTarget: { value: next, name: name || '' },
     });
     setQuery('');
+    onSearchQueryChange?.('');
     closeMenuRef.current({ restoreFocus: true });
   };
 
@@ -108,6 +110,7 @@ const BaseSelect = forwardRef(function BaseSelect(
 
   const closeMenu = (opts) => {
     setQuery('');
+    onSearchQueryChange?.('');
     close(opts);
   };
 
@@ -193,7 +196,11 @@ const BaseSelect = forwardRef(function BaseSelect(
                 spellCheck={false}
                 aria-autocomplete="list"
                 aria-controls={listId}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setQuery(next);
+                  onSearchQueryChange?.(next);
+                }}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
                     event.preventDefault();

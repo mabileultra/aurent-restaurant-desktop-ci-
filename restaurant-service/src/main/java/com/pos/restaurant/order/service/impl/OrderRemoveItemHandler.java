@@ -15,6 +15,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderWaiterMutationGate;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,10 +36,12 @@ public class OrderRemoveItemHandler {
     private final OrderResponseAssembler assembler;
     private final FloorTenantSupport tenantSupport;
     private final PrintJobPublisher printJobPublisher;
+    private final OrderWaiterMutationGate waiterMutationGate;
 
     @Transactional
     public OrderResponse handle(UUID orderId, UUID itemId) {
         FloorOrder order = orderLookup.requireActive(orderId);
+        waiterMutationGate.assertCanMutate(order);
         FloorOrderItem item = itemRepository.findByIdAndOrderId(itemId, orderId)
             .orElseThrow(() -> new NotFoundException("Order item not found: " + itemId));
 

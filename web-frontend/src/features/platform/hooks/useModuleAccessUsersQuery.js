@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { platformModuleAccessApi } from '../../../api';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
-import { MODULE_ACCESS_PLATFORM_FILTER } from '../constants';
-import { MODULE_ACCESS_USERS_PAGE_SIZE } from '../components/module-access/users/PlatformModuleAccessUsersList';
+import { buildModuleAccessUsersListParams } from '../utils/moduleAccessUsersListParams';
 
 function unwrapUsersPage(data) {
   if (Array.isArray(data)) {
@@ -24,61 +23,58 @@ export function useModuleAccessUsersQuery({
   userFilter,
   canManagePlatformStaff,
 }) {
-  const [page, setPage] = useState(0);
-  const [accumulated, setAccumulated] = useState([]);
   const debouncedSearch = useDebouncedValue(userSearch.trim(), 300);
 
-  const platformOnly = companyId === MODULE_ACCESS_PLATFORM_FILTER;
-  const numericCompanyId = platformOnly || !companyId ? undefined : Number(companyId);
+  const listParams = useMemo(
+    () => buildModuleAccessUsersListParams({
+      companyId,
+      businessType,
+      search: debouncedSearch,
+      userFilter,
+    }),
+    [companyId, businessType, debouncedSearch, userFilter]
+  );
 
-  const params = useMemo(() => ({
-    companyId: Number.isFinite(numericCompanyId) ? numericCompanyId : undefined,
-    platformOnly: platformOnly || undefined,
-    search: debouncedSearch || undefined,
-    accessFilter: userFilter && userFilter !== 'all' ? userFilter : undefined,
-    businessType: !platformOnly && !numericCompanyId && businessType ? businessType : undefined,
-    page,
-    size: MODULE_ACCESS_USERS_PAGE_SIZE,
-  }), [numericCompanyId, platformOnly, debouncedSearch, userFilter, businessType, page]);
-
-  useEffect(() => {
-    setPage(0);
-    setAccumulated([]);
-  }, [numericCompanyId, platformOnly, debouncedSearch, userFilter, businessType]);
-
-  const query = useQuery({
-    queryKey: ['platform-module-access-users', params],
-    queryFn: () => platformModuleAccessApi.listUsers(params).then((r) => unwrapUsersPage(r.data)),
+  const query = useInfiniteQuery({
+    queryKey: ['platform-module-access-users', listParams],
+    queryFn: ({ pageParam }) => platformModuleAccessApi
+      .listUsers({ ...listParams, page: pageParam })
+      .then((r) => unwrapUsersPage(r.data)),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, page) => sum + (page.content?.length || 0), 0);
+      if (loaded >= (lastPage.totalElements || 0)) return undefined;
+      return allPages.length;
+    },
   });
 
-  useEffect(() => {
-    const content = query.data?.content;
-    if (!content) return;
-    setAccumulated((prev) => (page === 0 ? content : [...prev, ...content]));
-  }, [query.data, page]);
+  const accumulated = useMemo(
+    () => (query.data?.pages ?? []).flatMap((page) => page.content || []),
+    [query.data]
+  );
 
   const filteredUsers = useMemo(() => {
     if (canManagePlatformStaff) return accumulated;
     return accumulated.filter((user) => user.role !== 'PLATFORM_ADMIN' && user.role !== 'PLATFORM_ANALYTICS');
   }, [accumulated, canManagePlatformStaff]);
 
-  const total = query.data?.totalElements ?? filteredUsers.length;
-  const hasMore = accumulated.length < total;
+  const total = query.data?.pages?.[0]?.totalElements ?? filteredUsers.length;
+  const hasMore = Boolean(query.hasNextPage);
   const loadMore = () => {
-    if (!hasMore || query.isFetching) return;
-    setPage((p) => p + 1);
+    if (!query.hasNextPage || query.isFetchingNextPage) return;
+    query.fetchNextPage();
   };
 
   const unconfiguredQuery = useQuery({
     queryKey: ['platform-module-access-users', 'unconfigured-count', {
-      companyId: params.companyId,
-      platformOnly: params.platformOnly,
-      businessType: params.businessType,
+      companyId: listParams.companyId,
+      platformOnly: listParams.platformOnly,
+      businessType: listParams.businessType,
     }],
     queryFn: () => platformModuleAccessApi.listUsers({
-      companyId: params.companyId,
-      platformOnly: params.platformOnly,
-      businessType: params.businessType,
+      companyId: listParams.companyId,
+      platformOnly: listParams.platformOnly,
+      businessType: listParams.businessType,
       accessFilter: 'unconfigured',
       page: 0,
       size: 1,
@@ -87,12 +83,12 @@ export function useModuleAccessUsersQuery({
 
   return {
     filteredUsers,
-    usersLoading: query.isPending && page === 0,
+    usersLoading: query.isPending,
     usersFetching: query.isFetching,
     total,
     hasMore,
     loadMore,
-    usersListResetKey: `${businessType}|${companyId}|${userFilter}|${debouncedSearch}`,
+    usersListResetKey: `${listParams.businessType || ''}|${companyId}|${userFilter}|${debouncedSearch}`,
     unconfiguredCount: unconfiguredQuery.data ?? 0,
     refetchUsers: query.refetch,
   };

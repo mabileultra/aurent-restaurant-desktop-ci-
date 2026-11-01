@@ -45,6 +45,14 @@ public class RestaurantCaffeineCacheConfig {
                     .expireAfterWrite(30, TimeUnit.SECONDS)
                     .recordStats()
                     .build()
+            ),
+            new CaffeineCache(
+                RestaurantCacheNames.FOREIGN_TABLE_ORDERS,
+                Caffeine.newBuilder()
+                    .maximumSize(2_000)
+                    .expireAfterWrite(30, TimeUnit.SECONDS)
+                    .recordStats()
+                    .build()
             )
         ));
         return manager;

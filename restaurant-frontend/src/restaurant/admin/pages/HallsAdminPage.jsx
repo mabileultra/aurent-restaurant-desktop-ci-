@@ -107,6 +107,39 @@ export default function HallsAdminPage() {
         </div>
       </div>
 
+      <form
+        className="rst-admin-board-card rst-halls__foreign-card"
+        onSubmit={(e) => {
+          e.preventDefault();
+          p.setAllowForeignTableOrders(!p.allowForeignTableOrders);
+        }}
+      >
+        <div>
+          <h2 className="rst-coming__title">
+            {p.t('rst.admin.foreignTableOrdersTitle', {
+              defaultValue: 'Чужие открытые столы',
+            })}
+          </h2>
+          <p className="rst-coming__text">
+            {p.t('rst.admin.foreignTableOrdersHint', {
+              defaultValue: 'Если выключено — официант бьёт товар только на своих открытых столах. Чужой стол остаётся у владельца.',
+            })}
+          </p>
+        </div>
+        <span
+          className={`rst-admin-board-card__status${p.allowForeignTableOrders ? ' is-on' : ' is-off'}`}
+        >
+          {p.allowForeignTableOrders
+            ? p.t('rst.admin.foreignTableOrdersOn', { defaultValue: 'Разрешено' })
+            : p.t('rst.admin.foreignTableOrdersOff', { defaultValue: 'Запрещено' })}
+        </span>
+        <BaseButton type="submit" disabled={p.foreignTableOrdersSaving}>
+          {p.allowForeignTableOrders
+            ? p.t('rst.admin.foreignTableOrdersTurnOff', { defaultValue: 'Запретить чужие столы' })
+            : p.t('rst.admin.foreignTableOrdersTurnOn', { defaultValue: 'Разрешить чужие столы' })}
+        </BaseButton>
+      </form>
+
       {p.halls.length > 0 ? (
         <FloorHallTabs halls={p.halls} selectedHallId={p.selectedHall?.id} onSelect={p.setSelectedHallId} />
       ) : (

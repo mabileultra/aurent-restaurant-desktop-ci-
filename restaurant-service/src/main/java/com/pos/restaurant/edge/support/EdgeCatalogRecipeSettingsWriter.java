@@ -55,6 +55,9 @@ public class EdgeCatalogRecipeSettingsWriter {
         e.setKitchenBoardEnabled(row.kitchenBoardEnabled());
         e.setPrintProfileJson(row.printProfileJson());
         e.setMenuPhotosEnabled(row.menuPhotosEnabled() == null || row.menuPhotosEnabled());
+        e.setAllowForeignTableOrders(
+            row.allowForeignTableOrders() == null || row.allowForeignTableOrders()
+        );
         storeSettingRepository.save(e);
         return 1;
     }
