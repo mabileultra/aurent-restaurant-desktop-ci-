@@ -4,6 +4,7 @@ import './product-import-tasnif-cell.css';
 export default function ProductImportTasnifCell({ t, row, tasnif }) {
   const tone = classifyProductImportTasnif(row, tasnif);
   const checking = tasnif?.status === 'checking';
+  const ikpuCode = resolveIkpuCode(row, tasnif);
 
   return (
     <div className="product-import-tasnif-cell">
@@ -22,6 +23,17 @@ export default function ProductImportTasnifCell({ t, row, tasnif }) {
           {tasnif.tasnifName}
         </p>
       ) : null}
+      {ikpuCode ? (
+        <p className="product-import-tasnif-cell__ikpu" title={ikpuCode}>
+          {t('products.import.colIkpu')}: {ikpuCode}
+        </p>
+      ) : null}
     </div>
   );
+}
+
+function resolveIkpuCode(row, tasnif) {
+  const fromTasnif = String(tasnif?.ikpu || '').trim();
+  if (fromTasnif) return fromTasnif;
+  return String(row?.ikpu || '').trim();
 }

@@ -370,6 +370,30 @@
   font-variant-numeric: tabular-nums;
 }
 
+.product-import-qty__input {
+  width: 4.25rem;
+  min-height: 1.75rem;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  background: #fff;
+  color: #0f172a;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.product-import-qty__input:focus {
+  outline: 2px solid rgb(16 185 129 / 0.35);
+  border-color: #10b981;
+}
+
+.dark .product-import-qty__input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
 .dark .product-import-qty__btn {
   background: #0f172a;
   border-color: #334155;

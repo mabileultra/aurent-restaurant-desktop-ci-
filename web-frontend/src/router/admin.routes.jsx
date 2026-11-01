@@ -162,6 +162,16 @@ export const adminRoutes = (
       )}
     />
     <Route
+      path="stock/receipts/:id/edit"
+      element={(
+        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
+          <PharmacyStockReceiptRedirect>
+            <StockReceiptCreatePage />
+          </PharmacyStockReceiptRedirect>
+        </ProtectedRoute>
+      )}
+    />
+    <Route
       path="pharm/stock/receipts"
       element={(
         <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">

@@ -40,7 +40,11 @@ public final class UzInvoiceProductRowMapper {
             unit = "dona";
         }
 
-        int qty = ProductImportParseUtil.parseIntOpt(qtyRaw).orElse(0);
+        // Decimal, not int: «0,5» / «1.5» иначе становились 0 и строка не попадала в приход.
+        BigDecimal qty = ProductImportParseUtil.parseDecimalOpt(qtyRaw).orElse(BigDecimal.ZERO);
+        if (qty.signum() < 0) {
+            qty = BigDecimal.ZERO;
+        }
         BigDecimal price = ProductImportParseUtil.parseDecimalOpt(priceRaw).orElse(null);
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
@@ -67,9 +71,10 @@ public final class UzInvoiceProductRowMapper {
             map.put("barcode", barcodeRaw.trim());
         }
         map.put("unit_of_measure", unit.trim());
-        map.put("stock_quantity", String.valueOf(Math.max(0, qty)));
+        map.put("stock_quantity", qty.toPlainString());
         map.put("selling_price", price.toPlainString());
-        map.put("cost_price", "0");
+        // Закуп для прихода: в фактуре отдельной себестоимости нет — та же «Нарх».
+        map.put("cost_price", price.toPlainString());
         map.put("tax_rate_percent_nds", vat.toPlainString());
         map.put("active", "1");
         if (normDoc != null) {

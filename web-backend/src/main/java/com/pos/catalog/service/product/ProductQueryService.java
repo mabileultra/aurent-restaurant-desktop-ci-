@@ -1,5 +1,6 @@
 package com.pos.catalog.service.product;
 
+import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.dto.shared.PageResponse;
 import org.springframework.data.domain.Pageable;
@@ -77,4 +78,18 @@ public interface ProductQueryService {
     ProductResponse getByBarcode(String barcode, Integer storeId);
 
     java.util.List<ProductResponse> getLowStockProducts();
+
+    ProductCatalogTotalsResponse getCatalogTotals(
+        String search,
+        Integer categoryId,
+        boolean activeOnly,
+        String deletedScope,
+        Integer storeId,
+        String ikpuStatus,
+        Boolean markedProduct,
+        Boolean soldIndividually,
+        String barcodeExact,
+        Map<String, String> attributeFilters,
+        String businessTypeCode
+    );
 }

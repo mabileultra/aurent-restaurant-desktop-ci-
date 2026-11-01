@@ -8,6 +8,7 @@ export const DEFAULT_STOCK_FLOW_PATHS = {
   inventoriesNew: '/stock/inventories/new',
   receiptsReport: '/reports/stock/receipts',
   receiptsNew: '/stock/receipts/new',
+  receiptEdit: (id) => `/stock/receipts/${id}/edit`,
   balancesReport: '/reports/stock/balances',
   lowStockReport: '/reports/stock/low',
   stockDashboard: '/reports/stock',

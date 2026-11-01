@@ -1,7 +1,8 @@
 import { AlertTriangle, MoreVertical } from 'lucide-react';
 import { fmtMoney as fmtNum } from '../../../../utils/formatMoney';
 import TablePagination from '../../../../components/shared/TablePagination';
-import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
+import { ProductsTableChangedAtCells, ProductsTableChangedAtHeaders } from './ProductsTableChangedAt';
+import ProductsTableTotals from './ProductsTableTotals';
 import { CATALOG_PROFILE_RESTAURANT_INGREDIENT, productBusinessTypeLabel } from '../../../../config/productCatalogConfig';
 
 export default function ProductsTable({
@@ -23,6 +24,7 @@ export default function ProductsTable({
   selectAllRef,
   onOpenRowMenu,
   catalogProfile = null,
+  catalogTotals = null,
 }) {
   const isIngredient = catalogProfile === CATALOG_PROFILE_RESTAURANT_INGREDIENT;
   const colSpan = isIngredient ? 8 : 13;
@@ -42,7 +44,7 @@ export default function ProductsTable({
                   className="rounded border-slate-400 dark:border-slate-600"
                 />
               </th>
-              <AdminTableNoIdHeaders />
+              <ProductsTableChangedAtHeaders />
               {!isIngredient ? (
                 <th className="px-3 py-3 font-medium">{t('products.colIkpuId')}</th>
               ) : null}
@@ -89,7 +91,13 @@ export default function ProductsTable({
                       className="rounded border-slate-400 dark:border-slate-600"
                     />
                   </td>
-                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={p.id} />
+                  <ProductsTableChangedAtCells
+                    page={page}
+                    pageSize={pageSize}
+                    index={index}
+                    updatedAt={p.updatedAt}
+                    createdAt={p.createdAt}
+                  />
                   {!isIngredient ? (
                     <td className="px-3 py-3">
                       <div className="font-mono text-xs leading-tight text-slate-700 dark:text-slate-300">
@@ -163,6 +171,14 @@ export default function ProductsTable({
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
         pageSizeOptions={pageSizeOptions}
+        summary={
+          catalogTotals ? (
+            <ProductsTableTotals
+              productCount={catalogTotals.productCount ?? total}
+              stockValueTotal={catalogTotals.stockValueTotal}
+            />
+          ) : null
+        }
       />
     </div>
   );

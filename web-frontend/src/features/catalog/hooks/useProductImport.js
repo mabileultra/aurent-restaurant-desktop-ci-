@@ -214,6 +214,22 @@ export function useProductImport(onClose) {
     }));
   };
 
+  const setRowQuantityValue = (rowNum, raw) => {
+    const cleaned = String(raw ?? '').replace(/\s/g, '').replace(',', '.');
+    if (cleaned === '' || cleaned === '.') {
+      setEditable((prev) => ({
+        ...prev,
+        [rowNum]: { ...prev[rowNum], quantity: cleaned === '.' ? '0.' : '' },
+      }));
+      return;
+    }
+    if (!/^\d*\.?\d*$/.test(cleaned)) return;
+    setEditable((prev) => ({
+      ...prev,
+      [rowNum]: { ...prev[rowNum], quantity: cleaned },
+    }));
+  };
+
   const setRowPrice = (rowNum, raw) => {
     const parsed = parseMoneyInput(raw);
     setEditable((prev) => ({
@@ -302,6 +318,7 @@ export function useProductImport(onClose) {
     setVisibleColumns((prev) => {
       const def = { ...prev, [id]: !prev[id] };
       if (id === 'rowNum') def.rowNum = true;
+      if (id === 'ikpu') def.ikpu = true;
       saveProductImportColumnVisibility(def);
       return def;
     });
@@ -389,16 +406,21 @@ export function useProductImport(onClose) {
 
       if (created > 0) {
         const receiptNo = data?.receiptNumber;
-        const msg = receiptNo
-          ? t('products.import.receiptDone', { no: receiptNo })
-          : skipped > 0
-            ? t('products.import.importPartial', { created, skipped })
-            : `${t('products.import.done')} · ${t('products.import.created')}: ${created}`;
-        toast.success(msg);
-        if (errs.length) {
-          errs.slice(0, 3).forEach((line) => toast(line, { icon: '⚠️' }));
+        if (mode === 'AS_RECEIPT' && !receiptNo) {
+          toast.error(t('products.import.receiptMissingAfterImport', { created }), { duration: 7000 });
+          errs.slice(0, 5).forEach((line) => toast(line, { icon: '⚠️' }));
+        } else {
+          const msg = receiptNo
+            ? t('products.import.receiptDone', { no: receiptNo })
+            : skipped > 0
+              ? t('products.import.importPartial', { created, skipped })
+              : `${t('products.import.done')} · ${t('products.import.created')}: ${created}`;
+          toast.success(msg);
+          if (errs.length) {
+            errs.slice(0, 3).forEach((line) => toast(line, { icon: '⚠️' }));
+          }
+          onClose();
         }
-        onClose();
       } else if (skipped > 0 && errs.length === 0) {
         toast(t('products.import.importOnlySkipped', { skipped }), { icon: 'ℹ️', duration: 5000 });
         try {
@@ -479,6 +501,7 @@ export function useProductImport(onClose) {
     applyDefaultLocationToAll,
     refreshPreview,
     setRowQuantity,
+    setRowQuantityValue,
     setRowPrice,
     setRowCategory,
     setRowStore,

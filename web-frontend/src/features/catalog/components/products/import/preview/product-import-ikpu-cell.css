@@ -1,0 +1,48 @@
+.product-import-ikpu-cell {
+  display: inline-block;
+  max-width: 12rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.35rem;
+  background: rgb(241 245 249);
+  color: rgb(15 23 42);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.product-import-ikpu-cell--empty {
+  background: transparent;
+  color: rgb(148 163 184);
+  font-weight: 500;
+}
+
+.product-import-ikpu-cell__input {
+  min-width: 9.5rem;
+  max-width: 12rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.75rem !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+html.dark .product-import-ikpu-cell {
+  background: rgb(30 41 59);
+  color: rgb(226 232 240);
+}
+
+html.dark .product-import-ikpu-cell--empty {
+  background: transparent;
+  color: rgb(100 116 139);
+}
+
+.product-import-preview-table th[data-col='ikpu'],
+.product-import-preview-table td[data-col='ikpu'] {
+  min-width: 10rem;
+  width: 10.5rem;
+}

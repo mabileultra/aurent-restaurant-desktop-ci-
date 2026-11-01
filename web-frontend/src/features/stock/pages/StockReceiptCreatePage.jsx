@@ -1,4 +1,4 @@
-import { useStockReceiptCreatePage } from '../hooks/useStockReceiptCreatePage';
+import { useStockReceiptFormPage } from '../hooks/useStockReceiptFormPage';
 import { useStockFlowPaths } from '../stockFlowPaths';
 import StockDocumentPageHeader from '../components/document-create/StockDocumentPageHeader';
 import StockReceiptMetaPanel from '../components/document-create/StockReceiptMetaPanel';
@@ -8,6 +8,10 @@ import StockDocumentSubmitButton from '../components/document-create/StockDocume
 export default function StockReceiptCreatePage() {
   const {
     t,
+    isEdit,
+    receiptNumber,
+    isLoadingReceipt,
+    receiptLoadError,
     supplierId,
     setSupplierId,
     storeId,
@@ -27,15 +31,26 @@ export default function StockReceiptCreatePage() {
     addLine,
     removeLine,
     submit,
-  } = useStockReceiptCreatePage();
+  } = useStockReceiptFormPage();
   const paths = useStockFlowPaths();
+
+  if (isLoadingReceipt) {
+    return <p className="p-6 text-slate-500">{t('common.loading')}</p>;
+  }
+  if (receiptLoadError) {
+    return <p className="p-6 text-rose-600">{t('stockReports.receiptLoadFailed')}</p>;
+  }
 
   return (
     <div className="admin-page admin-page--full space-y-6">
       <StockDocumentPageHeader
         backTo={paths.receiptsReport}
         backLabel={t('stockReports.receiptsTitle')}
-        title={t('stockReports.receiptCreateTitle')}
+        title={
+          isEdit
+            ? t('stockReports.receiptEditTitle', { no: receiptNumber || '…' })
+            : t('stockReports.receiptCreateTitle')
+        }
       />
 
       <StockReceiptMetaPanel
@@ -64,7 +79,7 @@ export default function StockReceiptCreatePage() {
       />
 
       <StockDocumentSubmitButton
-        label={t('stockReports.receiptSubmit')}
+        label={isEdit ? t('stockReports.receiptSave') : t('stockReports.receiptSubmit')}
         onClick={submit}
         disabled={isPending}
         variant="full"

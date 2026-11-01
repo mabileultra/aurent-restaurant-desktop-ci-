@@ -110,13 +110,11 @@ public class ProductImportProductCreator {
 
     private static BigDecimal resolveCostPrice(ProductImportPreviewRow row) {
         BigDecimal raw = row.costPrice();
-        if (raw == null) {
-            return BigDecimal.ZERO;
-        }
-        if (raw.signum() < 0) {
+        if (raw != null && raw.signum() < 0) {
             throw new BadRequestException("Себестоимость не может быть отрицательной");
         }
-        return raw;
+        // Как в приходе: в фактуре цена часто только в fileSellingPrice.
+        return ProductImportReceiptPurchasePrice.resolve(row);
     }
 
     private static BigDecimal resolveInitialStock(

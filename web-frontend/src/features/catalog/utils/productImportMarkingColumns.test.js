@@ -53,5 +53,11 @@ describe('productImportColumns', () => {
     expect(vis.marking).toBe(true);
     expect(vis.barcode).toBe(true);
     expect(vis.rowNum).toBe(true);
+    expect(vis.ikpu).toBe(true);
+  });
+
+  it('ИКПУ — sticky колонка (нельзя скрыть)', () => {
+    const ikpu = PRODUCT_IMPORT_COLUMN_DEFS.find((c) => c.id === 'ikpu');
+    expect(ikpu?.sticky).toBe(true);
   });
 });

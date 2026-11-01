@@ -15,6 +15,29 @@
   color: rgb(71 85 105);
 }
 
+.table-pagination__summary {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.table-pagination__summary-sep {
+  color: rgb(148 163 184);
+  font-weight: 400;
+}
+
+.dark .table-pagination__summary {
+  color: rgb(226 232 240);
+}
+
+.dark .table-pagination__summary-sep {
+  color: rgb(100 116 139);
+}
+
 .table-pagination__page-size {
   display: flex;
   flex-direction: row;

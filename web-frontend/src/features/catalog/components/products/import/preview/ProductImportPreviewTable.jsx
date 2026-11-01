@@ -11,6 +11,7 @@ import {
 import { productImportStatusBadge } from '../../../../utils/productImportStatusBadge';
 import ProductImportNameCell from '../ProductImportNameCell';
 import ProductImportQtyStepper from './ProductImportQtyStepper';
+import ProductImportIkpuCell from './ProductImportIkpuCell';
 import ProductImportMarkingCell from './ProductImportMarkingCell';
 import ProductImportTasnifCell from './ProductImportTasnifCell';
 
@@ -23,6 +24,7 @@ export default function ProductImportPreviewTable({
   visibleColumns,
   tasnifByRow,
   setRowQuantity,
+  setRowQuantityValue,
   setRowPrice,
   setRowCategory,
   setRowStore,
@@ -42,6 +44,7 @@ export default function ProductImportPreviewTable({
               {cols.map((col) => (
                 <th
                   key={col.id}
+                  data-col={col.id}
                   className={
                     col.id === 'filePrice' || col.id === 'importPrice' || col.id === 'qty'
                       ? 'text-right'
@@ -73,7 +76,7 @@ export default function ProductImportPreviewTable({
                   }
                 >
                   {cols.map((col) => (
-                    <td key={col.id} className={cellAlignClass(col.id)}>
+                    <td key={col.id} data-col={col.id} className={cellAlignClass(col.id)}>
                       {renderCell({
                         colId: col.id,
                         t,
@@ -85,6 +88,7 @@ export default function ProductImportPreviewTable({
                         stores,
                         tasnif,
                         setRowQuantity,
+                        setRowQuantityValue,
                         setRowPrice,
                         setRowCategory,
                         setRowStore,
@@ -133,19 +137,16 @@ function renderCell(ctx) {
         );
       }
       return <span className="font-mono text-xs">{r.barcode || '—'}</span>;
-    case 'ikpu':
-      if (isNew && ed) {
-        return (
-          <input
-            type="text"
-            value={ed.ikpu ?? ''}
-            onChange={(e) => ctx.setRowIkpu(r.rowNum, e.target.value)}
-            className={inputCls}
-            placeholder="—"
-          />
-        );
-      }
-      return <span className="font-mono text-xs">{r.ikpu || '—'}</span>;
+    case 'ikpu': {
+      const ikpuValue = isNew && ed ? (ed.ikpu ?? '') : (r.ikpu ?? '');
+      return (
+        <ProductImportIkpuCell
+          value={ikpuValue}
+          editable={Boolean(isNew && ed)}
+          onChange={(value) => ctx.setRowIkpu(r.rowNum, value)}
+        />
+      );
+    }
     case 'marking':
       return (
         <ProductImportMarkingCell
@@ -165,6 +166,7 @@ function renderCell(ctx) {
             plusLabel={t('products.import.qtyPlus')}
             onMinus={() => ctx.setRowQuantity(r.rowNum, -1)}
             onPlus={() => ctx.setRowQuantity(r.rowNum, 1)}
+            onChange={(raw) => ctx.setRowQuantityValue?.(r.rowNum, raw)}
           />
         );
       }

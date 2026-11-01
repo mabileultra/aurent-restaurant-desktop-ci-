@@ -60,3 +60,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.product-import-tasnif-cell__ikpu {
+  margin: 2px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.dark .product-import-tasnif-cell__ikpu {
+  color: #e2e8f0;
+}

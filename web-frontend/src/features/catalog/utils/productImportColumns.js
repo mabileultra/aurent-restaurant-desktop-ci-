@@ -2,14 +2,15 @@
  * Колонки предпросмотра импорта товаров (выбор видимости).
  */
 
-export const PRODUCT_IMPORT_COLUMNS_STORAGE_KEY = 'productImport.visibleColumns.v1';
+/** v2: ИКПУ всегда включён (sticky) — сбрасываем старые prefs, где колонку скрывали. */
+export const PRODUCT_IMPORT_COLUMNS_STORAGE_KEY = 'productImport.visibleColumns.v2';
 
 export const PRODUCT_IMPORT_COLUMN_DEFS = [
   { id: 'rowNum', labelKey: 'products.import.colRow', defaultOn: true, sticky: true },
   { id: 'tasnif', labelKey: 'products.import.colTasnif', defaultOn: true },
   { id: 'name', labelKey: 'products.import.colName', defaultOn: true },
   { id: 'barcode', labelKey: 'products.import.colBarcode', defaultOn: true },
-  { id: 'ikpu', labelKey: 'products.import.colIkpu', defaultOn: true },
+  { id: 'ikpu', labelKey: 'products.import.colIkpu', defaultOn: true, sticky: true },
   { id: 'marking', labelKey: 'products.import.colMarking', defaultOn: true },
   { id: 'qty', labelKey: 'products.import.colQty', defaultOn: true },
   { id: 'unit', labelKey: 'products.import.colUnit', defaultOn: false },
@@ -34,7 +35,12 @@ export function loadProductImportColumnVisibility() {
     if (!raw) return defaults;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return defaults;
-    return { ...defaults, ...parsed };
+    const merged = { ...defaults, ...parsed };
+    // Sticky-колонки нельзя выключить даже из старых prefs.
+    PRODUCT_IMPORT_COLUMN_DEFS.filter((c) => c.sticky).forEach((c) => {
+      merged[c.id] = true;
+    });
+    return merged;
   } catch {
     return defaults;
   }

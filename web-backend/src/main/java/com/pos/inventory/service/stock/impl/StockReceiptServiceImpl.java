@@ -1,35 +1,28 @@
 package com.pos.inventory.service.stock.impl;
 
-import com.pos.domain.StockMovementType;
 import com.pos.dto.shared.PageResponse;
-import com.pos.inventory.dto.warehouse.CreateStockReceiptRequest;
-import com.pos.inventory.dto.warehouse.StockReceiptLineRequest;
-import com.pos.inventory.dto.warehouse.StockReceiptLineResponse;
-import com.pos.inventory.dto.warehouse.StockReceiptResponse;
-import com.pos.catalog.entity.Product;
-import com.pos.inventory.domain.StockReceiptStatus;
-import com.pos.inventory.entity.StockMovement;
-import com.pos.inventory.entity.StockReceipt;
-import com.pos.inventory.entity.StockReceiptLine;
 import com.pos.entity.Store;
-import com.pos.inventory.entity.Supplier;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
+import com.pos.integrations.finance.service.FinancePurchaseIntegrationService;
+import com.pos.inventory.domain.StockReceiptStatus;
+import com.pos.inventory.dto.warehouse.CreateStockReceiptRequest;
+import com.pos.inventory.dto.warehouse.StockReceiptLineResponse;
+import com.pos.inventory.dto.warehouse.StockReceiptResponse;
+import com.pos.inventory.dto.warehouse.UpdateStockReceiptRequest;
+import com.pos.inventory.entity.StockReceipt;
+import com.pos.inventory.entity.Supplier;
 import com.pos.inventory.repository.StockReceiptRepository;
 import com.pos.inventory.repository.SupplierRepository;
-import com.pos.repository.StoreRepository;
-import com.pos.security.CurrentUserProvider;
-import com.pos.service.event.PosDomainEventService;
-import com.pos.integrations.finance.service.FinancePurchaseIntegrationService;
 import com.pos.inventory.service.stock.StockReceiptService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.inventory.service.stock.support.StockDocumentSupport;
-import com.pos.inventory.service.stock.support.StockMovementPersistence;
+import com.pos.inventory.service.stock.support.StockReceiptMutationSupport;
+import com.pos.security.CurrentUserProvider;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.support.CatalogIsolationSupport;
-import com.pos.service.support.ProductValueNormalizer;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.QuantityUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,12 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,10 +46,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockReceiptRepository stockReceiptRepository;
-    private final ProductRepository productRepository;
-    private final StockMovementPersistence stockMovementPersistence;
     private final SupplierRepository supplierRepository;
-    private final StoreRepository storeRepository;
     private final StoreStockService storeStockService;
     private final TenantAccessSupport tenantAccess;
     private final CurrentUserProvider currentUserProvider;
@@ -66,6 +54,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     private final CatalogIsolationSupport catalogIsolation;
     private final FinancePurchaseIntegrationService financePurchaseIntegrationService;
     private final PosDomainEventService posDomainEventService;
+    private final StockReceiptMutationSupport mutationSupport;
 
     @Override
     public StockReceiptResponse create(CreateStockReceiptRequest request) {
@@ -77,9 +66,8 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         catalogIsolation.rejectPharmacyStoreOnGrocery(store);
         Supplier supplier = resolveSupplier(request.supplierId());
 
-        String receiptNumber = nextReceiptNumber();
         StockReceipt receipt = stockReceiptRepository.save(StockReceipt.builder()
-            .receiptNumber(receiptNumber)
+            .receiptNumber(nextReceiptNumber())
             .status(StockReceiptStatus.POSTED)
             .documentDate(LocalDate.now(ZONE))
             .paymentType(request.paymentType())
@@ -91,79 +79,66 @@ public class StockReceiptServiceImpl implements StockReceiptService {
             .totalCost(BigDecimal.ZERO)
             .totalRetail(BigDecimal.ZERO)
             .build());
-        UUID receiptId = receipt.getId();
 
-        BigDecimal totalQty = BigDecimal.ZERO;
-        BigDecimal totalCost = BigDecimal.ZERO;
-        List<StockReceiptLine> lines = new ArrayList<>();
-
-        for (StockReceiptLineRequest lineReq : request.lines()) {
-            Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
-            BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
-            stockDocument.requirePositiveQuantity(q);
-            com.pos.util.QuantityValidator.validate(product, q);
-
-            product.setCostPrice(lineReq.purchasePrice());
-            product.setSellingPrice(lineReq.unitSellingPrice());
-            if (lineReq.vatPercent() != null) {
-                product.setTaxRate(ProductValueNormalizer.taxRatePercent(BigDecimal.valueOf(lineReq.vatPercent())));
-            }
-            if (lineReq.markedProduct() != null) {
-                product.setMarkedProduct(lineReq.markedProduct());
-            }
-            if (StringUtils.hasText(lineReq.storageLocation())) {
-                product.setStorageLocation(lineReq.storageLocation().trim());
-            }
-            storeStockService.increase(product, store, q);
-            productRepository.save(product);
-
-            BigDecimal lineCost = lineReq.purchasePrice()
-                .multiply(q)
-                .setScale(2, RoundingMode.HALF_UP);
-            StockReceiptLine line = StockReceiptLine.builder()
-                .receipt(receipt)
-                .product(product)
-                .quantity(q)
-                .purchasePrice(lineReq.purchasePrice())
-                .unitSellingPrice(lineReq.unitSellingPrice())
-                .lineCost(lineCost)
-                .build();
-            lines.add(line);
-
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
-                .store(store)
-                .movementType(StockMovementType.RESTOCK)
-                .quantity(q)
-                .referenceId(receiptId)
-                .notes("Приход " + receiptNumber)
-                .createdBy(user)
-                .build(), receiptNumber);
-
-            totalQty = QuantityUtil.add(totalQty, q);
-            totalCost = totalCost.add(lineCost);
-        }
-
-        receipt.getLines().clear();
-        receipt.getLines().addAll(lines);
-        receipt.setTotalQuantity(totalQty);
-        receipt.setTotalCost(totalCost);
+        mutationSupport.applyLines(receipt, store, user, request.lines());
         stockReceiptRepository.save(receipt);
         financePurchaseIntegrationService.onPurchaseCompleted(receipt, request.paymentType());
         posDomainEventService.publishStockReceivedAfterCommit(receipt);
 
-        return toResponse(stockReceiptRepository.findDetailedById(receiptId).orElseThrow());
+        return toResponse(stockReceiptRepository.findDetailedById(receipt.getId()).orElseThrow());
+    }
+
+    @Override
+    public StockReceiptResponse update(UUID id, UpdateStockReceiptRequest request) {
+        stockDocument.requireLines(request.lines());
+        StockReceipt receipt = requireAccessibleReceipt(id);
+        User user = currentUserProvider.requireCurrentUser();
+        Integer companyId = tenantAccess.effectiveCompanyIdOrNull();
+        stockDocument.requireCompanyContext(companyId);
+
+        Integer storeId = request.storeId() != null
+            ? request.storeId()
+            : (receipt.getStore() != null ? receipt.getStore().getId() : null);
+        Store store = storeStockService.requireStoreForCompany(companyId, storeId);
+        catalogIsolation.rejectPharmacyStoreOnGrocery(store);
+
+        mutationSupport.reverseStockAndMovements(receipt);
+        receipt.setSupplier(resolveSupplier(request.supplierId()));
+        receipt.setStore(store);
+        receipt.setNotes(trimToNull(request.notes()));
+        if (StringUtils.hasText(request.paymentType())) {
+            receipt.setPaymentType(request.paymentType().trim());
+        }
+        mutationSupport.applyLines(receipt, store, user, request.lines());
+        stockReceiptRepository.save(receipt);
+        posDomainEventService.publishStockReceivedAfterCommit(receipt);
+        LogUtil.info(
+            StockReceiptServiceImpl.class,
+            "Receipt updated (finance entries not rewritten): id={} number={}",
+            receipt.getId(),
+            receipt.getReceiptNumber()
+        );
+        return toResponse(stockReceiptRepository.findDetailedById(receipt.getId()).orElseThrow());
+    }
+
+    @Override
+    public void delete(UUID id) {
+        StockReceipt receipt = requireAccessibleReceipt(id);
+        String number = receipt.getReceiptNumber();
+        mutationSupport.reverseStockAndMovements(receipt);
+        stockReceiptRepository.delete(receipt);
+        LogUtil.warn(
+            StockReceiptServiceImpl.class,
+            "Receipt deleted; finance expense/payable for receipt may remain: id={} number={}",
+            id,
+            number
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public StockReceiptResponse getById(UUID id) {
-        StockReceipt receipt = stockReceiptRepository.findDetailedById(id)
-            .orElseThrow(() -> PosExceptions.notFound("Receipt"));
-        if (receipt.getStore() != null) {
-            tenantAccess.assertCanAccessStore(receipt.getStore());
-        }
-        return toResponse(receipt);
+        return toResponse(requireAccessibleReceipt(id));
     }
 
     @Override
@@ -183,20 +158,21 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         return PageResponse.from(page.map(this::toSummary));
     }
 
+    private StockReceipt requireAccessibleReceipt(UUID id) {
+        StockReceipt receipt = stockReceiptRepository.findDetailedById(id)
+            .orElseThrow(() -> PosExceptions.notFound("Receipt"));
+        if (receipt.getStore() != null) {
+            tenantAccess.assertCanAccessStore(receipt.getStore());
+        }
+        return receipt;
+    }
+
     private String nextReceiptNumber() {
         LocalDate today = LocalDate.now(ZONE);
         Instant dayStart = today.atStartOfDay(ZONE).toInstant();
         long seq = stockReceiptRepository.countByCreatedAtGreaterThanEqual(dayStart) + 1;
         String datePart = today.format(DateTimeFormatter.BASIC_ISO_DATE);
         return "REC-" + datePart + "-" + String.format("%04d", seq);
-    }
-
-    private Store resolveStore(Integer storeId) {
-        if (storeId == null) {
-            return null;
-        }
-        return storeRepository.findById(storeId)
-            .orElseThrow(() -> PosExceptions.notFound("Store"));
     }
 
     private Supplier resolveSupplier(UUID supplierId) {

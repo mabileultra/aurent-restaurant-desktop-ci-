@@ -58,6 +58,7 @@ export default function ProductsPage({
           toggleSelectAllPage={p.toggleSelectAllPage}
           selectAllRef={p.selectAllRef}
           catalogProfile={catalogProfile}
+          catalogTotals={p.catalogTotals}
           onOpenRowMenu={(product, rect) =>
             p.setRowMenu((cur) => (cur?.product?.id === product.id ? null : { product, rect }))
           }

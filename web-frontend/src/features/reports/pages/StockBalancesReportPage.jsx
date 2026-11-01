@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { stockReportApi } from '../../../api';
-import { BaseSelect, PageSearchField } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
+import StockBalancesFilters from '../components/stock-balances/StockBalancesFilters';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportExportButton from '../components/ReportExportButton';
 import { useStockBalancesReportPage } from '../hooks/useStockBalancesReportPage';
@@ -24,27 +24,21 @@ export default function StockBalancesReportPage() {
           filenamePrefix="stock_balances"
         />
       </div>
-      <div className="flex flex-wrap gap-3">
-        <PageSearchField
-          value={r.search}
-          onChange={r.handleSearchChange}
-          placeholder={t('stockModule.searchPh')}
-          className="min-w-[12rem] flex-1"
-        />
-        <BaseSelect
-          value={r.categoryId}
-          onChange={(e) => r.handleCategoryChange(e.target.value)}
-          placeholder={t('stockReports.allCategories')}
-          options={[
-            { value: '', label: t('stockReports.allCategories') },
-            ...r.categories.map((c) => ({ value: String(c.id), label: c.name })),
-          ]}
-        />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={r.onlyWithStock} onChange={(e) => r.handleOnlyWithStockChange(e.target.checked)} />
-          {t('stockReports.onlyWithStock')}
-        </label>
-      </div>
+
+      <StockBalancesFilters
+        t={t}
+        search={r.search}
+        onSearchChange={r.handleSearchChange}
+        storeId={r.storeId}
+        stores={r.stores}
+        onStoreChange={r.handleStoreChange}
+        categoryId={r.categoryId}
+        categories={r.categories}
+        onCategoryChange={r.handleCategoryChange}
+        onlyWithStock={r.onlyWithStock}
+        onOnlyWithStockChange={r.handleOnlyWithStockChange}
+      />
+
       <ReportTableCard
         pagination={{
           page: r.page,

@@ -2,6 +2,7 @@ import { api } from './client';
 
 export const productApi = {
   getAll: (params, config) => api.get('/products', { params, ...config }),
+  getCatalogTotals: (params, config) => api.get('/products/catalog-totals', { params, ...config }),
   getById: (id, params) => api.get(`/products/${id}`, { params }),
   lifecycle: (id, params) => api.get(`/products/${id}/lifecycle`, { params }),
   getByBarcode: (barcode, storeId) =>

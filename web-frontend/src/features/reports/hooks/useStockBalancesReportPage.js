@@ -4,32 +4,37 @@ import { stockReportApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportCategories } from './useReportCategories';
 import { useReportPagination } from './useReportPagination';
+import { useReportStores } from './useReportStores';
 
 export function useStockBalancesReportPage() {
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_DEFAULT);
   const [search, setSearch] = useState('');
+  const [storeId, setStoreId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [onlyWithStock, setOnlyWithStock] = useState(false);
   const { data: categories = [] } = useReportCategories();
+  const { data: stores = [] } = useReportStores();
 
   const params = useMemo(
     () => ({
       page,
       size: pageSize,
       onlyWithStock,
+      storeId: storeId === '' ? undefined : Number(storeId),
       categoryId: categoryId === '' ? undefined : Number(categoryId),
       search: search.trim() || undefined,
     }),
-    [page, pageSize, onlyWithStock, categoryId, search]
+    [page, pageSize, onlyWithStock, storeId, categoryId, search]
   );
 
   const exportParams = useMemo(
     () => ({
       onlyWithStock,
+      storeId: storeId === '' ? undefined : Number(storeId),
       categoryId: categoryId === '' ? undefined : Number(categoryId),
       search: search.trim() || undefined,
     }),
-    [onlyWithStock, categoryId, search]
+    [onlyWithStock, storeId, categoryId, search]
   );
 
   const query = useQuery({
@@ -40,6 +45,11 @@ export function useStockBalancesReportPage() {
 
   const handleSearchChange = (value) => {
     setSearch(value);
+    resetPage();
+  };
+
+  const handleStoreChange = (value) => {
+    setStoreId(value);
     resetPage();
   };
 
@@ -55,9 +65,11 @@ export function useStockBalancesReportPage() {
 
   return {
     search,
+    storeId,
     categoryId,
     onlyWithStock,
     categories,
+    stores,
     exportParams,
     page,
     setPage,
@@ -68,6 +80,7 @@ export function useStockBalancesReportPage() {
     totalPages: query.data?.totalPages ?? 0,
     isPending: query.isPending,
     handleSearchChange,
+    handleStoreChange,
     handleCategoryChange,
     handleOnlyWithStockChange,
   };

@@ -28,6 +28,7 @@ export default function TablePagination({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
+  summary = null,
   className = '',
 }) {
   const { t } = useTranslation();
@@ -52,6 +53,7 @@ export default function TablePagination({
         <span className="table-pagination__range">
           {t('products.recordsRange', { from, to, total })}
         </span>
+        {summary ? <div className="table-pagination__summary">{summary}</div> : null}
         {onPageSizeChange ? (
           <div className="table-pagination__page-size">
             <span className="table-pagination__page-size-label">

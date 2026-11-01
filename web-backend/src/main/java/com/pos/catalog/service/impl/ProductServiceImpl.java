@@ -2,6 +2,7 @@ package com.pos.catalog.service.impl;
 
 import com.pos.catalog.dto.product.BulkTaxRateRequest;
 import com.pos.catalog.dto.product.CreateProductRequest;
+import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductExportPreviewRow;
 import com.pos.catalog.dto.product.ProductExportRequest;
 import com.pos.catalog.dto.product.ProductImportConfirmRequest;
@@ -86,6 +87,27 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProduct(UUID id, Integer storeId) {
         return queryService.getProduct(id, storeId);
+    }
+
+    @Override
+    public ProductCatalogTotalsResponse getCatalogTotals(
+        String search,
+        Integer categoryId,
+        boolean activeOnly,
+        String deletedScope,
+        Integer storeId,
+        String ikpuStatus,
+        Boolean markedProduct,
+        Boolean soldIndividually,
+        String barcodeExact,
+        Map<String, String> attributeFilters,
+        String businessTypeCode
+    ) {
+        return queryService.getCatalogTotals(
+            search, categoryId, activeOnly, deletedScope, storeId,
+            ikpuStatus, markedProduct, soldIndividually, barcodeExact, attributeFilters,
+            businessTypeCode
+        );
     }
 
     @Override

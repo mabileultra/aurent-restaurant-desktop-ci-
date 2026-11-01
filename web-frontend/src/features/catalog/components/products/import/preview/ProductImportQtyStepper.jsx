@@ -1,6 +1,14 @@
-export default function ProductImportQtyStepper({ value, onMinus, onPlus, minusLabel, plusLabel }) {
+/** Кол-во в импорте: − / ввод / +. */
+export default function ProductImportQtyStepper({
+  value,
+  onMinus,
+  onPlus,
+  onChange,
+  minusLabel,
+  plusLabel,
+}) {
   const n = Number(value);
-  const display = Number.isFinite(n) ? String(n) : '0';
+  const display = value == null || value === '' ? '' : String(value);
   const atZero = !Number.isFinite(n) || n <= 0;
 
   return (
@@ -14,7 +22,14 @@ export default function ProductImportQtyStepper({ value, onMinus, onPlus, minusL
       >
         −
       </button>
-      <span className="product-import-qty__value">{display}</span>
+      <input
+        type="text"
+        inputMode="decimal"
+        className="product-import-qty__input"
+        value={display}
+        onChange={(e) => onChange?.(e.target.value)}
+        aria-label={plusLabel ? undefined : 'qty'}
+      />
       <button
         type="button"
         className="product-import-qty__btn"

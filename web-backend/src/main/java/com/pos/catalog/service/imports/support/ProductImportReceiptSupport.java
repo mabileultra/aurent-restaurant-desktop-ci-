@@ -29,9 +29,6 @@ public class ProductImportReceiptSupport {
         ProductImportConfirmRequest.ImportRowConfirm rowOpts
     ) {
         BigDecimal qty = ProductImportQuantity.resolve(row, rowOpts);
-        BigDecimal purchase = row.costPrice() != null && row.costPrice().signum() >= 0
-            ? row.costPrice()
-            : BigDecimal.ZERO;
         BigDecimal selling = row.fileSellingPrice();
         if (rowOpts != null && rowOpts.sellingPrice() != null) {
             selling = rowOpts.sellingPrice();
@@ -39,6 +36,7 @@ public class ProductImportReceiptSupport {
         if (selling == null || selling.signum() < 0) {
             selling = BigDecimal.ZERO;
         }
+        BigDecimal purchase = ProductImportReceiptPurchasePrice.resolve(row, selling);
         Integer vat = row.taxRatePercent() != null ? row.taxRatePercent().intValue() : null;
         Boolean marked = rowOpts != null ? rowOpts.markedProduct() : null;
         String location = rowOpts != null && StringUtils.hasText(rowOpts.storageLocation())

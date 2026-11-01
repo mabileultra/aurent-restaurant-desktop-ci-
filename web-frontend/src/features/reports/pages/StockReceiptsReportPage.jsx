@@ -3,17 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
 import { Plus } from 'lucide-react';
 import ReportTableCard from '../components/ReportTableCard';
+import StockReceiptsActionsCell from '../components/StockReceiptsActionsCell';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportStoreSelect from '../components/ReportStoreSelect';
 import { useStockReceiptsReportPage } from '../hooks/useStockReceiptsReportPage';
+import { useStockReceiptsActions } from '../hooks/useStockReceiptsActions';
 import { useStockFlowPaths } from '../../stock/stockFlowPaths';
 
 export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
   const { t } = useTranslation();
   const r = useStockReceiptsReportPage();
+  const actions = useStockReceiptsActions();
   const paths = useStockFlowPaths();
+  const colSpan = 8;
 
   return (
     <div className="space-y-6">
@@ -55,11 +59,12 @@ export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
               <th className="px-4 py-3">{t('stockReports.colSupplier')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colQty')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colAmount')}</th>
+              <th className="px-4 py-3 text-right">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={7} className="p-6 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.isPending && <tr><td colSpan={colSpan} className="p-6 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={colSpan} className="p-6 text-center">{t('common.noData')}</td></tr>}
             {r.rows.map((row, index) => (
               <tr key={row.id} className="border-t border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
@@ -68,6 +73,12 @@ export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
                 <td className="px-4 py-2">{row.supplierName || '—'}</td>
                 <td className="px-4 py-2 text-right">{row.totalQuantity}</td>
                 <td className="px-4 py-2 text-right">{fmtMoney(row.totalCost)}</td>
+                <StockReceiptsActionsCell
+                  t={t}
+                  editTo={paths.receiptEdit(row.id)}
+                  deleting={actions.deletingId === row.id}
+                  onDelete={() => actions.confirmDelete(row)}
+                />
               </tr>
             ))}
           </tbody>

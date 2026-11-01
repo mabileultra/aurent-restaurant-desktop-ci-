@@ -2,6 +2,7 @@ package com.pos.catalog.service;
 
 import com.pos.catalog.dto.product.BulkTaxRateRequest;
 import com.pos.catalog.dto.product.CreateProductRequest;
+import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductExportPreviewRow;
 import com.pos.catalog.dto.product.ProductExportRequest;
 import com.pos.catalog.dto.product.ProductImportConfirmRequest;
@@ -116,6 +117,20 @@ public interface ProductService {
     int bulkDeactivateProducts(List<UUID> productIds);
 
     List<ProductResponse> getLowStockProducts();
+
+    ProductCatalogTotalsResponse getCatalogTotals(
+        String search,
+        Integer categoryId,
+        boolean activeOnly,
+        String deletedScope,
+        Integer storeId,
+        String ikpuStatus,
+        Boolean markedProduct,
+        Boolean soldIndividually,
+        String barcodeExact,
+        Map<String, String> attributeFilters,
+        String businessTypeCode
+    );
 
     List<ProductExportPreviewRow> previewProductsExport(String storeIdsParam, BigDecimal markupPercent);
 

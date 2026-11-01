@@ -18,6 +18,8 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
 
     boolean existsByReferenceIdAndMovementType(UUID referenceId, String movementType);
 
+    void deleteByReferenceId(UUID referenceId);
+
     @Query("""
         SELECT m FROM StockMovement m
         JOIN FETCH m.product

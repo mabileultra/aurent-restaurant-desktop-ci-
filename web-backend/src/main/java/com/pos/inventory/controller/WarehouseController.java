@@ -13,6 +13,7 @@ import com.pos.inventory.dto.warehouse.StockInventoryResponse;
 import com.pos.inventory.dto.warehouse.StockProductionResponse;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.inventory.dto.warehouse.StockTransferResponse;
+import com.pos.inventory.dto.warehouse.UpdateStockReceiptRequest;
 import com.pos.inventory.dto.stock.CreateWriteOffRequest;
 import com.pos.inventory.dto.stock.WriteOffRowResponse;
 import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
@@ -111,6 +112,26 @@ public class WarehouseController {
     @ApiResponse(responseCode = "200", description = "Данные прихода")
     public ResponseEntity<StockReceiptResponse> getReceipt(@PathVariable UUID id) {
         return ResponseEntity.ok(stockReceiptService.getById(id));
+    }
+
+    @PutMapping("/receipts/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Изменить приход", description = "Замена строк и метаданных; остаток откатывается и проводится заново")
+    @ApiResponse(responseCode = "200", description = "Документ прихода обновлён")
+    public ResponseEntity<StockReceiptResponse> updateReceipt(
+        @PathVariable UUID id,
+        @Valid @RequestBody UpdateStockReceiptRequest request
+    ) {
+        return ResponseEntity.ok(stockReceiptService.update(id, request));
+    }
+
+    @DeleteMapping("/receipts/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Удалить приход", description = "Откат остатка и удаление документа REC-…")
+    @ApiResponse(responseCode = "204", description = "Приход удалён")
+    public ResponseEntity<Void> deleteReceipt(@PathVariable UUID id) {
+        stockReceiptService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/inventories")

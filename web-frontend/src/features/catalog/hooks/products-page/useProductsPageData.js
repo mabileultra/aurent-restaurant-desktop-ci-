@@ -10,6 +10,7 @@ import {
   PRODUCT_TABLE_PAGE_SIZE_OPTIONS,
   buildAttributeFiltersParam,
 } from '../../constants';
+import { useProductsPageTotals } from './useProductsPageTotals';
 
 export function useProductsPageData() {
   const { tenantKey, tenantReady } = useTenantScope();
@@ -53,6 +54,7 @@ export function useProductsPageData() {
     enabled: tenantReady,
   });
   const isLoading = !isError && !data && (isPending || isFetching || !tenantReady);
+  const catalogTotals = useProductsPageTotals(queryParams, tenantReady);
 
   const { data: categories = [] } = useQuery({
     queryKey: tenantKey('categories'),
@@ -96,5 +98,6 @@ export function useProductsPageData() {
     totalPages: data?.totalPages ?? 0,
     pageContent: data?.content ?? [],
     filterFields,
+    catalogTotals,
   };
 }

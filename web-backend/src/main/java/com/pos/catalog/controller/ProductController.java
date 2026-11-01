@@ -4,6 +4,7 @@ import com.pos.config.openapi.StandardApiResponses;
 import com.pos.catalog.dto.product.BulkProductIdsRequest;
 import com.pos.catalog.dto.product.BulkTaxRateRequest;
 import com.pos.catalog.dto.product.CreateProductRequest;
+import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductExportPreviewRow;
 import com.pos.catalog.dto.product.ProductExportRequest;
 import com.pos.catalog.dto.product.ProductImportConfirmRequest;
@@ -66,6 +67,30 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProducts(
             search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
             markedProduct, soldIndividually, barcode, AttributeFilterParser.parse(attributeFilters), pageable
+        ));
+    }
+
+    @GetMapping("/catalog-totals")
+    @Operation(
+        summary = "Итоги каталога",
+        description = "Количество товаров и сумма остатков (цена × кол-во) по тем же фильтрам, что и список"
+    )
+    @ApiResponse(responseCode = "200", description = "Итоги по фильтру")
+    public ResponseEntity<ProductCatalogTotalsResponse> getCatalogTotals(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Integer categoryId,
+        @RequestParam(defaultValue = "true") boolean activeOnly,
+        @RequestParam(required = false) String deletedScope,
+        @RequestParam(required = false) Integer storeId,
+        @RequestParam(required = false) String ikpuStatus,
+        @RequestParam(required = false) Boolean markedProduct,
+        @RequestParam(required = false) Boolean soldIndividually,
+        @RequestParam(required = false) String barcode,
+        @RequestParam(required = false) String attributeFilters
+    ) {
+        return ResponseEntity.ok(productService.getCatalogTotals(
+            search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
+            markedProduct, soldIndividually, barcode, AttributeFilterParser.parse(attributeFilters), null
         ));
     }
 
