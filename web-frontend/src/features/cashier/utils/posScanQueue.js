@@ -1,7 +1,8 @@
 /**
- * Очередь сканов кассы: пока идёт lookup, следующие 1–2 кода не теряются.
+ * Очередь сканов кассы: пока идёт lookup, следующие коды не теряются.
+ * При переполнении сдвигаем самый старый (редкий случай при max ≥ 24).
  */
-export function createPosScanQueue({ maxPending = 2 } = {}) {
+export function createPosScanQueue({ maxPending = 24 } = {}) {
   const pending = [];
   let busy = false;
 

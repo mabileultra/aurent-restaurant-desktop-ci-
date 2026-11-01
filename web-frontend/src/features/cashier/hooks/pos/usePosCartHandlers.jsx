@@ -3,8 +3,11 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { findProductBarcode, findProductByIkpu, withScannedBarcode } from '../../utils/productBarcodeMatch';
 import { posFetchFirstProductByBarcode } from '../../utils/posFetchFirstProductByBarcode';
+import { rememberPosBarcodeHit } from '../../utils/posBarcodeHitCache';
+import { resolveBarcodeFromLoadedProducts } from '../../utils/resolveBarcodeFromLoadedProducts';
 import { createPosScanQueue } from '../../utils/posScanQueue';
 import { tryResolveWeightPluProduct } from '../../utils/tryResolveWeightPluProduct';
+import { posBarcodeCandidates } from '../../utils/posBarcodeCandidates';
 import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner';
 import { lineSubtotal, useCartStore } from '../../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
@@ -45,7 +48,7 @@ export function usePosCartHandlers({
   const { t } = useTranslation();
   const scanningRef = useRef(false);
   const scanQueueRef = useRef(null);
-  if (!scanQueueRef.current) scanQueueRef.current = createPosScanQueue({ maxPending: 2 });
+  if (!scanQueueRef.current) scanQueueRef.current = createPosScanQueue({ maxPending: 24 });
   const pendingMarkKeysRef = useRef(new Set());
   const [weightModalProduct, setWeightModalProduct] = useState(null);
   const [weightEditLineId, setWeightEditLineId] = useState(null);
@@ -314,7 +317,16 @@ export function usePosCartHandlers({
 
       scanningRef.current = true;
       try {
-        // Весовой PLU и обычный EAN параллельно — PLU не блокирует штрихкод таймаутом.
+        // 1) Уже загруженный список / кэш сессии — в корзину без сети.
+        const localHit = resolveBarcodeFromLoadedProducts(products, trimmed);
+        if (localHit?.product) {
+          rememberPosBarcodeHit(storeId, posBarcodeCandidates(trimmed), localHit.product);
+          addProductToCart(withScannedBarcode(localHit.product, localHit.code));
+          setSearch('');
+          return true;
+        }
+
+        // 2) Весовой PLU и обычный EAN параллельно — PLU не блокирует штрихкод таймаутом.
         const [weightHit, barcodeHit] = await Promise.all([
           tryResolveWeightPluProduct(trimmed, storeId),
           posFetchFirstProductByBarcode(storeId, trimmed),
@@ -355,6 +367,7 @@ export function usePosCartHandlers({
     },
     [
       storeId,
+      products,
       addProductToCart,
       addWeightLine,
       cartProductPayload,
