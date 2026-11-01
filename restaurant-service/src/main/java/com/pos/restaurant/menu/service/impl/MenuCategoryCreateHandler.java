@@ -2,6 +2,7 @@ package com.pos.restaurant.menu.service.impl;
 
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.floor.support.StoreTenantSupport;
 import com.pos.restaurant.menu.dto.MenuCategoryResponse;
 import com.pos.restaurant.menu.dto.SaveMenuCategoryRequest;
 import com.pos.restaurant.menu.entity.MenuCategory;
@@ -20,13 +21,15 @@ public class MenuCategoryCreateHandler {
     private final MenuCategoryRepository categoryRepository;
     private final MenuCategoryMapper categoryMapper;
     private final FloorTenantSupport tenantSupport;
+    private final StoreTenantSupport storeTenantSupport;
     private final MenuCategoryNameUniquenessValidator nameUniquenessValidator;
 
     @Transactional
     public MenuCategoryResponse handle(Integer storeId, SaveMenuCategoryRequest request) {
+        storeTenantSupport.requireStore(storeId);
         Integer companyId = tenantSupport.requireCompanyId();
         String name = request.name().trim();
-        nameUniquenessValidator.assertUniqueOnCreate(storeId, name);
+        nameUniquenessValidator.assertUniqueOnCreate(companyId, storeId, name);
         boolean autoPrint = Boolean.TRUE.equals(request.autoPrint());
         MenuCategory saved = categoryRepository.save(MenuCategory.builder()
             .companyId(companyId)

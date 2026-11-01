@@ -558,7 +558,7 @@
 }
 
 .rst-menu-board__head-actions .rst-menu-board__btn-light:hover:not(:disabled) {
-  background: #fff;
+  background: #F8F2EC;
   border-color: #f97316;
   color: #1c1917;
 }

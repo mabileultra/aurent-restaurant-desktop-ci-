@@ -19,7 +19,7 @@ function emptyResolve(status, mark, extras = {}) {
 
 /**
  * Скан КМ: всегда Tasnif (оборот), товар — склад через Tasnif.
- * Локальный «пробит» не отменяет запрос в Tasnif.
+ * Журнал «пробит» и поиск карточки — параллельно; Tasnif до add в корзину.
  */
 export async function resolveCashierMarking({
   rawCode,
@@ -32,8 +32,11 @@ export async function resolveCashierMarking({
     return emptyResolve('not-marking', '');
   }
 
-  const gate = await inspectMarkPunched({ storeId, mark });
-  const product = findProduct ? await findProduct(mark, gate) : null;
+  const [gate, product] = await Promise.all([
+    inspectMarkPunched({ storeId, mark }),
+    findProduct ? findProduct(mark) : Promise.resolve(null),
+  ]);
+
   const hasIkpu = /\d{8,}/.test(String(product?.ikpu || '').replace(/\D/g, ''));
   const circulationProduct = hasIkpu
     ? product

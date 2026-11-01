@@ -11,6 +11,7 @@ import com.pos.restaurant.payment.domain.PaymentMethod;
 import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import com.pos.restaurant.payment.entity.FloorOrderPayment;
 import com.pos.restaurant.payment.repository.FloorOrderPaymentRepository;
+import com.pos.shared.api.PageLimits;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -28,9 +29,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ListRecentPaidOrdersHandler {
 
-    private static final int DEFAULT_LIMIT = 40;
-    private static final int MAX_LIMIT = 100;
-
     private final FloorOrderRepository orderRepository;
     private final FloorOrderItemRepository itemRepository;
     private final FloorOrderPaymentRepository paymentRepository;
@@ -40,7 +38,7 @@ public class ListRecentPaidOrdersHandler {
     @Transactional(readOnly = true)
     public List<PaidOrderSummaryResponse> handle(Integer storeId, boolean refunded, Integer limit) {
         Integer companyId = tenantSupport.requireCompanyId();
-        int size = limit == null ? DEFAULT_LIMIT : Math.min(Math.max(limit, 1), MAX_LIMIT);
+        int size = limit == null ? 40 : PageLimits.normalizeSize(limit);
         List<FloorOrder> orders = refunded
             ? orderRepository.findRecentRefundedByCompanyIdAndStoreId(
                 companyId,

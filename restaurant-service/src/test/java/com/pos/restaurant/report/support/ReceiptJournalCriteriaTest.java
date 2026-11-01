@@ -4,6 +4,7 @@ import com.pos.restaurant.exception.ValidationException;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.report.domain.ReceiptStatus;
 import com.pos.restaurant.report.dto.ReceiptJournalFilter;
+import com.pos.shared.api.DateRangeLimits;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -24,7 +25,7 @@ class ReceiptJournalCriteriaTest {
         assertThatThrownBy(() -> ReceiptJournalCriteria.of(1, 1, filter(TO, FROM, null, null)))
             .isInstanceOf(ValidationException.class);
         assertThatThrownBy(() -> ReceiptJournalCriteria.of(
-            1, 1, filter(FROM, FROM.plus(ReceiptJournalCriteria.MAX_RANGE).plusSeconds(1), null, null)))
+            1, 1, filter(FROM, FROM.plus(Duration.ofDays(DateRangeLimits.MAX_DAYS_REPORT)).plusSeconds(1), null, null)))
             .isInstanceOf(ValidationException.class);
     }
 
@@ -41,10 +42,13 @@ class ReceiptJournalCriteriaTest {
         assertThat(ReceiptJournalCriteria.of(1, 1, filter(FROM, TO, ReceiptStatus.REFUNDED, null)).params())
             .containsEntry("receiptStatus", OrderStatus.REFUNDED);
         ReceiptJournalCriteria partial = ReceiptJournalCriteria.of(1, 1, filter(FROM, TO, ReceiptStatus.PARTIAL_REFUND, null));
-        assertThat(partial.params()).containsEntry("receiptStatus", OrderStatus.CLOSED);
+        assertThat(partial.params())
+            .containsEntry("receiptStatus", OrderStatus.CLOSED)
+            .containsEntry("requireReturns", Boolean.TRUE);
         assertThat(partial.where()).contains("and exists");
-        assertThat(ReceiptJournalCriteria.of(1, 1, filter(FROM, TO, ReceiptStatus.PAID, null)).where())
-            .contains("and not exists");
+        ReceiptJournalCriteria paid = ReceiptJournalCriteria.of(1, 1, filter(FROM, TO, ReceiptStatus.PAID, null));
+        assertThat(paid.where()).contains("and not exists");
+        assertThat(paid.params()).containsEntry("requireReturns", Boolean.FALSE);
     }
 
     @Test
@@ -58,7 +62,7 @@ class ReceiptJournalCriteriaTest {
 
     @Test
     void periodLimitIsOneYear() {
-        assertThat(ReceiptJournalCriteria.MAX_RANGE).isEqualTo(Duration.ofDays(366));
+        assertThat(DateRangeLimits.MAX_DAYS_REPORT).isEqualTo(366);
     }
 
     private static ReceiptJournalFilter filter(Instant from, Instant to, ReceiptStatus status, String search) {

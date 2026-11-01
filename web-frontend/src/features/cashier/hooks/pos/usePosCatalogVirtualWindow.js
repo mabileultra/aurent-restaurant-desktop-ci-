@@ -74,6 +74,19 @@ export function usePosCatalogVirtualWindow({
   const rowCount = Math.max(1, Math.ceil(Math.max(0, itemCount) / columns));
 
   return useMemo(() => {
+    // No measured viewport (missing scroll parent / first paint): paint all rows.
+    // Otherwise overscan*2 alone caps the list at 8 and leaves a blank spacer.
+    if (!scroll.height) {
+      return {
+        columns,
+        rowHeight,
+        totalHeight: rowCount * rowHeight,
+        offsetY: 0,
+        startIndex: 0,
+        endIndex: itemCount,
+      };
+    }
+
     const overscan = POS_CATALOG_VIRTUAL_OVERSCAN_ROWS;
     const startRow = Math.max(0, Math.floor(scroll.scrollTop / rowHeight) - overscan);
     const visibleRows = Math.ceil(scroll.height / rowHeight) + overscan * 2;

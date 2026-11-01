@@ -33,17 +33,22 @@ public class FloorRevisionBump {
         evictAfterCommit(companyId, storeId);
     }
 
-    public void noteRemote(Integer companyId, Integer storeId, Long remoteOrigin) {
+    /**
+     * @return true when local {@code revision} advanced because this remote origin is new
+     */
+    public boolean noteRemote(Integer companyId, Integer storeId, Long remoteOrigin) {
         if (companyId == null || storeId == null || remoteOrigin == null || remoteOrigin <= 0) {
-            return;
+            return false;
         }
         if (!mark("remote:" + companyId + ":" + storeId)) {
-            return;
+            return false;
         }
         int updated = store.advanceSeenOrigin(companyId, storeId, remoteOrigin);
         if (updated > 0) {
             evictAfterCommit(companyId, storeId);
+            return true;
         }
+        return false;
     }
 
     private boolean mark(String key) {

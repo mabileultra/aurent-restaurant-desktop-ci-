@@ -1,11 +1,17 @@
 import { EMPH_LINE_PREFIX, BOLD_LINE_PREFIX } from '../../pos/utils/ticketLayout';
+import { isKitchenChannelPlaceLine } from '../../pos/utils/kitchenPlaceLine';
 import { factoryPrintProfile, fieldStyle, fontCss } from './printProfileDefaults';
 
 const HEADER_KEYS = new Set(['logo', 'storeName', 'address', 'phone', 'footer']);
 
-/** Guest bill and the fiscal check print a filled header even if that tab's box stayed off. */
+/**
+ * Guest bill header: schemaVersion ≥ 2 respects toggles.
+ * Older profiles keep legacy auto-on when text is filled (no deploy break).
+ */
 export function slipFieldStyle(profile, slipType, key) {
   const style = fieldStyle(profile, slipType, key);
+  const schema = Number(profile?.schemaVersion) || 1;
+  if (schema >= 2) return style;
   if (slipType === 'GUEST_BILL' && HEADER_KEYS.has(key) && headerValue(profile, key)) {
     return { ...style, on: true };
   }
@@ -143,9 +149,24 @@ export function filterMetaLines(metaLines, profile, slipType) {
   lines.forEach((line, index) => {
     const text = String(line || '');
     if (!text) return;
+    // Takeaway / delivery mark must stay on station & category slips.
+    if (isKitchenChannelPlaceLine(text)) {
+      const hall = fieldStyle(profile, slipType, 'hallTable');
+      out.push(styleLine(text, { ...hall, on: true, bold: true, size: hall.size === 'sm' ? 'md' : hall.size }));
+      return;
+    }
     let key = 'time';
     if (index === 0) key = 'hallTable';
     else if (/официант|waiter/i.test(text)) key = 'waiter';
+    // Delivery phone / address sit between place and waiter — keep them with the channel.
+    else if (index > 0 && !/официант|waiter/i.test(text) && !/^\d{1,2}[./]/.test(text)
+      && !/\d{1,2}:\d{2}/.test(text)) {
+      const prev = String(lines[0] || '');
+      if (isKitchenChannelPlaceLine(prev)) {
+        out.push(styleLine(text, fieldStyle(profile, slipType, 'hallTable')));
+        return;
+      }
+    }
     const style = fieldStyle(profile, slipType, key);
     if (!style.on) return;
     out.push(styleLine(text, style));

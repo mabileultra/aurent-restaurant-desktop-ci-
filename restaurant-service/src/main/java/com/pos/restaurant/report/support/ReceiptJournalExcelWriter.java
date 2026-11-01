@@ -44,8 +44,8 @@ public class ReceiptJournalExcelWriter {
         new Column("hall", "Зал", 16, Kind.TEXT, c -> c.row().hallName()),
         new Column("table", "Стол", 10, Kind.TEXT, c -> c.row().tableCode()),
         new Column("guests", "Гости", 8, Kind.INT, c -> c.row().guestCount()),
-        new Column("waiter", "Официант", 20, Kind.TEXT, c -> userName(c, c.row().waiterUserId())),
-        new Column("cashier", "Кассир", 20, Kind.TEXT, c -> userName(c, c.row().cashierUserId())),
+        new Column("waiter", "Официант", 20, Kind.TEXT, c -> staffLabel(c, c.row().waiterName(), c.row().waiterUserId())),
+        new Column("cashier", "Кассир", 20, Kind.TEXT, c -> staffLabel(c, c.row().cashierName(), c.row().cashierUserId())),
         new Column("method", "Оплата", 14, Kind.TEXT, c -> c.labels().enumLabel("method", c.row().method())),
         new Column("cardType", "Карта", 10, Kind.TEXT, c -> c.row().cardType() == null ? null : c.row().cardType().name()),
         new Column("total", "Сумма", 14, Kind.MONEY, c -> c.row().totalAmount()),
@@ -170,7 +170,10 @@ public class ReceiptJournalExcelWriter {
         return instant == null ? null : LocalDateTime.ofInstant(instant, zone);
     }
 
-    private static String userName(Ctx ctx, UUID userId) {
+    private static String staffLabel(Ctx ctx, String serverName, UUID userId) {
+        if (serverName != null && !serverName.isBlank()) {
+            return serverName;
+        }
         if (userId == null) {
             return null;
         }

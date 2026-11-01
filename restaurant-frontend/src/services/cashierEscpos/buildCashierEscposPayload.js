@@ -23,6 +23,13 @@ function readReceiptFields() {
   return out;
 }
 
+/** @returns {Record<string, { size?: string, bold?: boolean }>} */
+function readReceiptFieldStyles() {
+  const { receiptFieldStyles } = useTenantDisplayStore.getState().committed;
+  if (!receiptFieldStyles || typeof receiptFieldStyles !== 'object') return {};
+  return { ...receiptFieldStyles };
+}
+
 /**
  * Брендинг и env для шапки чека.
  * @returns {object}
@@ -68,6 +75,8 @@ export function buildEscposLabels(t) {
     ikpuLine: t('receipt.ikpuLine'),
     vatLineShort: t('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
     currency: t('fiscalReceipt.currency'),
+    serviceLine: t('rst.order.serviceLine', { percent: '{{percent}}' }),
+    serviceShort: t('rst.order.serviceShort', { defaultValue: 'Обслуживание' }),
     lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),
     orderDiscountSum: t('fiscalReceipt.orderDiscountSum'),
     discountsSum: t('fiscalReceipt.discountsSum'),
@@ -129,7 +138,6 @@ export function buildCashierEscposPayload(sale, t) {
   const printFiscalQr = sale.printFiscalQr !== false;
   const qrValue = printFiscalQr ? fiscalMeta.qrValue : '';
   const receiptFields = readReceiptFields();
-  receiptFields.footer = false;
   if (!printFiscalQr || !qrValue) {
     receiptFields.qrCode = false;
   }
@@ -153,6 +161,7 @@ export function buildCashierEscposPayload(sale, t) {
     },
     branding,
     receiptFields,
+    receiptFieldStyles: readReceiptFieldStyles(),
     qrValue,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,

@@ -24,7 +24,7 @@
   border: 1px solid transparent;
   border-radius: 11px;
   background: transparent;
-  color: #c5cce0;
+  color: var(--rst-muted);
   font: inherit;
   font-size: 0.9rem;
   font-weight: 700;
@@ -35,16 +35,16 @@
 }
 
 .rst-shell__group-toggle:hover {
-  background: rgb(255 255 255 / 0.04);
-  border-color: rgb(255 255 255 / 0.06);
+  background: var(--rst-accent-soft);
+  border-color: color-mix(in srgb, var(--rst-accent) 22%, transparent);
   color: var(--rst-ink);
 }
 
 .rst-shell__group.is-active > .rst-shell__group-toggle,
 .rst-shell__group.is-open > .rst-shell__group-toggle {
-  background: rgb(255 122 26 / 0.1);
-  border-color: rgb(255 122 26 / 0.22);
-  color: #ffd7b0;
+  background: var(--rst-accent-soft);
+  border-color: color-mix(in srgb, var(--rst-accent) 30%, transparent);
+  color: var(--rst-ink);
 }
 
 .rst-shell__group-toggle-main {
@@ -56,13 +56,17 @@
 
 .rst-shell__chevron {
   flex-shrink: 0;
-  color: #6f7b91;
-  transition: transform 0.18s ease;
+  color: var(--rst-muted);
+  transition: transform 0.18s ease, color 0.12s ease;
+}
+
+.rst-shell__group.is-active > .rst-shell__group-toggle .rst-shell__chevron {
+  color: var(--rst-accent);
 }
 
 .rst-shell__group.is-open > .rst-shell__group-toggle .rst-shell__chevron {
   transform: rotate(180deg);
-  color: #ffd7b0;
+  color: var(--rst-accent);
 }
 
 .rst-shell__group-links {
@@ -86,6 +90,7 @@
 .rst-shell__ico {
   flex-shrink: 0;
   opacity: 0.9;
+  color: inherit;
 }
 
 .rst-shell__link.is-active .rst-shell__ico {
@@ -99,6 +104,7 @@
 
 .rst-shell__group--solo + .rst-shell__group,
 .rst-shell__group + .rst-shell__group--solo {
-  padding-top: 0.2rem;
-  border-top: 1px solid rgb(255 255 255 / 0.04);
+  padding-top: 0.35rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid var(--rst-line);
 }

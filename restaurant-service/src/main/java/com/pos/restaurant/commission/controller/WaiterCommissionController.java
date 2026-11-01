@@ -1,10 +1,11 @@
 package com.pos.restaurant.commission.controller;
 
+import com.pos.restaurant.commission.dto.WaiterCommissionOrderRow;
 import com.pos.restaurant.commission.dto.WaiterCommissionPercentRequest;
-import com.pos.restaurant.commission.dto.WaiterCommissionOrdersResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionSettingsResponse;
 import com.pos.restaurant.commission.service.WaiterCommissionService;
+import com.pos.shared.api.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -94,13 +95,13 @@ public class WaiterCommissionController {
     @GetMapping("/stores/{storeId}/reports/waiter-commission/waiters/{waiterUserId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Заказы официанта в отчёте комиссии (страница)")
-    public WaiterCommissionOrdersResponse waiterOrders(
+    public PageResponse<WaiterCommissionOrderRow> waiterOrders(
         @PathVariable Integer storeId,
         @PathVariable UUID waiterUserId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "14") int size
+        @RequestParam(defaultValue = "20") int size
     ) {
         return commissionService.waiterOrders(storeId, waiterUserId, from, to, page, size);
     }

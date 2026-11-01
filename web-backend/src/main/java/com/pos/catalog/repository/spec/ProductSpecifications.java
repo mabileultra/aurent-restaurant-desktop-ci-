@@ -274,7 +274,7 @@ public final class ProductSpecifications {
         ));
     }
 
-    /** Точный поиск одного товара: SKU, штрихкод, ИКПУ e-фактуры и т.д. */
+    /** Точный поиск одного товара: SKU, штрихкод, ИКПУ/МХИК, e-фактура и т.д. */
     public static LookupBuilder lookup(Integer companyId) {
         return new LookupBuilder(companyId);
     }
@@ -285,6 +285,7 @@ public final class ProductSpecifications {
         private String sku;
         private String nameIgnoreCase;
         private String barcode;
+        private String ikpu;
         private String uzInvoiceDocumentId;
         private String skuStartsWith;
         private Boolean activeOnly = true;
@@ -308,6 +309,12 @@ public final class ProductSpecifications {
 
         public LookupBuilder barcode(String value) {
             this.barcode = value;
+            return this;
+        }
+
+        /** Точный MXIK/ИКПУ (например 03305005001000000) — пробитие на кассе. */
+        public LookupBuilder ikpu(String value) {
+            this.ikpu = value;
             return this;
         }
 
@@ -336,6 +343,7 @@ public final class ProductSpecifications {
             if (!StringUtils.hasText(sku)
                 && !StringUtils.hasText(nameIgnoreCase)
                 && !StringUtils.hasText(barcode)
+                && !StringUtils.hasText(ikpu)
                 && !StringUtils.hasText(uzInvoiceDocumentId)
                 && !StringUtils.hasText(skuStartsWith)) {
                 throw new IllegalStateException("At least one lookup field is required");
@@ -359,6 +367,9 @@ public final class ProductSpecifications {
                 }
                 if (StringUtils.hasText(barcode)) {
                     parts.add(cb.equal(root.get("barcode"), barcode.trim()));
+                }
+                if (StringUtils.hasText(ikpu)) {
+                    parts.add(cb.equal(root.get("ikpu"), ikpu.trim()));
                 }
                 if (StringUtils.hasText(uzInvoiceDocumentId)) {
                     parts.add(cb.equal(root.get("uzInvoiceDocumentId"), uzInvoiceDocumentId.trim()));

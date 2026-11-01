@@ -19,8 +19,9 @@ describe('applyGuestBillToFiscalPayload', () => {
     expect(next.branding.companyName).toBe('Tenant');
   });
 
-  it('copies a filled header onto the fiscal check even if the guest-bill boxes are off', () => {
+  it('legacy schema v1 copies filled header onto fiscal even if boxes are off', () => {
     const profile = factoryPrintProfile();
+    profile.schemaVersion = 1;
     profile.storeName = 'XAN BALIQ';
     profile.phone = '+998';
     profile.address = 'Ташкент';
@@ -37,6 +38,16 @@ describe('applyGuestBillToFiscalPayload', () => {
     expect(next.receiptFields.companyAddress).toBe(true);
     expect(next.receiptFields.footer).toBe(true);
     expect(next.labels.footer).toBe('Ждём снова');
+  });
+
+  it('schema v2 does not copy guest header when toggles are off', () => {
+    const profile = factoryPrintProfile();
+    profile.schemaVersion = 2;
+    profile.storeName = 'XAN BALIQ';
+    profile.phone = '+998';
+    const next = applyGuestBillToFiscalPayload(payload, profile);
+    expect(next.branding.companyName).toBe('Tenant');
+    expect(next.branding.companyPhone).toBe('');
   });
 
   it('copies logo, phone and footer when the guest-bill toggles are on', () => {

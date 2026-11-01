@@ -54,7 +54,7 @@
   overflow-y: auto;
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240);
-  background: #fff;
+  background: var(--rst-surface, var(--color-surface, #F8F2EC));
 }
 
 .dark .tasnif-search__results {

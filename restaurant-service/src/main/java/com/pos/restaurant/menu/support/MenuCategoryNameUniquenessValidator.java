@@ -13,14 +13,18 @@ public class MenuCategoryNameUniquenessValidator {
 
     private final MenuCategoryRepository categoryRepository;
 
-    public void assertUniqueOnCreate(Integer storeId, String name) {
-        if (categoryRepository.existsByStoreIdAndNameIgnoreCaseAndActiveTrue(storeId, name)) {
+    public void assertUniqueOnCreate(Integer companyId, Integer storeId, String name) {
+        if (categoryRepository.existsByCompanyIdAndStoreIdAndNameIgnoreCaseAndActiveTrue(
+            companyId, storeId, name
+        )) {
             throw new BusinessException("Menu category already exists: " + name);
         }
     }
 
-    public void assertUniqueOnUpdate(Integer storeId, String name, UUID id) {
-        if (categoryRepository.existsByStoreIdAndNameIgnoreCaseAndActiveTrueAndIdNot(storeId, name, id)) {
+    public void assertUniqueOnUpdate(Integer companyId, Integer storeId, String name, UUID id) {
+        if (categoryRepository.existsByCompanyIdAndStoreIdAndNameIgnoreCaseAndActiveTrueAndIdNot(
+            companyId, storeId, name, id
+        )) {
             throw new BusinessException("Menu category already exists: " + name);
         }
     }

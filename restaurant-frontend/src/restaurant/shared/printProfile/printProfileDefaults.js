@@ -54,10 +54,14 @@ function defaultSlip(slip) {
   return { fields };
 }
 
+/** v2 = guest-bill header toggles are respected (no auto-on when text filled). */
+export const PRINT_PROFILE_SCHEMA_VERSION = 2;
+
 export function factoryPrintProfile() {
   const slips = {};
   for (const slip of PRINT_SLIP_TYPES) slips[slip] = defaultSlip(slip);
   return {
+    schemaVersion: PRINT_PROFILE_SCHEMA_VERSION,
     logoDataUrl: '',
     logoMaxHeightMm: 22,
     storeName: '',

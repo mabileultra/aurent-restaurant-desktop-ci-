@@ -4,17 +4,21 @@ const {
   bootstrapCashRegistersFromCloud,
 } = require('./edgeBootstrapAdmin');
 const { getLiveCloudSession } = require('./edgeLiveSync');
+const { pushCatalogToCloud } = require('./edgeCatalogCloudPush');
 
 /**
- * Quiet catalog reconcile while online (Phase E).
- * Menu/halls/stations/modifiers/recipes come via catalog-export → local bootstrap.
- * Categories + cash registers refreshed lightly for admin screens.
- * Does not wipe offline-only local edits that share cloud ids (upsert import).
+ * Quiet catalog reconcile while online (Phase E + S2).
+ * 1) Push local structure → cloud (LWW)
+ * 2) Pull cloud → local (LWW) so both sides converge
  */
 async function refreshCatalogFromCloud() {
   const session = getLiveCloudSession();
   if (!session?.token || !session.storeIds?.length) {
     return { skipped: true, reason: 'no-session' };
+  }
+  const pushed = await pushCatalogToCloud();
+  if (pushed?.authFailed) {
+    return { refreshed: false, authFailed: true, pushed };
   }
   const secret = session.bootstrapSecret;
   const results = [];
@@ -66,10 +70,11 @@ async function refreshCatalogFromCloud() {
 
   return {
     refreshed: true,
+    pushed,
     results,
     categories,
     cashRegisters,
   };
 }
 
-module.exports = { refreshCatalogFromCloud };
+module.exports = { refreshCatalogFromCloud, pushCatalogToCloud };

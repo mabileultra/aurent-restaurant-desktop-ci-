@@ -37,9 +37,10 @@ export default function DashboardRecentOrders({ t, rows, waiterNameById }) {
                   </thead>
                   <tbody>
                     {pageRows.map((row) => {
-                      const waiter = row.waiterUserId
-                        ? (waiterNameById.get(String(row.waiterUserId)) || '—')
-                        : '—';
+                      const waiter = row.waiterName
+                        || (row.waiterUserId
+                          ? (waiterNameById.get(String(row.waiterUserId)) || '—')
+                          : '—');
                       const statusKey = STATUS_KEY[row.status] || 'statusOpen';
                       return (
                         <tr key={`${row.orderNo}-${row.status}`}>

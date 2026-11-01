@@ -4,6 +4,7 @@ import com.pos.identity.client.PosCoreClient;
 import com.pos.identity.client.dto.CompanyDto;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
+import com.pos.identity.dto.shared.PageResponse;
 import com.pos.identity.entity.User;
 import com.pos.identity.entity.UserModuleAccess;
 import com.pos.identity.entity.UserModuleAccessId;
@@ -14,6 +15,7 @@ import com.pos.identity.security.PlatformAdminModule;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessUsersPager;
 import com.pos.identity.support.IdentityUsers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.List;
@@ -32,6 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +53,7 @@ class ModuleAccessServiceImplTest {
     @Mock
     private ModuleAccessUserGate moduleAccessUserGate;
     @Mock
-    private com.pos.identity.service.support.TenantAccessSupport tenantAccess;
+    private ModuleAccessUsersPager moduleAccessUsersPager;
 
     private ModuleAccessServiceImpl service;
 
@@ -59,11 +64,10 @@ class ModuleAccessServiceImplTest {
         service = new ModuleAccessServiceImpl(
             userRepository,
             userModuleAccessRepository,
-            posCoreClient,
             catalog,
             moduleAccessUserGate,
             scopeResolver,
-            tenantAccess
+            moduleAccessUsersPager
         );
     }
 
@@ -107,13 +111,11 @@ class ModuleAccessServiceImplTest {
 
     @Test
     void listUsersIncludesOperatorsOnlyForSuperAdmin() {
-        User tenant = IdentityUsers.user("ADMIN", 9);
-        tenant.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z"));
-        User operator = IdentityUsers.user("PLATFORM_ADMIN", null);
-        operator.setCreatedAt(Instant.parse("2026-02-01T00:00:00Z"));
-        when(userRepository.findTenantUsersForModuleAccess(null)).thenReturn(List.of(tenant));
-        when(tenantAccess.isSuperAdmin()).thenReturn(true);
-        when(userRepository.findPlatformOperatorsForModuleAccess()).thenReturn(List.of(operator));
+        UserModuleAccessSummary tenant = summary("ADMIN");
+        UserModuleAccessSummary operator = summary("PLATFORM_ADMIN");
+        when(moduleAccessUsersPager.page(
+            isNull(), eq(false), isNull(), eq("all"), isNull(), any(Pageable.class)
+        )).thenReturn(PageResponse.slice(List.of(operator, tenant), Pageable.unpaged()));
 
         List<UserModuleAccessSummary> all = service.listUsers(null);
         assertEquals(List.of("PLATFORM_ADMIN", "ADMIN"), all.stream().map(UserModuleAccessSummary::role).toList());
@@ -121,25 +123,24 @@ class ModuleAccessServiceImplTest {
 
     @Test
     void listUsersHidesOperatorsForPlatformAdminActor() {
-        User tenant = IdentityUsers.user("ADMIN", 9);
-        tenant.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z"));
-        when(userRepository.findTenantUsersForModuleAccess(null)).thenReturn(List.of(tenant));
-        when(tenantAccess.isSuperAdmin()).thenReturn(false);
+        UserModuleAccessSummary tenant = summary("ADMIN");
+        when(moduleAccessUsersPager.page(
+            isNull(), eq(false), isNull(), eq("all"), isNull(), any(Pageable.class)
+        )).thenReturn(PageResponse.slice(List.of(tenant), Pageable.unpaged()));
 
         List<UserModuleAccessSummary> all = service.listUsers(null);
         assertEquals(List.of("ADMIN"), all.stream().map(UserModuleAccessSummary::role).toList());
-        verify(userRepository, never()).findPlatformOperatorsForModuleAccess();
     }
 
     @Test
     void listUsersSkipsOperatorsWhenCompanyFilterIsSet() {
-        User tenant = IdentityUsers.user("ADMIN", 9);
-        tenant.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z"));
-        when(userRepository.findTenantUsersForModuleAccess(9)).thenReturn(List.of(tenant));
+        UserModuleAccessSummary tenant = summary("ADMIN");
+        when(moduleAccessUsersPager.page(
+            eq(9), eq(false), isNull(), eq("all"), isNull(), any(Pageable.class)
+        )).thenReturn(PageResponse.slice(List.of(tenant), Pageable.unpaged()));
 
         List<UserModuleAccessSummary> companyOnly = service.listUsers(9);
         assertEquals(List.of("ADMIN"), companyOnly.stream().map(UserModuleAccessSummary::role).toList());
-        verify(userRepository, never()).findPlatformOperatorsForModuleAccess();
     }
 
     @Test
@@ -193,6 +194,19 @@ class ModuleAccessServiceImplTest {
         List<String> allowed = service.resolveAllowedModuleIds(admin);
         assertTrue(allowed.stream().noneMatch("dashboard"::equals));
         assertTrue(allowed.contains("products"));
+    }
+
+    private static UserModuleAccessSummary summary(String role) {
+        return new UserModuleAccessSummary(
+            UUID.randomUUID(),
+            "user",
+            "User",
+            role,
+            null,
+            null,
+            false,
+            Instant.parse("2026-01-01T00:00:00Z")
+        );
     }
 
     private static UserModuleAccess row(UUID userId, String key, boolean allowed) {

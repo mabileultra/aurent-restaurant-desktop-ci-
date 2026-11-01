@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,7 @@ public class EdgeProductController {
         applyBody(p, body);
         p.setActive(body.get("active") == null || Boolean.TRUE.equals(body.get("active")));
         if (p.getStockQty() == null) p.setStockQty(BigDecimal.ZERO);
+        p.setUpdatedAt(Instant.now());
         productRepository.save(p);
         return ResponseEntity.ok(toDto(p));
     }
@@ -136,6 +138,7 @@ public class EdgeProductController {
         if (body.containsKey("active")) {
             p.setActive(Boolean.TRUE.equals(body.get("active")));
         }
+        p.setUpdatedAt(Instant.now());
         productRepository.save(p);
         return ResponseEntity.ok(toDto(p));
     }
@@ -157,6 +160,7 @@ public class EdgeProductController {
         } else {
             p.setStockQty(p.getStockQty().add(qty));
         }
+        p.setUpdatedAt(Instant.now());
         productRepository.save(p);
         Map<String, Object> dto = toDto(p);
         dto.put("notes", notes);

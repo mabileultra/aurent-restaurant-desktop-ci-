@@ -8,11 +8,6 @@
   font-size: 1.05rem;
 }
 
-.cashier-app--pharmacy-pos .cashier-topbar__pro-badge {
-  padding: 2px 6px;
-  font-size: 0.5625rem;
-}
-
 .cashier-app--pharmacy-pos .cashier-topbar__store-pill {
   gap: 8px;
   min-height: var(--cashier-topbar-control-h, 40px);
@@ -78,11 +73,6 @@
 
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__brand-name {
   color: #1a2e28;
-}
-
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__pro-badge {
-  background: var(--pharm-brand-soft, rgb(0 104 71 / 0.12));
-  color: var(--pharm-brand, #006847);
 }
 
 /* Pay column: чуть шире под макет */

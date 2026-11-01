@@ -69,7 +69,7 @@
 .rst-menu-import__table th {
   position: sticky;
   top: 0;
-  background: var(--rst-surface, #fff);
+  background: var(--rst-surface, #F8F2EC);
   z-index: 1;
 }
 
@@ -100,7 +100,7 @@
   padding: 0.65rem 0.75rem;
   max-height: 26rem;
   overflow: auto;
-  background: var(--rst-surface, #fff);
+  background: var(--rst-surface, #F8F2EC);
 }
 
 .rst-menu-import__editor-empty {

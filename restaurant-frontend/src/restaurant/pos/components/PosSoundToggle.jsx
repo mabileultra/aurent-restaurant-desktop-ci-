@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BaseButton } from '../../../components/ui';
 import {
+  hookGestureUnlock,
   isPosSoundsEnabled,
   playPosSound,
   setPosSoundsEnabled,
@@ -9,6 +10,10 @@ import {
 
 export default function PosSoundToggle({ t }) {
   const [on, setOn] = useState(() => isPosSoundsEnabled());
+
+  useEffect(() => {
+    hookGestureUnlock();
+  }, []);
 
   const toggle = () => {
     const next = !on;

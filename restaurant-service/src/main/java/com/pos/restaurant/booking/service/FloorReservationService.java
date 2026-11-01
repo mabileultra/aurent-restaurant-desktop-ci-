@@ -1,10 +1,11 @@
 package com.pos.restaurant.booking.service;
 
 import com.pos.restaurant.booking.dto.BookingTableOptionResponse;
+import com.pos.restaurant.booking.dto.ReservationListFilter;
+import com.pos.restaurant.booking.dto.ReservationListResponse;
 import com.pos.restaurant.booking.dto.ReservationResponse;
 import com.pos.restaurant.booking.dto.SaveReservationRequest;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ public interface FloorReservationService {
 
     List<BookingTableOptionResponse> listBookingTables(Integer storeId);
 
-    List<ReservationResponse> list(Integer storeId, Instant from, Instant to, boolean activeOnly);
+    ReservationListResponse list(Integer storeId, ReservationListFilter filter, int page, int size);
 
     ReservationResponse get(UUID reservationId);
 

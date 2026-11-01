@@ -2,10 +2,12 @@ const { bootstrapStockFromCloud } = require('./edgeBootstrapStock');
 const { bootstrapSuppliersFromCloud } = require('./edgeBootstrapSuppliers');
 const { bootstrapStoresFromCloud } = require('./edgeBootstrapStores');
 const { getLiveCloudSession } = require('./edgeLiveSync');
+const { pushStockToCloud } = require('./edgeStockCloudPush');
 
 /**
- * Quiet stock + refs reconcile while online (Phase F).
- * Products/balances per store, suppliers, stores list — upsert into local edge.
+ * Quiet stock + refs reconcile while online (Phase F + S4).
+ * 1) Push local stock → cloud (LWW)
+ * 2) Pull cloud → local (LWW)
  * Local STOCK_* document outbox stays separate (applied locally; flush policy unchanged).
  */
 async function refreshStockFromCloud() {
@@ -16,6 +18,16 @@ async function refreshStockFromCloud() {
   const secret = session.bootstrapSecret;
   const results = [];
 
+  let pushed = null;
+  try {
+    pushed = await pushStockToCloud();
+    if (pushed?.authFailed) {
+      return { refreshed: false, authFailed: true, pushed };
+    }
+  } catch {
+    /* still try pull */
+  }
+
   try {
     await bootstrapStoresFromCloud({
       token: session.token,
@@ -24,7 +36,7 @@ async function refreshStockFromCloud() {
     });
   } catch (err) {
     if (err.status === 401 || err.status === 403) {
-      return { refreshed: false, authFailed: true, results };
+      return { refreshed: false, authFailed: true, results, pushed };
     }
   }
 
@@ -59,7 +71,7 @@ async function refreshStockFromCloud() {
     }
   }
 
-  return { refreshed: true, results };
+  return { refreshed: true, pushed, results };
 }
 
-module.exports = { refreshStockFromCloud };
+module.exports = { refreshStockFromCloud, pushStockToCloud };

@@ -101,7 +101,8 @@ public class EdgeCatalogExportService {
         List<HallRow> halls = hallRepository
             .findByCompanyIdAndStoreIdOrderBySortOrderAscNameAsc(companyId, storeId)
             .stream()
-            .map(h -> new HallRow(h.getId(), h.getName(), h.getSortOrder(), h.isActive(), h.getServicePercent()))
+            .map(h -> new HallRow(
+                h.getId(), h.getName(), h.getSortOrder(), h.isActive(), h.getServicePercent(), h.getUpdatedAt()))
             .toList();
 
         List<TableRow> tables = tableRepository
@@ -119,14 +120,16 @@ public class EdgeCatalogExportService {
                 t.getWidth(),
                 t.getHeight(),
                 t.getStatus() == null ? "FREE" : t.getStatus().name(),
-                t.isActive()
+                t.isActive(),
+                t.getUpdatedAt()
             ))
             .toList();
 
         List<StationRow> stations = stationRepository
             .findByCompanyIdAndStoreIdOrderBySortOrderAscNameAsc(companyId, storeId)
             .stream()
-            .map(s -> new StationRow(s.getId(), s.getCode(), s.getName(), s.getSortOrder(), s.isActive()))
+            .map(s -> new StationRow(
+                s.getId(), s.getCode(), s.getName(), s.getSortOrder(), s.isActive(), s.getUpdatedAt()))
             .toList();
 
         List<CategoryRow> categories = categoryRepository
@@ -134,7 +137,7 @@ public class EdgeCatalogExportService {
             .stream()
             .map(c -> new CategoryRow(
                 c.getId(), c.getName(), c.getSortOrder(), c.isActive(),
-                c.isAutoPrint(), c.getPrintPrinterName()
+                c.isAutoPrint(), c.getPrintPrinterName(), c.getUpdatedAt()
             ))
             .toList();
 
@@ -168,7 +171,8 @@ public class EdgeCatalogExportService {
                 i.getUnitMeasureCode(),
                 i.getBarcode(),
                 i.isMarkedProduct(),
-                i.getSortOrder()
+                i.getSortOrder(),
+                i.getUpdatedAt()
             ))
             .toList();
 

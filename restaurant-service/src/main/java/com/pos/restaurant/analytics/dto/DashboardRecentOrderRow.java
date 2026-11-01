@@ -6,6 +6,7 @@ public record DashboardRecentOrderRow(
     int orderNo,
     String tableCode,
     String waiterUserId,
+    String waiterName,
     BigDecimal amount,
     String status
 ) {

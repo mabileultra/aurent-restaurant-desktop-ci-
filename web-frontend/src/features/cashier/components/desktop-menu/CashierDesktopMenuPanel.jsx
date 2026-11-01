@@ -1,25 +1,21 @@
 import {
   Barcode,
-  ChevronDown,
   Download,
   FileText,
   LogOut,
   Maximize,
+  Menu,
   Printer,
   RefreshCw,
   Scale,
   Server,
   Tag,
+  X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef } from 'react';
-import BrandMark from '../../../../components/shared/BrandMark';
-import { isDesktopCashier } from '../../../../utils/authLogin';
-import { BRAND_LOGO_SIZES } from '../../../../config/brandLogos';
 import CashierDesktopMenuConnectivity from './CashierDesktopMenuConnectivity';
 import CashierFiscalTheme from '../../../fiscal/CashierFiscalTheme';
 
 export default function CashierDesktopMenuPanel({
-  appName,
   menu,
 }) {
   const {
@@ -43,63 +39,24 @@ export default function CashierDesktopMenuPanel({
     reloadingUi,
   } = menu;
 
-  const label = appName || 'Aurent';
-  const desktop = isDesktopCashier();
-  const closeTimerRef = useRef(null);
-
-  const cancelClose = useCallback(() => {
-    if (closeTimerRef.current != null) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  }, []);
-
-  const openMenu = useCallback(() => {
-    cancelClose();
-    setOpen(true);
-  }, [cancelClose, setOpen]);
-
-  const scheduleClose = useCallback(() => {
-    if (reloadingUi) return;
-    cancelClose();
-    closeTimerRef.current = window.setTimeout(() => {
-      closeTimerRef.current = null;
-      setOpen(false);
-    }, 200);
-  }, [cancelClose, reloadingUi, setOpen]);
-
-  useEffect(() => () => cancelClose(), [cancelClose]);
-
   return (
     <div
       ref={rootRef}
       className={`cashier-desktop-menu${open ? ' is-open' : ''}`}
-      onMouseEnter={openMenu}
-      onMouseLeave={scheduleClose}
     >
       <button
         type="button"
         className="cashier-desktop-menu__trigger"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => {
-          cancelClose();
-          setOpen((v) => !v);
-        }}
+        aria-label={open ? t('common.close', { defaultValue: 'Закрыть' }) : t('desktop.menu', { defaultValue: 'Меню' })}
+        onClick={() => setOpen((v) => !v)}
       >
-        {desktop ? (
-          <BrandMark
-            variant="full"
-            height={BRAND_LOGO_SIZES.pharmacyDesktop}
-            className="cashier-desktop-menu__logo"
-          />
+        {open ? (
+          <X size={20} strokeWidth={2.5} className="cashier-desktop-menu__burger" aria-hidden />
         ) : (
-          <>
-            <BrandMark variant="full" height={BRAND_LOGO_SIZES.pharmacyDesktop} className="cashier-desktop-menu__logo" />
-            <span className="cashier-desktop-menu__label">{label}</span>
-          </>
+          <Menu size={20} strokeWidth={2.5} className="cashier-desktop-menu__burger" aria-hidden />
         )}
-        <ChevronDown size={12} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
       </button>
       <div className="cashier-desktop-menu__panel" role="menu">
         <button

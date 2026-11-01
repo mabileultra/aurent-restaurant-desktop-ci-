@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateSiteLeadRequest(
-    @NotBlank @Size(max = 200) String name,
-    @NotBlank @Size(max = 32) String phone,
+    @NotBlank @Size(min = 2, max = 200) String name,
+    @NotBlank @Size(min = 9, max = 32) String phone,
     @Email @Size(max = 255) String email,
     @NotNull SiteLeadType leadType,
     @NotBlank @Size(max = 64) String source,

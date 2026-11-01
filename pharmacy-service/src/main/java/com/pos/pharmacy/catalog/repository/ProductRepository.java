@@ -22,6 +22,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     List<Product> findByCompanyIdAndBarcodeIn(Integer companyId, Collection<String> barcodes);
 
+    List<Product> findByCompanyIdAndIkpuIn(Integer companyId, Collection<String> ikpus);
+
     @Query("""
         SELECT p FROM Product p
         WHERE p.companyId = :companyId
@@ -33,6 +35,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             OR FUNCTION('translate', p.sku, :foldFrom, :foldTo)
               LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
             OR FUNCTION('translate', COALESCE(p.barcode, ''), :foldFrom, :foldTo)
+              LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+            OR FUNCTION('translate', COALESCE(p.ikpu, ''), :foldFrom, :foldTo)
               LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
           )
         ORDER BY p.name

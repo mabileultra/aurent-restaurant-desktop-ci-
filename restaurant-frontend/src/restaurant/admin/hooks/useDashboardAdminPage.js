@@ -7,6 +7,7 @@ import { rstAnalyticsApi } from '../../api/analytics.api';
 import { rstFloorApi } from '../../api/floor.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { dashboardQueryParams } from '../utils/dashboardPeriod';
+import { toDashboardViewModel } from '../utils/dashboardViewModel';
 import { resolveDashboardQuickActions } from '../utils/dashboardQuickActions';
 
 function normalizeList(data) {
@@ -31,10 +32,12 @@ export function useDashboardAdminPage() {
   const [waiterId, setWaiterId] = useState('');
   const [topMode, setTopMode] = useState('qty');
 
-  const params = useMemo(
-    () => dashboardQueryParams(period, customFrom, customTo),
-    [period, customFrom, customTo],
-  );
+  const params = useMemo(() => {
+    const base = dashboardQueryParams(period, customFrom, customTo);
+    if (hallId) base.hallId = hallId;
+    if (waiterId) base.waiterUserId = waiterId;
+    return base;
+  }, [period, customFrom, customTo, hallId, waiterId]);
 
   const dashQuery = useQuery({
     queryKey: ['rst-dashboard', workspace.storeId, params],
@@ -84,17 +87,13 @@ export function useDashboardAdminPage() {
     return map;
   }, [staffQuery.data]);
 
-  const recentOrders = useMemo(() => {
-    const rows = dashQuery.data?.recentOrders ?? [];
-    if (!waiterId) return rows;
-    return rows.filter((row) => String(row.waiterUserId || '') === String(waiterId));
-  }, [dashQuery.data?.recentOrders, waiterId]);
+  const data = useMemo(
+    () => toDashboardViewModel(dashQuery.data),
+    [dashQuery.data],
+  );
 
-  const liveTables = useMemo(() => {
-    const rows = dashQuery.data?.liveTables ?? [];
-    if (!hallId) return rows;
-    return rows;
-  }, [dashQuery.data?.liveTables, hallId]);
+  const recentOrders = data?.recentOrders ?? [];
+  const liveTables = data?.liveTables ?? [];
 
   const quickActions = useMemo(
     () => resolveDashboardQuickActions(user?.role),
@@ -126,8 +125,6 @@ export function useDashboardAdminPage() {
     recentOrders,
     liveTables,
     quickActions,
-    data: dashQuery.data
-      ? { ...dashQuery.data, liveTables }
-      : dashQuery.data,
+    data,
   };
 }

@@ -45,7 +45,31 @@ public class ProductBarcodeLookupService {
         if (extra != null) {
             return extra;
         }
+        Product byIkpu = matchIkpu(companyId, candidates);
+        if (byIkpu != null) {
+            return byIkpu;
+        }
         throw PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_BARCODE_NOT_FOUND, raw);
+    }
+
+    private Product matchIkpu(Integer companyId, List<String> candidates) {
+        List<Product> hits = productRepository.findByCompanyIdAndIkpuIn(companyId, candidates);
+        if (hits.isEmpty()) {
+            return null;
+        }
+        Map<String, Product> byIkpu = new HashMap<>();
+        for (Product product : hits) {
+            if (StringUtils.hasText(product.getIkpu())) {
+                byIkpu.putIfAbsent(product.getIkpu().trim(), product);
+            }
+        }
+        for (String candidate : candidates) {
+            Product found = byIkpu.get(candidate);
+            if (found != null) {
+                return found;
+            }
+        }
+        return hits.get(0);
     }
 
     private Product matchPrimaryBarcode(Integer companyId, List<String> candidates) {

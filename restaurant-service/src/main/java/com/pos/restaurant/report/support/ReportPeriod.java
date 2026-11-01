@@ -1,26 +1,27 @@
 package com.pos.restaurant.report.support;
 
 import com.pos.restaurant.exception.ValidationException;
+import com.pos.shared.api.DateRangeLimits;
+import com.pos.shared.api.FilterValidationException;
+import com.pos.shared.api.InstantRange;
 
-import java.time.Duration;
 import java.time.Instant;
 
+/** Restaurant adapter over platform {@link DateRangeLimits}. */
 public final class ReportPeriod {
-
-    static final Duration MAX_RANGE = Duration.ofDays(366);
 
     private ReportPeriod() {
     }
 
+    public static InstantRange require(Instant from, Instant to) {
+        try {
+            return DateRangeLimits.require(from, to);
+        } catch (FilterValidationException ex) {
+            throw new ValidationException(ex.getMessage());
+        }
+    }
+
     public static void assertValid(Instant from, Instant to) {
-        if (from == null || to == null) {
-            throw new ValidationException("Укажите период отчёта");
-        }
-        if (!to.isAfter(from)) {
-            throw new ValidationException("Конец периода должен быть позже начала");
-        }
-        if (Duration.between(from, to).compareTo(MAX_RANGE) > 0) {
-            throw new ValidationException("Период отчёта не может быть больше года");
-        }
+        require(from, to);
     }
 }

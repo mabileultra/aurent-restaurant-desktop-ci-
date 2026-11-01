@@ -1,0 +1,16 @@
+.rst-fiscal-field {
+  font-size: var(--rst-fs-size, 100%);
+  font-weight: var(--rst-fs-weight, 400);
+}
+
+.rst-fiscal-field--align-left {
+  text-align: left;
+}
+
+.rst-fiscal-field--align-center {
+  text-align: center;
+}
+
+.rst-fiscal-field--align-right {
+  text-align: right;
+}

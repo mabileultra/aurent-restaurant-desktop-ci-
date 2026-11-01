@@ -50,4 +50,26 @@ class PharmacySqlConstraintMessageTest {
             PharmacySqlConstraintMessage.of(error)
         );
     }
+
+    @Test
+    void explainsNumericOverflowAsAmountTooLarge() {
+        RuntimeException error = new RuntimeException(
+            "ERROR: numeric field overflow Detail: A field with precision 8, scale 2 must round to an absolute value less than 10^6."
+        );
+        assertEquals(
+            "Сумма слишком большая. В цену или количество попал ИКПУ или штрихкод.",
+            PharmacySqlConstraintMessage.of(error)
+        );
+    }
+
+    @Test
+    void explainsValueTooLong() {
+        RuntimeException error = new RuntimeException(
+            "ERROR: value too long for type character varying(20)"
+        );
+        assertEquals(
+            "Слишком длинное значение (серия, штрихкод, ИКПУ или код упаковки). Проверьте строки и повторите.",
+            PharmacySqlConstraintMessage.of(error)
+        );
+    }
 }

@@ -164,6 +164,7 @@ const PosRegisterFinder = forwardRef(function PosRegisterFinder(
               productsHasMore={productsHasMore}
               viewMode={viewMode}
               onAddProduct={onAddProduct}
+              scrollParentRef={bodyRef}
             />
           </div>
         </div>

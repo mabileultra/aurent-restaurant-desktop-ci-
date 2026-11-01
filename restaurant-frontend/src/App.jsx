@@ -7,6 +7,7 @@ import AdminThemeSync from './components/shared/AdminThemeSync';
 import AppViewportSync from './components/shared/AppViewportSync';
 import AuthBootstrap from './components/shared/AuthBootstrap';
 import AuthSessionGuard from './components/shared/AuthSessionGuard';
+import TenantDisplayBootstrap from './components/shared/TenantDisplayBootstrap';
 import UnitsCatalogBootstrap from './components/shared/UnitsCatalogBootstrap';
 import AppRoutes from './router/AppRoutes';
 import RestaurantWorldGate from './router/guards/RestaurantWorldGate';
@@ -19,12 +20,14 @@ export default function App() {
       <BrowserRouter>
         <AuthBootstrap>
           <AuthSessionGuard>
-            <UnitsCatalogBootstrap>
-              <AdminThemeSync />
-              <RestaurantWorldGate>
-                <AppRoutes />
-              </RestaurantWorldGate>
-            </UnitsCatalogBootstrap>
+            <TenantDisplayBootstrap>
+              <UnitsCatalogBootstrap>
+                <AdminThemeSync />
+                <RestaurantWorldGate>
+                  <AppRoutes />
+                </RestaurantWorldGate>
+              </UnitsCatalogBootstrap>
+            </TenantDisplayBootstrap>
           </AuthSessionGuard>
         </AuthBootstrap>
       </BrowserRouter>

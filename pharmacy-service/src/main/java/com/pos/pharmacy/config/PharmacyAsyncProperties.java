@@ -11,7 +11,7 @@ public class PharmacyAsyncProperties {
 
     private final PoolProperties markVerify = new PoolProperties(8, 8, 200, "pharm-mark-verify-");
     private final PoolProperties markWithdraw = new PoolProperties(4, 8, 500, "pharm-mark-withdraw-");
-    private final PoolProperties importPool = new PoolProperties(8, 8, 100, "pharm-import-");
+    private final PoolProperties importPool = new PoolProperties(8, 8, 2000, "pharm-import-");
     private final PoolProperties catalog = new PoolProperties(4, 8, 100, "pharm-catalog-");
     private final PoolProperties revenueOutbox = new PoolProperties(4, 8, 500, "pharm-revenue-outbox-");
 

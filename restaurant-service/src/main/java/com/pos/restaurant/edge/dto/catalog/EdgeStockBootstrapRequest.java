@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +30,7 @@ public record EdgeStockBootstrapRequest(
         String unitOfMeasure,
         String unitMeasureCode,
         Boolean markedProduct,
-        Boolean active
+        Boolean active,
+        Instant updatedAt
     ) {}
 }

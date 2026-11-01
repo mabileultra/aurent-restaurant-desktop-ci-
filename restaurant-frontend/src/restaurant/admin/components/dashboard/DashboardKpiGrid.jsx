@@ -38,13 +38,6 @@ export default function DashboardKpiGrid({ t, d }) {
   const occupied = Number(d.occupiedTables ?? 0) + Number(d.waitingPaymentTables ?? 0);
   const kitchenTotal = Number(d.kitchenWaiting ?? 0);
 
-  const profitValue = d.costComplete
-    ? fmtMoneyCompact(d.grossProfit)
-    : t('rst.dashboard.costIncomplete');
-  const profitHint = d.costComplete
-    ? t('rst.dashboard.marginPct', { value: Number(d.grossMarginPct ?? 0).toFixed(1) })
-    : t('rst.dashboard.costIncompleteHint');
-
   return (
     <div className="rst-dash__kpi-grid">
       <KpiCard
@@ -94,11 +87,13 @@ export default function DashboardKpiGrid({ t, d }) {
         to="/rst/kitchen"
       />
       <KpiCard
-        Icon={DASHBOARD_KPI_ICONS.profit}
-        title={t('rst.dashboard.kpiGrossProfit')}
-        value={profitValue}
-        hint={profitHint}
-        tone={d.costComplete ? 'up' : 'warn'}
+        Icon={DASHBOARD_KPI_ICONS.guests}
+        title={t('rst.dashboard.kpiGuests')}
+        value={String(d.guests ?? 0)}
+        hint={t('rst.dashboard.guestsHint', {
+          cancelled: d.cancelledOrders ?? 0,
+        })}
+        to="/rst/admin/reports"
       />
     </div>
   );

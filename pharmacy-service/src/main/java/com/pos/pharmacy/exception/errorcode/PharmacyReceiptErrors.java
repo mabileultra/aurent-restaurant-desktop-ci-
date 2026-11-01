@@ -39,6 +39,10 @@ public enum PharmacyReceiptErrors implements PharmacyErrorCode {
         "Строку нельзя удалить: по ней уже создана партия. Обновите страницу и повторите."
     ),
     PHARM_RECEIPT_SAVE_FAILED(HttpStatus.BAD_REQUEST, "Не удалось сохранить документ. Повторите попытку."),
+    PHARM_RECEIPT_VALUE_TOO_LONG(
+        HttpStatus.BAD_REQUEST,
+        "Слишком длинное значение (серия, штрихкод, ИКПУ или код упаковки). Проверьте строки и повторите."
+    ),
     PHARM_IMPORT_INVOICE_DUPLICATE(HttpStatus.BAD_REQUEST, "Этот счёт-фактура уже импортирован"),
     PHARM_IMPORT_NO_QTY_LINES(
         HttpStatus.BAD_REQUEST,

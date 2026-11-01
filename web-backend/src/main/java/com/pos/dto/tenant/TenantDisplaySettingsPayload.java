@@ -14,5 +14,9 @@ public record TenantDisplaySettingsPayload(
     String receiptStir,
     Map<String, Boolean> receiptFields,
     Map<String, Boolean> userFormFields,
-    PrintSettingsPayload printSettings
+    PrintSettingsPayload printSettings,
+    /** Reserved for per-company UI theme JSON; null until theme UI ships. */
+    Map<String, Object> uiTheme,
+    /** Per fiscal-field size/bold: { footer: { size: "md", bold: false }, ... }. */
+    Map<String, Object> receiptFieldStyles
 ) {}

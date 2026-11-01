@@ -17,10 +17,17 @@ function soldHit(status, extra = {}) {
   };
 }
 
+async function softCheck(fn) {
+  try {
+    return await fn();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Жёсткая проверка одного КМ до чека.
- * Склад IN_STOCK и карточка в каталоге не отменяют проверку:
- * локальный кэш → stock_marks → grocery-журнал → pharmacy-журнал.
+ * Локальный кэш сначала; журналы склада/grocery/pharmacy — параллельно.
  * ASL не вызываем: оборот проверяет Tasnif, вывод — ОФД.
  */
 export async function inspectMarkPunched({ storeId, mark }) {
@@ -36,42 +43,37 @@ export async function inspectMarkPunched({ storeId, mark }) {
     }
   }
 
-  let stock = null;
-  if (storeId) {
-    try {
+  if (!storeId) {
+    return { punched: false, aslResult: null, stock: null, aslError: null };
+  }
+
+  const [stockData, groceryData, pharmacyData] = await Promise.all([
+    softCheck(async () => {
       const { data } = await pharmacyStockMarksApi.check({ storeId, code: mark });
-      stock = data || null;
-      if (data?.alreadySold) {
-        rememberSoldMarks(storeId, [mark]);
-        return soldHit(data.status || 'SOLD', { stock });
-      }
-    } catch {
-      // склад недоступен — журнал продаж всё равно проверяем
-    }
-  }
-
-  if (storeId) {
-    try {
+      return data || null;
+    }),
+    softCheck(async () => {
       const { data } = await saleApi.checkMarkSold({ storeId, code: mark });
-      if (data?.sold === true) {
-        rememberSoldMarks(storeId, [mark]);
-        return soldHit(data.status || 'SOLD', { stock });
-      }
-    } catch {
-      // grocery-журнал недоступен — проверяем аптечный
-    }
-  }
-
-  if (storeId) {
-    try {
+      return data || null;
+    }),
+    softCheck(async () => {
       const { data } = await pharmacySalesApi.checkMarkSold({ storeId, code: mark });
-      if (data?.sold === true) {
-        rememberSoldMarks(storeId, [mark]);
-        return soldHit(data.status || 'SOLD', { stock });
-      }
-    } catch {
-      // сеть — журнал недоступен, Tasnif проверит оборот на скане
-    }
+      return data || null;
+    }),
+  ]);
+
+  const stock = stockData;
+  if (stockData?.alreadySold) {
+    rememberSoldMarks(storeId, [mark]);
+    return soldHit(stockData.status || 'SOLD', { stock });
+  }
+  if (groceryData?.sold === true) {
+    rememberSoldMarks(storeId, [mark]);
+    return soldHit(groceryData.status || 'SOLD', { stock });
+  }
+  if (pharmacyData?.sold === true) {
+    rememberSoldMarks(storeId, [mark]);
+    return soldHit(pharmacyData.status || 'SOLD', { stock });
   }
 
   return { punched: false, aslResult: null, stock, aslError: null };

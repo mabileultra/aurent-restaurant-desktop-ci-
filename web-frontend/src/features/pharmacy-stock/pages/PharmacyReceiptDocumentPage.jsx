@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, storeApi, supplierApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
+import { notifyPharmacyCatalogChanged } from '../utils/pharmacyCatalogChangedNotify';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyProductModal from '../components/PharmacyProductModal';
@@ -101,6 +102,7 @@ export default function PharmacyReceiptDocumentPage() {
       toast.success(t('pharmacyStock.saved'));
       qc.setQueryData(['pharmacy-receipt', id], data);
       invalidateProductCaches(qc);
+      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-line' });
       setEditingLine(null);
     },
     onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
@@ -156,6 +158,7 @@ export default function PharmacyReceiptDocumentPage() {
     onSuccess: ({ posted, receipt: data }) => {
       toast.success(t('pharmacyStock.activated', { no: posted.receiptNumber || data.receiptNumber }));
       invalidateProductCaches(qc);
+      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-activate' });
       qc.setQueryData(['pharmacy-receipt', id], data);
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
       setActivateOpen(false);
@@ -191,6 +194,7 @@ export default function PharmacyReceiptDocumentPage() {
     onUpdated: (data) => {
       qc.setQueryData(['pharmacy-receipt', id], data);
       invalidateProductCaches(qc);
+      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-revalue' });
     },
   });
   const mass = usePharmacyReceiptMassEdit({
@@ -201,6 +205,7 @@ export default function PharmacyReceiptDocumentPage() {
     onUpdated: (data) => {
       qc.setQueryData(['pharmacy-receipt', id], data);
       invalidateProductCaches(qc);
+      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-mass' });
     },
   });
 

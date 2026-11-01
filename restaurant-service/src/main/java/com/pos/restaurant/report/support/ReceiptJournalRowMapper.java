@@ -8,6 +8,8 @@ import com.pos.restaurant.report.domain.ReceiptStatus;
 import com.pos.restaurant.report.dto.ReceiptJournalRow;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.UUID;
 
 public final class ReceiptJournalRowMapper {
 
@@ -16,8 +18,13 @@ public final class ReceiptJournalRowMapper {
 
     /**
      * @param returnedAmount value of returned dishes for a partially refunded order, or null
+     * @param names          batch-resolved staff display names (may be empty)
      */
-    public static ReceiptJournalRow toRow(FloorOrderPayment payment, BigDecimal returnedAmount) {
+    public static ReceiptJournalRow toRow(
+        FloorOrderPayment payment,
+        BigDecimal returnedAmount,
+        Map<UUID, String> names
+    ) {
         FloorOrder order = payment.getOrder();
         FloorTable table = order.getTable();
         BigDecimal total = ReceiptJournalLoader.money(payment.getAmount());
@@ -38,6 +45,9 @@ public final class ReceiptJournalRowMapper {
         BigDecimal service = order.getServiceAmount() != null
             ? order.getServiceAmount()
             : order.getCommissionAmount();
+        UUID waiterId = order.getWaiterUserId();
+        UUID cashierId = payment.getPaidByUserId();
+        Map<UUID, String> nameMap = names == null ? Map.of() : names;
 
         return new ReceiptJournalRow(
             order.getId(),
@@ -47,8 +57,10 @@ public final class ReceiptJournalRowMapper {
             table == null || table.getHall() == null ? null : table.getHall().getName(),
             table == null ? null : table.getCode(),
             order.getGuestCount(),
-            order.getWaiterUserId(),
-            payment.getPaidByUserId(),
+            waiterId,
+            waiterId == null ? null : nameMap.get(waiterId),
+            cashierId,
+            cashierId == null ? null : nameMap.get(cashierId),
             payment.getMethod(),
             payment.getCardType(),
             ReceiptJournalLoader.money(order.getDiscountAmount()),

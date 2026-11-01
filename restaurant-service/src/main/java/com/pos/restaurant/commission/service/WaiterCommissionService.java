@@ -1,13 +1,13 @@
 package com.pos.restaurant.commission.service;
 
-import com.pos.restaurant.commission.dto.WaiterCommissionOrdersResponse;
+import com.pos.restaurant.commission.dto.WaiterCommissionOrderRow;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionSettingsResponse;
 import com.pos.restaurant.order.entity.FloorOrder;
+import com.pos.shared.api.PageResponse;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 public interface WaiterCommissionService {
@@ -26,7 +26,7 @@ public interface WaiterCommissionService {
 
     WaiterCommissionReportResponse report(Integer storeId, Instant from, Instant to);
 
-    WaiterCommissionOrdersResponse waiterOrders(
+    PageResponse<WaiterCommissionOrderRow> waiterOrders(
         Integer storeId,
         UUID waiterUserId,
         Instant from,

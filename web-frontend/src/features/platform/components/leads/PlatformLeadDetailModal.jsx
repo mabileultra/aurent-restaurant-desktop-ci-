@@ -20,7 +20,9 @@ export default function PlatformLeadDetailModal({
   onNoteChange,
   onClose,
   onSave,
+  onDelete,
   isSaving,
+  isDeleting,
 }) {
   if (!lead) return null;
 
@@ -32,10 +34,13 @@ export default function PlatformLeadDetailModal({
       size="lg"
       footer={(
         <>
+          <BaseButton variant="danger" onClick={onDelete} disabled={isSaving || isDeleting}>
+            {isDeleting ? t('common.deleting') : t('common.delete')}
+          </BaseButton>
           <BaseButton variant="ghost" onClick={onClose}>
             {t('common.cancel')}
           </BaseButton>
-          <BaseButton variant="primary" onClick={onSave} disabled={isSaving}>
+          <BaseButton variant="primary" onClick={onSave} disabled={isSaving || isDeleting}>
             {isSaving ? t('common.saving') : t('common.save')}
           </BaseButton>
         </>

@@ -37,6 +37,7 @@
     "saveError": "Saqlab bo'lmadi",
     "view": "Ochish",
     "saving": "Saqlanmoqda…",
+    "deleting": "O‘chirilmoqda…",
     "refresh": "Yangilash"
   },
   "errors": {
@@ -962,7 +963,7 @@
       "sending": "Yuborilmoqda…",
       "success": "Ariza yuborildi — tez orada bog‘lanamiz",
       "error": "Arizani yuborib bo‘lmadi",
-      "required": "Ism va telefonni kiriting"
+      "required": "Ism (kamida 2 belgi) va telefon (kamida 9 raqam) kiriting"
     },
     "homePage": {
       "eyebrow": "Chakana va HoReCa uchun POS",
@@ -2802,6 +2803,8 @@
       "search": "Ism, telefon yoki email…",
       "filterAll": "Barchasi",
       "saved": "Ariza yangilandi",
+      "deleted": "Ariza o‘chirildi",
+      "deleteConfirm": "Bu arizani o‘chirasizmi? Amalni qaytarib bo‘lmaydi.",
       "detailTitle": "Ariza kartochkasi",
       "managerNote": "Menejer izohi",
       "managerNotePh": "Arizani qayta ishlash bo‘yicha eslatmalar",

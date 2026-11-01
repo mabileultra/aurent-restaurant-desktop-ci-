@@ -2,4 +2,5 @@
 @import './payment-shift.css';
 @import './shift-terminal-modal.css';
 @import './shift-modal-compact.css';
+@import './cash-movement-modal.css';
 @import '../../light-theme/shift-modal.css';

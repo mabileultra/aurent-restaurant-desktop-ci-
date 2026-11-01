@@ -63,9 +63,28 @@ class ProductBarcodeLookupServiceTest {
     }
 
     @Test
+    void findsByIkpuWhenBarcodeMissing() {
+        UUID productId = UUID.randomUUID();
+        when(productRepository.findByCompanyIdAndBarcodeIn(eq(10), any())).thenReturn(List.of());
+        when(productBarcodeRepository.findByBarcodeIn(any())).thenReturn(List.of());
+        when(productRepository.findByCompanyIdAndIkpuIn(eq(10), any())).thenReturn(List.of(
+            Product.builder()
+                .id(productId)
+                .companyId(10)
+                .ikpu("03305005001000000")
+                .name("By IKPU")
+                .build()
+        ));
+
+        Product found = service.findByScan(10, "03305005001000000");
+        assertEquals(productId, found.getId());
+    }
+
+    @Test
     void throwsWhenNotFound() {
         when(productRepository.findByCompanyIdAndBarcodeIn(eq(10), any())).thenReturn(List.of());
         when(productBarcodeRepository.findByBarcodeIn(any())).thenReturn(List.of());
+        when(productRepository.findByCompanyIdAndIkpuIn(eq(10), any())).thenReturn(List.of());
         assertThrows(NotFoundException.class, () -> service.findByScan(10, "999"));
     }
 }

@@ -149,13 +149,29 @@ export async function posFetchProductByBarcode(storeId, barcode, { catalogKind }
   const trimmed = String(barcode || '').trim();
   if (!trimmed) return null;
   const pharmacy = catalogKind === 'pharmacy';
+  // Electron: сначала локальный каталог — скан не ждёт сеть при попадании.
+  if (isDesktopOfflineBridge()) {
+    try {
+      const local = await offlineGetProductByBarcode(trimmed);
+      if (local) return local;
+    } catch {
+      /* fall through to route */
+    }
+  }
   return withRemoteFallback(
     storeId,
-    () =>
-      (pharmacy
-        ? pharmacyWarehouseApi.getByBarcode(trimmed, storeId)
-        : productApi.getByBarcode(trimmed, storeId)
-      ).then((r) => r.data),
+    async () => {
+      try {
+        const res = await (pharmacy
+          ? pharmacyWarehouseApi.getByBarcode(trimmed, storeId)
+          : productApi.getByBarcode(trimmed, storeId));
+        return res.data;
+      } catch (err) {
+        // 404 → null, чтобы касса могла перебрать GTIN/EAN-кандидаты
+        if (err?.response?.status === 404) return null;
+        throw err;
+      }
+    },
     () => offlineGetProductByBarcode(trimmed),
   );
 }

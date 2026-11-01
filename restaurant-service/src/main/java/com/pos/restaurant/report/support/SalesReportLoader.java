@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,19 +39,7 @@ public class SalesReportLoader {
     }
 
     @SuppressWarnings("unchecked")
-    public List<SalesTimeBuckets.Payment> payments(ReceiptJournalCriteria criteria) {
-        Query query = em.createQuery("select p.paidAt, p.amount " + ReceiptJournalLoader.FROM + criteria.where());
-        criteria.params().forEach(query::setParameter);
-        List<Object[]> rows = query.getResultList();
-        List<SalesTimeBuckets.Payment> result = new ArrayList<>(rows.size());
-        for (Object[] row : rows) {
-            result.add(new SalesTimeBuckets.Payment((Instant) row[0], (BigDecimal) row[1]));
-        }
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<DishSalesReportRow> dishes(ReceiptJournalCriteria criteria) {
+    public List<DishSalesReportRow> dishes(ReceiptJournalCriteria criteria, int maxRows) {
         Query query = em.createQuery("""
             select di.name,
                    dm.category,
@@ -73,19 +60,14 @@ public class SalesReportLoader {
         query.setParameter("cancelledItem", OrderItemStatus.CANCELLED);
         List<Object[]> raw = query.getResultList();
 
-        BigDecimal netTotal = BigDecimal.ZERO;
-        for (Object[] row : raw) {
-            netTotal = netTotal.add(ReceiptJournalLoader.money(row[4]).subtract(ReceiptJournalLoader.money(row[5])));
-        }
-
-        List<DishSalesReportRow> rows = new ArrayList<>(raw.size());
+        List<DishSalesReportRow> unsorted = new ArrayList<>(raw.size());
         for (Object[] row : raw) {
             BigDecimal gross = ReceiptJournalLoader.money(row[4]);
             BigDecimal refund = ReceiptJournalLoader.money(row[5]);
             BigDecimal net = gross.subtract(refund);
             BigDecimal qty = quantity(row[2]);
             BigDecimal returned = quantity(row[3]);
-            rows.add(new DishSalesReportRow(
+            unsorted.add(new DishSalesReportRow(
                 (String) row[0],
                 (String) row[1],
                 qty,
@@ -95,13 +77,39 @@ public class SalesReportLoader {
                 refund,
                 net,
                 ((Number) row[6]).longValue(),
-                share(net, netTotal)
+                BigDecimal.ZERO.setScale(1)
             ));
         }
-        rows.sort((a, b) -> {
+        unsorted.sort((a, b) -> {
             int byAmount = b.netAmount().compareTo(a.netAmount());
             return byAmount != 0 ? byAmount : b.netQuantity().compareTo(a.netQuantity());
         });
+
+        int limit = Math.max(maxRows, 1);
+        List<DishSalesReportRow> top = unsorted.size() <= limit
+            ? unsorted
+            : unsorted.subList(0, limit);
+
+        BigDecimal netTotal = BigDecimal.ZERO;
+        for (DishSalesReportRow row : top) {
+            netTotal = netTotal.add(row.netAmount());
+        }
+
+        List<DishSalesReportRow> rows = new ArrayList<>(top.size());
+        for (DishSalesReportRow row : top) {
+            rows.add(new DishSalesReportRow(
+                row.name(),
+                row.category(),
+                row.quantity(),
+                row.returnedQuantity(),
+                row.netQuantity(),
+                row.grossAmount(),
+                row.refundAmount(),
+                row.netAmount(),
+                row.orderCount(),
+                share(row.netAmount(), netTotal)
+            ));
+        }
         return rows;
     }
 

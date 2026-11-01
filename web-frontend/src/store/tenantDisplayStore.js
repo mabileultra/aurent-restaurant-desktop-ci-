@@ -1,5 +1,10 @@
 import { create } from 'zustand';
 import { APP_NAME } from '../config/brand';
+import {
+  defaultReceiptFieldMap,
+  isReceiptFieldOn as fieldOn,
+  mergeReceiptFields,
+} from '../receiptProfile/receiptFieldCatalog';
 import { tenantDisplayApi } from '../services/api';
 import {
   syncReceiptDisplayCssVars,
@@ -20,35 +25,13 @@ export {
   RECEIPT_LOGO_HEIGHT_MAX_MM,
 } from '../utils/syncReceiptDisplayCssVars';
 
+export { RECEIPT_FIELD_DEFS } from '../receiptProfile/receiptFieldCatalog';
+
 export const SYSTEM_LOGO_SIZE_DEFAULT_PX = 32;
 export const SYSTEM_LOGO_SIZE_MIN_PX = 20;
 export const SYSTEM_LOGO_SIZE_MAX_PX = 96;
 
 const LEGACY_STORAGE_KEY = 'pos-tenant-display';
-
-/** Поля фискального чека (вкл./выкл. в настройках принтера). */
-export const RECEIPT_FIELD_DEFS = [
-  { key: 'logo', labelKey: 'tenantSettings.receiptFields.logo' },
-  { key: 'companyName', labelKey: 'tenantSettings.receiptFields.companyName' },
-  { key: 'companyAddress', labelKey: 'tenantSettings.receiptFields.companyAddress' },
-  { key: 'companyPhone', labelKey: 'tenantSettings.receiptFields.companyPhone' },
-  { key: 'stir', labelKey: 'tenantSettings.receiptFields.stir' },
-  { key: 'dateTime', labelKey: 'tenantSettings.receiptFields.dateTime' },
-  { key: 'receiptNo', labelKey: 'tenantSettings.receiptFields.receiptNo' },
-  { key: 'receiptType', labelKey: 'tenantSettings.receiptFields.receiptType' },
-  { key: 'employee', labelKey: 'tenantSettings.receiptFields.employee' },
-  { key: 'shift', labelKey: 'tenantSettings.receiptFields.shift' },
-  { key: 'items', labelKey: 'tenantSettings.receiptFields.items' },
-  { key: 'itemIkpu', labelKey: 'tenantSettings.receiptFields.itemIkpu' },
-  { key: 'itemVatLine', labelKey: 'tenantSettings.receiptFields.itemVatLine' },
-  { key: 'discounts', labelKey: 'tenantSettings.receiptFields.discounts' },
-  { key: 'grandTotal', labelKey: 'tenantSettings.receiptFields.grandTotal' },
-  { key: 'vatTotal', labelKey: 'tenantSettings.receiptFields.vatTotal' },
-  { key: 'payment', labelKey: 'tenantSettings.receiptFields.payment' },
-  { key: 'fiscalBlock', labelKey: 'tenantSettings.receiptFields.fiscalBlock' },
-  { key: 'qrCode', labelKey: 'tenantSettings.receiptFields.qrCode' },
-  { key: 'footer', labelKey: 'tenantSettings.receiptFields.footer' },
-];
 
 /** Поля формы пользователя (кроме логина — всегда обязателен). */
 export const USER_FORM_FIELD_DEFS = [
@@ -76,8 +59,9 @@ function emptyDisplayState() {
     receiptCompanyAddress: '',
     receiptCompanyPhone: '',
     receiptStir: '',
-    receiptFields: defaultFieldMap(RECEIPT_FIELD_DEFS),
+    receiptFields: defaultReceiptFieldMap(),
     userFormFields: defaultFieldMap(USER_FORM_FIELD_DEFS),
+    uiTheme: null,
   };
 }
 
@@ -102,8 +86,9 @@ function payloadToDisplay(payload) {
     receiptCompanyAddress: String(p.receiptCompanyAddress ?? '').trim(),
     receiptCompanyPhone: String(p.receiptCompanyPhone ?? '').trim(),
     receiptStir: String(p.receiptStir ?? '').trim(),
-    receiptFields: mergeFieldMap(RECEIPT_FIELD_DEFS, p.receiptFields),
+    receiptFields: mergeReceiptFields(p.receiptFields),
     userFormFields: mergeFieldMap(USER_FORM_FIELD_DEFS, p.userFormFields),
+    uiTheme: p.uiTheme && typeof p.uiTheme === 'object' ? p.uiTheme : null,
   };
 }
 
@@ -126,6 +111,7 @@ function displayToPayload(display) {
     receiptStir: cleanText(d.receiptStir),
     receiptFields: d.receiptFields,
     userFormFields: d.userFormFields,
+    uiTheme: d.uiTheme && typeof d.uiTheme === 'object' ? d.uiTheme : null,
     printSettings: printSettingsToPayload(),
   };
 }
@@ -200,7 +186,7 @@ export const useTenantDisplayStore = create((set, get) => ({
     return custom || APP_NAME;
   },
 
-  isReceiptFieldOn: (key) => get().committed.receiptFields[key] !== false,
+  isReceiptFieldOn: (key) => fieldOn(get().committed.receiptFields, key),
   isUserFormFieldOn: (key) => get().committed.userFormFields[key] !== false,
 
   setSystemLogo: (dataUrl) => patchDraft(set, { systemLogoDataUrl: dataUrl || null }),
@@ -239,7 +225,7 @@ export const useTenantDisplayStore = create((set, get) => ({
     })),
 
   resetReceiptFields: () =>
-    patchDraft(set, { receiptFields: defaultFieldMap(RECEIPT_FIELD_DEFS) }),
+    patchDraft(set, { receiptFields: defaultReceiptFieldMap() }),
   resetUserFormFields: () =>
     patchDraft(set, { userFormFields: defaultFieldMap(USER_FORM_FIELD_DEFS) }),
 

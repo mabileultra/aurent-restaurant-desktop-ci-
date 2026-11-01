@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { posFetchProductByBarcode } from '../../../../services/pos/posDataRouter';
-import { findProductBarcode, withScannedBarcode } from '../../utils/productBarcodeMatch';
-import { scalesApi } from '../../../../api/scales.api';
-import { decodeWeightBarcode } from '../../../scales/utils/weightBarcode';
+import { findProductBarcode, findProductByIkpu, withScannedBarcode } from '../../utils/productBarcodeMatch';
+import { posFetchFirstProductByBarcode } from '../../utils/posFetchFirstProductByBarcode';
+import { createPosScanQueue } from '../../utils/posScanQueue';
+import { tryResolveWeightPluProduct } from '../../utils/tryResolveWeightPluProduct';
 import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner';
 import { lineSubtotal, useCartStore } from '../../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
@@ -44,6 +44,8 @@ export function usePosCartHandlers({
 }) {
   const { t } = useTranslation();
   const scanningRef = useRef(false);
+  const scanQueueRef = useRef(null);
+  if (!scanQueueRef.current) scanQueueRef.current = createPosScanQueue({ maxPending: 2 });
   const pendingMarkKeysRef = useRef(new Set());
   const [weightModalProduct, setWeightModalProduct] = useState(null);
   const [weightEditLineId, setWeightEditLineId] = useState(null);
@@ -301,8 +303,8 @@ export function usePosCartHandlers({
    */
   const tryAddByBarcode = useCallback(
     async (code, { silent = false } = {}) => {
-      const trimmed = code.trim();
-      if (!trimmed || !storeId || scanningRef.current || payOpen || returnOpen) return false;
+      const trimmed = String(code || '').trim();
+      if (!trimmed || !storeId || payOpen || returnOpen) return false;
 
       // Жёсткое разделение: КМ → только маркировка; штрихкод → налог без ASL
       if (classifyPosScanInput(trimmed) === 'marking') {
@@ -312,43 +314,34 @@ export function usePosCartHandlers({
 
       scanningRef.current = true;
       try {
-        const decoded = decodeWeightBarcode(trimmed);
-        if (decoded) {
-          try {
-            const { data: product } = await scalesApi.getByPlu(decoded.plu, storeId);
-            if (!shiftIsOpen) {
-              toast.error(t('pos.shiftRequired'));
-              return false;
-            }
-            if (!product?.active) {
-              toast.error(t('pos.productInactive'));
-              return false;
-            }
-            const payload = cartProductPayload(product);
-            const lineId = addWeightLine(payload, decoded.weightKg);
-            const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
-            if (line) showLineAddedToast(line, product.name);
-            if (lineId) setSelectedLineId(lineId);
-            setSearch('');
-            return true;
-          } catch {
-            // Не весовой товар с похожим на этикетку кодом — ищем как обычный штрихкод
+        // Весовой PLU и обычный EAN параллельно — PLU не блокирует штрихкод таймаутом.
+        const [weightHit, barcodeHit] = await Promise.all([
+          tryResolveWeightPluProduct(trimmed, storeId),
+          posFetchFirstProductByBarcode(storeId, trimmed),
+        ]);
+
+        if (weightHit?.product) {
+          if (!shiftIsOpen) {
+            toast.error(t('pos.shiftRequired'));
+            return false;
           }
+          if (!weightHit.product.active) {
+            toast.error(t('pos.productInactive'));
+            return false;
+          }
+          const payload = cartProductPayload(weightHit.product);
+          const lineId = addWeightLine(payload, weightHit.weightKg);
+          const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
+          if (line) showLineAddedToast(line, weightHit.product.name);
+          if (lineId) setSelectedLineId(lineId);
+          setSearch('');
+          return true;
         }
 
-        const digits = trimmed.replace(/\D/g, '');
-        const barcodeCandidates = [trimmed];
-        if (digits && digits !== trimmed) barcodeCandidates.push(digits);
-        // EAN-13 со check digit, в карточке часто лежит 12 цифр без контрольной
-        if (digits.length === 13) barcodeCandidates.push(digits.slice(0, 12));
-
-        for (const code of barcodeCandidates) {
-          const product = await posFetchProductByBarcode(storeId, code);
-          if (product) {
-            addProductToCart(withScannedBarcode(product, code));
-            setSearch('');
-            return true;
-          }
+        if (barcodeHit?.product) {
+          addProductToCart(withScannedBarcode(barcodeHit.product, barcodeHit.code));
+          setSearch('');
+          return true;
         }
         if (!silent) toast.error(t('pos.barcodeNotFound'));
         return false;
@@ -377,10 +370,15 @@ export function usePosCartHandlers({
     ]
   );
 
+  const enqueueScan = useCallback(
+    (code, opts) => scanQueueRef.current.enqueue(code, opts, tryAddByBarcode),
+    [tryAddByBarcode]
+  );
+
   useBarcodeScanner({
     enabled: !!storeId && !payOpen && !shiftModalOpen && !returnOpen,
     barcodeInputRef: searchInputRef,
-    onScan: (code) => tryAddByBarcode(code),
+    onScan: (code) => enqueueScan(code),
     alwaysCapture: true,
   });
 
@@ -395,8 +393,10 @@ export function usePosCartHandlers({
     }
     const lower = q.toLowerCase();
     const byBarcode = products.find((p) => findProductBarcode(p, q));
+    const byIkpu = products.find((p) => findProductByIkpu(p, q));
     const exact =
       (byBarcode && withScannedBarcode(byBarcode, q)) ||
+      byIkpu ||
       products.find((p) => p.sku?.toLowerCase() === lower) ||
       products.find((p) => p.name?.toLowerCase() === lower);
     addProductToCart(exact ?? products[0]);

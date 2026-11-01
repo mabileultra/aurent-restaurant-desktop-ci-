@@ -1,0 +1,67 @@
+.rst-printers-shell {
+  display: grid;
+  grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.rst-printers-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.55rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: var(--rst-surface);
+  position: sticky;
+  top: 0.75rem;
+}
+
+.rst-printers-nav__btn {
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  background: transparent;
+  text-align: left;
+  font-weight: 750;
+  font-size: 0.92rem;
+  color: var(--rst-ink);
+  cursor: pointer;
+}
+
+.rst-printers-nav__btn:hover {
+  background: var(--rst-surface-2);
+}
+
+.rst-printers-nav__btn.is-active {
+  border-color: var(--rst-line);
+  background: var(--rst-surface-2);
+  box-shadow: inset 3px 0 0 var(--rst-brand, #059669);
+}
+
+.rst-printers-shell__main {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .rst-printers-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .rst-printers-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .rst-printers-nav__btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .rst-printers-nav__btn.is-active {
+    box-shadow: none;
+    border-color: var(--rst-brand, #059669);
+  }
+}

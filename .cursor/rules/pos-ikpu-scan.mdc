@@ -1,0 +1,20 @@
+---
+description: POS scan/search must resolve products by ИКПУ/МХИК (do not regress)
+globs: web-frontend/src/features/cashier/**,web-backend/src/main/java/com/pos/catalog/**,pharmacy-service/src/main/java/com/pos/pharmacy/catalog/**,desktop-electron/electron/offline/**
+---
+# POS — пробитие по ИКПУ/МХИК
+
+ИКПУ (MXIK), например `03305005001000000` (14–17 цифр), **не** пишется в `product.barcode` (см. `labelBarcode` / Tasnif). На этикетках и в поиске кассир часто вводит именно ИКПУ.
+
+## Invariants
+
+1. `GET …/by-barcode` (grocery `resolveByBarcode`, pharmacy `ProductBarcodeLookupService.findByScan`) после штрихкода/доп. кодов ищет **точный** `products.ikpu`.
+2. Офлайн SQLite `getProductByBarcode` / `searchProducts` тоже матчат `payload_json.ikpu`.
+3. Pharmacy catalog `search` включает `ikpu` (иначе список на кассе пустой по ИКПУ).
+4. Enter в загруженном списке: `findProductByIkpu` — **не** подставлять ИКПУ в `product.barcode` через `withScannedBarcode`.
+5. Маркировочный КМ (DataMatrix) не путать с ИКПУ: `^\d{14,17}$` — не marking (`markingCode.js`).
+
+## Do not
+
+- Класть ИКПУ в `barcode` / `product_barcodes` «чтобы нашлось».
+- Ломать EAN/GTIN и весовую этикетку ради ИКПУ.

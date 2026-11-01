@@ -9,15 +9,8 @@ const {
 let liveCloudSession = null;
 let liveRefreshInFlight = false;
 let livePushInFlight = false;
-let sessionHydrated = false;
-
-function hydrateSessionOnce() {
-  if (sessionHydrated) return;
-  sessionHydrated = true;
-  if (!liveCloudSession) {
-    liveCloudSession = readLiveCloudSession();
-  }
-}
+/** Skip hall→cloud push while local origin watermark unchanged (still pull). */
+const lastPushedOriginByStore = new Map();
 
 function rememberLiveCloudSession({
   token,
@@ -30,7 +23,6 @@ function rememberLiveCloudSession({
     ? storeIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
     : [];
   if (!token || !ids.length) return;
-  sessionHydrated = true;
   liveCloudSession = {
     token,
     companyId: companyId == null ? null : Number(companyId),
@@ -44,11 +36,15 @@ function rememberLiveCloudSession({
 
 function clearSession() {
   liveCloudSession = null;
+  lastPushedOriginByStore.clear();
   clearLiveCloudSession();
 }
 
 function getLiveCloudSession() {
-  hydrateSessionOnce();
+  // Stage 4: re-read disk when memory empty (e.g. after 401 clear + new bootstrap file).
+  if (!liveCloudSession) {
+    liveCloudSession = readLiveCloudSession();
+  }
   return liveCloudSession;
 }
 
@@ -129,11 +125,19 @@ async function pushLiveToCloud() {
           results.push({ storeId, ok: false, error: 'empty-local-live' });
           continue;
         }
+        const origin = Number(snapshot.floorRevision || 0);
+        const prevOrigin = lastPushedOriginByStore.get(storeId);
+        // Origin > 0 and unchanged → cloud already has this floor slice.
+        if (origin > 0 && prevOrigin === origin) {
+          results.push({ storeId, ok: true, skipped: true, reason: 'origin-unchanged' });
+          continue;
+        }
         const cloud = await requestJson(`${cloudBase()}/rst/edge/live-ingest`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${session.token}` },
           body: snapshot,
         });
+        lastPushedOriginByStore.set(storeId, origin);
         results.push({
           storeId,
           ok: true,
@@ -154,9 +158,14 @@ async function pushLiveToCloud() {
   }
 }
 
+function getLastPushedOrigins() {
+  return lastPushedOriginByStore;
+}
+
 module.exports = {
   rememberLiveCloudSession,
   getLiveCloudSession,
+  getLastPushedOrigins,
   refreshLiveFromCloud,
   pushLiveToCloud,
 };

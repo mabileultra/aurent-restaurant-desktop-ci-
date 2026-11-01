@@ -46,6 +46,17 @@ export function usePlatformLeadsPage() {
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => platformLeadsApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['platform-leads'] });
+      setDetailOpen(false);
+      setSelectedLead(null);
+      toast.success(t('platform.leads.deleted'));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
+
   const rows = data?.content ?? [];
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
@@ -88,6 +99,12 @@ export function usePlatformLeadsPage() {
     });
   };
 
+  const deleteDetail = () => {
+    if (!selectedLead) return;
+    if (!window.confirm(t('platform.leads.deleteConfirm'))) return;
+    deleteMutation.mutate(selectedLead.id);
+  };
+
   return {
     t,
     search,
@@ -112,6 +129,8 @@ export function usePlatformLeadsPage() {
     openDetail,
     closeDetail,
     saveDetail,
+    deleteDetail,
     isSaving: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 }

@@ -63,6 +63,9 @@
     <include file="db/changelog/v57-edge-admin-parity.xml"/>
     <include file="db/changelog/v58-edge-stores-phone.xml"/>
     <include file="db/changelog/v59-payment-one-per-order.xml"/>
+    <include file="db/changelog/v60-commission-report-index.xml"/>
+    <include file="db/changelog/v61-receipt-journal-index.xml"/>
+    <include file="db/changelog/v62-menu-category-unique-active-name.xml"/>
 
 </databaseChangeLog>
 

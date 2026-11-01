@@ -1,6 +1,8 @@
 package com.pos.identity.controller;
 
 import com.pos.identity.dto.auth.EdgeStaffExportResponse;
+import com.pos.identity.dto.auth.EdgeStaffIngestRequest;
+import com.pos.identity.dto.auth.EdgeStaffIngestResponse;
 import com.pos.identity.dto.user.CreateUserRequest;
 import com.pos.identity.dto.user.ManagedUserPage;
 import com.pos.identity.dto.user.UpdateUserRequest;
@@ -8,6 +10,7 @@ import com.pos.identity.dto.user.UserListCriteria;
 import com.pos.identity.dto.user.UserResponse;
 import com.pos.identity.service.UserService;
 import com.pos.identity.service.auth.EdgeStaffExportService;
+import com.pos.identity.service.auth.EdgeStaffIngestService;
 import com.pos.identity.service.user.UserListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,6 +45,7 @@ public class UserController {
     private final UserService userService;
     private final UserListService userListService;
     private final EdgeStaffExportService edgeStaffExportService;
+    private final EdgeStaffIngestService edgeStaffIngestService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'MANAGER')")
@@ -80,6 +84,16 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "Staff rows with password/PIN hashes")
     public ResponseEntity<EdgeStaffExportResponse> edgeStaffExport() {
         return ResponseEntity.ok(edgeStaffExportService.exportForCurrentCompany());
+    }
+
+    @PostMapping("/edge-staff-ingest")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'MANAGER')")
+    @Operation(summary = "Ingest hall staff hashes (local-first push, soft upsert)")
+    @ApiResponse(responseCode = "200", description = "Upsert counts")
+    public ResponseEntity<EdgeStaffIngestResponse> edgeStaffIngest(
+        @Valid @RequestBody EdgeStaffIngestRequest request
+    ) {
+        return ResponseEntity.ok(edgeStaffIngestService.ingest(request));
     }
 
     @GetMapping("/pos-roster")

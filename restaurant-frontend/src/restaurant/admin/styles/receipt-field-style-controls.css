@@ -1,0 +1,68 @@
+.rst-receipt-style {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.rst-receipt-style__align {
+  display: inline-flex;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--rst-surface);
+}
+
+.rst-receipt-style__align-btn {
+  min-width: 2.1rem;
+  min-height: 2.1rem;
+  padding: 0 0.35rem;
+  border: none;
+  border-right: 1px solid var(--rst-line);
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+  color: var(--rst-muted);
+}
+
+.rst-receipt-style__align-btn:last-child {
+  border-right: none;
+}
+
+.rst-receipt-style__align-btn.is-on {
+  background: var(--rst-brand, #059669);
+  color: #fff;
+}
+
+.rst-receipt-style__align-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rst-receipt-style__num {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+}
+
+.rst-receipt-style__num input {
+  width: 3.6rem;
+  min-height: 2.1rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.5rem;
+  background: var(--rst-surface);
+  font-weight: 700;
+  color: var(--rst-ink);
+  text-align: right;
+}
+
+.rst-receipt-style__unit {
+  font-weight: 800;
+  color: var(--rst-ink);
+  min-width: 0.9rem;
+}

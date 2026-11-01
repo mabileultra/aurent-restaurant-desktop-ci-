@@ -18,4 +18,6 @@ public interface SiteLeadService {
     SiteLeadResponse getById(UUID id);
 
     SiteLeadResponse update(UUID id, UpdateSiteLeadRequest request);
+
+    void delete(UUID id);
 }

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { publicSiteApi } from '../../../api/publicSite.api';
+import { validatePublicLeadForm } from '../utils/validatePublicLeadForm';
 
 const emptyForm = () => ({
   name: '',
@@ -42,7 +43,8 @@ export function usePublicLeadForm({ leadType = 'QUESTION', source = 'contacts' }
 
   const submit = (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.phone.trim()) {
+    const check = validatePublicLeadForm(form);
+    if (!check.ok) {
       toast.error(t('publicSite.leadForm.required'));
       return;
     }

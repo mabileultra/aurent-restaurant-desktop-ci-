@@ -32,7 +32,7 @@
   border: 1px solid rgb(203 213 225);
   border-radius: 0.5rem;
   padding: 0.5rem 0.625rem;
-  background: #fff;
+  background: var(--rst-surface, var(--color-surface, #F8F2EC));
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -154,7 +154,7 @@
   overflow-y: auto;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.75rem;
-  background: #fff;
+  background: var(--rst-surface, var(--color-surface, #F8F2EC));
   padding: 0.25rem 0;
   box-shadow: 0 10px 25px rgb(15 23 42 / 0.12);
 }

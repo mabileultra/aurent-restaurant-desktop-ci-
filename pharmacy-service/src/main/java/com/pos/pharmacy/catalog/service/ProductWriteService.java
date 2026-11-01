@@ -15,6 +15,7 @@ import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -72,11 +73,13 @@ public class ProductWriteService {
             .plu(trim(req.plu()))
             .imageUrl(req.imageUrl())
             .externalProductId(req.externalProductId())
-            .ikpu(req.ikpu())
-            .ikpuStatus(req.ikpuStatus() != null ? req.ikpuStatus() : "UNKNOWN")
+            .ikpu(PharmacyDbFieldLimits.ikpu(req.ikpu()))
+            .ikpuStatus(req.ikpuStatus() != null
+                ? PharmacyDbFieldLimits.ikpuStatus(req.ikpuStatus())
+                : "UNKNOWN")
             .unitOfMeasure(req.unitOfMeasure())
             .unitMeasureCode(req.unitMeasureCode())
-            .packageCode(req.packageCode())
+            .packageCode(PharmacyDbFieldLimits.packageCode(req.packageCode()))
             .soldIndividually(req.soldIndividually() == null || req.soldIndividually())
             .markedProduct(Boolean.TRUE.equals(req.markedProduct()))
             .storageLocation(req.storageLocation())

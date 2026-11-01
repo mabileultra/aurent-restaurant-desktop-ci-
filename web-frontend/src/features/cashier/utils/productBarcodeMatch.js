@@ -13,6 +13,13 @@ export function findProductBarcode(product, code) {
   return productBarcodeList(product).find((b) => b.toLowerCase() === target) ?? null;
 }
 
+/** Точное совпадение ИКПУ/МХИК (не подставлять в product.barcode). */
+export function findProductByIkpu(product, code) {
+  const target = String(code ?? '').trim();
+  if (!target) return false;
+  return String(product?.ikpu ?? '').trim() === target;
+}
+
 /** Чек и строка корзины показывают код, которым пробили (основной или дополнительный). */
 export function withScannedBarcode(product, code) {
   const matched = findProductBarcode(product, code);

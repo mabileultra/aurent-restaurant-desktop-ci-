@@ -7,6 +7,7 @@ import com.pos.restaurant.edge.dto.EdgePinLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinRosterEntry;
 import com.pos.restaurant.edge.dto.EdgeStaffBootstrapRequest;
 import com.pos.restaurant.edge.service.EdgeAuthService;
+import com.pos.restaurant.edge.support.EdgeStaffLocalExporter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,6 +35,7 @@ import java.util.Map;
 public class EdgeAuthController {
 
     private final EdgeAuthService edgeAuthService;
+    private final EdgeStaffLocalExporter staffLocalExporter;
 
     @PostMapping("/auth/login")
     @Operation(summary = "Local password login (edge)")
@@ -83,5 +85,13 @@ public class EdgeAuthController {
             "edge", true,
             "hasStaff", edgeAuthService.hasStaff()
         ));
+    }
+
+    @GetMapping("/edge/auth/staff-export")
+    @Operation(summary = "Export local staff hashes for cloud ingest (S2b)")
+    public ResponseEntity<Map<String, Object>> staffExport(
+        @RequestParam(required = false) Integer companyId
+    ) {
+        return ResponseEntity.ok(staffLocalExporter.exportForCompany(companyId));
     }
 }

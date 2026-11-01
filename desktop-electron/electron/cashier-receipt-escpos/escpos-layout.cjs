@@ -35,15 +35,21 @@ function appendCenterHeader(printer, lines) {
   printer.alignLeft();
 }
 
+const { appendAlertBeeps } = require('./escpos-alert-beep.cjs');
+
 /**
- * Один короткий сигнал зуммера, затем отрез.
- * ESC B — команда Epson, её же понимают типичные чековые принтеры.
+ * Сигнал зуммера, затем отрез.
  * @param {import('node-thermal-printer').printer} printer
+ * @param {number} [times=1]
+ * @param {number} [duration=2]
+ * @param {{ pulseDrawer?: boolean }} [opts] — pulseDrawer только для кухни
  */
-function beepAndCut(printer) {
-  if (typeof printer.beep === 'function') {
-    printer.beep(1, 2);
-  }
+function beepAndCut(printer, times = 1, duration = 2, opts = {}) {
+  appendAlertBeeps(printer, {
+    times,
+    duration,
+    pulseDrawer: Boolean(opts.pulseDrawer),
+  });
   printer.cut();
 }
 

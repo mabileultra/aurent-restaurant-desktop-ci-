@@ -43,7 +43,9 @@ public record EdgeCatalogSnapshot(
         String name,
         int sortOrder,
         boolean active,
-        BigDecimal servicePercent
+        BigDecimal servicePercent,
+        /** Null = do not clobber newer local row on edge pull (S1 LWW). */
+        Instant updatedAt
     ) {}
 
     public record TableRow(
@@ -58,7 +60,8 @@ public record EdgeCatalogSnapshot(
         int width,
         int height,
         String status,
-        boolean active
+        boolean active,
+        Instant updatedAt
     ) {}
 
     public record StationRow(
@@ -66,7 +69,8 @@ public record EdgeCatalogSnapshot(
         String code,
         String name,
         int sortOrder,
-        boolean active
+        boolean active,
+        Instant updatedAt
     ) {}
 
     public record CategoryRow(
@@ -75,7 +79,8 @@ public record EdgeCatalogSnapshot(
         int sortOrder,
         boolean active,
         boolean autoPrint,
-        String printPrinterName
+        String printPrinterName,
+        Instant updatedAt
     ) {}
 
     public record ItemRow(
@@ -105,7 +110,8 @@ public record EdgeCatalogSnapshot(
         String unitMeasureCode,
         String barcode,
         boolean markedProduct,
-        int sortOrder
+        int sortOrder,
+        Instant updatedAt
     ) {}
 
     public record ModifierGroupRow(

@@ -11,6 +11,7 @@ import com.pos.catalog.repository.ProductStorePriceRepository;
 import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.service.product.ProductQueryService;
 import com.pos.catalog.service.product.ProductResponseAssembler;
+import com.pos.catalog.service.product.support.ProductBarcodeScanVariants;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
 import com.pos.inventory.service.stock.StoreStockService;
@@ -176,16 +177,25 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private Product resolveByBarcode(String barcode) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        Optional<Product> primary = productLookup.findOne(
-            ProductSpecifications.lookup(companyId).barcode(barcode).anyActiveState()
-        );
-        if (primary.isPresent()) {
-            return primary.get();
-        }
-        Optional<Product> extra = productBarcodeRepository.findByBarcodeAndProductCompanyId(barcode, companyId)
-            .map(ProductBarcode::getProduct);
-        if (extra.isPresent()) {
-            return extra.get();
+        for (String code : ProductBarcodeScanVariants.of(barcode)) {
+            Optional<Product> primary = productLookup.findOne(
+                ProductSpecifications.lookup(companyId).barcode(code).anyActiveState()
+            );
+            if (primary.isPresent()) {
+                return primary.get();
+            }
+            Optional<Product> extra = productBarcodeRepository.findByBarcodeAndProductCompanyId(code, companyId)
+                .map(ProductBarcode::getProduct);
+            if (extra.isPresent()) {
+                return extra.get();
+            }
+            // ИКПУ/МХИК часто печатают на этикетке; в barcode поле его не кладём (см. labelBarcode).
+            Optional<Product> byIkpu = productLookup.findOne(
+                ProductSpecifications.lookup(companyId).ikpu(code).anyActiveState()
+            );
+            if (byIkpu.isPresent()) {
+                return byIkpu.get();
+            }
         }
         return weightBarcodeCodec.tryDecode(barcode)
             .flatMap(decoded -> productRepository.findByCompany_IdAndPlu(companyId, decoded.plu()))

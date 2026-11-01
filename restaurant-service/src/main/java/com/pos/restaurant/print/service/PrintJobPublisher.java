@@ -242,7 +242,8 @@ public class PrintJobPublisher {
                 item.getUnitPrice() == null ? BigDecimal.ZERO : item.getUnitPrice()
             ));
             String baseTitle = category.getName() == null ? "" : category.getName();
-            titleByPrinter.putIfAbsent(printer, voidSlip ? ("ОТКАЗ · " + baseTitle) : baseTitle);
+            String prefixed = channelTitlePrefix(order) + (voidSlip ? ("ОТКАЗ · " + baseTitle) : baseTitle);
+            titleByPrinter.putIfAbsent(printer, prefixed);
         }
 
         String header = kitchenPlaceLine(order);
@@ -273,11 +274,13 @@ public class PrintJobPublisher {
             return;
         }
         List<FloorOrderItemModifier> mods = itemModifierRepository.findByOrderItemIdIn(List.of(item.getId()));
+        String categoryTitle = channelTitlePrefix(order)
+            + (category.getName() == null ? "" : category.getName());
         enqueue(order, PrintJobKind.CATEGORY_SLIP, new PrintJobPayloads.CategorySlip(
             order.getId(),
             item.getId(),
             quantity,
-            category.getName(),
+            categoryTitle,
             printer,
             kitchenPlaceLine(order),
             order.getWaiterUserId(),
@@ -321,11 +324,17 @@ public class PrintJobPublisher {
     private static String placeLine(FloorOrder order, boolean withCheckNo) {
         OrderChannel channel = order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel();
         String no = String.valueOf(order.getOrderNo());
-        if (channel == OrderChannel.TAKEAWAY) {
-            return "TAKEAWAY #" + no;
-        }
-        if (channel == OrderChannel.DELIVERY) {
-            return "DELIVERY #" + no;
+        if (channel == OrderChannel.TAKEAWAY || channel == OrderChannel.DELIVERY) {
+            String label = channel == OrderChannel.DELIVERY ? "ДОСТАВКА" : "НА ВЫНОС";
+            StringBuilder sb = new StringBuilder(label);
+            if (order.getOrderNo() > 0) {
+                sb.append(" · №").append(no);
+            }
+            String client = order.getClientName() == null ? "" : order.getClientName().trim();
+            if (!client.isEmpty()) {
+                sb.append(" · ").append(client);
+            }
+            return sb.toString();
         }
         String table = order.getTable() == null || order.getTable().getCode() == null
             ? "—"
@@ -340,6 +349,17 @@ public class PrintJobPublisher {
             return place + " · №" + no;
         }
         return place;
+    }
+
+    private static String channelTitlePrefix(FloorOrder order) {
+        OrderChannel channel = order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel();
+        if (channel == OrderChannel.DELIVERY) {
+            return "ДОСТАВКА · ";
+        }
+        if (channel == OrderChannel.TAKEAWAY) {
+            return "НА ВЫНОС · ";
+        }
+        return "";
     }
 
     private void enqueue(FloorOrder order, PrintJobKind kind, Object payload) {

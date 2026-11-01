@@ -28,6 +28,10 @@ export default function PosOrderPanelLine({
   const isWeight = item.saleType === 'WEIGHT';
   const qtyParts = formatQtyParts(item.quantity, item.saleType, item.unitCode);
   const isEditingQty = editingQtyLineId === item.lineId;
+  const markCount = Array.isArray(item.productMarks) ? item.productMarks.length : 0;
+  const hasMark =
+    Boolean(item.markedProduct) &&
+    Boolean(item.productMark || item.markCode || markCount > 0);
 
   return (
     <li
@@ -36,22 +40,28 @@ export default function PosOrderPanelLine({
       role="row"
       onClick={() => onSelectLine(item.lineId)}
     >
-      <div className="pos-cart-table__col pos-cart-table__col--name">
-        <span className="pos-cart-table__name" title={item.name}>
-          {item.name}
-        </span>
-        {item.sku ? (
-          <span className="pos-cart-table__sku" title={item.sku}>
-            {item.sku}
-          </span>
-        ) : null}
-        {item.markedProduct && (item.productMark || item.markCode || (Array.isArray(item.productMarks) && item.productMarks.length > 0)) ? (
+      <div
+        className={`pos-cart-table__col pos-cart-table__col--name${
+          hasMark ? ' pos-cart-table__col--name-marked' : ''
+        }`}
+      >
+        {hasMark ? (
           <span className="pos-cart-table__mark" title={t('pos.markingBadgeHint')}>
-            {Array.isArray(item.productMarks) && item.productMarks.length > 0
-              ? t('pos.markingBadgeCount', { count: item.productMarks.length })
+            {markCount > 0
+              ? t('pos.markingBadgeCount', { count: markCount })
               : t('pos.markingBadgeOk')}
           </span>
         ) : null}
+        <div className="pos-cart-table__name-stack">
+          <span className="pos-cart-table__name" title={item.name}>
+            {item.name}
+          </span>
+          {item.sku ? (
+            <span className="pos-cart-table__sku" title={item.sku}>
+              {item.sku}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="pos-cart-table__col pos-cart-table__col--price">

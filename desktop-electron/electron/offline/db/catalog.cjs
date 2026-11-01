@@ -9,6 +9,7 @@ const {
 const { fold, foldSql } = require('./catalogSearchFold.cjs');
 const { importBootstrapChunked } = require('./catalogBootstrapImport.cjs');
 const { applyCatalogDelta } = require('./catalogDeltaImport.cjs');
+const { barcodeScanVariants } = require('./barcodeScanVariants.cjs');
 
 async function importBootstrap(payload) {
   return importBootstrapChunked(payload);
@@ -55,13 +56,14 @@ async function searchProducts({ search = '', categoryId, limit = 200, offset = 0
       ${foldSql("COALESCE(name, '')")} LIKE ?
       OR ${foldSql("COALESCE(sku, '')")} LIKE ?
       OR ${foldSql("COALESCE(barcode, '')")} LIKE ?
+      OR ${foldSql("COALESCE(json_extract(payload_json, '$.ikpu'), '')")} LIKE ?
       OR EXISTS (
         SELECT 1 FROM product_barcodes b
         WHERE b.product_id = products.id
           AND ${foldSql("COALESCE(b.barcode, '')")} LIKE ?
       )
     )`;
-    params.push(like, like, like, like);
+    params.push(like, like, like, like, like);
   }
   sql += ' ORDER BY name LIMIT ? OFFSET ?';
   params.push(Number(limit), Number(offset));
@@ -72,16 +74,37 @@ async function searchProducts({ search = '', categoryId, limit = 200, offset = 0
 
 async function getProductByBarcode(barcode) {
   const db = await getDb();
-  const code = String(barcode || '').trim();
-  if (!code) return null;
-  const stmt = db.prepare(
+  const variants = barcodeScanVariants(barcode);
+  if (!variants.length) return null;
+
+  const byBarcode = db.prepare(
     `SELECT p.payload_json FROM product_barcodes b
      JOIN products p ON p.id = b.product_id
      WHERE b.barcode = ? AND p.active = 1 LIMIT 1`,
   );
-  stmt.bind([code]);
-  const rows = rowsFromStmt(stmt);
-  return rows.length ? parseJson(rows[0].payload_json, null) : null;
+  for (const code of variants) {
+    byBarcode.bind([code]);
+    const barcodeRows = rowsFromStmt(byBarcode);
+    if (barcodeRows.length) {
+      return parseJson(barcodeRows[0].payload_json, null);
+    }
+  }
+
+  // ИКПУ/МХИК: в barcode не пишем, но на кассе пробивают 14–17 цифр
+  const byIkpu = db.prepare(
+    `SELECT payload_json FROM products
+     WHERE active = 1
+       AND trim(COALESCE(json_extract(payload_json, '$.ikpu'), '')) = ?
+     LIMIT 1`,
+  );
+  for (const code of variants) {
+    byIkpu.bind([code]);
+    const ikpuRows = rowsFromStmt(byIkpu);
+    if (ikpuRows.length) {
+      return parseJson(ikpuRows[0].payload_json, null);
+    }
+  }
+  return null;
 }
 
 async function getProductById(id) {

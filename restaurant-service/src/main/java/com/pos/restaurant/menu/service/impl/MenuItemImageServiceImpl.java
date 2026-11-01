@@ -2,6 +2,7 @@ package com.pos.restaurant.menu.service.impl;
 
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.floor.support.StoreTenantSupport;
 import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.menu.service.MenuItemImageService;
@@ -19,12 +20,14 @@ public class MenuItemImageServiceImpl implements MenuItemImageService {
 
     private final MenuItemRepository itemRepository;
     private final FloorTenantSupport tenantSupport;
+    private final StoreTenantSupport storeTenantSupport;
 
     @Override
     public MenuItemDataUriParser.Parsed getImage(UUID itemId) {
         Integer companyId = tenantSupport.requireCompanyId();
         MenuItem item = itemRepository.findByIdAndCompanyId(itemId, companyId)
             .orElseThrow(() -> new NotFoundException("Menu item not found"));
+        storeTenantSupport.requireStore(companyId, item.getStoreId());
         return MenuItemDataUriParser.requireParsed(item.getImageUrl());
     }
 }

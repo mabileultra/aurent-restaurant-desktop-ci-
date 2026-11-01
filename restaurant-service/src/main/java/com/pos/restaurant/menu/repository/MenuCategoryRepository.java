@@ -18,7 +18,16 @@ public interface MenuCategoryRepository extends JpaRepository<MenuCategory, UUID
 
     Optional<MenuCategory> findByIdAndCompanyId(UUID id, Integer companyId);
 
-    boolean existsByStoreIdAndNameIgnoreCaseAndActiveTrue(Integer storeId, String name);
+    boolean existsByCompanyIdAndStoreIdAndNameIgnoreCaseAndActiveTrue(
+        Integer companyId,
+        Integer storeId,
+        String name
+    );
 
-    boolean existsByStoreIdAndNameIgnoreCaseAndActiveTrueAndIdNot(Integer storeId, String name, UUID id);
+    boolean existsByCompanyIdAndStoreIdAndNameIgnoreCaseAndActiveTrueAndIdNot(
+        Integer companyId,
+        Integer storeId,
+        String name,
+        UUID id
+    );
 }

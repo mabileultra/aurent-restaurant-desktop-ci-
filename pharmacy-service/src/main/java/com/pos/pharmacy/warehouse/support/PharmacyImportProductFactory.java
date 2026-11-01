@@ -6,6 +6,7 @@ import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.domain.ProductType;
 import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import com.pos.pharmacy.util.ProductImportParseUtil;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
 import org.springframework.stereotype.Component;
@@ -30,10 +31,10 @@ public class PharmacyImportProductFactory {
         String raw = StringUtils.hasText(invoiceId)
             ? ProductImportParseUtil.resolveUzInvoiceSku(invoiceId, item.rowIndex() + 1)
             : autoSku(item.excelName(), item.rowIndex());
-        if (raw.length() <= 100) {
+        if (raw.length() <= PharmacyDbFieldLimits.SKU) {
             return raw;
         }
-        return raw.substring(0, 92) + "-" + item.rowIndex();
+        return PharmacyDbFieldLimits.sku(raw.substring(0, 92) + "-" + item.rowIndex());
     }
 
     public CreateProductRequest request(
@@ -81,20 +82,20 @@ public class PharmacyImportProductFactory {
             null,
             null,
             null,
-            blank(item.ikpu()),
+            PharmacyDbFieldLimits.ikpu(item.ikpu()),
             StringUtils.hasText(item.ikpuStatus())
-                ? item.ikpuStatus()
+                ? PharmacyDbFieldLimits.ikpuStatus(item.ikpuStatus())
                 : (StringUtils.hasText(item.ikpu()) ? "MANUAL" : null),
             "pcs",
             null,
-            blank(item.packageCode()),
+            PharmacyDbFieldLimits.packageCode(item.packageCode()),
             units.compareTo(BigDecimal.ONE) > 0,
             item.markedProduct(),
             null,
             "OWN",
             null,
             null,
-            invoiceId,
+            PharmacyDbFieldLimits.uzInvoiceDocumentId(invoiceId),
             storeId == null ? null : List.of(new ProductStorePriceRequest(storeId, selling)),
             null,
             null,
@@ -105,9 +106,9 @@ public class PharmacyImportProductFactory {
     }
 
     private String uniqueBarcodeOrNull(Integer companyId, String barcode) {
-        String value = blank(barcode);
+        String value = PharmacyDbFieldLimits.barcode(barcode);
         if (value == null || companyId == null) {
-            return value;
+            return null;
         }
         return productRepository.findFirstByCompanyIdAndBarcode(companyId, value).isPresent() ? null : value;
     }

@@ -28,7 +28,9 @@ import com.pos.restaurant.order.service.FloorOrderService;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.OrderSearchSupport;
 import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
+import com.pos.shared.api.InstantRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -141,7 +143,11 @@ public class FloorOrderServiceImpl implements FloorOrderService {
         Pageable pageable
     ) {
         Integer companyId = tenantSupport.requireCompanyId();
-        String query = q == null || q.isBlank() ? null : q.trim();
+        String query = OrderSearchSupport.searchTerm(q);
+        InstantRange period = OrderSearchSupport.requirePeriodIfComplete(openedFrom, openedTo);
+        Instant from = period == null ? openedFrom : period.from();
+        Instant to = period == null ? openedTo : period.to();
+        Pageable safePageable = OrderSearchSupport.pageable(pageable);
         Page<FloorOrder> page = orderRepository.findAll(
             FloorOrderSpecifications.searchByChannel(
                 companyId,
@@ -150,10 +156,10 @@ public class FloorOrderServiceImpl implements FloorOrderService {
                 status,
                 deliveryStatus,
                 query,
-                openedFrom,
-                openedTo
+                from,
+                to
             ),
-            pageable
+            safePageable
         );
         if (page.isEmpty()) {
             return page.map(order -> assembler.toBoardCard(order, List.of()));

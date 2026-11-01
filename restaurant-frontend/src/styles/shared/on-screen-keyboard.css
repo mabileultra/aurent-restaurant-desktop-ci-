@@ -116,7 +116,7 @@
   padding: 0.25rem 0.45rem;
   border: 1px solid rgb(148 163 184 / 0.45);
   border-radius: 8px;
-  background: #fff;
+  background: var(--rst-surface, var(--color-surface, #F8F2EC));
   color: rgb(15 23 42);
   font-size: 0.95rem;
   font-weight: 600;

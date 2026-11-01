@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstBookingApi } from '../../api/booking.api';
@@ -32,16 +32,18 @@ function toLocalInputValue(date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function toDayStart(value) {
-  if (!value) return null;
+function toDayStartIso(value) {
+  if (!value) return undefined;
   const d = new Date(`${value}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? null : d;
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
-function toDayEnd(value) {
-  if (!value) return null;
-  const d = new Date(`${value}T23:59:59.999`);
-  return Number.isNaN(d.getTime()) ? null : d;
+function toDayEndExclusiveIso(value) {
+  if (!value) return undefined;
+  const d = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return undefined;
+  d.setDate(d.getDate() + 1);
+  return d.toISOString();
 }
 
 export function useBookingAdminPage() {
@@ -59,10 +61,27 @@ export function useBookingAdminPage() {
     enabled: workspace.storeId != null,
   });
 
+  const listParams = useMemo(() => {
+    const params = {
+      activeOnly: false,
+      page,
+      size: pageSize,
+    };
+    const from = toDayStartIso(filters.fromDate);
+    const to = toDayEndExclusiveIso(filters.toDate);
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (filters.status && filters.status !== 'all') params.status = filters.status;
+    const search = filters.search.trim();
+    if (search) params.search = search;
+    return params;
+  }, [filters, page, pageSize]);
+
   const reservationsQuery = useQuery({
-    queryKey: ['rst-booking', workspace.storeId],
-    queryFn: () => rstBookingApi.list(workspace.storeId, { activeOnly: false }).then((r) => r.data),
+    queryKey: ['rst-booking', workspace.storeId, listParams],
+    queryFn: () => rstBookingApi.list(workspace.storeId, listParams).then((r) => r.data),
     enabled: workspace.storeId != null,
+    placeholderData: keepPreviousData,
   });
 
   const tableOptions = useMemo(
@@ -75,48 +94,12 @@ export function useBookingAdminPage() {
     [tablesQuery.data],
   );
 
-  const reservations = useMemo(() => {
-    const list = Array.isArray(reservationsQuery.data) ? [...reservationsQuery.data] : [];
-    list.sort((a, b) => {
-      const ta = a.reservedAt ? new Date(a.reservedAt).getTime() : 0;
-      const tb = b.reservedAt ? new Date(b.reservedAt).getTime() : 0;
-      return tb - ta;
-    });
-    return list;
-  }, [reservationsQuery.data]);
-
-  const filtered = useMemo(() => {
-    const q = filters.search.trim().toLowerCase();
-    const from = toDayStart(filters.fromDate);
-    const to = toDayEnd(filters.toDate);
-    return reservations.filter((row) => {
-      if (filters.status !== 'all' && row.status !== filters.status) return false;
-      if (from || to) {
-        const at = row.reservedAt ? new Date(row.reservedAt) : null;
-        if (!at) return false;
-        if (from && at < from) return false;
-        if (to && at > to) return false;
-      }
-      if (!q) return true;
-      const hay = `${row.clientName ?? ''} ${row.clientPhone ?? ''} ${row.tableCode ?? ''} ${row.hallName ?? ''}`.toLowerCase();
-      return hay.includes(q);
-    });
-  }, [reservations, filters]);
-
-  const total = filtered.length;
-  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+  const data = reservationsQuery.data;
+  const rows = data?.content ?? [];
+  const total = data?.totalElements ?? 0;
+  const totalPages = Math.max(1, data?.totalPages || Math.ceil(total / pageSize) || 1);
   const safePage = Math.min(page, Math.max(0, totalPages - 1));
-  const rows = useMemo(() => {
-    const start = safePage * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, safePage, pageSize]);
-
-  const stats = useMemo(() => ({
-    pending: reservations.filter((r) => r.status === 'PENDING').length,
-    confirmed: reservations.filter((r) => r.status === 'CONFIRMED').length,
-    seated: reservations.filter((r) => r.status === 'SEATED').length,
-    cancelled: reservations.filter((r) => r.status === 'CANCELLED' || r.status === 'NO_SHOW').length,
-  }), [reservations]);
+  const stats = data?.stats ?? { pending: 0, confirmed: 0, seated: 0, cancelled: 0 };
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-booking', workspace.storeId] });
@@ -172,7 +155,6 @@ export function useBookingAdminPage() {
     workspace,
     tablesQuery,
     reservationsQuery,
-    reservations,
     rows,
     stats,
     tableOptions,

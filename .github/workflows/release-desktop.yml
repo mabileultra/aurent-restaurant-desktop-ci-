@@ -1,14 +1,8 @@
 name: Release Desktop
 
+# Only tag or manual — not main push (avoids double Release with desktop-v*).
 on:
   push:
-    branches: [main]
-    paths:
-      - 'desktop-electron/**'
-      - 'web-frontend/public/brand/**'
-      - 'downloads/desktop/**'
-      - 'deploy/publish-desktop.sh'
-      - '.github/workflows/release-desktop.yml'
     tags:
       - 'desktop-v*'
   workflow_dispatch:

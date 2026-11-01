@@ -58,11 +58,10 @@ describe('inspectMarkPunched — sold-gate до чека', () => {
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('grocery-журнал sold — punched, pharmacy и ASL не зовём', async () => {
+  it('grocery-журнал sold — punched, ASL не зовём (журналы параллельно)', async () => {
     saleApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
     const gate = await inspectMarkPunched({ storeId: 7, mark: MARK, aslEnabled: true });
     expect(gate.punched).toBe(true);
-    expect(pharmacySalesApi.checkMarkSold).not.toHaveBeenCalled();
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
@@ -73,13 +72,12 @@ describe('inspectMarkPunched — sold-gate до чека', () => {
     expect(gate.punched).toBe(true);
   });
 
-  it('stock_marks alreadySold — punched, ASL не зовём', async () => {
+  it('stock_marks alreadySold — punched, ASL не зовём (журналы параллельно)', async () => {
     pharmacyStockMarksApi.check.mockResolvedValue({
       data: { found: false, alreadySold: true, status: 'PENDING_WITHDRAW' },
     });
     const gate = await inspectMarkPunched({ storeId: 7, mark: MARK, aslEnabled: true });
     expect(gate.punched).toBe(true);
-    expect(pharmacySalesApi.checkMarkSold).not.toHaveBeenCalled();
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 

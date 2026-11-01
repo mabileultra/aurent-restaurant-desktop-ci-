@@ -54,14 +54,17 @@ public class LiveFloorApplyService {
         int staleTickets = reconcileGhosts ? ghosts.reconcileTickets(snap) : 0;
         // After floor upsert (+ hall ghost close): align shift both ways (Phase C).
         int openShift = shiftReconcile.apply(snap);
-        floorRevision.noteRemote(snap.companyId(), snap.storeId(), snap.floorRevision());
-        // Phase D: edge pull must move local watermark so POS/kitchen polls refresh
-        // even when remote origin is 0 or unchanged after LWW upserts.
+        boolean remoteAdvanced = floorRevision.noteRemote(
+            snap.companyId(), snap.storeId(), snap.floorRevision());
+        // Phase D: POS/kitchen poll floor-revision. Wake them when rows were applied.
+        // Edge pull: always bump if touched (origin may be 0 / LWW no-ops noteRemote).
+        // Hall→cloud: noteRemote bumps when origin advances; if it did not, still bump so
+        // cloud pollers are not stuck (origin 0, or ghosts/shift with stale origin).
         int touched = servicePercents + orders + items + links + mods
             + closedOrders + closedItems + closedMods
             + tickets + ticketLines + payments
             + closedGhosts + staleTickets + openShift;
-        if (!reconcileGhosts && touched > 0) {
+        if (touched > 0 && (!reconcileGhosts || !remoteAdvanced)) {
             floorRevision.bump(snap.companyId(), snap.storeId());
         }
 

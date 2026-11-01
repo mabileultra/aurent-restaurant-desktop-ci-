@@ -1,5 +1,6 @@
 package com.pos.restaurant.analytics.support;
 
+import com.pos.restaurant.analytics.dto.DashboardOpsBlock;
 import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.kitchen.domain.KitchenTicketStatus;
 import com.pos.restaurant.order.domain.OrderStatus;
@@ -18,52 +19,40 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DashboardOpsSliceLoader {
 
-    public record OpsSlice(
-        long openOrders,
-        long occupiedTables,
-        long freeTables,
-        long waitingPaymentTables,
-        long reservedTables,
-        long blockedTables,
-        long totalTables,
-        long kitchenNew,
-        long kitchenPreparing,
-        long kitchenReady,
-        long kitchenWaiting,
-        long reservationsActive,
-        boolean shiftOpen,
-        BigDecimal shiftRevenue,
-        int shiftSaleCount
-    ) {
-    }
-
-    private final AnalyticsQuerySupport queries;
+    private final AnalyticsOrderQuerySupport orderQueries;
+    private final AnalyticsFloorQuerySupport floorQueries;
     private final RestaurantShiftRepository shiftRepository;
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    public OpsSlice load(Integer companyId, Integer storeId) {
-        long open = queries.countOrdersByStatuses(companyId, storeId, List.of(OrderStatus.OPEN, OrderStatus.BILLING));
-        long totalTables = queries.countActiveTables(companyId, storeId);
-        long freeTables = queries.countTablesByStatus(companyId, storeId, TableStatus.FREE);
-        long occupiedTables = queries.countTablesByStatus(companyId, storeId, TableStatus.OCCUPIED);
-        long waitingPayment = queries.countTablesByStatus(companyId, storeId, TableStatus.WAITING_PAYMENT);
-        long reservedTables = queries.countTablesByStatus(companyId, storeId, TableStatus.RESERVED);
-        long blockedTables = queries.countTablesByStatus(companyId, storeId, TableStatus.BLOCKED);
-        long reservations = queries.countActiveReservations(companyId, storeId);
+    public DashboardOpsBlock load(Integer companyId, Integer storeId) {
+        long open = orderQueries.countOrdersByStatuses(
+            companyId, storeId, List.of(OrderStatus.OPEN, OrderStatus.BILLING)
+        );
+        long totalTables = floorQueries.countActiveTables(companyId, storeId);
+        long freeTables = floorQueries.countTablesByStatus(companyId, storeId, TableStatus.FREE);
+        long occupiedTables = floorQueries.countTablesByStatus(companyId, storeId, TableStatus.OCCUPIED);
+        long waitingPayment = floorQueries.countTablesByStatus(
+            companyId, storeId, TableStatus.WAITING_PAYMENT
+        );
+        long reservedTables = floorQueries.countTablesByStatus(companyId, storeId, TableStatus.RESERVED);
+        long blockedTables = floorQueries.countTablesByStatus(companyId, storeId, TableStatus.BLOCKED);
+        long reservations = floorQueries.countActiveReservations(companyId, storeId);
 
-        long kitchenNew = queries.countKitchenByStatuses(
+        long kitchenNew = floorQueries.countKitchenByStatuses(
             companyId, storeId, List.of(KitchenTicketStatus.NEW, KitchenTicketStatus.ACCEPTED)
         );
-        long kitchenPreparing = queries.countKitchenByStatuses(
+        long kitchenPreparing = floorQueries.countKitchenByStatuses(
             companyId, storeId, List.of(KitchenTicketStatus.PREPARING)
         );
-        long kitchenReady = queries.countKitchenByStatuses(
+        long kitchenReady = floorQueries.countKitchenByStatuses(
             companyId, storeId, List.of(KitchenTicketStatus.READY)
         );
 
-        RestaurantShift openShift = shiftRepository.findByStoreIdAndStatus(storeId, RestaurantShiftStatus.OPEN).orElse(null);
+        RestaurantShift openShift = shiftRepository
+            .findByStoreIdAndStatus(storeId, RestaurantShiftStatus.OPEN)
+            .orElse(null);
 
-        return new OpsSlice(
+        return new DashboardOpsBlock(
             open,
             occupiedTables,
             freeTables,

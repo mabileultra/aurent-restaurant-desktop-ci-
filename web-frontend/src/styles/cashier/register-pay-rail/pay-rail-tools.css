@@ -38,3 +38,76 @@
 .pos-register-pay-rail__tool--return:hover:not(:disabled) {
   filter: brightness(0.97);
 }
+
+.pos-register-pay-rail__tool--cash-in,
+.pos-register-pay-rail__tool--cash-out {
+  gap: 10px;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+
+.pos-register-pay-rail__tool--cash-in svg,
+.pos-register-pay-rail__tool--cash-out svg {
+  width: 18px;
+  height: 18px;
+  padding: 5px;
+  box-sizing: content-box;
+  border-radius: 999px;
+}
+
+.pos-register-pay-rail__tool--cash-in {
+  border-color: var(--pay-tool-cash-in-border);
+  background: var(--pay-tool-cash-in-bg);
+  color: var(--pay-tool-cash-in-fg);
+}
+
+.pos-register-pay-rail__tool--cash-in svg {
+  background: var(--pay-tool-cash-in-icon-bg);
+  color: var(--pay-tool-cash-in-fg);
+}
+
+.pos-register-pay-rail__tool--cash-in:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 10px rgb(16 185 129 / 0.22);
+}
+
+.pos-register-pay-rail__tool--cash-in:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.pos-register-pay-rail__tool--cash-out {
+  border-color: var(--pay-tool-cash-out-border);
+  background: var(--pay-tool-cash-out-bg);
+  color: var(--pay-tool-cash-out-fg);
+}
+
+.pos-register-pay-rail__tool--cash-out svg {
+  background: var(--pay-tool-cash-out-icon-bg);
+  color: var(--pay-tool-cash-out-fg);
+}
+
+.pos-register-pay-rail__tool--cash-out:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 10px rgb(245 158 11 / 0.22);
+}
+
+.pos-register-pay-rail__tool--cash-out:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-in,
+.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-out {
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.22),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-in:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgb(16 185 129 / 0.28);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-out:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgb(245 158 11 / 0.28);
+}

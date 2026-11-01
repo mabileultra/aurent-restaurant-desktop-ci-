@@ -12,6 +12,14 @@
   background-size: 32px 32px, 32px 32px, auto;
 }
 
+html.rst-theme.rst-theme--light .rst-shell {
+  background:
+    linear-gradient(rgb(18 21 28 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(18 21 28 / 0.035) 1px, transparent 1px),
+    var(--rst-bg-deep);
+  background-size: 32px 32px, 32px 32px, auto;
+}
+
 .rst-shell__nav {
   width: 248px;
   flex-shrink: 0;
@@ -24,6 +32,10 @@
   box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.02);
   height: 100%;
   overflow: hidden;
+}
+
+html.rst-theme.rst-theme--light .rst-shell__nav {
+  box-shadow: 1px 0 0 color-mix(in srgb, var(--rst-ink) 4%, transparent);
 }
 
 .rst-shell__brand {
@@ -70,14 +82,29 @@
 
 .rst-shell__link:hover {
   background: var(--rst-accent-soft);
-  border-color: rgb(255 122 26 / 0.2);
+  border-color: color-mix(in srgb, var(--rst-accent) 22%, transparent);
+  color: var(--rst-ink);
 }
 
 .rst-shell__link.is-active {
   background: var(--rst-accent);
   border-color: var(--rst-accent);
   color: #1b1208;
-  box-shadow: 0 8px 18px rgb(255 122 26 / 0.22);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rst-accent) 28%, transparent);
+}
+
+html.rst-theme.rst-theme--light .rst-shell__link.is-active {
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--rst-accent) 22%, transparent);
+}
+
+html.rst-theme.rst-theme--light .rst-shell__footer .rst-shell__link:not(.is-active) {
+  color: var(--rst-ink);
+  font-weight: 600;
+}
+
+html.rst-theme.rst-theme--light .rst-shell__footer .rst-shell__link:not(.is-active):hover {
+  background: var(--rst-surface-2);
+  border-color: var(--rst-line);
 }
 
 .rst-shell__link.is-disabled {

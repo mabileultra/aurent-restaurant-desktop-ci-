@@ -6,6 +6,7 @@ import {
   Plus,
   Receipt,
   TrendingUp,
+  Users,
   UtensilsCrossed,
   Warehouse,
 } from 'lucide-react';
@@ -16,7 +17,7 @@ export const DASHBOARD_KPI_ICONS = {
   avg: Receipt,
   tables: LayoutGrid,
   kitchen: ChefHat,
-  profit: TrendingUp,
+  guests: Users,
 };
 
 export const DASHBOARD_ACTION_ICONS = {

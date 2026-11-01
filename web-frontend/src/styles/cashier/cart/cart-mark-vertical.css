@@ -1,0 +1,52 @@
+/*
+ * КМ-бейдж слева в колонке имени — вертикальная плашка на всю высоту строки.
+ */
+
+.pos-cart-table__col--name-marked {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.pos-cart-table__name-stack {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.pos-cart-table__col--name-marked .pos-cart-table__mark {
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px 3px;
+  min-width: 22px;
+  border-radius: 8px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  white-space: nowrap;
+  background: #ffedd5;
+  color: #9a3412;
+  box-shadow: inset 0 0 0 1px rgb(154 52 18 / 0.18);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--name-marked
+  .pos-cart-table__mark {
+  min-width: 24px;
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}

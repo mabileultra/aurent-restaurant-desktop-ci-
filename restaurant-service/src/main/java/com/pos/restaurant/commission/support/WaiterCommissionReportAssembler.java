@@ -1,60 +1,56 @@
 package com.pos.restaurant.commission.support;
 
+import com.pos.restaurant.analytics.support.AnalyticsStaffNameResolver;
 import com.pos.restaurant.commission.dto.WaiterCommissionOrderRow;
-import com.pos.restaurant.commission.dto.WaiterCommissionOrdersResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportRow;
-import com.pos.restaurant.order.domain.OrderChannel;
-import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
+import com.pos.shared.api.PageLimits;
+import com.pos.shared.api.PageResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class WaiterCommissionReportAssembler {
 
-    static final int MAX_PAGE_SIZE = 100;
+    private final WaiterCommissionReportQuerySupport queries;
+    private final AnalyticsStaffNameResolver staffNameResolver;
 
-    @PersistenceContext
-    private EntityManager em;
-
+    @Transactional(readOnly = true)
     public WaiterCommissionReportResponse build(
         Integer companyId,
         Integer storeId,
         Instant from,
         Instant to
     ) {
-        @SuppressWarnings("unchecked")
-        List<Object[]> grouped = bind(em.createQuery("""
-            select o.waiterUserId,
-                   count(o),
-                   coalesce(sum(o.commissionBaseAmount), 0),
-                   coalesce(sum(o.commissionAmount), 0)
-            from FloorOrder o
-            where o.companyId = :companyId and o.storeId = :storeId
-              and o.status = :status
-              and o.channel = :channel
-              and o.closedAt >= :from and o.closedAt < :to
-              and o.commissionAmount is not null
-              and o.waiterUserId is not null
-            group by o.waiterUserId
-            order by coalesce(sum(o.commissionAmount), 0) desc
-            """), companyId, storeId, from, to).getResultList();
+        List<Object[]> grouped = queries.aggregateByWaiter(companyId, storeId, from, to);
+
+        Set<UUID> waiterIds = new HashSet<>(grouped.size());
+        for (Object[] row : grouped) {
+            if (row[0] instanceof UUID id) {
+                waiterIds.add(id);
+            }
+        }
+        Map<UUID, String> names = staffNameResolver.namesByIds(waiterIds);
 
         List<WaiterCommissionReportRow> rows = new ArrayList<>(grouped.size());
         long orderCount = 0;
         BigDecimal salesTotal = BigDecimal.ZERO;
         BigDecimal commissionTotal = BigDecimal.ZERO;
         for (Object[] row : grouped) {
+            UUID waiterId = (UUID) row[0];
             long count = ((Number) row[1]).longValue();
             BigDecimal sales = money(row[2]);
             BigDecimal commission = money(row[3]);
@@ -62,17 +58,18 @@ public class WaiterCommissionReportAssembler {
             salesTotal = salesTotal.add(sales);
             commissionTotal = commissionTotal.add(commission);
             rows.add(new WaiterCommissionReportRow(
-                (UUID) row[0],
+                waiterId,
+                names.get(waiterId),
                 count,
                 sales,
-                commission,
-                List.of()
+                commission
             ));
         }
         return new WaiterCommissionReportResponse(from, to, orderCount, salesTotal, commissionTotal, rows);
     }
 
-    public WaiterCommissionOrdersResponse orders(
+    @Transactional(readOnly = true)
+    public PageResponse<WaiterCommissionOrderRow> orders(
         Integer companyId,
         Integer storeId,
         UUID waiterUserId,
@@ -81,37 +78,16 @@ public class WaiterCommissionReportAssembler {
         int page,
         int size
     ) {
-        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-        int safePage = Math.max(page, 0);
-        long total = ((Number) bind(em.createQuery("""
-            select count(o)
-            from FloorOrder o
-            where o.companyId = :companyId and o.storeId = :storeId
-              and o.status = :status
-              and o.channel = :channel
-              and o.closedAt >= :from and o.closedAt < :to
-              and o.commissionAmount is not null
-              and o.waiterUserId = :waiterUserId
-            """), companyId, storeId, from, to)
-            .setParameter("waiterUserId", waiterUserId)
-            .getSingleResult()).longValue();
+        int safeSize = PageLimits.normalizeSize(size);
+        int safePage = PageLimits.normalizePage(page);
+        long total = queries.countWaiterOrders(companyId, storeId, waiterUserId, from, to);
+        if (total == 0) {
+            return PageResponse.empty(safePage, safeSize);
+        }
 
-        @SuppressWarnings("unchecked")
-        List<FloorOrder> orders = total == 0 ? List.of() : bind(em.createQuery("""
-            select o from FloorOrder o left join fetch o.table
-            where o.companyId = :companyId and o.storeId = :storeId
-              and o.status = :status
-              and o.channel = :channel
-              and o.closedAt >= :from and o.closedAt < :to
-              and o.commissionAmount is not null
-              and o.waiterUserId = :waiterUserId
-            order by o.closedAt desc
-            """), companyId, storeId, from, to)
-            .setParameter("waiterUserId", waiterUserId)
-            .setFirstResult(safePage * safeSize)
-            .setMaxResults(safeSize)
-            .getResultList();
-
+        List<FloorOrder> orders = queries.pageWaiterOrders(
+            companyId, storeId, waiterUserId, from, to, safePage, safeSize
+        );
         List<WaiterCommissionOrderRow> rows = new ArrayList<>(orders.size());
         for (FloorOrder order : orders) {
             String tableCode = order.getTable() == null
@@ -127,17 +103,7 @@ public class WaiterCommissionReportAssembler {
                 money(order.getCommissionAmount())
             ));
         }
-        return new WaiterCommissionOrdersResponse(rows, safePage, safeSize, total);
-    }
-
-    private static Query bind(Query query, Integer companyId, Integer storeId, Instant from, Instant to) {
-        return query
-            .setParameter("companyId", companyId)
-            .setParameter("storeId", storeId)
-            .setParameter("status", OrderStatus.CLOSED)
-            .setParameter("channel", OrderChannel.DINE_IN)
-            .setParameter("from", from)
-            .setParameter("to", to);
+        return PageResponse.of(rows, safePage, safeSize, total);
     }
 
     private static BigDecimal money(Object value) {

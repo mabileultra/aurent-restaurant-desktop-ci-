@@ -17,9 +17,16 @@ import com.pos.restaurant.report.dto.DishSalesReportRow;
 import com.pos.restaurant.report.dto.ReceiptExportRequest;
 import com.pos.restaurant.report.dto.SalesBreakdownRow;
 import com.pos.restaurant.report.dto.SalesSummaryResponse;
+import com.pos.restaurant.analytics.support.AnalyticsStaffNameResolver;
 import com.pos.restaurant.report.support.DishSalesExcelWriter;
+import com.pos.restaurant.report.support.DishSalesReportHandler;
+import com.pos.restaurant.report.support.ReceiptJournalAssembler;
+import com.pos.restaurant.report.support.ReceiptJournalReportHandler;
 import com.pos.restaurant.report.support.SalesReportLoader;
+import com.pos.restaurant.report.support.SalesSummaryReportHandler;
+import com.pos.restaurant.report.support.SalesTimeBucketQuery;
 import com.pos.restaurant.report.support.ShiftCashExcelWriter;
+import com.pos.restaurant.report.support.ShiftCashReportHandler;
 import com.pos.restaurant.report.support.ShiftCashReportLoader;
 import com.pos.restaurant.shift.support.ShiftCashOpTotalsLoader;
 import com.pos.restaurant.report.dto.ReceiptJournalFilter;
@@ -64,10 +71,16 @@ import static org.mockito.Mockito.when;
 @Testcontainers(disabledWithoutDocker = true)
 @Import({
     RestaurantReportServiceImpl.class,
+    ReceiptJournalReportHandler.class,
+    ReceiptJournalAssembler.class,
     ReceiptJournalLoader.class,
     ReceiptJournalExcelWriter.class,
+    SalesSummaryReportHandler.class,
     SalesReportLoader.class,
+    SalesTimeBucketQuery.class,
+    DishSalesReportHandler.class,
     DishSalesExcelWriter.class,
+    ShiftCashReportHandler.class,
     ShiftCashReportLoader.class,
     ShiftCashExcelWriter.class,
     ShiftCashOpTotalsLoader.class
@@ -99,6 +112,9 @@ class ReceiptJournalSqlTest {
     @MockBean
     private FloorTenantSupport tenantSupport;
 
+    @MockBean
+    private AnalyticsStaffNameResolver staffNameResolver;
+
     private final Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
     private FloorHall terrace;
     private FloorTable table;
@@ -106,6 +122,7 @@ class ReceiptJournalSqlTest {
     @BeforeEach
     void seed() {
         when(tenantSupport.requireCompanyId()).thenReturn(COMPANY);
+        when(staffNameResolver.namesByIds(org.mockito.ArgumentMatchers.any())).thenReturn(Map.of());
         terrace = em.persist(FloorHall.builder().companyId(COMPANY).storeId(STORE).name("Терраса").build());
         table = em.persist(FloorTable.builder()
             .hall(terrace).companyId(COMPANY).storeId(STORE).code("T1").label("T1").build());
@@ -156,8 +173,8 @@ class ReceiptJournalSqlTest {
         ReceiptJournalResponse page = service.receipts(STORE, filter(), 0, 2);
 
         assertThat(page.totalElements()).isEqualTo(5);
-        assertThat(page.rows()).hasSize(2);
-        assertThat(page.rows()).extracting(ReceiptJournalRow::orderNo).containsExactly(105, 104);
+        assertThat(page.content()).hasSize(2);
+        assertThat(page.content()).extracting(ReceiptJournalRow::orderNo).containsExactly(105, 104);
 
         var totals = page.totals();
         assertThat(totals.checkCount()).isEqualTo(5);
@@ -178,7 +195,7 @@ class ReceiptJournalSqlTest {
         assertThat(orderNos(statusFilter(ReceiptStatus.PAID))).containsExactlyInAnyOrder(101, 104, 105);
 
         ReceiptJournalResponse partial = service.receipts(STORE, statusFilter(ReceiptStatus.PARTIAL_REFUND), 0, 20);
-        assertThat(partial.rows()).singleElement().satisfies(row -> {
+        assertThat(partial.content()).singleElement().satisfies(row -> {
             assertThat(row.orderNo()).isEqualTo(102);
             assertThat(row.status()).isEqualTo(ReceiptStatus.PARTIAL_REFUND);
             assertThat(row.refundAmount()).isEqualByComparingTo("30000");
@@ -187,7 +204,7 @@ class ReceiptJournalSqlTest {
         assertThat(partial.totals().refundAmount()).isEqualByComparingTo("30000");
 
         ReceiptJournalResponse refunded = service.receipts(STORE, statusFilter(ReceiptStatus.REFUNDED), 0, 20);
-        assertThat(refunded.rows()).singleElement().satisfies(row -> {
+        assertThat(refunded.content()).singleElement().satisfies(row -> {
             assertThat(row.status()).isEqualTo(ReceiptStatus.REFUNDED);
             assertThat(row.netAmount()).isEqualByComparingTo("0");
         });
@@ -219,13 +236,13 @@ class ReceiptJournalSqlTest {
 
     @Test
     void rowCarriesHallTableAndDebtDetails() {
-        ReceiptJournalRow a = service.receipts(STORE, search("t1"), 0, 20).rows().get(0);
+        ReceiptJournalRow a = service.receipts(STORE, search("t1"), 0, 20).content().get(0);
         assertThat(a.hallName()).isEqualTo("Терраса");
         assertThat(a.tableCode()).isEqualTo("T1");
         assertThat(a.cashierUserId()).isEqualTo(CASHIER);
         assertThat(a.serviceAmount()).isEqualByComparingTo("10000");
 
-        ReceiptJournalRow e = service.receipts(STORE, search("№105"), 0, 20).rows().get(0);
+        ReceiptJournalRow e = service.receipts(STORE, search("№105"), 0, 20).content().get(0);
         assertThat(e.advancePaid()).isEqualByComparingTo("30000");
         assertThat(e.debtRemaining()).isEqualByComparingTo("50000");
     }
@@ -307,7 +324,7 @@ class ReceiptJournalSqlTest {
     }
 
     private List<Integer> orderNos(ReceiptJournalFilter filter) {
-        return service.receipts(STORE, filter, 0, 50).rows().stream().map(ReceiptJournalRow::orderNo).toList();
+        return service.receipts(STORE, filter, 0, 50).content().stream().map(ReceiptJournalRow::orderNo).toList();
     }
 
     private ReceiptJournalFilter filter() {
