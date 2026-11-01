@@ -62,7 +62,8 @@ export default function PlatformDesktopTimeSchedulePicker({ p }) {
             />
           </div>
 
-          {p.scheduledFormatted ? (
+          {/* Mutually exclusive schedule status/error messages: never show both red and green */}
+          {p.isScheduleValid && p.scheduledFormatted ? (
             <p className="flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium pt-0.5">
               <Calendar size={12} className="shrink-0" />
               <span>
@@ -72,17 +73,15 @@ export default function PlatformDesktopTimeSchedulePicker({ p }) {
                 })}
               </span>
             </p>
+          ) : p.isScheduleValid === false && p.scheduleDate ? (
+            <p role="alert" className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
+              {!p.isScheduleInFuture
+                ? t('platform.desktopNotifications.scheduleFutureError', { defaultValue: 'Rejalashtirilgan vaqt kelajakda bo‘lishi kerak' })
+                : t('platform.desktopNotifications.scheduleRequiredError', { defaultValue: 'Sana va vaqtni to‘liq belgilang' })}
+            </p>
           ) : (
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
               {t('platform.desktopNotifications.schedulePrompt', { defaultValue: 'Xabar jo‘natilishi kerak bo‘lgan sana va vaqtni tanlang' })}
-            </p>
-          )}
-
-          {p.isScheduleValid === false && (
-            <p role="alert" className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
-              {!p.isScheduleInFuture && p.scheduleDate
-                ? t('platform.desktopNotifications.scheduleFutureError', { defaultValue: 'Rejalashtirilgan vaqt kelajakda bo‘lishi kerak' })
-                : t('platform.desktopNotifications.scheduleRequiredError', { defaultValue: 'Sana va vaqtni to‘liq belgilang' })}
             </p>
           )}
         </div>

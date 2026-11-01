@@ -3,6 +3,10 @@ import React from 'react';
 export default function PlatformDesktopConfirmModalSummary({
   t,
   targetLabel,
+  isSelect,
+  isCompanies,
+  selectedCompanies = [],
+  selectedStores = [],
   isAlert,
   isUpdate,
   visibleUntilFormatted,
@@ -11,16 +15,52 @@ export default function PlatformDesktopConfirmModalSummary({
   activeTitle,
   activeBody,
 }) {
+  const isScheduled = scheduleType === 'SCHEDULED';
+
+  let footnoteText;
+  if (isScheduled) {
+    footnoteText = isSelect
+      ? t('platform.desktopNotifications.confirmFootnoteScheduledSelected', {
+          date: scheduledFormatted,
+          defaultValue: `Xabar belgilangan vaqtda (${scheduledFormatted}) faqat tanlangan ob'ektlarga avtomatik yuboriladi va belgilangan muddatgacha ko'rsatiladi.`,
+        })
+      : t('platform.desktopNotifications.confirmFootnoteScheduledAll', {
+          date: scheduledFormatted,
+          defaultValue: `Xabar belgilangan vaqtda (${scheduledFormatted}) barcha faol kassalarga avtomatik yuboriladi va belgilangan muddatgacha ko'rsatiladi.`,
+        });
+  } else {
+    footnoteText = isSelect
+      ? t('platform.desktopNotifications.confirmFootnoteSelected', {
+          defaultValue: "Xabar darhol faqat tanlangan ob'ektlarga tarqatiladi va belgilangan muddatgacha kassalarda ko'rsatiladi.",
+        })
+      : t('platform.desktopNotifications.confirmFootnote', {
+          defaultValue: "Xabar darhol barcha faol kassalarga tarqatiladi va belgilangan muddatgacha kassalarda ko'rsatiladi.",
+        });
+  }
+
+  const selectedDetailsText = isSelect
+    ? isCompanies
+      ? selectedCompanies.map((c) => c.name).filter(Boolean).join(', ')
+      : selectedStores.map((s) => (s.companyName ? `${s.name} (${s.companyName})` : s.name)).filter(Boolean).join(', ')
+    : null;
+
   return (
     <>
       <div className="divide-y divide-slate-100 dark:divide-slate-800 border-y border-slate-100 dark:border-slate-800 text-xs">
-        <div className="flex items-center justify-between py-2.5">
-          <span className="text-slate-500 dark:text-slate-400">
-            {t('platform.desktopNotifications.confirmLabelTarget')}
-          </span>
-          <span className="font-semibold text-slate-900 dark:text-white">
-            {targetLabel}
-          </span>
+        <div className="py-2.5 space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500 dark:text-slate-400">
+              {t('platform.desktopNotifications.confirmLabelTarget')}
+            </span>
+            <span className="font-semibold text-slate-900 dark:text-white">
+              {targetLabel}
+            </span>
+          </div>
+          {selectedDetailsText && (
+            <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate">
+              {selectedDetailsText}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-between py-2.5">
@@ -81,7 +121,7 @@ export default function PlatformDesktopConfirmModalSummary({
       </div>
 
       <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-        {t('platform.desktopNotifications.confirmFootnote')}
+        {footnoteText}
       </p>
     </>
   );

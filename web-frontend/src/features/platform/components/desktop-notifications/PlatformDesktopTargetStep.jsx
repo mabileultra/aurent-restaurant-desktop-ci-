@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
-import { Building2, Check, Monitor, Store, X } from 'lucide-react';
+import React from 'react';
+import { Building2, Check, Monitor, Store } from 'lucide-react';
 
 export default function PlatformDesktopTargetStep({ p }) {
   const { t } = p;
   const isSelect = p.targetScope === 'SELECT';
   const isCompanies = p.targetType === 'COMPANIES';
-  const [filterQuery, setFilterQuery] = useState('');
 
-  const companies = (p.companies || []).filter((c) =>
-    filterQuery ? c.name?.toLowerCase().includes(filterQuery.toLowerCase()) : true
-  );
-  const stores = (p.stores || []).filter((s) =>
-    filterQuery ? s.name?.toLowerCase().includes(filterQuery.toLowerCase()) : true
-  );
+  const companies = p.companies || [];
+  const stores = p.stores || [];
 
   return (
     <div className="space-y-3">
@@ -113,8 +108,8 @@ export default function PlatformDesktopTargetStep({ p }) {
           {/* Quick search input */}
           <input
             type="text"
-            value={filterQuery}
-            onChange={(e) => setFilterQuery(e.target.value)}
+            value={p.searchQuery || ''}
+            onChange={(e) => p.setSearchQuery?.(e.target.value)}
             placeholder={
               isCompanies
                 ? t('platform.desktopNotifications.selectCompaniesPlaceholder', { defaultValue: 'Kompaniya nomini qidiring...' })
@@ -124,7 +119,7 @@ export default function PlatformDesktopTargetStep({ p }) {
           />
 
           {/* Items selector grid/list */}
-          <div className="max-h-36 overflow-y-auto rounded-lg border border-slate-200/80 bg-white p-2 dark:border-slate-800 dark:bg-slate-850 space-y-1">
+          <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200/80 bg-white p-2 dark:border-slate-800 dark:bg-slate-850 space-y-1">
             {isCompanies ? (
               companies.length === 0 ? (
                 <p className="p-2 text-center text-xs text-slate-400">Kompaniyalar topilmadi</p>
@@ -143,7 +138,7 @@ export default function PlatformDesktopTargetStep({ p }) {
                       }`}
                     >
                       <span className="truncate">{c.name}</span>
-                      <div className={`h-4 w-4 rounded flex items-center justify-center border ${isChecked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 dark:border-slate-600'}`}>
+                      <div className={`h-4 w-4 rounded flex items-center justify-center border shrink-0 ${isChecked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 dark:border-slate-600'}`}>
                         {isChecked && <Check size={12} strokeWidth={3} />}
                       </div>
                     </button>
@@ -166,8 +161,15 @@ export default function PlatformDesktopTargetStep({ p }) {
                         : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <span className="truncate">{s.name}</span>
-                    <div className={`h-4 w-4 rounded flex items-center justify-center border ${isChecked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 dark:border-slate-600'}`}>
+                    <div className="flex items-center gap-2 truncate pr-2">
+                      <span className="truncate">{s.name}</span>
+                      {s.companyName && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0 font-normal">
+                          {s.companyName}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`h-4 w-4 rounded flex items-center justify-center border shrink-0 ${isChecked ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 dark:border-slate-600'}`}>
                       {isChecked && <Check size={12} strokeWidth={3} />}
                     </div>
                   </button>

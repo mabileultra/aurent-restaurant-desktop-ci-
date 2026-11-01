@@ -1,52 +1,143 @@
 import { useEffect, useRef, useState } from 'react';
+import {
+  DRAFT_STORAGE_KEY,
+  restoreDraftFromStorage,
+  serializeDraftToStorage,
+} from '../utils/desktopNotificationDraftUtils';
 
-const DRAFT_STORAGE_KEY = 'aurent_desktop_notification_draft_v1';
-
-export function useDesktopNotificationDraft({ title, setTitle, body, setBody, kind, setKind, duration, setDuration, customHours, setCustomHours }) {
+export function useDesktopNotificationDraft({
+  title,
+  setTitle,
+  body,
+  setBody,
+  kind,
+  setKind,
+  duration,
+  setDuration,
+  customHours,
+  setCustomHours,
+  targetScope,
+  setTargetScope,
+  targetType,
+  setTargetType,
+  selectedCompanyIds,
+  setSelectedCompanyIds,
+  selectedStoreIds,
+  setSelectedStoreIds,
+  selectedCompanies,
+  setSelectedCompanies,
+  selectedStores,
+  setSelectedStores,
+  scheduleType,
+  setScheduleType,
+  scheduleDate,
+  setScheduleDate,
+  scheduleTime,
+  setScheduleTime,
+}) {
   const [draftSaved, setDraftSaved] = useState(true);
   const [isDraftRestored, setIsDraftRestored] = useState(false);
   const draftTimerRef = useRef(null);
+  const isInitialMountRef = useRef(true);
 
+  // Restore draft on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      const restoredTitle = parsed.title || parsed.titleUz || '';
-      const restoredBody = parsed.body || parsed.bodyUz || '';
-      if (restoredTitle || restoredBody) {
-        setTitle(restoredTitle);
-        setBody(restoredBody);
+      const isRestored = restoreDraftFromStorage(saved, {
+        setTitle,
+        setBody,
+        setKind,
+        setDuration,
+        setCustomHours,
+        setTargetScope,
+        setTargetType,
+        setSelectedCompanyIds,
+        setSelectedStoreIds,
+        setSelectedCompanies,
+        setSelectedStores,
+        setScheduleType,
+        setScheduleDate,
+        setScheduleTime,
+      });
+
+      if (isRestored) {
         setIsDraftRestored(true);
       }
-      if (parsed.kind) setKind(parsed.kind);
-      if (parsed.duration) setDuration(parsed.duration);
-      if (parsed.customHours) setCustomHours(parsed.customHours);
     } catch {
-      // ignore
+      // ignore storage error
     }
-  }, [setTitle, setBody, setKind, setDuration, setCustomHours]);
+  }, [
+    setTitle,
+    setBody,
+    setKind,
+    setDuration,
+    setCustomHours,
+    setTargetScope,
+    setTargetType,
+    setSelectedCompanyIds,
+    setSelectedStoreIds,
+    setSelectedCompanies,
+    setSelectedStores,
+    setScheduleType,
+    setScheduleDate,
+    setScheduleTime,
+  ]);
 
+  // Auto-save draft on changes (debounced 600ms)
   useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
     setDraftSaved(false);
     clearTimeout(draftTimerRef.current);
     draftTimerRef.current = setTimeout(() => {
       try {
-        if (!title.trim() && !body.trim()) {
+        const serialized = serializeDraftToStorage({
+          title,
+          body,
+          kind,
+          duration,
+          customHours,
+          targetScope,
+          targetType,
+          selectedCompanyIds,
+          selectedStoreIds,
+          selectedCompanies,
+          selectedStores,
+          scheduleType,
+          scheduleDate,
+          scheduleTime,
+        });
+
+        if (!serialized) {
           localStorage.removeItem(DRAFT_STORAGE_KEY);
         } else {
-          localStorage.setItem(
-            DRAFT_STORAGE_KEY,
-            JSON.stringify({ title, body, kind, duration, customHours })
-          );
+          localStorage.setItem(DRAFT_STORAGE_KEY, serialized);
         }
         setDraftSaved(true);
       } catch {
-        // ignore
+        // ignore storage error
       }
     }, 600);
     return () => clearTimeout(draftTimerRef.current);
-  }, [title, body, kind, duration, customHours]);
+  }, [
+    title,
+    body,
+    kind,
+    duration,
+    customHours,
+    targetScope,
+    targetType,
+    selectedCompanyIds,
+    selectedStoreIds,
+    selectedCompanies,
+    selectedStores,
+    scheduleType,
+    scheduleDate,
+    scheduleTime,
+  ]);
 
   const clearDraftStorage = () => {
     try {
@@ -65,4 +156,4 @@ export function useDesktopNotificationDraft({ title, setTitle, body, setBody, ki
   };
 }
 
-export { DRAFT_STORAGE_KEY };
+export { DRAFT_STORAGE_KEY, restoreDraftFromStorage, serializeDraftToStorage };

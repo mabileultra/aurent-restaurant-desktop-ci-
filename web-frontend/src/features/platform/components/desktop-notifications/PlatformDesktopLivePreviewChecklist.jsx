@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Info } from 'lucide-react';
+import { AlertCircle, Check, Info } from 'lucide-react';
 
 export default function PlatformDesktopLivePreviewChecklist({ p }) {
   const { t } = p;
@@ -46,12 +46,19 @@ export default function PlatformDesktopLivePreviewChecklist({ p }) {
           </span>
         </div>
 
-        {p.scheduleType === 'SCHEDULED' && p.scheduledFormatted ? (
-          <div className="flex items-start gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
-            <Check size={14} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
-            <span>{p.scheduledFormatted} da avtomatik yuboriladi</span>
-          </div>
-        ) : null}
+        {p.scheduleType === 'SCHEDULED' && (
+          p.isScheduleValid && p.scheduledFormatted ? (
+            <div className="flex items-start gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
+              <Check size={14} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{p.scheduledFormatted} da avtomatik yuboriladi</span>
+            </div>
+          ) : p.scheduleDate && !p.isScheduleInFuture ? (
+            <div className="flex items-start gap-2 text-rose-600 dark:text-rose-400 font-medium">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" />
+              <span>{t('platform.desktopNotifications.scheduleFutureError', { defaultValue: 'Rejalashtirilgan vaqt kelajakda bo‘lishi kerak' })}</span>
+            </div>
+          ) : null
+        )}
       </div>
     </div>
   );

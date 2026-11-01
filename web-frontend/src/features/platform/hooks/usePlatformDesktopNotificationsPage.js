@@ -1,17 +1,14 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { platformDesktopNotificationsApi, platformCashRegistersApi } from '../../../api';
-import {
-  enrichDesktopNotificationHistory,
-  filterDesktopNotificationHistory,
-} from './enrichDesktopNotificationHistory';
 import { useDesktopNotificationDraft } from './useDesktopNotificationDraft';
 import { useDesktopNotificationActions } from './useDesktopNotificationActions';
 import { useDesktopNotificationTiming } from './useDesktopNotificationTiming';
 import { useDesktopNotificationBroadcast } from './useDesktopNotificationBroadcast';
 import { useDesktopNotificationTargeting } from './useDesktopNotificationTargeting';
+import { useDesktopNotificationStats } from './useDesktopNotificationStats';
+import { useDesktopNotificationHistoryList } from './useDesktopNotificationHistoryList';
 import { formatUzbekMonthLower } from '../components/desktop-notifications/desktopNotificationFormatters';
 
 export { formatUzbekMonthLower };
@@ -31,10 +28,10 @@ export function usePlatformDesktopNotificationsPage() {
   const [scheduleType, setScheduleType] = useState('NOW');
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('09:00');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
 
   const targeting = useDesktopNotificationTargeting();
+  const stats = useDesktopNotificationStats();
+  const historyList = useDesktopNotificationHistoryList({ t });
 
   const draft = useDesktopNotificationDraft({
     title,
@@ -47,6 +44,24 @@ export function usePlatformDesktopNotificationsPage() {
     setDuration,
     customHours,
     setCustomHours,
+    targetScope: targeting.targetScope,
+    setTargetScope: targeting.setTargetScope,
+    targetType: targeting.targetType,
+    setTargetType: targeting.setTargetType,
+    selectedCompanyIds: targeting.selectedCompanyIds,
+    setSelectedCompanyIds: targeting.setSelectedCompanyIds,
+    selectedStoreIds: targeting.selectedStoreIds,
+    setSelectedStoreIds: targeting.setSelectedStoreIds,
+    selectedCompanies: targeting.selectedCompanies,
+    setSelectedCompanies: targeting.setSelectedCompanies,
+    selectedStores: targeting.selectedStores,
+    setSelectedStores: targeting.setSelectedStores,
+    scheduleType,
+    setScheduleType,
+    scheduleDate,
+    setScheduleDate,
+    scheduleTime,
+    setScheduleTime,
   });
 
   const actions = useDesktopNotificationActions({
@@ -56,21 +71,6 @@ export function usePlatformDesktopNotificationsPage() {
     setBody,
     setKind,
     draft,
-  });
-
-  const registersStatsQuery = useQuery({
-    queryKey: ['platform-cash-registers-stats'],
-    queryFn: () => platformCashRegistersApi.getStats().then((r) => r.data).catch(() => null),
-    staleTime: 60_000,
-  });
-
-  const totalRegistersCount = registersStatsQuery.data?.totalRegisters ?? null;
-  const activeRegistersCount = registersStatsQuery.data?.activeRegisters ?? totalRegistersCount;
-  const onlineRegistersCount = registersStatsQuery.data?.onlineRegisters ?? null;
-
-  const historyQuery = useQuery({
-    queryKey: ['platform-desktop-notifications'],
-    queryFn: () => platformDesktopNotificationsApi.list().then((r) => r.data),
   });
 
   const timing = useDesktopNotificationTiming({
@@ -98,6 +98,11 @@ export function usePlatformDesktopNotificationsPage() {
   const handleClear = useCallback(() => {
     setTitle('');
     setBody('');
+    setKind('MESSAGE');
+    setDuration('3d');
+    setCustomHours('72');
+    targeting.setTargetScope('ALL');
+    targeting.setTargetType('COMPANIES');
     targeting.clearTargetSelection();
     setScheduleType('NOW');
     setScheduleDate('');
@@ -106,18 +111,6 @@ export function usePlatformDesktopNotificationsPage() {
     draft.clearDraftStorage();
     toast.success(t('common.cleared', { defaultValue: 'Tozalandi' }));
   }, [t, draft, targeting]);
-
-  const enrichedHistory = useMemo(
-    () => enrichDesktopNotificationHistory(
-      historyQuery.data,
-      t('platform.desktopNotifications.targetAll', { defaultValue: 'Barcha kassalar' })
-    ),
-    [historyQuery.data, t]
-  );
-  const filteredHistory = useMemo(
-    () => filterDesktopNotificationHistory(enrichedHistory, searchQuery, statusFilter),
-    [enrichedHistory, searchQuery, statusFilter]
-  );
 
   return {
     t,
@@ -140,7 +133,7 @@ export function usePlatformDesktopNotificationsPage() {
     setPreviewLang,
     targetGroup,
     setTargetGroup,
-    activeTargetCount: totalRegistersCount,
+    activeTargetCount: stats.totalRegistersCount,
     kind,
     setKind,
     duration,
@@ -167,10 +160,10 @@ export function usePlatformDesktopNotificationsPage() {
     draftSaved: draft.draftSaved,
     isDraftRestored: draft.isDraftRestored,
     handleDismissDraftNotice: draft.handleDismissDraftNotice,
-    activeRegistersCount,
-    totalRegistersCount,
-    allRegistersCount: activeRegistersCount,
-    onlineRegistersCount,
+    activeRegistersCount: stats.activeRegistersCount,
+    totalRegistersCount: stats.totalRegistersCount,
+    allRegistersCount: stats.activeRegistersCount,
+    onlineRegistersCount: stats.onlineRegistersCount,
 
     // Spread targeting
     ...targeting,
@@ -181,14 +174,8 @@ export function usePlatformDesktopNotificationsPage() {
     executeBroadcast: broadcast.executeBroadcast,
 
     ...actions,
+    ...historyList,
 
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    history: filteredHistory,
-    totalHistoryCount: enrichedHistory.length,
-    historyLoading: historyQuery.isLoading,
     handleSend: broadcast.handleInitiateSend,
     handleClear,
     sendPending: broadcast.sendPending,

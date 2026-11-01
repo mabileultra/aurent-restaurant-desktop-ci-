@@ -140,7 +140,12 @@ export default function PlatformDesktopConfirmModal({ p }) {
               {modalTitle}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {t('platform.desktopNotifications.confirmModalSubtitle')}
+              {p.scheduleType === 'SCHEDULED' && p.scheduledFormatted
+                ? t('platform.desktopNotifications.confirmModalSubtitleScheduled', {
+                    date: p.scheduledFormatted,
+                    defaultValue: `Xabar ${p.scheduledFormatted} da avtomatik yuboriladi. Oflayn kassalar internetga ulanganda oladi.`,
+                  })
+                : t('platform.desktopNotifications.confirmModalSubtitle')}
             </p>
           </div>
         </div>
@@ -148,6 +153,10 @@ export default function PlatformDesktopConfirmModal({ p }) {
         <PlatformDesktopConfirmModalSummary
           t={t}
           targetLabel={targetLabel}
+          isSelect={isSelect}
+          isCompanies={p.targetType === 'COMPANIES'}
+          selectedCompanies={p.selectedCompanies}
+          selectedStores={p.selectedStores}
           isAlert={isAlert}
           isUpdate={isUpdate}
           visibleUntilFormatted={p.visibleUntilFormatted}
