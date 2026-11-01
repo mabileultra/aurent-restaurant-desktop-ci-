@@ -15,13 +15,21 @@ import {
   getScopeForRole,
 } from '../utils/roleDefaultModules';
 import { useRoleDefaultsQuery } from './useRoleDefaultsQuery';
+import { useBusinessTypeCountsQuery } from './useBusinessTypeCountsQuery';
+import { useAccessRightsCompanies } from './useAccessRightsCompanies';
 
 const MAX_USERS_PAGE_SIZE = 250;
 
 export function useAccessRightsV2Data() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language === 'ru' ? 'ru' : 'uz';
-  const [selectedBT, setSelectedBT] = useState('RESTAURANT');
+  const [selectedBT, setSelectedBTState] = useState('RESTAURANT');
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+
+  const setSelectedBT = useCallback((bt) => {
+    setSelectedBTState(bt);
+    setSelectedCompanyId('');
+  }, []);
 
   const {
     data: rawBusinessTypes = [],
@@ -47,6 +55,8 @@ export function useAccessRightsV2Data() {
     staleTime: 300_000,
   });
 
+  const { companies, companiesLoading } = useAccessRightsCompanies(selectedBT);
+
   const {
     data: usersResponse = { content: [], totalElements: 0 },
     isLoading: usersLoading,
@@ -54,9 +64,13 @@ export function useAccessRightsV2Data() {
     error: usersErrorObj,
     refetch: refetchUsers,
   } = useQuery({
-    queryKey: ['access-v2-users', selectedBT],
+    queryKey: ['access-v2-users', selectedBT, selectedCompanyId],
     queryFn: async () => {
-      const res = await platformModuleAccessApi.listUsers({ businessType: selectedBT, size: MAX_USERS_PAGE_SIZE });
+      const res = await platformModuleAccessApi.listUsers({
+        businessType: selectedBT,
+        companyId: selectedCompanyId || undefined,
+        size: MAX_USERS_PAGE_SIZE,
+      });
       const raw = res.data;
       const content = Array.isArray(raw) ? raw : (raw?.content || []);
       const totalElements = Number(raw?.totalElements ?? raw?.total ?? content.length);
@@ -68,30 +82,8 @@ export function useAccessRightsV2Data() {
   const rawUsers = usersResponse.content;
   const usersTotalElements = usersResponse.totalElements;
 
-  // Haqiqiy backend roleDefault modullari namunaviy xodimlar orqali olinadi (Haqiqat manbai)
   const roleDefaults = useRoleDefaultsQuery(rawUsers);
-
-  // Faol bo'lmagan biznes turlarining soni (faqat 1 marta keshlangan holda yuklanadi)
-  const { data: btCounts = {} } = useQuery({
-    queryKey: ['access-v2-bt-counts', rawBusinessTypes.map((b) => b.code).join(',')],
-    queryFn: async () => {
-      const counts = {};
-      const otherTypes = rawBusinessTypes.filter((b) => b.code !== selectedBT);
-      await Promise.all(
-        otherTypes.map(async (bt) => {
-          try {
-            const res = await platformModuleAccessApi.listUsers({ businessType: bt.code, size: 1 });
-            counts[bt.code] = res.data?.totalElements ?? res.data?.total ?? 0;
-          } catch {
-            counts[bt.code] = 0;
-          }
-        })
-      );
-      return counts;
-    },
-    enabled: rawBusinessTypes.length > 0,
-    staleTime: Infinity,
-  });
+  const btCounts = useBusinessTypeCountsQuery(rawBusinessTypes, selectedBT);
 
   const catalogMap = useMemo(() => buildCatalogMap(rawCatalog, t), [rawCatalog, t]);
   const moduleGroups = useMemo(
@@ -125,16 +117,11 @@ export function useAccessRightsV2Data() {
       const roleScope = backendDefault?.scopeKeys || getScopeForRole(roleCode, selectedBT);
       const enabledModuleKeys = backendDefault?.defaultKeys || getDefaultModulesForRole(roleCode, selectedBT);
 
-      // Guruhlar bo'yicha taqsimot: faqat ushbu rol doirasiga (scope) tegishli modullar
       const breakdown = moduleGroups
         .map((g) => {
           const roleModulesInGroup = g.modules.filter((m) => roleScope.has(m.id));
           const enabledInGroup = roleModulesInGroup.filter((m) => enabledModuleKeys.has(m.id)).length;
-          return {
-            name: g.title,
-            enabled: enabledInGroup,
-            total: roleModulesInGroup.length,
-          };
+          return { name: g.title, enabled: enabledInGroup, total: roleModulesInGroup.length };
         })
         .filter((g) => g.total > 0 && g.enabled > 0);
 
@@ -177,9 +164,14 @@ export function useAccessRightsV2Data() {
   return {
     selectedBT,
     setSelectedBT,
+    selectedCompanyId,
+    setSelectedCompanyId,
+    companies,
+    companiesLoading,
     businessTypes,
     roles,
     rawUsers,
+    rawCatalog,
     moduleGroups,
     catalogMap,
     isLoading: btLoading || catalogLoading || usersLoading,

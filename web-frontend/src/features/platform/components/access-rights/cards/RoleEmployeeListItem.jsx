@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, SlidersHorizontal } from 'lucide-react';
 
 /**
  * Xodimlar ro'yxatidagi bitta xodim kartochkasi
@@ -8,6 +8,7 @@ export default function RoleEmployeeListItem({
   user,
   businessTypeName,
   onResetClick,
+  onEditClick,
 }) {
   const hasExceptions = Boolean(user.moduleAccessCustom || user.customAccess || user.hasExceptions);
   const initials = (user.fullName || user.username || 'U').substring(0, 2).toUpperCase();
@@ -39,17 +40,28 @@ export default function RoleEmployeeListItem({
         </div>
       </div>
 
-      {hasExceptions && (
+      <div className="flex items-center gap-1.5 shrink-0 ml-2">
         <button
           type="button"
-          onClick={() => onResetClick?.(user)}
-          aria-label={`${user.fullName || user.username}ni shablonga qaytarish`}
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 cursor-pointer shrink-0 ml-2"
+          onClick={() => onEditClick?.(user)}
+          aria-label={`${user.fullName || user.username} huquqlarini sozlash`}
+          className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/80 px-2.5 py-1 text-[11px] font-semibold dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900 cursor-pointer"
         >
-          <RotateCcw size={11} />
-          <span>Shablonga qaytarish</span>
+          <SlidersHorizontal size={11} />
+          <span>Sozlash</span>
         </button>
-      )}
+        {hasExceptions && (
+          <button
+            type="button"
+            onClick={() => onResetClick?.(user)}
+            aria-label={`${user.fullName || user.username}ni shablonga qaytarish`}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+          >
+            <RotateCcw size={11} />
+            <span>Shablonga</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }
