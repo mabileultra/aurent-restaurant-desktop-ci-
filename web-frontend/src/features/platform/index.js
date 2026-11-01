@@ -1,5 +1,6 @@
 export { default as PlatformCompaniesPage } from './pages/PlatformCompaniesPage';
 export { default as PlatformModuleAccessPage } from './pages/PlatformModuleAccessPage';
+export { default as PlatformModuleAccessV2Page } from './pages/PlatformModuleAccessV2Page';
 export { default as PlatformMonitoringPage } from './pages/PlatformMonitoringPage';
 export { default as PlatformEmailPage } from './pages/PlatformEmailPage';
 export { default as PlatformDesktopNotificationsPage } from './pages/PlatformDesktopNotificationsPage';
