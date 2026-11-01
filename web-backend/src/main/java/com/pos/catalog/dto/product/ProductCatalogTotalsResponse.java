@@ -6,9 +6,10 @@ import java.math.BigDecimal;
 public record ProductCatalogTotalsResponse(
     long productCount,
     BigDecimal stockQuantityTotal,
-    BigDecimal stockValueTotal
+    BigDecimal stockValueTotal,
+    BigDecimal stockCostTotal
 ) {
     public static ProductCatalogTotalsResponse empty() {
-        return new ProductCatalogTotalsResponse(0L, BigDecimal.ZERO, BigDecimal.ZERO);
+        return new ProductCatalogTotalsResponse(0L, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 }

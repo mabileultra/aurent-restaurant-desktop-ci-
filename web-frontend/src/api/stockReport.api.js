@@ -2,13 +2,14 @@ import { api } from './client';
 
 export const stockReportApi = {
   dashboard: (params) => api.get('/reports/stock/dashboard', { params }),
-  lowStock: (params) => api.get('/reports/stock/low-stock', { params }),
+  // Live store_stock via web-backend (/warehouse — not reporting_db facts).
+  lowStock: (params) => api.get('/warehouse/reports/low-stock', { params }),
   writeOffs: (params) => api.get('/reports/stock/write-offs', { params }),
   turnover: (params) => api.get('/reports/stock/turnover', { params }),
   movements: (params) => api.get('/reports/stock/movements', { params }),
   adjustments: (params) => api.get('/reports/stock/adjustments', { params }),
   receipts: (params) => api.get('/reports/stock/receipts', { params }),
-  balances: (params) => api.get('/reports/stock/balances', { params }),
+  balances: (params) => api.get('/warehouse/reports/balances', { params }),
   deadStock: (params) => api.get('/reports/stock/dead-stock', { params }),
   inventories: (params) => api.get('/reports/stock/inventories', { params }),
   transfers: (params) => api.get('/reports/stock/transfers', { params }),

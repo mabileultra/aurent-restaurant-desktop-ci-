@@ -1,11 +1,15 @@
 const PRODUCT_QUERY_SEGMENTS = [
   'products',
   'product',
+  'products-catalog-totals',
+  'live-stock-retail-totals',
   'warehouse-products',
   'pos-products',
   'dashboard-low-stock',
   'low-stock',
   'reports-low-stock',
+  'stock-dashboard',
+  'stock-balances',
 ];
 
 function isProductQueryKey(queryKey) {

@@ -1,0 +1,27 @@
+---
+description: One live stock sum for catalog, dashboard, balances, low-stock
+alwaysApply: false
+---
+
+# Stock retail / cost total (единая живая сумма)
+
+## Canonical
+
+- Source: live `store_stock` + `products.selling_price` / `cost_price` via web-backend.
+- Formula: `price × max(qty, 0)` (`StockRetailValueMath`).
+- Missing store row → qty `0` (never stale `product.stockQuantity` for company totals).
+
+## Surfaces
+
+| UI | API |
+|----|-----|
+| Products «Сумма» | `GET /products/catalog-totals` |
+| Dashboard «Остаток сейчас» / «Сумма прихода» | same totals overlaid in `mergeDashboardLiveStock` |
+| Report «Остатки» | `GET /warehouse/reports/balances` |
+| Report «Ниже минимума» | `GET /warehouse/reports/low-stock` |
+
+Do **not** use `reporting_db` movement/snapshot facts for these current-stock money/qty KPIs.
+
+## Still facts (OK)
+
+Period movement reports: write-offs, turnover, receipts history, dead-stock (no-sale window), exports that still hit `/reports/stock/**`.

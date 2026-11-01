@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,8 +23,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Catalog list totals with the same Specification as the products page.
- * Distinct by product id so search joins do not inflate sums.
+ * Catalog / dashboard stock totals from live store_stock + product prices.
+ * Missing store row → qty 0 (no stale product.stockQuantity fallback).
  */
 @Component
 @RequiredArgsConstructor
@@ -41,7 +40,7 @@ public class ProductCatalogTotalsSupport {
         cq.multiselect(
             root.get("id").alias("id"),
             root.get("sellingPrice").alias("price"),
-            root.get("stockQuantity").alias("qty")
+            root.get("costPrice").alias("cost")
         );
         Predicate predicate = spec.toPredicate(root, cq, cb);
         if (predicate != null) {
@@ -55,44 +54,44 @@ public class ProductCatalogTotalsSupport {
         }
 
         Map<UUID, BigDecimal> priceById = new HashMap<>();
-        Map<UUID, BigDecimal> qtyById = new HashMap<>();
+        Map<UUID, BigDecimal> costById = new HashMap<>();
         Set<UUID> seen = new HashSet<>();
         for (Tuple row : rows) {
             UUID id = row.get("id", UUID.class);
             if (id == null || !seen.add(id)) {
                 continue;
             }
-            priceById.put(id, coalesce(row.get("price", BigDecimal.class)));
-            qtyById.put(id, coalesce(row.get("qty", BigDecimal.class)));
+            BigDecimal price = row.get("price", BigDecimal.class);
+            BigDecimal cost = row.get("cost", BigDecimal.class);
+            priceById.put(id, price != null ? price : BigDecimal.ZERO);
+            costById.put(id, cost != null ? cost : BigDecimal.ZERO);
         }
 
         List<UUID> ids = new ArrayList<>(seen);
         Map<UUID, BigDecimal> liveQty = storeId != null
             ? storeStockService.getQuantities(ids, storeId)
             : storeStockService.sumQuantities(ids);
-        for (UUID id : ids) {
-            if (liveQty.containsKey(id)) {
-                qtyById.put(id, liveQty.get(id));
-            }
-        }
 
         BigDecimal qtyTotal = BigDecimal.ZERO;
-        BigDecimal valueTotal = BigDecimal.ZERO;
+        BigDecimal retailTotal = BigDecimal.ZERO;
+        BigDecimal costTotal = BigDecimal.ZERO;
         for (UUID id : ids) {
-            BigDecimal qty = qtyById.getOrDefault(id, BigDecimal.ZERO);
-            BigDecimal price = priceById.getOrDefault(id, BigDecimal.ZERO);
+            BigDecimal rawQty = liveQty.getOrDefault(id, BigDecimal.ZERO);
+            BigDecimal qty = StockRetailValueMath.displayQty(rawQty);
             qtyTotal = qtyTotal.add(qty);
-            valueTotal = valueTotal.add(price.multiply(qty));
+            retailTotal = retailTotal.add(
+                StockRetailValueMath.lineValue(priceById.getOrDefault(id, BigDecimal.ZERO), rawQty)
+            );
+            costTotal = costTotal.add(
+                StockRetailValueMath.lineValue(costById.getOrDefault(id, BigDecimal.ZERO), rawQty)
+            );
         }
 
         return new ProductCatalogTotalsResponse(
             ids.size(),
-            qtyTotal.setScale(3, RoundingMode.HALF_UP),
-            valueTotal.setScale(2, RoundingMode.HALF_UP)
+            StockRetailValueMath.scaleQty(qtyTotal),
+            StockRetailValueMath.scaleMoney(retailTotal),
+            StockRetailValueMath.scaleMoney(costTotal)
         );
-    }
-
-    private static BigDecimal coalesce(BigDecimal value) {
-        return value != null ? value : BigDecimal.ZERO;
     }
 }
