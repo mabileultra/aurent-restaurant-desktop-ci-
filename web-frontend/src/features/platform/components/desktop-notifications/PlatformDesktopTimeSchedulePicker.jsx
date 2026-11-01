@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import PlatformDatePicker from '../PlatformDatePicker';
+import PlatformTimePicker from '../PlatformTimePicker';
 
 export default function PlatformDesktopTimeSchedulePicker({ p }) {
   const { t } = p;
@@ -54,15 +55,11 @@ export default function PlatformDesktopTimeSchedulePicker({ p }) {
                 placeholder={t('platform.desktopNotifications.scheduleDatePlaceholder', { defaultValue: 'Sana tanlang...' })}
               />
             </div>
-            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-slate-200 dark:bg-slate-850 dark:border-slate-700">
-              <Clock size={13} className="text-slate-400" />
-              <input
-                type="time"
-                value={p.scheduleTime || '09:00'}
-                onChange={(e) => p.setScheduleTime(e.target.value)}
-                className="text-xs bg-transparent text-slate-800 dark:text-slate-200 outline-none font-medium"
-              />
-            </div>
+            <PlatformTimePicker
+              value={p.scheduleTime || '09:00'}
+              onChange={(val) => p.setScheduleTime(val)}
+              ariaLabel={t('platform.desktopNotifications.sendTime')}
+            />
           </div>
 
           {p.scheduledFormatted ? (
