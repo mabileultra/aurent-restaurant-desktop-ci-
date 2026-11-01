@@ -3456,6 +3456,8 @@
       "confirmModalTitleAll": "Barcha kassalarga yuborilsinmi?",
       "confirmSubmitAll": "Ha, barcha kassalarga yuborish",
       "comingSoon": "Tez kunda",
+      "comingSoonBackend": "Tez kunda (Backend kutilmoqda)",
+      "allAssociatedRegisters": "barcha kassalari",
       "draftRestoredNotice": "Qoralama tiklandi",
       "detailUntrackedHint": "Kassir xabarni o'qigani hozircha kuzatilmaydi (Server barcha faol kassalarga tarqatadi).",
       "allCompaniesOfflineNote": "Barcha kompaniyalar · oflayn kassalar internetga ulanganda oladi",

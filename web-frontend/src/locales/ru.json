@@ -3668,6 +3668,8 @@
       "confirmModalTitleAll": "Отправить на все кассы?",
       "confirmSubmitAll": "Да, отправить на все кассы",
       "comingSoon": "Скоро",
+      "comingSoonBackend": "Скоро (Ожидается бэкенд)",
+      "allAssociatedRegisters": "все кассы",
       "draftRestoredNotice": "Черновик восстановлен",
       "detailUntrackedHint": "Прочтение сообщения кассиром пока не отслеживается (Сервер рассылает всем активным кассам).",
       "allCompaniesOfflineNote": "Все компании · офлайн-кассы получат при подключении к сети",

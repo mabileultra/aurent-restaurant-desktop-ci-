@@ -12,7 +12,7 @@ export function useDesktopNotificationTargeting() {
   const [selectedStoreIds, setSelectedStoreIds] = useState([]);
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectedStores, setSelectedStores] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [targetSearchQuery, setTargetSearchQuery] = useState('');
 
   const isSelect = targetScope === 'SELECT';
 
@@ -26,18 +26,18 @@ export function useDesktopNotificationTargeting() {
       setSelectedCompanyIds([]);
       setSelectedCompanies([]);
     }
-    setSearchQuery('');
+    setTargetSearchQuery('');
   }, []);
 
   // Server-searched companies with limit 30 (prevents full-table size=200 scans)
   const companiesQuery = useQuery({
-    queryKey: ['platform-companies-target-options', searchQuery],
+    queryKey: ['platform-companies-target-options', targetSearchQuery],
     queryFn: () =>
       companyApi
         .getAll({
           page: 0,
           size: TARGET_PAGE_SIZE,
-          search: searchQuery.trim() || undefined,
+          search: targetSearchQuery.trim() || undefined,
           sort: 'name,asc',
         })
         .then((r) => (Array.isArray(r.data) ? r.data : r.data?.content || [])),
@@ -47,13 +47,13 @@ export function useDesktopNotificationTargeting() {
 
   // Server-searched managed stores with limit 30 (prevents full-table /stores scan and includes companyName)
   const storesQuery = useQuery({
-    queryKey: ['platform-stores-target-options', searchQuery],
+    queryKey: ['platform-stores-target-options', targetSearchQuery],
     queryFn: () =>
       storeApi
         .getManaged({
           page: 0,
           size: TARGET_PAGE_SIZE,
-          search: searchQuery.trim() || undefined,
+          search: targetSearchQuery.trim() || undefined,
           sort: 'name,asc',
         })
         .then((r) => (Array.isArray(r.data) ? r.data : r.data?.content || [])),
@@ -149,8 +149,8 @@ export function useDesktopNotificationTargeting() {
     clearTargetSelection,
     hasValidTarget,
     selectedTargetCount,
-    searchQuery,
-    setSearchQuery,
+    targetSearchQuery,
+    setTargetSearchQuery,
     companies: mergedCompanies,
     isCompaniesLoading: companiesQuery.isLoading,
     stores: mergedStores,

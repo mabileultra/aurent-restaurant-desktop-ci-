@@ -39,12 +39,20 @@ describe('PlatformDesktopTargetStep', () => {
     expect(html).toContain('Barcha kompaniyalar');
   });
 
-  it('renders SELECT scope with companies and stores buttons', () => {
-    const selectProps = { ...mockProps, targetScope: 'SELECT' };
+  it('renders SELECT scope with companies and stores buttons and binds targetSearchQuery', () => {
+    const selectProps = { ...mockProps, targetScope: 'SELECT', targetSearchQuery: 'Niso' };
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: selectProps }));
 
     expect(html).toContain("Kompaniyalar bo&#x27;yicha");
     expect(html).toContain("Filiallar bo&#x27;yicha");
     expect(html).toContain('Company Alpha');
+    expect(html).toContain('value="Niso"');
+  });
+
+  it('disables targetSelect button with Tez kunda badge when targetScope is ALL', () => {
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: mockProps }));
+
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('Tez kunda');
   });
 });

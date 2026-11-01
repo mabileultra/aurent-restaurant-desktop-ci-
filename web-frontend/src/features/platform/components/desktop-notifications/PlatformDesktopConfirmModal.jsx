@@ -87,8 +87,8 @@ export default function PlatformDesktopConfirmModal({ p }) {
       defaultValue: `Tanlangan ${count} ta ob'ektga yuborilsinmi?`,
     });
     targetLabel = isCompanies
-      ? `${t('platform.desktopNotifications.targetTypeCompanies', { defaultValue: "Kompaniyalar bo'yicha" })}: ${count} ta`
-      : `${t('platform.desktopNotifications.targetTypeStores', { defaultValue: "Filiallar bo'yicha" })}: ${count} ta`;
+      ? `${t('platform.desktopNotifications.targetTypeCompanies', { defaultValue: "Kompaniyalar bo'yicha" })}: ${count} ta (${t('platform.desktopNotifications.allAssociatedRegisters', { defaultValue: 'barcha kassalari' })})`
+      : `${t('platform.desktopNotifications.targetTypeStores', { defaultValue: "Filiallar bo'yicha" })}: ${count} ta (${t('platform.desktopNotifications.allAssociatedRegisters', { defaultValue: 'barcha kassalari' })})`;
     submitBtnLabel = t('platform.desktopNotifications.confirmSubmitSelected', {
       defaultValue: 'Ha, tanlanganlarga yuborish',
     });

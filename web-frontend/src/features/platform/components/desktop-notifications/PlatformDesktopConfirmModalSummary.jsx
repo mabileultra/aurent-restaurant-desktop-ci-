@@ -22,7 +22,7 @@ export default function PlatformDesktopConfirmModalSummary({
     footnoteText = isSelect
       ? t('platform.desktopNotifications.confirmFootnoteScheduledSelected', {
           date: scheduledFormatted,
-          defaultValue: `Xabar belgilangan vaqtda (${scheduledFormatted}) faqat tanlangan ob'ektlarga avtomatik yuboriladi va belgilangan muddatgacha ko'rsatiladi.`,
+          defaultValue: `Xabar belgilangan vaqtda (${scheduledFormatted}) faqat tanlangan ob'ektlarning barcha kassalariga avtomatik yuboriladi va belgilangan muddatgacha ko'rsatiladi.`,
         })
       : t('platform.desktopNotifications.confirmFootnoteScheduledAll', {
           date: scheduledFormatted,
@@ -31,7 +31,7 @@ export default function PlatformDesktopConfirmModalSummary({
   } else {
     footnoteText = isSelect
       ? t('platform.desktopNotifications.confirmFootnoteSelected', {
-          defaultValue: "Xabar darhol faqat tanlangan ob'ektlarga tarqatiladi va belgilangan muddatgacha kassalarda ko'rsatiladi.",
+          defaultValue: "Xabar darhol faqat tanlangan ob'ektlarning barcha kassalariga tarqatiladi va belgilangan muddatgacha kassalarda ko'rsatiladi.",
         })
       : t('platform.desktopNotifications.confirmFootnote', {
           defaultValue: "Xabar darhol barcha faol kassalarga tarqatiladi va belgilangan muddatgacha kassalarda ko'rsatiladi.",
