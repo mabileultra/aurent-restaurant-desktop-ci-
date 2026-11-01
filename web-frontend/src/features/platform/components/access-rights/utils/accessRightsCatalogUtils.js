@@ -1,104 +1,61 @@
 import { isModuleVisibleForBusinessType } from '../../../utils/moduleAccessByBusinessType';
-import { PLATFORM_MODULE_KEYS } from './roleDefaultModules';
+import { PLATFORM_MODULE_KEYS, BUSINESS_TYPE_NAMES_UZ, BUSINESS_TYPE_NAMES_RU } from './roleDefaultModules';
+import {
+  GROUP_TITLES_UZ,
+  GROUP_TITLES_RU,
+  ROLE_LABELS_UZ,
+  ROLE_LABELS_RU,
+  MODULE_NAMES_UZ,
+  MODULE_NAMES_RU,
+} from './accessRightsTranslations';
 
-export const GROUP_TITLES_UZ = {
-  platform: 'Super-admin',
-  main: 'Asosiy',
-  goods: 'Tovarlar',
-  products: 'Tovarlar',
-  stock: 'Ombor',
-  orders: 'Buyurtmalar',
-  finance: 'Moliya',
-  registers: 'Kassalar',
-  reportsSales: 'Hisobotlar — sotuv',
-  reportsStock: 'Hisobotlar — ombor',
-  reports: 'Hisobotlar',
-  restaurant: 'Restoran',
-  settings: 'Sozlamalar',
-  cashier: 'Kassa oynasi',
+export {
+  GROUP_TITLES_UZ,
+  GROUP_TITLES_RU,
+  ROLE_LABELS_UZ,
+  ROLE_LABELS_RU,
+  MODULE_NAMES_UZ,
+  MODULE_NAMES_RU,
 };
 
-export const ROLE_LABELS_UZ = {
-  ADMIN: 'Admin',
-  MANAGER: 'Menejer',
-  CASHIER: 'Kassir',
-  WAITER: 'Ofitsiant',
-  COURIER: 'Kuryer',
-  COOK: 'Oshpaz',
-  ACCOUNTANT: 'Buxgalter',
-};
+export function resolveRoleLabel(roleCode, tOrLang = 'uz') {
+  const code = String(roleCode || '').toUpperCase();
+  if (typeof tOrLang === 'function') {
+    const val = tOrLang(`roles.${code}`);
+    if (val && val !== `roles.${code}`) return val;
+  }
+  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  if (lang === 'ru') return ROLE_LABELS_RU[code] || code;
+  return ROLE_LABELS_UZ[code] || code;
+}
 
-export const MODULE_NAMES_UZ = {
-  dashboard: 'Boshqaruv paneli',
-  aiAssistant: 'AI-assistent',
-  checkout: 'To‘lov oynasi',
-  products: 'Tovarlar katalogi',
-  categories: 'Kategoriyalar',
-  scalesStation: 'Tarozi stansiyasi',
-  scalesPlu: 'PLU kodlari',
-  stockProducts: 'Ombor — tovarlar',
-  stockSuppliers: 'Yetkazib beruvchilar',
-  stockReceipts: 'Kirim (hujjat)',
-  stockInventories: 'Inventarizatsiya',
-  stockTransfers: 'Ko‘chirish',
-  ordersList: 'Buyurtmalar ro‘yxati',
-  registersList: 'Kassalar ro‘yxati',
-  registersZReports: 'Z-hisobotlar',
-  registersTransfer: 'Kassa topshirig‘i',
-  registersConfig: 'Kassa sozlamalari',
-  reportsSales: 'Sotuvlar jurnali',
-  reportsSalesByProducts: 'Tovarlar bo‘yicha sotuv',
-  reportsReturns: 'Qaytarishlar',
-  reportsSync: 'Sinxronizatsiya hisoboti',
-  reportsAnalytics: 'Sotuv analitikasi',
-  reportsStockDashboard: 'Ombor — xulosa',
-  reportsStockWriteOffs: 'Hisobdan chiqarish',
-  reportsStockLow: 'Kam qolgan tovarlar',
-  reportsStockTurnover: 'Aylanma qaydnoma',
-  reportsStockMovements: 'Harakatlar jurnali',
-  reportsStockLifecycle: 'Tovar hayot tsikli',
-  reportsStockReceipts: 'Kirimlar hisoboti',
-  reportsSalesByCategories: 'Kategoriyalar bo‘yicha',
-  reportsSalesByStores: 'Do‘konlar bo‘yicha sotuv',
-  reportsSalesPeriodCompare: 'Davrlarni solishtirish',
-  reportsSalesDaily: 'Kunlik xulosa',
-  reportsCashierPerformance: 'Kassirlar samaradorligi',
-  reportsStockBalances: 'Ombor qoldiqlari',
-  reportsStockAdjustments: 'Qoldiq tuzatishlar',
-  reportsStockDead: 'Sotilmagan tovarlar',
-  reportsStockInventories: 'Inventarizatsiya hisoboti',
-  reportsStockTransfers: 'Ko‘chirishlar hisoboti',
-  stores: 'Do‘konlar va filiallar',
-  restaurantFloor: 'Zal va stollar',
-  restaurantRequestBill: 'Hisob berish',
-  restaurantPickupLabel: 'Berish etiketi',
-  restaurantCustomerDisplay: 'Xaridor ekrani',
-  restaurantQuickSale: 'Tezkor chek',
-  restaurantBooking: 'Bronlash',
-  restaurantDelivery: 'Yetkazib berish',
-  restaurantKitchen: 'Oshxona (KDS)',
-  usersList: 'Xodimlar ro‘yxati',
-  usersPrinterSettings: 'Printer sozlamalari',
-  usersBrandingSettings: 'Brending sozlamalari',
-  usersBarcodePrint: 'Yorliq chop etish',
-  cashierPos: 'Kassa — sotuv',
-  cashierSales: 'Kassa — cheklarim',
-  cashierOffline: 'Kassa — oflayn rejim',
-  restaurantPos: 'Restoran — kassa',
-  financeDashboard: 'Moliya — boshqaruv paneli',
-  financeDebts: 'Moliya — qarzlar',
-  financeIncomes: 'Moliya — tushumlar',
-  financeExpenses: 'Moliya — xarajatlar',
-  financeAccounts: 'Moliya — kassalar va hisoblar',
-  financeTransfers: 'Moliya — o‘tkazmalar',
-  financeReports: 'Moliya — hisobotlar',
-  financeAudit: 'Moliya — audit jurnali',
-  financeCategories: 'Moliya — moddalar',
-  financeSync: 'Moliya — sinxronizatsiya',
-};
+export function resolveBusinessTypeName(btCode, tOrLang = 'uz') {
+  const code = String(btCode || '').toUpperCase();
+  if (typeof tOrLang === 'function') {
+    const val = tOrLang(`businessTypes.${code}`);
+    if (val && val !== `businessTypes.${code}`) return val;
+  }
+  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  if (lang === 'ru') return BUSINESS_TYPE_NAMES_RU[code] || code;
+  return BUSINESS_TYPE_NAMES_UZ[code] || code;
+}
 
-export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT') {
+export function resolveModuleName(moduleId, catalogMap = {}, tOrLang = 'uz') {
+  const id = String(moduleId || '');
+  if (typeof tOrLang === 'function') {
+    const val = tOrLang([`nav.${id}`, `platform.modules.${id}`]);
+    if (val && val !== `nav.${id}` && val !== `platform.modules.${id}`) return val;
+  }
+  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  if (lang === 'ru') return MODULE_NAMES_RU[id] || catalogMap[id]?.name || id;
+  return MODULE_NAMES_UZ[id] || catalogMap[id]?.name || id;
+}
+
+export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT', tOrLang = 'uz') {
   const map = new Map();
+  const isFn = typeof tOrLang === 'function';
+  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  const titles = lang === 'ru' ? GROUP_TITLES_RU : GROUP_TITLES_UZ;
 
   rawCatalog.forEach((item) => {
     if (PLATFORM_MODULE_KEYS.has(item.id)) return;
@@ -106,33 +63,36 @@ export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT')
 
     const groupId = item.group || 'main';
     if (!map.has(groupId)) {
+      const title = isFn
+        ? tOrLang([`platform.moduleAccess.groups.${groupId}`, `nav.${groupId}Group`], { defaultValue: titles[groupId] || groupId })
+        : (titles[groupId] || groupId);
+
       map.set(groupId, {
         id: groupId,
-        title: GROUP_TITLES_UZ[groupId] || groupId,
+        title,
         modules: [],
       });
     }
+
+    const name = resolveModuleName(item.id, {}, tOrLang);
+
     map.get(groupId).modules.push({
       id: item.id,
-      name: MODULE_NAMES_UZ[item.id] || item.name || item.id,
+      name,
     });
   });
 
   return Array.from(map.values()).filter((g) => g.modules.length > 0);
 }
 
-export function buildCatalogMap(rawCatalog = []) {
+export function buildCatalogMap(rawCatalog = [], tOrLang = 'uz') {
   const map = {};
   rawCatalog.forEach((item) => {
     map[item.id] = {
       id: item.id,
-      name: MODULE_NAMES_UZ[item.id] || item.name || item.id,
+      name: resolveModuleName(item.id, {}, tOrLang),
       group: item.group || 'main',
     };
   });
   return map;
-}
-
-export function resolveModuleName(moduleId, catalogMap = {}) {
-  return MODULE_NAMES_UZ[moduleId] || catalogMap[moduleId]?.name || moduleId;
 }

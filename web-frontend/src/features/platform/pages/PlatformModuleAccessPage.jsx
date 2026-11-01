@@ -27,6 +27,9 @@ export default function PlatformModuleAccessPage() {
         >
           <Sparkles size={14} className="text-emerald-600 dark:text-emerald-400" />
           <span>Yangi kartali ko'rinish (V2)</span>
+          <span className="rounded bg-amber-100 text-amber-900 text-[10px] px-1.5 py-0.5 font-bold dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+            Beta
+          </span>
           <ArrowRight size={14} />
         </Link>
       )}

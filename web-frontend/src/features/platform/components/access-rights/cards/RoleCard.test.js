@@ -41,4 +41,30 @@ describe('RoleCard', () => {
     expect(html).toContain('Sozlash');
     expect(html).toContain('Xodimlar');
   });
+
+  it('renders compact mode for roles with 0 employees', () => {
+    const mockRole = {
+      code: 'COOK',
+      name: 'Oshpaz',
+      totalEmployees: 0,
+      exceptionCount: 0,
+      enabledModulesCount: 1,
+      totalModulesCount: 8,
+      breakdown: [],
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(RoleCard, {
+        role: mockRole,
+        isCompact: true,
+        onConfigure: () => {},
+        onViewEmployees: () => {},
+      })
+    );
+
+    expect(html).toContain('Oshpaz');
+    expect(html).toContain('0 xodim');
+    expect(html).toContain('1/8 modul');
+    expect(html).toContain('Ko‘rish');
+  });
 });

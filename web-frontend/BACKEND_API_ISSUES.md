@@ -129,3 +129,19 @@ Frontendda xabarni kelajakdagi vaqtga rejalashtirish (`scheduledAt: "2026-11-01T
   - Xabarning statusi `"SCHEDULED"` bo'lib saqlansin.
   - Belgilangan vaqt yetganda fonda ishlovchi scheduler (masalan, Spring `@Scheduled` yoki Quartz) xabarni aktiv kassalarga yetkazsin va statusini `"SENT"` ga o'tkazsin.
 - Agar `scheduledAt` o'tgan vaqt bo'lsa yoki formati noto'g'ri bo'lsa, `400 Bad Request` qaytarilsin.
+
+---
+
+## Issue 6: Faoliyat turlari va rollar bo'yicha agregat statistika (GET /platform/module-access/stats)
+**Labels**: `backend`, `performance`, `module-access`, `feature`  
+**GitHub Issue**: #36  
+**Priority**: High  
+
+### Tavsif
+Hozirda frontend `/platform/access-v2` sahifasida har bir faoliyat turi bo'yicha xodimlar sonini olish uchun alohida `GET /platform/module-access/users?businessType=...&size=1` (9 ta so'rov) yuborishga majbur bo'lmoqda. Shuningdek, rollar bo'yicha xodimlar va istisnolarni hisoblash uchun barcha xodimlarni `size=500` bilan brauzer xotirasiga yuklamoqda.
+
+### Talab
+- Yangi endpoint: `GET /api/v1/platform/module-access/stats`
+- Parametr (ixtiyoriy): `businessType`
+- Qaytaradi: Har bir faoliyat turi uchun jami xodimlar, istisnolar soni va rollar bo'yicha `totalEmployees`, `exceptionCount`, `totalModulesCount`, `enabledModulesCount` agregatlari.
+

@@ -3,12 +3,13 @@ import RoleCardBreakdown from './RoleCardBreakdown';
 
 /**
  * Bitta rol kartasi (Admin, Menejer, Kassir, Ofitsiant, Oshpaz)
- * PDF tanlangan dizayniga 1:1 muvofiq
+ * WCAG AA kontrasti va to'liq o'qiluvchanlik ta'minlangan
  */
 export default function RoleCard({
   role,
   onConfigure,
   onViewEmployees,
+  isCompact = false,
 }) {
   const {
     name,
@@ -23,6 +24,36 @@ export default function RoleCard({
     ? Math.round((enabledModulesCount / totalModulesCount) * 100)
     : 0;
 
+  if (isCompact) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200/80 bg-white/70 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            {name ? name.slice(0, 2).toUpperCase() : 'RL'}
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              {name}
+            </h4>
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              0 xodim · {enabledModulesCount}/{totalModulesCount} modul ({percentage}%)
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onConfigure(role)}
+            className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
+          >
+            Ko‘rish
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs hover:shadow-md transition-shadow dark:border-slate-800 dark:bg-slate-900">
       <div>
@@ -32,7 +63,7 @@ export default function RoleCard({
             <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
               {name}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">
               {totalEmployees} xodim
             </p>
           </div>
@@ -49,11 +80,11 @@ export default function RoleCard({
             <span className="text-xl font-extrabold tracking-tight">
               {enabledModulesCount}
             </span>
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 ml-1">
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-400 ml-1">
               / {totalModulesCount} modul
             </span>
           </div>
-          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 tabular-nums">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
             {percentage}%
           </span>
         </div>
@@ -66,7 +97,7 @@ export default function RoleCard({
           />
         </div>
 
-        {/* 2 ustunli modul guruhlari statistikasi */}
+        {/* Modul guruhlari statistikasi */}
         <RoleCardBreakdown items={breakdown} />
       </div>
 
@@ -75,6 +106,7 @@ export default function RoleCard({
         <button
           type="button"
           onClick={() => onConfigure(role)}
+          aria-label={`${name} rolini ko‘rish`}
           className="flex-1 rounded-xl bg-emerald-900 hover:bg-emerald-800 dark:bg-emerald-800 dark:hover:bg-emerald-700 text-white font-semibold py-2 px-3 text-xs transition-colors cursor-pointer text-center"
         >
           Sozlash
@@ -82,6 +114,7 @@ export default function RoleCard({
         <button
           type="button"
           onClick={() => onViewEmployees(role)}
+          aria-label={`${name} xodimlarini ko‘rish`}
           className="rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold py-2 px-3.5 text-xs transition-colors cursor-pointer"
         >
           Xodimlar

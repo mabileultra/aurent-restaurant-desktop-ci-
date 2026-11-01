@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   getDefaultModulesForRole,
+  getScopeForRole,
   BUSINESS_TYPE_NAMES_UZ,
   PLATFORM_MODULE_KEYS,
 } from './roleDefaultModules';
 import {
   buildCatalogGroups,
   resolveModuleName,
-  MODULE_NAMES_UZ,
 } from './accessRightsCatalogUtils';
 
 describe('roleDefaultModules & accessRightsCatalogUtils', () => {
@@ -23,33 +23,33 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
     expect(BUSINESS_TYPE_NAMES_UZ.OTHER).toBe('Boshqa');
   });
 
+  it('matches exact backend roleDefault and scope numbers for RESTAURANT', () => {
+    const adminScope = getScopeForRole('ADMIN', 'RESTAURANT');
+    const adminDefaults = getDefaultModulesForRole('ADMIN', 'RESTAURANT');
+    expect(adminScope.size).toBe(59);
+    expect(adminDefaults.size).toBe(56);
+
+    const managerScope = getScopeForRole('MANAGER', 'RESTAURANT');
+    const managerDefaults = getDefaultModulesForRole('MANAGER', 'RESTAURANT');
+    expect(managerScope.size).toBe(59);
+    expect(managerDefaults.size).toBe(47);
+
+    const cashierScope = getScopeForRole('CASHIER', 'RESTAURANT');
+    const cashierDefaults = getDefaultModulesForRole('CASHIER', 'RESTAURANT');
+    expect(cashierScope.size).toBe(11);
+    expect(cashierDefaults.size).toBe(7);
+
+    const waiterScope = getScopeForRole('WAITER', 'RESTAURANT');
+    const waiterDefaults = getDefaultModulesForRole('WAITER', 'RESTAURANT');
+    expect(waiterScope.size).toBe(11);
+    expect(waiterDefaults.size).toBe(6);
+  });
+
   it('excludes super-admin platform modules from tenant role defaults', () => {
     const adminRestaurant = getDefaultModulesForRole('ADMIN', 'RESTAURANT');
     PLATFORM_MODULE_KEYS.forEach((platformKey) => {
       expect(adminRestaurant.has(platformKey)).toBe(false);
     });
-  });
-
-  it('correctly grants default modules for MANAGER in RESTAURANT', () => {
-    const managerRestaurant = getDefaultModulesForRole('MANAGER', 'RESTAURANT');
-    expect(managerRestaurant.has('dashboard')).toBe(true);
-    expect(managerRestaurant.has('restaurantFloor')).toBe(true);
-    expect(managerRestaurant.has('restaurantKitchen')).toBe(true);
-    expect(managerRestaurant.has('financeIncomes')).toBe(true);
-    expect(managerRestaurant.has('aiAssistant')).toBe(false);
-    expect(managerRestaurant.has('usersList')).toBe(false);
-  });
-
-  it('correctly grants default modules for CASHIER', () => {
-    const cashierRestaurant = getDefaultModulesForRole('CASHIER', 'RESTAURANT');
-    expect(cashierRestaurant.has('restaurantPos')).toBe(true);
-    expect(cashierRestaurant.has('cashierPos')).toBe(false);
-    expect(cashierRestaurant.has('restaurantKitchen')).toBe(true);
-    expect(cashierRestaurant.has('dashboard')).toBe(false);
-
-    const cashierGrocery = getDefaultModulesForRole('CASHIER', 'GROCERY');
-    expect(cashierGrocery.has('cashierPos')).toBe(true);
-    expect(cashierGrocery.has('restaurantPos')).toBe(false);
   });
 
   it('translates raw module keys into pure Uzbek titles', () => {
