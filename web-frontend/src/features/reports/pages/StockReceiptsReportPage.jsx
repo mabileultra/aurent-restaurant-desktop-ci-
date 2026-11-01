@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
@@ -17,6 +18,7 @@ export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
   const r = useStockReceiptsReportPage();
   const actions = useStockReceiptsActions();
   const paths = useStockFlowPaths();
+  const [menuOpenId, setMenuOpenId] = useState(null);
   const colSpan = 8;
 
   return (
@@ -76,6 +78,8 @@ export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
                 <StockReceiptsActionsCell
                   t={t}
                   editTo={paths.receiptEdit(row.id)}
+                  open={menuOpenId === row.id}
+                  onOpenChange={(open) => setMenuOpenId(open ? row.id : null)}
                   deleting={actions.deletingId === row.id}
                   onDelete={() => actions.confirmDelete(row)}
                 />

@@ -4354,21 +4354,27 @@
     "colDate": "Sana",
     "colName": "Nomi",
     "colTax": "STIR/JSHSHIR",
-    "colAddress": "Manzil",
-    "colEmail": "Elektron pochta",
+    "colAccount": "Hisob raqam",
     "colPhone": "Telefon",
     "createdOk": "Yetkazib beruvchi saqlandi",
     "createdFail": "Saqlab boʻlmadi",
+    "updatedOk": "Yetkazib beruvchi yangilandi",
+    "updatedFail": "Yetkazib beruvchini yangilab boʻlmadi",
+    "deletedOk": "Yetkazib beruvchi o‘chirildi",
+    "deletedFail": "Yetkazib beruvchini o‘chirib boʻlmadi",
+    "deleteConfirm": "«{{name}}» yetkazib beruvchisini o‘chirasizmi?",
+    "accountInvalid": "Hisob raqam 20 ta raqamdan iborat bo‘lishi kerak",
+    "phoneRequired": "To‘liq telefon raqamini kiriting",
     "filters": {
       "title": "Filtr paneli",
       "createdOn": "Yaratilgan sana"
     },
     "modal": {
       "title": "Yetkazib beruvchi qo‘shish",
+      "editTitle": "Yetkazib beruvchini tahrirlash",
       "name": "Nomi",
       "taxId": "STIR/JSHSHIR",
-      "address": "Manzil",
-      "email": "Elektron pochta",
+      "accountNumber": "Hisob raqam",
       "phone": "Telefon raqami"
     }
   },

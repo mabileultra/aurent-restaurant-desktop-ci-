@@ -36,6 +36,10 @@ public class Supplier {
     @Column(length = 255)
     private String email;
 
+    /** Расчётный счёт (ҳисоб рақам), обычно 20 цифр. */
+    @Column(name = "account_number", length = 32)
+    private String accountNumber;
+
     @Column(length = 40)
     private String phone;
 

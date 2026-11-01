@@ -8,7 +8,6 @@ public record SupplierResponse(
     Instant createdAt,
     String name,
     String taxId,
-    String address,
-    String email,
+    String accountNumber,
     String phone
 ) {}

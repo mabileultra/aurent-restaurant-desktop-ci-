@@ -18,6 +18,8 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
 
     long countByCreatedAtGreaterThanEqual(Instant start);
 
+    boolean existsBySupplier_Id(UUID supplierId);
+
     @Query("""
         SELECT r FROM StockReceipt r
         JOIN r.store st

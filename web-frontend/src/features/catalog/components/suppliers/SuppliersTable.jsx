@@ -1,6 +1,10 @@
 import { Info } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
+import { formatSupplierAccount } from '../../../../utils/supplierAccountUz';
+import SuppliersRowActionsCell from './SuppliersRowActionsCell';
+
+const COL_COUNT = 8;
 
 export default function SuppliersTable({
   t,
@@ -14,6 +18,12 @@ export default function SuppliersTable({
   totalPages,
   onPageChange,
   onPageSizeChange,
+  manage,
+  menuOpenId,
+  onMenuOpenChange,
+  onEdit,
+  onDelete,
+  deletingId,
 }) {
   return (
     <div className="admin-table-shell">
@@ -25,15 +35,15 @@ export default function SuppliersTable({
               <th className="px-4 py-3">{t('suppliersModule.colDate')}</th>
               <th className="px-4 py-3">{t('suppliersModule.colName')}</th>
               <th className="px-4 py-3">{t('suppliersModule.colTax')}</th>
-              <th className="px-4 py-3">{t('suppliersModule.colAddress')}</th>
-              <th className="px-4 py-3">{t('suppliersModule.colEmail')}</th>
+              <th className="px-4 py-3">{t('suppliersModule.colAccount')}</th>
               <th className="px-4 py-3">{t('suppliersModule.colPhone')}</th>
+              {manage ? <th className="px-4 py-3 text-right">{t('common.actions')}</th> : null}
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={COL_COUNT} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   {t('common.loading')}
                 </td>
               </tr>
@@ -45,9 +55,21 @@ export default function SuppliersTable({
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtDate(row.createdAt)}</td>
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">{row.taxId}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.address ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.email ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                    {row.accountNumber ? formatSupplierAccount(row.accountNumber) : '—'}
+                  </td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.phone ?? '—'}</td>
+                  {manage ? (
+                    <SuppliersRowActionsCell
+                      t={t}
+                      row={row}
+                      open={menuOpenId === row.id}
+                      onOpenChange={(open) => onMenuOpenChange(open ? row.id : null)}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      deleting={deletingId === row.id}
+                    />
+                  ) : null}
                 </tr>
               ))}
           </tbody>

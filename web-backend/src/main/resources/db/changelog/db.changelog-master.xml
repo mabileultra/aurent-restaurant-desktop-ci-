@@ -56,6 +56,7 @@
     <include file="v48-sale-sold-marks.xml" relativeToChangelogFile="true"/>
     <include file="v49-clear-min-margin-percent.xml" relativeToChangelogFile="true"/>
     <include file="v50-cash-register-heartbeat-movements.xml" relativeToChangelogFile="true"/>
+    <include file="v51-supplier-account-number.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
 

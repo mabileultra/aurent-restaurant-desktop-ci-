@@ -4,6 +4,7 @@ import com.pos.config.openapi.StandardApiResponses;
 import com.pos.dto.shared.PageResponse;
 import com.pos.inventory.dto.supplier.CreateSupplierRequest;
 import com.pos.inventory.dto.supplier.SupplierResponse;
+import com.pos.inventory.dto.supplier.UpdateSupplierRequest;
 import com.pos.inventory.service.SupplierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/suppliers")
@@ -46,5 +48,25 @@ public class SupplierController {
     @ApiResponse(responseCode = "201", description = "Поставщик создан")
     public ResponseEntity<SupplierResponse> create(@Valid @RequestBody CreateSupplierRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(supplierService.create(request));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Обновить поставщика")
+    @ApiResponse(responseCode = "200", description = "Поставщик обновлён")
+    public ResponseEntity<SupplierResponse> update(
+        @PathVariable UUID id,
+        @Valid @RequestBody UpdateSupplierRequest request
+    ) {
+        return ResponseEntity.ok(supplierService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Удалить поставщика")
+    @ApiResponse(responseCode = "204", description = "Поставщик удалён")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        supplierService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

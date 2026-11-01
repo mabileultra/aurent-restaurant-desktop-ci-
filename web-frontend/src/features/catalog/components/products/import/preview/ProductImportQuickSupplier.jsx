@@ -5,18 +5,22 @@ import toast from 'react-hot-toast';
 import { supplierApi } from '../../../../../../api';
 import { BaseButton } from '../../../../../../components/ui';
 import { formatUzPhone, isCompleteUzPhone } from '../../../../../../utils/phoneUz';
+import {
+  digitsAccount,
+  formatSupplierAccount,
+  isCompleteSupplierAccount,
+} from '../../../../../../utils/supplierAccountUz';
 import './product-import-quick-supplier.css';
 
 /**
- * Всплывающая форма как в справочнике: название, ИНН, адрес, email, телефон.
+ * Быстрое создание поставщика: название, ИНН, ҳисоб рақам, телефон.
  */
 export default function ProductImportQuickSupplier({ t, onCreated }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [taxId, setTaxId] = useState('');
-  const [address, setAddress] = useState('');
-  const [email, setEmail] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
   const [phone, setPhone] = useState('+998 ');
   const rootRef = useRef(null);
   const nameRef = useRef(null);
@@ -34,8 +38,7 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
     if (open) {
       setName('');
       setTaxId('');
-      setAddress('');
-      setEmail('');
+      setAccountNumber('');
       setPhone('+998 ');
       requestAnimationFrame(() => nameRef.current?.focus());
     }
@@ -63,12 +66,19 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
       toast.error(t('validation.required'));
       return;
     }
+    if (!isCompleteSupplierAccount(accountNumber)) {
+      toast.error(t('suppliersModule.accountInvalid'));
+      return;
+    }
+    if (!isCompleteUzPhone(phone)) {
+      toast.error(t('suppliersModule.phoneRequired'));
+      return;
+    }
     createM.mutate({
       name: name.trim(),
       taxId: taxId.trim(),
-      address: address.trim() || null,
-      email: email.trim() || null,
-      phone: isCompleteUzPhone(phone) ? formatUzPhone(phone).trim() : null,
+      accountNumber: digitsAccount(accountNumber),
+      phone: formatUzPhone(phone).trim(),
     });
   };
 
@@ -123,24 +133,25 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
             />
           </label>
           <label className="product-import-quick-supplier__field">
-            <span>{t('suppliersModule.modal.address')}</span>
+            <span>
+              <em>*</em>
+              {' '}
+              {t('suppliersModule.modal.accountNumber')}
+            </span>
             <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(formatSupplierAccount(e.target.value))}
+              placeholder="2020 8000 1234 5678 9012"
+              inputMode="numeric"
               autoComplete="off"
             />
           </label>
           <label className="product-import-quick-supplier__field">
-            <span>{t('suppliersModule.modal.email')}</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="off"
-            />
-          </label>
-          <label className="product-import-quick-supplier__field">
-            <span>{t('suppliersModule.modal.phone')}</span>
+            <span>
+              <em>*</em>
+              {' '}
+              {t('suppliersModule.modal.phone')}
+            </span>
             <input
               value={phone}
               onChange={(e) => setPhone(formatUzPhone(e.target.value))}

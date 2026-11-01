@@ -1,11 +1,8 @@
-// src/components/suppliers/SupplierModal.jsx
-import { useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { supplierApi } from '../../../../api';
-import { formatUzPhone, digitsAfter998, isCompleteUzPhone } from '../../../../utils/phoneUz';
+import { formatUzPhone } from '../../../../utils/phoneUz';
+import { formatSupplierAccount } from '../../../../utils/supplierAccountUz';
+import { useSupplierModalForm } from '../../hooks/useSupplierModalForm';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
                   focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -13,62 +10,25 @@ const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 t
 
 const labelCls = 'mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400';
 
-export default function SupplierModal({ open, onClose, onCreated }) {
+export default function SupplierModal({ open, onClose, onCreated, supplier = null }) {
   const { t } = useTranslation();
-  const qc = useQueryClient();
-  const [name, setName] = useState('');
-  const [taxId, setTaxId] = useState('');
-  const [address, setAddress] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+998 ');
-
-  useEffect(() => {
-    if (!open) return;
-    setName('');
-    setTaxId('');
-    setAddress('');
-    setEmail('');
-    setPhone('+998 ');
-  }, [open]);
-
-  const mutation = useMutation({
-    mutationFn: (body) => supplierApi.create(body),
-    onSuccess: (res) => {
-      toast.success(t('suppliersModule.createdOk'));
-      qc.invalidateQueries({ queryKey: ['suppliers'] });
-      qc.invalidateQueries({ queryKey: ['suppliers-all'] });
-      onCreated?.(res?.data ?? res);
-      onClose();
-    },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message ?? t('suppliersModule.createdFail'));
-    },
+  const { isEdit, form, setField, submit, pending } = useSupplierModalForm({
+    open,
+    supplier,
+    onClose,
+    onCreated,
   });
 
   if (!open) return null;
-
-  const submit = (e) => {
-    e.preventDefault();
-    if (!name.trim() || !taxId.trim()) {
-      toast.error(t('validation.required'));
-      return;
-    }
-    const body = {
-      name: name.trim(),
-      taxId: taxId.trim(),
-      address: address.trim() || null,
-      email: email.trim() || null,
-      phone: isCompleteUzPhone(phone) ? formatUzPhone(phone).trim() : null,
-    };
-    mutation.mutate(body);
-  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
       <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('suppliersModule.modal.title')}</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            {isEdit ? t('suppliersModule.modal.editTitle') : t('suppliersModule.modal.title')}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -82,28 +42,43 @@ export default function SupplierModal({ open, onClose, onCreated }) {
             <label className={labelCls}>
               <span className="text-red-600">*</span> {t('suppliersModule.modal.name')}
             </label>
-            <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
+            <input
+              className={inputCls}
+              value={form.name}
+              onChange={(e) => setField('name', e.target.value)}
+            />
           </div>
           <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
             <label className={labelCls}>
               <span className="text-red-600">*</span> {t('suppliersModule.modal.taxId')}
             </label>
-            <input className={inputCls} value={taxId} onChange={(e) => setTaxId(e.target.value)} />
-          </div>
-          <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
-            <label className={labelCls}>{t('suppliersModule.modal.address')}</label>
-            <input className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} />
-          </div>
-          <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
-            <label className={labelCls}>{t('suppliersModule.modal.email')}</label>
-            <input className={inputCls} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
-            <label className={labelCls}>{t('suppliersModule.modal.phone')}</label>
             <input
               className={inputCls}
-              value={phone}
-              onChange={(e) => setPhone(formatUzPhone(e.target.value))}
+              value={form.taxId}
+              onChange={(e) => setField('taxId', e.target.value)}
+            />
+          </div>
+          <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
+            <label className={labelCls}>
+              <span className="text-red-600">*</span> {t('suppliersModule.modal.accountNumber')}
+            </label>
+            <input
+              className={`${inputCls} font-mono`}
+              value={form.accountNumber}
+              onChange={(e) => setField('accountNumber', formatSupplierAccount(e.target.value))}
+              placeholder="2020 8000 1234 5678 9012"
+              inputMode="numeric"
+              autoComplete="off"
+            />
+          </div>
+          <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
+            <label className={labelCls}>
+              <span className="text-red-600">*</span> {t('suppliersModule.modal.phone')}
+            </label>
+            <input
+              className={inputCls}
+              value={form.phone}
+              onChange={(e) => setField('phone', formatUzPhone(e.target.value))}
               placeholder="+998 (__) ___-__-__"
             />
           </div>
@@ -117,10 +92,14 @@ export default function SupplierModal({ open, onClose, onCreated }) {
             </button>
             <button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={pending}
               className="admin-btn-primary px-4 py-2 text-sm"
             >
-              {mutation.isPending ? t('common.processing') : t('suppliersModule.add')}
+              {pending
+                ? t('common.processing')
+                : isEdit
+                  ? t('common.save')
+                  : t('suppliersModule.add')}
             </button>
           </div>
         </form>

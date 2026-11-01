@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v51-suppliers-account-number" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="suppliers" columnName="account_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="suppliers">
+            <column name="account_number" type="varchar(32)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

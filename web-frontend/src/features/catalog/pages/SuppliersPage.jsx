@@ -10,10 +10,12 @@ import SupplierFiltersDrawer from '../components/suppliers/SupplierFiltersDrawer
 import SupplierModal from '../components/suppliers/SupplierModal';
 import SuppliersTable from '../components/suppliers/SuppliersTable';
 import { useSuppliersPage } from '../hooks/useSuppliersPage';
+import { useSupplierRowActions } from '../hooks/useSupplierRowActions';
 
 export default function SuppliersPage({ hideTitle = false } = {}) {
   const { t } = useTranslation();
   const s = useSuppliersPage();
+  const actions = useSupplierRowActions();
 
   return (
     <PageLayout
@@ -63,6 +65,12 @@ export default function SuppliersPage({ hideTitle = false } = {}) {
         totalPages={s.totalPages}
         onPageChange={s.setPage}
         onPageSizeChange={s.setPageSize}
+        manage={s.manage}
+        menuOpenId={actions.menuOpenId}
+        onMenuOpenChange={actions.setMenuOpenId}
+        onEdit={actions.openEdit}
+        onDelete={actions.confirmDelete}
+        deletingId={actions.deletingId}
       />
 
       <SupplierFiltersDrawer
@@ -75,6 +83,11 @@ export default function SuppliersPage({ hideTitle = false } = {}) {
       />
 
       <SupplierModal open={s.addOpen} onClose={() => s.setAddOpen(false)} />
+      <SupplierModal
+        open={Boolean(actions.editSupplier)}
+        supplier={actions.editSupplier}
+        onClose={actions.closeEdit}
+      />
     </PageLayout>
   );
 }

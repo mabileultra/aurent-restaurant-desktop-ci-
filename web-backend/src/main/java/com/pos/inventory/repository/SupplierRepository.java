@@ -4,6 +4,7 @@ import com.pos.inventory.entity.Supplier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface SupplierRepository extends JpaRepository<Supplier, UUID>, JpaSpecificationExecutor<Supplier> {
@@ -11,4 +12,8 @@ public interface SupplierRepository extends JpaRepository<Supplier, UUID>, JpaSp
     boolean existsByTaxId(String taxId);
 
     boolean existsByCompanyIdAndTaxId(Integer companyId, String taxId);
+
+    boolean existsByCompanyIdAndTaxIdAndIdNot(Integer companyId, String taxId, UUID id);
+
+    Optional<Supplier> findByIdAndCompany_Id(UUID id, Integer companyId);
 }
