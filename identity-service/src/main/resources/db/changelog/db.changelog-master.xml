@@ -12,5 +12,6 @@
     <include file="db/changelog/v5-identity-platform-admin-user.xml"/>
     <include file="db/changelog/v6-identity-platform-admin-access.xml"/>
     <include file="db/changelog/v7-identity-platform-analytics-role.xml"/>
+    <include file="db/changelog/v8-role-module-templates.xml"/>
 
 </databaseChangeLog>

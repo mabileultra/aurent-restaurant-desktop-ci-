@@ -3,10 +3,10 @@
 Ushbu hujjat frontend talablari asosida backend jamoasi uchun tayyorlangan texnik topshiriqlar (issues) to'plamidir. Har bir issue'ni to'g'ridan-to'g'ri GitHub/GitLab issue yoki Jira task sifatida ochish mumkin.
 
 Status (2026-11-01):
+- Issue 1 (role templates) — done
 - Issue 2 (role filter) — done
 - Issue 4–5 (desktop targeting/schedule) — done
 - Issue 6 (module-access stats) — done
-- Issue 1 (role templates) — open
 - Issue 3 (audit/rollback) — open
 
 ---

@@ -2,6 +2,8 @@ package com.pos.identity.service;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
 import com.pos.identity.dto.access.ModuleAccessStatsResponse;
+import com.pos.identity.dto.access.RoleTemplateResponse;
+import com.pos.identity.dto.access.UpdateRoleTemplateRequest;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
@@ -30,6 +32,10 @@ public interface ModuleAccessService {
     );
 
     ModuleAccessStatsResponse stats(String businessType);
+
+    RoleTemplateResponse getRoleTemplate(String businessType, String role);
+
+    RoleTemplateResponse updateRoleTemplate(String businessType, String role, UpdateRoleTemplateRequest request);
 
     UserModuleAccessDetailResponse getUserAccess(UUID userId);
 

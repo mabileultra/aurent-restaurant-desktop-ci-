@@ -1,22 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Search, Info, ShieldCheck } from 'lucide-react';
+import { X, Search, ShieldCheck } from 'lucide-react';
 import RoleTemplateModuleGroupCard from './RoleTemplateModuleGroupCard';
 import RoleTemplateDrawerFooter from './RoleTemplateDrawerFooter';
 import { trapFocus } from '../utils/focusTrapUtils';
+import { useRoleTemplateEditor } from '../hooks/useRoleTemplateEditor';
 
 export default function RoleTemplateDrawer({
   isOpen,
   onClose,
   role,
+  businessType,
   businessTypeName,
   moduleGroups = [],
+  onSaved,
 }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterMode, setFilterMode] = useState('ALL');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [filterMode, setFilterMode] = React.useState('ALL');
   const triggerElementRef = useRef(null);
   const closeButtonRef = useRef(null);
   const drawerRef = useRef(null);
+
+  const fallbackEnabledKeys = useMemo(
+    () => Array.from(role?.enabledModuleKeys || []),
+    [role]
+  );
+
+  const editor = useRoleTemplateEditor({
+    isOpen,
+    businessType,
+    roleCode: role?.code,
+    fallbackEnabledKeys,
+    onSaved,
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -58,15 +74,15 @@ export default function RoleTemplateDrawer({
 
   if (!isOpen || !role) return null;
 
-  const activeModules = new Set(role.enabledModuleKeys || []);
-  const roleScope = role.roleScope || activeModules;
+  const roleScope = role.roleScope || editor.activeModules;
 
-  // Faqat ushbu rol doirasiga (scope) tegishli modullar ko'rsatiladi
   const filteredGroups = moduleGroups
     .map((group) => {
       const scopeModules = group.modules.filter((m) => roleScope.has(m.id));
       const matchedModules = scopeModules.filter((m) => {
-        const isEnabled = activeModules.has(m.id);
+        const isEnabled = editor.dirtyModules.has(m.id)
+          ? editor.dirtyModules.get(m.id)
+          : editor.activeModules.has(m.id);
         if (filterMode === 'ENABLED' && !isEnabled) return false;
         if (filterMode === 'DISABLED' && isEnabled) return false;
         if (searchQuery.trim()) {
@@ -94,8 +110,8 @@ export default function RoleTemplateDrawer({
               className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"
             >
               <span>{role.name} shablon huquqlari</span>
-              <span className="rounded-md bg-amber-100 text-amber-900 text-[10px] px-2 py-0.5 font-bold dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
-                Tez kunda
+              <span className="rounded-md bg-emerald-100 text-emerald-900 text-[10px] px-2 py-0.5 font-bold dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                {editor.source === 'TEMPLATE' ? 'Saqlangan' : 'Standart'}
               </span>
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">· {businessTypeName}</span>
             </h3>
@@ -114,17 +130,15 @@ export default function RoleTemplateDrawer({
           </button>
         </header>
 
-        {/* Read-only axborot xabarnomasi */}
-        <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-2.5 dark:bg-amber-950/30 dark:border-amber-900/40 shrink-0">
-          <p className="text-xs text-amber-800 dark:text-amber-300 flex items-center gap-1.5 leading-snug">
-            <Info size={14} className="shrink-0 text-amber-700" />
+        <div className="bg-emerald-50/80 border-b border-emerald-200/60 px-6 py-2.5 dark:bg-emerald-950/30 dark:border-emerald-900/40 shrink-0">
+          <p className="text-xs text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5 leading-snug">
+            <ShieldCheck size={14} className="shrink-0" />
             <span>
-              <strong>Tez kunda:</strong> Rol shablonlarini tahrirlash imkoniyati tez kunda ishga tushadi. Hozircha faqat standart huquqlarni ko‘rish mumkin.
+              Shablonni o‘zgartiring va saqlang. Istisnosiz xodimlar yangi shablonga avtomatik o‘tadi.
             </span>
           </p>
         </div>
 
-        {/* Qidiruv va Filtr */}
         <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
@@ -155,9 +169,10 @@ export default function RoleTemplateDrawer({
           </div>
         </div>
 
-        {/* Modul guruhlari */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {filteredGroups.length === 0 ? (
+          {editor.isLoading ? (
+            <div className="p-8 text-center text-xs text-slate-500">Yuklanmoqda…</div>
+          ) : filteredGroups.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
               Qidiruv bo‘yicha modullar topilmadi.
             </div>
@@ -166,14 +181,25 @@ export default function RoleTemplateDrawer({
               <RoleTemplateModuleGroupCard
                 key={group.id}
                 group={group}
-                activeModules={activeModules}
-                isReadOnly={true}
+                activeModules={editor.activeModules}
+                dirtyModules={editor.dirtyModules}
+                onToggleModule={editor.toggleModule}
+                onEnableAllInGroup={editor.enableAllInGroup}
+                onDisableAllInGroup={editor.disableAllInGroup}
+                isReadOnly={false}
               />
             ))
           )}
         </div>
 
-        <RoleTemplateDrawerFooter onClose={onClose} />
+        <RoleTemplateDrawerFooter
+          onClose={onClose}
+          onSave={editor.save}
+          isDirty={editor.isDirty}
+          isSaving={editor.isSaving}
+          applyToExisting={editor.applyToExisting}
+          onApplyToExistingChange={editor.setApplyToExisting}
+        />
       </div>
     </div>
   );

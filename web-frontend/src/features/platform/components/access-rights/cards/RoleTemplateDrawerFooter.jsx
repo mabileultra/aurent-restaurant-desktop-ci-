@@ -1,22 +1,30 @@
 import React from 'react';
-import { Lock } from 'lucide-react';
 
 /**
- * Rol shablonini ko'rish yon panelining pastki qismi (Faqat ko'rish / Tez kunda rejimi)
+ * Role template drawer footer: save + applyToExisting.
  */
-export default function RoleTemplateDrawerFooter({ onClose }) {
+export default function RoleTemplateDrawerFooter({
+  onClose,
+  onSave,
+  isDirty,
+  isSaving,
+  applyToExisting,
+  onApplyToExistingChange,
+}) {
   return (
     <footer className="border-t border-slate-100 bg-slate-50/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-850 shrink-0">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
-          <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
-            <Lock size={11} />
-            <span>Tez kunda</span>
+        <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={Boolean(applyToExisting)}
+            onChange={(e) => onApplyToExistingChange?.(e.target.checked)}
+            className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-500"
+          />
+          <span className="font-medium">
+            Istisnosiz xodimlarga qo‘llash
           </span>
-          <span className="font-medium text-slate-600 dark:text-slate-400">
-            Rol shablonini tahrirlash imkoniyati tez kunda ishga tushadi
-          </span>
-        </div>
+        </label>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -27,12 +35,11 @@ export default function RoleTemplateDrawerFooter({ onClose }) {
           </button>
           <button
             type="button"
-            disabled
-            aria-disabled="true"
-            title="Backend endpointi ulanishi kutilmoqda"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-4 py-2 text-xs font-bold cursor-not-allowed border border-slate-300/60 dark:border-slate-700"
+            onClick={onSave}
+            disabled={!isDirty || isSaving}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 text-white px-4 py-2 text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-800"
           >
-            <span>Saqlash (Tez kunda)</span>
+            <span>{isSaving ? 'Saqlanmoqda…' : 'Saqlash'}</span>
           </button>
         </div>
       </div>

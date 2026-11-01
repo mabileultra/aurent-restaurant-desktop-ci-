@@ -2,6 +2,8 @@ package com.pos.identity.controller;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
 import com.pos.identity.dto.access.ModuleAccessStatsResponse;
+import com.pos.identity.dto.access.RoleTemplateResponse;
+import com.pos.identity.dto.access.UpdateRoleTemplateRequest;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
@@ -54,6 +56,27 @@ public class PlatformModuleAccessController {
         @RequestParam(required = false) String businessType
     ) {
         return ResponseEntity.ok(moduleAccessService.stats(businessType));
+    }
+
+    @GetMapping("/role-templates/{businessType}/{role}")
+    @Operation(summary = "Шаблон модулей роли", description = "DEFAULT из enum или сохранённый TEMPLATE")
+    @ApiResponse(responseCode = "200", description = "Шаблон")
+    public ResponseEntity<RoleTemplateResponse> getRoleTemplate(
+        @PathVariable String businessType,
+        @PathVariable String role
+    ) {
+        return ResponseEntity.ok(moduleAccessService.getRoleTemplate(businessType, role));
+    }
+
+    @PutMapping("/role-templates/{businessType}/{role}")
+    @Operation(summary = "Сохранить шаблон роли", description = "applyToExisting учитывает сотрудников без istisno")
+    @ApiResponse(responseCode = "200", description = "Шаблон сохранён")
+    public ResponseEntity<RoleTemplateResponse> updateRoleTemplate(
+        @PathVariable String businessType,
+        @PathVariable String role,
+        @Valid @RequestBody UpdateRoleTemplateRequest request
+    ) {
+        return ResponseEntity.ok(moduleAccessService.updateRoleTemplate(businessType, role, request));
     }
 
     @GetMapping("/users")

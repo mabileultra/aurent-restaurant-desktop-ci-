@@ -99,8 +99,10 @@ export default function PlatformModuleAccessV2Page() {
         isOpen={Boolean(configuringRole)}
         onClose={() => setConfiguringRole(null)}
         role={configuringRole}
+        businessType={selectedBT}
         businessTypeName={currentBT.name}
         moduleGroups={moduleGroups}
+        onSaved={refetchAll}
       />
 
       <RoleEmployeesDrawer

@@ -4,28 +4,41 @@ import com.pos.identity.client.PosCoreClient;
 import com.pos.identity.client.dto.CompanyDto;
 import com.pos.identity.entity.User;
 import com.pos.identity.security.PlatformAdminModule;
+import com.pos.identity.service.access.support.RoleTemplateLookup;
 import com.pos.identity.support.IdentityUsers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class ModuleAccessScopeResolverTest {
 
     @Mock
     private PosCoreClient posCoreClient;
+    @Mock
+    private RoleTemplateLookup roleTemplateLookup;
 
     @InjectMocks
     private ModuleAccessScopeResolver resolver;
+
+    @BeforeEach
+    void stubTemplatePassthrough() {
+        lenient().when(roleTemplateLookup.isAllowed(anyString(), anyString(), anyString(), anyBoolean()))
+            .thenAnswer(invocation -> invocation.getArgument(3));
+    }
 
     @Test
     void platformAdminGetsOnlyGrantablePlatformKeysWithNoRoleDefaults() {

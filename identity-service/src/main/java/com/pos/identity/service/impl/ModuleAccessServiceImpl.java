@@ -2,6 +2,8 @@ package com.pos.identity.service.impl;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
 import com.pos.identity.dto.access.ModuleAccessStatsResponse;
+import com.pos.identity.dto.access.RoleTemplateResponse;
+import com.pos.identity.dto.access.UpdateRoleTemplateRequest;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessRow;
@@ -20,6 +22,7 @@ import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
 import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
+import com.pos.identity.service.access.support.RoleTemplateSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     private final ModuleAccessScopeResolver scopeResolver;
     private final ModuleAccessUsersPager moduleAccessUsersPager;
     private final ModuleAccessStatsSupport moduleAccessStatsSupport;
+    private final RoleTemplateSupport roleTemplateSupport;
 
     @Override
     public List<AdminModuleCatalogItem> catalog() {
@@ -72,6 +76,21 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     @Override
     public ModuleAccessStatsResponse stats(String businessType) {
         return moduleAccessStatsSupport.build(businessType);
+    }
+
+    @Override
+    public RoleTemplateResponse getRoleTemplate(String businessType, String role) {
+        return roleTemplateSupport.get(businessType, role);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public RoleTemplateResponse updateRoleTemplate(
+        String businessType,
+        String role,
+        UpdateRoleTemplateRequest request
+    ) {
+        return roleTemplateSupport.put(businessType, role, request);
     }
 
     @Override

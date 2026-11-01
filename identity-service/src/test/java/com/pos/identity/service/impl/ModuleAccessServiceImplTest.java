@@ -17,6 +17,8 @@ import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
 import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
+import com.pos.identity.service.access.support.RoleTemplateLookup;
+import com.pos.identity.service.access.support.RoleTemplateSupport;
 import com.pos.identity.support.IdentityUsers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,8 +38,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,13 +62,19 @@ class ModuleAccessServiceImplTest {
     private ModuleAccessUsersPager moduleAccessUsersPager;
     @Mock
     private ModuleAccessStatsSupport moduleAccessStatsSupport;
+    @Mock
+    private RoleTemplateSupport roleTemplateSupport;
+    @Mock
+    private RoleTemplateLookup roleTemplateLookup;
 
     private ModuleAccessServiceImpl service;
 
     @BeforeEach
     void setUp() {
         ModuleAccessCatalog catalog = new ModuleAccessCatalog();
-        ModuleAccessScopeResolver scopeResolver = new ModuleAccessScopeResolver(posCoreClient);
+        ModuleAccessScopeResolver scopeResolver = new ModuleAccessScopeResolver(posCoreClient, roleTemplateLookup);
+        lenient().when(roleTemplateLookup.isAllowed(anyString(), anyString(), anyString(), anyBoolean()))
+            .thenAnswer(invocation -> invocation.getArgument(3));
         service = new ModuleAccessServiceImpl(
             userRepository,
             userModuleAccessRepository,
@@ -71,7 +82,8 @@ class ModuleAccessServiceImplTest {
             moduleAccessUserGate,
             scopeResolver,
             moduleAccessUsersPager,
-            moduleAccessStatsSupport
+            moduleAccessStatsSupport,
+            roleTemplateSupport
         );
     }
 
