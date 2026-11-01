@@ -12,6 +12,8 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
   const drawerRef = useRef(null);
   const closeBtnRef = useRef(null);
   const lastActiveElementRef = useRef(null);
+  const revokeOpenRef = useRef(false);
+  revokeOpenRef.current = Boolean(p.revokeConfirmItem);
 
   // Manage body scroll lock and focus trap
   useEffect(() => {
@@ -26,7 +28,7 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
     }, 50);
 
     const handleKeyDown = (e) => {
-      if (p.revokeConfirmItem) {
+      if (revokeOpenRef.current) {
         return;
       }
 
