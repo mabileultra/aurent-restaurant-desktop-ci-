@@ -33,6 +33,9 @@ export const GROUP_TITLES_RU = {
 };
 
 export const ROLE_LABELS_UZ = {
+  SUPER_ADMIN: 'Super Administrator',
+  PLATFORM_ADMIN: 'Platforma administratori',
+  PLATFORM_ANALYTICS: 'Platforma tahlilchisi',
   ADMIN: 'Admin',
   MANAGER: 'Menejer',
   CASHIER: 'Kassir',
@@ -43,6 +46,9 @@ export const ROLE_LABELS_UZ = {
 };
 
 export const ROLE_LABELS_RU = {
+  SUPER_ADMIN: 'Супер-администратор',
+  PLATFORM_ADMIN: 'Администратор платформы',
+  PLATFORM_ANALYTICS: 'Аналитик платформы',
   ADMIN: 'Администратор',
   MANAGER: 'Менеджер',
   CASHIER: 'Кассир',

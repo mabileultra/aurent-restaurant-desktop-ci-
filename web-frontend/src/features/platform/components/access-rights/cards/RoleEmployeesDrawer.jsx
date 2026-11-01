@@ -1,10 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertCircle } from 'lucide-react';
-import RoleEmployeeListItem from './RoleEmployeeListItem';
 import RoleEmployeeResetConfirmDialog from './RoleEmployeeResetConfirmDialog';
 import RoleEmployeeEditDrawer from './RoleEmployeeEditDrawer';
 import RoleEmployeesFilterBar from './RoleEmployeesFilterBar';
+import RoleEmployeesBulkBar from './RoleEmployeesBulkBar';
+import RoleEmployeesListSection from './RoleEmployeesListSection';
+import RoleEmployeeBulkDrawer from './RoleEmployeeBulkDrawer';
+import { useRoleEmployeesSelection } from '../hooks/useRoleEmployeesSelection';
+import { useRoleEmployeesDrawerState } from '../hooks/useRoleEmployeesDrawerState';
 import { trapFocus } from '../utils/focusTrapUtils';
 import { filterRoleEmployees } from '../utils/roleEmployeeFilterUtils';
 
@@ -12,6 +16,7 @@ export default function RoleEmployeesDrawer({
   isOpen,
   onClose,
   role,
+  businessType = 'RESTAURANT',
   businessTypeName,
   users = [],
   onResetUserToTemplate,
@@ -20,51 +25,6 @@ export default function RoleEmployeesDrawer({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('ALL');
-  const [confirmUser, setConfirmUser] = useState(null);
-  const [editingUser, setEditingUser] = useState(null);
-  const [isResetting, setIsResetting] = useState(false);
-  const triggerElementRef = useRef(null);
-  const closeButtonRef = useRef(null);
-  const drawerRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      triggerElementRef.current = document.activeElement;
-      setConfirmUser(null);
-      setEditingUser(null);
-      setSearchQuery('');
-      setFilterType('ALL');
-
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      const timer = setTimeout(() => closeButtonRef.current?.focus(), 50);
-
-      return () => {
-        clearTimeout(timer);
-        document.body.style.overflow = originalOverflow;
-        triggerElementRef.current?.focus?.();
-      };
-    }
-    return undefined;
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        if (editingUser) setEditingUser(null);
-        else if (confirmUser) setConfirmUser(null);
-        else onClose?.();
-      } else if (e.key === 'Tab') {
-        trapFocus(e, drawerRef.current);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, confirmUser, editingUser]);
-
-  if (!isOpen || !role) return null;
 
   const { filteredUsers, totalCount, exceptionsCount } = filterRoleEmployees(
     users,
@@ -73,17 +33,44 @@ export default function RoleEmployeesDrawer({
     searchQuery
   );
 
-  const handleConfirmReset = async () => {
-    if (!confirmUser || isResetting) return;
-    try {
-      setIsResetting(true);
-      const userId = confirmUser.userId || confirmUser.id;
-      await onResetUserToTemplate?.(userId);
-      setConfirmUser(null);
-    } finally {
-      setIsResetting(false);
-    }
-  };
+  const {
+    selectedUserIds,
+    toggleSelect,
+    selectAll,
+    clearSelection,
+    isAllSelected,
+  } = useRoleEmployeesSelection(filteredUsers);
+
+  const {
+    confirmUser,
+    setConfirmUser,
+    editingUser,
+    setEditingUser,
+    isBulkOpen,
+    setIsBulkOpen,
+    isResetting,
+    handleConfirmReset,
+    closeButtonRef,
+    drawerRef,
+  } = useRoleEmployeesDrawerState({ isOpen, clearSelection, onResetUserToTemplate });
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const handleKeyDown = (e) => {
+      if (editingUser || isBulkOpen) return;
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        if (confirmUser) setConfirmUser(null);
+        else onClose?.();
+      } else if (e.key === 'Tab') {
+        trapFocus(e, drawerRef.current);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, confirmUser, editingUser, isBulkOpen, drawerRef]);
+
+  if (!isOpen || !role) return null;
 
   const drawerNode = (
     <div
@@ -115,10 +102,10 @@ export default function RoleEmployeesDrawer({
           </button>
         </header>
 
-        {totalCount >= 500 && (
+        {totalCount >= 250 && (
           <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 flex items-center gap-1.5 shrink-0">
             <AlertCircle size={13} className="shrink-0 text-amber-700" />
-            <span>Faqat dastlabki 500 ta xodim ko‘rsatilmoqda. Qidiruvdan foydalaning.</span>
+            <span>Dastlabki 250 ta xodim ko‘rsatilmoqda (Jami: {totalCount} ta). Qidiruvdan foydalaning.</span>
           </div>
         )}
 
@@ -129,25 +116,24 @@ export default function RoleEmployeesDrawer({
           setFilterType={setFilterType}
           totalCount={totalCount}
           exceptionsCount={exceptionsCount}
+          isAllSelected={isAllSelected}
+          onSelectAll={selectAll}
         />
 
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
-          {filteredUsers.length === 0 ? (
-            <div className="text-center py-10 text-xs text-slate-500 dark:text-slate-400">
-              Ushbu filtr bo‘yicha xodim topilmadi
-            </div>
-          ) : (
-            filteredUsers.map((u) => (
-              <RoleEmployeeListItem
-                key={u.userId || u.id}
-                user={u}
-                businessTypeName={businessTypeName}
-                onEditClick={setEditingUser}
-                onResetClick={setConfirmUser}
-              />
-            ))
-          )}
-        </div>
+        <RoleEmployeesBulkBar
+          selectedCount={selectedUserIds.size}
+          onApply={() => setIsBulkOpen(true)}
+          onClear={clearSelection}
+        />
+
+        <RoleEmployeesListSection
+          filteredUsers={filteredUsers}
+          businessTypeName={businessTypeName}
+          selectedUserIds={selectedUserIds}
+          onToggleSelect={toggleSelect}
+          onEditClick={setEditingUser}
+          onResetClick={setConfirmUser}
+        />
 
         <RoleEmployeeResetConfirmDialog
           user={confirmUser}
@@ -160,9 +146,24 @@ export default function RoleEmployeesDrawer({
           isOpen={Boolean(editingUser)}
           onClose={() => setEditingUser(null)}
           user={editingUser}
+          businessType={businessType}
           businessTypeName={businessTypeName}
           rawCatalog={rawCatalog}
           onSaved={() => onUserUpdated?.()}
+        />
+
+        <RoleEmployeeBulkDrawer
+          isOpen={isBulkOpen}
+          onClose={() => setIsBulkOpen(false)}
+          selectedUserIds={selectedUserIds}
+          role={role}
+          businessType={businessType}
+          businessTypeName={businessTypeName}
+          rawCatalog={rawCatalog}
+          onSaved={() => {
+            clearSelection();
+            onUserUpdated?.();
+          }}
         />
 
         <footer className="border-t border-slate-100 px-6 py-3 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-850 flex justify-end shrink-0">
@@ -178,8 +179,5 @@ export default function RoleEmployeesDrawer({
     </div>
   );
 
-  if (typeof document !== 'undefined' && document.body) {
-    return createPortal(drawerNode, document.body);
-  }
-  return drawerNode;
+  return typeof document !== 'undefined' && document.body ? createPortal(drawerNode, document.body) : drawerNode;
 }

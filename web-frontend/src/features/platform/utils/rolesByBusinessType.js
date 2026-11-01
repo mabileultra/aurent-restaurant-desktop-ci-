@@ -42,7 +42,15 @@ const RESTAURANT_TYPES = new Set(['RESTAURANT', 'CANTEEN']);
 /**
  * Список ролей для типа бизнеса. Пустой / UNIVERSAL / OTHER — полный список.
  */
+export const PLATFORM_STAFF_ROLES = [
+  'PLATFORM_ADMIN',
+  'PLATFORM_ANALYTICS',
+];
+
 export function rolesForBusinessType(businessTypeCode) {
+  if (businessTypeCode === 'PLATFORM_STAFF') {
+    return [...PLATFORM_STAFF_ROLES];
+  }
   const type = normalizeBusinessTypeCode(businessTypeCode);
   if (!type || type === 'UNIVERSAL' || type === 'OTHER') {
     return [...PLATFORM_COMPANY_ROLES];

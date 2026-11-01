@@ -7,15 +7,33 @@ import { RotateCcw, SlidersHorizontal } from 'lucide-react';
 export default function RoleEmployeeListItem({
   user,
   businessTypeName,
+  isSelected = false,
+  onToggleSelect,
   onResetClick,
   onEditClick,
 }) {
   const hasExceptions = Boolean(user.moduleAccessCustom || user.customAccess || user.hasExceptions);
   const initials = (user.fullName || user.username || 'U').substring(0, 2).toUpperCase();
+  const userId = user.userId || user.id;
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-3 dark:border-slate-800 dark:bg-slate-850">
-      <div className="flex items-center gap-3 min-w-0">
+    <div
+      className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${
+        isSelected
+          ? 'border-emerald-500 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20'
+          : 'border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-850'
+      }`}
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        {onToggleSelect && (
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(userId)}
+            aria-label={`${user.fullName || user.username}ni tanlash`}
+            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+          />
+        )}
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
           {initials}
         </div>

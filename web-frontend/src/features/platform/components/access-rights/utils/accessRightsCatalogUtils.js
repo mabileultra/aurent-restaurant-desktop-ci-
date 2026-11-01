@@ -24,48 +24,52 @@ export function resolveRoleLabel(roleCode, tOrLang = 'uz') {
     const val = tOrLang(`roles.${code}`);
     if (val && val !== `roles.${code}`) return val;
   }
-  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
   if (lang === 'ru') return ROLE_LABELS_RU[code] || code;
   return ROLE_LABELS_UZ[code] || code;
 }
 
 export function resolveBusinessTypeName(btCode, tOrLang = 'uz') {
   const code = String(btCode || '').toUpperCase();
+  if (code === 'PLATFORM_STAFF') {
+    return tOrLang === 'ru' || tOrLang?.language === 'ru' ? 'Платформа' : 'Platforma';
+  }
   if (typeof tOrLang === 'function') {
     const val = tOrLang(`businessTypes.${code}`);
     if (val && val !== `businessTypes.${code}`) return val;
   }
-  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
   if (lang === 'ru') return BUSINESS_TYPE_NAMES_RU[code] || code;
   return BUSINESS_TYPE_NAMES_UZ[code] || code;
 }
 
 export function resolveModuleName(moduleId, catalogMap = {}, tOrLang = 'uz') {
   const id = String(moduleId || '');
-  if (typeof tOrLang === 'function') {
-    const val = tOrLang([`nav.${id}`, `platform.modules.${id}`]);
-    if (val && val !== `nav.${id}` && val !== `platform.modules.${id}`) return val;
+  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
+  if (lang === 'ru') {
+    return MODULE_NAMES_RU[id] || (typeof tOrLang === 'function' ? tOrLang(`nav.modules.${id}`) : null) || catalogMap[id]?.name || id;
   }
-  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
-  if (lang === 'ru') return MODULE_NAMES_RU[id] || catalogMap[id]?.name || id;
-  return MODULE_NAMES_UZ[id] || catalogMap[id]?.name || id;
+  return MODULE_NAMES_UZ[id] || (typeof tOrLang === 'function' ? tOrLang(`nav.modules.${id}`) : null) || catalogMap[id]?.name || id;
 }
 
 export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT', tOrLang = 'uz') {
   const map = new Map();
-  const isFn = typeof tOrLang === 'function';
-  const lang = typeof tOrLang === 'string' ? tOrLang : 'uz';
+  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
   const titles = lang === 'ru' ? GROUP_TITLES_RU : GROUP_TITLES_UZ;
+  const isPlatformStaff = businessType === 'PLATFORM_STAFF';
 
   rawCatalog.forEach((item) => {
-    if (PLATFORM_MODULE_KEYS.has(item.id)) return;
-    if (!isModuleVisibleForBusinessType(item.id, businessType)) return;
+    const isPlatformMod = PLATFORM_MODULE_KEYS.has(item.id);
+    if (isPlatformStaff) {
+      if (!isPlatformMod) return;
+    } else {
+      if (isPlatformMod) return;
+      if (!isModuleVisibleForBusinessType(item.id, businessType)) return;
+    }
 
     const groupId = item.group || 'main';
     if (!map.has(groupId)) {
-      const title = isFn
-        ? tOrLang([`platform.moduleAccess.groups.${groupId}`, `nav.${groupId}Group`], { defaultValue: titles[groupId] || groupId })
-        : (titles[groupId] || groupId);
+      const title = titles[groupId] || (typeof tOrLang === 'function' ? tOrLang(`nav.${groupId}Group`) : groupId);
 
       map.set(groupId, {
         id: groupId,

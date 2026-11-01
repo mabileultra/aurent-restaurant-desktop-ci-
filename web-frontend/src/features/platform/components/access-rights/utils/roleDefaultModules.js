@@ -117,6 +117,10 @@ const MODULE_SPECS = [
  */
 export function getScopeForRole(roleCode, businessType) {
   const role = String(roleCode || '').toUpperCase();
+  if (role === 'PLATFORM_ADMIN' || role === 'PLATFORM_ANALYTICS' || businessType === 'PLATFORM_STAFF') {
+    return new Set(PLATFORM_MODULE_KEYS);
+  }
+
   const isCashierScope = role === 'CASHIER' || role === 'WAITER';
   const isFinanceScope = role === 'ACCOUNTANT';
 
@@ -137,6 +141,13 @@ export function getScopeForRole(roleCode, businessType) {
  */
 export function getDefaultModulesForRole(roleCode, businessType) {
   const role = String(roleCode || '').toUpperCase();
+  if (role === 'PLATFORM_ADMIN') {
+    return new Set(PLATFORM_MODULE_KEYS);
+  }
+  if (role === 'PLATFORM_ANALYTICS') {
+    return new Set(['platformAnalytics', 'platformMonitoring', 'platformBilling']);
+  }
+
   const scope = getScopeForRole(role, businessType);
   const result = new Set();
 

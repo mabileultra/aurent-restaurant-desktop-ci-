@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -7,7 +7,7 @@ import RoleCard from '../components/access-rights/cards/RoleCard';
 import RoleTemplateDrawer from '../components/access-rights/cards/RoleTemplateDrawer';
 import RoleEmployeesDrawer from '../components/access-rights/cards/RoleEmployeesDrawer';
 import PlatformModuleAccessV2Header from '../components/access-rights/cards/PlatformModuleAccessV2Header';
-import PlatformSelect from '../components/PlatformSelect';
+import PlatformModuleAccessToolbar from '../components/access-rights/cards/PlatformModuleAccessToolbar';
 import { useAccessRightsV2Data } from '../components/access-rights/hooks/useAccessRightsV2Data';
 
 export default function PlatformModuleAccessV2Page() {
@@ -19,6 +19,12 @@ export default function PlatformModuleAccessV2Page() {
     setSelectedBT,
     selectedCompanyId = '',
     setSelectedCompanyId,
+    searchTerm = '',
+    setSearchTerm,
+    accessFilter = 'all',
+    setAccessFilter,
+    unconfiguredCount = 0,
+    isPlatformStaff = false,
     companies = [],
     companiesLoading = false,
     businessTypes = [],
@@ -30,6 +36,8 @@ export default function PlatformModuleAccessV2Page() {
     isLoading = false,
     isError = false,
     error = null,
+    isTruncated = false,
+    totalCount = 0,
     refetchAll,
     handleResetUser,
   } = useAccessRightsV2Data() || {};
@@ -40,13 +48,6 @@ export default function PlatformModuleAccessV2Page() {
   const currentBT = businessTypes.find((b) => b.code === selectedBT) || businessTypes[0] || {
     name: selectedBT,
   };
-
-  const companyOptions = useMemo(() => {
-    return (companies || []).map((c) => ({
-      value: String(c.id),
-      label: c.name || c.brandName || String(c.id),
-    }));
-  }, [companies]);
 
   const hasActiveEmployees = roles.some((r) => r.totalEmployees > 0);
   const activeRoles = hasActiveEmployees ? roles.filter((r) => r.totalEmployees > 0) : roles;
@@ -62,25 +63,28 @@ export default function PlatformModuleAccessV2Page() {
         onRetry={refetchAll}
       />
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <BusinessTypePills
-          businessTypes={businessTypes}
-          selectedCode={selectedBT}
-          onSelect={setSelectedBT}
-        />
-        <div className="w-full sm:w-64 shrink-0">
-          <PlatformSelect
-            options={companyOptions}
-            value={selectedCompanyId}
-            onChange={(e) => setSelectedCompanyId(e.target.value)}
-            placeholder={currentLang === 'ru' ? 'Все компании' : 'Barcha kompaniyalar'}
-            size="sm"
-            searchable
-            ariaLabel="Kompaniya bo‘yicha filtr"
-            disabled={companiesLoading}
-          />
-        </div>
-      </div>
+      <BusinessTypePills
+        businessTypes={businessTypes}
+        selectedCode={selectedBT}
+        onSelect={setSelectedBT}
+      />
+
+      <PlatformModuleAccessToolbar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        accessFilter={accessFilter}
+        setAccessFilter={setAccessFilter}
+        unconfiguredCount={unconfiguredCount}
+        isPlatformStaff={isPlatformStaff}
+        companies={companies}
+        companiesLoading={companiesLoading}
+        selectedCompanyId={selectedCompanyId}
+        setSelectedCompanyId={setSelectedCompanyId}
+        currentLang={currentLang}
+        isTruncated={isTruncated}
+        totalCount={totalCount}
+        loadedCount={rawUsers.length}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         {activeRoles.map((role) => (
@@ -145,6 +149,7 @@ export default function PlatformModuleAccessV2Page() {
         isOpen={Boolean(viewingRoleEmployees)}
         onClose={() => setViewingRoleEmployees(null)}
         role={viewingRoleEmployees}
+        businessType={selectedBT}
         businessTypeName={currentBT.name}
         users={rawUsers}
         catalogMap={catalogMap}

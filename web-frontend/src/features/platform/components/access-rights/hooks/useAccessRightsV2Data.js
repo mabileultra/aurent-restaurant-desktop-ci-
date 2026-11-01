@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { platformBusinessTypeApi, platformModuleAccessApi } from '../../../../../api';
+import { useAuthStore } from '../../../../../store/authStore';
+import { isSuperAdminRole } from '../../../../../utils/platformRoles';
+import { useDebouncedValue } from '../../../../../hooks/useDebouncedValue';
 import { rolesForBusinessType } from '../../../utils/rolesByBusinessType';
 import {
   buildCatalogGroups,
@@ -10,65 +13,57 @@ import {
   resolveRoleLabel,
   resolveBusinessTypeName,
 } from '../utils/accessRightsCatalogUtils';
-import {
-  getDefaultModulesForRole,
-  getScopeForRole,
-} from '../utils/roleDefaultModules';
-import { useRoleDefaultsQuery } from './useRoleDefaultsQuery';
+import { getDefaultModulesForRole, getScopeForRole } from '../utils/roleDefaultModules';
 import { useBusinessTypeCountsQuery } from './useBusinessTypeCountsQuery';
 import { useAccessRightsCompanies } from './useAccessRightsCompanies';
+import { useAccessRightsUnconfiguredCount } from './useAccessRightsUnconfiguredCount';
 
 const MAX_USERS_PAGE_SIZE = 250;
 
 export function useAccessRightsV2Data() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language === 'ru' ? 'ru' : 'uz';
+  const userRole = useAuthStore((s) => s.user?.role);
+  const canManagePlatformStaff = isSuperAdminRole(userRole);
+
   const [selectedBT, setSelectedBTState] = useState('RESTAURANT');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [accessFilter, setAccessFilter] = useState('all');
+
+  const debouncedSearch = useDebouncedValue(searchTerm.trim(), 300);
+  const isPlatformStaff = selectedBT === 'PLATFORM_STAFF';
 
   const setSelectedBT = useCallback((bt) => {
     setSelectedBTState(bt);
     setSelectedCompanyId('');
   }, []);
 
-  const {
-    data: rawBusinessTypes = [],
-    isLoading: btLoading,
-    isError: btError,
-    error: btErrorObj,
-    refetch: refetchBT,
-  } = useQuery({
+  const { data: rawBusinessTypes = [], isLoading: btLoading, isError: btError, error: btErrorObj, refetch: refetchBT } = useQuery({
     queryKey: ['platform-business-types-options'],
     queryFn: () => platformBusinessTypeApi.list().then((r) => r.data || []),
     staleTime: 300_000,
   });
 
-  const {
-    data: rawCatalog = [],
-    isLoading: catalogLoading,
-    isError: catalogError,
-    error: catalogErrorObj,
-    refetch: refetchCatalog,
-  } = useQuery({
+  const { data: rawCatalog = [], isLoading: catalogLoading, isError: catalogError, error: catalogErrorObj, refetch: refetchCatalog } = useQuery({
     queryKey: ['platform-module-access-catalog'],
     queryFn: () => platformModuleAccessApi.catalog().then((r) => r.data || []),
     staleTime: 300_000,
   });
 
-  const { companies, companiesLoading } = useAccessRightsCompanies(selectedBT);
+  const { companies, companiesLoading } = useAccessRightsCompanies(isPlatformStaff ? '' : selectedBT);
+  const btCounts = useBusinessTypeCountsQuery(rawBusinessTypes, canManagePlatformStaff);
+  const unconfiguredCount = useAccessRightsUnconfiguredCount({ selectedBT, selectedCompanyId, isPlatformStaff });
 
-  const {
-    data: usersResponse = { content: [], totalElements: 0 },
-    isLoading: usersLoading,
-    isError: usersError,
-    error: usersErrorObj,
-    refetch: refetchUsers,
-  } = useQuery({
-    queryKey: ['access-v2-users', selectedBT, selectedCompanyId],
+  const { data: usersResponse = { content: [], totalElements: 0 }, isLoading: usersLoading, isError: usersError, error: usersErrorObj, refetch: refetchUsers } = useQuery({
+    queryKey: ['access-v2-users', selectedBT, selectedCompanyId, debouncedSearch, accessFilter],
     queryFn: async () => {
       const res = await platformModuleAccessApi.listUsers({
-        businessType: selectedBT,
-        companyId: selectedCompanyId || undefined,
+        businessType: isPlatformStaff ? undefined : selectedBT,
+        companyId: isPlatformStaff ? undefined : (selectedCompanyId || undefined),
+        platformOnly: isPlatformStaff || undefined,
+        search: debouncedSearch || undefined,
+        accessFilter: accessFilter !== 'all' ? accessFilter : undefined,
         size: MAX_USERS_PAGE_SIZE,
       });
       const raw = res.data;
@@ -82,40 +77,33 @@ export function useAccessRightsV2Data() {
   const rawUsers = usersResponse.content;
   const usersTotalElements = usersResponse.totalElements;
 
-  const roleDefaults = useRoleDefaultsQuery(rawUsers);
-  const btCounts = useBusinessTypeCountsQuery(rawBusinessTypes, selectedBT);
-
   const catalogMap = useMemo(() => buildCatalogMap(rawCatalog, t), [rawCatalog, t]);
-  const moduleGroups = useMemo(
-    () => buildCatalogGroups(rawCatalog, selectedBT, t),
-    [rawCatalog, selectedBT, t]
-  );
+  const moduleGroups = useMemo(() => buildCatalogGroups(rawCatalog, selectedBT, t), [rawCatalog, selectedBT, t]);
 
   const businessTypes = useMemo(() => {
-    if (!rawBusinessTypes.length) {
-      return [{ code: 'RESTAURANT', name: resolveBusinessTypeName('RESTAURANT', t), totalEmployees: usersTotalElements || rawUsers.length }];
-    }
-    return rawBusinessTypes.map((bt) => ({
+    const list = rawBusinessTypes.map((bt) => ({
       code: bt.code,
       name: resolveBusinessTypeName(bt.code, t) || bt.nameUz || bt.name || bt.code,
-      totalEmployees: bt.code === selectedBT ? (usersTotalElements || rawUsers.length) : (btCounts[bt.code] ?? 0),
+      totalEmployees: btCounts[bt.code] ?? (bt.code === selectedBT ? (usersTotalElements || rawUsers.length) : 0),
     }));
-  }, [rawBusinessTypes, rawUsers, usersTotalElements, selectedBT, btCounts, t]);
+    if (canManagePlatformStaff) {
+      list.push({
+        code: 'PLATFORM_STAFF',
+        name: resolveBusinessTypeName('PLATFORM_STAFF', t),
+        totalEmployees: btCounts['PLATFORM_STAFF'] ?? 0,
+      });
+    }
+    return list;
+  }, [rawBusinessTypes, canManagePlatformStaff, btCounts, selectedBT, usersTotalElements, rawUsers.length, t]);
 
   const roles = useMemo(() => {
     const allowedRoleCodes = rolesForBusinessType(selectedBT);
 
     return allowedRoleCodes.map((roleCode) => {
-      const roleUsers = rawUsers.filter(
-        (u) => String(u.role).toUpperCase() === roleCode.toUpperCase()
-      );
-      const exceptionCount = roleUsers.filter(
-        (u) => Boolean(u.moduleAccessCustom || u.customAccess)
-      ).length;
-
-      const backendDefault = roleDefaults[roleCode.toUpperCase()];
-      const roleScope = backendDefault?.scopeKeys || getScopeForRole(roleCode, selectedBT);
-      const enabledModuleKeys = backendDefault?.defaultKeys || getDefaultModulesForRole(roleCode, selectedBT);
+      const roleUsers = rawUsers.filter((u) => String(u.role).toUpperCase() === roleCode.toUpperCase());
+      const exceptionCount = roleUsers.filter((u) => Boolean(u.moduleAccessCustom || u.customAccess)).length;
+      const roleScope = getScopeForRole(roleCode, selectedBT);
+      const enabledModuleKeys = getDefaultModulesForRole(roleCode, selectedBT);
 
       const breakdown = moduleGroups
         .map((g) => {
@@ -138,7 +126,7 @@ export function useAccessRightsV2Data() {
         users: roleUsers,
       };
     });
-  }, [selectedBT, rawUsers, roleDefaults, moduleGroups, t]);
+  }, [selectedBT, rawUsers, moduleGroups, t]);
 
   const isTruncated = rawUsers.length >= MAX_USERS_PAGE_SIZE && usersTotalElements > rawUsers.length;
 
@@ -158,14 +146,18 @@ export function useAccessRightsV2Data() {
     refetchUsers();
   }, [refetchBT, refetchCatalog, refetchUsers]);
 
-  const isError = btError || catalogError || usersError;
-  const errorObj = btErrorObj || catalogErrorObj || usersErrorObj;
-
   return {
     selectedBT,
     setSelectedBT,
     selectedCompanyId,
     setSelectedCompanyId,
+    searchTerm,
+    setSearchTerm,
+    accessFilter,
+    setAccessFilter,
+    unconfiguredCount,
+    isPlatformStaff,
+    canManagePlatformStaff,
     companies,
     companiesLoading,
     businessTypes,
@@ -175,9 +167,10 @@ export function useAccessRightsV2Data() {
     moduleGroups,
     catalogMap,
     isLoading: btLoading || catalogLoading || usersLoading,
-    isError,
-    error: errorObj,
+    isError: btError || catalogError || usersError,
+    error: btErrorObj || catalogErrorObj || usersErrorObj,
     isTruncated,
+    totalCount: usersTotalElements,
     refetchAll,
     handleResetUser,
   };

@@ -6,15 +6,15 @@ import { trapFocus } from '../utils/focusTrapUtils';
 import { buildCatalogGroups } from '../utils/accessRightsCatalogUtils';
 import RoleEmployeeEditGroupList from './RoleEmployeeEditGroupList';
 import RoleEmployeeEditHeader from './RoleEmployeeEditHeader';
+import RoleEmployeeResetConfirmDialog from './RoleEmployeeResetConfirmDialog';
+import RoleEmployeeDiscardConfirmDialog from './RoleEmployeeDiscardConfirmDialog';
 import { useRoleEmployeeEdit } from '../hooks/useRoleEmployeeEdit';
 
-/**
- * Xodimning individual modullar huquqlarini tahrirlash paneli
- */
 export default function RoleEmployeeEditDrawer({
   isOpen,
   onClose,
   user,
+  businessType = 'RESTAURANT',
   businessTypeName,
   rawCatalog = [],
   onSaved,
@@ -23,6 +23,8 @@ export default function RoleEmployeeEditDrawer({
   const triggerElementRef = useRef(null);
   const closeButtonRef = useRef(null);
   const drawerRef = useRef(null);
+
+  const effectiveBT = user?.businessType || businessType || 'RESTAURANT';
 
   const {
     loading,
@@ -33,9 +35,15 @@ export default function RoleEmployeeEditDrawer({
     setSearchQuery,
     filterMode,
     setFilterMode,
+    confirmDiscardOpen,
+    setConfirmDiscardOpen,
+    confirmResetOpen,
+    setConfirmResetOpen,
     handleToggle,
+    handleRequestClose,
+    handleConfirmDiscard,
     handleSave,
-    handleReset,
+    handleConfirmReset,
     defaultsMap,
   } = useRoleEmployeeEdit({ user, isOpen, onSaved, onClose });
 
@@ -58,18 +66,20 @@ export default function RoleEmployeeEditDrawer({
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose?.();
+        if (confirmDiscardOpen) setConfirmDiscardOpen(false);
+        else if (confirmResetOpen) setConfirmResetOpen(false);
+        else handleRequestClose();
       } else if (e.key === 'Tab') {
         trapFocus(e, drawerRef.current);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleRequestClose, confirmDiscardOpen, confirmResetOpen]);
 
   const catalogGroups = useMemo(() => {
-    return buildCatalogGroups(rawCatalog, user?.businessType || 'RESTAURANT', t);
-  }, [rawCatalog, user?.businessType, t]);
+    return buildCatalogGroups(rawCatalog, effectiveBT, t);
+  }, [rawCatalog, effectiveBT, t]);
 
   if (!isOpen || !user) return null;
 
@@ -90,7 +100,7 @@ export default function RoleEmployeeEditDrawer({
           setSearchQuery={setSearchQuery}
           filterMode={filterMode}
           setFilterMode={setFilterMode}
-          onClose={onClose}
+          onClose={handleRequestClose}
           closeButtonRef={closeButtonRef}
         />
 
@@ -118,7 +128,7 @@ export default function RoleEmployeeEditDrawer({
               <button
                 type="button"
                 disabled={saving}
-                onClick={handleReset}
+                onClick={() => setConfirmResetOpen(true)}
                 className="inline-flex items-center gap-1 text-xs text-rose-600 hover:underline cursor-pointer disabled:opacity-50"
               >
                 <RotateCcw size={12} />
@@ -129,7 +139,7 @@ export default function RoleEmployeeEditDrawer({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleRequestClose}
               disabled={saving}
               className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
             >
@@ -146,6 +156,21 @@ export default function RoleEmployeeEditDrawer({
             </button>
           </div>
         </footer>
+
+        {confirmResetOpen && (
+          <RoleEmployeeResetConfirmDialog
+            user={user}
+            isResetting={saving}
+            onCancel={() => setConfirmResetOpen(false)}
+            onConfirm={handleConfirmReset}
+          />
+        )}
+
+        <RoleEmployeeDiscardConfirmDialog
+          isOpen={confirmDiscardOpen}
+          onStay={() => setConfirmDiscardOpen(false)}
+          onDiscard={handleConfirmDiscard}
+        />
       </div>
     </div>
   );

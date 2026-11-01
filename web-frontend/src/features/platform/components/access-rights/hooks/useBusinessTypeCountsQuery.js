@@ -1,29 +1,42 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { platformModuleAccessApi } from '../../../../../api';
 
 /**
- * Faol bo'lmagan biznes turlaridagi xodimlar sonini orqa fonda keshlash hooki (SRP)
+ * Barcha biznes turlaridagi xodimlar sonini orqa fonda keshlash hooki (SRP)
  */
-export function useBusinessTypeCountsQuery(rawBusinessTypes = [], selectedBT) {
+export function useBusinessTypeCountsQuery(rawBusinessTypes = [], includePlatformStaff = false) {
+  const allCodes = useMemo(() => {
+    const list = rawBusinessTypes.map((b) => b.code);
+    if (includePlatformStaff && !list.includes('PLATFORM_STAFF')) {
+      list.push('PLATFORM_STAFF');
+    }
+    return list;
+  }, [rawBusinessTypes, includePlatformStaff]);
+
   const { data: btCounts = {} } = useQuery({
-    queryKey: ['access-v2-bt-counts', rawBusinessTypes.map((b) => b.code).join(',')],
+    queryKey: ['access-v2-bt-counts', allCodes.join(',')],
     queryFn: async () => {
       const counts = {};
-      const otherTypes = rawBusinessTypes.filter((b) => b.code !== selectedBT);
       await Promise.all(
-        otherTypes.map(async (bt) => {
+        allCodes.map(async (code) => {
           try {
-            const res = await platformModuleAccessApi.listUsers({ businessType: bt.code, size: 1 });
-            counts[bt.code] = res.data?.totalElements ?? res.data?.total ?? 0;
+            const isPlatform = code === 'PLATFORM_STAFF';
+            const res = await platformModuleAccessApi.listUsers({
+              businessType: isPlatform ? undefined : code,
+              platformOnly: isPlatform || undefined,
+              size: 1,
+            });
+            counts[code] = res.data?.totalElements ?? res.data?.total ?? 0;
           } catch {
-            counts[bt.code] = 0;
+            counts[code] = 0;
           }
         })
       );
       return counts;
     },
-    enabled: rawBusinessTypes.length > 0,
-    staleTime: Infinity,
+    enabled: allCodes.length > 0,
+    staleTime: 300_000,
   });
 
   return btCounts;
