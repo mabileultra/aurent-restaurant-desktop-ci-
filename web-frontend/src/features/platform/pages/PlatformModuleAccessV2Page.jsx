@@ -86,34 +86,53 @@ export default function PlatformModuleAccessV2Page() {
         loadedCount={rawUsers.length}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-        {activeRoles.map((role) => (
-          <RoleCard
-            key={role.code}
-            role={role}
-            onConfigure={(r) => setConfiguringRole(r)}
-            onViewEmployees={(r) => setViewingRoleEmployees(r)}
-          />
-        ))}
-      </div>
+      {searchTerm && rawUsers.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            «{searchTerm}» {currentLang === 'ru' ? 'не найдено сотрудников' : 'bo‘yicha hech qanday xodim topilmadi'}
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {currentLang === 'ru' ? 'Попробуйте изменить поисковый запрос' : 'Qidiruv so‘zini o‘zgartiring yoki filtrlarni tozalang'}
+          </p>
+        </div>
+      ) : (
+        <>
+          {searchTerm && rawUsers.length > 0 && (
+            <div className="rounded-xl bg-emerald-50/80 border border-emerald-200 px-4 py-2.5 text-xs text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-200 font-semibold flex items-center justify-between">
+              <span>«{searchTerm}» bo‘yicha {rawUsers.length} ta xodim topildi</span>
+            </div>
+          )}
 
-      {emptyRoles.length > 0 && (
-        <div className="space-y-3 pt-3 border-t border-slate-200/80 dark:border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-            {currentLang === 'ru' ? 'Роли без сотрудников' : 'Xodimi bo‘lmagan rollar'} ({emptyRoles.length})
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {emptyRoles.map((role) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            {activeRoles.map((role) => (
               <RoleCard
                 key={role.code}
                 role={role}
-                isCompact={true}
                 onConfigure={(r) => setConfiguringRole(r)}
                 onViewEmployees={(r) => setViewingRoleEmployees(r)}
               />
             ))}
           </div>
-        </div>
+
+          {emptyRoles.length > 0 && (
+            <div className="space-y-3 pt-3 border-t border-slate-200/80 dark:border-slate-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                {currentLang === 'ru' ? 'Роли без сотрудников' : 'Xodimi bo‘lmagan rollar'} ({emptyRoles.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {emptyRoles.map((role) => (
+                  <RoleCard
+                    key={role.code}
+                    role={role}
+                    isCompact={true}
+                    onConfigure={(r) => setConfiguringRole(r)}
+                    onViewEmployees={(r) => setViewingRoleEmployees(r)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <div className="pt-2 flex items-center gap-2.5">

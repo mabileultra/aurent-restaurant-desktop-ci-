@@ -41,6 +41,10 @@ export default function RoleEmployeesDrawer({
     isAllSelected,
   } = useRoleEmployeesSelection(filteredUsers);
 
+  useEffect(() => {
+    clearSelection();
+  }, [filterType, searchQuery, clearSelection]);
+
   const {
     confirmUser,
     setConfirmUser,
@@ -120,12 +124,6 @@ export default function RoleEmployeesDrawer({
           onSelectAll={selectAll}
         />
 
-        <RoleEmployeesBulkBar
-          selectedCount={selectedUserIds.size}
-          onApply={() => setIsBulkOpen(true)}
-          onClear={clearSelection}
-        />
-
         <RoleEmployeesListSection
           filteredUsers={filteredUsers}
           businessTypeName={businessTypeName}
@@ -133,6 +131,12 @@ export default function RoleEmployeesDrawer({
           onToggleSelect={toggleSelect}
           onEditClick={setEditingUser}
           onResetClick={setConfirmUser}
+        />
+
+        <RoleEmployeesBulkBar
+          selectedCount={selectedUserIds.size}
+          onApply={() => setIsBulkOpen(true)}
+          onClear={clearSelection}
         />
 
         <RoleEmployeeResetConfirmDialog

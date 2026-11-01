@@ -8,6 +8,10 @@ import {
   MODULE_NAMES_UZ,
   MODULE_NAMES_RU,
 } from './accessRightsTranslations';
+import {
+  PLATFORM_MODULE_NAMES_UZ,
+  PLATFORM_MODULE_NAMES_RU,
+} from './platformModuleTranslations';
 
 export {
   GROUP_TITLES_UZ,
@@ -16,6 +20,8 @@ export {
   ROLE_LABELS_RU,
   MODULE_NAMES_UZ,
   MODULE_NAMES_RU,
+  PLATFORM_MODULE_NAMES_UZ,
+  PLATFORM_MODULE_NAMES_RU,
 };
 
 export function resolveRoleLabel(roleCode, tOrLang = 'uz') {
@@ -47,18 +53,31 @@ export function resolveModuleName(moduleId, catalogMap = {}, tOrLang = 'uz') {
   const id = String(moduleId || '');
   const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
   if (lang === 'ru') {
-    return MODULE_NAMES_RU[id] || (typeof tOrLang === 'function' ? tOrLang(`nav.modules.${id}`) : null) || catalogMap[id]?.name || id;
+    return (
+      PLATFORM_MODULE_NAMES_RU[id] ||
+      MODULE_NAMES_RU[id] ||
+      (typeof tOrLang === 'function' && tOrLang(`nav.modules.${id}`) !== `nav.modules.${id}` ? tOrLang(`nav.modules.${id}`) : null) ||
+      catalogMap[id]?.name ||
+      id
+    );
   }
-  return MODULE_NAMES_UZ[id] || (typeof tOrLang === 'function' ? tOrLang(`nav.modules.${id}`) : null) || catalogMap[id]?.name || id;
+  return (
+    PLATFORM_MODULE_NAMES_UZ[id] ||
+    MODULE_NAMES_UZ[id] ||
+    (typeof tOrLang === 'function' && tOrLang(`nav.modules.${id}`) !== `nav.modules.${id}` ? tOrLang(`nav.modules.${id}`) : null) ||
+    catalogMap[id]?.name ||
+    id
+  );
 }
 
-export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT', tOrLang = 'uz') {
+export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT', tOrLang = 'uz', allowedModuleIds = null) {
   const map = new Map();
   const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
   const titles = lang === 'ru' ? GROUP_TITLES_RU : GROUP_TITLES_UZ;
   const isPlatformStaff = businessType === 'PLATFORM_STAFF';
 
   rawCatalog.forEach((item) => {
+    if (allowedModuleIds && !allowedModuleIds.has(item.id)) return;
     const isPlatformMod = PLATFORM_MODULE_KEYS.has(item.id);
     if (isPlatformStaff) {
       if (!isPlatformMod) return;

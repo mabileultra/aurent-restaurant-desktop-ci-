@@ -37,11 +37,7 @@ export default function RoleEmployeeBulkDrawer({
     setFilterMode('ALL');
 
     const defaultToggles = {};
-    if (role?.enabledModuleKeys) {
-      role.enabledModuleKeys.forEach((k) => {
-        defaultToggles[k] = true;
-      });
-    }
+    role?.enabledModuleKeys?.forEach((k) => { defaultToggles[k] = true; });
     setModuleToggles(defaultToggles);
 
     const originalOverflow = document.body.style.overflow;
@@ -62,6 +58,7 @@ export default function RoleEmployeeBulkDrawer({
         e.stopPropagation();
         onClose?.();
       } else if (e.key === 'Tab') {
+        e.stopPropagation();
         trapFocus(e, drawerRef.current);
       }
     };
@@ -71,6 +68,21 @@ export default function RoleEmployeeBulkDrawer({
 
   const handleToggle = (id) => setModuleToggles((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  const defaultsMap = useMemo(() => {
+    const map = new Map();
+    role?.enabledModuleKeys?.forEach((k) => map.set(k, true));
+    return map;
+  }, [role]);
+
+  const isDirty = useMemo(() => {
+    const defaults = role?.enabledModuleKeys || new Set();
+    const scope = role?.roleScope || new Set();
+    for (const key of scope) {
+      if (Boolean(moduleToggles[key]) !== defaults.has(key)) return true;
+    }
+    return false;
+  }, [moduleToggles, role]);
+
   const handleSaveBulk = async () => {
     if (saving || userIdsArray.length === 0) return;
     const hasAtLeastOne = Object.values(moduleToggles).some(Boolean);
@@ -79,24 +91,41 @@ export default function RoleEmployeeBulkDrawer({
       return;
     }
 
+    if (!isDirty) {
+      toast.info('Modullar rol shabloniga to‘liq mos. O‘zgartirish kiritilmadi');
+      onClose?.();
+      return;
+    }
+
     try {
       setSaving(true);
+      let successCount = 0;
+      let failCount = 0;
       for (const userId of userIdsArray) {
-        await platformModuleAccessApi.updateUser(userId, { customAccess: true, modules: moduleToggles });
+        try {
+          await platformModuleAccessApi.updateUser(userId, { customAccess: true, modules: moduleToggles });
+          successCount += 1;
+        } catch {
+          failCount += 1;
+        }
       }
-      toast.success(`Kirish huquqlari ${userIdsArray.length} ta xodimga qo‘llandi`);
-      onSaved?.();
+      if (failCount === 0) {
+        toast.success(`Kirish huquqlari ${successCount} ta xodimga qo‘llandi`);
+      } else if (successCount > 0) {
+        toast.error(`${successCount} ta xodimga saqlandi, lekin ${failCount} tasida xatolik yuz berdi`);
+      } else {
+        toast.error(`Barcha ${failCount} ta xodimga saqlashda xatolik yuz berdi`);
+      }
+      if (successCount > 0) onSaved?.();
       onClose?.();
-    } catch {
-      toast.error('Ommaviy saqlashda xatolik yuz berdi');
     } finally {
       setSaving(false);
     }
   };
 
   const catalogGroups = useMemo(() => {
-    return buildCatalogGroups(rawCatalog, businessType, t);
-  }, [rawCatalog, businessType, t]);
+    return buildCatalogGroups(rawCatalog, businessType, t, role?.roleScope);
+  }, [rawCatalog, businessType, t, role]);
 
   if (!isOpen || userIdsArray.length === 0) return null;
 
@@ -125,7 +154,7 @@ export default function RoleEmployeeBulkDrawer({
           <RoleEmployeeEditGroupList
             catalogGroups={catalogGroups}
             moduleToggles={moduleToggles}
-            defaultsMap={new Map()}
+            defaultsMap={defaultsMap}
             filterMode={filterMode}
             searchQuery={searchQuery}
             onToggle={handleToggle}

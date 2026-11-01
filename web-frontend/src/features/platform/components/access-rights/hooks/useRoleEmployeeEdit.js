@@ -75,13 +75,37 @@ export function useRoleEmployeeEdit({ user, isOpen, onSaved, onClose }) {
       return;
     }
 
-    if (!isDirty && detail?.moduleAccessCustom) {
-      toast.success(`${user.fullName || user.username} huquqlari o‘zgarmadi`);
+    if (!isDirty) {
+      toast.info(`${user.fullName || user.username} huquqlariga o‘zgartirish kiritilmadi`);
       onClose?.();
       return;
     }
 
     const userId = user.userId || user.id;
+    const isMatchingRoleDefaults = Array.isArray(detail?.modules) && detail.modules.length > 0 && detail.modules.every(
+      (m) => Boolean(moduleToggles[m.id]) === Boolean(m.roleDefault)
+    );
+
+    if (isMatchingRoleDefaults) {
+      if (detail?.moduleAccessCustom) {
+        try {
+          setSaving(true);
+          await platformModuleAccessApi.resetUser(userId);
+          toast.success(`${user.fullName || user.username} shablonga qaytarildi`);
+          onSaved?.();
+          onClose?.();
+        } catch {
+          toast.error('Shablonga qaytarishda xatolik yuz berdi');
+        } finally {
+          setSaving(false);
+        }
+      } else {
+        toast.info(`${user.fullName || user.username} huquqlari shablonga to‘liq mos`);
+        onClose?.();
+      }
+      return;
+    }
+
     try {
       setSaving(true);
       await platformModuleAccessApi.updateUser(userId, { customAccess: true, modules: moduleToggles });

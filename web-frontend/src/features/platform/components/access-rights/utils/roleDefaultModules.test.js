@@ -72,4 +72,41 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
     expect(allModuleIds).toContain('restaurantFloor');
     expect(allModuleIds).not.toContain('platformCompanies');
   });
+
+  it('matches exact backend numbers for PLATFORM_ADMIN (0/12) and PLATFORM_ANALYTICS (1/1)', () => {
+    expect(PLATFORM_MODULE_KEYS.size).toBe(12);
+    expect(PLATFORM_MODULE_KEYS.has('super_admin')).toBe(false);
+
+    const operatorScope = getScopeForRole('PLATFORM_ADMIN', 'PLATFORM_STAFF');
+    const operatorDefaults = getDefaultModulesForRole('PLATFORM_ADMIN', 'PLATFORM_STAFF');
+    expect(operatorScope.size).toBe(12);
+    expect(operatorDefaults.size).toBe(0);
+
+    const analystScope = getScopeForRole('PLATFORM_ANALYTICS', 'PLATFORM_STAFF');
+    const analystDefaults = getDefaultModulesForRole('PLATFORM_ANALYTICS', 'PLATFORM_STAFF');
+    expect(analystScope.size).toBe(1);
+    expect(analystScope.has('platformAnalytics')).toBe(true);
+    expect(analystDefaults.size).toBe(1);
+    expect(analystDefaults.has('platformAnalytics')).toBe(true);
+  });
+
+  it('translates platform modules into clean Uzbek and Russian titles', () => {
+    expect(resolveModuleName('platformCompanies', {}, 'uz')).toBe('Kompaniyalar');
+    expect(resolveModuleName('platformCompanies', {}, 'ru')).toBe('Компании');
+    expect(resolveModuleName('platformAnalytics', {}, 'uz')).toBe('Platforma analitikasi');
+    expect(resolveModuleName('platformBilling', {}, 'uz')).toBe('Billing va to‘lovlar');
+  });
+
+  it('filters catalog groups by allowedModuleIds when provided', () => {
+    const mockCatalog = [
+      { id: 'dashboard', group: 'main' },
+      { id: 'restaurantPos', group: 'cashier' },
+      { id: 'products', group: 'goods' },
+    ];
+    const allowed = new Set(['restaurantPos']);
+    const groups = buildCatalogGroups(mockCatalog, 'RESTAURANT', 'uz', allowed);
+    expect(groups.length).toBe(1);
+    expect(groups[0].modules.length).toBe(1);
+    expect(groups[0].modules[0].id).toBe('restaurantPos');
+  });
 });

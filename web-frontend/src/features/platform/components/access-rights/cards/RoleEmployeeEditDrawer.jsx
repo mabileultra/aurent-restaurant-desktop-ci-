@@ -70,6 +70,7 @@ export default function RoleEmployeeEditDrawer({
         else if (confirmResetOpen) setConfirmResetOpen(false);
         else handleRequestClose();
       } else if (e.key === 'Tab') {
+        e.stopPropagation();
         trapFocus(e, drawerRef.current);
       }
     };
@@ -77,9 +78,14 @@ export default function RoleEmployeeEditDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleRequestClose, confirmDiscardOpen, confirmResetOpen]);
 
+  const allowedModuleIds = useMemo(() => {
+    if (!detail?.modules) return null;
+    return new Set(detail.modules.map((m) => m.id));
+  }, [detail]);
+
   const catalogGroups = useMemo(() => {
-    return buildCatalogGroups(rawCatalog, effectiveBT, t);
-  }, [rawCatalog, effectiveBT, t]);
+    return buildCatalogGroups(rawCatalog, effectiveBT, t, allowedModuleIds);
+  }, [rawCatalog, effectiveBT, t, allowedModuleIds]);
 
   if (!isOpen || !user) return null;
 

@@ -36,7 +36,6 @@ export const PLATFORM_MODULE_KEYS = new Set([
   'platformMonitoring',
   'platformEmail',
   'platformDesktopNotifications',
-  'super_admin',
   'platformAccess',
 ]);
 
@@ -117,7 +116,10 @@ const MODULE_SPECS = [
  */
 export function getScopeForRole(roleCode, businessType) {
   const role = String(roleCode || '').toUpperCase();
-  if (role === 'PLATFORM_ADMIN' || role === 'PLATFORM_ANALYTICS' || businessType === 'PLATFORM_STAFF') {
+  if (role === 'PLATFORM_ANALYTICS') {
+    return new Set(['platformAnalytics']);
+  }
+  if (role === 'PLATFORM_ADMIN' || businessType === 'PLATFORM_STAFF') {
     return new Set(PLATFORM_MODULE_KEYS);
   }
 
@@ -142,10 +144,10 @@ export function getScopeForRole(roleCode, businessType) {
 export function getDefaultModulesForRole(roleCode, businessType) {
   const role = String(roleCode || '').toUpperCase();
   if (role === 'PLATFORM_ADMIN') {
-    return new Set(PLATFORM_MODULE_KEYS);
+    return new Set();
   }
   if (role === 'PLATFORM_ANALYTICS') {
-    return new Set(['platformAnalytics', 'platformMonitoring', 'platformBilling']);
+    return new Set(['platformAnalytics']);
   }
 
   const scope = getScopeForRole(role, businessType);
