@@ -1,6 +1,7 @@
 package com.pos.identity.controller;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
+import com.pos.identity.dto.access.ModuleAccessStatsResponse;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
@@ -43,8 +44,23 @@ public class PlatformModuleAccessController {
         return ResponseEntity.ok(moduleAccessService.catalog());
     }
 
+    @GetMapping("/stats")
+    @Operation(
+        summary = "Агрегаты Access V2",
+        description = "Счётчики сотрудников и исключений по businessType и role"
+    )
+    @ApiResponse(responseCode = "200", description = "Статистика")
+    public ResponseEntity<ModuleAccessStatsResponse> stats(
+        @RequestParam(required = false) String businessType
+    ) {
+        return ResponseEntity.ok(moduleAccessService.stats(businessType));
+    }
+
     @GetMapping("/users")
-    @Operation(summary = "Пользователи для доступа", description = "Страница пользователей; platformOnly=true — только staff платформы")
+    @Operation(
+        summary = "Пользователи для доступа",
+        description = "Страница пользователей; platformOnly=true — только staff платформы; role фильтрует по роли"
+    )
     @ApiResponse(responseCode = "200", description = "Страница пользователей")
     public ResponseEntity<PageResponse<UserModuleAccessSummary>> listUsers(
         @RequestParam(required = false) Integer companyId,
@@ -52,10 +68,11 @@ public class PlatformModuleAccessController {
         @RequestParam(required = false) String search,
         @RequestParam(required = false) String accessFilter,
         @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String role,
         @PageableDefault(size = 30) Pageable pageable
     ) {
         return ResponseEntity.ok(moduleAccessService.listUsersPaged(
-            companyId, platformOnly, search, accessFilter, businessType, pageable
+            companyId, platformOnly, search, accessFilter, businessType, role, pageable
         ));
     }
 

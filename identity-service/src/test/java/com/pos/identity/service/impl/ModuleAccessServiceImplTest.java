@@ -15,6 +15,7 @@ import com.pos.identity.security.PlatformAdminModule;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
 import com.pos.identity.support.IdentityUsers;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +55,8 @@ class ModuleAccessServiceImplTest {
     private ModuleAccessUserGate moduleAccessUserGate;
     @Mock
     private ModuleAccessUsersPager moduleAccessUsersPager;
+    @Mock
+    private ModuleAccessStatsSupport moduleAccessStatsSupport;
 
     private ModuleAccessServiceImpl service;
 
@@ -67,7 +70,8 @@ class ModuleAccessServiceImplTest {
             catalog,
             moduleAccessUserGate,
             scopeResolver,
-            moduleAccessUsersPager
+            moduleAccessUsersPager,
+            moduleAccessStatsSupport
         );
     }
 
@@ -114,7 +118,7 @@ class ModuleAccessServiceImplTest {
         UserModuleAccessSummary tenant = summary("ADMIN");
         UserModuleAccessSummary operator = summary("PLATFORM_ADMIN");
         when(moduleAccessUsersPager.page(
-            isNull(), eq(false), isNull(), eq("all"), isNull(), any(Pageable.class)
+            isNull(), eq(false), isNull(), eq("all"), isNull(), isNull(), any(Pageable.class)
         )).thenReturn(PageResponse.slice(List.of(operator, tenant), Pageable.unpaged()));
 
         List<UserModuleAccessSummary> all = service.listUsers(null);
@@ -125,7 +129,7 @@ class ModuleAccessServiceImplTest {
     void listUsersHidesOperatorsForPlatformAdminActor() {
         UserModuleAccessSummary tenant = summary("ADMIN");
         when(moduleAccessUsersPager.page(
-            isNull(), eq(false), isNull(), eq("all"), isNull(), any(Pageable.class)
+            isNull(), eq(false), isNull(), eq("all"), isNull(), isNull(), any(Pageable.class)
         )).thenReturn(PageResponse.slice(List.of(tenant), Pageable.unpaged()));
 
         List<UserModuleAccessSummary> all = service.listUsers(null);
@@ -136,7 +140,7 @@ class ModuleAccessServiceImplTest {
     void listUsersSkipsOperatorsWhenCompanyFilterIsSet() {
         UserModuleAccessSummary tenant = summary("ADMIN");
         when(moduleAccessUsersPager.page(
-            eq(9), eq(false), isNull(), eq("all"), isNull(), any(Pageable.class)
+            eq(9), eq(false), isNull(), eq("all"), isNull(), isNull(), any(Pageable.class)
         )).thenReturn(PageResponse.slice(List.of(tenant), Pageable.unpaged()));
 
         List<UserModuleAccessSummary> companyOnly = service.listUsers(9);

@@ -1,6 +1,7 @@
 package com.pos.identity.service;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
+import com.pos.identity.dto.access.ModuleAccessStatsResponse;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
@@ -24,8 +25,11 @@ public interface ModuleAccessService {
         String search,
         String accessFilter,
         String businessType,
+        String role,
         Pageable pageable
     );
+
+    ModuleAccessStatsResponse stats(String businessType);
 
     UserModuleAccessDetailResponse getUserAccess(UUID userId);
 

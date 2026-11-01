@@ -1,6 +1,7 @@
 package com.pos.identity.service.impl;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
+import com.pos.identity.dto.access.ModuleAccessStatsResponse;
 import com.pos.identity.dto.access.UpdateUserModuleAccessRequest;
 import com.pos.identity.dto.access.UserModuleAccessDetailResponse;
 import com.pos.identity.dto.access.UserModuleAccessRow;
@@ -17,6 +18,7 @@ import com.pos.identity.service.ModuleAccessService;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +42,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     private final ModuleAccessUserGate moduleAccessUserGate;
     private final ModuleAccessScopeResolver scopeResolver;
     private final ModuleAccessUsersPager moduleAccessUsersPager;
+    private final ModuleAccessStatsSupport moduleAccessStatsSupport;
 
     @Override
     public List<AdminModuleCatalogItem> catalog() {
@@ -48,7 +51,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
     @Override
     public List<UserModuleAccessSummary> listUsers(Integer companyId) {
-        return listUsersPaged(companyId, false, null, "all", null, Pageable.unpaged()).content();
+        return listUsersPaged(companyId, false, null, "all", null, null, Pageable.unpaged()).content();
     }
 
     @Override
@@ -58,9 +61,17 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         String search,
         String accessFilter,
         String businessType,
+        String role,
         Pageable pageable
     ) {
-        return moduleAccessUsersPager.page(companyId, platformOnly, search, accessFilter, businessType, pageable);
+        return moduleAccessUsersPager.page(
+            companyId, platformOnly, search, accessFilter, businessType, role, pageable
+        );
+    }
+
+    @Override
+    public ModuleAccessStatsResponse stats(String businessType) {
+        return moduleAccessStatsSupport.build(businessType);
     }
 
     @Override

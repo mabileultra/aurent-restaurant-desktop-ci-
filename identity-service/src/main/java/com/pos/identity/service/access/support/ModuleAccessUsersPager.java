@@ -43,6 +43,7 @@ public class ModuleAccessUsersPager {
         String search,
         String accessFilter,
         String businessType,
+        String role,
         Pageable pageable
     ) {
         List<User> users = loadUsers(companyId, platformOnly, businessType);
@@ -50,9 +51,11 @@ public class ModuleAccessUsersPager {
         Instant now = Instant.now();
         String q = StringUtils.hasText(search) ? search.trim().toLowerCase(Locale.ROOT) : "";
         String filter = StringUtils.hasText(accessFilter) ? accessFilter.trim().toLowerCase(Locale.ROOT) : "all";
+        String roleFilter = StringUtils.hasText(role) ? role.trim().toUpperCase(Locale.ROOT) : null;
 
         List<UserModuleAccessSummary> rows = users.stream()
             .map(user -> toSummary(user, companies))
+            .filter(row -> matchesRole(row, roleFilter))
             .filter(row -> matchesSearch(row, q))
             .filter(row -> matchesAccess(row, filter, now))
             .sorted(Comparator
@@ -108,6 +111,16 @@ public class ModuleAccessUsersPager {
             user.isModuleAccessCustom(),
             user.getCreatedAt()
         );
+    }
+
+    private static boolean matchesRole(UserModuleAccessSummary row, String roleFilter) {
+        if (roleFilter == null) {
+            return true;
+        }
+        if (row.role() == null) {
+            return false;
+        }
+        return roleFilter.equals(row.role().trim().toUpperCase(Locale.ROOT));
     }
 
     private static boolean matchesSearch(UserModuleAccessSummary row, String q) {

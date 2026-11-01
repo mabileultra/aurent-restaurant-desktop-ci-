@@ -17,6 +17,7 @@ import { getDefaultModulesForRole, getScopeForRole } from '../utils/roleDefaultM
 import { useRoleDefaultsQuery } from './useRoleDefaultsQuery';
 import { useAccessRightsCompanies, useAccessRightsCompaniesMap } from './useAccessRightsCompanies';
 import { useAccessRightsUnconfiguredCount } from './useAccessRightsUnconfiguredCount';
+import { useAccessRightsStats } from './useAccessRightsStats';
 
 const MAX_USERS_PAGE_SIZE = 250;
 
@@ -50,6 +51,7 @@ export function useAccessRightsV2Data() {
   const { companies, companiesLoading } = useAccessRightsCompanies(isPlatformStaff ? '' : selectedBT);
   const companiesMap = useAccessRightsCompaniesMap();
   const unconfiguredCount = useAccessRightsUnconfiguredCount({ selectedBT, selectedCompanyId, isPlatformStaff });
+  const { statsByCode, refetchStats } = useAccessRightsStats();
 
   const { data: usersResponse = { content: [], totalElements: 0 }, isLoading: usersLoading, isError: usersError, error: usersErrorObj, refetch: refetchUsers } = useQuery({
     queryKey: ['access-v2-users', selectedBT, selectedCompanyId, debouncedSearch, accessFilter],
@@ -73,6 +75,7 @@ export function useAccessRightsV2Data() {
 
   const rawUsers = usersResponse.content;
   const usersTotalElements = usersResponse.totalElements;
+  const selectedStats = statsByCode.get(String(selectedBT || '').toUpperCase()) || null;
 
   const users = useMemo(() => {
     return rawUsers.map((u) => {
@@ -100,8 +103,10 @@ export function useAccessRightsV2Data() {
 
   const businessTypes = useMemo(() => {
     const list = rawBusinessTypes.map((bt) => {
+      const fromStats = statsByCode.get(String(bt.code || '').toUpperCase());
       const isSelected = bt.code === selectedBT;
-      const count = isSelected && isUnfilteredQuery ? usersTotalElements : (visitedCounts[bt.code] ?? null);
+      const count = fromStats?.totalEmployees
+        ?? (isSelected && isUnfilteredQuery ? usersTotalElements : (visitedCounts[bt.code] ?? null));
       return {
         code: bt.code,
         name: resolveBusinessTypeName(bt.code, t) || bt.nameUz || bt.name || bt.code,
@@ -109,8 +114,10 @@ export function useAccessRightsV2Data() {
       };
     });
     if (canManagePlatformStaff) {
+      const fromStats = statsByCode.get('PLATFORM_STAFF');
       const isSelected = selectedBT === 'PLATFORM_STAFF';
-      const count = isSelected && isUnfilteredQuery ? usersTotalElements : (visitedCounts['PLATFORM_STAFF'] ?? null);
+      const count = fromStats?.totalEmployees
+        ?? (isSelected && isUnfilteredQuery ? usersTotalElements : (visitedCounts['PLATFORM_STAFF'] ?? null));
       list.push({
         code: 'PLATFORM_STAFF',
         name: resolveBusinessTypeName('PLATFORM_STAFF', t),
@@ -118,14 +125,20 @@ export function useAccessRightsV2Data() {
       });
     }
     return list;
-  }, [rawBusinessTypes, canManagePlatformStaff, visitedCounts, selectedBT, usersTotalElements, isUnfilteredQuery, t]);
+  }, [rawBusinessTypes, canManagePlatformStaff, visitedCounts, selectedBT, usersTotalElements, isUnfilteredQuery, statsByCode, t]);
 
   const roles = useMemo(() => {
     const allowedRoleCodes = rolesForBusinessType(selectedBT);
 
     return allowedRoleCodes.map((roleCode) => {
       const roleUsers = users.filter((u) => String(u.role).toUpperCase() === roleCode.toUpperCase());
-      const exceptionCount = roleUsers.filter((u) => Boolean(u.moduleAccessCustom || u.customAccess)).length;
+      const statsRole = selectedStats?.roleMap?.get(roleCode.toUpperCase());
+      const exceptionCount = isUnfilteredQuery && statsRole
+        ? Number(statsRole.exceptionCount || 0)
+        : roleUsers.filter((u) => Boolean(u.moduleAccessCustom || u.customAccess)).length;
+      const totalEmployees = isUnfilteredQuery && statsRole
+        ? Number(statsRole.totalEmployees || 0)
+        : roleUsers.length;
       const backendRoleData = roleDefaultsFromBackend[roleCode.toUpperCase()];
       const roleScope = backendRoleData?.scopeKeys || getScopeForRole(roleCode, selectedBT);
       const enabledModuleKeys = backendRoleData?.defaultKeys || getDefaultModulesForRole(roleCode, selectedBT);
@@ -141,7 +154,7 @@ export function useAccessRightsV2Data() {
       return {
         code: roleCode,
         name: resolveRoleLabel(roleCode, t),
-        totalEmployees: roleUsers.length,
+        totalEmployees,
         exceptionCount,
         enabledModulesCount: enabledModuleKeys.size,
         totalModulesCount: roleScope.size,
@@ -151,7 +164,7 @@ export function useAccessRightsV2Data() {
         users: roleUsers,
       };
     });
-  }, [selectedBT, users, rawCatalog, roleDefaultsFromBackend, t]);
+  }, [selectedBT, users, rawCatalog, roleDefaultsFromBackend, selectedStats, isUnfilteredQuery, t]);
 
   const isTruncated = rawUsers.length >= MAX_USERS_PAGE_SIZE && usersTotalElements > rawUsers.length;
 
@@ -160,6 +173,7 @@ export function useAccessRightsV2Data() {
       await platformModuleAccessApi.resetUser(userId);
       toast.success(currentLang === 'ru' ? 'Пользователь успешно сброшен к шаблону' : 'Xodim muvaffaqiyatli rol shabloniga qaytarildi');
       refetchUsers();
+      refetchStats();
     } catch {
       toast.error(currentLang === 'ru' ? 'Ошибка при сбросе пользователя' : 'Xodimni qaytarishda xatolik yuz berdi');
     }
@@ -169,7 +183,8 @@ export function useAccessRightsV2Data() {
     refetchBT();
     refetchCatalog();
     refetchUsers();
-  }, [refetchBT, refetchCatalog, refetchUsers]);
+    refetchStats();
+  }, [refetchBT, refetchCatalog, refetchUsers, refetchStats]);
 
   return {
     selectedBT, setSelectedBT, selectedCompanyId, setSelectedCompanyId,
