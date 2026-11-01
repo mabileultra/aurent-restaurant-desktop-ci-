@@ -23,6 +23,7 @@ vi.mock('../../../../../hooks/useDebouncedValue', () => ({
 
 vi.mock('./useAccessRightsCompanies', () => ({
   useAccessRightsCompanies: () => ({ companies: [], companiesLoading: false }),
+  useAccessRightsCompaniesMap: () => new Map(),
 }));
 
 vi.mock('./useAccessRightsUnconfiguredCount', () => ({

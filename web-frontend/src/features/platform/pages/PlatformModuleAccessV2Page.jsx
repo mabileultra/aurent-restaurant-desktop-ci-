@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import BusinessTypePills from '../components/access-rights/cards/BusinessTypePills';
-import RoleCard from '../components/access-rights/cards/RoleCard';
+import RoleCardsGrid from '../components/access-rights/cards/RoleCardsGrid';
+import SearchResultsSection from '../components/access-rights/cards/SearchResultsSection';
 import RoleTemplateDrawer from '../components/access-rights/cards/RoleTemplateDrawer';
 import RoleEmployeesDrawer from '../components/access-rights/cards/RoleEmployeesDrawer';
+import RoleEmployeeEditDrawer from '../components/access-rights/cards/RoleEmployeeEditDrawer';
+import RoleEmployeeResetConfirmDialog from '../components/access-rights/cards/RoleEmployeeResetConfirmDialog';
 import PlatformModuleAccessV2Header from '../components/access-rights/cards/PlatformModuleAccessV2Header';
 import PlatformModuleAccessToolbar from '../components/access-rights/cards/PlatformModuleAccessToolbar';
 import { useAccessRightsV2Data } from '../components/access-rights/hooks/useAccessRightsV2Data';
@@ -15,40 +18,22 @@ export default function PlatformModuleAccessV2Page() {
   const currentLang = i18n.language === 'ru' ? 'ru' : 'uz';
 
   const {
-    selectedBT,
-    setSelectedBT,
-    selectedCompanyId = '',
-    setSelectedCompanyId,
-    searchTerm = '',
-    setSearchTerm,
-    accessFilter = 'all',
-    setAccessFilter,
-    unconfiguredCount = 0,
-    isPlatformStaff = false,
-    companies = [],
-    companiesLoading = false,
-    businessTypes = [],
-    roles = [],
-    rawUsers = [],
-    rawCatalog = [],
-    moduleGroups = [],
-    catalogMap = {},
-    isLoading = false,
-    isError = false,
-    error = null,
-    isTruncated = false,
-    totalCount = 0,
-    refetchAll,
-    handleResetUser,
+    selectedBT, setSelectedBT, selectedCompanyId = '', setSelectedCompanyId,
+    searchTerm = '', setSearchTerm, accessFilter = 'all', setAccessFilter,
+    unconfiguredCount = 0, isPlatformStaff = false,
+    companies = [], companiesLoading = false, businessTypes = [],
+    roles = [], rawUsers = [], rawCatalog = [], moduleGroups = [], catalogMap = {},
+    isLoading = false, isError = false, error = null,
+    isTruncated = false, totalCount = 0, refetchAll, handleResetUser,
   } = useAccessRightsV2Data() || {};
 
   const [configuringRole, setConfiguringRole] = useState(null);
   const [viewingRoleEmployees, setViewingRoleEmployees] = useState(null);
+  const [editingSearchUser, setEditingSearchUser] = useState(null);
+  const [confirmResetUser, setConfirmResetUser] = useState(null);
+  const [isResettingSearchUser, setIsResettingSearchUser] = useState(false);
 
-  const currentBT = businessTypes.find((b) => b.code === selectedBT) || businessTypes[0] || {
-    name: selectedBT,
-  };
-
+  const currentBT = businessTypes.find((b) => b.code === selectedBT) || businessTypes[0] || { name: selectedBT };
   const hasActiveEmployees = roles.some((r) => r.totalEmployees > 0);
   const activeRoles = hasActiveEmployees ? roles.filter((r) => r.totalEmployees > 0) : roles;
   const emptyRoles = hasActiveEmployees ? roles.filter((r) => r.totalEmployees === 0) : [];
@@ -56,83 +41,37 @@ export default function PlatformModuleAccessV2Page() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
       <PlatformModuleAccessV2Header
-        currentLang={currentLang}
-        isLoading={isLoading}
-        isError={isError}
-        error={error}
-        onRetry={refetchAll}
+        currentLang={currentLang} isLoading={isLoading} isError={isError} error={error} onRetry={refetchAll}
       />
 
-      <BusinessTypePills
-        businessTypes={businessTypes}
-        selectedCode={selectedBT}
-        onSelect={setSelectedBT}
-      />
+      <BusinessTypePills businessTypes={businessTypes} selectedCode={selectedBT} onSelect={setSelectedBT} />
 
       <PlatformModuleAccessToolbar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        accessFilter={accessFilter}
-        setAccessFilter={setAccessFilter}
-        unconfiguredCount={unconfiguredCount}
-        isPlatformStaff={isPlatformStaff}
-        companies={companies}
-        companiesLoading={companiesLoading}
-        selectedCompanyId={selectedCompanyId}
-        setSelectedCompanyId={setSelectedCompanyId}
-        currentLang={currentLang}
-        isTruncated={isTruncated}
-        totalCount={totalCount}
-        loadedCount={rawUsers.length}
+        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+        accessFilter={accessFilter} setAccessFilter={setAccessFilter}
+        unconfiguredCount={unconfiguredCount} isPlatformStaff={isPlatformStaff}
+        companies={companies} companiesLoading={companiesLoading}
+        selectedCompanyId={selectedCompanyId} setSelectedCompanyId={setSelectedCompanyId}
+        currentLang={currentLang} isTruncated={isTruncated}
+        totalCount={totalCount} loadedCount={rawUsers.length}
       />
 
-      {searchTerm && rawUsers.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900 shadow-xs">
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-            «{searchTerm}» {currentLang === 'ru' ? 'не найдено сотрудников' : 'bo‘yicha hech qanday xodim topilmadi'}
-          </p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            {currentLang === 'ru' ? 'Попробуйте изменить поисковый запрос' : 'Qidiruv so‘zini o‘zgartiring yoki filtrlarni tozalang'}
-          </p>
-        </div>
+      {searchTerm ? (
+        <SearchResultsSection
+          searchTerm={searchTerm}
+          users={rawUsers}
+          currentLang={currentLang}
+          onEditUser={(u) => setEditingSearchUser(u)}
+          onResetUser={(u) => setConfirmResetUser(u)}
+        />
       ) : (
-        <>
-          {searchTerm && rawUsers.length > 0 && (
-            <div className="rounded-xl bg-emerald-50/80 border border-emerald-200 px-4 py-2.5 text-xs text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-200 font-semibold flex items-center justify-between">
-              <span>«{searchTerm}» bo‘yicha {rawUsers.length} ta xodim topildi</span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-            {activeRoles.map((role) => (
-              <RoleCard
-                key={role.code}
-                role={role}
-                onConfigure={(r) => setConfiguringRole(r)}
-                onViewEmployees={(r) => setViewingRoleEmployees(r)}
-              />
-            ))}
-          </div>
-
-          {emptyRoles.length > 0 && (
-            <div className="space-y-3 pt-3 border-t border-slate-200/80 dark:border-slate-800">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                {currentLang === 'ru' ? 'Роли без сотрудников' : 'Xodimi bo‘lmagan rollar'} ({emptyRoles.length})
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {emptyRoles.map((role) => (
-                  <RoleCard
-                    key={role.code}
-                    role={role}
-                    isCompact={true}
-                    onConfigure={(r) => setConfiguringRole(r)}
-                    onViewEmployees={(r) => setViewingRoleEmployees(r)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+        <RoleCardsGrid
+          activeRoles={activeRoles}
+          emptyRoles={emptyRoles}
+          onConfigureRole={setConfiguringRole}
+          onViewEmployees={setViewingRoleEmployees}
+          currentLang={currentLang}
+        />
       )}
 
       <div className="pt-2 flex items-center gap-2.5">
@@ -175,6 +114,33 @@ export default function PlatformModuleAccessV2Page() {
         rawCatalog={rawCatalog}
         onResetUserToTemplate={handleResetUser}
         onUserUpdated={refetchAll}
+      />
+
+      <RoleEmployeeEditDrawer
+        isOpen={Boolean(editingSearchUser)}
+        onClose={() => setEditingSearchUser(null)}
+        user={editingSearchUser}
+        businessType={editingSearchUser?.businessType || selectedBT}
+        businessTypeName={editingSearchUser?.businessTypeName || currentBT.name}
+        rawCatalog={rawCatalog}
+        onSaved={refetchAll}
+      />
+
+      <RoleEmployeeResetConfirmDialog
+        user={confirmResetUser}
+        isResetting={isResettingSearchUser}
+        onCancel={() => !isResettingSearchUser && setConfirmResetUser(null)}
+        onConfirm={async () => {
+          if (confirmResetUser) {
+            setIsResettingSearchUser(true);
+            try {
+              await handleResetUser(confirmResetUser.userId || confirmResetUser.id);
+              setConfirmResetUser(null);
+            } finally {
+              setIsResettingSearchUser(false);
+            }
+          }
+        }}
       />
     </div>
   );

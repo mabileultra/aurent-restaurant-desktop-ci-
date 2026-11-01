@@ -16,7 +16,7 @@ export default function BusinessTypePills({
     () =>
       businessTypes.map((bt) => ({
         value: bt.code,
-        label: `${bt.name} (${bt.totalEmployees} xodim)`,
+        label: bt.totalEmployees != null ? `${bt.name} (${bt.totalEmployees} xodim)` : bt.name,
       })),
     [businessTypes]
   );
@@ -60,13 +60,15 @@ export default function BusinessTypePills({
               }`}
             >
               <span>{bt.name}</span>
-              <span
-                className={`text-xs font-semibold ${
-                  isSelected ? 'text-emerald-100' : 'text-slate-600 dark:text-slate-300'
-                }`}
-              >
-                {bt.totalEmployees} xodim
-              </span>
+              {bt.totalEmployees != null && (
+                <span
+                  className={`text-xs font-semibold ${
+                    isSelected ? 'text-emerald-100' : 'text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {bt.totalEmployees} xodim
+                </span>
+              )}
             </button>
           );
         })}

@@ -25,6 +25,7 @@ export default function RoleEmployeeEditDrawer({
   const drawerRef = useRef(null);
 
   const effectiveBT = user?.businessType || businessType || 'RESTAURANT';
+  const effectiveBTName = user?.businessTypeName || businessTypeName;
 
   const {
     loading,
@@ -100,7 +101,7 @@ export default function RoleEmployeeEditDrawer({
       <div className="flex flex-col w-full max-w-xl bg-white h-full shadow-2xl dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 animate-in slide-in-from-right duration-200">
         <RoleEmployeeEditHeader
           user={user}
-          businessTypeName={businessTypeName}
+          businessTypeName={effectiveBTName}
           detail={detail}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

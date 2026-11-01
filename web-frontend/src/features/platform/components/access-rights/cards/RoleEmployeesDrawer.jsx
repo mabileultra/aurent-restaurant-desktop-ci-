@@ -27,35 +27,28 @@ export default function RoleEmployeesDrawer({
   const [filterType, setFilterType] = useState('ALL');
 
   const { filteredUsers, totalCount, exceptionsCount } = filterRoleEmployees(
-    users,
-    role,
-    filterType,
-    searchQuery
+    users, role, filterType, searchQuery
   );
 
   const {
-    selectedUserIds,
-    toggleSelect,
-    selectAll,
-    clearSelection,
-    isAllSelected,
+    selectedUserIds, setSelectedUserIds, toggleSelect, selectAll, clearSelection, isAllSelected
   } = useRoleEmployeesSelection(filteredUsers);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery('');
+      setFilterType('ALL');
+    }
+  }, [isOpen, role?.code]);
 
   useEffect(() => {
     clearSelection();
   }, [filterType, searchQuery, clearSelection]);
 
   const {
-    confirmUser,
-    setConfirmUser,
-    editingUser,
-    setEditingUser,
-    isBulkOpen,
-    setIsBulkOpen,
-    isResetting,
-    handleConfirmReset,
-    closeButtonRef,
-    drawerRef,
+    confirmUser, setConfirmUser, editingUser, setEditingUser,
+    isBulkOpen, setIsBulkOpen, isResetting, handleConfirmReset,
+    closeButtonRef, drawerRef,
   } = useRoleEmployeesDrawerState({ isOpen, clearSelection, onResetUserToTemplate });
 
   useEffect(() => {
@@ -150,8 +143,8 @@ export default function RoleEmployeesDrawer({
           isOpen={Boolean(editingUser)}
           onClose={() => setEditingUser(null)}
           user={editingUser}
-          businessType={businessType}
-          businessTypeName={businessTypeName}
+          businessType={editingUser?.businessType || businessType}
+          businessTypeName={editingUser?.businessTypeName || businessTypeName}
           rawCatalog={rawCatalog}
           onSaved={() => onUserUpdated?.()}
         />
@@ -164,8 +157,12 @@ export default function RoleEmployeesDrawer({
           businessType={businessType}
           businessTypeName={businessTypeName}
           rawCatalog={rawCatalog}
-          onSaved={() => {
-            clearSelection();
+          onSaved={(failedIds) => {
+            if (failedIds?.length > 0) {
+              setSelectedUserIds(new Set(failedIds));
+            } else {
+              clearSelection();
+            }
             onUserUpdated?.();
           }}
         />

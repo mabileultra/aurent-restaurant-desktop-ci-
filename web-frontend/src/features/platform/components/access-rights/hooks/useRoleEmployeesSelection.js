@@ -32,6 +32,7 @@ export function useRoleEmployeesSelection(filteredUsers = []) {
 
   return {
     selectedUserIds,
+    setSelectedUserIds,
     toggleSelect,
     selectAll,
     clearSelection,

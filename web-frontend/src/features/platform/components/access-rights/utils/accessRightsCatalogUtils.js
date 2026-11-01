@@ -77,13 +77,16 @@ export function buildCatalogGroups(rawCatalog = [], businessType = 'RESTAURANT',
   const isPlatformStaff = businessType === 'PLATFORM_STAFF';
 
   rawCatalog.forEach((item) => {
-    if (allowedModuleIds && !allowedModuleIds.has(item.id)) return;
-    const isPlatformMod = PLATFORM_MODULE_KEYS.has(item.id);
-    if (isPlatformStaff) {
-      if (!isPlatformMod) return;
+    if (allowedModuleIds) {
+      if (!allowedModuleIds.has(item.id)) return;
     } else {
-      if (isPlatformMod) return;
-      if (!isModuleVisibleForBusinessType(item.id, businessType)) return;
+      const isPlatformMod = PLATFORM_MODULE_KEYS.has(item.id);
+      if (isPlatformStaff) {
+        if (!isPlatformMod) return;
+      } else {
+        if (isPlatformMod) return;
+        if (!isModuleVisibleForBusinessType(item.id, businessType)) return;
+      }
     }
 
     const groupId = item.group || 'main';

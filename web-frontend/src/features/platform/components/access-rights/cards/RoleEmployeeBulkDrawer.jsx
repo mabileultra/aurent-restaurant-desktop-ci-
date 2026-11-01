@@ -21,7 +21,9 @@ export default function RoleEmployeeBulkDrawer({
 }) {
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
-  const [moduleToggles, setModuleToggles] = useState({});
+
+  const getInitialToggles = () => Object.fromEntries(Array.from(role?.enabledModuleKeys || []).map((k) => [k, true]));
+  const [moduleToggles, setModuleToggles] = useState(getInitialToggles);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('ALL');
   const triggerElementRef = useRef(null);
@@ -35,10 +37,7 @@ export default function RoleEmployeeBulkDrawer({
     triggerElementRef.current = document.activeElement;
     setSearchQuery('');
     setFilterMode('ALL');
-
-    const defaultToggles = {};
-    role?.enabledModuleKeys?.forEach((k) => { defaultToggles[k] = true; });
-    setModuleToggles(defaultToggles);
+    setModuleToggles(getInitialToggles());
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -101,12 +100,14 @@ export default function RoleEmployeeBulkDrawer({
       setSaving(true);
       let successCount = 0;
       let failCount = 0;
+      const failedIds = [];
       for (const userId of userIdsArray) {
         try {
           await platformModuleAccessApi.updateUser(userId, { customAccess: true, modules: moduleToggles });
           successCount += 1;
         } catch {
           failCount += 1;
+          failedIds.push(userId);
         }
       }
       if (failCount === 0) {
@@ -116,7 +117,7 @@ export default function RoleEmployeeBulkDrawer({
       } else {
         toast.error(`Barcha ${failCount} ta xodimga saqlashda xatolik yuz berdi`);
       }
-      if (successCount > 0) onSaved?.();
+      onSaved?.(failedIds);
       onClose?.();
     } finally {
       setSaving(false);
@@ -176,9 +177,9 @@ export default function RoleEmployeeBulkDrawer({
             </button>
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || !isDirty}
               onClick={handleSaveBulk}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
               <span>{saving ? 'Qo‘llanilmoqda...' : `${userIdsArray.length} ta xodimga saqlash`}</span>

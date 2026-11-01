@@ -23,3 +23,20 @@ export function useAccessRightsCompanies(businessType) {
     refetchCompanies,
   };
 }
+
+/**
+ * Barcha kompaniyalar xaritasi (id -> company) hooki (SRP)
+ * Global qidiruvda har bir xodimning faoliyat turini (businessType) aniqlash uchun ishlatiladi
+ */
+export function useAccessRightsCompaniesMap() {
+  const { data: allCompanies = [] } = useQuery({
+    queryKey: ['access-v2-all-companies'],
+    queryFn: () => loadCompaniesOptionsPage(),
+    staleTime: 300_000,
+  });
+
+  return allCompanies.reduce((acc, c) => {
+    if (c && c.id != null) acc.set(c.id, c);
+    return acc;
+  }, new Map());
+}
