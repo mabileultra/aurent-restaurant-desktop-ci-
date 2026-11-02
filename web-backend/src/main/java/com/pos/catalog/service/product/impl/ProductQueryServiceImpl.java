@@ -1,5 +1,6 @@
 package com.pos.catalog.service.product.impl;
 
+import com.pos.catalog.api.support.CatalogRemoteReadinessGuard;
 import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.dto.shared.PageResponse;
@@ -51,6 +52,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final TenantAccessSupport tenantAccess;
     private final WeightBarcodeCodec weightBarcodeCodec;
     private final CatalogIsolationSupport catalogIsolation;
+    private final CatalogRemoteReadinessGuard catalogRemoteReadinessGuard;
 
     @Override
     public PageResponse<ProductResponse> getProducts(
@@ -67,6 +69,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String businessTypeCode,
         Pageable pageable
     ) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
@@ -97,6 +100,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public ProductResponse getProduct(UUID id, Integer storeId) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = catalogLoader.requireDetailed(id);
         tenantAccess.assertProductBelongsToTenant(product);
         catalogIsolation.hidePharmacyFromGrocery(product);
@@ -105,6 +109,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public ProductResponse getByBarcode(String barcode) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), null);
         catalogIsolation.hidePharmacyFromGrocery(product);
         return forStore(assembler.toResponse(product), product, null);
@@ -112,6 +117,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public ProductResponse getByBarcode(String barcode, Integer storeId) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), storeId);
         catalogIsolation.hidePharmacyFromGrocery(product);
         return forStore(assembler.toResponse(product), product, storeId);
@@ -137,6 +143,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         java.util.Map<String, String> attributeFilters,
         String businessTypeCode
     ) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),

@@ -1,7 +1,9 @@
 package com.pos.client.catalog;
 
 import com.pos.catalog.dto.ref.ProductRef;
+import com.pos.config.catalog.CatalogReadMode;
 import com.pos.config.catalog.CatalogServiceProperties;
+import com.pos.exception.ServiceUnavailableException;
 import com.pos.shared.log.LogUtil;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -50,7 +52,8 @@ public class CatalogServiceClient {
             () -> catalogRestClient.get()
                 .uri("/internal/catalog/products/{id}", productId)
                 .retrieve()
-                .body(CatalogRemoteRef.class)
+                .body(CatalogRemoteRef.class),
+            strictRemoteOnlyRead()
         );
     }
 
@@ -67,7 +70,8 @@ public class CatalogServiceClient {
                     .queryParam("companyId", companyId)
                     .build(productId))
                 .retrieve()
-                .body(CatalogRemoteRef.class)
+                .body(CatalogRemoteRef.class),
+            strictRemoteOnlyRead()
         );
     }
 
@@ -85,7 +89,8 @@ public class CatalogServiceClient {
                     .queryParam("barcode", barcode.trim())
                     .build())
                 .retrieve()
-                .body(CatalogRemoteRef.class)
+                .body(CatalogRemoteRef.class),
+            strictRemoteOnlyRead()
         );
     }
 
@@ -109,8 +114,15 @@ public class CatalogServiceClient {
             return body.stream().map(mapper::toProductRef).toList();
         } catch (Exception ex) {
             LogUtil.warn(CatalogServiceClient.class, "catalog-service search failed", ex);
+            if (strictRemoteOnlyRead()) {
+                throw new ServiceUnavailableException("catalog-service unavailable (REMOTE_ONLY read)", ex);
+            }
             return List.of();
         }
+    }
+
+    private boolean strictRemoteOnlyRead() {
+        return properties.effectiveReadMode() == CatalogReadMode.REMOTE_ONLY;
     }
 
     public Optional<CatalogRemoteStats> fetchStats(Integer companyId) {
