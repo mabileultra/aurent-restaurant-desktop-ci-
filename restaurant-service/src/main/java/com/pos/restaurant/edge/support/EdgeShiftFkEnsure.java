@@ -3,7 +3,6 @@ package com.pos.restaurant.edge.support;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderRow;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +18,10 @@ import java.util.UUID;
  * Inserts stub CLOSED shifts for any order.shift_id missing locally.
  * Cloud often references a closed shift while snapshot.openShift is null —
  * floor_orders.fk_floor_orders_shift would otherwise fail on bootstrap/live-import.
+ * Always on (cloud ingest + edge): {@link com.pos.restaurant.edge.live.LiveFloorApplyService} needs this bean.
  */
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "app.restaurant.edge", name = "enabled", havingValue = "true")
 public class EdgeShiftFkEnsure {
 
     private final JdbcTemplate jdbc;
