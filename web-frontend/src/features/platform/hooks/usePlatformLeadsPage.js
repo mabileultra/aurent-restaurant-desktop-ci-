@@ -3,44 +3,83 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { platformLeadsApi } from '../../../api/platform/leads.api';
-
-export const PLATFORM_LEADS_PAGE_SIZE = 20;
-export const PLATFORM_LEADS_PAGE_SIZE_OPTIONS = [10, 20, 50];
-
-const LEAD_STATUSES = ['', 'NEW', 'IN_PROGRESS', 'DONE', 'REJECTED'];
+import { companyApi } from '../../../api/company.api';
+import { appendLeadTimelineEvent, getLeadWaitUrgency } from '../utils/leadFormatUtils';
 
 export function usePlatformLeadsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(PLATFORM_LEADS_PAGE_SIZE);
-  const [selectedLead, setSelectedLead] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [editStatus, setEditStatus] = useState('');
-  const [editNote, setEditNote] = useState('');
+  const [leadType, setLeadType] = useState('');
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [viewMode, setViewMode] = useState('split'); // 'split' | 'convert_company' | 'mobile_detail'
+  const [convertTargetLead, setConvertTargetLead] = useState(null);
 
-  const params = useMemo(
+  const queryParams = useMemo(
     () => ({
-      page,
-      size: pageSize,
+      page: 0,
+      size: 100,
       search: search.trim() || undefined,
       status: status || undefined,
     }),
-    [page, pageSize, search, status]
+    [search, status]
   );
 
   const { data, isPending } = useQuery({
-    queryKey: ['platform-leads', params],
-    queryFn: () => platformLeadsApi.list(params).then((r) => r.data),
+    queryKey: ['platform-leads', queryParams],
+    queryFn: () => platformLeadsApi.list(queryParams).then((r) => r.data),
   });
+
+  const rawRows = data?.content ?? [];
+
+  // Filter by leadType if chosen
+  const rows = useMemo(() => {
+    let list = rawRows;
+    if (leadType) {
+      list = list.filter((r) => r.leadType === leadType);
+    }
+    // Sort urgent NEW leads to top as requested in the design
+    return [...list].sort((a, b) => {
+      const uA = getLeadWaitUrgency(a).isUrgent ? 1 : 0;
+      const uB = getLeadWaitUrgency(b).isUrgent ? 1 : 0;
+      if (uA !== uB) return uB - uA;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }, [rawRows, leadType]);
+
+  // Selected lead object
+  const selectedLead = useMemo(() => {
+    if (selectedLeadId) {
+      const found = rows.find((r) => r.id === selectedLeadId);
+      if (found) return found;
+    }
+    return rows[0] || null;
+  }, [rows, selectedLeadId]);
+
+  // Status counts
+  const counts = useMemo(() => {
+    const res = { ALL: rawRows.length, NEW: 0, IN_PROGRESS: 0, DONE: 0, REJECTED: 0 };
+    rawRows.forEach((r) => {
+      if (r.status && typeof res[r.status] === 'number') {
+        res[r.status] += 1;
+      }
+    });
+    return res;
+  }, [rawRows]);
+
+  // Unanswered count for SLA header
+  const unansweredCount = useMemo(() => {
+    return rawRows.filter((r) => getLeadWaitUrgency(r).isUrgent).length;
+  }, [rawRows]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['platform-leads'] });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => platformLeadsApi.update(id, payload),
-    onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['platform-leads'] });
-      setSelectedLead(res.data);
+    onSuccess: () => {
+      invalidate();
       toast.success(t('platform.leads.saved'));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
@@ -49,88 +88,97 @@ export function usePlatformLeadsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => platformLeadsApi.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['platform-leads'] });
-      setDetailOpen(false);
-      setSelectedLead(null);
+      invalidate();
+      setSelectedLeadId(null);
+      setViewMode('split');
       toast.success(t('platform.leads.deleted'));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
 
-  const rows = data?.content ?? [];
-  const total = data?.totalElements ?? 0;
-  const totalPages = data?.totalPages ?? 0;
+  const convertMutation = useMutation({
+    mutationFn: async ({ leadId, company, markDone }) => {
+      await companyApi.create(company);
+      if (markDone) {
+        const lead = rawRows.find((r) => r.id === leadId);
+        const note = appendLeadTimelineEvent(lead?.managerNote, {
+          type: 'status_change',
+          author: 'Administrator',
+          text: `Kompaniyaga aylantirildi: «${company.name}». Holat: Yakunlangan`,
+        });
+        await platformLeadsApi.update(leadId, { status: 'DONE', managerNote: note });
+      }
+    },
+    onSuccess: () => {
+      invalidate();
+      setViewMode('split');
+      setConvertTargetLead(null);
+      toast.success(t('platform.leads.companyCreated', { defaultValue: 'Kompaniya muvaffaqiyatli yaratildi' }));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
 
-  const openDetail = (row) => {
-    setSelectedLead(row);
-    setEditStatus(row.status ?? 'NEW');
-    setEditNote(row.managerNote ?? '');
-    setDetailOpen(true);
-  };
-
-  const closeDetail = () => {
-    setDetailOpen(false);
-    setSelectedLead(null);
-  };
-
-  const handleSearchChange = (value) => {
-    setSearch(value);
-    setPage(0);
-  };
-
-  const handleStatusFilter = (value) => {
-    setStatus(value);
-    setPage(0);
-  };
-
-  const handlePageSizeChange = (nextSize) => {
-    setPageSize(nextSize);
-    setPage(0);
-  };
-
-  const saveDetail = () => {
-    if (!selectedLead) return;
-    updateMutation.mutate({
-      id: selectedLead.id,
-      payload: {
-        status: editStatus,
-        managerNote: editNote,
-      },
+  const handleStatusChange = (leadId, nextStatus) => {
+    const lead = rawRows.find((r) => r.id === leadId);
+    if (!lead || lead.status === nextStatus) return;
+    const note = appendLeadTimelineEvent(lead.managerNote, {
+      type: 'status_change',
+      author: 'Administrator',
+      text: `Holat: ${t(`platform.leads.statuses.${lead.status}`)} → ${t(`platform.leads.statuses.${nextStatus}`)}`,
     });
+    updateMutation.mutate({ id: leadId, payload: { status: nextStatus, managerNote: note } });
   };
 
-  const deleteDetail = () => {
-    if (!selectedLead) return;
+  const handleAddComment = (commentText) => {
+    if (!selectedLead || !commentText.trim()) return;
+    const note = appendLeadTimelineEvent(selectedLead.managerNote, {
+      type: 'comment',
+      author: 'Administrator',
+      text: commentText.trim(),
+    });
+    updateMutation.mutate({ id: selectedLead.id, payload: { managerNote: note } });
+  };
+
+  const handleDeleteLead = (id) => {
     if (!window.confirm(t('platform.leads.deleteConfirm'))) return;
-    deleteMutation.mutate(selectedLead.id);
+    deleteMutation.mutate(id);
+  };
+
+  const handleStartConvert = (lead) => {
+    setConvertTargetLead(lead);
+    setViewMode('convert_company');
+  };
+
+  const handleSelectLeadMobile = (lead) => {
+    setSelectedLeadId(lead.id);
+    setViewMode('mobile_detail');
   };
 
   return {
     t,
     search,
+    setSearch,
     status,
-    statusOptions: LEAD_STATUSES,
-    page,
-    pageSize,
-    setPage,
-    setPageSize: handlePageSizeChange,
+    setStatus,
+    leadType,
+    setLeadType,
     rows,
     isPending,
-    total,
-    totalPages,
-    handleSearchChange,
-    handleStatusFilter,
-    detailOpen,
+    counts,
+    unansweredCount,
     selectedLead,
-    editStatus,
-    setEditStatus,
-    editNote,
-    setEditNote,
-    openDetail,
-    closeDetail,
-    saveDetail,
-    deleteDetail,
-    isSaving: updateMutation.isPending,
+    selectedLeadId,
+    setSelectedLeadId,
+    viewMode,
+    setViewMode,
+    convertTargetLead,
+    handleStatusChange,
+    handleAddComment,
+    handleDeleteLead,
+    handleStartConvert,
+    handleSelectLeadMobile,
+    handleConvertSubmit: convertMutation.mutate,
+    isSaving: updateMutation.isPending || convertMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 }
