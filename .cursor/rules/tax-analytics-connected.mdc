@@ -1,0 +1,18 @@
+# Tax analytics — «connected»
+
+## Source of data
+
+Platform `/platform/analytics` reads **Aurent** `companies` + grocery `sales` in web-backend. It is **not** the GNК/Soliq registry and does not call external tax APIs.
+
+## Connected flag
+
+A company is connected when any of its stores has a cash register with:
+
+- Multikassa settings `enabled = TRUE`, **or**
+- FiscalDrive settings row **and** `cash_registers.fiscal_provider = 'FISCAL_DRIVE'`
+
+SQL lives in `TaxAnalyticsConnectedSql` — keep Multikassa and FiscalDrive in sync; do not drop FiscalDrive again after its migration shipped.
+
+## Not connected
+
+Not-connected companies still appear in enterprise/company lists (LEFT JOIN). Turnover is only from POS `sales` — zeros mean no completed sales in the period, not a filter that hides the row.
