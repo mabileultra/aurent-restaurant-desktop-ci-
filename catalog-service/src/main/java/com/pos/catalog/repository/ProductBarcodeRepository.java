@@ -10,13 +10,15 @@ import java.util.UUID;
 
 public interface ProductBarcodeRepository extends JpaRepository<ProductBarcode, UUID> {
 
-    boolean existsByBarcode(String barcode);
+    boolean existsByCompanyIdAndBarcode(Integer companyId, String barcode);
+
+    boolean existsByCompanyIdAndBarcodeAndProductIdNot(Integer companyId, String barcode, UUID productId);
 
     @Query("""
         SELECT b FROM ProductBarcode b
         JOIN FETCH b.product p
         WHERE b.barcode = :barcode
-          AND p.companyId = :companyId
+          AND b.companyId = :companyId
           AND p.active = true
         """)
     Optional<ProductBarcode> findActiveByCompanyAndBarcode(

@@ -7,5 +7,6 @@
 
     <include file="v1-catalog-baseline.xml" relativeToChangelogFile="true"/>
     <include file="v2-catalog-outbox.xml" relativeToChangelogFile="true"/>
+    <include file="v3-product-barcodes-tenant.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

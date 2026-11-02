@@ -1,0 +1,11 @@
+---
+description: Catalog barcodes are unique per company, never globally
+globs: catalog-service/**/*
+---
+
+# Catalog barcode uniqueness
+
+- Barcodes (`products.barcode` and `product_barcodes.barcode`) are unique **within a company only**.
+- Same barcode across different `company_id` values is allowed (matches grocery `pos_db`).
+- Do **not** reintroduce global `UNIQUE(barcode)` or `existsByBarcode(code)` without company scope.
+- Use `ProductBarcodeUniqueness.assertAvailable(companyId, barcode, excludeProductId)`.

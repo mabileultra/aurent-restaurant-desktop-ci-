@@ -63,6 +63,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         Pageable pageable
     );
 
+    boolean existsByCompanyIdAndBarcode(Integer companyId, String barcode);
+
+    boolean existsByCompanyIdAndBarcodeAndIdNot(Integer companyId, String barcode, UUID id);
+
     Optional<Product> findByCompanyIdAndBarcodeAndActiveTrue(Integer companyId, String barcode);
 
     Optional<Product> findByCompanyIdAndPluAndActiveTrue(Integer companyId, String plu);

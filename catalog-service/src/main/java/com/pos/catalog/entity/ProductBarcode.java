@@ -6,7 +6,13 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "product_barcodes")
+@Table(
+    name = "product_barcodes",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_product_barcodes_company_barcode",
+        columnNames = {"company_id", "barcode"}
+    )
+)
 @Getter
 @Setter
 @Builder
@@ -18,10 +24,13 @@ public class ProductBarcode {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "company_id", nullable = false)
+    private Integer companyId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 100)
     private String barcode;
 }

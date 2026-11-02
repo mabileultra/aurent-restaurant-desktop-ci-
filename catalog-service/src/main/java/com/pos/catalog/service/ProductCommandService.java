@@ -9,9 +9,9 @@ import com.pos.catalog.event.CatalogOutboxWriter;
 import com.pos.catalog.exception.CatalogExceptions;
 import com.pos.catalog.mapper.ProductCardMapper;
 import com.pos.catalog.repository.CategoryRepository;
-import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.service.support.ProductBarcodeSync;
+import com.pos.catalog.service.support.ProductBarcodeUniqueness;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ public class ProductCommandService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductBarcodeRepository productBarcodeRepository;
+    private final ProductBarcodeUniqueness barcodeUniqueness;
     private final ProductBarcodeSync barcodeSync;
     private final ProductCardMapper mapper;
     private final CatalogOutboxWriter outboxWriter;
@@ -39,7 +39,7 @@ public class ProductCommandService {
             throw CatalogExceptions.conflict("SKU уже существует: " + sku);
         }
         String barcode = blankToNull(req.barcode());
-        assertPrimaryBarcodeFree(barcode);
+        barcodeUniqueness.assertAvailable(companyId, barcode, null);
 
         Category category = resolveCategory(req.categoryId(), companyId);
         Product product = Product.builder()
@@ -134,11 +134,8 @@ public class ProductCommandService {
         }
         if (req.barcode() != null) {
             String barcode = blankToNull(req.barcode());
-            if (barcode != null
-                && !barcode.equals(product.getBarcode())
-                && productBarcodeRepository.existsByBarcode(barcode)
-            ) {
-                throw CatalogExceptions.conflict("Штрихкод уже используется: " + barcode);
+            if (barcode != null && !barcode.equals(product.getBarcode())) {
+                barcodeUniqueness.assertAvailable(companyId, barcode, id);
             }
             product.setBarcode(barcode);
         }
@@ -188,12 +185,6 @@ public class ProductCommandService {
         }
         return categoryRepository.findByIdAndCompanyId(categoryId, companyId)
             .orElseThrow(() -> CatalogExceptions.badRequest("Категория не найдена"));
-    }
-
-    private void assertPrimaryBarcodeFree(String barcode) {
-        if (barcode != null && productBarcodeRepository.existsByBarcode(barcode)) {
-            throw CatalogExceptions.conflict("Штрихкод уже используется: " + barcode);
-        }
     }
 
     private static String blankToNull(String value) {

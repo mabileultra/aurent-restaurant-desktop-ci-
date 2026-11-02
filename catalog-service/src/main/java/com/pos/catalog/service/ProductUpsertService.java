@@ -8,9 +8,9 @@ import com.pos.catalog.event.CatalogOutboxWriter;
 import com.pos.catalog.exception.CatalogExceptions;
 import com.pos.catalog.mapper.ProductCardMapper;
 import com.pos.catalog.repository.CategoryRepository;
-import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.service.support.ProductBarcodeSync;
+import com.pos.catalog.service.support.ProductBarcodeUniqueness;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class ProductUpsertService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductBarcodeRepository productBarcodeRepository;
+    private final ProductBarcodeUniqueness barcodeUniqueness;
     private final ProductBarcodeSync barcodeSync;
     private final ProductCardMapper mapper;
     private final CatalogOutboxWriter outboxWriter;
@@ -89,11 +89,8 @@ public class ProductUpsertService {
         product.setLowStockAlert(req.lowStockAlert() != null ? req.lowStockAlert() : 10);
 
         String barcode = blankToNull(req.barcode());
-        if (barcode != null
-            && !barcode.equals(product.getBarcode())
-            && productBarcodeRepository.existsByBarcode(barcode)
-        ) {
-            throw CatalogExceptions.conflict("Штрихкод уже используется: " + barcode);
+        if (barcode != null && !barcode.equals(product.getBarcode())) {
+            barcodeUniqueness.assertAvailable(req.companyId(), barcode, product.getId());
         }
         product.setBarcode(barcode);
         product.setPlu(blankToNull(req.plu()));
