@@ -2,6 +2,7 @@ package com.pos.catalog.service.product.support;
 
 import com.pos.catalog.dto.product.ProductStorePriceRequest;
 import com.pos.catalog.entity.Product;
+import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.exception.PosExceptions;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Component
 @RequiredArgsConstructor
@@ -36,10 +38,10 @@ public class ProductInitialStockSupport {
         BigDecimal initialStock = initialStockRaw != null
             ? QuantityUtil.normalize(initialStockRaw)
             : BigDecimal.ZERO;
-        if (initialStock.signum() <= 0 || companyId == null || !StockCalculator.tracksStock(product)) {
+        if (initialStock.signum() <= 0 || companyId == null || !StockCalculator.tracksStock(product.getSaleType())) {
             return;
         }
-        QuantityValidator.validate(product, initialStock);
+        QuantityValidator.validate(ProductQuantityRulesResolver.fromProduct(product), initialStock);
         List<Integer> targetStoreIds = resolveTargetStoreIds(storePrices, companyId);
         if (targetStoreIds.isEmpty()) {
             return;
@@ -73,8 +75,8 @@ public class ProductInitialStockSupport {
     }
 
     private void recordMovement(Product product, BigDecimal quantity, String movementType, String notes, Store store) {
-        stockMovementPersistence.save(StockMovement.builder()
-            .product(product)
+        stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+            
             .store(store)
             .movementType(movementType)
             .quantity(QuantityUtil.normalize(quantity))

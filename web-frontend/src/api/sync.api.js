@@ -5,6 +5,8 @@ export const syncApi = {
   bootstrap: (storeId) => api.get('/sync/bootstrap', { params: { storeId } }),
   catalogDelta: (storeId, since) =>
     api.get('/sync/catalog/delta', { params: { storeId, since } }),
+  catalogSnapshots: (since, limit = 50) =>
+    api.get('/sync/catalog/snapshots', { params: { since, limit } }),
   pushSalesBatch: (body) => api.post('/sync/sales/batch', body),
 };
 

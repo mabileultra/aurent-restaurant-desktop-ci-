@@ -21,7 +21,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
 
     Optional<Sale> findByClientSaleId(UUID clientSaleId);
 
-    @EntityGraph(attributePaths = {"cashier", "store", "items", "items.product", "cashierShift"})
+    @EntityGraph(attributePaths = {"cashier", "store", "items", "cashierShift"})
     @Query("""
         SELECT s FROM Sale s
         WHERE s.company.id = :companyId
@@ -40,11 +40,11 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
 
     boolean existsByCashier_Id(UUID cashierId);
 
-    @EntityGraph(attributePaths = {"cashier", "store", "items", "items.product"})
+    @EntityGraph(attributePaths = {"cashier", "store", "items"})
     @Query("""
         SELECT DISTINCT s FROM Sale s
         JOIN s.items si
-        WHERE si.product.id = :productId
+        WHERE si.productId = :productId
           AND s.createdAt >= :start AND s.createdAt < :end
         ORDER BY s.createdAt ASC
         """)
@@ -57,7 +57,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
     // Only one bag (items) — fetching items.lotAllocations in the same graph
     // triggers Hibernate "cannot simultaneously fetch multiple bags".
     @EntityGraph(attributePaths = {
-        "cashier", "store", "store.company", "items", "items.product"
+        "cashier", "store", "store.company", "items"
     })
     @Query("""
         SELECT s FROM Sale s
@@ -75,7 +75,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         @Param("saleReceiptType") Sale.ReceiptType saleReceiptType
     );
 
-    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items", "items.product", "items.product.category"})
+    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items"})
     @Query("""
         SELECT s FROM Sale s
         WHERE s.status = :status
@@ -93,7 +93,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         Pageable pageable
     );
 
-    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items", "items.product", "items.product.category"})
+    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items"})
     @Query("""
         SELECT s FROM Sale s
         WHERE (s.receiptType = :saleReceiptType OR s.receiptType IS NULL)
@@ -109,7 +109,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         Pageable pageable
     );
 
-    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items", "items.product", "items.product.category"})
+    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items"})
     @Query("""
         SELECT s FROM Sale s
         WHERE s.status IN :statuses

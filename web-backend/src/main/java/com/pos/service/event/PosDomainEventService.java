@@ -10,6 +10,7 @@ import com.pos.sales.entity.CashierShift;
 import com.pos.sales.entity.Sale;
 import com.pos.sales.entity.SaleItem;
 import com.pos.sales.entity.ZReport;
+import com.pos.sales.service.sale.support.SaleItemProductLoader;
 import com.pos.service.event.support.DomainEventKafkaPublisher;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.shared.event.ProductSnapshotEvent;
@@ -36,9 +37,17 @@ public class PosDomainEventService {
 
     private final ObjectProvider<DomainEventKafkaPublisher> domainEventKafkaPublisher;
     private final ProductAttributeService productAttributeService;
+    private final SaleItemProductLoader saleItemProductLoader;
 
     public void publishSaleCompletedAfterCommit(Sale sale) {
-        SaleCompletedEvent event = DomainEventMappers.toSaleCompleted(sale, loadSaleAttributes(sale));
+        Map<UUID, Product> productsById = saleItemProductLoader.loadByItems(
+            sale != null ? sale.getItems() : null
+        );
+        SaleCompletedEvent event = DomainEventMappers.toSaleCompleted(
+            sale,
+            loadSaleAttributes(sale),
+            productsById
+        );
         if (event == null) {
             return;
         }
@@ -51,9 +60,8 @@ public class PosDomainEventService {
         }
         Set<UUID> productIds = new HashSet<>();
         for (SaleItem item : sale.getItems()) {
-            Product product = item.getProduct();
-            if (product != null && product.getId() != null) {
-                productIds.add(product.getId());
+            if (item.getProductId() != null) {
+                productIds.add(item.getProductId());
             }
         }
         Map<UUID, Map<String, String>> result = new HashMap<>();

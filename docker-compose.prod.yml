@@ -563,6 +563,62 @@ services:
     networks:
       - pos-net
 
+  # Grocery Catalog SoT candidate (Wave 6 soak). Backend keeps SoT until Wave 7.
+  catalog-db:
+    image: postgres:15-alpine
+    container_name: aurent-catalog-db
+    mem_limit: 192m
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${CATALOG_DB_NAME:-catalog_db}
+      POSTGRES_USER: ${CATALOG_DB_USER:-catalog_user}
+      POSTGRES_PASSWORD: ${CATALOG_DB_PASSWORD:?Set CATALOG_DB_PASSWORD in .env}
+      TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - catalog_pg_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5442:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${CATALOG_DB_USER:-catalog_user} -d ${CATALOG_DB_NAME:-catalog_db}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pos-net
+
+  catalog-service:
+    build:
+      context: .
+      dockerfile: catalog-service/Dockerfile
+    container_name: aurent-catalog-service
+    mem_limit: 512m
+    restart: unless-stopped
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+    environment:
+      CATALOG_DB_URL: jdbc:postgresql://catalog-db:5432/${CATALOG_DB_NAME:-catalog_db}
+      CATALOG_DB_USERNAME: ${CATALOG_DB_USER:-catalog_user}
+      CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD:?Set CATALOG_DB_PASSWORD in .env}
+      CATALOG_SERVER_PORT: "8090"
+      CATALOG_INTERNAL_API_KEY: ${CATALOG_INTERNAL_API_KEY:?Set CATALOG_INTERNAL_API_KEY in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (min 32 chars)}
+      GATEWAY_CONTEXT_SECRET: ${GATEWAY_CONTEXT_SECRET:-}
+      CATALOG_OUTBOX_TRANSPORT: ${CATALOG_OUTBOX_TRANSPORT:-logging}
+      CATALOG_OUTBOX_DISPATCH_ENABLED: ${CATALOG_OUTBOX_DISPATCH_ENABLED:-true}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-redpanda:9092}
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - '127.0.0.1:8090:8090'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://127.0.0.1:8090/api/v1/actuator/health | grep -q UP || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - pos-net
+
   ai-service:
     build:
       context: .
@@ -657,6 +713,12 @@ services:
       CRM_SERVICE_URL: http://crm-service:8083/api/v1
       POS_INTERNAL_API_KEY: ${POS_INTERNAL_API_KEY:-pos-internal-dev-key-change-in-prod}
       RESTAURANT_SERVICE_URL: http://restaurant-service:8087/api/v1
+      # Catalog dual-path (Wave 6). Keep ENABLED=false until staging soak green.
+      CATALOG_SERVICE_ENABLED: ${CATALOG_SERVICE_ENABLED:-false}
+      CATALOG_SERVICE_READ_MODE: ${CATALOG_SERVICE_READ_MODE:-REMOTE_FIRST}
+      CATALOG_SERVICE_WRITE_MODE: ${CATALOG_SERVICE_WRITE_MODE:-DUAL}
+      CATALOG_SERVICE_URL: ${CATALOG_SERVICE_URL:-http://catalog-service:8090/api/v1}
+      CATALOG_INTERNAL_API_KEY: ${CATALOG_INTERNAL_API_KEY:-}
       TELEGRAM_BOT_API_TOKEN: ${TELEGRAM_BOT_API_TOKEN:-}
       TELEGRAM_BOT_COMPANY_ID: ${TELEGRAM_BOT_COMPANY_ID:-}
       TELEGRAM_BOT_RUNTIME_TOKEN: ${TELEGRAM_BOT_RUNTIME_TOKEN:-}
@@ -852,6 +914,7 @@ volumes:
   crm_pg_data:
   restaurant_pg_data:
   pharmacy_pg_data:
+  catalog_pg_data:
   redpanda_data:
   redis_data:
   backend_uploads:

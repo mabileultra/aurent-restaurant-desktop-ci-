@@ -16,7 +16,6 @@ public class SaleExportRepositoryImpl implements SaleExportRepository {
         SELECT DISTINCT s FROM Sale s
         JOIN FETCH s.cashier
         LEFT JOIN FETCH s.items i
-        LEFT JOIN FETCH i.product
         WHERE s.createdAt >= :from AND s.createdAt <= :to AND s.status = :st
         ORDER BY s.createdAt ASC
         """;

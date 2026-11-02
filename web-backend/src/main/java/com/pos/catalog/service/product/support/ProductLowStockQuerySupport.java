@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Low-stock для grocery-каталога и обзора: живой остаток из store_stock / products,
- * без зависимости от reporting-фактов (они часто отстают → на дашборде «0»).
+ * Low-stock для grocery-каталога и обзора: живой остаток из {@code store_stock},
+ * без зависимости от reporting-фактов и без stale {@code products.stock_quantity}.
  */
 @Component
 @RequiredArgsConstructor
@@ -75,10 +75,7 @@ public class ProductLowStockQuerySupport {
     }
 
     private static BigDecimal resolveQty(Product product, Map<UUID, BigDecimal> stockById) {
-        if (stockById.containsKey(product.getId())) {
-            BigDecimal summed = stockById.get(product.getId());
-            return summed != null ? summed : BigDecimal.ZERO;
-        }
-        return product.getStockQuantity() != null ? product.getStockQuantity() : BigDecimal.ZERO;
+        BigDecimal summed = stockById.get(product.getId());
+        return summed != null ? summed : BigDecimal.ZERO;
     }
 }

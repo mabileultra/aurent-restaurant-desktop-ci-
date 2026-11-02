@@ -21,14 +21,14 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
         SELECT COALESCE(SUM(ss.quantity), 0)
         FROM StoreStock ss
         JOIN ss.store st
-        WHERE ss.product.id = :productId AND st.company.id = :companyId
+        WHERE ss.productId = :productId AND st.company.id = :companyId
         """)
     BigDecimal sumQuantityByProductAndCompany(@Param("productId") UUID productId, @Param("companyId") Integer companyId);
 
     @Query("""
-        SELECT ss.product.id, ss.quantity
+        SELECT ss.productId, ss.quantity
         FROM StoreStock ss
-        WHERE ss.store.id = :storeId AND ss.product.id IN :productIds
+        WHERE ss.store.id = :storeId AND ss.productId IN :productIds
         """)
     List<Object[]> quantitiesByStoreAndProductIds(
         @Param("storeId") Integer storeId,
@@ -36,17 +36,16 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
     );
 
     @Query("""
-        SELECT ss.product.id, COALESCE(SUM(ss.quantity), 0)
+        SELECT ss.productId, COALESCE(SUM(ss.quantity), 0)
         FROM StoreStock ss
-        WHERE ss.product.id IN :productIds
-        GROUP BY ss.product.id
+        WHERE ss.productId IN :productIds
+        GROUP BY ss.productId
         """)
     List<Object[]> sumQuantitiesByProductIds(@Param("productIds") Collection<UUID> productIds);
 
     @Query("""
         SELECT ss
         FROM StoreStock ss
-        JOIN FETCH ss.product p
         JOIN FETCH ss.store st
         WHERE st.company.id = :companyId
         """)
@@ -55,7 +54,7 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
     @Query("""
         SELECT ss
         FROM StoreStock ss
-        WHERE ss.product.id IN :productIds
+        WHERE ss.productId IN :productIds
         """)
     List<StoreStock> findByProductIdIn(@Param("productIds") Collection<UUID> productIds);
 }

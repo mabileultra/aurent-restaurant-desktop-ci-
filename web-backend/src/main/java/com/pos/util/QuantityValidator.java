@@ -3,7 +3,6 @@ package com.pos.util;
 import com.pos.domain.ProductQuantityRules;
 import com.pos.domain.SaleType;
 import com.pos.domain.UnitCode;
-import com.pos.catalog.entity.Product;
 import com.pos.exception.BadRequestException;
 
 import java.math.BigDecimal;
@@ -11,16 +10,13 @@ import java.math.RoundingMode;
 
 /**
  * Валидация количества по правилам товара (хранение всегда DECIMAL 18,3).
+ * Принимает только {@link ProductQuantityRules} — без JPA Product.
  */
 public final class QuantityValidator {
 
     public static final BigDecimal MIN_WEIGHT_KG = new BigDecimal("0.001");
 
     private QuantityValidator() {
-    }
-
-    public static void validate(Product product, BigDecimal rawQuantity) {
-        validate(ProductQuantityRules.from(product), rawQuantity);
     }
 
     public static void validate(ProductQuantityRules rules, BigDecimal rawQuantity) {
@@ -57,10 +53,6 @@ public final class QuantityValidator {
     public static BigDecimal normalizeForProduct(ProductQuantityRules rules, BigDecimal quantity) {
         BigDecimal stored = QuantityUtil.normalize(quantity);
         return stored.setScale(rules.quantityScale(), RoundingMode.HALF_UP);
-    }
-
-    public static BigDecimal normalizeForProduct(Product product, BigDecimal quantity) {
-        return normalizeForProduct(ProductQuantityRules.from(product), quantity);
     }
 
     private static void validateWeightMinimum(UnitCode unitCode, BigDecimal q) {

@@ -35,6 +35,7 @@ public class FinanceSyncBackfillServiceImpl implements FinanceSyncBackfillServic
     private final StockReceiptRepository stockReceiptRepository;
     private final SaleRepository saleRepository;
     private final FinanceIntegrationPublisher integrationPublisher;
+    private final FinanceSalePayloadBuilder financeSalePayloadBuilder;
     private final TenantAccessSupport tenantAccess;
 
     @Override
@@ -77,7 +78,7 @@ public class FinanceSyncBackfillServiceImpl implements FinanceSyncBackfillServic
                 start, end, companyId, Sale.SaleStatus.COMPLETED, Sale.ReceiptType.SALE
             );
             for (Sale sale : sales) {
-                Map<String, Object> payload = FinanceSalePayloadBuilder.build(sale);
+                Map<String, Object> payload = financeSalePayloadBuilder.build(sale);
                 if (payload == null) {
                     skipped++;
                     continue;

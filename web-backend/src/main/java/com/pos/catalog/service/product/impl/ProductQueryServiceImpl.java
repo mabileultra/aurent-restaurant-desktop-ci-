@@ -19,7 +19,7 @@ import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.scales.codec.WeightBarcodeCodec;
 import com.pos.service.support.CatalogIsolationSupport;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -107,7 +107,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     public ProductResponse getByBarcode(String barcode) {
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), null);
         catalogIsolation.hidePharmacyFromGrocery(product);
-        return assembler.toResponse(product);
+        return forStore(assembler.toResponse(product), product, null);
     }
 
     @Override
@@ -157,10 +157,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             );
             return PageResponse.from(page.map(p -> {
                 ProductResponse base = assembler.toResponse(p, storeCounts, dispatched);
-                if (!companyQty.containsKey(p.getId())) {
-                    return base;
-                }
-                return assembler.withStockQuantity(base, companyQty.get(p.getId()));
+                // Live company sum from store_stock; missing rows → 0 (not denormalized products.stock_quantity).
+                BigDecimal qty = companyQty.getOrDefault(p.getId(), BigDecimal.ZERO);
+                return assembler.withStockQuantity(base, qty);
             }));
         }
         Map<UUID, BigDecimal> storeQty = storeStockService.getQuantities(
@@ -181,7 +180,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private ProductResponse forStore(ProductResponse base, Product product, Integer storeId) {
         if (storeId == null) {
-            return base;
+            BigDecimal companyQty = storeStockService.sumQuantities(java.util.List.of(product.getId()))
+                .getOrDefault(product.getId(), BigDecimal.ZERO);
+            return assembler.withStockQuantity(base, companyQty);
         }
         BigDecimal qty = storeStockService.getQuantity(product.getId(), storeId);
         ProductResponse withQty = assembler.withStockQuantity(base, qty);

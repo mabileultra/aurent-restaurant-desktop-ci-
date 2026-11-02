@@ -1,4 +1,4 @@
-package com.pos.service.support;
+package com.pos.catalog.service.product.support;
 
 import com.pos.catalog.entity.Product;
 import com.pos.catalog.repository.ProductRepository;

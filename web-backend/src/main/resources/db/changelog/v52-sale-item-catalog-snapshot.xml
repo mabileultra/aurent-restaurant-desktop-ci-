@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Wave 2.1: freeze catalog fields on sale_items. Keep product_id FK / JPA for now. -->
+    <changeSet id="v52-sale-items-catalog-snapshot-columns" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="sale_items" columnName="product_sku"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="sale_items">
+            <column name="product_sku" type="varchar(120)"/>
+            <column name="product_barcode" type="varchar(64)"/>
+            <column name="unit_code" type="varchar(16)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v52-sale-items-catalog-snapshot-backfill" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="sale_items" columnName="product_sku"/>
+        </preConditions>
+        <sql>
+            UPDATE sale_items si
+            SET product_sku = COALESCE(p.sku, ''),
+                product_barcode = NULLIF(trim(p.barcode), ''),
+                unit_code = COALESCE(p.unit_code, 'PCS')
+            FROM products p
+            WHERE p.id = si.product_id
+              AND (si.product_sku IS NULL OR si.unit_code IS NULL);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -5,7 +5,7 @@ import com.pos.catalog.entity.Product;
 import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.service.imports.source.CatalogImportSourceHandler;
 import com.pos.catalog.service.imports.source.UzInvoiceImportSourceHandler;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.spreadsheet.ExcelSpreadsheetReader;
 import com.pos.spreadsheet.parser.CatalogJsonParser;

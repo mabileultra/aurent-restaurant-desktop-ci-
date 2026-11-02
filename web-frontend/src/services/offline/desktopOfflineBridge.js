@@ -46,6 +46,17 @@ export async function offlineImportCatalogDelta(payload) {
   );
 }
 
+export async function offlineImportProductSnapshots(payload) {
+  if (!isDesktopOfflineBridge()) return null;
+  if (typeof window.desktopCashier.offlineImportProductSnapshots !== 'function') {
+    return { ok: false, error: 'snapshots_unsupported' };
+  }
+  return withOfflineTimeout(
+    window.desktopCashier.offlineImportProductSnapshots(payload),
+    OFFLINE_BOOTSTRAP_IPC_TIMEOUT_MS,
+  );
+}
+
 export async function offlineListCategories() {
   if (!isDesktopOfflineBridge()) return [];
   return withOfflineTimeout(window.desktopCashier.offlineListCategories());

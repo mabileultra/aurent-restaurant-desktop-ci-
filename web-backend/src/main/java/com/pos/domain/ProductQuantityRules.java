@@ -1,9 +1,8 @@
 package com.pos.domain;
 
-import com.pos.catalog.entity.Product;
-
 /**
  * Правила количества для товара: тип продажи, единица, точность, дробность.
+ * Не зависит от JPA Product — собирается в catalog ({@code ProductQuantityRulesResolver}).
  */
 public record ProductQuantityRules(
     SaleType saleType,
@@ -12,16 +11,8 @@ public record ProductQuantityRules(
     boolean allowFraction
 ) {
 
-    public static ProductQuantityRules from(Product product) {
-        if (product == null) {
-            return new ProductQuantityRules(SaleType.PIECE, UnitCode.PCS, 0, false);
-        }
-        return new ProductQuantityRules(
-            product.getSaleType() != null ? product.getSaleType() : SaleType.PIECE,
-            product.getUnitCode() != null ? product.getUnitCode() : UnitCode.PCS,
-            product.getQuantityScale(),
-            product.isAllowFraction()
-        );
+    public static ProductQuantityRules pieceDefault() {
+        return new ProductQuantityRules(SaleType.PIECE, UnitCode.PCS, 0, false);
     }
 
     public String displayUnitLabel() {

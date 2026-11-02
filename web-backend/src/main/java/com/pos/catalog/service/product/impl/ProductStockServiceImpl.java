@@ -24,7 +24,11 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
+/**
+ * Catalog orchestration for stock UI — quantity mutation only via {@link StoreStockService}.
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -46,7 +50,6 @@ public class ProductStockServiceImpl implements ProductStockService {
         Store store = storeStockService.resolveStoreForProduct(product, storeId);
         BigDecimal delta = QuantityUtil.normalize(quantity);
         applyStockDelta(product, delta, store);
-        productRepository.save(product);
         recordMovement(product, delta, movementType, notes, store);
         ProductResponse base = assembler.toResponse(product);
         return assembler.withStockQuantity(base, storeStockService.getQuantity(product.getId(), store.getId()));
@@ -61,7 +64,7 @@ public class ProductStockServiceImpl implements ProductStockService {
             throw PosExceptions.badRequest("Quantity must be greater than zero");
         }
         Store store = storeStockService.resolveStoreForProduct(product, req.storeId());
-        applyStockDelta(product, quantity, store);
+        // Card fields first; stock last so StoreStockService owns quantity persistence.
         product.setSellingPrice(req.unitSellingPrice());
         product.setCostPrice(req.purchasePrice());
         if (req.vatPercent() != null) {
@@ -72,9 +75,14 @@ public class ProductStockServiceImpl implements ProductStockService {
             product.setStorageLocation(req.storageLocation().trim());
         }
         Product saved = productRepository.save(product);
+        applyStockDelta(saved, quantity, store);
         recordMovement(saved, quantity, "RESTOCK", "Склад: поступление", store);
         productSnapshotNotifier.notify(saved.getId());
-        return assembler.toResponse(saved);
+        ProductResponse base = assembler.toResponse(saved);
+        return assembler.withStockQuantity(
+            base,
+            storeStockService.getQuantity(saved.getId(), store.getId())
+        );
     }
 
     private void applyStockDelta(Product product, BigDecimal delta, Store store) {
@@ -89,8 +97,8 @@ public class ProductStockServiceImpl implements ProductStockService {
     }
 
     private void recordMovement(Product product, BigDecimal quantity, String movementType, String notes, Store store) {
-        stockMovementPersistence.save(StockMovement.builder()
-            .product(product)
+        stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+            
             .store(store)
             .movementType(movementType)
             .quantity(QuantityUtil.normalize(quantity))

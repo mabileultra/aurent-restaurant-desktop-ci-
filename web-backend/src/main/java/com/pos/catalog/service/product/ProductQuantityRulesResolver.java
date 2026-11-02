@@ -20,6 +20,19 @@ public final class ProductQuantityRulesResolver {
         return resolve(saleType, null, null, null, null);
     }
 
+    /** Map managed product → quantity rules (replaces old {@code ProductQuantityRules.from(Product)}). */
+    public static ProductQuantityRules fromProduct(Product product) {
+        if (product == null) {
+            return ProductQuantityRules.pieceDefault();
+        }
+        return new ProductQuantityRules(
+            product.getSaleType() != null ? product.getSaleType() : SaleType.PIECE,
+            product.getUnitCode() != null ? product.getUnitCode() : UnitCode.PCS,
+            product.getQuantityScale(),
+            product.isAllowFraction()
+        );
+    }
+
     public static ProductQuantityRules resolve(
         SaleType requestedSaleType,
         UnitCode requestedUnitCode,

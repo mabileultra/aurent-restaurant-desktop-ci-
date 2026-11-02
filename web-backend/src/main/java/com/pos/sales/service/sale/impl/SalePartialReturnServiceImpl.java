@@ -10,7 +10,6 @@ import com.pos.domain.StockMovementType;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.exception.PosExceptions;
 import com.pos.sales.mapper.SaleMapper;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.integrations.finance.service.FinanceReturnIntegrationService;
@@ -18,6 +17,7 @@ import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.sales.service.sale.SaleAccessPolicy;
 import com.pos.sales.service.sale.SalePartialReturnService;
+import com.pos.sales.service.sale.support.SaleItemProductLoader;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.CatalogIsolationSupport;
@@ -32,6 +32,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -39,12 +40,12 @@ import java.util.UUID;
 public class SalePartialReturnServiceImpl implements SalePartialReturnService {
 
     private final SaleRepository saleRepository;
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final SaleMapper saleMapper;
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SaleAccessPolicy accessPolicy;
     private final StoreStockService storeStockService;
+    private final SaleItemProductLoader saleItemProductLoader;
     private final CatalogIsolationSupport catalogIsolation;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
     private final PosDomainEventService posDomainEventService;
@@ -76,14 +77,16 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
             if (item == null) {
                 throw PosExceptions.badRequest("Позиция чека не найдена: " + line.saleItemId());
             }
-            BigDecimal returnQty = item.getProduct() != null
-                ? com.pos.util.QuantityValidator.normalizeForProduct(item.getProduct(), line.quantity())
+            Product product = saleItemProductLoader.require(item);
+            var rules = com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product);
+            BigDecimal returnQty = rules != null
+                ? com.pos.util.QuantityValidator.normalizeForProduct(rules, line.quantity())
                 : QuantityUtil.normalize(line.quantity());
             if (returnQty.signum() <= 0) {
                 continue;
             }
-            if (item.getProduct() != null) {
-                com.pos.util.QuantityValidator.validate(item.getProduct(), returnQty);
+            if (rules != null) {
+                com.pos.util.QuantityValidator.validate(rules, returnQty);
             }
             BigDecimal remaining = QuantityUtil.subtract(item.getQuantity(), item.getReturnedQuantity());
             if (returnQty.compareTo(remaining) > 0) {
@@ -155,14 +158,13 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
     }
 
     private void restoreStock(Sale sale, SaleItem item, BigDecimal qty, String reason) {
-        Product product = item.getProduct();
+        Product product = saleItemProductLoader.require(item);
         if (sale.getStore() != null) {
             storeStockService.increase(product, sale.getStore(), qty);
         }
-        productRepository.save(product);
 
-        stockMovementPersistence.save(StockMovement.builder()
-            .product(product)
+        stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+            
             .store(sale.getStore())
             .movementType(StockMovementType.RETURN)
             .quantity(qty)

@@ -1,8 +1,8 @@
 package com.pos.inventory.service.stock.support;
 
 import com.pos.catalog.entity.Product;
+import com.pos.catalog.service.product.support.CatalogManagedProductLoader;
 import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StockDocumentSupport {
 
-    private final ProductRepository productRepository;
+    private final CatalogManagedProductLoader catalogManagedProductLoader;
     private final CatalogIsolationSupport catalogIsolation;
 
     public void requireLines(List<?> lines) {
@@ -35,12 +35,7 @@ public class StockDocumentSupport {
     }
 
     public Product requireActiveProduct(UUID productId) {
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> PosExceptions.notFound("Product", productId));
-        if (!product.isActive()) {
-            throw PosExceptions.badRequest("Product is not active: " + product.getName());
-        }
-        return product;
+        return catalogManagedProductLoader.requireActive(productId);
     }
 
     public Product requireActiveGroceryProduct(UUID productId) {

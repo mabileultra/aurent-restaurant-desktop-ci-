@@ -32,7 +32,6 @@ public class ShiftReportRepositoryImpl implements ShiftReportRepository {
         SELECT DISTINCT s FROM Sale s
         JOIN FETCH s.cashier
         LEFT JOIN FETCH s.items i
-        LEFT JOIN FETCH i.product
         WHERE s.cashierShift.zReport.id = :zReportId
           AND s.status = :status
         ORDER BY s.createdAt ASC

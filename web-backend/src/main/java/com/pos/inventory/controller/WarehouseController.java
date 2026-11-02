@@ -41,8 +41,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Складской UI: те же товары и поле {@code stock_quantity}, что и {@code /products}.
- * Отдельный префикс — удобные фильтры (штрихкод, маркировка); БД одна.
+ * Складской UI: те же товары, что и {@code /products}.
+ * Поле {@code stockQuantity} в ответе — живой остаток из {@code store_stock}
+ * (филиал или сумма по компании), не сырой кэш {@code products.stock_quantity}.
  */
 @RestController
 @RequestMapping("/warehouse")

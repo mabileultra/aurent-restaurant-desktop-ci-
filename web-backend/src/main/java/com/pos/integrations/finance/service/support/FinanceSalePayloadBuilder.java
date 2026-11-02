@@ -2,6 +2,8 @@ package com.pos.integrations.finance.service.support;
 
 import com.pos.sales.entity.Sale;
 import com.pos.shared.log.LogUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,14 +11,15 @@ import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public final class FinanceSalePayloadBuilder {
+@Component
+@RequiredArgsConstructor
+public class FinanceSalePayloadBuilder {
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
-    private FinanceSalePayloadBuilder() {
-    }
+    private final FinanceSaleCostCalculator costCalculator;
 
-    public static Map<String, Object> build(Sale sale) {
+    public Map<String, Object> build(Sale sale) {
         if (sale.getReceiptType() == Sale.ReceiptType.CREDIT) {
             return null;
         }
@@ -42,7 +45,7 @@ public final class FinanceSalePayloadBuilder {
         payload.put("totalAmount", sale.getTotalAmount());
         payload.put("cashAmount", sale.getCashAmount() != null ? sale.getCashAmount() : BigDecimal.ZERO);
         payload.put("cardAmount", sale.getCardAmount() != null ? sale.getCardAmount() : BigDecimal.ZERO);
-        payload.put("costAmount", FinanceSaleCostCalculator.totalCost(sale));
+        payload.put("costAmount", costCalculator.totalCost(sale));
         payload.put("paymentMethod", sale.getPaymentMethod().name());
         if (sale.getCardType() != null) {
             payload.put("cardType", sale.getCardType().name());

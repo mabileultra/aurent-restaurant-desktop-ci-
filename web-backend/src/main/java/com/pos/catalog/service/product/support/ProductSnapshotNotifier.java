@@ -1,6 +1,7 @@
 package com.pos.catalog.service.product.support;
 
 import com.pos.catalog.entity.Product;
+import com.pos.client.catalog.CatalogDualWritePublisher;
 import com.pos.service.event.PosDomainEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ public class ProductSnapshotNotifier {
 
     private final ProductCatalogLoader catalogLoader;
     private final PosDomainEventService posDomainEventService;
+    private final CatalogDualWritePublisher catalogDualWritePublisher;
 
     public void notify(UUID productId) {
         if (productId == null) {
@@ -26,5 +28,6 @@ public class ProductSnapshotNotifier {
             return;
         }
         posDomainEventService.publishProductSnapshotAfterCommit(product);
+        catalogDualWritePublisher.publishAfterCommit(product);
     }
 }

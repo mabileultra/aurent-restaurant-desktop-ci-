@@ -1,25 +1,25 @@
 package com.pos.sales.service.sale.support;
 
-import com.pos.sales.dto.sale.SaleItemRequest;
 import com.pos.catalog.entity.Product;
-import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.service.product.support.CatalogManagedProductLoader;
+import com.pos.sales.dto.sale.SaleItemRequest;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
+/**
+ * Checkout entry: validates tenant and returns managed products for stock / snapshot.
+ * Does not touch {@code ProductRepository} — loading lives in catalog.
+ */
 @Component
 @RequiredArgsConstructor
 public class CheckoutProductLoader {
 
-    private final ProductRepository productRepository;
+    private final CatalogManagedProductLoader catalogManagedProductLoader;
     private final TenantAccessSupport tenantAccess;
 
     public Map<UUID, Product> loadIndexed(List<SaleItemRequest> lineItems) {
@@ -28,19 +28,8 @@ public class CheckoutProductLoader {
             .distinct()
             .toList();
 
-        Map<UUID, Product> byId = productRepository.findAllByIdWithCompany(ids).stream()
-            .collect(Collectors.toMap(Product::getId, Function.identity(), (a, b) -> a, LinkedHashMap::new));
-
-        for (UUID id : ids) {
-            Product product = byId.get(id);
-            if (product == null) {
-                throw PosExceptions.notFound("Product", id);
-            }
-            if (!product.isActive()) {
-                throw PosExceptions.badRequest("Product is inactive: " + product.getName());
-            }
-            tenantAccess.assertProductBelongsToTenant(product);
-        }
+        Map<UUID, Product> byId = catalogManagedProductLoader.requireActiveWithCompany(ids);
+        byId.values().forEach(tenantAccess::assertProductBelongsToTenant);
         return byId;
     }
 }

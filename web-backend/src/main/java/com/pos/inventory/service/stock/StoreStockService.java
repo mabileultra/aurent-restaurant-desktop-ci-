@@ -2,6 +2,7 @@ package com.pos.inventory.service.stock;
 
 import com.pos.domain.SaleType;
 import com.pos.catalog.entity.Product;
+import com.pos.catalog.repository.ProductRepository;
 import com.pos.entity.Store;
 import com.pos.entity.StoreStock;
 import com.pos.exception.PosExceptions;
@@ -20,6 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Sole writer of grocery live stock ({@code store_stock}) and denormalized {@code products.stock_quantity}.
+ * See {@code .cursor/rules/stock-ownership.mdc}.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,6 +32,7 @@ public class StoreStockService {
 
     private final StoreStockRepository storeStockRepository;
     private final StoreRepository storeRepository;
+    private final ProductRepository productRepository;
     private final TenantAccessSupport tenantAccess;
 
     public BigDecimal getQuantity(UUID productId, Integer storeId) {
@@ -67,7 +73,7 @@ public class StoreStockService {
     }
 
     public void requireAvailable(Product product, Store store, BigDecimal quantity) {
-        if (!com.pos.util.StockCalculator.tracksStock(product)) {
+        if (!com.pos.util.StockCalculator.tracksStock(product.getSaleType())) {
             return;
         }
         if (store == null) {
@@ -119,20 +125,20 @@ public class StoreStockService {
             throw PosExceptions.badRequest("Quantity cannot be negative");
         }
         StoreStock stock = storeStockRepository.findByProductIdAndStoreId(product.getId(), store.getId())
-            .orElseGet(() -> StoreStock.builder().product(product).store(store).quantity(BigDecimal.ZERO).build());
+            .orElseGet(() -> StoreStock.builder().productId(product.getId()).store(store).quantity(BigDecimal.ZERO).build());
         stock.setQuantity(q);
         storeStockRepository.save(stock);
         syncProductTotal(product);
     }
 
     public void decrease(Product product, Store store, BigDecimal quantity) {
-        if (!com.pos.util.StockCalculator.tracksStock(product)) {
+        if (!com.pos.util.StockCalculator.tracksStock(product.getSaleType())) {
             return;
         }
         BigDecimal q = QuantityUtil.normalize(quantity);
         StoreStock stock = storeStockRepository.findByProductIdAndStoreId(product.getId(), store.getId())
             .orElseGet(() -> StoreStock.builder()
-                .product(product)
+                .productId(product.getId())
                 .store(store)
                 .quantity(BigDecimal.ZERO)
                 .build());
@@ -142,13 +148,13 @@ public class StoreStockService {
     }
 
     public void increase(Product product, Store store, BigDecimal quantity) {
-        if (!com.pos.util.StockCalculator.tracksStock(product)) {
+        if (!com.pos.util.StockCalculator.tracksStock(product.getSaleType())) {
             return;
         }
         BigDecimal q = QuantityUtil.normalize(quantity);
         StoreStock stock = storeStockRepository.findByProductIdAndStoreId(product.getId(), store.getId())
             .orElseGet(() -> StoreStock.builder()
-                .product(product)
+                .productId(product.getId())
                 .store(store)
                 .quantity(BigDecimal.ZERO)
                 .build());
@@ -159,7 +165,7 @@ public class StoreStockService {
 
     public void initializeForStore(Product product, Store store, BigDecimal quantity) {
         StoreStock stock = storeStockRepository.findByProductIdAndStoreId(product.getId(), store.getId())
-            .orElseGet(() -> StoreStock.builder().product(product).store(store).quantity(BigDecimal.ZERO).build());
+            .orElseGet(() -> StoreStock.builder().productId(product.getId()).store(store).quantity(BigDecimal.ZERO).build());
         stock.setQuantity(QuantityUtil.normalize(quantity));
         storeStockRepository.save(stock);
         syncProductTotal(product);
@@ -201,5 +207,7 @@ public class StoreStockService {
             product.getCompany().getId()
         );
         product.setStockQuantity(QuantityUtil.normalize(total));
+        // Denormalized cache on products — inventory owns the write (callers must not ProductRepository.save for stock).
+        productRepository.save(product);
     }
 }

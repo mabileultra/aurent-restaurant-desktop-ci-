@@ -1,0 +1,67 @@
+server:
+  port: ${CATALOG_SERVER_PORT:8090}
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: catalog-service
+  datasource:
+    url: ${CATALOG_DB_URL:jdbc:postgresql://localhost:5442/catalog_db}
+    username: ${CATALOG_DB_USERNAME:catalog_user}
+    password: ${CATALOG_DB_PASSWORD:catalog_password}
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+app:
+  timezone: ${APP_TIMEZONE:Asia/Tashkent}
+  cors:
+    allowed-origin-patterns: ${APP_CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}
+  jwt:
+    secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
+  internal:
+    api-key: ${CATALOG_INTERNAL_API_KEY:catalog-internal-dev-key-change-in-prod}
+  outbox:
+    # logging (default) | kafka
+    transport: ${CATALOG_OUTBOX_TRANSPORT:logging}
+    dispatch-enabled: ${CATALOG_OUTBOX_DISPATCH_ENABLED:true}
+    dispatch-cron: ${CATALOG_OUTBOX_DISPATCH_CRON:*/15 * * * * *}
+    batch-size: ${CATALOG_OUTBOX_BATCH_SIZE:50}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    send-timeout-ms: ${CATALOG_KAFKA_SEND_TIMEOUT_MS:10000}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.pos.catalog: INFO

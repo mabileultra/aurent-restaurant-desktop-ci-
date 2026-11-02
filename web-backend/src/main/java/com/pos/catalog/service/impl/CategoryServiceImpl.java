@@ -12,6 +12,7 @@ import com.pos.catalog.mapper.CategoryMapper;
 import com.pos.repository.BusinessTypeDefinitionRepository;
 import com.pos.catalog.repository.CategoryRepository;
 import com.pos.catalog.service.CategoryService;
+import com.pos.client.catalog.CatalogCategoryDualWritePublisher;
 import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
@@ -33,6 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final TenantAccessSupport tenantAccess;
     private final BusinessTypeDefinitionRepository typeRepository;
     private final CompanyBusinessTypeAssignmentService companyBusinessTypeAssignmentService;
+    private final CatalogCategoryDualWritePublisher catalogCategoryDualWritePublisher;
 
     @Override
     @Cacheable(value = "categories", key = "@tenantCacheKeyResolver.categories(#businessTypeId)")
@@ -63,6 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
             .businessType(businessType)
             .build();
         Category saved = categoryRepository.save(cat);
+        catalogCategoryDualWritePublisher.publishAfterCommit(saved);
         LogUtil.info(CategoryServiceImpl.class, "Category created: id={}, name={}", saved.getId(), saved.getName());
         return categoryMapper.toResponse(saved);
     }
@@ -82,6 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
         cat.setDescription(req.description());
         cat.setBusinessType(resolveBusinessType(cat.getCompany().getId(), req.businessTypeId()));
         Category saved = categoryRepository.save(cat);
+        catalogCategoryDualWritePublisher.publishAfterCommit(saved);
         LogUtil.info(CategoryServiceImpl.class, "Category updated: id={}", id);
         return categoryMapper.toResponse(saved);
     }
@@ -93,6 +97,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category cat = categoryRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         tenantAccess.assertCanAccessCompany(cat.getCompany().getId());
+        catalogCategoryDualWritePublisher.publishDeactivateAfterCommit(cat);
         categoryRepository.delete(cat);
         LogUtil.info(CategoryServiceImpl.class, "Category deleted: id={}", id);
     }

@@ -300,6 +300,46 @@ services:
       retries: 12
       start_period: 45s
 
+  catalog-db:
+    image: postgres:15-alpine
+    container_name: masterpiece-catalog-db
+    environment:
+      POSTGRES_DB: catalog_db
+      POSTGRES_USER: catalog_user
+      POSTGRES_PASSWORD: catalog_password
+    ports:
+      - "5442:5432"
+    volumes:
+      - catalog_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalog_user -d catalog_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  catalog-service:
+    build:
+      context: .
+      dockerfile: catalog-service/Dockerfile
+    container_name: masterpiece-catalog-service
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+    environment:
+      CATALOG_DB_URL: jdbc:postgresql://catalog-db:5432/catalog_db
+      CATALOG_DB_USERNAME: catalog_user
+      CATALOG_DB_PASSWORD: catalog_password
+      CATALOG_SERVER_PORT: "8090"
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8090/api/v1/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
   pharmacy-db:
     image: postgres:15-alpine
     container_name: masterpiece-pharmacy-db
@@ -456,6 +496,8 @@ services:
         condition: service_healthy
       redpanda:
         condition: service_healthy
+      catalog-service:
+        condition: service_healthy
     environment:
       # local — Swagger включён (см. application-local.yml). Prod: docker-compose.prod.yml
       SPRING_PROFILES_ACTIVE: local
@@ -481,6 +523,11 @@ services:
       CRM_SERVICE_URL: http://crm-service:8083/api/v1
       POS_INTERNAL_API_KEY: pos-internal-dev-key-change-in-prod
       RESTAURANT_SERVICE_URL: http://restaurant-service:8087/api/v1
+      CATALOG_SERVICE_ENABLED: "true"
+      CATALOG_SERVICE_READ_MODE: REMOTE_FIRST
+      CATALOG_SERVICE_WRITE_MODE: DUAL
+      CATALOG_SERVICE_URL: http://catalog-service:8090/api/v1
+      CATALOG_INTERNAL_API_KEY: catalog-internal-dev-key-change-in-prod
       TZ: ${TZ:-Asia/Tashkent}
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/api/v1/actuator/health | grep -q UP || exit 1"]
@@ -574,4 +621,5 @@ volumes:
   reporting_pg_data:
   crm_pg_data:
   restaurant_pg_data:
+  catalog_pg_data:
   pharmacy_pg_data:

@@ -9,7 +9,6 @@ import com.pos.inventory.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.security.CurrentUserProvider;
 import com.pos.inventory.service.stock.StockWriteOffService;
 import com.pos.inventory.service.stock.StoreStockService;
@@ -23,13 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class StockWriteOffServiceImpl implements StockWriteOffService {
 
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
     private final CurrentUserProvider currentUserProvider;
@@ -49,16 +48,16 @@ public class StockWriteOffServiceImpl implements StockWriteOffService {
             throw PosExceptions.badRequest(ex.getMessage());
         }
         Store store = storeStockService.resolveStoreForProduct(product, request.storeId());
-        com.pos.util.QuantityValidator.validate(product, qty);
+        com.pos.util.QuantityValidator.validate(
+            com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product), qty);
         storeStockService.requireAvailable(product, store, qty);
         User user = currentUserProvider.requireCurrentUser();
 
         storeStockService.decrease(product, store, qty);
-        productRepository.save(product);
 
         String notes = request.notes() != null ? request.notes().trim() : null;
-        StockMovement movement = StockMovement.builder()
-            .product(product)
+        StockMovement movement = StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+            
             .store(store)
             .movementType(StockMovementType.WRITE_OFF)
             .writeOffReason(reason.name())

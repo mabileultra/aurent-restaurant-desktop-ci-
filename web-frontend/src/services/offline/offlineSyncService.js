@@ -8,6 +8,7 @@ import {
   isDesktopOfflineBridge,
 } from './desktopOfflineBridge';
 import { pullAndApplyCatalogDelta, shouldUseCatalogDelta } from './catalogDeltaSync';
+import { pullAndApplyCatalogSnapshots } from './catalogSnapshotSync';
 import { markApiReachable, useConnectivityStore } from '../../store/connectivityStore';
 import { FISCAL_STATUS, resolvePendingFiscalProvider, toSaleFiscalPayload } from '../fiscal';
 import { logCatalog, logSale } from '../desktop/activityLog';
@@ -80,12 +81,19 @@ export async function refreshCatalogBootstrap(storeId, { force = false, catalogK
       catalogKind,
     });
     if (!delta.fullReset) {
+      let snapshots = null;
+      try {
+        snapshots = await pullAndApplyCatalogSnapshots(status.lastCatalogSyncAt, { catalogKind });
+      } catch {
+        /* delta already applied; snapshot feed is best-effort */
+      }
       return {
         skipped: false,
         mode: 'delta',
         productCount: delta.imported?.productCount ?? status.productCount,
         upserted: delta.imported?.upserted ?? delta.data?.products?.length ?? 0,
         removed: delta.imported?.removed ?? delta.data?.removedProductIds?.length ?? 0,
+        snapshotsApplied: snapshots?.applied ?? 0,
         syncedAt: delta.data?.syncedAt ?? new Date().toISOString(),
       };
     }

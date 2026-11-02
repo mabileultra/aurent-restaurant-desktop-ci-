@@ -1,6 +1,5 @@
 package com.pos.sales.service.export.impl;
 
-import com.pos.catalog.entity.Product;
 import com.pos.sales.entity.Sale;
 import com.pos.sales.entity.SaleItem;
 import com.pos.sales.repository.sale.SaleSearchRepository;
@@ -83,8 +82,7 @@ public class SaleExportServiceImpl implements SaleExportService {
                 ? shift.getZReport().getId().toString()
                 : "";
             for (SaleItem line : sale.getItems()) {
-                Product p = line.getProduct();
-                BigDecimal rate = p != null && p.getTaxRate() != null ? p.getTaxRate() : new BigDecimal("12");
+                BigDecimal rate = line.getTaxRate() != null ? line.getTaxRate() : new BigDecimal("12");
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("receipt_number", sale.getReceiptNumber());
                 row.put("sale_id", sale.getId().toString());
@@ -99,9 +97,9 @@ public class SaleExportServiceImpl implements SaleExportService {
                 row.put("shift_z_report_id", shiftZReportId);
                 row.put("payment_method", pay);
                 row.put("card_type", cardType);
-                row.put("product_sku", p != null && p.getSku() != null ? p.getSku() : "");
+                row.put("product_sku", line.getProductSku() != null ? line.getProductSku() : "");
                 row.put("product_name", line.getProductName());
-                row.put("ikpu", p != null && p.getIkpu() != null ? p.getIkpu() : "");
+                row.put("ikpu", line.getIkpu() != null ? line.getIkpu() : "");
                 row.put("quantity", line.getQuantity());
                 row.put("unit_price", line.getUnitPrice());
                 row.put("line_discount", line.getDiscount() != null ? line.getDiscount() : BigDecimal.ZERO);

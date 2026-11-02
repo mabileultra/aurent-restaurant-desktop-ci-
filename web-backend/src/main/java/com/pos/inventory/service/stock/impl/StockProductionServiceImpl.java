@@ -3,7 +3,6 @@ package com.pos.inventory.service.stock.impl;
 import com.pos.domain.StockMovementType;
 import com.pos.dto.shared.PageResponse;
 import com.pos.catalog.entity.Product;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
@@ -39,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +48,6 @@ public class StockProductionServiceImpl implements StockProductionService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockProductionRepository stockProductionRepository;
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
     private final CurrentUserProvider currentUserProvider;
@@ -68,17 +67,21 @@ public class StockProductionServiceImpl implements StockProductionService {
         Product output = stockDocument.requireActiveGroceryProduct(request.outputProductId());
         BigDecimal outputQty = QuantityUtil.normalize(request.outputQuantity());
         stockDocument.requirePositiveQuantity(outputQty);
-        com.pos.util.QuantityValidator.validate(output, outputQty);
+        com.pos.util.QuantityValidator.validate(
+            com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(output), outputQty);
 
         if (request.lines().stream().anyMatch(l -> l.productId().equals(output.getId()))) {
             throw PosExceptions.badRequest("Output product cannot be in input lines");
         }
 
         String number = nextProductionNumber();
+        var outputCard = com.pos.inventory.service.stock.support.StockLineCatalogSnapshot.Card.of(output);
         StockProduction production = stockProductionRepository.save(StockProduction.builder()
             .productionNumber(number)
             .store(store)
-            .outputProduct(output)
+            .outputProductId(outputCard.productId())
+            .outputProductName(outputCard.productName())
+            .outputProductSku(outputCard.productSku())
             .outputQuantity(outputQty)
             .outputUnitCost(BigDecimal.ZERO)
             .notes(trimToNull(request.notes()))
@@ -96,26 +99,29 @@ public class StockProductionServiceImpl implements StockProductionService {
             Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
-            com.pos.util.QuantityValidator.validate(product, q);
+            com.pos.util.QuantityValidator.validate(
+                com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product), q);
             storeStockService.requireAvailable(product, store, q);
             storeStockService.decrease(product, store, q);
-            productRepository.save(product);
 
             BigDecimal unitCost = product.getCostPrice() != null
                 ? product.getCostPrice()
                 : BigDecimal.ZERO;
             BigDecimal lineCost = unitCost.multiply(q).setScale(2, RoundingMode.HALF_UP);
 
+            var card = com.pos.inventory.service.stock.support.StockLineCatalogSnapshot.Card.of(product);
             lines.add(StockProductionLine.builder()
                 .production(production)
-                .product(product)
+                .productId(card.productId())
+                .productName(card.productName())
+                .productSku(card.productSku())
                 .quantity(q)
                 .unitCost(unitCost)
                 .lineCost(lineCost)
                 .build());
 
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(store)
                 .movementType(StockMovementType.PRODUCTION_CONSUMPTION)
                 .quantity(q.negate())
@@ -136,10 +142,9 @@ public class StockProductionServiceImpl implements StockProductionService {
 
         applyWeightedAverageCost(output, store, outputQty, unitCost);
         storeStockService.increase(output, store, outputQty);
-        productRepository.save(output);
 
-        stockMovementPersistence.save(StockMovement.builder()
-            .product(output)
+        stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), output)
+            
             .store(store)
             .movementType(StockMovementType.PRODUCTION_OUTPUT)
             .quantity(outputQty)
@@ -209,8 +214,8 @@ public class StockProductionServiceImpl implements StockProductionService {
             p.getProductionNumber(),
             p.getStore().getId(),
             p.getStore().getName(),
-            p.getOutputProduct().getId(),
-            p.getOutputProduct().getName(),
+            p.getOutputProductId(),
+            p.getOutputProductName(),
             p.getOutputQuantity(),
             p.getOutputUnitCost(),
             p.getNotes(),
@@ -226,9 +231,9 @@ public class StockProductionServiceImpl implements StockProductionService {
         List<StockProductionLineResponse> lines = p.getLines().stream()
             .map(l -> new StockProductionLineResponse(
                 l.getId(),
-                l.getProduct().getId(),
-                l.getProduct().getName(),
-                l.getProduct().getSku(),
+                l.getProductId(),
+                l.getProductName(),
+                l.getProductSku(),
                 l.getQuantity(),
                 l.getUnitCost(),
                 l.getLineCost()
@@ -239,8 +244,8 @@ public class StockProductionServiceImpl implements StockProductionService {
             p.getProductionNumber(),
             p.getStore().getId(),
             p.getStore().getName(),
-            p.getOutputProduct().getId(),
-            p.getOutputProduct().getName(),
+            p.getOutputProductId(),
+            p.getOutputProductName(),
             p.getOutputQuantity(),
             p.getOutputUnitCost(),
             p.getNotes(),

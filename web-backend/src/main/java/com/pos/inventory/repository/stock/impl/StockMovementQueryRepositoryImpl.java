@@ -21,24 +21,24 @@ import java.util.UUID;
 public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepository {
 
     private static final String SUM_DISPATCHED_BY_IDS_JPQL = """
-        SELECT sm.product.id,
+        SELECT sm.productId,
                COALESCE(SUM(CASE WHEN sm.quantity < 0 THEN -sm.quantity ELSE 0 END), 0)
         FROM StockMovement sm
-        WHERE sm.product.id IN :productIds
-        GROUP BY sm.product.id
+        WHERE sm.productId IN :productIds
+        GROUP BY sm.productId
         """;
 
     private static final String SUM_DISPATCHED_BY_ID_JPQL = """
         SELECT COALESCE(SUM(CASE WHEN sm.quantity < 0 THEN -sm.quantity ELSE 0 END), 0)
         FROM StockMovement sm
-        WHERE sm.product.id = :productId
+        WHERE sm.productId = :productId
         """;
 
     private static final String FIND_PRODUCT_MOVEMENTS_JPQL = """
         SELECT sm FROM StockMovement sm
         LEFT JOIN FETCH sm.store
         LEFT JOIN FETCH sm.createdBy
-        WHERE sm.product.id = :productId
+        WHERE sm.productId = :productId
           AND sm.createdAt >= :start AND sm.createdAt < :end
           AND (:movementType IS NULL OR sm.movementType = :movementType)
           AND (:storeId IS NULL OR sm.store.id = :storeId)
@@ -47,7 +47,7 @@ public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepos
 
     private static final String COUNT_PRODUCT_MOVEMENTS_JPQL = """
         SELECT COUNT(sm) FROM StockMovement sm
-        WHERE sm.product.id = :productId
+        WHERE sm.productId = :productId
           AND sm.createdAt >= :start AND sm.createdAt < :end
           AND (:movementType IS NULL OR sm.movementType = :movementType)
           AND (:storeId IS NULL OR sm.store.id = :storeId)
@@ -55,13 +55,13 @@ public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepos
 
     private static final String PRODUCT_MOVEMENT_TIMELINE_JPQL = """
         SELECT sm.id, sm.createdAt, sm.quantity FROM StockMovement sm
-        WHERE sm.product.id = :productId
+        WHERE sm.productId = :productId
         ORDER BY sm.createdAt ASC, sm.id ASC
         """;
 
     private static final String SUM_QUANTITIES_BY_TYPE_JPQL = """
         SELECT sm.movementType, COALESCE(SUM(sm.quantity), 0) FROM StockMovement sm
-        WHERE sm.product.id = :productId
+        WHERE sm.productId = :productId
           AND sm.createdAt >= :start AND sm.createdAt < :end
           AND (:storeId IS NULL OR sm.store.id = :storeId)
         GROUP BY sm.movementType

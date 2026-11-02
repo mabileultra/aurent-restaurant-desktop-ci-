@@ -1,10 +1,9 @@
 package com.pos.telegram.service.impl;
 
-import com.pos.catalog.entity.Product;
+import com.pos.catalog.api.CatalogFacade;
+import com.pos.catalog.dto.ref.ProductRef;
 import com.pos.catalog.entity.ProductStorePrice;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.repository.ProductStorePriceRepository;
-import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.service.ProductAttributeService;
 import com.pos.entity.Store;
 import com.pos.entity.StoreStock;
@@ -21,8 +20,6 @@ import com.pos.telegram.service.TelegramMedicineSearchService;
 import com.pos.telegram.support.TelegramBotCompanyResolver;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -46,7 +43,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
 
     private static final String PHARMACY = "PHARMACY";
 
-    private final ProductRepository productRepository;
+    private final CatalogFacade catalogFacade;
     private final ProductStorePriceRepository productStorePriceRepository;
     private final StoreStockRepository storeStockRepository;
     private final StoreRepository storeRepository;
@@ -71,21 +68,12 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
         // Берём с запасом: после фильтра по аптечным магазинам часть отсеется
         int fetchLimit = companyId == null ? Math.min(limit * 3, 50) : limit;
 
-        List<Product> products = productRepository.findAll(
-            ProductSpecifications.catalogFilter(
-                companyId,
-                searchText,
-                null,
-                "ACTIVE",
-                null,
-                null,
-                null,
-                null,
-                barcodeExact,
-                null
-            ),
-            PageRequest.of(0, fetchLimit, Sort.by(Sort.Direction.ASC, "name"))
-        ).getContent();
+        List<ProductRef> products = catalogFacade.searchActiveProducts(
+            companyId,
+            searchText,
+            barcodeExact,
+            fetchLimit
+        );
 
         if (products.isEmpty()) {
             LogUtil.info(
@@ -115,15 +103,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
     @Override
     public MedicineSearchItemDto getProductAvailability(UUID productId) {
         Integer companyId = companyResolver.optionalCompanyId();
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> PosExceptions.notFound("Товар не найден"));
-        if (!product.isActive()) {
-            throw PosExceptions.notFound("Товар не найден");
-        }
-        if (companyId != null
-            && (product.getCompany() == null || !companyId.equals(product.getCompany().getId()))) {
-            throw PosExceptions.notFound("Товар не найден");
-        }
+        ProductRef product = catalogFacade.requireActiveById(productId, companyId);
         List<MedicineSearchItemDto> items = buildItems(List.of(product), companyId);
         if (items.isEmpty()) {
             throw PosExceptions.notFound("Товар не найден в аптеках");
@@ -166,15 +146,15 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
             && PHARMACY.equalsIgnoreCase(store.getBusinessType().trim());
     }
 
-    private List<MedicineSearchItemDto> buildItems(List<Product> products, Integer companyId) {
-        List<UUID> productIds = products.stream().map(Product::getId).toList();
+    private List<MedicineSearchItemDto> buildItems(List<ProductRef> products, Integer companyId) {
+        List<UUID> productIds = products.stream().map(ProductRef::id).toList();
         Map<UUID, List<ProductStorePrice>> pricesByProduct = groupStorePrices(productIds);
         Map<String, BigDecimal> stockByKey = groupStock(productIds);
 
         List<MedicineSearchItemDto> items = new ArrayList<>();
-        for (Product product : products) {
-            List<ProductStorePrice> prices = pricesByProduct.getOrDefault(product.getId(), List.of());
-            Map<String, String> attributes = productAttributeService.getAttributes(product.getId());
+        for (ProductRef product : products) {
+            List<ProductStorePrice> prices = pricesByProduct.getOrDefault(product.id(), List.of());
+            Map<String, String> attributes = productAttributeService.getAttributes(product.id());
             List<MedicineStoreMatchDto> matches = new ArrayList<>();
 
             for (ProductStorePrice priceRow : prices) {
@@ -190,7 +170,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
                     continue;
                 }
                 BigDecimal stock = stockByKey.getOrDefault(
-                    stockKey(product.getId(), store.getId()),
+                    stockKey(product.id(), store.getId()),
                     BigDecimal.ZERO.setScale(QuantityUtil.SCALE)
                 );
                 matches.add(new MedicineStoreMatchDto(
@@ -198,7 +178,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
                     store.getName(),
                     store.getAddress(),
                     store.getPhone(),
-                    priceRow.getPrice() != null ? priceRow.getPrice() : product.getSellingPrice(),
+                    priceRow.getPrice() != null ? priceRow.getPrice() : product.sellingPrice(),
                     stock,
                     attributes.isEmpty() ? Map.of() : attributes
                 ));
@@ -215,10 +195,10 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
             });
 
             items.add(new MedicineSearchItemDto(
-                product.getId(),
-                product.getName(),
-                product.getBarcode(),
-                product.getIkpu(),
+                product.id(),
+                product.name(),
+                product.barcode(),
+                product.ikpu(),
                 matches
             ));
         }
@@ -236,11 +216,11 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
     private Map<String, BigDecimal> groupStock(List<UUID> productIds) {
         Map<String, BigDecimal> map = new HashMap<>();
         for (StoreStock stock : storeStockRepository.findByProductIdIn(productIds)) {
-            if (stock.getProduct() == null || stock.getStore() == null) {
+            if (stock.getProductId() == null || stock.getStore() == null) {
                 continue;
             }
             map.put(
-                stockKey(stock.getProduct().getId(), stock.getStore().getId()),
+                stockKey(stock.getProductId(), stock.getStore().getId()),
                 QuantityUtil.normalize(stock.getQuantity())
             );
         }

@@ -13,7 +13,6 @@ import com.pos.inventory.entity.StockTransferLine;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.inventory.repository.StockTransferRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
@@ -39,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +48,6 @@ public class StockTransferServiceImpl implements StockTransferService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockTransferRepository stockTransferRepository;
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final StoreRepository storeRepository;
     private final CurrentUserProvider currentUserProvider;
@@ -93,19 +92,23 @@ public class StockTransferServiceImpl implements StockTransferService {
             Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
-            com.pos.util.QuantityValidator.validate(product, q);
+            com.pos.util.QuantityValidator.validate(
+                com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product), q);
             if (product.getStockQuantity().compareTo(q) < 0) {
                 throw PosExceptions.badRequest("Insufficient stock for " + product.getName());
             }
 
+            var card = com.pos.inventory.service.stock.support.StockLineCatalogSnapshot.Card.of(product);
             lines.add(StockTransferLine.builder()
                 .transfer(transfer)
-                .product(product)
+                .productId(card.productId())
+                .productName(card.productName())
+                .productSku(card.productSku())
                 .quantity(q)
                 .build());
 
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(fromStore)
                 .movementType(StockMovementType.ADJUSTMENT)
                 .quantity(q.negate())
@@ -113,8 +116,8 @@ public class StockTransferServiceImpl implements StockTransferService {
                 .notes("Перемещение " + number + " → " + toStore.getName())
                 .createdBy(user)
                 .build());
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(toStore)
                 .movementType(StockMovementType.RESTOCK)
                 .quantity(q)
@@ -197,9 +200,9 @@ public class StockTransferServiceImpl implements StockTransferService {
         List<StockTransferLineResponse> lines = t.getLines().stream()
             .map(l -> new StockTransferLineResponse(
                 l.getId(),
-                l.getProduct().getId(),
-                l.getProduct().getName(),
-                l.getProduct().getSku(),
+                l.getProductId(),
+                l.getProductName(),
+                l.getProductSku(),
                 l.getQuantity()
             ))
             .toList();

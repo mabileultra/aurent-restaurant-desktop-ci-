@@ -16,6 +16,7 @@ reporting-service
 crm-service
 restaurant-service
 pharmacy-service
+catalog-service
 ai-service
 backend
 api-gateway
@@ -86,6 +87,9 @@ classify() {
     pharmacy-service|pharmacy-service/*)
       mark pharmacy-service
       ;;
+    catalog-service|catalog-service/*)
+      mark catalog-service
+      ;;
     ai-service|ai-service/*)
       mark ai-service
       ;;
@@ -128,6 +132,7 @@ reporting-service
 crm-service
 restaurant-service
 pharmacy-service
+catalog-service
 ai-service
 backend
 api-gateway

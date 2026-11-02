@@ -95,8 +95,7 @@ public class ZReportExportServiceImpl implements ZReportExportService {
                 pay = pay + " (" + sale.getCardType().name() + ")";
             }
             for (SaleItem line : sale.getItems()) {
-                var p = line.getProduct();
-                BigDecimal rate = p != null && p.getTaxRate() != null ? p.getTaxRate() : new BigDecimal("12");
+                BigDecimal rate = line.getTaxRate() != null ? line.getTaxRate() : new BigDecimal("12");
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("created_at", created);
                 row.put("receipt_number", sale.getReceiptNumber());
@@ -104,8 +103,8 @@ public class ZReportExportServiceImpl implements ZReportExportService {
                 row.put("payment_method", pay);
                 row.put("sale_total", sale.getTotalAmount());
                 row.put("product_name", line.getProductName());
-                row.put("product_sku", p != null && p.getSku() != null ? p.getSku() : "");
-                row.put("ikpu", p != null && p.getIkpu() != null ? p.getIkpu() : "");
+                row.put("product_sku", line.getProductSku() != null ? line.getProductSku() : "");
+                row.put("ikpu", line.getIkpu() != null ? line.getIkpu() : "");
                 row.put("quantity", line.getQuantity());
                 row.put("unit_price", line.getUnitPrice());
                 row.put("line_discount", line.getDiscount() != null ? line.getDiscount() : BigDecimal.ZERO);

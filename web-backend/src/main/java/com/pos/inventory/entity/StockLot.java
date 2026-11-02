@@ -1,6 +1,5 @@
 package com.pos.inventory.entity;
 
-import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,9 +22,8 @@ public class StockLot {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "store_id", nullable = false)

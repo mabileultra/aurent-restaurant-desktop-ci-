@@ -104,11 +104,12 @@ public class EdgeStockIngestServiceImpl implements EdgeStockIngestService {
         if (item.unitMeasureCode() != null) {
             product.setUnitMeasureCode(item.unitMeasureCode());
         }
+        product.setUpdatedAt(item.updatedAt() != null ? item.updatedAt() : Instant.now());
+        productRepository.save(product);
+        // Stock after card save — StoreStockService owns qty + denormalized products.stock_quantity.
         if (item.stockQuantity() != null) {
             storeStockService.setQuantity(product, store, QuantityUtil.normalize(item.stockQuantity()));
         }
-        product.setUpdatedAt(item.updatedAt() != null ? item.updatedAt() : Instant.now());
-        productRepository.save(product);
         return true;
     }
 

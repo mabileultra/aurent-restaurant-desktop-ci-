@@ -26,6 +26,10 @@ public record ProductResponse(
     UnitCode unitCode,
     int quantityScale,
     boolean allowFraction,
+    /**
+     * Live stock for API/UI: from {@code store_stock} (per store or company sum).
+     * Not the raw denormalized {@code products.stock_quantity} column.
+     */
     BigDecimal stockQuantity,
     /** Суммарно списано со склада (продажи, корректировки в минус) по журналу движений. */
     int stockDispatched,

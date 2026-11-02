@@ -19,6 +19,17 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
 
     Optional<Product> findByCompany_IdAndPlu(Integer companyId, String plu);
 
+    long countByCompany_Id(Integer companyId);
+
+    long countByCompany_IdAndIsActiveTrue(Integer companyId);
+
+    long countByCompany_IdAndIsActiveFalse(Integer companyId);
+
+    long countByIsActiveTrue();
+
+    long countByIsActiveFalse();
+
+
     @Query("""
         SELECT p FROM Product p
         LEFT JOIN FETCH p.category
@@ -34,6 +45,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
 
     @Query("SELECT p FROM Product p JOIN FETCH p.company WHERE p.id IN :ids")
     List<Product> findAllByIdWithCompany(@Param("ids") Collection<UUID> ids);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category WHERE p.id IN :ids")
+    List<Product> findAllByIdWithCategory(@Param("ids") Collection<UUID> ids);
 
     /** Active grocery products changed after {@code since} (offline catalog delta upserts). */
     @Query("""

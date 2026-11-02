@@ -211,9 +211,9 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         List<StockReceiptLineResponse> lines = r.getLines().stream()
             .map(l -> new StockReceiptLineResponse(
                 l.getId(),
-                l.getProduct().getId(),
-                l.getProduct().getName(),
-                l.getProduct().getSku(),
+                l.getProductId(),
+                l.getProductName(),
+                l.getProductSku(),
                 l.getQuantity(),
                 l.getPurchasePrice(),
                 l.getUnitSellingPrice(),

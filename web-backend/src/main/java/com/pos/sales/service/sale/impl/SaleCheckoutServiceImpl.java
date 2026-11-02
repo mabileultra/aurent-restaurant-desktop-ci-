@@ -17,6 +17,7 @@ import com.pos.sales.mapper.SaleMapper;
 import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.sales.service.sale.support.CheckoutQuantityResolver;
 import com.pos.sales.service.sale.support.CreditSaleCustomerSupport;
+import com.pos.sales.service.sale.support.SaleItemCatalogSnapshot;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.repository.UserRepository;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -128,15 +130,14 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             BigDecimal netLine = lineGross.subtract(taxAmt);
             BigDecimal lineTotal = lineGross;
 
-            SaleItem saleItem = SaleItem.builder()
-                .product(product)
-                .productName(product.getName())
+            SaleItem.SaleItemBuilder saleItemBuilder = SaleItem.builder()
                 .unitPrice(unitPrice)
                 .quantity(lineQty)
                 .discount(lineDiscount)
                 .taxAmount(taxAmt)
-                .lineTotal(lineTotal)
-                .build();
+                .lineTotal(lineTotal);
+            SaleItemCatalogSnapshot.apply(saleItemBuilder, product);
+            SaleItem saleItem = saleItemBuilder.build();
 
             items.add(saleItem);
 
@@ -224,8 +225,8 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         );
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {
             for (SaleItem item : saved.getItems()) {
-                stockMovementPersistence.save(StockMovement.builder()
-                    .product(item.getProduct())
+                stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), productsById.get(item.getProductId()))
+                    
                     .store(store)
                     .movementType(StockMovementType.SALE)
                     .quantity(item.getQuantity().negate())

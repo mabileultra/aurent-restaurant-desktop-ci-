@@ -1,7 +1,6 @@
 package com.pos.inventory.entity;
 
 import jakarta.persistence.*;
-import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import lombok.*;
@@ -23,9 +22,17 @@ public class StockMovement {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
+
+    @Column(name = "product_name", length = 255)
+    private String productName;
+
+    @Column(name = "product_sku", length = 120)
+    private String productSku;
+
+    @Column(name = "product_barcode", length = 64)
+    private String productBarcode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")

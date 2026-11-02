@@ -4,7 +4,6 @@ import com.pos.domain.ExpenseReason;
 import com.pos.domain.StockMovementType;
 import com.pos.dto.shared.PageResponse;
 import com.pos.catalog.entity.Product;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
@@ -39,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +48,6 @@ public class StockExpenseServiceImpl implements StockExpenseService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockExpenseRepository stockExpenseRepository;
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
     private final CurrentUserProvider currentUserProvider;
@@ -91,20 +90,23 @@ public class StockExpenseServiceImpl implements StockExpenseService {
             Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
-            com.pos.util.QuantityValidator.validate(product, q);
+            com.pos.util.QuantityValidator.validate(
+                com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product), q);
             storeStockService.requireAvailable(product, store, q);
             storeStockService.decrease(product, store, q);
-            productRepository.save(product);
 
+            var card = com.pos.inventory.service.stock.support.StockLineCatalogSnapshot.Card.of(product);
             lines.add(StockExpenseLine.builder()
                 .expense(expense)
-                .product(product)
+                .productId(card.productId())
+                .productName(card.productName())
+                .productSku(card.productSku())
                 .quantity(q)
                 .build());
 
             String notes = buildNotes(number, reason, request.recipient(), request.notes());
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(store)
                 .movementType(StockMovementType.EXPENSE)
                 .writeOffReason(reason.name())
@@ -189,9 +191,9 @@ public class StockExpenseServiceImpl implements StockExpenseService {
         List<StockExpenseLineResponse> lines = e.getLines().stream()
             .map(l -> new StockExpenseLineResponse(
                 l.getId(),
-                l.getProduct().getId(),
-                l.getProduct().getName(),
-                l.getProduct().getSku(),
+                l.getProductId(),
+                l.getProductName(),
+                l.getProductSku(),
                 l.getQuantity()
             ))
             .toList();

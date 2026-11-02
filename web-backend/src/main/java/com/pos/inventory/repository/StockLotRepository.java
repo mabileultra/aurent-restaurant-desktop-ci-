@@ -13,7 +13,7 @@ public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
 
     @Query("""
         SELECT l FROM StockLot l
-        WHERE l.product.id = :productId
+        WHERE l.productId = :productId
           AND l.store.id = :storeId
           AND l.quantity > 0
         ORDER BY CASE WHEN l.expiryDate IS NULL THEN 1 ELSE 0 END,
@@ -28,9 +28,9 @@ public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
     @Query("""
         SELECT l FROM StockLot l
         WHERE l.store.id = :storeId
-          AND l.product.id IN :productIds
+          AND l.productId IN :productIds
           AND l.quantity > 0
-        ORDER BY l.product.id,
+        ORDER BY l.productId,
                  CASE WHEN l.expiryDate IS NULL THEN 1 ELSE 0 END,
                  l.expiryDate ASC,
                  l.createdAt ASC
@@ -40,7 +40,7 @@ public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
         @Param("productIds") Collection<UUID> productIds
     );
 
-    boolean existsByProduct_IdAndStore_IdAndQuantityGreaterThan(
+    boolean existsByProductIdAndStoreIdAndQuantityGreaterThan(
         UUID productId,
         Integer storeId,
         java.math.BigDecimal quantity

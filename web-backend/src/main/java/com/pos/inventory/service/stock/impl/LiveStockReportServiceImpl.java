@@ -1,8 +1,8 @@
 package com.pos.inventory.service.stock.impl;
 
 import com.pos.catalog.entity.Product;
-import com.pos.catalog.repository.ProductRepository;
-import com.pos.catalog.repository.spec.ProductSpecifications;
+import com.pos.catalog.service.product.support.CatalogGroceryStockQuerySupport;
+import com.pos.catalog.service.product.support.CatalogManagedProductLoader;
 import com.pos.catalog.service.product.support.StockRetailValueMath;
 import com.pos.dto.report.stock.LowStockRowResponse;
 import com.pos.dto.report.stock.StockBalanceRowResponse;
@@ -11,18 +11,16 @@ import com.pos.inventory.service.stock.LiveStockReportService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.inventory.service.stock.support.LiveStockBalanceRowMapper;
 import com.pos.service.support.TenantAccessSupport;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,7 +30,8 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class LiveStockReportServiceImpl implements LiveStockReportService {
 
-    private final ProductRepository productRepository;
+    private final CatalogGroceryStockQuerySupport catalogGroceryStockQuery;
+    private final CatalogManagedProductLoader catalogManagedProductLoader;
     private final StoreStockService storeStockService;
     private final TenantAccessSupport tenantAccess;
 
@@ -45,14 +44,8 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
         Pageable pageable
     ) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        Specification<Product> spec = ProductSpecifications.catalogFilter(
-            companyId, search, categoryId, "ACTIVE", storeId,
-            null, null, null, null, null, null
-        );
-        // Load candidates then filter/paginate with live store_stock qty.
-        List<Product> products = productRepository.findAll(
-            spec.and(fetchCategory()),
-            org.springframework.data.domain.Sort.by("name").ascending()
+        List<Product> products = catalogGroceryStockQuery.findActiveForBalanceReport(
+            companyId, search, categoryId, storeId
         );
         List<UUID> ids = products.stream().map(Product::getId).toList();
         Map<UUID, BigDecimal> liveQty = storeId != null
@@ -74,19 +67,12 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
     @Override
     public PageResponse<LowStockRowResponse> lowStock(Pageable pageable) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        List<String> idRows = productRepository.findGroceryLowStockIds(
-            companyId,
-            org.springframework.data.domain.PageRequest.of(0, 10_000)
-        );
-        if (idRows == null || idRows.isEmpty()) {
+        List<UUID> ids = catalogGroceryStockQuery.findGroceryLowStockIds(companyId, 10_000);
+        if (ids.isEmpty()) {
             return PageResponse.from(Page.empty(pageable));
         }
-        List<UUID> ids = idRows.stream()
-            .filter(s -> s != null && !s.isBlank())
-            .map(s -> UUID.fromString(s.trim()))
-            .toList();
-        Map<UUID, Product> byId = new java.util.LinkedHashMap<>();
-        for (Product p : productRepository.findAllById(ids)) {
+        Map<UUID, Product> byId = new LinkedHashMap<>();
+        for (Product p : catalogManagedProductLoader.findAllById(ids)) {
             byId.put(p.getId(), p);
         }
         Map<UUID, BigDecimal> liveQty = storeStockService.sumQuantities(ids);
@@ -105,16 +91,6 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
             rows.add(LiveStockBalanceRowMapper.toLowStock(product, raw));
         }
         return PageResponse.from(toPage(rows, pageable));
-    }
-
-    private static Specification<Product> fetchCategory() {
-        return (root, query, cb) -> {
-            if (query != null && query.getResultType() != Long.class && query.getResultType() != long.class) {
-                root.fetch("category", JoinType.LEFT);
-                query.distinct(true);
-            }
-            return cb.conjunction();
-        };
     }
 
     private static <T> Page<T> toPage(List<T> rows, Pageable pageable) {

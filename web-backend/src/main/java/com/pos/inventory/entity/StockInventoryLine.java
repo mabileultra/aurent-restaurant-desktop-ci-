@@ -1,7 +1,6 @@
 package com.pos.inventory.entity;
 
 import jakarta.persistence.*;
-import com.pos.catalog.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -24,9 +23,14 @@ public class StockInventoryLine {
     @JoinColumn(name = "inventory_id", nullable = false)
     private StockInventory inventory;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
+
+    @Column(name = "product_name", length = 255)
+    private String productName;
+
+    @Column(name = "product_sku", length = 120)
+    private String productSku;
 
     @Column(name = "system_quantity", nullable = false, precision = 18, scale = 3)
     private BigDecimal systemQuantity = BigDecimal.ZERO;

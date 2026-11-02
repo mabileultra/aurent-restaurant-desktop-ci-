@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+      Wave 2.5: remove cross-module FK to products for Sales/Inventory tables only.
+      Columns product_id / output_product_id stay (logical refs + snapshots).
+      Catalog-owned tables (barcodes, store prices, attributes, extensions) keep FK.
+      Restaurant/pharmacy product FKs are out of scope here.
+    -->
+    <changeSet id="v56-drop-sales-inventory-product-fks" author="pos">
+        <comment>Drop FK from sales/inventory product_id columns to products (catalog extract prep)</comment>
+        <sql splitStatements="false"><![CDATA[
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN
+        SELECT c.conname AS constraint_name,
+               rel.relname AS table_name
+        FROM pg_constraint c
+        JOIN pg_class rel ON rel.oid = c.conrelid
+        JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+        JOIN pg_class ref ON ref.oid = c.confrelid
+        WHERE c.contype = 'f'
+          AND nsp.nspname = current_schema()
+          AND ref.relname = 'products'
+          AND rel.relname IN (
+              'sale_items',
+              'store_stock',
+              'stock_movements',
+              'stock_lots',
+              'stock_receipt_lines',
+              'stock_transfer_lines',
+              'stock_inventory_lines',
+              'stock_expense_lines',
+              'stock_production_lines',
+              'stock_productions'
+          )
+    LOOP
+        EXECUTE format('ALTER TABLE %I DROP CONSTRAINT %I', r.table_name, r.constraint_name);
+    END LOOP;
+END $$;
+        ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>

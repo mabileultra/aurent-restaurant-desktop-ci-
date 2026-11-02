@@ -18,7 +18,7 @@ public interface StockTransferRepository extends JpaRepository<StockTransfer, UU
 
     long countByCreatedAtGreaterThanEqual(Instant dayStart);
 
-    @EntityGraph(attributePaths = {"fromStore", "toStore", "createdBy", "lines", "lines.product"})
+    @EntityGraph(attributePaths = {"fromStore", "toStore", "createdBy", "lines"})
     @Query("SELECT t FROM StockTransfer t WHERE t.id = :id")
     Optional<StockTransfer> findDetailedById(@Param("id") UUID id);
 

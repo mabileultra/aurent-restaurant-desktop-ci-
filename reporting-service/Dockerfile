@@ -14,6 +14,7 @@ COPY ai-service/pom.xml ai-service/pom.xml
 COPY crm-service/pom.xml crm-service/pom.xml
 COPY restaurant-service/pom.xml restaurant-service/pom.xml
 COPY pharmacy-service/pom.xml pharmacy-service/pom.xml
+COPY catalog-service/pom.xml catalog-service/pom.xml
 RUN --mount=type=cache,target=/root/.m2 mvn -pl shared-kernel,reporting-service -am dependency:go-offline -q
 
 COPY shared-kernel/src shared-kernel/src

@@ -15,10 +15,11 @@ import java.util.Map;
 public class FinanceSaleIntegrationServiceImpl implements FinanceSaleIntegrationService {
 
     private final FinanceIntegrationPublisher financeIntegrationPublisher;
+    private final FinanceSalePayloadBuilder financeSalePayloadBuilder;
 
     @Override
     public void onSaleCompleted(Sale sale) {
-        Map<String, Object> payload = FinanceSalePayloadBuilder.build(sale);
+        Map<String, Object> payload = financeSalePayloadBuilder.build(sale);
         if (payload == null) {
             return;
         }

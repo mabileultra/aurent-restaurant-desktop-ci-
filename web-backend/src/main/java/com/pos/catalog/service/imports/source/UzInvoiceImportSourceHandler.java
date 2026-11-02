@@ -6,7 +6,7 @@ import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.service.imports.ProductImportParseOptions;
 import com.pos.catalog.service.imports.ProductImportSource;
 import com.pos.catalog.service.imports.ProductImportSupport;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;

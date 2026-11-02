@@ -16,7 +16,7 @@ public interface StockExpenseRepository extends JpaRepository<StockExpense, UUID
 
     long countByCreatedAtGreaterThanEqual(Instant dayStart);
 
-    @EntityGraph(attributePaths = {"store", "createdBy", "lines", "lines.product"})
+    @EntityGraph(attributePaths = {"store", "createdBy", "lines"})
     @Query("SELECT e FROM StockExpense e WHERE e.id = :id")
     Optional<StockExpense> findDetailedById(@Param("id") UUID id);
 

@@ -53,6 +53,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         product.setActive(false);
         barcodeReleaser.release(product);
+        productRepository.save(product);
         productSnapshotNotifier.notify(product.getId());
     }
 
