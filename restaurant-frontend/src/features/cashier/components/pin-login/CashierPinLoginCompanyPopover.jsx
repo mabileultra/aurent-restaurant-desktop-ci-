@@ -15,8 +15,7 @@ export default function CashierPinLoginCompanyPopover({
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const isValid = Boolean(normalizeCompanyLoginCode(value));
-  // Hall desktop: keep the chip to enter/change code, but do not show digits on the button.
-  const hideChipDigits = isRestaurantDesktop();
+  const desktop = isRestaurantDesktop();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -46,7 +45,7 @@ export default function CashierPinLoginCompanyPopover({
         onClick={onToggle}
       >
         <Building2 size={18} strokeWidth={2.25} aria-hidden />
-        {isValid && !hideChipDigits ? (
+        {isValid ? (
           <span className="cashier-pin-login__company-chip-code">
             {normalizeCompanyLoginCode(value)}
           </span>
@@ -72,6 +71,13 @@ export default function CashierPinLoginCompanyPopover({
             onChange={(e) => onChange(sanitizeCompanyLoginCodeInput(e.target.value))}
             onKeyDown={(e) => e.stopPropagation()}
           />
+          {desktop ? (
+            <p className="cashier-pin-login__company-hint">
+              {t('cashierLogin.companySwitchHint', {
+                defaultValue: 'Другой код = сброс локального зала. Потом вход админа онлайн.',
+              })}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>

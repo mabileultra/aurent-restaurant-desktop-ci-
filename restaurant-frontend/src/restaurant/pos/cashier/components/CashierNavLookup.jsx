@@ -5,6 +5,7 @@ import { CASHIER_TAB_ICONS } from '../config/cashierNavIcons';
 import { CASHIER_TABS } from '../utils/cashierNav';
 import { useRestaurantDesktopUpdate } from '../hooks/useRestaurantDesktopUpdate';
 import CashierTaxToggle from './CashierTaxToggle';
+import RestaurantDesktopWifiFooter from '../../components/RestaurantDesktopWifiFooter';
 import '../styles/cashier-nav-lookup.css';
 
 export default function CashierNavLookup({
@@ -217,6 +218,7 @@ export default function CashierNavLookup({
                       : t('rst.cashier.checkUpdates')}
                 </span>
               </button>
+              <RestaurantDesktopWifiFooter />
             </>
           ) : null}
         </div>

@@ -68,8 +68,31 @@ function normalizeLocale(raw) {
   return STRINGS[code] ? code : 'ru';
 }
 
+let lastReloadPage = null;
+let lastLocale = 'ru';
+
+function viewSubmenu(t, reloadPage) {
+  return [
+    {
+      label: t.reload,
+      accelerator: 'CmdOrCtrl+R',
+      click: () => {
+        if (typeof reloadPage === 'function') {
+          Promise.resolve(reloadPage()).catch(() => {});
+        }
+      },
+    },
+    { role: 'togglefullscreen', label: t.toggleFullscreen },
+    ...(app.isPackaged
+      ? []
+      : [{ type: 'separator' }, { role: 'toggleDevTools', label: t.toggleDevTools }]),
+  ];
+}
+
 function buildAppMenu({ locale = 'ru', reloadPage } = {}) {
-  const t = STRINGS[normalizeLocale(locale)];
+  lastLocale = normalizeLocale(locale);
+  lastReloadPage = typeof reloadPage === 'function' ? reloadPage : lastReloadPage;
+  const t = STRINGS[lastLocale];
   const isMac = process.platform === 'darwin';
 
   const template = [
@@ -94,21 +117,7 @@ function buildAppMenu({ locale = 'ru', reloadPage } = {}) {
     },
     {
       label: t.view,
-      submenu: [
-        {
-          label: t.reload,
-          accelerator: 'CmdOrCtrl+R',
-          click: () => {
-            if (typeof reloadPage === 'function') {
-              Promise.resolve(reloadPage()).catch(() => {});
-            }
-          },
-        },
-        { role: 'togglefullscreen', label: t.toggleFullscreen },
-        ...(app.isPackaged
-          ? []
-          : [{ type: 'separator' }, { role: 'toggleDevTools', label: t.toggleDevTools }]),
-      ],
+      submenu: viewSubmenu(t, lastReloadPage),
     },
     {
       label: t.window,
@@ -128,4 +137,15 @@ function buildAppMenu({ locale = 'ru', reloadPage } = {}) {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-module.exports = { buildAppMenu, normalizeLocale };
+/** Popup «Вид» under the titlebar button — no permanent menu-bar row. */
+function popupViewMenu(browserWindow) {
+  const t = STRINGS[normalizeLocale(lastLocale)];
+  const menu = Menu.buildFromTemplate(viewSubmenu(t, lastReloadPage));
+  if (browserWindow && !browserWindow.isDestroyed()) {
+    menu.popup({ window: browserWindow });
+  } else {
+    menu.popup();
+  }
+}
+
+module.exports = { buildAppMenu, popupViewMenu, normalizeLocale };

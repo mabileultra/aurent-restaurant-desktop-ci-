@@ -25,7 +25,7 @@ Same UX online and offline. Cloud only syncs in the background.
 | Auth | Local staff / PIN / roles / JWT (after one online bootstrap) |
 | Catalog + stock | Local copy of what is now in web-backend; stock moves → queue |
 | Print | Local receipt / kitchen printers |
-| Status strip | **Hidden** — no network/queue chrome (confuses hall); sync stays quiet in Electron |
+| Status strip | **Hidden** under header — no network/queue chrome. Quiet Wi‑Fi icon only at bottom of hamburger ☰ (online glow / offline dim) |
 | LAN | This PC = hub for kitchen / second screen / waiter phones on restaurant Wi‑Fi |
 
 ## Boundaries

@@ -165,6 +165,7 @@ function getLastPushedOrigins() {
 module.exports = {
   rememberLiveCloudSession,
   getLiveCloudSession,
+  clearLiveCloudSessionMemory: clearSession,
   getLastPushedOrigins,
   refreshLiveFromCloud,
   pushLiveToCloud,

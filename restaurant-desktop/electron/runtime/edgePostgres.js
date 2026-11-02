@@ -566,9 +566,16 @@ async function stopEdgePostgres({ log = console.log } = {}) {
   startedByUs = false;
 }
 
+function markPostgresStopped() {
+  pgChild = null;
+  startedByUs = false;
+}
+
 module.exports = {
   ensureEdgePostgres,
   stopEdgePostgres,
+  forceStopCluster,
+  markPostgresStopped,
   dataDir,
   resolvePgsqlBinDir,
   getListenPort,

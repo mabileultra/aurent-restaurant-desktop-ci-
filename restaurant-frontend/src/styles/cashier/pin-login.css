@@ -208,6 +208,14 @@
   box-shadow: 0 0 0 3px rgb(255 122 26 / 0.2);
 }
 
+.cashier-pin-login__company-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: rgb(255 255 255 / 0.62);
+  text-align: left;
+}
+
 .cashier-pin-login--roster-light .cashier-pin-login__company-chip {
   border-color: rgb(15 23 42 / 0.12);
   background: #F8F2EC;
@@ -229,6 +237,10 @@
 .cashier-pin-login--roster-light .cashier-pin-login__company-popover {
   border-color: #e2e8f0;
   background: #F8F2EC;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-login__company-hint {
+  color: rgb(71 85 105 / 0.9);
 }
 
 .cashier-pin-login--roster-light .cashier-pin-login__company-label {

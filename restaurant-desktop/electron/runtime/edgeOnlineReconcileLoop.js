@@ -13,14 +13,14 @@ const { getOutboxCounts, flushEdgeOutbox } = require('./edgeOutboxFlush');
 const { HEALTH_URL } = require('../config');
 
 /** Full live push/pull backup while online (Phase D). */
-const LIVE_SYNC_MS = 5_000;
+const LIVE_SYNC_MS = 2_000;
 /** Cheap origin watch — push as soon as hall floor watermark grows (Stage 2). */
 const ORIGIN_PROBE_MS = 1_000;
-const STAFF_REFRESH_MS = 60_000;
-/** Menu/halls/stations — infrequent; heavy export (Phase E). */
-const CATALOG_REFRESH_MS = 15 * 60_000;
+const STAFF_REFRESH_MS = 30_000;
+/** Menu/halls/stations — while online keep near-fresh (was 15m; felt «stuck»). */
+const CATALOG_REFRESH_MS = 30_000;
 /** Stock products + suppliers + stores (Phase F). */
-const STOCK_REFRESH_MS = 15 * 60_000;
+const STOCK_REFRESH_MS = 30_000;
 const LOOP_MS = 1_000;
 
 function probeCloudOnline() {
@@ -172,6 +172,7 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     // Backup full live round (covers cloud→hall while hall idle).
     if (
       online
+      && liveSession
       && !liveSyncInFlight
       && (justCameOnline || Date.now() - lastLiveSyncAt >= LIVE_SYNC_MS)
     ) {

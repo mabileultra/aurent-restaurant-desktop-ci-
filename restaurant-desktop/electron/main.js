@@ -23,7 +23,13 @@ const {
   getCompanyLoginCode,
   setCompanyLoginCode,
 } = require('./runtime/companyCodeStore');
-const { buildAppMenu, normalizeLocale } = require('./menu/appMenu');
+const { resetEdgeTenant } = require('./runtime/edgeTenantReset');
+const { getLiveCloudSession } = require('./runtime/edgeLiveSync');
+const { buildAppMenu, popupViewMenu, normalizeLocale } = require('./menu/appMenu');
+const {
+  browserWindowChromeOptions,
+  attachOverlayTitlebar,
+} = require('./runtime/windowTitlebar');
 const { setMainWindow } = require('./printers/window-ref.cjs');
 const { registerPrinterIpc } = require('./printers/registerPrinterIpc');
 const { initAutoUpdater } = require('./autoUpdaterBridge');
@@ -118,8 +124,7 @@ function createWindow() {
     backgroundColor: '#0f172a',
     show: false,
     fullscreen: true,
-    // Native menu stays available via Alt — do not permanently eat vertical space on Windows.
-    autoHideMenuBar: true,
+    ...browserWindowChromeOptions(),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -137,6 +142,7 @@ function createWindow() {
     mainWindow.focus();
   });
 
+  attachOverlayTitlebar(mainWindow);
   mainWindow.loadFile(path.join(__dirname, 'boot.html'));
   setMainWindow(mainWindow);
   mainWindow.webContents.setWindowOpenHandler(
@@ -247,13 +253,28 @@ app.whenReady().then(async () => {
     uiOrigin: lastStatus.uiOrigin || null,
   }));
   ipcMain.handle('restaurant:get-edge-auth-status', async () => {
+    const session = getLiveCloudSession();
+    const boundCompanyLoginCode =
+      getCompanyLoginCode()
+      || session?.companyLoginCode
+      || null;
+    const liveSession = Boolean(session?.token && session?.storeIds?.length);
     try {
-      return await getLocalBootstrapStatus();
+      const status = await getLocalBootstrapStatus();
+      return { ...status, boundCompanyLoginCode, liveSession };
     } catch (err) {
       try {
-        return await getLocalAuthStatus();
+        const auth = await getLocalAuthStatus();
+        return { ...auth, boundCompanyLoginCode, liveSession };
       } catch (inner) {
-        return { edge: true, hasStaff: false, hasCatalog: false, error: inner.message || err.message };
+        return {
+          edge: true,
+          hasStaff: false,
+          hasCatalog: false,
+          boundCompanyLoginCode,
+          liveSession,
+          error: inner.message || err.message,
+        };
       }
     }
   });
@@ -266,12 +287,25 @@ app.whenReady().then(async () => {
   ipcMain.handle('restaurant:ensure-staff-via-cloud-pin', async (_e, payload) => {
     return ensureStaffViaCloudPin(payload || {});
   });
+  ipcMain.handle('restaurant:reset-edge-tenant', async (_e, payload) => {
+    return resetEdgeTenant({
+      companyLoginCode: payload?.companyLoginCode || '',
+      isPackaged: app.isPackaged,
+      log: (line) => bootLog(line),
+      publishStatus,
+    });
+  });
   ipcMain.handle('restaurant:get-company-login-code', async () => getCompanyLoginCode());
   ipcMain.handle('restaurant:set-company-login-code', async (_e, code) => setCompanyLoginCode(code));
   ipcMain.handle('restaurant:set-menu-locale', async (_e, locale) => {
     menuLocale = normalizeLocale(locale);
     applyAppMenu();
     return { locale: menuLocale };
+  });
+  ipcMain.handle('restaurant:popup-view-menu', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender) || mainWindow;
+    popupViewMenu(win);
+    return { ok: true };
   });
   ipcMain.handle('restaurant:push-cloud-sync', async () => {
     const http = require('http');

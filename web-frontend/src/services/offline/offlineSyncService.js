@@ -8,7 +8,7 @@ import {
   isDesktopOfflineBridge,
 } from './desktopOfflineBridge';
 import { pullAndApplyCatalogDelta, shouldUseCatalogDelta } from './catalogDeltaSync';
-import { pullAndApplyCatalogSnapshots } from './catalogSnapshotSync';
+import { drainCatalogSnapshots } from './catalogSnapshotDrain';
 import { markApiReachable, useConnectivityStore } from '../../store/connectivityStore';
 import { FISCAL_STATUS, resolvePendingFiscalProvider, toSaleFiscalPayload } from '../fiscal';
 import { logCatalog, logSale } from '../desktop/activityLog';
@@ -16,8 +16,11 @@ import { logCatalog, logSale } from '../desktop/activityLog';
 /** Отправка очереди продаж — часто (лёгкий запрос). */
 export const SALES_SYNC_INTERVAL_MS = 60_000;
 
-/** Полный каталог: не чаще этого интервала (раньше 4ч — новые товары не попадали на десктоп). */
-export const CATALOG_MAX_AGE_MS = 15 * 60 * 1000;
+/**
+ * Full/delta catalog refresh interval. Keep longer so reconnect feels like online;
+ * outbox snapshots still drain on each delta path.
+ */
+export const CATALOG_MAX_AGE_MS = 4 * 60 * 60 * 1000;
 
 /** Как часто проверять, не пора ли обновить каталог (без скачивания). */
 export const CATALOG_STALE_CHECK_MS = 30 * 60 * 1000;
@@ -83,7 +86,7 @@ export async function refreshCatalogBootstrap(storeId, { force = false, catalogK
     if (!delta.fullReset) {
       let snapshots = null;
       try {
-        snapshots = await pullAndApplyCatalogSnapshots(status.lastCatalogSyncAt, { catalogKind });
+        snapshots = await drainCatalogSnapshots(status.lastCatalogSyncAt, { catalogKind });
       } catch {
         /* delta already applied; snapshot feed is best-effort */
       }
@@ -94,7 +97,7 @@ export async function refreshCatalogBootstrap(storeId, { force = false, catalogK
         upserted: delta.imported?.upserted ?? delta.data?.products?.length ?? 0,
         removed: delta.imported?.removed ?? delta.data?.removedProductIds?.length ?? 0,
         snapshotsApplied: snapshots?.applied ?? 0,
-        syncedAt: delta.data?.syncedAt ?? new Date().toISOString(),
+        syncedAt: delta.data?.syncedAt ?? snapshots?.data?.syncedAt ?? new Date().toISOString(),
       };
     }
   }
