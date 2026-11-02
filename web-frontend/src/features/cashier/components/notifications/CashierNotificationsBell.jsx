@@ -1,12 +1,36 @@
+import { useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import CashierNotificationsPanel from './CashierNotificationsPanel';
+import CashierNotificationAlertModal from './CashierNotificationAlertModal';
 import { useCashierNotifications } from '../../hooks/useCashierNotifications';
 
 export default function CashierNotificationsBell() {
   const notifications = useCashierNotifications();
+  const updateTriggered = useRef(new Set());
+  const active = notifications?.items?.[0] || null;
+
+  useEffect(() => {
+    if (!active || active.kind !== 'UPDATE') return;
+    if (updateTriggered.current.has(active.id)) return;
+    updateTriggered.current.add(active.id);
+    if (typeof window.desktopCashier?.checkForUpdates === 'function') {
+      void window.desktopCashier.checkForUpdates();
+    }
+  }, [active]);
+
   if (!notifications) return null;
 
-  const { t, rootRef, open, setOpen, unreadCount } = notifications;
+  const {
+    t,
+    rootRef,
+    open,
+    setOpen,
+    unreadCount,
+    dismiss,
+    resolveTitle,
+    resolveBody,
+    resolveAction,
+  } = notifications;
 
   return (
     <div
@@ -28,6 +52,13 @@ export default function CashierNotificationsBell() {
         ) : null}
       </button>
       {open ? <CashierNotificationsPanel notifications={notifications} /> : null}
+      <CashierNotificationAlertModal
+        item={active}
+        title={active ? resolveTitle(active) : ''}
+        body={active ? resolveBody(active) : ''}
+        actionLabel={active ? (resolveAction(active) || 'OK') : 'OK'}
+        onOk={(item) => { void dismiss(item); }}
+      />
     </div>
   );
 }

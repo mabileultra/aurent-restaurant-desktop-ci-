@@ -9,6 +9,7 @@ import com.pos.restaurant.edge.support.EdgeCatalogOrderBootstrapWriter;
 import com.pos.restaurant.edge.support.EdgeCatalogRecipeSettingsWriter;
 import com.pos.restaurant.edge.support.EdgeCatalogSequenceSync;
 import com.pos.restaurant.edge.support.EdgeCatalogStructureWriter;
+import com.pos.restaurant.edge.support.EdgeShiftFkEnsure;
 import com.pos.restaurant.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -34,6 +35,7 @@ public class EdgeCatalogImportService {
     private final EdgeCatalogStructureWriter structureWriter;
     private final EdgeCatalogModifierWriter modifierWriter;
     private final EdgeCatalogRecipeSettingsWriter recipeSettingsWriter;
+    private final EdgeShiftFkEnsure shiftFkEnsure;
     private final EdgeCatalogOrderBootstrapWriter orderBootstrapWriter;
     private final EdgeCatalogGhostOrderReconciler ghostOrderReconciler;
     private final EdgeCatalogKitchenBootstrapWriter kitchenBootstrapWriter;
@@ -60,6 +62,7 @@ public class EdgeCatalogImportService {
         result.putAll(structureWriter.applyStructure(snap));
         result.putAll(modifierWriter.apply(snap));
         result.putAll(recipeSettingsWriter.apply(snap));
+        result.put("ensuredShifts", shiftFkEnsure.ensureForOrders(snap));
         result.putAll(orderBootstrapWriter.apply(snap));
         result.putAll(ghostOrderReconciler.apply(snap));
         result.putAll(kitchenBootstrapWriter.apply(snap));

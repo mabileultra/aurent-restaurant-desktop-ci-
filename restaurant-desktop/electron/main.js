@@ -31,6 +31,7 @@ const { openRestaurantSetupWindow } = require('./setup/restaurantSetupWindow');
 const { setMainWindow } = require('./printers/window-ref.cjs');
 const { registerPrinterIpc } = require('./printers/registerPrinterIpc');
 const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
+const { registerDesktopNotificationsIpc } = require('./runtime/edgeDesktopNotificationsBridge');
 const { multikassaRequest } = require('./multikassa/multikassaProxy');
 
 let menuLocale = 'ru';
@@ -342,6 +343,7 @@ app.whenReady().then(async () => {
 
   applyAppMenu();
   registerPrinterIpc();
+  registerDesktopNotificationsIpc();
   ipcMain.handle('desktop:quit', () => {
     app.quit();
     return { ok: true };

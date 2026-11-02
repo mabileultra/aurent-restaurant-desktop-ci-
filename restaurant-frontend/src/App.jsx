@@ -11,6 +11,7 @@ import TenantDisplayBootstrap from './components/shared/TenantDisplayBootstrap';
 import UnitsCatalogBootstrap from './components/shared/UnitsCatalogBootstrap';
 import AppRoutes from './router/AppRoutes';
 import RestaurantWorldGate from './router/guards/RestaurantWorldGate';
+import RestaurantDesktopNotificationsHost from './restaurant/pos/components/RestaurantDesktopNotificationsHost';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
                 <AdminThemeSync />
                 <RestaurantWorldGate>
                   <AppRoutes />
+                  <RestaurantDesktopNotificationsHost />
                 </RestaurantWorldGate>
               </UnitsCatalogBootstrap>
             </TenantDisplayBootstrap>

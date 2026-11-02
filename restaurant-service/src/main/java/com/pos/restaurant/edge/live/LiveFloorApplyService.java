@@ -1,6 +1,7 @@
 package com.pos.restaurant.edge.live;
 
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot;
+import com.pos.restaurant.edge.support.EdgeShiftFkEnsure;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.revision.FloorRevisionBump;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class LiveFloorApplyService {
     private final LiveFloorGhostReconcile ghosts;
     private final LiveServicePercentApply servicePercentApply;
     private final LiveShiftReconcile shiftReconcile;
+    private final EdgeShiftFkEnsure shiftFkEnsure;
     private final FloorRevisionBump floorRevision;
 
     @Transactional
@@ -41,6 +43,9 @@ public class LiveFloorApplyService {
         }
         boolean forceOverwrite = reconcileGhosts;
         int servicePercents = reconcileGhosts ? 0 : servicePercentApply.apply(snap);
+        // FK first: orders may reference a closed shift absent from openShift snapshot.
+        int ensuredShifts = shiftFkEnsure.ensureForOrders(snap);
+        int openShift = shiftReconcile.apply(snap);
         int orders = upserts.upsertOrders(snap, snap.openOrders(), forceOverwrite);
         int items = upserts.upsertItems(snap.openOrderItems(), forceOverwrite);
         int links = upserts.upsertLinks(snap.openOrderLinks());
@@ -53,24 +58,23 @@ public class LiveFloorApplyService {
         int payments = upserts.upsertPayments(snap);
         int closedGhosts = reconcileGhosts ? ghosts.reconcileOpen(snap) : 0;
         int staleTickets = reconcileGhosts ? ghosts.reconcileTickets(snap) : 0;
-        // After floor upsert (+ hall ghost close): align shift both ways (Phase C).
-        int openShift = shiftReconcile.apply(snap);
         boolean remoteAdvanced = floorRevision.noteRemote(
             snap.companyId(), snap.storeId(), snap.floorRevision());
         // Phase D: POS/kitchen poll floor-revision. Wake them when rows were applied.
         // Edge pull: always bump if touched (origin may be 0 / LWW no-ops noteRemote).
         // Hall→cloud: noteRemote bumps when origin advances; if it did not, still bump so
         // cloud pollers are not stuck (origin 0, or ghosts/shift with stale origin).
-        int touched = servicePercents + orders + items + links + mods
+        int touched = servicePercents + ensuredShifts + openShift + orders + items + links + mods
             + closedOrders + closedItems + closedMods
             + tickets + ticketLines + payments
-            + closedGhosts + staleTickets + openShift;
+            + closedGhosts + staleTickets;
         if (touched > 0 && (!reconcileGhosts || !remoteAdvanced)) {
             floorRevision.bump(snap.companyId(), snap.storeId());
         }
 
         Map<String, Object> out = new HashMap<>();
         out.put("servicePercents", servicePercents);
+        out.put("ensuredShifts", ensuredShifts);
         out.put("openShift", openShift);
         out.put("openOrders", orders);
         out.put("openOrderItems", items);

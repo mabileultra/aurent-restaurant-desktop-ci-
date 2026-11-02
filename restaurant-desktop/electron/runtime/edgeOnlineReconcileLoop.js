@@ -9,10 +9,13 @@ const { refreshStaffRosterFromCloud } = require('./edgeStaffCloudRefresh');
 const { refreshCatalogFromCloud } = require('./edgeCatalogCloudRefresh');
 const { refreshStockFromCloud } = require('./edgeStockCloudRefresh');
 const { getOutboxCounts, flushEdgeOutbox } = require('./edgeOutboxFlush');
+const { pollAndPublishDesktopNotifications } = require('./edgeDesktopNotificationsBridge');
 const { HEALTH_URL } = require('../config');
 
 /** Full live push/pull backup while online (Phase D). */
 const LIVE_SYNC_MS = 2_000;
+/** Super-admin desktop broadcasts (same cloud API as Cashier). */
+const DESKTOP_NOTIF_MS = 60_000;
 /** Cheap origin watch — push as soon as hall floor watermark grows (Stage 2). */
 const ORIGIN_PROBE_MS = 1_000;
 const STAFF_REFRESH_MS = 30_000;
@@ -60,6 +63,8 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
   let catalogRefreshInFlight = false;
   let lastStockRefreshAt = 0;
   let stockRefreshInFlight = false;
+  let lastDesktopNotifAt = 0;
+  let desktopNotifInFlight = false;
   let wasOnline = false;
   let lastCloudProbeAt = 0;
   let cachedOnline = false;
@@ -215,6 +220,24 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
         /* next tick */
       } finally {
         stockRefreshInFlight = false;
+      }
+    }
+
+    // Super-admin desktop notifications (cloud) when live session exists.
+    if (
+      online
+      && liveSession
+      && !desktopNotifInFlight
+      && (justCameOnline || Date.now() - lastDesktopNotifAt >= DESKTOP_NOTIF_MS)
+    ) {
+      desktopNotifInFlight = true;
+      lastDesktopNotifAt = Date.now();
+      try {
+        await pollAndPublishDesktopNotifications();
+      } catch {
+        /* next tick */
+      } finally {
+        desktopNotifInFlight = false;
       }
     }
   }, LOOP_MS);
