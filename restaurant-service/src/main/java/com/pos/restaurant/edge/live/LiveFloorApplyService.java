@@ -30,8 +30,9 @@ public class LiveFloorApplyService {
     }
 
     /**
-     * @param reconcileGhosts when true, OPEN/BILLING absent from snapshot are closed (hall→cloud).
-     *                        when false, LWW upsert-only (cloud→edge pull).
+     * @param reconcileGhosts when true, OPEN/BILLING absent from snapshot are closed
+     *                        and force-overwrite applies (hall→cloud ingest and edge live-import).
+     *                        when false, LWW upsert-only (legacy / special callers).
      */
     @Transactional
     public Map<String, Object> applyLive(EdgeCatalogSnapshot snap, boolean reconcileGhosts) {

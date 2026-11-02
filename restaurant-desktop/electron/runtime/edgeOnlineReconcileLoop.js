@@ -1,11 +1,10 @@
 const { probeHealth } = require('./health');
 const {
-  refreshLiveFromCloud,
-  pushLiveToCloud,
   getLastPushedOrigins,
   getLiveCloudSession,
 } = require('./edgeLiveSync');
 const { probeLocalOrigins, originsNeedPush } = require('./edgeLiveOriginProbe');
+const { runDirectedLiveRound } = require('./edgeLiveSyncRound');
 const { refreshStaffRosterFromCloud } = require('./edgeStaffCloudRefresh');
 const { refreshCatalogFromCloud } = require('./edgeCatalogCloudRefresh');
 const { refreshStockFromCloud } = require('./edgeStockCloudRefresh');
@@ -70,8 +69,8 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     liveSyncInFlight = true;
     lastLiveSyncAt = Date.now();
     try {
-      await pushLiveToCloud();
-      await refreshLiveFromCloud();
+      // Online: if server ahead → pull first (web close wins); else push then pull.
+      await runDirectedLiveRound();
       publishStatus({ floorSyncedAt: Date.now() });
     } catch {
       /* next tick */

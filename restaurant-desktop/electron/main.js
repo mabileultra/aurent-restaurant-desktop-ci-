@@ -23,16 +23,14 @@ const {
   getCompanyLoginCode,
   setCompanyLoginCode,
 } = require('./runtime/companyCodeStore');
+const { applyCloudApiUrlFromDisk } = require('./runtime/cloudApiUrlStore');
 const { resetEdgeTenant } = require('./runtime/edgeTenantReset');
 const { getLiveCloudSession } = require('./runtime/edgeLiveSync');
 const { buildAppMenu, popupViewMenu, normalizeLocale } = require('./menu/appMenu');
-const {
-  browserWindowChromeOptions,
-  attachOverlayTitlebar,
-} = require('./runtime/windowTitlebar');
+const { openRestaurantSetupWindow } = require('./setup/restaurantSetupWindow');
 const { setMainWindow } = require('./printers/window-ref.cjs');
 const { registerPrinterIpc } = require('./printers/registerPrinterIpc');
-const { initAutoUpdater } = require('./autoUpdaterBridge');
+const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
 const { multikassaRequest } = require('./multikassa/multikassaProxy');
 
 let menuLocale = 'ru';
@@ -45,6 +43,16 @@ function applyAppMenu() {
         mainWindow.webContents.reload();
       }
     },
+    openServerSettings: () => {
+      const win = openRestaurantSetupWindow(mainWindow);
+      win.once('closed', () => {
+        if (!win.__restaurantSetupSaved) return;
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.reload();
+        }
+      });
+    },
+    checkForUpdates: () => checkForUpdatesNow(),
   });
 }
 
@@ -114,6 +122,7 @@ function resolveAppIcon() {
 }
 
 function createWindow() {
+  // Same chrome as Aurent Cashier: normal frame + always-visible menu («Вид»).
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -123,8 +132,7 @@ function createWindow() {
     icon: resolveAppIcon(),
     backgroundColor: '#0f172a',
     show: false,
-    fullscreen: true,
-    ...browserWindowChromeOptions(),
+    autoHideMenuBar: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -135,14 +143,10 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
-    if (!mainWindow.isFullScreen()) {
-      mainWindow.setFullScreen(true);
-    }
     mainWindow.show();
     mainWindow.focus();
   });
 
-  attachOverlayTitlebar(mainWindow);
   mainWindow.loadFile(path.join(__dirname, 'boot.html'));
   setMainWindow(mainWindow);
   mainWindow.webContents.setWindowOpenHandler(
@@ -242,6 +246,7 @@ async function bootStack() {
 }
 
 app.whenReady().then(async () => {
+  applyCloudApiUrlFromDisk();
   ipcMain.handle('restaurant:get-status', async () => ({
     ...lastStatus,
     stack: getStackStatus(),

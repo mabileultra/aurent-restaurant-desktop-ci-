@@ -11,6 +11,8 @@ let liveRefreshInFlight = false;
 let livePushInFlight = false;
 /** Skip hall→cloud push while local origin watermark unchanged (still pull). */
 const lastPushedOriginByStore = new Map();
+/** Last cloud origin applied on this PC — detect server-side closes/opens. */
+const lastSeenCloudOriginByStore = new Map();
 
 function rememberLiveCloudSession({
   token,
@@ -37,6 +39,7 @@ function rememberLiveCloudSession({
 function clearSession() {
   liveCloudSession = null;
   lastPushedOriginByStore.clear();
+  lastSeenCloudOriginByStore.clear();
   clearLiveCloudSession();
 }
 
@@ -73,13 +76,18 @@ async function refreshLiveFromCloud() {
           results.push({ storeId, ok: false, error: 'empty-cloud-live' });
           continue;
         }
+        const cloudOrigin = Number(snapshot.floorRevision || 0);
         const local = await requestJson(`${localBase()}/edge/live-import`, {
           method: 'POST',
           body: { bootstrapSecret: secret, snapshot },
         });
+        if (Number.isFinite(cloudOrigin) && cloudOrigin > 0) {
+          lastSeenCloudOriginByStore.set(storeId, cloudOrigin);
+        }
         results.push({
           storeId,
           ok: true,
+          cloudOrigin: Number.isFinite(cloudOrigin) ? cloudOrigin : 0,
           openOrders: Number(local.data?.openOrders || 0),
           openShift: Number(local.data?.openShift || 0),
           kitchenTickets: Number(local.data?.kitchenTickets || 0),
@@ -162,11 +170,27 @@ function getLastPushedOrigins() {
   return lastPushedOriginByStore;
 }
 
+function getLastSeenCloudOrigins() {
+  return lastSeenCloudOriginByStore;
+}
+
+function markCloudOriginsSeen(origins) {
+  if (!(origins instanceof Map)) return;
+  for (const [storeId, origin] of origins) {
+    const n = Number(origin);
+    if (!Number.isFinite(n) || n <= 0) continue;
+    const prev = lastSeenCloudOriginByStore.get(storeId) || 0;
+    if (n > prev) lastSeenCloudOriginByStore.set(storeId, n);
+  }
+}
+
 module.exports = {
   rememberLiveCloudSession,
   getLiveCloudSession,
   clearLiveCloudSessionMemory: clearSession,
   getLastPushedOrigins,
+  getLastSeenCloudOrigins,
+  markCloudOriginsSeen,
   refreshLiveFromCloud,
   pushLiveToCloud,
 };

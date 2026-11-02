@@ -3,6 +3,7 @@ package com.pos.restaurant.edge.live;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot;
 import com.pos.restaurant.edge.service.EdgeCatalogExportService;
 import com.pos.restaurant.exception.BusinessException;
+import com.pos.restaurant.floor.revision.FloorRevisionStore;
 import com.pos.restaurant.security.RestaurantTenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ public class LiveFloorIngestController {
 
     private final LiveFloorApplyService applyService;
     private final EdgeCatalogExportService exportService;
+    private final FloorRevisionStore floorRevisionStore;
 
     @PostMapping("/rst/edge/live-ingest")
     @Operation(summary = "Upsert live floor snapshot from restaurant-desktop")
@@ -46,5 +48,23 @@ public class LiveFloorIngestController {
         @RequestParam(required = false) String companyLoginCode
     ) {
         return ResponseEntity.ok(LiveFloorSlice.of(exportService.export(storeId, companyLoginCode)));
+    }
+
+    @GetMapping("/rst/edge/live-origin")
+    @Operation(summary = "Cheap cloud floor origin for desktop sync direction")
+    public ResponseEntity<Map<String, Object>> origin(@RequestParam Integer storeId) {
+        if (storeId == null) {
+            throw new BusinessException("storeId required");
+        }
+        Integer companyId = RestaurantTenantContext.getCompanyId();
+        if (companyId == null) {
+            throw new BusinessException("Company context required");
+        }
+        return ResponseEntity.ok(Map.of(
+            "companyId", companyId,
+            "storeId", storeId,
+            "origin", floorRevisionStore.readOrigin(companyId, storeId),
+            "revision", floorRevisionStore.readRevision(companyId, storeId)
+        ));
     }
 }

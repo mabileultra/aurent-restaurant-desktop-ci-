@@ -57,7 +57,7 @@ No network/queue **chrome indicators** (product).
 | Payment card | `CONFIRM` queue | | done rule |
 | Discount | `OK`+`LIVE` | | **D** |
 | Cash in/out | `OK`+`OUTBOX` | flush | **C** |
-| Shift open/close | `OK`+`LIVE` | live shift both ways; empty-floor close | **C** done |
+| Shift open/close | `OK`+`LIVE` | live shift both ways; null snap closes OPEN | **C** done |
 | Paid receipts / returns | `OK`+`OUTBOX` | quiet flush | **C** done |
 | OFD pending bar | `CONFIRM` | | done |
 
@@ -133,7 +133,7 @@ No network/queue **chrome indicators** (product).
 | Staff roster 60s | done | **B** sooner on online |
 | Catalog periodic pull (~15 min) | done | **E** |
 | Stock/suppliers/stores periodic pull | done | **F** |
-| Shift live both ways + empty-floor close | done | **C** |
+| Shift live both ways + force close when snap null | done | **C** |
 | Session file | done | **B** 401 path |
 
 ---
