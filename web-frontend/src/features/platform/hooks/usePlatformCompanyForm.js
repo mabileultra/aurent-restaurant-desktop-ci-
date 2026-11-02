@@ -4,12 +4,18 @@ import toast from 'react-hot-toast';
 import { companyApi } from '../../../api/company.api';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
 import { emptyForm, toggleFormBusinessType } from '../utils/companyFormUtils';
+import { useFormDraft } from '../../../hooks/useFormDraft';
 
 export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) {
   const qc = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
+
+  const isCreateMode = modalOpen && !editing;
+  const { clearDraft } = useFormDraft('platform_company_create', isCreateMode ? form : null, (saved) => {
+    if (isCreateMode && saved) setForm((prev) => ({ ...prev, ...saved }));
+  });
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -69,6 +75,7 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
       qc.invalidateQueries({ queryKey: ['companies'] });
       qc.invalidateQueries({ queryKey: ['platform-stores-total-count'] });
       qc.invalidateQueries({ queryKey: ['company-business-types'] });
+      clearDraft();
       toast.success(t('platform.companySaved'));
       setModalOpen(false);
       setEditing(null);
@@ -179,5 +186,6 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
     toggleBusinessType,
     setDefaultBusinessType,
     tryDelete,
+    clearDraft,
   };
 }

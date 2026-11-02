@@ -52,11 +52,11 @@ export default function SearchResultsSection({
                       {u.fullName || u.username}
                     </span>
                     {hasExceptions ? (
-                      <span className="rounded-md bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-300">
+                      <span className="rounded-md bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-300 whitespace-nowrap shrink-0">
                         Istisno bor
                       </span>
                     ) : (
-                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 whitespace-nowrap shrink-0">
                         Shablon
                       </span>
                     )}
@@ -67,7 +67,7 @@ export default function SearchResultsSection({
                     <span className="truncate">{u.companyName || u.businessTypeName}</span>
                   </div>
                   <div className="mt-1">
-                    <span className="inline-block rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 px-1.5 py-0.2 text-[10px] font-semibold dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
+                    <span className="inline-block rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 px-1.5 py-0.2 text-[10px] font-semibold dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap shrink-0">
                       {u.businessTypeName || u.businessType}
                     </span>
                   </div>

@@ -8,6 +8,8 @@ import { trapFocus } from '../utils/focusTrapUtils';
 import { buildCatalogGroups } from '../utils/accessRightsCatalogUtils';
 import RoleEmployeeEditGroupList from './RoleEmployeeEditGroupList';
 import RoleEmployeeBulkHeader from './RoleEmployeeBulkHeader';
+import RoleEmployeeDiscardConfirmDialog from './RoleEmployeeDiscardConfirmDialog';
+import { useOnlineActionGuard } from '../../../../../hooks/useOnlineActionGuard';
 
 export default function RoleEmployeeBulkDrawer({
   isOpen,
@@ -20,7 +22,9 @@ export default function RoleEmployeeBulkDrawer({
   onSaved,
 }) {
   const { t } = useTranslation();
+  const { isActionBlocked, blockReason } = useOnlineActionGuard();
   const [saving, setSaving] = useState(false);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
 
   const getInitialToggles = () => Object.fromEntries(Array.from(role?.enabledModuleKeys || []).map((k) => [k, true]));
   const [moduleToggles, setModuleToggles] = useState(getInitialToggles);
@@ -32,11 +36,19 @@ export default function RoleEmployeeBulkDrawer({
 
   const userIdsArray = useMemo(() => Array.from(selectedUserIds), [selectedUserIds]);
 
+  const isDirty = useMemo(() => {
+    const def = role?.enabledModuleKeys || new Set();
+    return Array.from(role?.roleScope || []).some((k) => Boolean(moduleToggles[k]) !== def.has(k));
+  }, [moduleToggles, role]);
+
+  const handleRequestClose = () => (isDirty ? setConfirmDiscardOpen(true) : onClose?.());
+
   useEffect(() => {
     if (!isOpen) return undefined;
     triggerElementRef.current = document.activeElement;
     setSearchQuery('');
     setFilterMode('ALL');
+    setConfirmDiscardOpen(false);
     setModuleToggles(getInitialToggles());
 
     const originalOverflow = document.body.style.overflow;
@@ -55,7 +67,8 @@ export default function RoleEmployeeBulkDrawer({
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose?.();
+        if (confirmDiscardOpen) setConfirmDiscardOpen(false);
+        else handleRequestClose();
       } else if (e.key === 'Tab') {
         e.stopPropagation();
         trapFocus(e, drawerRef.current);
@@ -63,33 +76,17 @@ export default function RoleEmployeeBulkDrawer({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, confirmDiscardOpen, isDirty, onClose]);
 
   const handleToggle = (id) => setModuleToggles((prev) => ({ ...prev, [id]: !prev[id] }));
-
-  const defaultsMap = useMemo(() => {
-    const map = new Map();
-    role?.enabledModuleKeys?.forEach((k) => map.set(k, true));
-    return map;
-  }, [role]);
-
-  const isDirty = useMemo(() => {
-    const defaults = role?.enabledModuleKeys || new Set();
-    const scope = role?.roleScope || new Set();
-    for (const key of scope) {
-      if (Boolean(moduleToggles[key]) !== defaults.has(key)) return true;
-    }
-    return false;
-  }, [moduleToggles, role]);
+  const defaultsMap = useMemo(() => new Map(Array.from(role?.enabledModuleKeys || []).map((k) => [k, true])), [role]);
 
   const handleSaveBulk = async () => {
     if (saving || userIdsArray.length === 0) return;
-    const hasAtLeastOne = Object.values(moduleToggles).some(Boolean);
-    if (!hasAtLeastOne) {
+    if (!Object.values(moduleToggles).some(Boolean)) {
       toast.error('Kamida bitta modul yoqilgan bo‘lishi shart');
       return;
     }
-
     if (!isDirty) {
       toast.info('Modullar rol shabloniga to‘liq mos. O‘zgartirish kiritilmadi');
       onClose?.();
@@ -99,24 +96,19 @@ export default function RoleEmployeeBulkDrawer({
     try {
       setSaving(true);
       let successCount = 0;
-      let failCount = 0;
       const failedIds = [];
       for (const userId of userIdsArray) {
         try {
           await platformModuleAccessApi.updateUser(userId, { customAccess: true, modules: moduleToggles });
           successCount += 1;
         } catch {
-          failCount += 1;
           failedIds.push(userId);
         }
       }
-      if (failCount === 0) {
-        toast.success(`Kirish huquqlari ${successCount} ta xodimga qo‘llandi`);
-      } else if (successCount > 0) {
-        toast.error(`${successCount} ta xodimga saqlandi, lekin ${failCount} tasida xatolik yuz berdi`);
-      } else {
-        toast.error(`Barcha ${failCount} ta xodimga saqlashda xatolik yuz berdi`);
-      }
+      const failCount = failedIds.length;
+      if (failCount === 0) toast.success(`Kirish huquqlari ${successCount} ta xodimga qo‘llandi`);
+      else if (successCount > 0) toast.error(`${successCount} ta xodimga saqlandi, lekin ${failCount} tasida xatolik yuz berdi`);
+      else toast.error(`Barcha ${failCount} ta xodimga saqlashda xatolik yuz berdi`);
       onSaved?.(failedIds);
       onClose?.();
     } finally {
@@ -124,9 +116,10 @@ export default function RoleEmployeeBulkDrawer({
     }
   };
 
-  const catalogGroups = useMemo(() => {
-    return buildCatalogGroups(rawCatalog, businessType, t, role?.roleScope);
-  }, [rawCatalog, businessType, t, role]);
+  const catalogGroups = useMemo(
+    () => buildCatalogGroups(rawCatalog, businessType, t, role?.roleScope),
+    [rawCatalog, businessType, t, role]
+  );
 
   if (!isOpen || userIdsArray.length === 0) return null;
 
@@ -147,7 +140,7 @@ export default function RoleEmployeeBulkDrawer({
           setSearchQuery={setSearchQuery}
           filterMode={filterMode}
           setFilterMode={setFilterMode}
-          onClose={onClose}
+          onClose={handleRequestClose}
           closeButtonRef={closeButtonRef}
         />
 
@@ -169,7 +162,7 @@ export default function RoleEmployeeBulkDrawer({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleRequestClose}
               disabled={saving}
               className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
             >
@@ -177,7 +170,8 @@ export default function RoleEmployeeBulkDrawer({
             </button>
             <button
               type="button"
-              disabled={saving || !isDirty}
+              disabled={saving || !isDirty || isActionBlocked}
+              title={isActionBlocked ? blockReason : undefined}
               onClick={handleSaveBulk}
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -186,6 +180,15 @@ export default function RoleEmployeeBulkDrawer({
             </button>
           </div>
         </footer>
+
+        <RoleEmployeeDiscardConfirmDialog
+          isOpen={confirmDiscardOpen}
+          onStay={() => setConfirmDiscardOpen(false)}
+          onDiscard={() => {
+            setConfirmDiscardOpen(false);
+            onClose?.();
+          }}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Loader, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { BaseSelect } from '../../../../components/ui';
+import { useOnlineActionGuard } from '../../../../hooks/useOnlineActionGuard';
 import { userFormInputCls } from '../../utils/userFormModalUtils';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 import { formatUzbekPhone } from '../../utils/phoneFormatUtils';
@@ -46,6 +47,7 @@ export default function UserFormModalFields({
   onSubmit,
   onUsernameChange,
 }) {
+  const { isActionBlocked, blockReason } = useOnlineActionGuard();
   const [pinVisible, setPinVisible] = useState(false);
   const [storeSearch, setStoreSearch] = useState('');
 
@@ -533,8 +535,9 @@ export default function UserFormModalFields({
         </button>
         <button
           type="submit"
-          disabled={isPending}
-          className="admin-btn-primary px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs"
+          disabled={isPending || isActionBlocked}
+          title={isActionBlocked ? blockReason : undefined}
+          className="admin-btn-primary px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending && <Loader size={15} className="mr-2 inline animate-spin" />}
           {isEdit ? t('common.save') : t('users.createUser')}

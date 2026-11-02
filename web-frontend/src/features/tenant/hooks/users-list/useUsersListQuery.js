@@ -91,5 +91,6 @@ export function useUsersListQuery({
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
+    dataUpdatedAt: query.dataUpdatedAt,
   };
 }

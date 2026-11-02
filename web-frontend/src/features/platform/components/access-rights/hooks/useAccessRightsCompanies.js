@@ -5,15 +5,16 @@ import { loadCompaniesOptionsPage } from '../../../utils/loadCompaniesOptionsPag
  * Super Admin kirish huquqlari sahifasida kompaniyalar ro'yxatini yuklash hooki (SRP)
  */
 export function useAccessRightsCompanies(businessType) {
+  const isAll = !businessType || businessType === 'ALL';
   const {
     data: companies = [],
     isLoading: companiesLoading,
     isError: companiesError,
     refetch: refetchCompanies,
   } = useQuery({
-    queryKey: ['access-v2-companies', businessType],
-    queryFn: () => loadCompaniesOptionsPage({ businessType }),
-    staleTime: 120_000,
+    queryKey: isAll ? ['access-v2-all-companies'] : ['access-v2-companies', businessType],
+    queryFn: () => (isAll ? loadCompaniesOptionsPage() : loadCompaniesOptionsPage({ businessType })),
+    staleTime: isAll ? 300_000 : 120_000,
   });
 
   return {

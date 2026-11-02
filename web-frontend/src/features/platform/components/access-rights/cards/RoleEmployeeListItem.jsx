@@ -43,11 +43,11 @@ export default function RoleEmployeeListItem({
               {user.fullName || user.username}
             </span>
             {hasExceptions ? (
-              <span className="rounded-md bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-300">
+              <span className="rounded-md bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-300 whitespace-nowrap shrink-0">
                 Istisno bor
               </span>
             ) : (
-              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 whitespace-nowrap shrink-0">
                 Shablon
               </span>
             )}

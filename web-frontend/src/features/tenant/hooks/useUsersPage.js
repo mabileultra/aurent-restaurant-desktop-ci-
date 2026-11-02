@@ -96,6 +96,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     isError,
     error,
     refetch,
+    dataUpdatedAt,
   } = useUsersListQuery({
     isPlatform,
     tenantReady,
@@ -477,6 +478,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     isError,
     error,
     refetch,
+    dataUpdatedAt,
     pageRows,
     total,
     totalPages,

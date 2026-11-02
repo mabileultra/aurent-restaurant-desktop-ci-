@@ -66,6 +66,10 @@ vi.mock('../components/access-rights/hooks/useAccessRightsV2Data', () => ({
   useAccessRightsV2Data: () => mockHookData,
 }));
 
+vi.mock('../components/access-rights/cards/RoleTemplateDrawer', () => ({
+  default: () => null,
+}));
+
 describe('PlatformModuleAccessV2Page', () => {
   it('renders V2 card design with real counts, business type pills, and compact empty roles', () => {
     const html = renderToStaticMarkup(

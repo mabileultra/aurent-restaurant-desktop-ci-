@@ -1,5 +1,6 @@
 /* Service Worker for Aurent Web Platform & POS */
-const CACHE_NAME = 'aurent-shell-v1';
+const CACHE_VERSION = '__SW_CACHE_VERSION__';
+const CACHE_NAME = `aurent-shell-${CACHE_VERSION === '__SW_CACHE_VERSION__' ? 'dev' : CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
   '/',
@@ -28,7 +29,7 @@ self.addEventListener('activate', (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME)
+            .filter((key) => key.startsWith('aurent-shell-') && key !== CACHE_NAME)
             .map((key) => caches.delete(key))
         )
       )

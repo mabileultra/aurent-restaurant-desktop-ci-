@@ -9,6 +9,7 @@ import RoleEmployeeEditHeader from './RoleEmployeeEditHeader';
 import RoleEmployeeResetConfirmDialog from './RoleEmployeeResetConfirmDialog';
 import RoleEmployeeDiscardConfirmDialog from './RoleEmployeeDiscardConfirmDialog';
 import { useRoleEmployeeEdit } from '../hooks/useRoleEmployeeEdit';
+import { useOnlineActionGuard } from '../../../../../hooks/useOnlineActionGuard';
 
 export default function RoleEmployeeEditDrawer({
   isOpen,
@@ -20,6 +21,7 @@ export default function RoleEmployeeEditDrawer({
   onSaved,
 }) {
   const { t } = useTranslation();
+  const { isActionBlocked, blockReason } = useOnlineActionGuard();
   const triggerElementRef = useRef(null);
   const closeButtonRef = useRef(null);
   const drawerRef = useRef(null);
@@ -134,7 +136,8 @@ export default function RoleEmployeeEditDrawer({
             {detail?.moduleAccessCustom && (
               <button
                 type="button"
-                disabled={saving}
+                disabled={saving || isActionBlocked}
+                title={isActionBlocked ? blockReason : undefined}
                 onClick={() => setConfirmResetOpen(true)}
                 className="inline-flex items-center gap-1 text-xs text-rose-600 hover:underline cursor-pointer disabled:opacity-50"
               >
@@ -154,7 +157,8 @@ export default function RoleEmployeeEditDrawer({
             </button>
             <button
               type="button"
-              disabled={saving || loading}
+              disabled={saving || loading || isActionBlocked}
+              title={isActionBlocked ? blockReason : undefined}
               onClick={handleSave}
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-60"
             >

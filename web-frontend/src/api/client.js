@@ -5,6 +5,11 @@ import { forceAuthReLogin } from '../utils/authSessionExpiry';
 import { isPublicAppPath } from '../utils/publicAppPaths';
 import { isApiNetworkError, notifyNetworkOffline, notifyNetworkOnline } from '../utils/apiNetworkError';
 import {
+  generateIdempotencyKey,
+  IDEMPOTENCY_HEADER,
+  isFinancialOrCriticalEndpoint,
+} from '../utils/idempotencyKey';
+import {
   markApiUnreachable,
   refreshConnectivityStatus,
 } from '../store/connectivityStore';
@@ -41,6 +46,14 @@ api.interceptors.request.use(
       } else {
         delete config.headers['Content-Type'];
         delete config.headers['content-type'];
+      }
+    }
+    if (config.headers) {
+      if (config.idempotencyKey && !config.headers[IDEMPOTENCY_HEADER]) {
+        config.headers[IDEMPOTENCY_HEADER] = config.idempotencyKey;
+      }
+      if (!config.headers[IDEMPOTENCY_HEADER] && (config.idempotent || isFinancialOrCriticalEndpoint(config.url, config.method))) {
+        config.headers[IDEMPOTENCY_HEADER] = generateIdempotencyKey();
       }
     }
     return config;

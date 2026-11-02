@@ -48,6 +48,7 @@ export default function PlatformCompanyFormModal({
             {t('common.cancel')}
           </BaseButton>
           <BaseButton
+            requiresOnline
             disabled={!form.name.trim() || isSaving || form.businessTypeIds.length === 0 || !geoReady}
             onClick={onSave}
             className="admin-btn-primary"

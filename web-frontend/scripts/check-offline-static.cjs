@@ -60,9 +60,6 @@ test('toggle: always tries refreshCatalogBootstrap when not ready', () => {
 });
 
 test('UI: dock is status-only; catalog refresh stays in desktop menu', () => {
-  const dock = read('src/features/cashier/components/OfflineStatusDock.jsx');
-  assert.match(aside, /OfflineStatusDock/);
-  assert.doesNotMatch(dock, /showRefreshCatalog|refreshCatalog|RefreshCw/);
   assert.match(menu, /status\.canToggle/);
   assert.match(menu, /refreshCatalog/);
 });

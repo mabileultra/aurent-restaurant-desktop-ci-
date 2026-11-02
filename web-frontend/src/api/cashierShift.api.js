@@ -7,6 +7,6 @@ export const cashierShiftApi = {
   zReportPreview: (id) => api.get(`/cashier/shifts/${id}/z-report`),
   finalizeZReport: (id) => api.post(`/cashier/shifts/${id}/z-report`),
   close: (id) => api.post(`/cashier/shifts/${id}/close`),
-  cashIn: (id, body) => api.post(`/cashier/shifts/${id}/cash-in`, body),
-  cashOut: (id, body) => api.post(`/cashier/shifts/${id}/cash-out`, body),
+  cashIn: (id, body, config) => api.post(`/cashier/shifts/${id}/cash-in`, body, config),
+  cashOut: (id, body, config) => api.post(`/cashier/shifts/${id}/cash-out`, body, config),
 };
