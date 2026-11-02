@@ -4,11 +4,17 @@ import { generateIdempotencyKey, IDEMPOTENCY_HEADER } from '../utils/idempotency
 /**
  * Bitta foydalanuvchi amali (forma saqlash, to'lov qilish) doirasida
  * barqaror Idempotency Key boshqarish hooki (P0).
- * Tarmoq uzilishi yoki timeout sababli foydalanuvchi qayta bosganda
- * aynan BIR XIL kalit yuborilishini ta'minlaydi.
+ * Agar payloadSignature berilsa va u o'zgarsa (masalan, summa yoki amal turi),
+ * yangi kalit talab qilinishi uchun eski kalit avtomatik bekor qilinadi.
  */
-export function useActionIdempotencyKey() {
+export function useActionIdempotencyKey(payloadSignature = null) {
   const keyRef = useRef(null);
+  const signatureRef = useRef(payloadSignature);
+
+  if (payloadSignature !== null && payloadSignature !== signatureRef.current) {
+    keyRef.current = null;
+    signatureRef.current = payloadSignature;
+  }
 
   const getKey = useCallback(() => {
     if (!keyRef.current) {
@@ -19,6 +25,7 @@ export function useActionIdempotencyKey() {
 
   const resetKey = useCallback(() => {
     keyRef.current = null;
+    signatureRef.current = null;
   }, []);
 
   const getHeaders = useCallback(() => {

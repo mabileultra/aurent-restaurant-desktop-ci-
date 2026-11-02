@@ -32,3 +32,30 @@ export function toggleFormBusinessType(prev, typeId, constructorTypes) {
     businessType: defaultType?.code ?? prev.businessType,
   };
 }
+
+export function buildCompanyPayload(form, constructorTypes = []) {
+  const {
+    name,
+    legalName,
+    tin,
+    address,
+    regionCode,
+    districtCode,
+    phone,
+    active,
+    businessType,
+    defaultBusinessTypeId,
+  } = form;
+  const defaultType = constructorTypes.find((bt) => bt.id === defaultBusinessTypeId);
+  return {
+    name: name.trim(),
+    legalName: legalName?.trim() || null,
+    tin: tin?.trim() || null,
+    address: address?.trim() || null,
+    regionCode: regionCode || null,
+    districtCode: districtCode || null,
+    phone: phone?.trim() || null,
+    active,
+    businessType: defaultType?.code ?? businessType,
+  };
+}

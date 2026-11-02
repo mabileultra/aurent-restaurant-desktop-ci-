@@ -26,7 +26,8 @@ export default function ShiftCashMovementModal({
     numericAmount,
     handleAddQuickAmount,
     handleSubmit,
-  } = useShiftCashMovement({ direction, shiftId, onSuccess, onClose, t });
+    handleClose,
+  } = useShiftCashMovement({ open, direction, shiftId, onSuccess, onClose, t });
 
   if (!open) return null;
 
@@ -44,7 +45,7 @@ export default function ShiftCashMovementModal({
   ].join(' ');
 
   return (
-    <PosModalPortal open={open} onClose={onClose}>
+    <PosModalPortal open={open} onClose={handleClose}>
       <div
         className={modalClass}
         onMouseDown={(e) => e.stopPropagation()}
@@ -67,7 +68,7 @@ export default function ShiftCashMovementModal({
           <button
             type="button"
             className="cashier-cash-move-modal__close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label={t('common.close')}
           >
             <X size={20} />
@@ -143,7 +144,7 @@ export default function ShiftCashMovementModal({
           <div className="cashier-cash-move-modal__actions">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="cashier-cash-move-modal__btn cashier-cash-move-modal__btn--ghost"
             >

@@ -5,12 +5,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { X, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusinessTypes';
-import { formatUzPhone, digitsAfter998 } from '../../../../utils/phoneUz';
-import { normalizeBusinessTypeCode } from '../../../../config/productCatalogConfig';
 import { useOnlineActionGuard } from '../../../../hooks/useOnlineActionGuard';
 import { useFormDraft } from '../../../../hooks/useFormDraft';
+import FormDraftNotice from '../../../../components/shared/FormDraftNotice';
 import StoreFormModalFields from './StoreFormModalFields';
-import { buildStoreFormSchema, buildStoreSubmitPayload } from './storeFormSchema';
+import {
+  buildStoreFormSchema,
+  buildStoreSubmitPayload,
+  resolveBusinessTypeOptions,
+  buildDefaultStoreValues,
+} from './storeFormSchema';
 
 export default function StoreFormModal({
   open,
@@ -43,13 +47,18 @@ export default function StoreFormModal({
   const watchedDistrictCode = watch('districtCode');
   const watchedPhone = watch('phone');
 
-  const { clearDraft } = useFormDraft('tenant_store_create', isCreate && open ? watchedValues : null, (saved) => {
+  const { clearDraft, isDraftRestored } = useFormDraft('tenant_store_create', isCreate && open ? watchedValues : null, (saved) => {
     if (saved && isCreate) {
       Object.entries(saved).forEach(([k, v]) => {
         if (v !== undefined && v !== null && v !== '') setValue(k, v);
       });
     }
   });
+
+  const handleClearDraft = () => {
+    clearDraft();
+    reset(buildDefaultStoreValues(null));
+  };
 
   const { types: companyTypes = [], defaultTypeCode, isLoading: typesLoading, needsCompany } = useStoreFormBusinessTypes(
     watchedCompanyId,
@@ -58,24 +67,10 @@ export default function StoreFormModal({
 
   const prevCompanyRef = useRef('');
 
-  const businessTypeOptions = useMemo(() => {
-    if (needsCompany) {
-      return [{ value: '', label: t('stores.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' }) }];
-    }
-    if (companyTypes.length > 0) {
-      return companyTypes.map((bt) => ({
-        value: bt.code,
-        id: bt.id,
-        label: t(`productTemplates.businessTypes.${normalizeBusinessTypeCode(bt.code)}`, { defaultValue: bt.name || bt.code }),
-      }));
-    }
-    const normDefault = normalizeBusinessTypeCode(defaultTypeCode);
-    return [{
-      value: defaultTypeCode,
-      id: null,
-      label: t(`productTemplates.businessTypes.${normDefault}`, { defaultValue: defaultTypeCode }),
-    }];
-  }, [companyTypes, defaultTypeCode, needsCompany, t]);
+  const businessTypeOptions = useMemo(
+    () => resolveBusinessTypeOptions({ needsCompany, companyTypes, defaultTypeCode, t }),
+    [companyTypes, defaultTypeCode, needsCompany, t]
+  );
 
   useEffect(() => {
     if (!open || !showCompanySelect) return;
@@ -105,19 +100,8 @@ export default function StoreFormModal({
       prevCompanyRef.current = '';
       return;
     }
-    reset({
-      name: initial?.name ?? '',
-      address: initial?.address ?? '',
-      regionCode: initial?.regionCode ?? '',
-      districtCode: initial?.districtCode ?? '',
-      phone: initial?.phone && digitsAfter998(initial.phone) ? formatUzPhone(initial.phone) : '',
-      code: initial?.code ?? '',
-      companyId: initial?.companyId ? String(initial.companyId) : '',
-      businessType: initial?.businessType ?? '',
-      businessTypeId: initial?.businessTypeId ? String(initial.businessTypeId) : '',
-      active: initial?.active ?? true,
-    });
-  }, [open, initial?.id, reset]);
+    reset(buildDefaultStoreValues(initial));
+  }, [open, initial, reset]);
 
   if (!open) return null;
 
@@ -138,6 +122,9 @@ export default function StoreFormModal({
           </button>
         </div>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 p-5">
+          {isCreate && isDraftRestored ? (
+            <FormDraftNotice onClear={handleClearDraft} />
+          ) : null}
           <StoreFormModalFields
             t={t}
             showCompanySelect={showCompanySelect}

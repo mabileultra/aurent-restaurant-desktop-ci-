@@ -122,4 +122,18 @@ describe('PlatformCompanyFormModal', () => {
     expect(html).toContain('inputMode="numeric"');
     expect(html).toContain('maxLength="9"');
   });
+
+  it('renders draft restored notice with clear button when isDraftRestored is true in create mode', () => {
+    const onClearDraft = vi.fn();
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        isDraftRestored: true,
+        onClearDraft,
+      })
+    );
+
+    expect(html).toContain('Avvalgi kiritilgan ma’lumot tiklandi');
+    expect(html).toContain('Tozalash');
+  });
 });

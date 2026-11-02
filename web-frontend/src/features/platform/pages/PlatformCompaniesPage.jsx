@@ -159,6 +159,8 @@ export default function PlatformCompaniesPage() {
         onToggleBusinessType={p.toggleBusinessType}
         onSetDefaultBusinessType={p.setDefaultBusinessType}
         onSave={() => p.saveMutation.mutate()}
+        isDraftRestored={p.isDraftRestored}
+        onClearDraft={p.handleClearDraft}
       />
 
       {/* 5. Quick Peek Slide-Over Drawer */}

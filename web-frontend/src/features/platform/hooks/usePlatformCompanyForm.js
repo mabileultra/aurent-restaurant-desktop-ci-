@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { companyApi } from '../../../api/company.api';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
-import { emptyForm, toggleFormBusinessType } from '../utils/companyFormUtils';
+import { emptyForm, toggleFormBusinessType, buildCompanyPayload } from '../utils/companyFormUtils';
 import { useFormDraft } from '../../../hooks/useFormDraft';
 
 export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) {
@@ -13,38 +13,25 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
   const [form, setForm] = useState(emptyForm);
 
   const isCreateMode = modalOpen && !editing;
-  const { clearDraft } = useFormDraft('platform_company_create', isCreateMode ? form : null, (saved) => {
+  const { clearDraft, isDraftRestored } = useFormDraft('platform_company_create', isCreateMode ? form : null, (saved) => {
     if (isCreateMode && saved) setForm((prev) => ({ ...prev, ...saved }));
   });
 
+  const handleClearDraft = () => {
+    clearDraft();
+    const universal = constructorTypes.find((bt) => bt.code === 'UNIVERSAL');
+    setForm({
+      ...emptyForm(),
+      businessTypeIds: universal ? [universal.id] : [],
+      defaultBusinessTypeId: universal?.id ?? null,
+    });
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const {
-        name,
-        legalName,
-        tin,
-        address,
-        regionCode,
-        districtCode,
-        phone,
-        active,
-        businessType,
-        businessTypeIds = [],
-        defaultBusinessTypeId,
-      } = form;
-      if (!name.trim()) throw new Error(t('platform.nameRequired'));
-      const defaultType = constructorTypes.find((bt) => bt.id === defaultBusinessTypeId);
-      const payload = {
-        name: name.trim(),
-        legalName: legalName.trim() || null,
-        tin: tin.trim() || null,
-        address: address.trim() || null,
-        regionCode: regionCode || null,
-        districtCode: districtCode || null,
-        phone: phone.trim() || null,
-        active,
-        businessType: defaultType?.code ?? businessType,
-      };
+      if (!form.name.trim()) throw new Error(t('platform.nameRequired'));
+      const payload = buildCompanyPayload(form, constructorTypes);
+      const { businessTypeIds = [], defaultBusinessTypeId } = form;
 
       let companyId = editing?.id;
       if (editing?.id) {
@@ -65,9 +52,8 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
         }
       }
 
-      if (editing?.id) {
-        await companyApi.update(editing.id, payload);
-      } else if (companyId && payload.businessType !== (defaultType?.code ?? businessType)) {
+      const defaultType = constructorTypes.find((bt) => bt.id === defaultBusinessTypeId);
+      if (!editing?.id && companyId && payload.businessType !== (defaultType?.code ?? form.businessType)) {
         await companyApi.update(companyId, { businessType: payload.businessType });
       }
     },
@@ -187,5 +173,7 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
     setDefaultBusinessType,
     tryDelete,
     clearDraft,
+    isDraftRestored,
+    handleClearDraft,
   };
 }

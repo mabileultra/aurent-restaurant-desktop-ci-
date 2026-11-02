@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { formatUzPhone, digitsAfter998, isCompleteUzPhone } from '../../../../utils/phoneUz';
+import { normalizeBusinessTypeCode } from '../../../../config/productCatalogConfig';
 
 export function buildStoreFormSchema(t, { isCreate, showCompanySelect }) {
   return z.object({
@@ -48,4 +49,38 @@ export function buildStoreSubmitPayload(data, isCreate) {
     payload.districtCode = districtCode;
   }
   return payload;
+}
+
+export function resolveBusinessTypeOptions({ needsCompany, companyTypes = [], defaultTypeCode, t }) {
+  if (needsCompany) {
+    return [{ value: '', label: t('stores.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' }) }];
+  }
+  if (companyTypes.length > 0) {
+    return companyTypes.map((bt) => ({
+      value: bt.code,
+      id: bt.id,
+      label: t(`productTemplates.businessTypes.${normalizeBusinessTypeCode(bt.code)}`, { defaultValue: bt.name || bt.code }),
+    }));
+  }
+  const normDefault = normalizeBusinessTypeCode(defaultTypeCode);
+  return [{
+    value: defaultTypeCode,
+    id: null,
+    label: t(`productTemplates.businessTypes.${normDefault}`, { defaultValue: defaultTypeCode }),
+  }];
+}
+
+export function buildDefaultStoreValues(initial) {
+  return {
+    name: initial?.name ?? '',
+    address: initial?.address ?? '',
+    regionCode: initial?.regionCode ?? '',
+    districtCode: initial?.districtCode ?? '',
+    phone: initial?.phone && digitsAfter998(initial.phone) ? formatUzPhone(initial.phone) : '',
+    code: initial?.code ?? '',
+    companyId: initial?.companyId ? String(initial.companyId) : '',
+    businessType: initial?.businessType ?? '',
+    businessTypeId: initial?.businessTypeId ? String(initial.businessTypeId) : '',
+    active: initial?.active ?? true,
+  };
 }

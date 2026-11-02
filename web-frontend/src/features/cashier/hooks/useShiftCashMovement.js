@@ -1,23 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { cashierShiftApi } from '../../../api/cashierShift.api';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { useActionIdempotencyKey } from '../../../hooks/useActionIdempotencyKey';
 
 export function useShiftCashMovement({
+  open = false,
   direction = 'IN',
   shiftId,
   onSuccess,
   onClose,
   t,
 }) {
-  const { getHeaders, resetKey } = useActionIdempotencyKey();
   const [amountStr, setAmountStr] = useState('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isCashIn = direction === 'IN';
   const numericAmount = Math.max(0, Number(String(amountStr).replace(/\s+/g, '')) || 0);
+
+  // Modal ochiq bo'lsa yo'nalish, smena, summa va izoh bo'yicha imzo shakllanadi.
+  // Ulardan biri o'zgarsa yoki modal yopilsa, Idempotency Key avtomatik bekor qilinadi.
+  const payloadSignature = open
+    ? `${direction}:${shiftId}:${numericAmount}:${note.trim()}`
+    : null;
+
+  const { getHeaders, resetKey } = useActionIdempotencyKey(payloadSignature);
+
+  useEffect(() => {
+    if (!open) {
+      resetKey();
+      setAmountStr('');
+      setNote('');
+    }
+  }, [open, resetKey]);
+
+  const handleClose = () => {
+    resetKey();
+    setAmountStr('');
+    setNote('');
+    onClose?.();
+  };
 
   const handleAddQuickAmount = (delta) => {
     setAmountStr((prev) => {
@@ -66,9 +89,7 @@ export function useShiftCashMovement({
 
       resetKey();
       onSuccess?.();
-      onClose();
-      setAmountStr('');
-      setNote('');
+      handleClose();
     } catch (err) {
       const message = err.response?.data?.message || err.message;
       toast.error(message || t('pos.cashMovementFailed', { defaultValue: 'Operatsiyani bajarib bo‘lmadi' }));
@@ -87,5 +108,6 @@ export function useShiftCashMovement({
     numericAmount,
     handleAddQuickAmount,
     handleSubmit,
+    handleClose,
   };
 }

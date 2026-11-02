@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 const SENSITIVE_KEYS = new Set([
   'password',
@@ -44,6 +44,21 @@ export function sanitizeDraftData(data) {
  */
 export function useFormDraft(draftKey, formData, onRestore) {
   const isRestoredRef = useRef(false);
+  const [isDraftRestored, setIsDraftRestored] = useState(() => {
+    if (!draftKey || typeof window === 'undefined') return false;
+    try {
+      const saved = window.sessionStorage.getItem(`draft_${draftKey}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          return true;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return false;
+  });
 
   // 1. Dastlabki yuklanishda saqlangan qoralama (draft) ni tiklash
   useEffect(() => {
@@ -52,8 +67,9 @@ export function useFormDraft(draftKey, formData, onRestore) {
       const saved = window.sessionStorage.getItem(`draft_${draftKey}`);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') {
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
           isRestoredRef.current = true;
+          setIsDraftRestored(true);
           onRestore?.(parsed);
         }
       }
@@ -84,10 +100,19 @@ export function useFormDraft(draftKey, formData, onRestore) {
     try {
       window.sessionStorage.removeItem(`draft_${draftKey}`);
       isRestoredRef.current = false;
+      setIsDraftRestored(false);
     } catch {
       // ignore
     }
   }, [draftKey]);
 
-  return { clearDraft };
+  const resetDraftRestored = useCallback(() => {
+    setIsDraftRestored(false);
+  }, []);
+
+  return {
+    clearDraft,
+    isDraftRestored,
+    resetDraftRestored,
+  };
 }

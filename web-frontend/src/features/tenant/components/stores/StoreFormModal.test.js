@@ -111,4 +111,26 @@ describe('StoreFormModal', () => {
     expect(html).toContain('Do‘konni tahrirlash');
     expect(html).toContain('+998 (90) 123-45-67');
   });
+
+  it('renders draft restored notice when draft exists in sessionStorage', () => {
+    let mockStore = {
+      draft_tenant_store_create: JSON.stringify({ name: 'Eski qoralama do‘kon' }),
+    };
+    vi.stubGlobal('window', {
+      sessionStorage: {
+        getItem: (k) => mockStore[k] || null,
+        setItem: (k, v) => { mockStore[k] = String(v); },
+        removeItem: (k) => { delete mockStore[k]; },
+      },
+    });
+
+    const html = renderToStaticMarkup(
+      React.createElement(StoreFormModal, defaultProps)
+    );
+
+    expect(html).toContain('Avvalgi kiritilgan ma’lumot tiklandi');
+    expect(html).toContain('Tozalash');
+
+    vi.unstubAllGlobals();
+  });
 });
