@@ -250,6 +250,29 @@ cmd_check() {
   exit 1
 }
 
+# Guard: never silently deploy to an unnamed host (lab vs prod).
+require_deploy_target() {
+  local t="${DEPLOY_TARGET:-}"
+  case "$t" in
+    lab|test)
+      echo "==> DEPLOY_TARGET=${t} (lab/test) — продолжаем"
+      ;;
+    prod|production)
+      if [[ "${CONFIRM_PROD:-}" != "YES" ]]; then
+        echo "PROD заблокирован: нужно DEPLOY_TARGET=prod и CONFIRM_PROD=YES" >&2
+        exit 1
+      fi
+      echo "==> DEPLOY_TARGET=prod + CONFIRM_PROD=YES — продолжаем"
+      ;;
+    *)
+      echo "Укажите цель выкладки:" >&2
+      echo "  DEPLOY_TARGET=lab   bash deploy/deploy.sh     # тестовый (Contabo / aurent-pos-lab)" >&2
+      echo "  DEPLOY_TARGET=prod CONFIRM_PROD=YES bash deploy/deploy.sh  # живой прод" >&2
+      exit 1
+      ;;
+  esac
+}
+
 if [[ "$SUBCOMMAND" == "check" ]]; then
   cmd_check
 fi
@@ -276,10 +299,12 @@ case "$SUBCOMMAND" in
       echo "Использование: bash deploy/deploy.sh recreate <service>" >&2
       exit 1
     fi
+    require_deploy_target
     recreate_service "$1"
     exit 0
     ;;
   deploy)
+    require_deploy_target
     ;;
   *)
     echo "Использование: bash deploy/deploy.sh [deploy|check|verify-db|sync-db-password|recreate <service>]" >&2
