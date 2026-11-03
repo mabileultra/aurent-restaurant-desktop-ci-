@@ -2,6 +2,7 @@ import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { formatApiErrorMessage } from '../utils/apiErrorParser';
 import { isApiNetworkError, notifyNetworkOffline } from '../utils/apiNetworkError';
+import { useNetworkStore, ConnectionStatus } from '../store/networkStore';
 import { queryRetryDelay, shouldRetryQuery } from './queryRetry';
 
 /**
@@ -13,8 +14,8 @@ export const queryClient = new QueryClient({
     onError: (error, query) => {
       if (isApiNetworkError(error)) {
         notifyNetworkOffline(error);
+        return;
       }
-      // Background query error handling
       if (query?.meta?.errorMessage) {
         toast.error(query.meta.errorMessage);
       } else if (query?.meta?.showToastOnError) {
@@ -24,20 +25,26 @@ export const queryClient = new QueryClient({
   }),
   mutationCache: new MutationCache({
     onError: (error, _variables, _context, mutation) => {
-      if (isApiNetworkError(error)) {
+      const isNetError = isApiNetworkError(error);
+      if (isNetError) {
         notifyNetworkOffline(error);
       }
-      // Opt-out flag for custom local handling (e.g. inline form errors)
+
+      // Faqatgina internet yo'qligi aniq tasdiqlangan holatda (OFFLINE banner ko'rsatilayotganda)
+      // ortiqcha takroriy toast xabari bostiriladi.
+      const isConfirmedOffline = useNetworkStore.getState().status === ConnectionStatus.OFFLINE;
+      if (isNetError && isConfirmedOffline) {
+        return;
+      }
+
       if (mutation?.meta?.suppressGlobalError) return;
 
-      // Custom message override if provided in mutation meta
       if (mutation?.meta?.errorMessage) {
         toast.error(mutation.meta.errorMessage);
         return;
       }
 
-      // Default: parse status/response message and show user-friendly notification
-      const message = formatApiErrorMessage(error);
+      const message = formatApiErrorMessage(error) || "Saqlanmadi, qayta urinib ko'ring";
       toast.error(message);
     },
   }),
@@ -47,6 +54,9 @@ export const queryClient = new QueryClient({
       retryDelay: queryRetryDelay,
       staleTime: 30_000,
       refetchOnWindowFocus: false,
+    },
+    mutations: {
+      networkMode: 'always',
     },
   },
 });

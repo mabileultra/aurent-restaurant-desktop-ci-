@@ -5,6 +5,13 @@ import PlatformStoreQuickDrawer from './PlatformStoreQuickDrawer';
 
 globalThis.React = React;
 
+vi.mock('../../../shared/geo/useGeoNameLookup', () => ({
+  useGeoNameLookup: () => ({
+    regionName: (code) => (code === 'TAS' ? 'Toshkent sh.' : code),
+    districtName: (code) => (code === 'CHIL' ? 'Chilonzor tumani' : code),
+  }),
+}));
+
 describe('PlatformStoreQuickDrawer', () => {
   const mockT = (key, opts) => opts?.defaultValue || key;
 
@@ -76,7 +83,7 @@ describe('PlatformStoreQuickDrawer', () => {
     // Status & Action buttons
     expect(html).toContain('Faol');
     expect(html).toContain('Tahrirlash');
-    expect(html).toContain('To‘xtatish');
+    expect(html).toContain('Faolsizlantirish');
   });
 
   it('renders pharmacy integration button when businessType is PHARMACY', () => {

@@ -66,7 +66,7 @@ export default function PlatformDesktopHistoryMobileList({
                   }
                   onViewDetails={() => p.setSelectedItemForDrawer(item)}
                   onDuplicate={() => p.handleDuplicate(item)}
-                  onExtend={() => p.handleExtend(item)}
+                  onExtend={() => (p.handleExtendPrompt ? p.handleExtendPrompt(item) : p.handleExtend(item))}
                   onRevoke={() => p.handleRevokePrompt(item)}
                   t={t}
                 />

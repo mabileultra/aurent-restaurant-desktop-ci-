@@ -20,6 +20,6 @@ module.exports = {
   },
   plugins: ['react', 'react-hooks'],
   rules: {
-    'max-lines': ['warn', { max: 250, skipBlankLines: true, skipComments: true }],
+    'max-lines': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],
   },
 };

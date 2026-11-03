@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownLeft, ArrowUpRight, Loader, X } from 'lucide-react';
-import toast from 'react-hot-toast';
 import PosModalPortal from '../../../components/shared/PosModalPortal';
-import { cashierShiftApi } from '../../../api/cashierShift.api';
 import { fmtMoney } from '../../../utils/formatMoney';
+import { useOnlineActionGuard } from '../../../hooks/useOnlineActionGuard';
+import { useShiftCashMovement } from '../hooks/useShiftCashMovement';
 
 const QUICK_AMOUNTS = [10_000, 50_000, 100_000, 500_000];
 
@@ -16,13 +15,22 @@ export default function ShiftCashMovementModal({
   onSuccess,
 }) {
   const { t } = useTranslation();
-  const [amountStr, setAmountStr] = useState('');
-  const [note, setNote] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isActionBlocked, blockReason } = useOnlineActionGuard();
+  const {
+    amountStr,
+    setAmountStr,
+    note,
+    setNote,
+    isSubmitting,
+    isCashIn,
+    numericAmount,
+    handleAddQuickAmount,
+    handleSubmit,
+    handleClose,
+  } = useShiftCashMovement({ open, direction, shiftId, onSuccess, onClose, t });
 
   if (!open) return null;
 
-  const isCashIn = direction === 'IN';
   const title = isCashIn
     ? t('pos.cashInTitle', { defaultValue: 'Kassaga pul kiritish' })
     : t('pos.cashOutTitle', { defaultValue: 'Kassadan pul yechish (inkassatsiya)' });
@@ -31,71 +39,13 @@ export default function ShiftCashMovementModal({
     ? t('pos.cashInHint', { defaultValue: 'Razmen yoki kassaga naqd pul qo‘shish' })
     : t('pos.cashOutHint', { defaultValue: 'Inkassatsiya yoki xarajat uchun naqd pul olish' });
 
-  const numericAmount = Math.max(0, Number(String(amountStr).replace(/\s+/g, '')) || 0);
-
-  const handleAddQuickAmount = (delta) => {
-    setAmountStr((prev) => {
-      const current = Math.max(0, Number(String(prev).replace(/\s+/g, '')) || 0);
-      return String(current + delta);
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e?.preventDefault();
-    if (!shiftId) {
-      toast.error(t('pos.shiftRequired', { defaultValue: 'Faol smena topilmadi' }));
-      return;
-    }
-
-    if (numericAmount <= 0) {
-      toast.error(t('pos.cashMovementAmountRequired', { defaultValue: 'Iltimos, summani kiriting' }));
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        amount: numericAmount,
-        note: note.trim() || undefined,
-      };
-
-      if (isCashIn) {
-        await cashierShiftApi.cashIn(shiftId, payload);
-        toast.success(
-          t('pos.cashInSuccess', {
-            defaultValue: 'Kassaga {{amount}} so‘m kiritildi',
-            amount: fmtMoney(numericAmount),
-          })
-        );
-      } else {
-        await cashierShiftApi.cashOut(shiftId, payload);
-        toast.success(
-          t('pos.cashOutSuccess', {
-            defaultValue: 'Kassadan {{amount}} so‘m yechildi',
-            amount: fmtMoney(numericAmount),
-          })
-        );
-      }
-
-      onSuccess?.();
-      onClose();
-      setAmountStr('');
-      setNote('');
-    } catch (err) {
-      const message = err.response?.data?.message || err.message;
-      toast.error(message || t('pos.cashMovementFailed', { defaultValue: 'Operatsiyani bajarib bo‘lmadi' }));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const modalClass = [
     'cashier-cash-move-modal',
     isCashIn ? 'cashier-cash-move-modal--in' : 'cashier-cash-move-modal--out',
   ].join(' ');
 
   return (
-    <PosModalPortal open={open} onClose={onClose}>
+    <PosModalPortal open={open} onClose={handleClose}>
       <div
         className={modalClass}
         onMouseDown={(e) => e.stopPropagation()}
@@ -118,7 +68,7 @@ export default function ShiftCashMovementModal({
           <button
             type="button"
             className="cashier-cash-move-modal__close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label={t('common.close')}
           >
             <X size={20} />
@@ -194,7 +144,7 @@ export default function ShiftCashMovementModal({
           <div className="cashier-cash-move-modal__actions">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="cashier-cash-move-modal__btn cashier-cash-move-modal__btn--ghost"
             >
@@ -202,8 +152,9 @@ export default function ShiftCashMovementModal({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || numericAmount <= 0}
-              className="cashier-cash-move-modal__btn cashier-cash-move-modal__btn--primary"
+              disabled={isSubmitting || numericAmount <= 0 || isActionBlocked}
+              title={isActionBlocked ? blockReason : undefined}
+              className="cashier-cash-move-modal__btn cashier-cash-move-modal__btn--primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>

@@ -1,5 +1,8 @@
 import React from 'react';
 
+export const MAX_BROADCAST_TITLE_LENGTH = 200;
+export const MAX_BROADCAST_BODY_LENGTH = 4000;
+
 export default function PlatformDesktopContentStep({ p }) {
   const { t } = p;
   const currentTitle = p.title || '';
@@ -16,20 +19,20 @@ export default function PlatformDesktopContentStep({ p }) {
         </h3>
       </div>
 
-      {/* Title Field */}
+      {/* Title Field (Max 200 chars matching backend) */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
           <label htmlFor="broadcast-title-input">
             {t('platform.desktopNotifications.fieldTitle')} <span className="text-rose-500">*</span>
           </label>
           <span className="text-[11px] font-normal text-slate-400">
-            {currentTitle.length}/60
+            {currentTitle.length}/{MAX_BROADCAST_TITLE_LENGTH}
           </span>
         </div>
         <input
           id="broadcast-title-input"
           type="text"
-          maxLength={60}
+          maxLength={MAX_BROADCAST_TITLE_LENGTH}
           value={currentTitle}
           onChange={(e) => p.setTitle(e.target.value)}
           placeholder={t('platform.desktopNotifications.titlePlaceholder')}
@@ -37,20 +40,20 @@ export default function PlatformDesktopContentStep({ p }) {
         />
       </div>
 
-      {/* Body Field */}
+      {/* Body Field (Max 4000 chars matching backend) */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
           <label htmlFor="broadcast-body-input">
             {t('platform.desktopNotifications.fieldBody')} <span className="text-rose-500">*</span>
           </label>
           <span className="text-[11px] font-normal text-slate-400">
-            {currentBody.length}/500
+            {currentBody.length}/{MAX_BROADCAST_BODY_LENGTH}
           </span>
         </div>
         <textarea
           id="broadcast-body-input"
           rows={4}
-          maxLength={500}
+          maxLength={MAX_BROADCAST_BODY_LENGTH}
           value={currentBody}
           onChange={(e) => p.setBody(e.target.value)}
           placeholder={t('platform.desktopNotifications.bodyPlaceholder')}

@@ -14,7 +14,7 @@ export function useAccessRightsUnconfiguredCount({
     queryFn: async () => {
       try {
         const res = await platformModuleAccessApi.listUsers({
-          businessType: isPlatformStaff ? undefined : selectedBT,
+          businessType: isPlatformStaff || selectedBT === 'ALL' ? undefined : selectedBT,
           companyId: selectedCompanyId || undefined,
           platformOnly: isPlatformStaff || undefined,
           accessFilter: 'unconfigured',

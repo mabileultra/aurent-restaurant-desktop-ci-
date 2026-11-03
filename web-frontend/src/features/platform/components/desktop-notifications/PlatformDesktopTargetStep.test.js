@@ -49,10 +49,30 @@ describe('PlatformDesktopTargetStep', () => {
     expect(html).toContain('value="Niso"');
   });
 
-  it('disables targetSelect button with Tez kunda badge when targetScope is ALL', () => {
+  it('enables targetSelect button without Tez kunda badge when targetScope is ALL', () => {
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: mockProps }));
 
-    expect(html).toContain('disabled=""');
-    expect(html).toContain('Tez kunda');
+    expect(html).not.toContain('disabled');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).toContain('aria-pressed="false"');
+  });
+
+  it('sets aria-pressed true on targetSelect button when targetScope is SELECT', () => {
+    const selectProps = { ...mockProps, targetScope: 'SELECT' };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: selectProps }));
+
+    expect(html).not.toContain('disabled');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).toContain('aria-pressed="true"');
+  });
+
+  it('hides online count note when onlineRegistersCount is 0 or null', () => {
+    const zeroOnlineProps = { ...mockProps, onlineRegistersCount: 0 };
+    const htmlZero = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: zeroOnlineProps }));
+    expect(htmlZero).not.toContain('Hozir onlayn: 0');
+
+    const nullOnlineProps = { ...mockProps, onlineRegistersCount: null };
+    const htmlNull = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: nullOnlineProps }));
+    expect(htmlNull).not.toContain('Hozir onlayn');
   });
 });

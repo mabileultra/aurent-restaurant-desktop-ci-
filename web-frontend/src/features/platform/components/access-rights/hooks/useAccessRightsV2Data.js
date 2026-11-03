@@ -6,14 +6,12 @@ import { platformBusinessTypeApi, platformModuleAccessApi } from '../../../../..
 import { useAuthStore } from '../../../../../store/authStore';
 import { isSuperAdminRole } from '../../../../../utils/platformRoles';
 import { useDebouncedValue } from '../../../../../hooks/useDebouncedValue';
-import { rolesForBusinessType } from '../../../utils/rolesByBusinessType';
 import {
   buildCatalogGroups,
   buildCatalogMap,
-  resolveRoleLabel,
   resolveBusinessTypeName,
 } from '../utils/accessRightsCatalogUtils';
-import { getDefaultModulesForRole, getScopeForRole } from '../utils/roleDefaultModules';
+import { buildRoleSummaries } from '../utils/accessRightsRoleSummaryUtils';
 import { useRoleDefaultsQuery } from './useRoleDefaultsQuery';
 import { useAccessRightsCompanies, useAccessRightsCompaniesMap } from './useAccessRightsCompanies';
 import { useAccessRightsUnconfiguredCount } from './useAccessRightsUnconfiguredCount';
@@ -28,19 +26,27 @@ export function useAccessRightsV2Data() {
   const canManagePlatformStaff = isSuperAdminRole(userRole);
 
   const [selectedBT, setSelectedBTState] = useState('RESTAURANT');
+  const [searchBT, setSearchBT] = useState('ALL');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [accessFilter, setAccessFilter] = useState('all');
   const [visitedCounts, setVisitedCounts] = useState({});
 
   const debouncedSearch = useDebouncedValue(searchTerm.trim(), 300);
-  const isPlatformStaff = selectedBT === 'PLATFORM_STAFF';
+  const isSearching = Boolean(debouncedSearch);
+  const effectiveBT = isSearching ? searchBT : selectedBT;
+  const isPlatformStaff = effectiveBT === 'PLATFORM_STAFF';
   const isUnfilteredQuery = !selectedCompanyId && !debouncedSearch && accessFilter === 'all';
 
   const setSelectedBT = useCallback((bt) => {
-    setSelectedBTState(bt);
+    if (isSearching) {
+      setSearchBT(bt);
+      if (bt !== 'ALL') setSelectedBTState(bt);
+    } else {
+      setSelectedBTState(bt);
+    }
     setSelectedCompanyId('');
-  }, []);
+  }, [isSearching]);
 
   const { data: rawBusinessTypes = [], isLoading: btLoading, isError: btError, error: btErrorObj, refetch: refetchBT } =
     useQuery({ queryKey: ['platform-business-types-options'], queryFn: () => platformBusinessTypeApi.list().then((r) => r.data || []), staleTime: 300_000 });
@@ -48,17 +54,17 @@ export function useAccessRightsV2Data() {
   const { data: rawCatalog = [], isLoading: catalogLoading, isError: catalogError, error: catalogErrorObj, refetch: refetchCatalog } =
     useQuery({ queryKey: ['platform-module-access-catalog'], queryFn: () => platformModuleAccessApi.catalog().then((r) => r.data || []), staleTime: 300_000 });
 
-  const { companies, companiesLoading } = useAccessRightsCompanies(isPlatformStaff ? '' : selectedBT);
+  const { companies, companiesLoading } = useAccessRightsCompanies(isPlatformStaff ? '' : effectiveBT);
   const companiesMap = useAccessRightsCompaniesMap();
-  const unconfiguredCount = useAccessRightsUnconfiguredCount({ selectedBT, selectedCompanyId, isPlatformStaff });
+  const unconfiguredCount = useAccessRightsUnconfiguredCount({ selectedBT: effectiveBT, selectedCompanyId, isPlatformStaff });
   const { statsByCode, refetchStats } = useAccessRightsStats();
 
   const { data: usersResponse = { content: [], totalElements: 0 }, isLoading: usersLoading, isError: usersError, error: usersErrorObj, refetch: refetchUsers } = useQuery({
-    queryKey: ['access-v2-users', selectedBT, selectedCompanyId, debouncedSearch, accessFilter],
+    queryKey: ['access-v2-users', effectiveBT, selectedCompanyId, debouncedSearch, accessFilter],
     queryFn: async () => {
-      const isSearching = Boolean(debouncedSearch);
+      const queryBT = (isPlatformStaff || effectiveBT === 'ALL') ? undefined : effectiveBT;
       const res = await platformModuleAccessApi.listUsers({
-        businessType: (isPlatformStaff || isSearching) ? undefined : selectedBT,
+        businessType: queryBT,
         companyId: isPlatformStaff ? undefined : (selectedCompanyId || undefined),
         platformOnly: isPlatformStaff || undefined,
         search: debouncedSearch || undefined,
@@ -73,14 +79,14 @@ export function useAccessRightsV2Data() {
     staleTime: 60_000,
   });
 
-  const rawUsers = usersResponse.content;
-  const usersTotalElements = usersResponse.totalElements;
-  const selectedStats = statsByCode.get(String(selectedBT || '').toUpperCase()) || null;
+  const rawUsers = Array.isArray(usersResponse) ? usersResponse : (usersResponse?.content || []);
+  const usersTotalElements = Number(usersResponse?.totalElements ?? usersResponse?.total ?? rawUsers.length);
+  const selectedStats = statsByCode.get(String(effectiveBT === 'ALL' ? selectedBT : effectiveBT || '').toUpperCase()) || null;
 
   const users = useMemo(() => {
     return rawUsers.map((u) => {
       const company = u.companyId ? companiesMap.get(u.companyId) : null;
-      const btCode = u.businessType || company?.businessType || (u.companyId ? null : 'PLATFORM_STAFF') || selectedBT;
+      const btCode = u.businessType || company?.businessType || (u.companyId ? null : 'PLATFORM_STAFF') || (selectedBT === 'ALL' ? 'RESTAURANT' : selectedBT);
       return {
         ...u,
         businessType: btCode,
@@ -99,12 +105,13 @@ export function useAccessRightsV2Data() {
   }, [selectedBT, usersTotalElements, isUnfilteredQuery]);
 
   const catalogMap = useMemo(() => buildCatalogMap(rawCatalog, t), [rawCatalog, t]);
-  const moduleGroups = useMemo(() => buildCatalogGroups(rawCatalog, selectedBT, t), [rawCatalog, selectedBT, t]);
+  const gridBT = effectiveBT === 'ALL' ? selectedBT : effectiveBT;
+  const moduleGroups = useMemo(() => buildCatalogGroups(rawCatalog, gridBT, t), [rawCatalog, gridBT, t]);
 
   const businessTypes = useMemo(() => {
     const list = rawBusinessTypes.map((bt) => {
       const fromStats = statsByCode.get(String(bt.code || '').toUpperCase());
-      const isSelected = bt.code === selectedBT;
+      const isSelected = bt.code === effectiveBT;
       const count = fromStats?.totalEmployees
         ?? (isSelected && isUnfilteredQuery ? usersTotalElements : (visitedCounts[bt.code] ?? null));
       return {
@@ -115,7 +122,7 @@ export function useAccessRightsV2Data() {
     });
     if (canManagePlatformStaff) {
       const fromStats = statsByCode.get('PLATFORM_STAFF');
-      const isSelected = selectedBT === 'PLATFORM_STAFF';
+      const isSelected = effectiveBT === 'PLATFORM_STAFF';
       const count = fromStats?.totalEmployees
         ?? (isSelected && isUnfilteredQuery ? usersTotalElements : (visitedCounts['PLATFORM_STAFF'] ?? null));
       list.push({
@@ -124,47 +131,27 @@ export function useAccessRightsV2Data() {
         totalEmployees: count,
       });
     }
+    if (isSearching) {
+      list.unshift({
+        code: 'ALL',
+        name: currentLang === 'ru' ? 'Все направления' : 'Barcha turlar',
+        totalEmployees: usersTotalElements,
+      });
+    }
     return list;
-  }, [rawBusinessTypes, canManagePlatformStaff, visitedCounts, selectedBT, usersTotalElements, isUnfilteredQuery, statsByCode, t]);
+  }, [rawBusinessTypes, canManagePlatformStaff, visitedCounts, effectiveBT, usersTotalElements, isUnfilteredQuery, isSearching, statsByCode, currentLang, t]);
 
   const roles = useMemo(() => {
-    const allowedRoleCodes = rolesForBusinessType(selectedBT);
-
-    return allowedRoleCodes.map((roleCode) => {
-      const roleUsers = users.filter((u) => String(u.role).toUpperCase() === roleCode.toUpperCase());
-      const statsRole = selectedStats?.roleMap?.get(roleCode.toUpperCase());
-      const exceptionCount = isUnfilteredQuery && statsRole
-        ? Number(statsRole.exceptionCount || 0)
-        : roleUsers.filter((u) => Boolean(u.moduleAccessCustom || u.customAccess)).length;
-      const totalEmployees = isUnfilteredQuery && statsRole
-        ? Number(statsRole.totalEmployees || 0)
-        : roleUsers.length;
-      const backendRoleData = roleDefaultsFromBackend[roleCode.toUpperCase()];
-      const roleScope = backendRoleData?.scopeKeys || getScopeForRole(roleCode, selectedBT);
-      const enabledModuleKeys = backendRoleData?.defaultKeys || getDefaultModulesForRole(roleCode, selectedBT);
-
-      const roleGroups = buildCatalogGroups(rawCatalog, selectedBT, t, roleScope);
-      const breakdown = roleGroups
-        .map((g) => {
-          const enabledInGroup = g.modules.filter((m) => enabledModuleKeys.has(m.id)).length;
-          return { name: g.title, enabled: enabledInGroup, total: g.modules.length };
-        })
-        .filter((g) => g.total > 0 && g.enabled > 0);
-
-      return {
-        code: roleCode,
-        name: resolveRoleLabel(roleCode, t),
-        totalEmployees,
-        exceptionCount,
-        enabledModulesCount: enabledModuleKeys.size,
-        totalModulesCount: roleScope.size,
-        enabledModuleKeys,
-        roleScope,
-        breakdown,
-        users: roleUsers,
-      };
+    return buildRoleSummaries({
+      businessType: gridBT,
+      users,
+      rawCatalog,
+      roleDefaultsFromBackend,
+      selectedStats,
+      isUnfilteredQuery,
+      t,
     });
-  }, [selectedBT, users, rawCatalog, roleDefaultsFromBackend, selectedStats, isUnfilteredQuery, t]);
+  }, [gridBT, users, rawCatalog, roleDefaultsFromBackend, selectedStats, isUnfilteredQuery, t]);
 
   const isTruncated = rawUsers.length >= MAX_USERS_PAGE_SIZE && usersTotalElements > rawUsers.length;
 
@@ -187,7 +174,7 @@ export function useAccessRightsV2Data() {
   }, [refetchBT, refetchCatalog, refetchUsers, refetchStats]);
 
   return {
-    selectedBT, setSelectedBT, selectedCompanyId, setSelectedCompanyId,
+    selectedBT: effectiveBT, setSelectedBT, selectedCompanyId, setSelectedCompanyId,
     searchTerm, setSearchTerm, accessFilter, setAccessFilter,
     unconfiguredCount, isPlatformStaff, canManagePlatformStaff,
     companies, companiesLoading, companiesMap, businessTypes, roles,

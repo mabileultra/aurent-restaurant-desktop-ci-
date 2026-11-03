@@ -3,134 +3,182 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { platformLeadsApi } from '../../../api/platform/leads.api';
-
-export const PLATFORM_LEADS_PAGE_SIZE = 20;
-export const PLATFORM_LEADS_PAGE_SIZE_OPTIONS = [10, 20, 50];
-
-const LEAD_STATUSES = ['', 'NEW', 'IN_PROGRESS', 'DONE', 'REJECTED'];
+import { useAuthStore } from '../../../store/authStore';
+import {
+  appendLeadTimelineEvent,
+  getLeadWaitUrgency,
+  resolveCurrentAuthor,
+} from '../utils/leadTimelineUtils';
+import { calculateLeadCounts, filterAndSortLeads } from '../utils/leadFilterUtils';
+import { convertLeadToCompanyTransaction } from '../utils/leadConvertService';
+import { notifyConvertResult } from '../utils/leadConvertToastUtils';
+import { formatApiErrorMessage } from '../../../utils/apiErrorParser';
 
 export function usePlatformLeadsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(PLATFORM_LEADS_PAGE_SIZE);
-  const [selectedLead, setSelectedLead] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [editStatus, setEditStatus] = useState('');
-  const [editNote, setEditNote] = useState('');
+  const [leadType, setLeadType] = useState('');
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [viewMode, setViewMode] = useState('split');
+  const [convertTargetLead, setConvertTargetLead] = useState(null);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
 
-  const params = useMemo(
+  const normalizedSearch = useMemo(() => {
+    const trimmed = search.trim();
+    if (!trimmed) return undefined;
+    const digitsOnly = trimmed.replace(/\D/g, '');
+    if (/^[\d\s\-_+()]+$/.test(trimmed) && digitsOnly.length >= 3) {
+      return digitsOnly;
+    }
+    return trimmed;
+  }, [search]);
+
+  const queryParams = useMemo(
     () => ({
-      page,
-      size: pageSize,
-      search: search.trim() || undefined,
-      status: status || undefined,
+      page: 0,
+      size: 200,
+      search: normalizedSearch,
     }),
-    [page, pageSize, search, status]
+    [normalizedSearch]
   );
 
   const { data, isPending } = useQuery({
-    queryKey: ['platform-leads', params],
-    queryFn: () => platformLeadsApi.list(params).then((r) => r.data),
+    queryKey: ['platform-leads', queryParams],
+    queryFn: () => platformLeadsApi.list(queryParams).then((r) => r.data),
   });
+
+  const rawRows = data?.content ?? [];
+  const counts = useMemo(() => calculateLeadCounts(rawRows), [rawRows]);
+  const rows = useMemo(() => filterAndSortLeads(rawRows, { status, leadType, search }), [rawRows, status, leadType, search]);
+
+  const selectedLead = useMemo(() => {
+    if (selectedLeadId) {
+      const found = rows.find((r) => r.id === selectedLeadId);
+      if (found) return found;
+    }
+    return rows[0] || null;
+  }, [rows, selectedLeadId]);
+
+  const unansweredCount = useMemo(() => {
+    return rawRows.filter((r) => getLeadWaitUrgency(r).isUrgent).length;
+  }, [rawRows]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['platform-leads'] });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => platformLeadsApi.update(id, payload),
-    onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['platform-leads'] });
-      setSelectedLead(res.data);
-      toast.success(t('platform.leads.saved'));
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('platform.leads.saved', { defaultValue: 'Ariza yangilandi' }));
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+    onError: (e) => toast.error(formatApiErrorMessage(e, t('platform.saveFailed'))),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => platformLeadsApi.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['platform-leads'] });
-      setDetailOpen(false);
-      setSelectedLead(null);
-      toast.success(t('platform.leads.deleted'));
+      invalidate();
+      setSelectedLeadId(null);
+      setViewMode('split');
+      toast.success(t('platform.leads.deleted', { defaultValue: 'Ariza o\'chirildi' }));
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+    onError: (e) => toast.error(formatApiErrorMessage(e, t('platform.saveFailed'))),
   });
 
-  const rows = data?.content ?? [];
-  const total = data?.totalElements ?? 0;
-  const totalPages = data?.totalPages ?? 0;
+  const convertMutation = useMutation({
+    mutationFn: async (payload) => {
+      const lead = rawRows.find((r) => r.id === payload.leadId);
+      const author = resolveCurrentAuthor(useAuthStore.getState().user);
+      return convertLeadToCompanyTransaction({
+        ...payload,
+        lead,
+        author,
+      });
+    },
+    meta: { suppressGlobalError: true },
+    onSuccess: (res) => {
+      invalidate();
+      setViewMode('split');
+      setConvertTargetLead(null);
+      if (res?.credentials) {
+        setCreatedCredentials(res.credentials);
+      }
+      notifyConvertResult(res);
+    },
+    onError: (e) => toast.error(formatApiErrorMessage(e, t('platform.saveFailed'))),
+  });
 
-  const openDetail = (row) => {
-    setSelectedLead(row);
-    setEditStatus(row.status ?? 'NEW');
-    setEditNote(row.managerNote ?? '');
-    setDetailOpen(true);
-  };
-
-  const closeDetail = () => {
-    setDetailOpen(false);
-    setSelectedLead(null);
-  };
-
-  const handleSearchChange = (value) => {
-    setSearch(value);
-    setPage(0);
-  };
-
-  const handleStatusFilter = (value) => {
-    setStatus(value);
-    setPage(0);
-  };
-
-  const handlePageSizeChange = (nextSize) => {
-    setPageSize(nextSize);
-    setPage(0);
-  };
-
-  const saveDetail = () => {
-    if (!selectedLead) return;
-    updateMutation.mutate({
-      id: selectedLead.id,
-      payload: {
-        status: editStatus,
-        managerNote: editNote,
+  const handleStatusChange = (leadId, nextStatus) => {
+    const lead = rawRows.find((r) => r.id === leadId);
+    if (!lead || lead.status === nextStatus) return;
+    const author = resolveCurrentAuthor(useAuthStore.getState().user);
+    const note = appendLeadTimelineEvent(
+      lead.managerNote,
+      {
+        type: 'status_change',
+        author,
+        text: `Holat: ${t(`platform.leads.statuses.${lead.status}`, { defaultValue: lead.status })} → ${t(`platform.leads.statuses.${nextStatus}`, { defaultValue: nextStatus })}`,
       },
-    });
+      { leadCreatedAt: lead.createdAt }
+    );
+    updateMutation.mutate({ id: leadId, payload: { status: nextStatus, managerNote: note } });
   };
 
-  const deleteDetail = () => {
-    if (!selectedLead) return;
-    if (!window.confirm(t('platform.leads.deleteConfirm'))) return;
-    deleteMutation.mutate(selectedLead.id);
+  const handleAddComment = (commentText) => {
+    if (!selectedLead || !commentText.trim()) return;
+    const author = resolveCurrentAuthor(useAuthStore.getState().user);
+    const note = appendLeadTimelineEvent(
+      selectedLead.managerNote,
+      {
+        type: 'comment',
+        author,
+        text: commentText.trim(),
+      },
+      { leadCreatedAt: selectedLead.createdAt }
+    );
+    updateMutation.mutate({ id: selectedLead.id, payload: { managerNote: note } });
+  };
+
+  const handleStartConvert = (lead) => {
+    setConvertTargetLead(lead);
+    setViewMode('convert_company');
+  };
+
+  const handleSelectLeadMobile = (lead) => {
+    setSelectedLeadId(lead.id);
+    setViewMode('mobile_detail');
   };
 
   return {
     t,
     search,
+    setSearch,
     status,
-    statusOptions: LEAD_STATUSES,
-    page,
-    pageSize,
-    setPage,
-    setPageSize: handlePageSizeChange,
+    setStatus,
+    leadType,
+    setLeadType,
     rows,
     isPending,
-    total,
-    totalPages,
-    handleSearchChange,
-    handleStatusFilter,
-    detailOpen,
+    counts,
+    unansweredCount,
     selectedLead,
-    editStatus,
-    setEditStatus,
-    editNote,
-    setEditNote,
-    openDetail,
-    closeDetail,
-    saveDetail,
-    deleteDetail,
-    isSaving: updateMutation.isPending,
+    selectedLeadId,
+    setSelectedLeadId,
+    viewMode,
+    setViewMode,
+    convertTargetLead,
+    createdCredentials,
+    dismissCredentials: () => setCreatedCredentials(null),
+    handleStatusChange,
+    handleAddComment,
+    handleDeleteLead: deleteMutation.mutate,
+    handleStartConvert,
+    handleSelectLeadMobile,
+    handleConvertSubmit: convertMutation.mutate,
+    isSaving: updateMutation.isPending || convertMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 }

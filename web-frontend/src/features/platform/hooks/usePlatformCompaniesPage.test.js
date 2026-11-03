@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePlatformCompaniesPage } from './usePlatformCompaniesPage';
 import { companyApi } from '../../../api/company.api';
@@ -11,6 +12,7 @@ globalThis.React = React;
 vi.mock('../../../api/company.api', () => ({
   companyApi: {
     getAll: vi.fn(),
+    getById: vi.fn(),
     listAll: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
@@ -22,6 +24,7 @@ vi.mock('../../../api/store.api', () => ({
   storeApi: {
     getManaged: vi.fn(),
     getAll: vi.fn(),
+    getStats: vi.fn().mockResolvedValue({ data: { totalStores: 0 } }),
   },
 }));
 
@@ -61,7 +64,6 @@ describe('usePlatformCompaniesPage performance optimization', () => {
       defaultOptions: { queries: { retry: false } },
     });
 
-    // Populate cache synchronously to verify KPI computation without full-table fetch
     queryClient.setQueryData(['companies', {
       page: 0,
       size: 14,
@@ -70,6 +72,7 @@ describe('usePlatformCompaniesPage performance optimization', () => {
       regionCode: undefined,
       districtCode: undefined,
       active: undefined,
+      sort: 'name,asc',
     }], {
       content: [
         { id: 1, name: 'Company A', active: true, storeCount: 3 },
@@ -90,8 +93,10 @@ describe('usePlatformCompaniesPage performance optimization', () => {
     }
 
     renderToStaticMarkup(
-      React.createElement(QueryClientProvider, { client: queryClient },
-        React.createElement(Consumer)
+      React.createElement(MemoryRouter, null,
+        React.createElement(QueryClientProvider, { client: queryClient },
+          React.createElement(Consumer)
+        )
       )
     );
 
@@ -116,6 +121,7 @@ describe('usePlatformCompaniesPage performance optimization', () => {
       regionCode: undefined,
       districtCode: undefined,
       active: undefined,
+      sort: 'name,asc',
     }], {
       content: Array.from({ length: 9 }, (_, i) => ({
         id: i + 1,
@@ -136,13 +142,43 @@ describe('usePlatformCompaniesPage performance optimization', () => {
     }
 
     renderToStaticMarkup(
-      React.createElement(QueryClientProvider, { client: queryClient },
-        React.createElement(Consumer)
+      React.createElement(MemoryRouter, null,
+        React.createElement(QueryClientProvider, { client: queryClient },
+          React.createElement(Consumer)
+        )
       )
     );
 
     expect(hookResult.totalCompanies).toBe(9);
     expect(hookResult.activeCompanies).toBe(9);
     expect(hookResult.inactiveCompanies).toBe(0);
+  });
+
+  it('fetches direct company when companyId searchParam is provided', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    queryClient.setQueryData(['company-direct', '99'], {
+      id: 99,
+      name: 'Direct Company',
+      loginCode: 'DIR99',
+    });
+
+    let hookResult;
+    function Consumer() {
+      hookResult = usePlatformCompaniesPage();
+      return React.createElement('div', null, hookResult.selectedCompany?.name || 'none');
+    }
+
+    renderToStaticMarkup(
+      React.createElement(MemoryRouter, { initialEntries: ['/platform/companies?companyId=99'] },
+        React.createElement(QueryClientProvider, { client: queryClient },
+          React.createElement(Consumer)
+        )
+      )
+    );
+
+    expect(hookResult.selectedCompany).toEqual(expect.objectContaining({ id: 99, name: 'Direct Company' }));
   });
 });

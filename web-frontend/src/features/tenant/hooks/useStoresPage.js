@@ -8,6 +8,7 @@ import { useStoresGroupedQuery } from './useStoresGroupedQuery';
 import { useStoresPageMutations } from './useStoresPageMutations';
 import { useStoresPlatformStats } from './useStoresPlatformStats';
 import { useStoresPageFilters } from './useStoresPageFilters';
+import { useStoresInactiveTab } from './useStoresInactiveTab';
 
 export function useStoresPage({
   showCompanySelect = false,
@@ -56,7 +57,7 @@ export function useStoresPage({
     enabled: showCompanySelect,
   });
 
-  const { saveMutation, toggleMutation, tryDelete } = useStoresPageMutations({
+  const mutations = useStoresPageMutations({
     t,
     editing,
     setModalOpen,
@@ -70,6 +71,7 @@ export function useStoresPage({
     statusFilter: filters.statusFilter,
     businessType: filters.businessType,
     regionCode: filters.regionCode,
+    districtCode: filters.districtCode,
     companyId: filters.resolvedCompanyId,
   });
 
@@ -81,27 +83,47 @@ export function useStoresPage({
     statusFilter: filters.statusFilter,
     businessType: filters.businessType,
     regionCode: filters.regionCode,
+    districtCode: filters.districtCode,
     companyId: filters.resolvedCompanyId,
     companies,
     expandedIds: expandedCompanyIds,
   });
 
-  const rawRows = data?.content ?? [];
-  const rows = useMemo(() => {
-    if (filters.statusFilter === 'ACTIVE') return rawRows.filter((r) => r.active);
-    if (filters.statusFilter === 'INACTIVE') return rawRows.filter((r) => !r.active);
-    return rawRows;
-  }, [rawRows, filters.statusFilter]);
+  const isInactiveTab = filters.statusFilter === 'INACTIVE';
+  const {
+    inactiveTotal,
+    inactiveTotalPages,
+    inactiveRows,
+    inactiveGroupedGroups,
+  } = useStoresInactiveTab({
+    isInactiveTab,
+    filters,
+    companies,
+  });
 
-  const total = data?.totalElements ?? rows.length;
+  const rawRows = isInactiveTab ? inactiveRows : (data?.content ?? []);
+  const rows = useMemo(() => {
+    if (isInactiveTab) return inactiveRows;
+    if (filters.statusFilter === 'ACTIVE') return rawRows.filter((r) => r.active);
+    return rawRows;
+  }, [isInactiveTab, inactiveRows, rawRows, filters.statusFilter]);
+
+  const total = isInactiveTab ? inactiveTotal : (data?.totalElements ?? rows.length);
+  const totalPages = isInactiveTab ? inactiveTotalPages : (data?.totalPages ?? 0);
+  const displayPage = isInactiveTab ? filters.page : (typeof data?.number === 'number' ? data.number : filters.page);
+
   const kpi = resolveStoresKpi({
     stats,
     total,
     rawRows,
     statusFilter: filters.statusFilter,
     resolvedCompanyId: filters.resolvedCompanyId,
+    districtCode: filters.districtCode,
     companiesCountFallback: companies?.length || 0,
   });
+
+  const effectiveGroups = isInactiveTab ? (inactiveGroupedGroups || []) : groupedQuery.groups;
+  const effectiveTotalGroups = isInactiveTab ? (inactiveGroupedGroups?.length || 0) : groupedQuery.totalGroups;
 
   const pageFirstLoad = filters.isGroupedViewActive ? groupedQuery.firstLoad : tableFirstLoad;
   const pageRefreshing = filters.isGroupedViewActive ? groupedQuery.isRefreshing : tableRefreshing;
@@ -117,11 +139,11 @@ export function useStoresPage({
     setMenuId,
     rows,
     total,
-    totalPages: data?.totalPages ?? 0,
+    totalPages,
     firstLoad: pageFirstLoad,
     isRefreshing: pageRefreshing,
     showRefreshingOverlay: pageOverlay,
-    displayPage: typeof data?.number === 'number' ? data.number : filters.page,
+    displayPage,
     isPending: pageFirstLoad,
     isError: filters.isGroupedViewActive ? groupedQuery.isError : storesQuery.isError,
     error: filters.isGroupedViewActive ? groupedQuery.error : error,
@@ -132,7 +154,6 @@ export function useStoresPage({
     showCompanySelect,
     companies,
     businessTypes,
-    saveMutation,
     openCreate: (defaults = null) => {
       setEditing(defaults);
       setModalOpen(true);
@@ -146,20 +167,19 @@ export function useStoresPage({
       setModalOpen(false);
       setEditing(null);
     },
-    toggleMutation,
-    tryDelete,
+    ...mutations,
     ...kpi,
     selectedStore,
     openQuickDrawer: setSelectedStore,
     closeQuickDrawer: () => setSelectedStore(null),
     allStores: groupedQuery.allLoadedStores,
-    groupedGroups: groupedQuery.groups,
+    groupedGroups: effectiveGroups,
     loadingBranchIds: groupedQuery.loadingBranchIds,
     expandedCompanyIds,
     setExpandedCompanyIds,
     hasUserToggledGrouped,
     setHasUserToggledGrouped,
-    totalGroups: groupedQuery.totalGroups,
+    totalGroups: effectiveTotalGroups,
     pharmacyIntegrationStore,
     openPharmacyIntegration: (row) => {
       setPharmacyIntegrationStore(row);

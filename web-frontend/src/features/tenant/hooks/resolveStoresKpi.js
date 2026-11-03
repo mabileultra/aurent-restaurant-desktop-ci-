@@ -1,13 +1,21 @@
-/** Prefer backend /stores/stats; fallback to current manage page totals. */
+/**
+ * Resolves KPI numbers for Super Admin stores page.
+ * Reconciles backend stats with client totals when districtCode or inactive status is filtered.
+ */
 export function resolveStoresKpi({
   stats,
   total,
-  rawRows,
-  statusFilter,
+  rawRows = [],
+  statusFilter = 'ALL',
   resolvedCompanyId,
+  districtCode,
   companiesCountFallback = 0,
 }) {
-  if (stats) {
+  const isDistrictFiltered = Boolean(districtCode);
+  const isInactiveTab = statusFilter === 'INACTIVE';
+  const isActiveTab = statusFilter === 'ACTIVE';
+
+  if (stats && !isDistrictFiltered && !isInactiveTab) {
     return {
       totalStores: stats.totalStores ?? 0,
       activeStores: stats.activeStores ?? 0,
@@ -21,12 +29,12 @@ export function resolveStoresKpi({
   let activeStores;
   let inactiveStores;
 
-  if (statusFilter === 'ACTIVE') {
+  if (isActiveTab) {
     activeStores = total;
-    inactiveStores = Math.max(0, total - activeStores);
-  } else if (statusFilter === 'INACTIVE') {
+    inactiveStores = isDistrictFiltered ? 0 : (stats?.inactiveStores ?? 0);
+  } else if (isInactiveTab) {
     inactiveStores = total;
-    activeStores = Math.max(0, total - inactiveStores);
+    activeStores = isDistrictFiltered ? 0 : (stats?.activeStores ?? 0);
   } else if (total <= rawRows.length) {
     activeStores = rawActive;
     inactiveStores = rawInactive;
@@ -35,12 +43,25 @@ export function resolveStoresKpi({
     activeStores = Math.max(0, total - inactiveStores);
   }
 
+  const uniqueCompaniesInRows = new Set(
+    rawRows.map((r) => r.companyId).filter((id) => id != null && id !== '')
+  ).size;
+
+  let companiesCount = companiesCountFallback;
+  if (resolvedCompanyId) {
+    companiesCount = total > 0 ? 1 : 0;
+  } else if (isDistrictFiltered && uniqueCompaniesInRows > 0) {
+    companiesCount = uniqueCompaniesInRows;
+  } else if (stats?.companiesCount != null && !isDistrictFiltered) {
+    companiesCount = stats.companiesCount;
+  } else if (uniqueCompaniesInRows > 0) {
+    companiesCount = uniqueCompaniesInRows;
+  }
+
   return {
     totalStores: total,
     activeStores,
     inactiveStores,
-    companiesCount: resolvedCompanyId
-      ? (total > 0 ? 1 : 0)
-      : companiesCountFallback,
+    companiesCount,
   };
 }

@@ -38,10 +38,17 @@ export default function PlatformDesktopBroadcastForm({ p }) {
 
         {/* Draft Indicator or Restored Notice */}
         {p.isDraftRestored ? (
-          <div className="inline-flex items-center gap-2 rounded-lg bg-amber-50 px-2.5 py-1 text-xs text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300">
-            <span className="font-medium">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 rounded-xl bg-amber-50 px-3 py-1.5 text-xs text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300">
+            <span className="font-bold">
               {t('platform.desktopNotifications.draftRestoredNotice', { defaultValue: 'Qoralama tiklandi' })}
             </span>
+            {p.isTargetingReset && (
+              <span className="text-[11px] text-amber-900/90 dark:text-amber-200 font-medium">
+                · {t('platform.desktopNotifications.draftTargetingResetNotice', {
+                  defaultValue: 'tanlangan kompaniyalar tiklanmadi — xabar barcha kassalarga ketadi',
+                })}
+              </span>
+            )}
             <span>·</span>
             <button
               type="button"

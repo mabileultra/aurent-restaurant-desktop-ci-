@@ -11,6 +11,7 @@ import UserFormModal from '../components/users/UserFormModal';
 import UserDeleteConfirmModal from '../components/users/UserDeleteConfirmModal';
 import UsersTable from '../components/users/UsersTable';
 import PlatformUserQuickDrawer from '../components/users/PlatformUserQuickDrawer';
+import LastUpdatedBadge from '../../../components/shared/LastUpdatedBadge';
 import { useUsersPage } from '../hooks/useUsersPage';
 import { useAuthStore } from '../../../store/authStore';
 
@@ -24,10 +25,13 @@ export default function UsersPage({ mode = 'tenant' }) {
       title={`${p.title}${typeof p.total === 'number' && p.total > 0 ? ` (${p.total})` : ''}`}
       subtitle={p.subtitle}
       actions={(
-        <BaseButton onClick={p.openCreate} className="admin-btn-primary">
-          <Plus size={16} />
-          {p.t('users.add')}
-        </BaseButton>
+        <div className="flex items-center gap-3">
+          <LastUpdatedBadge timestamp={p.dataUpdatedAt} className="hidden md:inline-flex" />
+          <BaseButton requiresOnline onClick={p.openCreate} className="admin-btn-primary">
+            <Plus size={16} />
+            {p.t('users.add')}
+          </BaseButton>
+        </div>
       )}
     >
       {/* Network Error Card with Retry */}

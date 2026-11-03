@@ -260,6 +260,18 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Qoralama tiklandi');
   });
 
+  it('renders draft restored notice banner with targeting reset warning when isTargetingReset is true', () => {
+    currentHookState = {
+      ...mockBaseHook,
+      isDraftRestored: true,
+      isTargetingReset: true,
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+
+    expect(html).toContain('Qoralama tiklandi');
+    expect(html).toContain('tanlangan kompaniyalar tiklanmadi — xabar barcha kassalarga ketadi');
+  });
+
   it('renders live preview flyout for MESSAGE and centered modal for ALERT', () => {
     // MESSAGE kind: bell flyout toast
     const messageProps = {
@@ -353,5 +365,21 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Xabarni kassalardan olib tashlash');
     expect(html).toContain('Texnik tanaffus');
     expect(html).toContain('Kassalardan zudlik bilan olib tashlanadi');
+  });
+
+  it('renders extend confirmation dialog when extendConfirmItem is non-null', () => {
+    currentHookState = {
+      ...mockBaseHook,
+      extendConfirmItem: {
+        id: 'item-extend-1',
+        title: 'Foydali maslahat',
+        body: 'Kassada ishlash qoidalari',
+        kind: 'MESSAGE',
+      },
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+    expect(html).toContain('Xabar muddatini uzaytirish (+24 soat)');
+    expect(html).toContain('Foydali maslahat');
+    expect(html).toContain('Ha, 24 soatga uzaytirish');
   });
 });

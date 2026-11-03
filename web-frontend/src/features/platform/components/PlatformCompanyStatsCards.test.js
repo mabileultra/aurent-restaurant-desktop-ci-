@@ -61,4 +61,17 @@ describe('PlatformCompanyStatsCards', () => {
 
     expect(html).toContain('—');
   });
+
+  it('renders dash in activeHint when totalCompanies is 0', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyStatsCards, {
+        ...defaultProps,
+        totalCompanies: 0,
+        activeCompanies: 0,
+      })
+    );
+
+    expect(html).toContain('—');
+    expect(html).not.toContain('0% faoliyatda');
+  });
 });

@@ -1,14 +1,12 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { BaseButton, PageLayout, PlatformErrorState } from '../../../components/ui';
-import StoreFormModal from '../components/stores/StoreFormModal';
-import PharmacyIntegrationSettingsModal from '../components/stores/PharmacyIntegrationSettingsModal';
 import StoresFiltersBar from '../components/stores/StoresFiltersBar';
 import StoresTable from '../components/stores/StoresTable';
 import PlatformStoreStatsCards from '../components/stores/PlatformStoreStatsCards';
-import PlatformStoreQuickDrawer from '../components/stores/PlatformStoreQuickDrawer';
 import PlatformStoresGroupedView from '../components/stores/PlatformStoresGroupedView';
 import StoresPageControls from '../components/stores/StoresPageControls';
+import StoresPageModals from '../components/stores/StoresPageModals';
 import { useStoresPage } from '../hooks/useStoresPage';
 
 export default function StoresPage({
@@ -116,7 +114,7 @@ export default function StoresPage({
             menuId={p.menuId}
             onMenuOpenChange={p.setMenuId}
             onEdit={p.openEdit}
-            onToggleActive={(id) => p.toggleMutation.mutate(id)}
+            onToggleActive={p.tryToggleActive}
             onDelete={p.tryDelete}
             onPharmacyIntegration={p.openPharmacyIntegration}
             onSelectStore={p.openQuickDrawer}
@@ -140,7 +138,7 @@ export default function StoresPage({
             menuId={p.menuId}
             onMenuOpenChange={p.setMenuId}
             onEdit={p.openEdit}
-            onToggleActive={(id) => p.toggleMutation.mutate(id)}
+            onToggleActive={p.tryToggleActive}
             onDelete={p.tryDelete}
             onPharmacyIntegration={p.openPharmacyIntegration}
             onSelectStore={p.openQuickDrawer}
@@ -148,32 +146,7 @@ export default function StoresPage({
         )}
       </div>
 
-      <StoreFormModal
-        open={p.modalOpen}
-        onClose={p.closeModal}
-        onSubmit={(payload) => p.saveMutation.mutate(payload)}
-        isPending={p.saveMutation.isPending}
-        initial={p.editing}
-        showCompanySelect={p.showCompanySelect}
-        companies={p.companies}
-      />
-
-      <PharmacyIntegrationSettingsModal
-        open={Boolean(p.pharmacyIntegrationStore)}
-        store={p.pharmacyIntegrationStore}
-        onClose={p.closePharmacyIntegration}
-      />
-
-      {/* 4. Quick Drawer for Branch Details */}
-      <PlatformStoreQuickDrawer
-        open={Boolean(p.selectedStore)}
-        store={p.selectedStore}
-        onClose={p.closeQuickDrawer}
-        onEdit={p.openEdit}
-        onToggleActive={(id) => p.toggleMutation.mutate(id)}
-        onPharmacyIntegration={p.openPharmacyIntegration}
-        t={p.t}
-      />
+      <StoresPageModals p={p} />
     </PageLayout>
   );
 }

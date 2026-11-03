@@ -59,6 +59,17 @@ export default function PlatformDesktopLivePreviewChecklist({ p }) {
             </div>
           ) : null
         )}
+
+        {p.previewLang === 'ru' && (
+          <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400">
+            <Info size={14} className="text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
+            <span>
+              {t('platform.desktopNotifications.previewRuBackendNote', {
+                defaultValue: 'Backend hozircha bitta tilni saqlaydi — xabar matni kassa interfeysida o‘zgarishsiz chiqadi.',
+              })}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

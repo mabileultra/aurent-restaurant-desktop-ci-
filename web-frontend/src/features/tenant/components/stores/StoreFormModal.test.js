@@ -60,13 +60,14 @@ describe('StoreFormModal', () => {
     expect(html).toBe('');
   });
 
-  it('renders full-screen backdrop with z-[1000] and bg-black/60 when open is true', () => {
+  it('renders modal dialog with backdrop and accessibility attributes when open is true', () => {
     const html = renderToStaticMarkup(
       React.createElement(StoreFormModal, defaultProps)
     );
 
-    // Fullscreen backdrop must have fixed inset-0 z-[1000] bg-black/60
-    expect(html).toContain('fixed inset-0 z-[1000]');
+    // Modal dialog must have role="dialog" and aria-modal="true"
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
     expect(html).toContain('bg-black/60');
 
     // Title should be Filial qo‘shish
@@ -108,7 +109,28 @@ describe('StoreFormModal', () => {
       })
     );
 
-    expect(html).toContain('Do‘konni tahrirlash');
+    expect(html).toContain('Filialni tahrirlash');
     expect(html).toContain('+998 (90) 123-45-67');
+  });
+
+  it('renders draft restored notice when draft exists in sessionStorage', () => {
+    let mockStore = {
+      draft_tenant_store_create: JSON.stringify({ name: 'Eski qoralama do‘kon' }),
+    };
+    globalThis.sessionStorage = {
+      getItem: (k) => mockStore[k] || null,
+      setItem: (k, v) => { mockStore[k] = String(v); },
+      removeItem: (k) => { delete mockStore[k]; },
+      clear: () => { mockStore = {}; },
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(StoreFormModal, defaultProps)
+    );
+
+    expect(html).toContain('Avvalgi kiritilgan ma’lumot tiklandi');
+    expect(html).toContain('Tozalash');
+
+    delete globalThis.sessionStorage;
   });
 });

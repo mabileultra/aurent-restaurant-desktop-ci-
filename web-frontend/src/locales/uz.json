@@ -2564,6 +2564,8 @@
     "userSearch": "Ism, login, email, kompaniya bo‘yicha qidiruv…",
     "searchResults": "topildi: {{count}}",
     "noSearchResults": "Hech narsa topilmadi",
+    "noCompanies": "Kompaniyalar topilmadi",
+    "companyNotFound": "Kompaniya topilmadi",
     "addCompany": "Kompaniya qo‘shish",
     "editCompany": "Kompaniyani tahrirlash",
     "companySearch": "Nomi, kirish kodi, STIR yoki telefon…",
@@ -2843,7 +2845,7 @@
       },
       "types": {
         "DEMO": "Demo",
-        "CONNECT": "Ulash",
+        "CONNECT": "Ulanish",
         "QUESTION": "Savol",
         "EQUIPMENT": "Uskunalar"
       },

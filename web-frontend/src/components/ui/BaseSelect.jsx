@@ -211,6 +211,10 @@ const BaseSelect = forwardRef(function BaseSelect(
                     }
                     return;
                   }
+                  if (event.key === 'Tab') {
+                    closeMenu();
+                    return;
+                  }
                   if (['ArrowDown', 'ArrowUp', 'Escape'].includes(event.key)) {
                     // Allow useBaseSelect keydown listener on document to handle navigation
                     return;
@@ -300,7 +304,7 @@ const BaseSelect = forwardRef(function BaseSelect(
           else openMenu();
         }}
         onKeyDown={(event) => {
-          if (event.key === 'ArrowDown' && !open) {
+          if (!open && ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
             event.preventDefault();
             openMenu();
           }

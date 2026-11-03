@@ -6,10 +6,21 @@ export function useStoresPageFilters({
   showCompanySelect = false,
   companyIdFilter,
 } = {}) {
-  const [search, setSearch] = useState('');
-  const [companyId, setCompanyId] = useState(
-    companyIdFilter != null && companyIdFilter !== '' ? String(companyIdFilter) : ''
-  );
+  const [search, setSearch] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      return sp.get('search') || '';
+    }
+    return '';
+  });
+  const [companyId, setCompanyId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      const urlComp = sp.get('companyId') || sp.get('company') || sp.get('focusCompany');
+      if (urlComp) return String(urlComp);
+    }
+    return companyIdFilter != null && companyIdFilter !== '' ? String(companyIdFilter) : '';
+  });
   const [businessType, setBusinessType] = useState('');
   const [regionCode, setRegionCode] = useState('');
   const [districtCode, setDistrictCode] = useState('');
@@ -48,17 +59,27 @@ export function useStoresPageFilters({
     setGroupedPage(0);
   };
 
+  const normalizedSearch = useMemo(() => {
+    const trimmed = debouncedSearch.trim();
+    if (!trimmed) return undefined;
+    const digitsOnly = trimmed.replace(/\D/g, '');
+    if (digitsOnly.length >= 4 && /^[+\d\s().-]+$/.test(trimmed)) {
+      return trimmed.startsWith('+') ? `+${digitsOnly}` : digitsOnly;
+    }
+    return trimmed;
+  }, [debouncedSearch]);
+
   const queryParams = useMemo(
     () => ({
       page,
       size: pageSize,
-      search: debouncedSearch.trim() || undefined,
+      search: normalizedSearch || undefined,
       companyId: resolvedCompanyId,
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
       districtCode: districtCode || undefined,
     }),
-    [debouncedSearch, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
+    [normalizedSearch, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
   );
 
   return {

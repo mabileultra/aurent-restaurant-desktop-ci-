@@ -108,6 +108,7 @@ export function usePlatformDesktopNotificationsPage() {
     setScheduleDate('');
     setScheduleTime('09:00');
     draft.setIsDraftRestored(false);
+    draft.setIsTargetingReset?.(false);
     draft.clearDraftStorage();
     toast.success(t('common.cleared', { defaultValue: 'Tozalandi' }));
   }, [t, draft, targeting]);
@@ -159,6 +160,7 @@ export function usePlatformDesktopNotificationsPage() {
     setNeedsConfirm: () => {},
     draftSaved: draft.draftSaved,
     isDraftRestored: draft.isDraftRestored,
+    isTargetingReset: draft.isTargetingReset,
     handleDismissDraftNotice: draft.handleDismissDraftNotice,
     activeRegistersCount: stats.activeRegistersCount,
     totalRegistersCount: stats.totalRegistersCount,

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import Spinner from './Spinner';
+import { useOnlineActionGuard } from '../../hooks/useOnlineActionGuard';
 
 const VARIANT_CLS = {
   primary:
@@ -23,17 +24,30 @@ export default function BaseButton({
   type = 'button',
   loading = false,
   disabled = false,
+  requiresOnline = false,
+  title,
   className,
   children,
   ...props
 }) {
+  const { isActionBlocked, blockReason } = useOnlineActionGuard();
+  const isEffectivelyBlocked = requiresOnline && isActionBlocked;
+  const effectiveDisabled = disabled || loading || isEffectivelyBlocked;
+  const effectiveTitle = isEffectivelyBlocked
+    ? title
+      ? `${title} (${blockReason})`
+      : blockReason
+    : title;
+
   const spinnerVariant = variant === 'primary' || variant === 'danger' ? 'white' : 'emerald';
   const spinnerSize = size === 'sm' ? 'xs' : 'sm';
 
   return (
     <button
       type={type}
-      disabled={disabled || loading}
+      disabled={effectiveDisabled}
+      title={effectiveTitle}
+      aria-disabled={effectiveDisabled ? 'true' : undefined}
       className={clsx(
         'inline-flex items-center justify-center gap-2 transition-colors disabled:cursor-not-allowed',
         VARIANT_CLS[variant],

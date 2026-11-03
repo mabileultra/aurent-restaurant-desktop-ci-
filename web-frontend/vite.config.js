@@ -1,6 +1,22 @@
 // vite.config.js
+import fs from 'node:fs';
+import path from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+function serviceWorkerVersionPlugin() {
+  return {
+    name: 'sw-cache-version',
+    closeBundle() {
+      const swDistPath = path.resolve(__dirname, 'dist/sw.js');
+      if (fs.existsSync(swDistPath)) {
+        const buildVersion = `${new Date().toISOString().slice(0, 10).replace(/-/g, '.')}-${Date.now().toString(36)}`;
+        const content = fs.readFileSync(swDistPath, 'utf8');
+        fs.writeFileSync(swDistPath, content.replace('__SW_CACHE_VERSION__', buildVersion));
+      }
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -26,7 +42,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react()],
+    plugins: [react(), serviceWorkerVersionPlugin()],
     server: {
       port: 5173,
       // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).

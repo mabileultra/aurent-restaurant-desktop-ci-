@@ -26,22 +26,22 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
   it('matches exact backend roleDefault and scope numbers for RESTAURANT', () => {
     const adminScope = getScopeForRole('ADMIN', 'RESTAURANT');
     const adminDefaults = getDefaultModulesForRole('ADMIN', 'RESTAURANT');
-    expect(adminScope.size).toBe(59);
+    expect(adminScope.size).toBe(60);
     expect(adminDefaults.size).toBe(56);
 
     const managerScope = getScopeForRole('MANAGER', 'RESTAURANT');
     const managerDefaults = getDefaultModulesForRole('MANAGER', 'RESTAURANT');
-    expect(managerScope.size).toBe(59);
+    expect(managerScope.size).toBe(60);
     expect(managerDefaults.size).toBe(47);
 
     const cashierScope = getScopeForRole('CASHIER', 'RESTAURANT');
     const cashierDefaults = getDefaultModulesForRole('CASHIER', 'RESTAURANT');
-    expect(cashierScope.size).toBe(11);
+    expect(cashierScope.size).toBe(12);
     expect(cashierDefaults.size).toBe(7);
 
     const waiterScope = getScopeForRole('WAITER', 'RESTAURANT');
     const waiterDefaults = getDefaultModulesForRole('WAITER', 'RESTAURANT');
-    expect(waiterScope.size).toBe(11);
+    expect(waiterScope.size).toBe(12);
     expect(waiterDefaults.size).toBe(6);
   });
 

@@ -55,12 +55,16 @@ export function useGeoNameLookup(regionCodesPresent = []) {
 
   const regionName = (code) => {
     if (!code) return empty;
-    return labelOf(regionByCode.get(String(code)), lang) || String(code);
+    const label = labelOf(regionByCode.get(String(code)), lang);
+    if (label) return label;
+    return /^\d+$/.test(String(code).trim()) ? '' : String(code);
   };
 
   const districtName = (code) => {
     if (!code) return empty;
-    return labelOf(districtByCode.get(String(code)), lang) || String(code);
+    const label = labelOf(districtByCode.get(String(code)), lang);
+    if (label) return label;
+    return /^\d+$/.test(String(code).trim()) ? '' : String(code);
   };
 
   return { regions, regionName, districtName, empty, lang };

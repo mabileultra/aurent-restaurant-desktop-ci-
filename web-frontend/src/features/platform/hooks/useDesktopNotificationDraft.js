@@ -37,6 +37,7 @@ export function useDesktopNotificationDraft({
 }) {
   const [draftSaved, setDraftSaved] = useState(true);
   const [isDraftRestored, setIsDraftRestored] = useState(false);
+  const [isTargetingReset, setIsTargetingReset] = useState(false);
   const draftTimerRef = useRef(null);
   const isInitialMountRef = useRef(true);
 
@@ -59,6 +60,7 @@ export function useDesktopNotificationDraft({
         setScheduleType,
         setScheduleDate,
         setScheduleTime,
+        setIsTargetingReset,
       });
 
       if (isRestored) {
@@ -142,6 +144,7 @@ export function useDesktopNotificationDraft({
   const clearDraftStorage = () => {
     try {
       localStorage.removeItem(DRAFT_STORAGE_KEY);
+      setIsTargetingReset(false);
     } catch {
       // ignore
     }
@@ -151,8 +154,13 @@ export function useDesktopNotificationDraft({
     draftSaved,
     isDraftRestored,
     setIsDraftRestored,
+    isTargetingReset,
+    setIsTargetingReset,
     clearDraftStorage,
-    handleDismissDraftNotice: () => setIsDraftRestored(false),
+    handleDismissDraftNotice: () => {
+      setIsDraftRestored(false);
+      setIsTargetingReset(false);
+    },
   };
 }
 
