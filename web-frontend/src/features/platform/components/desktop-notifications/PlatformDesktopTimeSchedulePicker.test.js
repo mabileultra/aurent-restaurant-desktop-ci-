@@ -25,15 +25,16 @@ describe('PlatformDesktopTimeSchedulePicker', () => {
     isScheduleInFuture: true,
   };
 
-  it('renders NOW mode and disables sendSchedule button with Tez kunda badge', () => {
+  it('renders NOW mode with enabled sendSchedule button without Tez kunda badge', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformDesktopTimeSchedulePicker, { p: mockProps })
     );
 
     expect(html).toContain('Hozir');
     expect(html).toContain('Rejalashtirish');
-    expect(html).toContain('Tez kunda');
-    expect(html).toContain('disabled=""');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).not.toContain('disabled');
+    expect(html).toContain('aria-pressed="false"');
     expect(html).toContain('Xabar saqlangandan');
   });
 
@@ -48,13 +49,14 @@ describe('PlatformDesktopTimeSchedulePicker', () => {
     expect(html).not.toContain('Xabar saqlangandan');
   });
 
-  it('keeps sendSchedule button disabled with Tez kunda badge even in SCHEDULED mode', () => {
+  it('sets aria-pressed true on sendSchedule button in SCHEDULED mode without Tez kunda badge', () => {
     const scheduledProps = { ...mockProps, scheduleType: 'SCHEDULED' };
     const html = renderToStaticMarkup(
       React.createElement(PlatformDesktopTimeSchedulePicker, { p: scheduledProps })
     );
 
-    expect(html).toContain('disabled=""');
-    expect(html).toContain('Tez kunda');
+    expect(html).not.toContain('disabled');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).toContain('aria-pressed="true"');
   });
 });

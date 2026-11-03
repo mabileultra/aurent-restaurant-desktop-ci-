@@ -32,18 +32,17 @@ export default function PlatformDesktopTargetStep({ p }) {
           {t('platform.desktopNotifications.targetAll')}
         </button>
 
-        {/* Permanently disabled "Tez kunda" button */}
         <button
           type="button"
-          disabled={true}
-          aria-disabled="true"
-          className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all text-slate-400 dark:text-slate-500 opacity-60 cursor-not-allowed"
-          title={t('platform.desktopNotifications.comingSoonBackend', { defaultValue: 'Tez kunda (Backend kutilmoqda)' })}
+          onClick={() => p.setTargetScope('SELECT')}
+          aria-pressed={isSelect}
+          className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            isSelect
+              ? 'bg-white text-slate-900 shadow-xs dark:bg-slate-900 dark:text-white'
+              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+          }`}
         >
-          <span>{t('platform.desktopNotifications.targetSelect')}</span>
-          <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-            {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-          </span>
+          {t('platform.desktopNotifications.targetSelect')}
         </button>
       </div>
 

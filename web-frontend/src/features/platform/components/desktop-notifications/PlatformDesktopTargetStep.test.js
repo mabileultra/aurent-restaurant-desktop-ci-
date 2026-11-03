@@ -49,19 +49,21 @@ describe('PlatformDesktopTargetStep', () => {
     expect(html).toContain('value="Niso"');
   });
 
-  it('disables targetSelect button with Tez kunda badge when targetScope is ALL', () => {
+  it('enables targetSelect button without Tez kunda badge when targetScope is ALL', () => {
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: mockProps }));
 
-    expect(html).toContain('disabled=""');
-    expect(html).toContain('Tez kunda');
+    expect(html).not.toContain('disabled');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).toContain('aria-pressed="false"');
   });
 
-  it('keeps targetSelect button disabled with Tez kunda badge even when targetScope is SELECT', () => {
+  it('sets aria-pressed true on targetSelect button when targetScope is SELECT', () => {
     const selectProps = { ...mockProps, targetScope: 'SELECT' };
     const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: selectProps }));
 
-    expect(html).toContain('disabled=""');
-    expect(html).toContain('Tez kunda');
+    expect(html).not.toContain('disabled');
+    expect(html).not.toContain('Tez kunda');
+    expect(html).toContain('aria-pressed="true"');
   });
 
   it('hides online count note when onlineRegistersCount is 0 or null', () => {

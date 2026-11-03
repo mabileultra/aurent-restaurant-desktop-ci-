@@ -17,7 +17,7 @@ describe('desktopNotificationDraftUtils', () => {
       expect(restoreDraftFromStorage('{invalidJson', {})).toBe(false);
     });
 
-    it('restores message fields and forces safe ALL and NOW defaults for Tez kunda features', () => {
+    it('restores message fields, preserves targetScope SELECT and selections, and resets past schedule', () => {
       const setters = {
         setTitle: vi.fn(),
         setBody: vi.fn(),
@@ -33,6 +33,7 @@ describe('desktopNotificationDraftUtils', () => {
         setScheduleType: vi.fn(),
         setScheduleDate: vi.fn(),
         setScheduleTime: vi.fn(),
+        setIsTargetingReset: vi.fn(),
       };
 
       const savedData = {
@@ -43,9 +44,9 @@ describe('desktopNotificationDraftUtils', () => {
         customHours: '48',
         targetScope: 'SELECT',
         targetType: 'STORES',
-        selectedCompanyIds: [999999],
+        selectedCompanyIds: [10],
         selectedStoreIds: [1, 2],
-        selectedCompanies: [{ id: 999999, name: 'Ghost' }],
+        selectedCompanies: [{ id: 10, name: 'Alpha' }],
         selectedStores: [{ id: 1, name: 'Filial 1' }],
         scheduleType: 'SCHEDULED',
         scheduleDate: '2020-01-01',
@@ -60,15 +61,43 @@ describe('desktopNotificationDraftUtils', () => {
       expect(setters.setKind).toHaveBeenCalledWith('UPDATE');
       expect(setters.setDuration).toHaveBeenCalledWith('custom');
       expect(setters.setCustomHours).toHaveBeenCalledWith('48');
-      // Must force ALL and NOW and reset phantom entities
-      expect(setters.setTargetScope).toHaveBeenCalledWith('ALL');
-      expect(setters.setSelectedCompanyIds).toHaveBeenCalledWith([]);
-      expect(setters.setSelectedStoreIds).toHaveBeenCalledWith([]);
-      expect(setters.setSelectedCompanies).toHaveBeenCalledWith([]);
-      expect(setters.setSelectedStores).toHaveBeenCalledWith([]);
+      // Preserves SELECT and selections
+      expect(setters.setTargetScope).toHaveBeenCalledWith('SELECT');
+      expect(setters.setTargetType).toHaveBeenCalledWith('STORES');
+      expect(setters.setSelectedCompanyIds).toHaveBeenCalledWith([10]);
+      expect(setters.setSelectedStoreIds).toHaveBeenCalledWith([1, 2]);
+      expect(setters.setSelectedCompanies).toHaveBeenCalledWith([{ id: 10, name: 'Alpha' }]);
+      expect(setters.setSelectedStores).toHaveBeenCalledWith([{ id: 1, name: 'Filial 1' }]);
+      // Past date (2020-01-01) safely resets to NOW
       expect(setters.setScheduleType).toHaveBeenCalledWith('NOW');
       expect(setters.setScheduleDate).toHaveBeenCalledWith('');
       expect(setters.setScheduleTime).toHaveBeenCalledWith('09:00');
+    });
+
+    it('restores future scheduled date and time', () => {
+      const setters = {
+        setTitle: vi.fn(),
+        setBody: vi.fn(),
+        setScheduleType: vi.fn(),
+        setScheduleDate: vi.fn(),
+        setScheduleTime: vi.fn(),
+      };
+
+      const futureDate = '2099-12-31';
+      const savedData = {
+        title: 'Kelajakdagi xabar',
+        body: 'Test',
+        scheduleType: 'SCHEDULED',
+        scheduleDate: futureDate,
+        scheduleTime: '15:30',
+      };
+
+      const result = restoreDraftFromStorage(JSON.stringify(savedData), setters);
+
+      expect(result).toBe(true);
+      expect(setters.setScheduleType).toHaveBeenCalledWith('SCHEDULED');
+      expect(setters.setScheduleDate).toHaveBeenCalledWith(futureDate);
+      expect(setters.setScheduleTime).toHaveBeenCalledWith('15:30');
     });
 
     it('returns false when draft only has phantom targetScope or schedule without title/body', () => {
@@ -101,7 +130,7 @@ describe('desktopNotificationDraftUtils', () => {
       expect(serializeDraftToStorage(emptyState)).toBeNull();
     });
 
-    it('serializes state to JSON string with safe defaults for Tez kunda fields', () => {
+    it('serializes state to JSON string preserving targeting and scheduling fields', () => {
       const state = {
         title: 'Sarlavha',
         body: 'Matn',
@@ -123,9 +152,13 @@ describe('desktopNotificationDraftUtils', () => {
       expect(typeof serialized).toBe('string');
       const parsed = JSON.parse(serialized);
       expect(parsed.title).toBe('Sarlavha');
-      expect(parsed.targetScope).toBe('ALL');
-      expect(parsed.scheduleType).toBe('NOW');
-      expect(parsed.selectedCompanyIds).toEqual([]);
+      expect(parsed.targetScope).toBe('SELECT');
+      expect(parsed.targetType).toBe('COMPANIES');
+      expect(parsed.selectedCompanyIds).toEqual([10]);
+      expect(parsed.selectedCompanies).toEqual([{ id: 10, name: 'A' }]);
+      expect(parsed.scheduleType).toBe('SCHEDULED');
+      expect(parsed.scheduleDate).toBe('2026-12-01');
+      expect(parsed.scheduleTime).toBe('09:00');
     });
   });
 });

@@ -260,6 +260,18 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Qoralama tiklandi');
   });
 
+  it('renders draft restored notice banner with targeting reset warning when isTargetingReset is true', () => {
+    currentHookState = {
+      ...mockBaseHook,
+      isDraftRestored: true,
+      isTargetingReset: true,
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+
+    expect(html).toContain('Qoralama tiklandi');
+    expect(html).toContain('tanlangan kompaniyalar tiklanmadi — xabar barcha kassalarga ketadi');
+  });
+
   it('renders live preview flyout for MESSAGE and centered modal for ALERT', () => {
     // MESSAGE kind: bell flyout toast
     const messageProps = {
