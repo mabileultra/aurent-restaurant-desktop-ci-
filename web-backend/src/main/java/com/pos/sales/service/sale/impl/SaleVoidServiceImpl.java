@@ -7,7 +7,6 @@ import com.pos.domain.StockMovementType;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.exception.PosExceptions;
 import com.pos.sales.mapper.SaleMapper;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.integrations.finance.service.FinanceReturnIntegrationService;
@@ -15,6 +14,7 @@ import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.sales.service.sale.SaleAccessPolicy;
 import com.pos.sales.service.sale.SaleVoidService;
+import com.pos.sales.service.sale.support.SaleItemProductLoader;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.CatalogIsolationSupport;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -33,12 +34,12 @@ import java.util.UUID;
 public class SaleVoidServiceImpl implements SaleVoidService {
 
     private final SaleRepository saleRepository;
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final SaleMapper saleMapper;
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SaleAccessPolicy accessPolicy;
     private final StoreStockService storeStockService;
+    private final SaleItemProductLoader saleItemProductLoader;
     private final CatalogIsolationSupport catalogIsolation;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
     private final PosDomainEventService posDomainEventService;
@@ -67,17 +68,16 @@ public class SaleVoidServiceImpl implements SaleVoidService {
                 continue;
             }
             anyRemaining = true;
-            Product product = item.getProduct();
+            Product product = saleItemProductLoader.require(item);
             if (sale.getStore() != null) {
                 storeStockService.increase(product, sale.getStore(), remaining);
             }
-            productRepository.save(product);
 
             item.setReturnedQuantity(item.getQuantity());
             refundAmount = refundAmount.add(SalePartialReturnServiceImpl.lineReturnAmount(item, remaining));
 
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(sale.getStore())
                 .movementType(StockMovementType.RETURN)
                 .quantity(remaining)

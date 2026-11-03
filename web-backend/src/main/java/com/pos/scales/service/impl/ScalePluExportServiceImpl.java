@@ -1,9 +1,8 @@
 package com.pos.scales.service.impl;
 
-import com.pos.catalog.entity.Product;
-import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.api.CatalogFacade;
+import com.pos.catalog.dto.ref.WeightProductRef;
 import com.pos.catalog.repository.ProductStorePriceRepository;
-import com.pos.domain.SaleType;
 import com.pos.scales.domain.ScaleLabelProfile;
 import com.pos.scales.dto.ScalePluExportItemDto;
 import com.pos.scales.dto.ScalePluExportResponse;
@@ -24,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScalePluExportServiceImpl implements ScalePluExportService {
 
-    private final ProductRepository productRepository;
+    private final CatalogFacade catalogFacade;
     private final ProductStorePriceRepository productStorePriceRepository;
     private final TenantAccessSupport tenantAccess;
 
@@ -32,12 +31,12 @@ public class ScalePluExportServiceImpl implements ScalePluExportService {
     @Transactional(readOnly = true)
     public ScalePluExportResponse exportPluCatalog(boolean onlyWithPlu, Integer storeId) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        List<Product> products = productRepository.findActiveByCompanyAndSaleType(companyId, SaleType.WEIGHT);
+        List<WeightProductRef> products = catalogFacade.listActiveWeightProducts(companyId);
 
         List<ScalePluExportItemDto> items = new ArrayList<>();
         int withPlu = 0;
-        for (Product product : products) {
-            String plu = StringUtils.hasText(product.getPlu()) ? product.getPlu().trim() : null;
+        for (WeightProductRef product : products) {
+            String plu = StringUtils.hasText(product.plu()) ? product.plu().trim() : null;
             if (plu != null) {
                 withPlu++;
             } else if (onlyWithPlu) {
@@ -45,12 +44,12 @@ public class ScalePluExportServiceImpl implements ScalePluExportService {
             }
             BigDecimal price = resolvePrice(product, storeId);
             items.add(new ScalePluExportItemDto(
-                product.getId(),
+                product.id(),
                 plu,
-                product.getName(),
-                product.getSku(),
+                product.name(),
+                product.sku(),
                 price,
-                product.getUnitCode() != null ? product.getUnitCode().name() : "KG"
+                product.unitCode() != null ? product.unitCode() : "KG"
             ));
         }
 
@@ -72,13 +71,13 @@ public class ScalePluExportServiceImpl implements ScalePluExportService {
         );
     }
 
-    private BigDecimal resolvePrice(Product product, Integer storeId) {
+    private BigDecimal resolvePrice(WeightProductRef product, Integer storeId) {
         if (storeId == null) {
-            return product.getSellingPrice();
+            return product.sellingPrice();
         }
         return productStorePriceRepository
-            .findByProduct_IdAndStore_Id(product.getId(), storeId)
+            .findByProduct_IdAndStore_Id(product.id(), storeId)
             .map(sp -> sp.getPrice())
-            .orElse(product.getSellingPrice());
+            .orElse(product.sellingPrice());
     }
 }

@@ -46,6 +46,18 @@ cmd_update() {
 
   chmod +x deploy/*.sh 2>/dev/null || true
 
+  # Same gate as deploy.sh — agent/human must name lab vs prod.
+  if [[ -z "${DEPLOY_TARGET:-}" ]]; then
+    echo "Укажите DEPLOY_TARGET=lab|test|prod перед update (prod → ещё CONFIRM_PROD=YES)" >&2
+    exit 1
+  fi
+  if [[ "${DEPLOY_TARGET}" == "prod" || "${DEPLOY_TARGET}" == "production" ]]; then
+    if [[ "${CONFIRM_PROD:-}" != "YES" ]]; then
+      echo "PROD заблокирован: CONFIRM_PROD=YES обязателен" >&2
+      exit 1
+    fi
+  fi
+
   # Dual-domain: .env + host nginx + certbot (идемпотентно). Отключить: CONFIGURE_RESTAURANT_DOMAIN=0
   domain_build=0
   if [[ "${CONFIGURE_RESTAURANT_DOMAIN:-1}" != "0" ]]; then

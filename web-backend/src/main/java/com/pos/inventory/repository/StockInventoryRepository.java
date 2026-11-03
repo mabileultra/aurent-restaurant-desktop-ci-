@@ -18,7 +18,7 @@ public interface StockInventoryRepository extends JpaRepository<StockInventory, 
 
     long countByCreatedAtGreaterThanEqual(Instant dayStart);
 
-    @EntityGraph(attributePaths = {"store", "createdBy", "lines", "lines.product"})
+    @EntityGraph(attributePaths = {"store", "createdBy", "lines"})
     @Query("SELECT i FROM StockInventory i WHERE i.id = :id")
     Optional<StockInventory> findDetailedById(@Param("id") UUID id);
 

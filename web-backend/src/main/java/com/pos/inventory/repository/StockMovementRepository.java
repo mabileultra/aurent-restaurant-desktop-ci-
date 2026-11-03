@@ -22,7 +22,6 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
 
     @Query("""
         SELECT m FROM StockMovement m
-        JOIN FETCH m.product
         JOIN FETCH m.store st
         JOIN FETCH st.company
         LEFT JOIN FETCH m.createdBy

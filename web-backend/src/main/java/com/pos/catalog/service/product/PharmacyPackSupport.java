@@ -52,13 +52,18 @@ public final class PharmacyPackSupport {
         }
     }
 
-    public static ProductQuantityRules checkoutQuantityRules(Product product, Map<String, String> attributes) {
+    public static ProductQuantityRules checkoutQuantityRules(ProductQuantityRules base, Map<String, String> attributes) {
+        ProductQuantityRules rules = base != null ? base : ProductQuantityRules.pieceDefault();
         if (unitsInPack(attributes).isPresent()) {
-            SaleType saleType = product.getSaleType() != null ? product.getSaleType() : SaleType.PIECE;
-            UnitCode unitCode = product.getUnitCode() != null ? product.getUnitCode() : UnitCode.PCS;
+            SaleType saleType = rules.saleType() != null ? rules.saleType() : SaleType.PIECE;
+            UnitCode unitCode = rules.unitCode() != null ? rules.unitCode() : UnitCode.PCS;
             return new ProductQuantityRules(saleType, unitCode, QuantityUtil.SCALE, true);
         }
-        return ProductQuantityRules.from(product);
+        return rules;
+    }
+
+    public static ProductQuantityRules checkoutQuantityRules(Product product, Map<String, String> attributes) {
+        return checkoutQuantityRules(ProductQuantityRulesResolver.fromProduct(product), attributes);
     }
 
     /**

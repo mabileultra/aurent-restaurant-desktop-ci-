@@ -1,0 +1,24 @@
+# Tax analytics — connected + vertical turnover
+
+## Source of data
+
+Platform `/platform/analytics` and `/platform/analytics/companies` merge:
+
+| Vertical | Where | Turnover | Connected |
+|---|---|---|---|
+| Grocery / product | `pos_db.sales` | fiscal via `fiscal_status` | Multikassa enabled **or** FiscalDrive (`TaxAnalyticsConnectedSql`) |
+| Pharmacy | `pharmacy-service` `/internal/pharmacy/tax-analytics/*` | pharmacy `sales` | companies with `FISCALIZED` sales |
+| Restaurant | `restaurant-service` `/internal/rst/tax-analytics/*` | `floor_order_payments` on `CLOSED` orders | `edge_multikassa.enabled` |
+
+Companies still come from `pos_db.companies`. Not a GNК registry.
+
+## Must
+
+- Keep Multikassa **and** FiscalDrive in `TaxAnalyticsConnectedSql`.
+- Merge restaurant/pharmacy through `TaxAnalyticsVerticalSnapshotLoader` + `TaxAnalyticsVerticalMerge` — do not query foreign DBs from web-backend JDBC.
+- Vertical HTTP failures are best-effort (warn + zeros); grocery still returns.
+
+## Must NOT
+
+- Treat restaurant payments without OFD proof as fiscal (they stay non-fiscal until payment carries fiscal status).
+- Drop pharmacy/restaurant internal endpoints without replacing the merge path.

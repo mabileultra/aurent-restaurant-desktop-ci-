@@ -1,0 +1,124 @@
+/* Phone hall stage: less chrome, more table tiles */
+
+.rst-cashier.rst-cashier--mobile .rst-floor-hall-rail {
+  padding: 0.3rem 0.45rem;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-floor-hall-rail__title {
+  display: none;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-floor-hall-rail__btn {
+  min-width: 4.6rem;
+  min-height: 2.15rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border-left-width: 1px;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-floor-hall-rail__btn strong {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-floor-hall-rail__shift {
+  flex: 0 0 auto;
+  min-height: 2.15rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.72rem;
+  border-radius: 999px;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables {
+  padding: 0.3rem 0.45rem 0.2rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__head {
+  gap: 0.25rem;
+  margin-bottom: 0.3rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.3rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.05rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__filters,
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__order {
+  display: flex;
+  flex-wrap: nowrap;
+  grid-template-columns: none;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort-btn {
+  flex: 0 0 auto;
+  min-height: 2.05rem;
+  min-width: 4.4rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.7rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  border-radius: 999px;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__sort-btn--icon {
+  min-width: 2.35rem;
+  min-height: 2.05rem;
+  padding: 0.2rem;
+  font-size: 0.95rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__list {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  gap: 0.35rem;
+  padding-bottom: 0.25rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-tables__list .rst-cashier-tile {
+  min-height: 4.35rem;
+  padding: 0.45rem 0.5rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-dock {
+  padding: 0.28rem 0.45rem;
+  gap: 0.15rem;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-dock__head {
+  padding: 0.2rem 0.35rem 0;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-dock__head h2 {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-dock__empty {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0.35rem 0.45rem 0.45rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  place-items: start center;
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-more-bar {
+  padding: 0.25rem 0.55rem max(0.3rem, env(safe-area-inset-bottom, 0px));
+}
+
+.rst-cashier.rst-cashier--mobile .rst-cashier-more-trigger {
+  min-height: 2.35rem;
+  font-size: 0.82rem;
+}

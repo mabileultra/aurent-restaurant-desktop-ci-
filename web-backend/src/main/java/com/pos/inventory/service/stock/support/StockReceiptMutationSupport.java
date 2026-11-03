@@ -1,7 +1,7 @@
 package com.pos.inventory.service.stock.support;
 
 import com.pos.catalog.entity.Product;
-import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.service.product.support.CatalogManagedProductLoader;
 import com.pos.domain.StockMovementType;
 import com.pos.entity.Store;
 import com.pos.entity.User;
@@ -36,7 +36,7 @@ public class StockReceiptMutationSupport {
     private final StoreStockService storeStockService;
     private final StockMovementRepository stockMovementRepository;
     private final StockMovementPersistence stockMovementPersistence;
-    private final ProductRepository productRepository;
+    private final CatalogManagedProductLoader catalogManagedProductLoader;
     private final StockDocumentSupport stockDocument;
 
     public void reverseStockAndMovements(StockReceipt receipt) {
@@ -45,10 +45,10 @@ public class StockReceiptMutationSupport {
             throw PosExceptions.badRequest("У прихода не указан магазин");
         }
         for (StockReceiptLine line : receipt.getLines()) {
-            Product product = line.getProduct();
-            if (product == null) {
+            if (line.getProductId() == null) {
                 continue;
             }
+            Product product = catalogManagedProductLoader.requireById(line.getProductId());
             storeStockService.decrease(product, store, line.getQuantity());
         }
         stockMovementRepository.deleteByReferenceId(receipt.getId());
@@ -81,7 +81,8 @@ public class StockReceiptMutationSupport {
             Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
-            com.pos.util.QuantityValidator.validate(product, q);
+            com.pos.util.QuantityValidator.validate(
+                com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product), q);
 
             BigDecimal purchase = lineReq.purchasePrice() != null ? lineReq.purchasePrice() : BigDecimal.ZERO;
             BigDecimal selling = lineReq.unitSellingPrice() != null ? lineReq.unitSellingPrice() : BigDecimal.ZERO;
@@ -100,14 +101,17 @@ public class StockReceiptMutationSupport {
             if (StringUtils.hasText(lineReq.storageLocation())) {
                 product.setStorageLocation(lineReq.storageLocation().trim());
             }
+            catalogManagedProductLoader.saveCard(product);
             storeStockService.increase(product, store, q);
-            productRepository.save(product);
 
             BigDecimal lineCost = purchase.multiply(q).setScale(2, RoundingMode.HALF_UP);
             BigDecimal lineRetail = selling.multiply(q).setScale(2, RoundingMode.HALF_UP);
+            var card = StockLineCatalogSnapshot.Card.of(product);
             lines.add(StockReceiptLine.builder()
                 .receipt(receipt)
-                .product(product)
+                .productId(card.productId())
+                .productName(card.productName())
+                .productSku(card.productSku())
                 .quantity(q)
                 .purchasePrice(purchase)
                 .unitSellingPrice(selling)
@@ -116,8 +120,8 @@ public class StockReceiptMutationSupport {
                 .unitRetailPrice(selling)
                 .build());
 
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(store)
                 .movementType(StockMovementType.RESTOCK)
                 .quantity(q)

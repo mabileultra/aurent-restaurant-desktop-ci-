@@ -34,6 +34,10 @@ public class TaxAnalyticsQueryRepository {
         return n == null ? 0L : n;
     }
 
+    public List<Integer> listConnectedCompanyIds() {
+        return jdbc.queryForList(TaxAnalyticsConnectedSql.SQL, Integer.class);
+    }
+
     public BigDecimal sumTurnover(TaxAnalyticsPeriod period, boolean fiscalOnly, boolean nonFiscalOnly) {
         String fiscalClause = "";
         if (fiscalOnly) {

@@ -1,0 +1,74 @@
+---
+description: Grocery catalog-service cutover — Wave 6 Production Readiness & Soak
+globs: web-backend/**/catalog/**/*.java,web-backend/**/client/catalog/**/*.java,web-backend/**/client/catalog/**/*.java,web-backend/**/application*.yml,catalog-service/**/*
+alwaysApply: false
+---
+
+# Catalog cutover
+
+**Status (2026-11-02):** Waves 1–5.8 engineering done. Prod SoT = **web-backend**. Next = **Wave 6 — Production Readiness & Soak** (not code-first). Do **not** re-open Wave 1–2.
+
+## Wave ownership
+
+| Wave | Status |
+|---|---|
+| 1 Isolation / Facade | Done |
+| 2 Remove JPA Product / FK | Done |
+| 3 catalog-service + API + outbox | Done (import deferred) |
+| 4 Client / dual-path / desktop feed | Done |
+| 5 Cutover dials 5.1–5.8 | Done |
+| **6 Production readiness & soak** | **In progress** — local DUAL/verify/failover/offline-feed OK; staging/prod soak pending |
+| 7 Full write-cutover + drop local `products` | After Wave 6 green |
+| Later | Excel/UZ import; desktop Kafka consumer (optional) |
+
+## Critical: `write-mode=REMOTE_ONLY` ≠ Catalog SoT
+
+Current `REMOTE_ONLY` = **strict sync mirror**: remote fail aborts request, but **web-backend still owns the write** (local row is primary until Wave 7 proxy CRUD).
+
+| Mode | Who owns the card write |
+|---|---|
+| `enabled=false` / `LOCAL_ONLY` | web-backend only |
+| `DUAL` | web-backend primary; catalog best-effort after commit |
+| `REMOTE_ONLY` (today) | web-backend still writes; catalog must succeed in-request |
+| Wave 7 cutover | **catalog-service primary**; local mirror or read-only, then drop |
+
+## Wave 6 exit criteria (ops, not green unit tests alone)
+
+1. `catalog_db` + `catalog-service` up; health OK  
+2. Backfill categories → products  
+3. `GET /products/catalog-service/verify` → `countsMatch=true`, sample missing = 0  
+4. Outbox: no stuck FAILED; retry works; Kafka (if on) no silent loss  
+5. Soak on `DUAL` ≥ agreed window without upsert/error storm  
+6. Exercise `read-mode=REMOTE_ONLY` + failover (catalog down → expected behavior)  
+7. Offline cashier: offline ≥1 day, multi-update, deactivate, reconnect, duplicate/out-of-order snapshots idempotent  
+8. Only then decide Wave 7 write-cutover
+
+## Staging soak (ship path)
+
+Compose: `docker-compose.prod.yml` + `docker-compose.staging.yml` — services `catalog-db` / `catalog-service` included.  
+Safe default: `CATALOG_SERVICE_ENABLED=false`.
+
+1. Set in staging `.env`: `CATALOG_DB_PASSWORD`, `CATALOG_INTERNAL_API_KEY`  
+2. `docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml up -d --build catalog-db catalog-service`  
+3. Health: `curl -fsS http://127.0.0.1:18090/api/v1/actuator/health`  
+4. Flip `CATALOG_SERVICE_ENABLED=true`, `WRITE_MODE=DUAL`, recreate backend  
+5. `POST …/products/catalog-service/backfill-categories` then `…/backfill/all`  
+6. `GET …/verify` → `countsMatch` + `sampleMissingRemote=0`  
+7. Soak DUAL; watch `…/status` outboxFailed=0  
+8. Do **not** enable write REMOTE_ONLY / drop `products` until Wave 7
+
+## Flags (`app.catalog`) — safe defaults
+
+| Flag | Safe default |
+|---|---|
+| `enabled` | `false` |
+| `read-mode` | `REMOTE_FIRST` |
+| `write-mode` | `DUAL` |
+
+## Must NOT (until Wave 7+)
+
+- Delete web-backend `products`
+- Move Pharmacy / Restaurant catalog into grocery catalog-service
+- Put live stock into `catalog_db`
+- Start Excel/UZ import before cutover SoT
+- Re-propose Facade/ProductRef isolation as new work (already done)

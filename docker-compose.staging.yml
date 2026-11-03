@@ -104,6 +104,18 @@ services:
     ports:
       - '127.0.0.1:18089:8089'
 
+  catalog-db:
+    container_name: aurent-staging-catalog-db
+    ports:
+      - '127.0.0.1:15442:5432'
+    volumes:
+      - staging_catalog_pg_data:/var/lib/postgresql/data
+
+  catalog-service:
+    container_name: aurent-staging-catalog-service
+    ports:
+      - '127.0.0.1:18090:8090'
+
   ai-service:
     container_name: aurent-staging-ai-service
     ports:
@@ -144,5 +156,6 @@ volumes:
   staging_crm_pg_data:
   staging_restaurant_pg_data:
   staging_pharmacy_pg_data:
+  staging_catalog_pg_data:
   staging_backend_uploads:
   staging_backend_logs:

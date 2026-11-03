@@ -1,5 +1,6 @@
 package com.pos.catalog.service.product.impl;
 
+import com.pos.catalog.api.support.CatalogRemoteReadinessGuard;
 import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.dto.shared.PageResponse;
@@ -19,7 +20,7 @@ import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.scales.codec.WeightBarcodeCodec;
 import com.pos.service.support.CatalogIsolationSupport;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -51,6 +52,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final TenantAccessSupport tenantAccess;
     private final WeightBarcodeCodec weightBarcodeCodec;
     private final CatalogIsolationSupport catalogIsolation;
+    private final CatalogRemoteReadinessGuard catalogRemoteReadinessGuard;
 
     @Override
     public PageResponse<ProductResponse> getProducts(
@@ -67,6 +69,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String businessTypeCode,
         Pageable pageable
     ) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
@@ -97,6 +100,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public ProductResponse getProduct(UUID id, Integer storeId) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = catalogLoader.requireDetailed(id);
         tenantAccess.assertProductBelongsToTenant(product);
         catalogIsolation.hidePharmacyFromGrocery(product);
@@ -105,13 +109,15 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public ProductResponse getByBarcode(String barcode) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), null);
         catalogIsolation.hidePharmacyFromGrocery(product);
-        return assembler.toResponse(product);
+        return forStore(assembler.toResponse(product), product, null);
     }
 
     @Override
     public ProductResponse getByBarcode(String barcode, Integer storeId) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), storeId);
         catalogIsolation.hidePharmacyFromGrocery(product);
         return forStore(assembler.toResponse(product), product, storeId);
@@ -137,6 +143,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         java.util.Map<String, String> attributeFilters,
         String businessTypeCode
     ) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
@@ -157,10 +164,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             );
             return PageResponse.from(page.map(p -> {
                 ProductResponse base = assembler.toResponse(p, storeCounts, dispatched);
-                if (!companyQty.containsKey(p.getId())) {
-                    return base;
-                }
-                return assembler.withStockQuantity(base, companyQty.get(p.getId()));
+                // Live company sum from store_stock; missing rows → 0 (not denormalized products.stock_quantity).
+                BigDecimal qty = companyQty.getOrDefault(p.getId(), BigDecimal.ZERO);
+                return assembler.withStockQuantity(base, qty);
             }));
         }
         Map<UUID, BigDecimal> storeQty = storeStockService.getQuantities(
@@ -181,7 +187,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private ProductResponse forStore(ProductResponse base, Product product, Integer storeId) {
         if (storeId == null) {
-            return base;
+            BigDecimal companyQty = storeStockService.sumQuantities(java.util.List.of(product.getId()))
+                .getOrDefault(product.getId(), BigDecimal.ZERO);
+            return assembler.withStockQuantity(base, companyQty);
         }
         BigDecimal qty = storeStockService.getQuantity(product.getId(), storeId);
         ProductResponse withQty = assembler.withStockQuantity(base, qty);

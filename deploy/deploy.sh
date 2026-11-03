@@ -99,6 +99,7 @@ declare -A CONTAINER_NAMES=(
   [crm-db]=aurent-crm-db
   [restaurant-db]=aurent-restaurant-db
   [pharmacy-db]=aurent-pharmacy-db
+  [catalog-db]=aurent-catalog-db
   [redpanda]=aurent-redpanda
   [redis]=aurent-redis
   [finance-service]=aurent-finance-service
@@ -108,6 +109,7 @@ declare -A CONTAINER_NAMES=(
   [crm-service]=aurent-crm-service
   [restaurant-service]=aurent-restaurant-service
   [pharmacy-service]=aurent-pharmacy-service
+  [catalog-service]=aurent-catalog-service
   [ai-service]=aurent-ai-service
   [backend]=aurent-pos-backend
   [api-gateway]=aurent-api-gateway
@@ -248,6 +250,29 @@ cmd_check() {
   exit 1
 }
 
+# Guard: never silently deploy to an unnamed host (lab vs prod).
+require_deploy_target() {
+  local t="${DEPLOY_TARGET:-}"
+  case "$t" in
+    lab|test)
+      echo "==> DEPLOY_TARGET=${t} (lab/test) — продолжаем"
+      ;;
+    prod|production)
+      if [[ "${CONFIRM_PROD:-}" != "YES" ]]; then
+        echo "PROD заблокирован: нужно DEPLOY_TARGET=prod и CONFIRM_PROD=YES" >&2
+        exit 1
+      fi
+      echo "==> DEPLOY_TARGET=prod + CONFIRM_PROD=YES — продолжаем"
+      ;;
+    *)
+      echo "Укажите цель выкладки:" >&2
+      echo "  DEPLOY_TARGET=lab   bash deploy/deploy.sh     # тестовый (Contabo / aurent-pos-lab)" >&2
+      echo "  DEPLOY_TARGET=prod CONFIRM_PROD=YES bash deploy/deploy.sh  # живой прод" >&2
+      exit 1
+      ;;
+  esac
+}
+
 if [[ "$SUBCOMMAND" == "check" ]]; then
   cmd_check
 fi
@@ -274,10 +299,12 @@ case "$SUBCOMMAND" in
       echo "Использование: bash deploy/deploy.sh recreate <service>" >&2
       exit 1
     fi
+    require_deploy_target
     recreate_service "$1"
     exit 0
     ;;
   deploy)
+    require_deploy_target
     ;;
   *)
     echo "Использование: bash deploy/deploy.sh [deploy|check|verify-db|sync-db-password|recreate <service>]" >&2
@@ -478,7 +505,7 @@ else
 fi
 
 echo "==> Инфраструктура: PostgreSQL (все БД) + Redpanda + Redis..."
-compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db pharmacy-db redpanda redis
+compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db pharmacy-db catalog-db redpanda redis
 
 wait_container_healthy aurent-pos-db postgres
 wait_container_healthy aurent-identity-db identity-db
@@ -487,6 +514,7 @@ wait_container_healthy aurent-reporting-db reporting-db
 wait_container_healthy aurent-crm-db crm-db
 wait_container_healthy aurent-restaurant-db restaurant-db
 wait_container_healthy aurent-pharmacy-db pharmacy-db
+wait_container_healthy aurent-catalog-db catalog-db
 wait_container_healthy aurent-redpanda redpanda
 wait_container_healthy aurent-redis redis
 
@@ -523,8 +551,8 @@ wait_container_healthy aurent-pos-backend backend || {
   exit 1
 }
 
-echo "==> identity-service, platform-service, reporting-service, crm-service, restaurant-service, pharmacy-service, ai-service..."
-for svc in identity-service platform-service reporting-service crm-service restaurant-service pharmacy-service ai-service; do
+echo "==> identity-service, platform-service, reporting-service, crm-service, restaurant-service, pharmacy-service, catalog-service, ai-service..."
+for svc in identity-service platform-service reporting-service crm-service restaurant-service pharmacy-service catalog-service ai-service; do
   if ! recreate_service "$svc"; then
     compose_logs_tail "$svc" 150
     exit 1
@@ -553,6 +581,10 @@ wait_container_healthy aurent-restaurant-service restaurant-service || {
 }
 wait_container_healthy aurent-pharmacy-service pharmacy-service || {
   compose_logs_tail pharmacy-service 150
+  exit 1
+}
+wait_container_healthy aurent-catalog-service catalog-service || {
+  compose_logs_tail catalog-service 150
   exit 1
 }
 wait_container_healthy aurent-ai-service ai-service || {

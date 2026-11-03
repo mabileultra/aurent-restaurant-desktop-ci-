@@ -59,6 +59,8 @@ CREATE TABLE IF NOT EXISTS local_sales (
 );
 CREATE INDEX IF NOT EXISTS idx_local_sales_sync ON local_sales(sync_status);
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_products_active_name ON products(active, name);
+CREATE INDEX IF NOT EXISTS idx_product_barcodes_product ON product_barcodes(product_id);
 `;
 
 module.exports = { SCHEMA };

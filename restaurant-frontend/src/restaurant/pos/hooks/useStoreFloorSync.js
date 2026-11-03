@@ -10,7 +10,14 @@ const REVISION_POLL_MS = 3_000;
  * only when the floor revision changes (other cashier, booking, table).
  * Kitchen and the open check keep their own polls.
  */
-export function useStoreFloorSync(storeId, { activeOrderId = null, syncKitchen = false } = {}) {
+export function useStoreFloorSync(
+  storeId,
+  {
+    activeOrderId = null,
+    syncKitchen = false,
+    pollInBackground = false,
+  } = {},
+) {
   const qc = useQueryClient();
   const prevRevRef = useRef(null);
 
@@ -21,7 +28,7 @@ export function useStoreFloorSync(storeId, { activeOrderId = null, syncKitchen =
     staleTime: 0,
     refetchInterval: REVISION_POLL_MS,
     refetchOnWindowFocus: true,
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: pollInBackground,
   });
 
   const revision = revisionQuery.data?.revision;

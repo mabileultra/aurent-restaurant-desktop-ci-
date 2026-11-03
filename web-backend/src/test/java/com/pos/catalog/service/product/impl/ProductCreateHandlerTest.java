@@ -21,7 +21,7 @@ import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
 import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
 import com.pos.service.support.CatalogIsolationSupport;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

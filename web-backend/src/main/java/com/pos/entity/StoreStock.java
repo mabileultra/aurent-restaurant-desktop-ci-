@@ -1,7 +1,6 @@
 package com.pos.entity;
 
 import jakarta.persistence.*;
-import com.pos.catalog.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -24,9 +23,9 @@ public class StoreStock {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    /** Catalog product id — no JPA association (Wave 2.4). DB FK remains until Wave 2.5. */
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "store_id", nullable = false)

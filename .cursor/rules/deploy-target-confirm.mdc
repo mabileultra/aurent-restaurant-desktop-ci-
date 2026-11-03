@@ -1,0 +1,16 @@
+---
+description: Always ask test vs prod before any server deploy or DB restore
+alwaysApply: true
+---
+
+# Deploy target confirmation (обязательно)
+
+Before **any** of: `deploy.sh`, `update.sh`, docker up on a remote host, `scp`/`rsync` of app code to a server, or DB dump **restore** onto a server:
+
+1. **Ask explicitly** which target: **lab/test** (`aurent-pos-lab` / Contabo `169.58.250.132`) or **prod** (`Timur1019/postsystem` / live prod).
+2. **Do not start** until the user names the target in this turn (e.g. «на тест», «на lab», «на прод»).
+3. **Prod** additionally needs an unambiguous phrase like «подтверждаю прод» in the same turn — vague «выкатывай» is not enough.
+4. Never treat lab and prod as interchangeable remotes, `.env`, or hosts.
+5. Shell: set `DEPLOY_TARGET=lab` or `DEPLOY_TARGET=prod` (prod also `CONFIRM_PROD=YES`).
+
+Lab git: `Timur1019/aurent-pos-lab`. Prod git: `Timur1019/postsystem`. Do not push lab commits to prod unless the user asked for that merge/ship separately.

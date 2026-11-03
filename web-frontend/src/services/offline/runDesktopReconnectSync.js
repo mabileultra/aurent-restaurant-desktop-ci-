@@ -7,8 +7,8 @@ import { SYNC_PHASE } from './syncPhase';
 import { logCatalog, logSync } from '../desktop/activityLog';
 
 /**
- * After API comes back: refresh catalog if needed, then push pending sales.
- * Updates syncPhase so the cashier UI can show progress.
+ * After API comes back: push pending sales first when local catalog is ready
+ * (feels like online), then refresh catalog. Empty DB still bootstraps catalog first.
  */
 export async function runDesktopReconnectSync(storeId, { catalogKind } = {}) {
   if (!storeId || !canRunOnlineSync()) {
@@ -22,43 +22,63 @@ export async function runDesktopReconnectSync(storeId, { catalogKind } = {}) {
 
   try {
     let forceCatalog = false;
+    let bootstrapReady = false;
     try {
       const status = await offlineGetStatus();
-      forceCatalog =
-        isCatalogStoreMismatch(status.storeId, storeId)
-        || !(status.bootstrapReady || status.canSellOffline || Number(status.productCount) > 0);
+      bootstrapReady = Boolean(
+        status.bootstrapReady || status.canSellOffline || Number(status.productCount) > 0,
+      );
+      forceCatalog = isCatalogStoreMismatch(status.storeId, storeId) || !bootstrapReady;
     } catch {
       forceCatalog = true;
     }
 
-    store.setSyncPhase(SYNC_PHASE.CATALOG);
+    let catalogResult = null;
+    let sales = null;
+
     if (forceCatalog) {
+      store.setSyncPhase(SYNC_PHASE.CATALOG);
       store.setSyncingCatalog(true);
-    }
-    logCatalog(
-      forceCatalog ? 'Reconnect: загрузка каталога' : 'Reconnect: проверка каталога',
-      { storeId, catalogKind, forceCatalog },
-    );
-
-    const catalogResult = await runCatalogSyncIfNeeded(storeId, {
-      force: forceCatalog,
-      catalogKind,
-    });
-
-    if (catalogResult?.skipped && catalogResult?.reason === 'error') {
-      store.setSyncResult({
-        ok: false,
-        error: catalogResult.error || 'catalog_sync_failed',
+      logCatalog('Reconnect: загрузка каталога', { storeId, catalogKind, forceCatalog: true });
+      catalogResult = await runCatalogSyncIfNeeded(storeId, {
+        force: true,
+        catalogKind,
       });
-      logCatalog(`Reconnect: ошибка каталога — ${catalogResult.error || 'error'}`, { storeId }, 'error');
-      return { skipped: false, catalog: catalogResult, sales: null };
+      if (catalogResult?.skipped && catalogResult?.reason === 'error') {
+        store.setSyncResult({
+          ok: false,
+          error: catalogResult.error || 'catalog_sync_failed',
+        });
+        logCatalog(`Reconnect: ошибка каталога — ${catalogResult.error || 'error'}`, { storeId }, 'error');
+        return { skipped: false, catalog: catalogResult, sales: null };
+      }
+      store.setSyncingCatalog(false);
+
+      store.setSyncPhase(SYNC_PHASE.SALES);
+      logSync('Reconnect: отправка офлайн-продаж', { storeId });
+      sales = await runSalesSyncOnly({ catalogKind });
+    } else {
+      // Online-feel path: clear sale queue first, catalog refresh is secondary.
+      store.setSyncPhase(SYNC_PHASE.SALES);
+      logSync('Reconnect: отправка офлайн-продаж', { storeId });
+      sales = await runSalesSyncOnly({ catalogKind });
+
+      store.setSyncPhase(SYNC_PHASE.CATALOG);
+      logCatalog('Reconnect: проверка каталога', { storeId, catalogKind, forceCatalog: false });
+      catalogResult = await runCatalogSyncIfNeeded(storeId, {
+        force: false,
+        catalogKind,
+      });
+      if (catalogResult?.skipped && catalogResult?.reason === 'error') {
+        store.setSyncResult({
+          ok: false,
+          error: catalogResult.error || 'catalog_sync_failed',
+        });
+        logCatalog(`Reconnect: ошибка каталога — ${catalogResult.error || 'error'}`, { storeId }, 'error');
+        return { skipped: false, catalog: catalogResult, sales };
+      }
     }
 
-    store.setSyncPhase(SYNC_PHASE.SALES);
-    store.setSyncingCatalog(false);
-    logSync('Reconnect: отправка офлайн-продаж', { storeId });
-
-    const sales = await runSalesSyncOnly({ catalogKind });
     const salesFailed = Number(sales?.failed || 0);
     if (sales?.error || salesFailed > 0) {
       store.setSyncResult({

@@ -8,12 +8,18 @@ import { escapeHtml, printViaIframe } from './printOrdinarySaleReceipt';
 import { moneyRow, padRow, ticketStamp, TICKET_WIDTH } from './ticketLayout';
 import {
   resolveTicketTitle,
+  styleLine,
   ticketPrintOptions,
   wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { fieldStyle } from '../../shared/printProfile/printProfileDefaults';
 import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 import { slipChromeHtml } from './slipChromeHtml';
+import {
+  styleSlipFieldLine,
+  styleSlipItemRows,
+  styleSlipTotalsRow,
+} from './styleSlipBodyLines';
 
 /** Preserve API order; bucket rows under category headers. */
 export function groupShiftItemsByCategory(items, uncategorizedLabel) {
@@ -65,29 +71,43 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
         count: group.quantity,
         defaultValue: `${group.quantity} шт.`,
       }) || `${group.quantity} шт.`;
+      const dishRows = group.items.map((row) => (
+        withMoney
+          ? padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount))
+          : padRow(`${Number(row.quantity)} x ${row.name}`, '')
+      ));
       const block = [
         `≫ ${group.label}`,
-        ...group.items.map((row) => (
-          withMoney
-            ? padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount))
-            : padRow(`${Number(row.quantity)} x ${row.name}`, '')
-        )),
+        ...styleSlipItemRows(dishRows, profile, slipType),
         ...(withMoney
-          ? [padRow(group.label, catQty), moneyRow('', group.amount)]
+          ? [
+            styleSlipTotalsRow(padRow(group.label, catQty), profile, slipType) || padRow(group.label, catQty),
+            styleSlipTotalsRow(moneyRow('', group.amount), profile, slipType) || moneyRow('', group.amount),
+          ]
           : [padRow(group.label, catQty)]),
       ];
       return index < groups.length - 1 ? [...block, divider] : block;
     })
     : [emptyLabel];
-  const lines = wrapSlipLines([
-    ...(show('headerTitle') ? [title.toUpperCase()] : []),
-    ...(store ? [store] : []),
-    ...(show('waiter') && cashier ? [cashier] : []),
-    ...(show('time') ? [period] : []),
+
+  const body = [
+    styleSlipFieldLine(title.toUpperCase(), profile, slipType, 'headerTitle'),
+    // Store name always prints when known (not gated by branding checkbox on this slip).
+    store ? styleLine(store, { ...fieldStyle(profile, slipType, 'storeName'), on: true }) : null,
+    show('waiter') && cashier ? styleSlipFieldLine(cashier, profile, slipType, 'waiter') : null,
+    styleSlipFieldLine(period, profile, slipType, 'time'),
     divider,
     ...(show('items') ? itemLines : []),
-    ...(withMoney ? [divider, padRow(totalLabel, qtyLabel), moneyRow('', totalAmount)] : []),
-  ], profile, slipType);
+    ...(withMoney
+      ? [
+        divider,
+        styleSlipTotalsRow(padRow(totalLabel, qtyLabel), profile, slipType) || padRow(totalLabel, qtyLabel),
+        styleSlipTotalsRow(moneyRow('', totalAmount), profile, slipType) || moneyRow('', totalAmount),
+      ]
+      : []),
+  ].filter((row) => row != null && row !== '');
+
+  const lines = wrapSlipLines(body, profile, slipType);
 
   if (isDesktopPrinter()) {
     const settings = await getDesktopPrinterSettings();

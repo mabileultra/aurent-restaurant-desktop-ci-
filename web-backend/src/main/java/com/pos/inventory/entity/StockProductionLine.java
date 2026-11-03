@@ -1,6 +1,5 @@
 package com.pos.inventory.entity;
 
-import com.pos.catalog.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,9 +23,14 @@ public class StockProductionLine {
     @JoinColumn(name = "production_id", nullable = false)
     private StockProduction production;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
+
+    @Column(name = "product_name", length = 255)
+    private String productName;
+
+    @Column(name = "product_sku", length = 120)
+    private String productSku;
 
     @Column(nullable = false, precision = 18, scale = 3)
     private BigDecimal quantity;

@@ -13,7 +13,7 @@ alwaysApply: false
 
 - [ ] `restaurant-service` edge profile builds (includes `EdgeCloudSyncService`, `LiveShiftReconcile`, staff applier).
 - [ ] `pnpm` / prepare: UI bundle + jar in resources.
-- [ ] No network chrome / status strip under header (still `return null`).
+- [ ] No network chrome / status strip under header (still `return null`). Wi‑Fi mark only inside hamburger ☰ footer.
 - [ ] LAN hub: packaged default ON; boot log shows `LAN phones: http://…`.
 
 ## Smoke — offline months (local)
@@ -26,8 +26,9 @@ alwaysApply: false
 ## Smoke — online reconcile (88551-style)
 
 - [ ] With network: change password / deactivate user in cloud → within ~1 min (or reconnect) login on PC fails / kick after roster refresh.
-- [ ] Close shift in cloud, empty floor on PC → local OPEN closes after live pull.
-- [ ] Local open tables still present → local shift NOT force-closed.
+- [ ] Close shift/tables on site → within ~2s PC matches (pull-first when cloud origin ahead); no reopen from stale push.
+- [ ] Close shift/tables on PC → cloud matches after push; site/phones see closed.
+- [ ] No network → hall works local; reconnect resumes directed live round.
 - [ ] After offline sales: reconnect → outbox flush reduces pending (no manual sync button).
 - [ ] Catalog: new dish on cloud appears on PC after reconnect or ≤15 min.
 - [ ] Stock products refresh after reconnect or ≤15 min.

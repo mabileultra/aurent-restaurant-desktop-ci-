@@ -8,9 +8,14 @@ import { rstShiftApi } from '../../api/shift.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
+import {
+  groupTicketsBySimplePhase,
+  nextSimpleStatus,
+} from '../utils/kitchenSimpleBoard';
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
 import { playPosSound } from '../utils/posSounds';
+import { publishKitchenTvBump } from '../../ready-display/kitchenTvSyncChannel';
 import { useStoreFloorSync } from './useStoreFloorSync';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
@@ -31,7 +36,11 @@ function readStoredStation(storeId) {
   }
 }
 
-export function useKitchenPosPage() {
+/**
+ * @param {{ simpleMode?: boolean }} [options]
+ * simpleMode — TV kitchen: 2 taps (arrived→cooking→ready), skips ACCEPTED column.
+ */
+export function useKitchenPosPage({ simpleMode = false } = {}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -109,6 +118,7 @@ export function useKitchenPosPage() {
     mutationFn: ({ ticketId, status }) => rstKitchenApi.updateTicketStatus(ticketId, status),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['rst-kitchen-tickets', workspace.storeId] });
+      publishKitchenTvBump(workspace.storeId);
       if (vars.status === 'SERVED') {
         toast.success(t('rst.kitchen.servedCleared'));
       }
@@ -166,14 +176,27 @@ export function useKitchenPosPage() {
         arrived = true;
       }
     }
-    if (arrived) playPosSound('kitchen');
-  }, [ticketsQuery.data]);
+    if (arrived) {
+      playPosSound('kitchen');
+      publishKitchenTvBump(workspace.storeId);
+    }
+  }, [ticketsQuery.data, workspace.storeId]);
+
+  // Any kitchen ticket refresh → nudge TV window on this PC.
+  useEffect(() => {
+    if (workspace.storeId == null || !ticketsQuery.dataUpdatedAt) return;
+    publishKitchenTvBump(workspace.storeId);
+  }, [ticketsQuery.dataUpdatedAt, workspace.storeId]);
 
   useEffect(() => {
     seenNewTicketIdsRef.current = null;
   }, [workspace.storeId, stationFilter]);
 
   const columns = groupTicketsByStatus(tickets);
+  const simplePhases = useMemo(
+    () => groupTicketsBySimplePhase(tickets),
+    [tickets],
+  );
 
   const stations = stationsQuery.data ?? [];
 
@@ -181,6 +204,8 @@ export function useKitchenPosPage() {
     t,
     workspace,
     columns,
+    simplePhases,
+    tickets,
     stations,
     stationFilter,
     setStationFilter,
@@ -197,8 +222,11 @@ export function useKitchenPosPage() {
     canAdmin: user?.role === 'ADMIN' || user?.role === 'MANAGER',
     kitchenBoardEnabled,
     kitchenBoardLoading: kitchenBoardQuery.isLoading,
+    simpleMode,
     advance: (ticket) => {
-      const next = NEXT_TICKET_STATUS[ticket.status];
+      const next = simpleMode
+        ? nextSimpleStatus(ticket)
+        : NEXT_TICKET_STATUS[ticket.status];
       if (!next) return;
       statusMutation.mutate({ ticketId: ticket.id, status: next });
     },

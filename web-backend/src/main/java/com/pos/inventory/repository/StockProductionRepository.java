@@ -16,11 +16,11 @@ public interface StockProductionRepository extends JpaRepository<StockProduction
 
     long countByCreatedAtGreaterThanEqual(Instant dayStart);
 
-    @EntityGraph(attributePaths = {"store", "createdBy", "outputProduct", "lines", "lines.product"})
+    @EntityGraph(attributePaths = {"store", "createdBy", "lines"})
     @Query("SELECT p FROM StockProduction p WHERE p.id = :id")
     Optional<StockProduction> findDetailedById(@Param("id") UUID id);
 
-    @EntityGraph(attributePaths = {"store", "createdBy", "outputProduct"})
+    @EntityGraph(attributePaths = {"store", "createdBy"})
     @Query("""
         SELECT p FROM StockProduction p
         WHERE p.store.company.id = :companyId

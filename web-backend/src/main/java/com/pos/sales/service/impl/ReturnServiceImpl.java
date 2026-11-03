@@ -12,13 +12,13 @@ import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.sales.mapper.ReturnMapper;
 import com.pos.sales.mapper.SaleMapper;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.sales.repository.SaleItemRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.sales.repository.sale.SaleSearchRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.sales.service.ReturnService;
 import com.pos.sales.service.sale.SaleAccessPolicy;
+import com.pos.sales.service.sale.support.SaleItemProductLoader;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.util.ReturnNotesSupport;
@@ -35,6 +35,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,7 @@ public class ReturnServiceImpl implements ReturnService {
     private final SaleItemRepository saleItemRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
+    private final SaleItemProductLoader saleItemProductLoader;
     private final ReturnMapper returnMapper;
     private final SaleMapper saleMapper;
     private final SalesLedgerCacheService salesLedgerCacheService;
@@ -118,12 +120,12 @@ public class ReturnServiceImpl implements ReturnService {
         }
 
         sale.getItems().forEach(item -> {
-            Product product = item.getProduct();
+            Product product = saleItemProductLoader.require(item);
             storeStockService.requireAvailable(product, store, item.getQuantity());
             storeStockService.decrease(product, store, item.getQuantity());
 
-            stockMovementPersistence.save(StockMovement.builder()
-                .product(product)
+            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                
                 .store(sale.getStore())
                 .movementType(StockMovementType.SALE)
                 .quantity(item.getQuantity().negate())

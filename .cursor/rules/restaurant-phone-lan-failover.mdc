@@ -1,0 +1,30 @@
+---
+description: Restaurant phones use own internet (cloud); LAN only when hall PC loses internet and tells phones to switch
+globs: restaurant-frontend/**/*,restaurant-desktop/**/*
+alwaysApply: false
+---
+
+# Restaurant phones ↔ cloud / LAN
+
+## Product rule (invariant)
+
+1. **Phone has its own internet** (mobile data or Wi‑Fi with WAN) → works **only via cloud**. Do **not** auto-join hall LAN. Offline/desktop edge is irrelevant while cloud is reachable for the phone.
+2. **Hall desktop loses internet** → desktop is the authority that **signals phones**: «я недоступен в облаке — переключайтесь в LAN» (unavailable on cloud — switch to LAN). Phones then connect to the hall LAN hub (same Wi‑Fi as the PC).
+3. **Desktop has internet** → phones stay on cloud; desktop does **not** push LAN failover.
+4. Phone UI copy for that signal: clear CTA to switch to LAN (not a silent reconnect).
+
+## Why
+
+Cloud is the normal path for waiters/kitchen on phones. LAN is a **failover when the hall PC is cut off from the internet**, so phones talk to local `restaurant-service` instead of a stale/unreachable cloud floor.
+
+## Do not
+
+- Tie phone UX to desktop offline mode by default.
+- Force LAN while the phone can reach cloud **and** desktop is online.
+- Treat «phone has no internet» alone as the LAN trigger without the desktop unavailable signal (unless cloud is unreachable *and* user chooses LAN manually).
+
+## Implementation
+
+- Desktop → `POST /rst/edge/hall-presence` while cloud online (+ best-effort offline mark).
+- Cloud table `rst_hall_presence`; stale/offline → `switchToLan` for phones.
+- Phones poll `GET /rst/stores/{storeId}/hall-presence`; banner `HallLanFailoverHost` (not on desktop / not already on LAN IP).

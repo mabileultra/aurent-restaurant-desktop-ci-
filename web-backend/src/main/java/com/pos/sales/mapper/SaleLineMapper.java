@@ -23,8 +23,8 @@ public interface SaleLineMapper {
     @Mapping(target = "lineDiscount", source = "discount", qualifiedByName = "orZero")
     @Mapping(target = "taxAmount", source = "taxAmount", qualifiedByName = "orZero")
     @Mapping(target = "taxRatePercent", source = "item", qualifiedByName = "taxRate")
-    @Mapping(target = "ikpu", source = "product.ikpu")
-    @Mapping(target = "productSku", source = "product.sku")
+    @Mapping(target = "ikpu", source = "ikpu")
+    @Mapping(target = "productSku", source = "productSku")
     SaleResponse.SaleLineDto toLineDto(SaleItem item);
 
     List<SaleResponse.SaleLineDto> toLineDtoList(List<SaleItem> items);
@@ -40,22 +40,25 @@ public interface SaleLineMapper {
 
     @Named("saleTypeName")
     default String saleTypeName(SaleItem item) {
-        if (item == null || item.getProduct() == null || item.getProduct().getSaleType() == null) {
+        if (item == null || item.getSaleType() == null || item.getSaleType().isBlank()) {
             return SaleType.PIECE.name();
         }
-        return item.getProduct().getSaleType().name();
+        return item.getSaleType();
     }
 
     @Named("unitOfMeasure")
     default String unitOfMeasure(SaleItem item) {
-        if (item == null || item.getProduct() == null) {
+        if (item == null) {
             return null;
         }
-        UnitCode unitCode = item.getProduct().getUnitCode();
-        if (unitCode != null) {
-            return unitCode.displayLabel();
+        if (item.getUnitCode() != null && !item.getUnitCode().isBlank()) {
+            try {
+                return UnitCode.valueOf(item.getUnitCode().trim()).displayLabel();
+            } catch (IllegalArgumentException ignored) {
+                // fall through
+            }
         }
-        String uom = item.getProduct().getUnitOfMeasure();
+        String uom = item.getUnitOfMeasure();
         return uom != null && !uom.isBlank() ? uom : "pcs";
     }
 
@@ -66,9 +69,9 @@ public interface SaleLineMapper {
 
     @Named("taxRate")
     default BigDecimal taxRate(SaleItem item) {
-        if (item == null || item.getProduct() == null || item.getProduct().getTaxRate() == null) {
+        if (item == null || item.getTaxRate() == null) {
             return new BigDecimal("12");
         }
-        return item.getProduct().getTaxRate();
+        return item.getTaxRate();
     }
 }

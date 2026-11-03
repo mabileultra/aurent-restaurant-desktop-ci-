@@ -87,7 +87,7 @@ public class ProductLifecycleOrphanSaleLinker {
                 continue;
             }
             for (SaleItem item : sale.getItems()) {
-                if (item.getProduct() == null || !productId.equals(item.getProduct().getId())) {
+                if (item.getProductId() == null || !productId.equals(item.getProductId())) {
                     continue;
                 }
                 if (!quantityMatches(movement, item)) {

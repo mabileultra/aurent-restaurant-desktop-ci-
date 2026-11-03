@@ -1016,6 +1016,19 @@
       "sortSeatsDesc": "Сумма по убыванию",
       "sortSeatsAsc": "Сумма по возрастанию"
     },
+    "readyDisplay": {
+      "brand": "Aurent Restaurant",
+      "title": "Табло заказов",
+      "open": "TV кухни",
+      "denied": "Табло заказов не включено. Включите модуль «Кухня TV» в суперадмине для этого пользователя.",
+      "cooking": "Готовится",
+      "cookingHint": "Заказы на кухне",
+      "cookingEmpty": "Нет заказов в работе",
+      "ready": "Готово",
+      "readyHint": "Можно забирать",
+      "readyEmpty": "Пока ничего не готово",
+      "popupBlocked": "Окно TV заблокировано браузером. Разрешите всплывающие окна для этого сайта или откройте /rst/ready-display вручную на втором мониторе."
+    },
     "cfd": {
       "brand": "Aurent Restaurant",
       "open": "Экран покупателя",
@@ -1093,7 +1106,8 @@
       "kpiGuests": "Гости",
       "kpiKitchen": "Кухня",
       "kpiOrders": "Заказы",
-      "kpiSales": "Продажи",
+      "kpiSales": "Продажи · {{period}}",
+      "kpiSalesFallback": "Продажи",
       "kpiTables": "Столы",
       "liveKitchenEmpty": "Очередь кухни пуста",
       "liveKitchenTitle": "Кухня сейчас",
@@ -1111,7 +1125,9 @@
       "recentOrdersTitle": "Последние заказы",
       "revenue": "Выручка",
       "shiftClosed": "Смена закрыта",
+      "shiftClosedWithDay": "Смена закрыта · за период {{period}}: {{revenue}}",
       "shiftOpen": "Смена открыта · {{sales}} чек. · {{revenue}}",
+      "shiftVsDayHint": "Сумма смены — только пока смена открыта. «Продажи» ниже — оплаты за выбранный период (день/неделя), даже после закрытия смены.",
       "showAllOrders": "Показать все",
       "statusBilling": "Счёт",
       "statusCancelled": "Отменён",
@@ -1516,6 +1532,13 @@
       "exit": "Обычный вид (ПК)",
       "exitShort": "ПК"
     },
+    "hallLan": {
+      "title": "Зал недоступен в облаке — переключайтесь в LAN",
+      "hintWithUrl": "Подключитесь к Wi‑Fi зала и откройте локальный адрес ПК.",
+      "hintNoUrl": "Подключитесь к Wi‑Fi зала и откройте адрес LAN с экрана / лога ПК зала.",
+      "connect": "Подключиться к LAN",
+      "dismiss": "Позже"
+    },
     "kitchen": {
       "action": {
         "ACCEPTED": "Начать готовку",
@@ -1537,6 +1560,21 @@
       "servedCleared": "Выдано — убрано с доски",
       "shiftClosed": "Смена закрыта (откройте на зале)",
       "shiftOpen": "Смена открыта",
+      "simple": {
+        "title": "Кухня · простая доска",
+        "hwLine": "Кухня TV · 2 нажатия · цвет по статусу",
+        "hint": "Поступил → Готовится → Готово (на TV). Без перетаскивания.",
+        "phase": {
+          "ARRIVED": "Поступил",
+          "COOKING": "Готовится",
+          "READY": "Готово"
+        },
+        "action": {
+          "ARRIVED": "Готовится",
+          "COOKING": "Готово",
+          "READY": "Выдано"
+        }
+      },
       "statInWork": "В работе",
       "statOverdue": "Просрочено",
       "statReady": "К выдаче",

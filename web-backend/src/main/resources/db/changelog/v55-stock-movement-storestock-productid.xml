@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Wave 2.4: snapshot on stock_movements. store_stock/stock_lots keep product_id column (UUID), FK stays. -->
+    <changeSet id="v55-stock-movements-snapshot-columns" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_movements" columnName="product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_movements">
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_sku" type="varchar(120)"/>
+            <column name="product_barcode" type="varchar(64)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v55-stock-movements-snapshot-backfill" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="stock_movements" columnName="product_name"/>
+        </preConditions>
+        <sql>
+            UPDATE stock_movements m
+            SET product_name = COALESCE(p.name, ''),
+                product_sku = COALESCE(p.sku, ''),
+                product_barcode = NULLIF(trim(p.barcode), '')
+            FROM products p
+            WHERE p.id = m.product_id
+              AND (m.product_name IS NULL OR m.product_sku IS NULL);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

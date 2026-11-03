@@ -1,26 +1,30 @@
 const { probeHealth } = require('./health');
 const {
-  refreshLiveFromCloud,
-  pushLiveToCloud,
   getLastPushedOrigins,
   getLiveCloudSession,
 } = require('./edgeLiveSync');
 const { probeLocalOrigins, originsNeedPush } = require('./edgeLiveOriginProbe');
+const { runDirectedLiveRound } = require('./edgeLiveSyncRound');
 const { refreshStaffRosterFromCloud } = require('./edgeStaffCloudRefresh');
 const { refreshCatalogFromCloud } = require('./edgeCatalogCloudRefresh');
 const { refreshStockFromCloud } = require('./edgeStockCloudRefresh');
 const { getOutboxCounts, flushEdgeOutbox } = require('./edgeOutboxFlush');
+const { pollAndPublishDesktopNotifications } = require('./edgeDesktopNotificationsBridge');
+const { pushHallPresence } = require('./edgeHallPresencePush');
 const { HEALTH_URL } = require('../config');
 
+
 /** Full live push/pull backup while online (Phase D). */
-const LIVE_SYNC_MS = 5_000;
+const LIVE_SYNC_MS = 2_000;
+/** Super-admin desktop broadcasts (same cloud API as Cashier). */
+const DESKTOP_NOTIF_MS = 60_000;
 /** Cheap origin watch — push as soon as hall floor watermark grows (Stage 2). */
 const ORIGIN_PROBE_MS = 1_000;
-const STAFF_REFRESH_MS = 60_000;
-/** Menu/halls/stations — infrequent; heavy export (Phase E). */
-const CATALOG_REFRESH_MS = 15 * 60_000;
+const STAFF_REFRESH_MS = 30_000;
+/** Menu/halls/stations — while online keep near-fresh (was 15m; felt «stuck»). */
+const CATALOG_REFRESH_MS = 30_000;
 /** Stock products + suppliers + stores (Phase F). */
-const STOCK_REFRESH_MS = 15 * 60_000;
+const STOCK_REFRESH_MS = 30_000;
 const LOOP_MS = 1_000;
 
 function probeCloudOnline() {
@@ -61,6 +65,8 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
   let catalogRefreshInFlight = false;
   let lastStockRefreshAt = 0;
   let stockRefreshInFlight = false;
+  let lastDesktopNotifAt = 0;
+  let desktopNotifInFlight = false;
   let wasOnline = false;
   let lastCloudProbeAt = 0;
   let cachedOnline = false;
@@ -70,8 +76,8 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     liveSyncInFlight = true;
     lastLiveSyncAt = Date.now();
     try {
-      await pushLiveToCloud();
-      await refreshLiveFromCloud();
+      // Online: if server ahead → pull first (web close wins); else push then pull.
+      await runDirectedLiveRound();
       publishStatus({ floorSyncedAt: Date.now() });
     } catch {
       /* next tick */
@@ -108,7 +114,21 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     });
 
     const justCameOnline = online && !wasOnline;
+    const justWentOffline = !online && wasOnline;
     wasOnline = online;
+
+    // Phones poll cloud: heartbeat while online; best-effort «switch to LAN» on drop.
+    if (liveSession && (online || justWentOffline)) {
+      try {
+        await pushHallPresence({
+          online,
+          getLastStatus,
+          force: justCameOnline || justWentOffline,
+        });
+      } catch {
+        /* next tick */
+      }
+    }
 
     // Quiet flush: on reconnect always; while online whenever queue non-empty.
     if (online && !syncInFlight && (justCameOnline || pendingOutbox > 0)) {
@@ -172,6 +192,7 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     // Backup full live round (covers cloud→hall while hall idle).
     if (
       online
+      && liveSession
       && !liveSyncInFlight
       && (justCameOnline || Date.now() - lastLiveSyncAt >= LIVE_SYNC_MS)
     ) {
@@ -215,6 +236,24 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
         /* next tick */
       } finally {
         stockRefreshInFlight = false;
+      }
+    }
+
+    // Super-admin desktop notifications (cloud) when live session exists.
+    if (
+      online
+      && liveSession
+      && !desktopNotifInFlight
+      && (justCameOnline || Date.now() - lastDesktopNotifAt >= DESKTOP_NOTIF_MS)
+    ) {
+      desktopNotifInFlight = true;
+      lastDesktopNotifAt = Date.now();
+      try {
+        await pollAndPublishDesktopNotifications();
+      } catch {
+        /* next tick */
+      } finally {
+        desktopNotifInFlight = false;
       }
     }
   }, LOOP_MS);

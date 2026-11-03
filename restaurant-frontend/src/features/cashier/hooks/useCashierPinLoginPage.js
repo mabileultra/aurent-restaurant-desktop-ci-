@@ -21,6 +21,7 @@ import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAcces
 import { logoutAndResetSession, resetClientSessionState } from '../../../utils/authSession';
 import { normalizePin, PIN_MAX } from '../utils/cashierPinUtils';
 import { clearPersistedRestaurantStoreId } from '../../../restaurant/shared/hooks/usePersistedRestaurantStoreId';
+import { applyRestaurantDesktopCompanyCode } from '../utils/applyRestaurantDesktopCompanyCode';
 
 const PIN_ROLES = new Set(['MANAGER', 'CASHIER', 'WAITER', 'COOK']);
 const ADMIN_PASSWORD_ROLES = new Set(['ADMIN', 'MANAGER', 'SUPER_ADMIN']);
@@ -166,19 +167,61 @@ export function useCashierPinLoginPage() {
   );
 
   // Save as soon as 5 digits are valid — not only after PIN/admin login.
-  // Drop branch pick from another company so POS does not query an empty menu.
+  // Restaurant desktop: switching code with local data → confirm wipe + edge reset.
   const prevCompanyCodeRef = useRef(normalizedCompanyCode);
+  const companyBindInFlightRef = useRef(false);
   useEffect(() => {
     clearPersistedRestaurantStoreId();
   }, []);
   useEffect(() => {
     if (!normalizedCompanyCode) return;
-    persistCompanyLoginCode(normalizedCompanyCode);
     if (prevCompanyCodeRef.current && prevCompanyCodeRef.current !== normalizedCompanyCode) {
       clearPersistedRestaurantStoreId();
     }
-    prevCompanyCodeRef.current = normalizedCompanyCode;
-  }, [normalizedCompanyCode]);
+
+    if (!isRestaurantDesktop()) {
+      persistCompanyLoginCode(normalizedCompanyCode);
+      prevCompanyCodeRef.current = normalizedCompanyCode;
+      return undefined;
+    }
+
+    let cancelled = false;
+    const run = async () => {
+      if (companyBindInFlightRef.current) return;
+      companyBindInFlightRef.current = true;
+      try {
+        const result = await applyRestaurantDesktopCompanyCode(normalizedCompanyCode, { t });
+        if (cancelled) return;
+        if (!result.ok && result.reason === 'cancelled' && result.revertTo) {
+          setCompanyCode(result.revertTo);
+          prevCompanyCodeRef.current = result.revertTo;
+          return;
+        }
+        if (result.ok) {
+          prevCompanyCodeRef.current = result.companyLoginCode || normalizedCompanyCode;
+          if (result.reset) {
+            toast.success(t('cashierLogin.companySwitchDone', {
+              defaultValue: 'Компания сброшена. Войдите админом онлайн.',
+            }));
+            setRoster([]);
+            setStep('admin');
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(err?.message || t('cashierLogin.companySwitchFailed', {
+            defaultValue: 'Не удалось сменить компанию',
+          }));
+        }
+      } finally {
+        companyBindInFlightRef.current = false;
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedCompanyCode, t]);
 
   const loadRoster = useCallback(async (loginCode, { force = false } = {}) => {
     if (!loginCode) {
@@ -303,17 +346,19 @@ export function useCashierPinLoginPage() {
     setLoading(true);
     setAdminError('');
     try {
-      // Restaurant desktop: first online admin login copies staff hashes into local edge DB.
+      // Restaurant desktop: admin online login refreshes local edge + live cloud session.
       if (isRestaurantDesktop() && typeof window.aurentRestaurant?.bootstrapStaffFromCloud === 'function') {
         let needsBootstrap = true;
+        let liveSession = false;
         try {
           const status = await window.aurentRestaurant.getEdgeAuthStatus?.();
           needsBootstrap = !status?.hasStaff || !status?.hasCatalog || !status?.hasStock || !status?.hasStores;
+          liveSession = Boolean(status?.liveSession);
         } catch {
           needsBootstrap = true;
         }
-        // Always refresh catalog/stock when online admin logs in on desktop (down-sync).
-        if (needsBootstrap || navigator.onLine !== false) {
+        const mustRefreshCloud = needsBootstrap || !liveSession || navigator.onLine !== false;
+        if (mustRefreshCloud) {
           toast.loading(t('cashierLogin.edgeBootstrap', {
             defaultValue: 'Копируем сотрудников и каталог с облака…',
           }), { id: 'edge-bootstrap' });
@@ -321,6 +366,18 @@ export function useCashierPinLoginPage() {
             const boot = await window.aurentRestaurant.bootstrapStaffFromCloud({ username, password });
             if (boot?.catalogError && !boot?.hasCatalog) {
               throw new Error(boot.catalogError);
+            }
+            if (boot?.companyLoginCode) {
+              const bootCode = normalizeCompanyLoginCode(boot.companyLoginCode);
+              if (bootCode) {
+                setCompanyCode(bootCode);
+                persistCompanyLoginCode(bootCode);
+                try {
+                  await window.aurentRestaurant.setCompanyLoginCode?.(bootCode);
+                } catch {
+                  /* ignore */
+                }
+              }
             }
             if (boot?.catalogError) {
               toast.error(boot.catalogError, { id: 'edge-bootstrap' });
@@ -331,8 +388,8 @@ export function useCashierPinLoginPage() {
             }
           } catch (bootErr) {
             toast.dismiss('edge-bootstrap');
-            if (needsBootstrap) throw bootErr;
-            // Soft: local already has data; cloud refresh failed
+            // Without live session sync will stay dead — fail hard if empty OR no session.
+            if (needsBootstrap || !liveSession) throw bootErr;
             toast.error(bootErr?.message || t('cashierLogin.edgeBootstrapPartial', {
               defaultValue: 'Облако недоступно — работаем с локальной копией',
             }));

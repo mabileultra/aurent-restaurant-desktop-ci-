@@ -52,6 +52,8 @@ public enum AdminModule {
     RESTAURANT_PICKUP_LABEL("restaurantPickupLabel", "restaurant", Set.of()),
     /** Guest-facing cashier display. Off until Super Admin grants it. */
     RESTAURANT_CUSTOMER_DISPLAY("restaurantCustomerDisplay", "restaurant", Set.of()),
+    /** Kitchen TV: order numbers cooking → ready. Off until Super Admin grants it. */
+    RESTAURANT_READY_DISPLAY("restaurantReadyDisplay", "restaurant", Set.of()),
     /** Walk-in receipt without a table. Off until Super Admin grants it. */
     RESTAURANT_QUICK_SALE("restaurantQuickSale", "restaurant", Set.of()),
     RESTAURANT_BOOKING("restaurantBooking", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),

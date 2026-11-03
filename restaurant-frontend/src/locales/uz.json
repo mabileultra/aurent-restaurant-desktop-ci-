@@ -980,6 +980,19 @@
       "sortSeatsDesc": "Summa kamayish bo‘yicha",
       "sortSeatsAsc": "Summa o‘sish bo‘yicha"
     },
+    "readyDisplay": {
+      "brand": "Aurent Restaurant",
+      "title": "Buyurtmalar tablosi",
+      "open": "Oshxona TV",
+      "denied": "Buyurtmalar tablosi o‘chirilgan. Superadminda shu foydalanuvchi uchun «Oshxona TV» modulini yoqing.",
+      "cooking": "Tayyorlanmoqda",
+      "cookingHint": "Oshxonadagi buyurtmalar",
+      "cookingEmpty": "Ishda buyurtma yo‘q",
+      "ready": "Tayyor",
+      "readyHint": "Olish mumkin",
+      "readyEmpty": "Hali tayyor buyurtma yo‘q",
+      "popupBlocked": "TV oynasi bloklandi. Sayt uchun popup-larga ruxsat bering yoki ikkinchi monitorda /rst/ready-display ni oching."
+    },
     "cfd": {
       "brand": "Aurent Restaurant",
       "open": "Xaridor ekrani",
@@ -1057,7 +1070,8 @@
       "kpiGuests": "Mehmonlar",
       "kpiKitchen": "Oshxona",
       "kpiOrders": "Buyurtmalar",
-      "kpiSales": "Sotuvlar",
+      "kpiSales": "Sotuvlar · {{period}}",
+      "kpiSalesFallback": "Sotuvlar",
       "kpiTables": "Stollar",
       "liveKitchenEmpty": "Oshxona navbati bo‘sh",
       "liveKitchenTitle": "Oshxona hozir",
@@ -1075,7 +1089,9 @@
       "recentOrdersTitle": "So‘nggi buyurtmalar",
       "revenue": "Tushum",
       "shiftClosed": "Smena yopiq",
+      "shiftClosedWithDay": "Smena yopiq · {{period}} uchun: {{revenue}}",
       "shiftOpen": "Smena ochiq · {{sales}} chek · {{revenue}}",
+      "shiftVsDayHint": "Smena summasi faqat ochiq smenada. Pastdagi «Sotuvlar» — tanlangan davr (kun/hafta) to‘lovlari, smena yopilgandan keyin ham.",
       "showAllOrders": "Hammasini ko‘rish",
       "statusBilling": "Hisob",
       "statusCancelled": "Bekor",
@@ -1477,6 +1493,13 @@
       "exit": "Oddiy ko‘rinish (PK)",
       "exitShort": "PK"
     },
+    "hallLan": {
+      "title": "Zal bulutda mavjud emas — LAN ga o‘ting",
+      "hintWithUrl": "Zal Wi‑Fi ga ulaning va kompyuterning mahalliy manzilini oching.",
+      "hintNoUrl": "Zal Wi‑Fi ga ulaning va zal PK ekrani/logidagi LAN manzilini oching.",
+      "connect": "LAN ga ulanish",
+      "dismiss": "Keyinroq"
+    },
     "kitchen": {
       "action": {
         "ACCEPTED": "Tayyorlashni boshlash",
@@ -1498,6 +1521,21 @@
       "servedCleared": "Berildi — doskadan olib tashlandi",
       "shiftClosed": "Smena yopiq (zalda oching)",
       "shiftOpen": "Smena ochiq",
+      "simple": {
+        "title": "Oshxona · oddiy doska",
+        "hwLine": "Oshxona TV · 2 bosish · rang bo‘yicha holat",
+        "hint": "Keldi → Tayyorlanmoqda → Tayyor (TV). Surib o‘tkazish yo‘q.",
+        "phase": {
+          "ARRIVED": "Keldi",
+          "COOKING": "Tayyorlanmoqda",
+          "READY": "Tayyor"
+        },
+        "action": {
+          "ARRIVED": "Tayyorlash",
+          "COOKING": "Tayyor",
+          "READY": "Berildi"
+        }
+      },
       "statInWork": "Ishda",
       "statOverdue": "Kechikkan",
       "statReady": "Berishga",

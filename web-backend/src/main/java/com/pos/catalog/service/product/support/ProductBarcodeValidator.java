@@ -3,7 +3,7 @@ package com.pos.catalog.service.product.support;
 import com.pos.exception.PosExceptions;
 import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.spec.ProductSpecifications;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

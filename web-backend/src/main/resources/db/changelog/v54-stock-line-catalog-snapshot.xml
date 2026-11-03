@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Wave 2.3: snapshot name/sku on stock document lines. Keep product_id FK. -->
+    <changeSet id="v54-stock-receipt-lines-snapshot" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_receipt_lines" columnName="product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_receipt_lines">
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_sku" type="varchar(120)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v54-stock-transfer-lines-snapshot" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_transfer_lines" columnName="product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_transfer_lines">
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_sku" type="varchar(120)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v54-stock-inventory-lines-snapshot" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_inventory_lines" columnName="product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_inventory_lines">
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_sku" type="varchar(120)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v54-stock-expense-lines-snapshot" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_expense_lines" columnName="product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_expense_lines">
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_sku" type="varchar(120)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v54-stock-production-lines-snapshot" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_production_lines" columnName="product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_production_lines">
+            <column name="product_name" type="varchar(255)"/>
+            <column name="product_sku" type="varchar(120)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v54-stock-productions-output-snapshot" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stock_productions" columnName="output_product_name"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_productions">
+            <column name="output_product_name" type="varchar(255)"/>
+            <column name="output_product_sku" type="varchar(120)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v54-stock-lines-snapshot-backfill" author="pos">
+        <sql>
+            UPDATE stock_receipt_lines l SET product_name = COALESCE(p.name, ''), product_sku = COALESCE(p.sku, '')
+            FROM products p WHERE p.id = l.product_id AND (l.product_name IS NULL OR l.product_sku IS NULL);
+
+            UPDATE stock_transfer_lines l SET product_name = COALESCE(p.name, ''), product_sku = COALESCE(p.sku, '')
+            FROM products p WHERE p.id = l.product_id AND (l.product_name IS NULL OR l.product_sku IS NULL);
+
+            UPDATE stock_inventory_lines l SET product_name = COALESCE(p.name, ''), product_sku = COALESCE(p.sku, '')
+            FROM products p WHERE p.id = l.product_id AND (l.product_name IS NULL OR l.product_sku IS NULL);
+
+            UPDATE stock_expense_lines l SET product_name = COALESCE(p.name, ''), product_sku = COALESCE(p.sku, '')
+            FROM products p WHERE p.id = l.product_id AND (l.product_name IS NULL OR l.product_sku IS NULL);
+
+            UPDATE stock_production_lines l SET product_name = COALESCE(p.name, ''), product_sku = COALESCE(p.sku, '')
+            FROM products p WHERE p.id = l.product_id AND (l.product_name IS NULL OR l.product_sku IS NULL);
+
+            UPDATE stock_productions sp SET output_product_name = COALESCE(p.name, ''), output_product_sku = COALESCE(p.sku, '')
+            FROM products p WHERE p.id = sp.output_product_id
+              AND (sp.output_product_name IS NULL OR sp.output_product_sku IS NULL);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

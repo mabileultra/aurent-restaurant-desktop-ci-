@@ -1,0 +1,50 @@
+/* Wi‑Fi mark inside hamburger panel — not a hall status strip. */
+.rst-desktop-wifi {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.5rem 0.15rem;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.rst-desktop-wifi__icon {
+  transition: color 0.25s ease, filter 0.25s ease, opacity 0.25s ease;
+}
+
+.rst-desktop-wifi.is-online .rst-desktop-wifi__icon {
+  color: #34d399;
+  filter: drop-shadow(0 0 6px rgb(52 211 153 / 0.75));
+  opacity: 1;
+}
+
+.rst-desktop-wifi.is-offline .rst-desktop-wifi__icon {
+  color: rgb(148 163 184 / 0.55);
+  filter: none;
+  opacity: 0.72;
+}
+
+/* Uplink up but no cloud sync session — amber, not green. */
+.rst-desktop-wifi.is-nosession .rst-desktop-wifi__icon {
+  color: #fbbf24;
+  filter: drop-shadow(0 0 5px rgb(251 191 36 / 0.45));
+  opacity: 0.95;
+}
+
+html.rst-theme--light .rst-desktop-wifi {
+  border-top-color: rgb(15 23 42 / 0.08);
+}
+
+html.rst-theme--light .rst-desktop-wifi.is-online .rst-desktop-wifi__icon {
+  color: #059669;
+  filter: drop-shadow(0 0 5px rgb(5 150 105 / 0.45));
+}
+
+html.rst-theme--light .rst-desktop-wifi.is-offline .rst-desktop-wifi__icon {
+  color: rgb(100 116 139 / 0.55);
+}
+
+html.rst-theme--light .rst-desktop-wifi.is-nosession .rst-desktop-wifi__icon {
+  color: #d97706;
+  filter: drop-shadow(0 0 4px rgb(217 119 6 / 0.35));
+}

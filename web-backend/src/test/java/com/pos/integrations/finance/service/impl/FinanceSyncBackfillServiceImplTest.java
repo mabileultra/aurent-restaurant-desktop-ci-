@@ -1,6 +1,7 @@
 package com.pos.integrations.finance.service.impl;
 
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;
+import com.pos.integrations.finance.service.support.FinanceSalePayloadBuilder;
 import com.pos.inventory.repository.StockReceiptRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.sales.repository.ZReportRepository;
@@ -37,6 +38,9 @@ class FinanceSyncBackfillServiceImplTest {
     private FinanceIntegrationPublisher integrationPublisher;
 
     @Mock
+    private FinanceSalePayloadBuilder financeSalePayloadBuilder;
+
+    @Mock
     private TenantAccessSupport tenantAccess;
 
     private FinanceSyncBackfillServiceImpl service;
@@ -48,6 +52,7 @@ class FinanceSyncBackfillServiceImplTest {
             stockReceiptRepository,
             saleRepository,
             integrationPublisher,
+            financeSalePayloadBuilder,
             tenantAccess
         );
         when(tenantAccess.effectiveCompanyIdOrNull()).thenReturn(7);

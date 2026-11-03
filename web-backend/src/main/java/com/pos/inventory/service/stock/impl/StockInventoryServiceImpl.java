@@ -13,7 +13,6 @@ import com.pos.inventory.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
 import com.pos.inventory.repository.StockInventoryRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
@@ -40,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +49,6 @@ public class StockInventoryServiceImpl implements StockInventoryService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockInventoryRepository stockInventoryRepository;
-    private final ProductRepository productRepository;
     private final StockMovementPersistence stockMovementPersistence;
     private final StoreRepository storeRepository;
     private final StoreStockService storeStockService;
@@ -86,9 +85,12 @@ public class StockInventoryServiceImpl implements StockInventoryService {
             BigDecimal systemQty = storeStockService.getQuantity(product.getId(), store.getId());
             BigDecimal counted = QuantityUtil.normalize(lineReq.countedQuantity());
             BigDecimal diff = QuantityUtil.subtract(counted, systemQty);
+            var card = com.pos.inventory.service.stock.support.StockLineCatalogSnapshot.Card.of(product);
             lines.add(StockInventoryLine.builder()
                 .inventory(inventory)
-                .product(product)
+                .productId(card.productId())
+                .productName(card.productName())
+                .productSku(card.productSku())
                 .systemQuantity(systemQty)
                 .countedQuantity(counted)
                 .difference(diff)
@@ -96,9 +98,8 @@ public class StockInventoryServiceImpl implements StockInventoryService {
 
             if (diff.signum() != 0) {
                 storeStockService.setQuantity(product, store, counted);
-                productRepository.save(product);
-                stockMovementPersistence.save(StockMovement.builder()
-                    .product(product)
+                stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
+                    
                     .store(store)
                     .movementType(StockMovementType.ADJUSTMENT)
                     .quantity(diff)
@@ -192,9 +193,9 @@ public class StockInventoryServiceImpl implements StockInventoryService {
         List<StockInventoryLineResponse> lines = i.getLines().stream()
             .map(l -> new StockInventoryLineResponse(
                 l.getId(),
-                l.getProduct().getId(),
-                l.getProduct().getName(),
-                l.getProduct().getSku(),
+                l.getProductId(),
+                l.getProductName(),
+                l.getProductSku(),
                 l.getSystemQuantity(),
                 l.getCountedQuantity(),
                 l.getDifference()

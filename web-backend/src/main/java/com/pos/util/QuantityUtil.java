@@ -32,7 +32,7 @@ public final class QuantityUtil {
         return StockCalculator.tracksStock(saleType);
     }
 
-    /** @deprecated используйте {@link QuantityValidator#validate(com.pos.catalog.entity.Product, BigDecimal)} */
+    /** @deprecated используйте {@link QuantityValidator#validate(ProductQuantityRules, BigDecimal)} */
     @Deprecated
     public static void validateForSale(SaleType saleType, BigDecimal rawQuantity) {
         QuantityValidator.validate(

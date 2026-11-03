@@ -38,7 +38,7 @@ describe('runDesktopReconnectSync', () => {
     expect(runCatalogSyncIfNeeded).not.toHaveBeenCalled();
   });
 
-  it('runs catalog then sales when online', async () => {
+  it('runs sales first then catalog when local DB ready', async () => {
     canRunOnlineSync.mockReturnValue(true);
     offlineGetStatus.mockResolvedValue({
       storeId: 1,
@@ -51,15 +51,18 @@ describe('runDesktopReconnectSync', () => {
 
     const result = await runDesktopReconnectSync(1, { catalogKind: 'grocery' });
     expect(result.skipped).toBe(false);
+    expect(runSalesSyncOnly).toHaveBeenCalledWith({ catalogKind: 'grocery' });
     expect(runCatalogSyncIfNeeded).toHaveBeenCalledWith(1, {
       force: false,
       catalogKind: 'grocery',
     });
-    expect(runSalesSyncOnly).toHaveBeenCalledWith({ catalogKind: 'grocery' });
+    expect(runSalesSyncOnly.mock.invocationCallOrder[0]).toBeLessThan(
+      runCatalogSyncIfNeeded.mock.invocationCallOrder[0],
+    );
     expect(result.sales.pushed).toBe(2);
   });
 
-  it('forces catalog when local DB empty', async () => {
+  it('forces catalog before sales when local DB empty', async () => {
     canRunOnlineSync.mockReturnValue(true);
     offlineGetStatus.mockResolvedValue({
       storeId: 1,
@@ -74,5 +77,8 @@ describe('runDesktopReconnectSync', () => {
       force: true,
       catalogKind: 'pharmacy',
     });
+    expect(runCatalogSyncIfNeeded.mock.invocationCallOrder[0]).toBeLessThan(
+      runSalesSyncOnly.mock.invocationCallOrder[0],
+    );
   });
 });

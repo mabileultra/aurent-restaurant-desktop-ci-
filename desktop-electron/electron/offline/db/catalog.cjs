@@ -9,6 +9,7 @@ const {
 const { fold, foldSql } = require('./catalogSearchFold.cjs');
 const { importBootstrapChunked } = require('./catalogBootstrapImport.cjs');
 const { applyCatalogDelta } = require('./catalogDeltaImport.cjs');
+const { applyProductSnapshots } = require('./catalogSnapshotApply.cjs');
 const { barcodeScanVariants } = require('./barcodeScanVariants.cjs');
 
 async function importBootstrap(payload) {
@@ -17,6 +18,11 @@ async function importBootstrap(payload) {
 
 async function importCatalogDelta(payload) {
   return applyCatalogDelta(payload);
+}
+
+/** Apply ProductSnapshotEvent[] into local cashier catalog read-model. */
+async function importProductSnapshots(payload) {
+  return applyProductSnapshots(payload);
 }
 
 async function getBootstrapStatus() {
@@ -135,6 +141,7 @@ async function decreaseLocalStockBatch(lines = [], { persist = true } = {}) {
 module.exports = {
   importBootstrap,
   importCatalogDelta,
+  importProductSnapshots,
   getBootstrapStatus,
   listCategories,
   searchProducts,

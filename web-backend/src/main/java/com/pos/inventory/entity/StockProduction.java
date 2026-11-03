@@ -1,6 +1,5 @@
 package com.pos.inventory.entity;
 
-import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import jakarta.persistence.*;
@@ -32,9 +31,14 @@ public class StockProduction {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "output_product_id", nullable = false)
-    private Product outputProduct;
+    @Column(name = "output_product_id", nullable = false)
+    private UUID outputProductId;
+
+    @Column(name = "output_product_name", length = 255)
+    private String outputProductName;
+
+    @Column(name = "output_product_sku", length = 120)
+    private String outputProductSku;
 
     @Column(name = "output_quantity", nullable = false, precision = 18, scale = 3)
     private BigDecimal outputQuantity;

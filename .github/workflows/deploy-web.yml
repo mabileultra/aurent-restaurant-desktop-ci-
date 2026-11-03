@@ -87,9 +87,10 @@ jobs:
         run: |
           set -euo pipefail
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          # mobile-ci DEPLOY_HOST = live prod; gate matches deploy-target-confirm.
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            'cd /opt/aurent-pos && bash deploy/update.sh'
+            'cd /opt/aurent-pos && DEPLOY_TARGET=prod CONFIRM_PROD=YES bash deploy/update.sh'
 
       - name: Health check
         env:

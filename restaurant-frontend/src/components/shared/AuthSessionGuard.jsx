@@ -7,6 +7,7 @@ import OfdPendingConfirmBar from '../../restaurant/pos/components/OfdPendingConf
 import RestaurantDesktopStatusStrip from '../../restaurant/pos/components/RestaurantDesktopStatusStrip';
 import useRestaurantDesktopRosterRevalidate from '../../restaurant/pos/hooks/useRestaurantDesktopRosterRevalidate';
 import useRestaurantDesktopFloorSyncedInvalidate from '../../restaurant/pos/hooks/useRestaurantDesktopFloorSyncedInvalidate';
+import useRestaurantDesktopCatalogSyncedInvalidate from '../../restaurant/pos/hooks/useRestaurantDesktopCatalogSyncedInvalidate';
 
 /** After rehydrate — drop expired JWT; while logged in — idle logout (~15 min). */
 export default function AuthSessionGuard({ children }) {
@@ -30,6 +31,7 @@ export default function AuthSessionGuard({ children }) {
   const desktopSession = Boolean(hydrated && token);
   useRestaurantDesktopRosterRevalidate(desktopSession);
   useRestaurantDesktopFloorSyncedInvalidate(desktopSession);
+  useRestaurantDesktopCatalogSyncedInvalidate(desktopSession);
 
   return (
     <>

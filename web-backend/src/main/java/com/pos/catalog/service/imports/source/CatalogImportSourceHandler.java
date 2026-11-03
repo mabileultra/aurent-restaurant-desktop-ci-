@@ -4,7 +4,7 @@ import com.pos.catalog.dto.product.ProductImportPreviewRow;
 import com.pos.catalog.entity.Product;
 import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.service.imports.ProductImportParseOptions;
-import com.pos.service.support.ProductLookupSupport;
+import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.catalog.service.imports.ProductImportSource;
 import com.pos.catalog.service.imports.ProductImportSupport;

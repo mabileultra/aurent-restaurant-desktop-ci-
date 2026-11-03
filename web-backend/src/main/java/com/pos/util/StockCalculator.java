@@ -2,7 +2,6 @@ package com.pos.util;
 
 import com.pos.domain.ProductQuantityRules;
 import com.pos.domain.SaleType;
-import com.pos.catalog.entity.Product;
 
 import java.math.BigDecimal;
 
@@ -10,10 +9,6 @@ import java.math.BigDecimal;
 public final class StockCalculator {
 
     private StockCalculator() {
-    }
-
-    public static boolean tracksStock(Product product) {
-        return tracksStock(product != null ? product.getSaleType() : null);
     }
 
     public static boolean tracksStock(SaleType saleType) {
@@ -32,10 +27,10 @@ public final class StockCalculator {
         return QuantityUtil.add(stock, quantity);
     }
 
-    public static BigDecimal normalizeMovement(BigDecimal quantity, Product product) {
-        if (product == null) {
+    public static BigDecimal normalizeMovement(BigDecimal quantity, ProductQuantityRules rules) {
+        if (rules == null) {
             return QuantityUtil.normalize(quantity);
         }
-        return QuantityValidator.normalizeForProduct(ProductQuantityRules.from(product), quantity);
+        return QuantityValidator.normalizeForProduct(rules, quantity);
     }
 }

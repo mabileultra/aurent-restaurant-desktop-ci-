@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Wave 2.2: enough snapshot for sale API/export without JPA Product join. FK on product_id stays. -->
+    <changeSet id="v53-sale-items-snapshot-extended-columns" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="sale_items" columnName="sale_type"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="sale_items">
+            <column name="unit_of_measure" type="varchar(50)"/>
+            <column name="sale_type" type="varchar(20)"/>
+            <column name="tax_rate" type="decimal(5,2)"/>
+            <column name="ikpu" type="varchar(32)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v53-sale-items-snapshot-extended-backfill" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="sale_items" columnName="sale_type"/>
+        </preConditions>
+        <sql>
+            UPDATE sale_items si
+            SET unit_of_measure = NULLIF(trim(p.unit_of_measure), ''),
+                sale_type = COALESCE(p.sale_type, 'PIECE'),
+                tax_rate = COALESCE(p.tax_rate, 12),
+                ikpu = NULLIF(trim(p.ikpu), ''),
+                product_sku = COALESCE(si.product_sku, p.sku, ''),
+                product_barcode = COALESCE(si.product_barcode, NULLIF(trim(p.barcode), '')),
+                unit_code = COALESCE(si.unit_code, p.unit_code, 'PCS')
+            FROM products p
+            WHERE p.id = si.product_id
+              AND (si.sale_type IS NULL OR si.tax_rate IS NULL OR si.unit_code IS NULL OR si.product_sku IS NULL);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

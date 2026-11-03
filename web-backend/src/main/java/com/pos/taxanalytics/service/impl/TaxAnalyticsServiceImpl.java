@@ -8,6 +8,9 @@ import com.pos.taxanalytics.dto.TaxAnalyticsResultsResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsService;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalMerge;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
+import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +19,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,7 @@ import java.util.Map;
 public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
 
     private final TaxAnalyticsQueryRepository repository;
+    private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
 
     @Override
     public TaxAnalyticsOverviewResponse overview(String period, LocalDate from, LocalDate to) {
@@ -32,12 +38,25 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         TaxAnalyticsPeriod prev = new TaxAnalyticsPeriod(
             range.prevFrom(), range.prevTo(), range.prevFrom(), range.prevTo(), range.key()
         );
+        TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
+        TaxAnalyticsVerticalSnapshotLoader.Pair vertical = verticalLoader.load(
+            range.from(), range.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
+        );
+        TaxAnalyticsVerticalSnapshotLoader.Pair verticalPrev = verticalLoader.load(
+            prev.from(), prev.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
+        );
 
         long total = repository.countCompanies();
-        long connected = repository.countConnectedCompanies();
+        Set<Integer> connectedIds = new HashSet<>(repository.listConnectedCompanyIds());
+        connectedIds.addAll(TaxAnalyticsVerticalMerge.connectedIds(vertical.restaurant(), vertical.pharmacy()));
+        long connected = connectedIds.size();
         long notConnected = Math.max(0, total - connected);
-        BigDecimal totalTurnover = repository.sumTurnover(range, false, false);
-        BigDecimal prevTurnover = repository.sumTurnover(prev, false, false);
+        BigDecimal totalTurnover = repository.sumTurnover(range, false, false)
+            .add(TaxAnalyticsVerticalMerge.periodTotal(vertical.restaurant()))
+            .add(TaxAnalyticsVerticalMerge.periodTotal(vertical.pharmacy()));
+        BigDecimal prevTurnover = repository.sumTurnover(prev, false, false)
+            .add(TaxAnalyticsVerticalMerge.periodTotal(verticalPrev.restaurant()))
+            .add(TaxAnalyticsVerticalMerge.periodTotal(verticalPrev.pharmacy()));
         long newConn = repository.countNewFiscalConnections(range);
         long prevNewConn = repository.countNewFiscalConnections(prev);
         long errors = repository.countFiscalErrors(range);

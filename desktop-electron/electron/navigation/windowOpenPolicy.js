@@ -5,11 +5,25 @@ function guestDisplayBounds() {
   const target = displays.length > 1
     ? displays.find((d) => d.id !== screen.getPrimaryDisplay().id) || displays[1]
     : screen.getPrimaryDisplay();
-  return target?.bounds || { x: 0, y: 0, width: 1280, height: 800 };
+  return {
+    bounds: target?.bounds || { x: 0, y: 0, width: 1280, height: 800 },
+    multiMonitor: displays.length > 1,
+  };
+}
+
+function titleForUrl(url) {
+  try {
+    const path = new URL(url).pathname || '';
+    if (path.includes('ready-display')) return 'Aurent — TV кухни';
+    if (path.includes('customer-display')) return 'Aurent — экран покупателя';
+  } catch {
+    /* ignore */
+  }
+  return 'Aurent';
 }
 
 /**
- * Same-origin popups (guest customer display) stay inside Electron,
+ * Same-origin popups (guest CFD / kitchen TV) stay inside Electron,
  * fullscreen on the guest monitor when a second display exists.
  */
 function createWindowOpenHandler(getMainWindow) {
@@ -18,7 +32,7 @@ function createWindowOpenHandler(getMainWindow) {
       const win = typeof getMainWindow === 'function' ? getMainWindow() : null;
       const current = win && !win.isDestroyed() ? win.webContents.getURL() : '';
       if (current && new URL(url).origin === new URL(current).origin) {
-        const bounds = guestDisplayBounds();
+        const { bounds, multiMonitor } = guestDisplayBounds();
         return {
           action: 'allow',
           overrideBrowserWindowOptions: {
@@ -26,9 +40,10 @@ function createWindowOpenHandler(getMainWindow) {
             y: bounds.y,
             width: bounds.width,
             height: bounds.height,
-            fullscreen: true,
+            // One monitor: windowed so the kitchen UI is not covered blindly.
+            fullscreen: multiMonitor,
             autoHideMenuBar: true,
-            title: 'Aurent — экран покупателя',
+            title: titleForUrl(url),
           },
         };
       }

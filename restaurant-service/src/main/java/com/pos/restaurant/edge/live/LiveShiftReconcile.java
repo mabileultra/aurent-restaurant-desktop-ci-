@@ -15,8 +15,8 @@ import java.util.UUID;
  * Live floor shift align (hall↔cloud and cloud→edge).
  * <ul>
  *   <li>Snapshot has OPEN → upsert that shift; close other OPEN for the store.</li>
- *   <li>Snapshot has none → close OPEN only when store has no OPEN/BILLING floor orders
- *       (empty hall). Keeps months-offline local open when tables still exist.</li>
+ *   <li>Snapshot has none → close all OPEN for the store (same truth both sides when online).
+ *       Floor ghosts are reconciled separately so hall matches the snapshot.</li>
  * </ul>
  * Runs on cloud ingest and edge import (same JDBC schema).
  */
@@ -32,23 +32,12 @@ public class LiveShiftReconcile {
         }
         ShiftRow row = snap.openShift();
         if (row == null || row.id() == null) {
-            return closeOpenIfFloorEmpty(snap);
+            return closeOpenShifts(snap);
         }
         return upsertOpenShift(snap, row);
     }
 
-    private int closeOpenIfFloorEmpty(EdgeCatalogSnapshot snap) {
-        Integer openFloor = jdbc.queryForObject("""
-            SELECT COUNT(*) FROM floor_orders
-            WHERE store_id = ? AND company_id = ? AND status IN ('OPEN', 'BILLING')
-            """,
-            Integer.class,
-            snap.storeId(),
-            snap.companyId()
-        );
-        if (openFloor != null && openFloor > 0) {
-            return 0;
-        }
+    private int closeOpenShifts(EdgeCatalogSnapshot snap) {
         Instant now = Instant.now();
         return jdbc.update("""
             UPDATE restaurant_shifts

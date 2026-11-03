@@ -1,0 +1,38 @@
+---
+description: Grocery Catalog module boundary — use CatalogFacade, not Product entity/repo outside catalog
+globs: web-backend/**/*.java
+alwaysApply: false
+---
+
+# Catalog facade boundary (grocery)
+
+## Must
+
+- Outside `com.pos.catalog`, new code loads products only via `com.pos.catalog.api.CatalogFacade` → `ProductRef`.
+- Full card / admin CRUD stays on `ProductService` + `ProductResponse` (HTTP `/products`).
+- Stock qty ownership stays with Inventory (`StoreStockService` / `store_stock`); see `stock-ownership.mdc`.
+
+## Must NOT
+
+- Add new imports of `com.pos.catalog.repository.ProductRepository` outside `com.pos.catalog`.
+- Add new service-layer use of JPA `com.pos.catalog.entity.Product` outside `com.pos.catalog` (legacy callers migrate in waves B–D).
+- Wire production traffic to `catalog-service` until Wave 4–5 cutover is verified.
+- Flip `app.catalog.enabled=true` only for dual-read experiments / cutover — default remains local Catalog SoT.
+- When enabled, `CatalogRemoteReadBridge` follows `app.catalog.read-mode` (`REMOTE_FIRST` / `REMOTE_ONLY`); weight/PLU stays local.
+- When enabled, `CatalogDualWritePublisher` upserts after commit via `ProductSnapshotNotifier` (best-effort; local SoT still wins on failure).
+- Bulk seed: categories first `POST .../backfill-categories`, then `POST .../backfill` (ADMIN; `enabled=true`).
+- Category UUID = `CatalogLegacyIds.categoryId(companyId, intId)` (shared-kernel).
+- Verify: `GET /products/catalog-service/verify` compares local vs remote counts (+ sample id checks).
+- Put live stock qty into `catalog_db` — Inventory owns `store_stock`.
+
+## Allowed temporary debt
+
+- Sales/Inventory hold `product_id` UUID + snapshots **without** DB FK to `products` (Wave 2.5). Catalog tables still FK internally.
+- `CatalogManagedProductLoader` / `SaleItemProductLoader` for ops that still need managed Product (stock mutate, events).
+- `StoreStockService` may use `ProductRepository` only to refresh denorm `products.stock_quantity`.
+- `catalog-service` ready through Wave 5.4 (dual-read/write, category sync, deactivate). Default `enabled=false` — local SoT. Cutover paused; see `catalog-cutover.mdc`.
+- Do not delete web-backend `products` until write-cutover.
+
+## Enforcement
+
+- ArchUnit: `CatalogBoundaryArchTest` — no `ProductRepository` outside `com.pos.catalog..` except `StoreStockService`.

@@ -3,7 +3,7 @@
  */
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { fieldStyle } from '../../shared/printProfile/printProfileDefaults';
-import { styleDishLine } from '../../shared/printProfile/applyPrintProfile';
+import { styleDishLine, styleLine } from '../../shared/printProfile/applyPrintProfile';
 import { moneyRow, padRow, qtyNameRow, RECEIPT_WIDTH } from './ticketLayout';
 
 export function resolveKitchenLineAmount(item) {
@@ -51,5 +51,12 @@ export function styleKitchenDishBlock(items, profile, slipType) {
   if (!showMoney || !items?.length) return styled;
   const sum = (items || []).reduce((acc, item) => acc + resolveKitchenLineAmount(item), 0);
   if (!(sum > 0)) return styled;
-  return [...styled, moneyRow('ИТОГО', sum, RECEIPT_WIDTH)];
+  const totalsStyle = fieldStyle(profile, slipType, 'totals');
+  const totalRow = moneyRow('ИТОГО', sum, RECEIPT_WIDTH);
+  return [
+    ...styled,
+    (totalsStyle.bold || totalsStyle.size === 'lg')
+      ? styleLine(totalRow, totalsStyle)
+      : totalRow,
+  ];
 }

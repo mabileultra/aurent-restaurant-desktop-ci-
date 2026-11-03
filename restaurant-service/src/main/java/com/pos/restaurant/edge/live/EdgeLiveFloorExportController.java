@@ -58,8 +58,9 @@ public class EdgeLiveFloorExportController {
             throw new BusinessException("snapshot required");
         }
         assertSecret(request.bootstrapSecret());
-        // Upsert-only: hall PC is SoT for local opens not yet on cloud.
-        return ResponseEntity.ok(applyService.applyLive(request.snapshot(), false));
+        // Full align with cloud snapshot (ghosts + shift). Electron runs push then pull
+        // so local opens not yet on cloud are pushed first in the same round.
+        return ResponseEntity.ok(applyService.applyLive(request.snapshot(), true));
     }
 
     private void assertSecret(String given) {

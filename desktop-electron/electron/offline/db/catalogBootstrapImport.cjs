@@ -5,7 +5,7 @@ const {
 } = require('./connection.cjs');
 const { insertCategory, insertProduct } = require('./catalogProductWrite.cjs');
 
-const PRODUCT_CHUNK_SIZE = 80;
+const PRODUCT_CHUNK_SIZE = 250;
 
 function yieldEventLoop() {
   return new Promise((resolve) => setImmediate(resolve));

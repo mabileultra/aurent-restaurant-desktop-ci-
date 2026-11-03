@@ -11,7 +11,12 @@ import java.util.Set;
 public class KitchenTicketStatusPolicy {
 
     private static final Map<KitchenTicketStatus, Set<KitchenTicketStatus>> ALLOWED = Map.of(
-        KitchenTicketStatus.NEW, Set.of(KitchenTicketStatus.ACCEPTED, KitchenTicketStatus.CANCELLED),
+        // PREPARING: simple KDS skips ACCEPTED (arrived → cooking in one tap).
+        KitchenTicketStatus.NEW, Set.of(
+            KitchenTicketStatus.ACCEPTED,
+            KitchenTicketStatus.PREPARING,
+            KitchenTicketStatus.CANCELLED
+        ),
         KitchenTicketStatus.ACCEPTED, Set.of(KitchenTicketStatus.PREPARING, KitchenTicketStatus.READY, KitchenTicketStatus.CANCELLED),
         KitchenTicketStatus.PREPARING, Set.of(KitchenTicketStatus.READY, KitchenTicketStatus.CANCELLED),
         KitchenTicketStatus.READY, Set.of(KitchenTicketStatus.SERVED),

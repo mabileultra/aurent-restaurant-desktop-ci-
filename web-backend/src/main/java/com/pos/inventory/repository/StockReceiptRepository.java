@@ -43,7 +43,6 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
     @Query("""
         SELECT DISTINCT r FROM StockReceipt r
         LEFT JOIN FETCH r.lines l
-        LEFT JOIN FETCH l.product
         LEFT JOIN FETCH r.supplier
         LEFT JOIN FETCH r.store
         LEFT JOIN FETCH r.createdBy

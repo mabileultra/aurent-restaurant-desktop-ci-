@@ -182,10 +182,19 @@ jobs:
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
           shopt -s nullglob
-          # Only ship the product installer (skip NSIS __uninstaller helper)
-          files=(restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap)
-          if ((${#files[@]} == 0)); then
+          # Installer + electron-updater feed (latest.yml) — auto-update needs the yml.
+          files=(
+            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
+            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
+            restaurant-desktop/dist/latest.yml
+          )
+          if ! compgen -G "restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe" > /dev/null; then
             echo "No Windows artifacts (Aurent-Restaurant-*-win-*.exe)" >&2
+            ls -la restaurant-desktop/dist || true
+            exit 1
+          fi
+          if [[ ! -f restaurant-desktop/dist/latest.yml ]]; then
+            echo "latest.yml missing — electron-updater feed will 404" >&2
             ls -la restaurant-desktop/dist || true
             exit 1
           fi
@@ -203,6 +212,7 @@ jobs:
           path: |
             restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
             restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
+            restaurant-desktop/dist/latest.yml
           if-no-files-found: warn
           retention-days: 14
 

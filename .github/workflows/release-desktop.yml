@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       skip_deploy:
-        description: 'Only build, do not upload to server'
+        description: 'Only build, do not upload to server (use for lab; then publish artifacts manually)'
         required: false
         default: false
         type: boolean
@@ -17,13 +17,18 @@ on:
         required: false
         default: false
         type: boolean
+      update_base_url:
+        description: 'electron-updater base (lab: http://169.58.250.132 — leave empty for prod secret/default)'
+        required: false
+        default: ''
+        type: string
 
 concurrency:
   group: desktop-release-${{ github.ref }}
   cancel-in-progress: false
 
 env:
-  UPDATE_BASE_URL: ${{ secrets.DEPLOY_PUBLIC_URL || 'https://aurent.uz' }}
+  UPDATE_BASE_URL: ${{ inputs.update_base_url || secrets.DEPLOY_PUBLIC_URL || 'https://aurent.uz' }}
   CI_DEPLOY_REPO: mabileultra/aurent-restaurant-desktop-ci-
 
 jobs:
@@ -51,6 +56,17 @@ jobs:
         run: |
           pnpm install
           pnpm run dist:win
+
+      - name: Upload Windows artifacts (lab / skip_deploy)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_deploy == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurent-cashier-desktop-win-lab
+          path: |
+            desktop-electron/dist/*.exe
+            desktop-electron/dist/*.blockmap
+            desktop-electron/dist/latest.yml
+          if-no-files-found: error
 
       - name: Setup SSH
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}

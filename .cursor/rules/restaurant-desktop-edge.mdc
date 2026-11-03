@@ -25,7 +25,7 @@ Same UX online and offline. Cloud only syncs in the background.
 | Auth | Local staff / PIN / roles / JWT (after one online bootstrap) |
 | Catalog + stock | Local copy of what is now in web-backend; stock moves → queue |
 | Print | Local receipt / kitchen printers |
-| Status strip | **Hidden** — no network/queue chrome (confuses hall); sync stays quiet in Electron |
+| Status strip | **Hidden** under header — no network/queue chrome. Quiet Wi‑Fi icon only at bottom of hamburger ☰ (online glow / offline dim) |
 | LAN | This PC = hub for kitchen / second screen / waiter phones on restaurant Wi‑Fi |
 
 ## Boundaries
@@ -75,6 +75,6 @@ Needs **one online** login + full bootstrap. Cold start with zero network is imp
 - Hall UI talks **only** to local `restaurant-service`, not r-aurent.uz for ops (months-offline).
 - When **online**, Electron reconciles quietly: floor push/pull + staff roster refresh (`replaceRoster`) so cloud password/revoke wins without abandoning local stack.
 - Cloud session for live sync persists in userData (`edge-live-cloud-session.json`); 401 clears it.
-- Live shift reconcile runs on **both** hall→cloud ingest and cloud→edge import (after floor upsert/ghosts). `openShift=null` closes OPEN only if store has **no** OPEN/BILLING orders; open tables keep shift (months-offline).
+- Online + live session: probe cloud origin — if **server ahead** → **pull first** (web close/open wins, no stale push reopen), else push then pull. Live import reconciles ghosts + shift. `openShift=null` closes all OPEN. Offline: local-only until reconnect.
 - Grocery/pharmacy «Aurent Cashier» + `pos-offline.db` stay out of scope; **restaurant касса** stays in scope.
 - Site r-aurent.uz remains cloud SaaS; desktop is a separate product install.

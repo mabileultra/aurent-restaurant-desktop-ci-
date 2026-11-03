@@ -52,6 +52,8 @@ afterEach(() => {
 });
 
 const compact = (s) => s.replace(/\s/g, '');
+const plain = (s) => String(s ?? '').replace(/^§[EB]§/, '');
+const findPlain = (lines, pred) => lines.map(plain).find(pred);
 
 describe('groupShiftItemsByCategory', () => {
   it('keeps API order and buckets empty category as uncategorized', () => {
@@ -86,26 +88,26 @@ describe('printShiftItemsReceipt', () => {
     const { title, lines, printerName } = printer.printTicketLines.mock.calls[0][0];
     expect(printerName).toBe('XP-80');
     expect(title).toBe('Продано за смену');
-    expect(lines[0]).toBe('ПРОДАНО ЗА СМЕНУ');
-    expect(lines).toContain('Rayhon');
-    expect(lines).toContain('Dilnoza');
+    expect(plain(lines[0])).toBe('ПРОДАНО ЗА СМЕНУ');
+    expect(lines.map(plain)).toContain('Rayhon');
+    expect(lines.map(plain)).toContain('Dilnoza');
     expect(lines).toContain('≫ Горячее');
     expect(lines).toContain('≫ Напитки');
 
-    const lagman = lines.find((l) => l.startsWith('12 x Лагман'));
-    const tea = lines.find((l) => l.startsWith('30 x Чай'));
+    const lagman = findPlain(lines, (l) => l.startsWith('12 x Лагман'));
+    const tea = findPlain(lines, (l) => l.startsWith('30 x Чай'));
     expect(compact(lagman)).toContain('360000');
     expect(compact(tea)).toContain('90000');
     expect(lagman.length).toBeLessThanOrEqual(32);
 
-    const hotSub = lines.find((l) => l.startsWith('Горячее'));
+    const hotSub = findPlain(lines, (l) => l.startsWith('Горячее'));
     expect(hotSub).toContain('12 шт.');
-    const drinksSub = lines.find((l) => l.startsWith('Напитки'));
+    const drinksSub = findPlain(lines, (l) => l.startsWith('Напитки'));
     expect(drinksSub).toContain('30 шт.');
 
-    const totalRow = lines.find((l) => l.startsWith('ИТОГО'));
+    const totalRow = findPlain(lines, (l) => l.startsWith('ИТОГО'));
     expect(totalRow).toContain('42 шт.');
-    expect(compact(lines[lines.length - 1])).toContain('450000');
+    expect(compact(plain(lines[lines.length - 1]))).toContain('450000');
   });
 
   it('falls back to the browser when the desktop has no receipt printer', async () => {
@@ -149,8 +151,8 @@ describe('printShiftItemsReceipt', () => {
     await printShiftItemsReceipt({ report: { ...report, items: [] }, t });
 
     const { lines } = printer.printTicketLines.mock.calls[0][0];
-    expect(lines).toContain('Продаж нет');
-    expect(lines.find((l) => l.startsWith('ИТОГО'))).toContain('0 шт.');
+    expect(lines.map(plain)).toContain('Продаж нет');
+    expect(findPlain(lines, (l) => l.startsWith('ИТОГО'))).toContain('0 шт.');
   });
 
   it('uses store and cashier passed by the modal when the Z report has none', async () => {

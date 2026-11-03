@@ -3,7 +3,11 @@ import {
   buildRestaurantTicketBody,
   formatTicketItemLines,
 } from '../../../../src/restaurant/pos/utils/buildRestaurantTicketBody';
-import { EMPH_LINE_PREFIX, RECEIPT_WIDTH } from '../../../../src/restaurant/pos/utils/ticketLayout';
+import {
+  BOLD_LINE_PREFIX,
+  EMPH_LINE_PREFIX,
+  RECEIPT_WIDTH,
+} from '../../../../src/restaurant/pos/utils/ticketLayout';
 import { factoryPrintProfile } from '../../../../src/restaurant/shared/printProfile/printProfileDefaults';
 
 const t = (key, opts) => opts?.defaultValue || key;
@@ -166,5 +170,23 @@ describe('buildRestaurantTicketBody bill', () => {
     expect(joined).not.toMatch(/14000|14 000|322/);
     expect(joined).not.toMatch(/ИТОГО/i);
     expect(joined).not.toMatch(/Подытог/i);
+  });
+
+  it('applies bold/size from print profile to guest-bill body lines', () => {
+    const profile = factoryPrintProfile();
+    profile.slips.GUEST_BILL.fields.hallTable.bold = true;
+    profile.slips.GUEST_BILL.fields.items.bold = true;
+    profile.slips.GUEST_BILL.fields.items.size = 'lg';
+    profile.slips.GUEST_BILL.fields.waiter.bold = true;
+    const lines = buildRestaurantTicketBody({
+      kind: 'bill',
+      order: baseOrder,
+      waiterName: 'DILBAR',
+      profile,
+      t,
+    });
+    expect(lines.some((row) => String(row).startsWith(BOLD_LINE_PREFIX) && /Стол 2|Asosiy/.test(row))).toBe(true);
+    expect(lines.some((row) => String(row).startsWith(BOLD_LINE_PREFIX) && /Официант: DILBAR/.test(row))).toBe(true);
+    expect(lines.some((row) => String(row).startsWith(EMPH_LINE_PREFIX) && /ADRENALIN/.test(row))).toBe(true);
   });
 });

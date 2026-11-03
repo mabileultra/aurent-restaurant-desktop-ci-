@@ -46,11 +46,21 @@ contextBridge.exposeInMainWorld('aurentRestaurant', {
   pushCloudSync: () => ipcRenderer.invoke('restaurant:push-cloud-sync'),
   getCompanyLoginCode: () => ipcRenderer.invoke('restaurant:get-company-login-code'),
   setCompanyLoginCode: (code) => ipcRenderer.invoke('restaurant:set-company-login-code', code),
+  resetEdgeTenant: (payload) => ipcRenderer.invoke('restaurant:reset-edge-tenant', payload || {}),
   setMenuLocale: (locale) => ipcRenderer.invoke('restaurant:set-menu-locale', locale),
+  popupViewMenu: () => ipcRenderer.invoke('restaurant:popup-view-menu'),
   onStatus: (cb) => {
     const handler = (_e, payload) => cb(payload);
     ipcRenderer.on('restaurant:status', handler);
     return () => ipcRenderer.removeListener('restaurant:status', handler);
   },
   getLanHub: () => ipcRenderer.invoke('restaurant:get-lan-hub'),
+  fetchDesktopNotifications: () => ipcRenderer.invoke('restaurant:desktop-notifications-unread'),
+  markDesktopNotificationRead: (id) => ipcRenderer.invoke('restaurant:desktop-notifications-mark-read', id),
+  onDesktopNotifications: (cb) => {
+    if (typeof cb !== 'function') return () => {};
+    const handler = (_e, payload) => cb(payload);
+    ipcRenderer.on('restaurant:desktop-notifications', handler);
+    return () => ipcRenderer.removeListener('restaurant:desktop-notifications', handler);
+  },
 });

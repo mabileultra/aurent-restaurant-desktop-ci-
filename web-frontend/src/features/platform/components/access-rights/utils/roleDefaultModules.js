@@ -91,6 +91,7 @@ const MODULE_SPECS = [
   { id: 'restaurantRequestBill', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
   { id: 'restaurantPickupLabel', group: 'restaurant', roles: [] },
   { id: 'restaurantCustomerDisplay', group: 'restaurant', roles: [] },
+  { id: 'restaurantReadyDisplay', group: 'restaurant', roles: [] },
   { id: 'restaurantQuickSale', group: 'restaurant', roles: [] },
   { id: 'restaurantBooking', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'] },
   { id: 'restaurantDelivery', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'] },

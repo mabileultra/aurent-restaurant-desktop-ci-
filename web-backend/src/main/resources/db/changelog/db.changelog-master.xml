@@ -57,6 +57,11 @@
     <include file="v49-clear-min-margin-percent.xml" relativeToChangelogFile="true"/>
     <include file="v50-cash-register-heartbeat-movements.xml" relativeToChangelogFile="true"/>
     <include file="v51-supplier-account-number.xml" relativeToChangelogFile="true"/>
+    <include file="v52-sale-item-catalog-snapshot.xml" relativeToChangelogFile="true"/>
+    <include file="v53-sale-item-snapshot-extended.xml" relativeToChangelogFile="true"/>
+    <include file="v54-stock-line-catalog-snapshot.xml" relativeToChangelogFile="true"/>
+    <include file="v55-stock-movement-storestock-productid.xml" relativeToChangelogFile="true"/>
+    <include file="v56-drop-sales-inventory-product-fks.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
 

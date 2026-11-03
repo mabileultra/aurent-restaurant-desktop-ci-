@@ -71,6 +71,14 @@ function registerOfflineIpc(getConfig, probeBackendOnlineQuick) {
     ),
   );
 
+  ipcMain.handle('offline:import-product-snapshots', async (_e, payload) =>
+    safeOffline(
+      () => localDb.importProductSnapshots(payload),
+      { ok: false, error: 'offline_db_unavailable' },
+      BOOTSTRAP_IPC_TIMEOUT_MS,
+    ),
+  );
+
   ipcMain.handle('offline:list-categories', async () =>
     safeOffline(() => localDb.listCategories(), []),
   );

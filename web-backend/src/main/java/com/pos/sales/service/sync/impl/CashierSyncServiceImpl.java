@@ -23,7 +23,7 @@ import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.sales.service.sale.support.CreditSaleCustomerSupport;
-import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.service.product.support.CatalogManagedProductLoader;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.repository.UserRepository;
@@ -34,6 +34,7 @@ import com.pos.integrations.finance.service.FinanceCreditSaleIntegrationService;
 import com.pos.integrations.finance.service.FinanceSaleIntegrationService;
 import com.pos.catalog.service.product.ProductQueryService;
 import com.pos.sales.service.sale.support.CheckoutQuantityResolver;
+import com.pos.sales.service.sale.support.SaleItemCatalogSnapshot;
 import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
@@ -59,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -74,7 +76,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final CatalogIsolationSupport catalogIsolation;
     private final SaleRepository saleRepository;
     private final CashierShiftRepository cashierShiftRepository;
-    private final ProductRepository productRepository;
+    private final CatalogManagedProductLoader catalogManagedProductLoader;
     private final CreditSaleCustomerSupport creditSaleCustomerSupport;
     private final StockMovementPersistence stockMovementPersistence;
     private final SalesLedgerCacheService salesLedgerCacheService;
@@ -199,13 +201,10 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             productIds.add(itemReq.productId());
         }
         Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(productIds);
+        Map<UUID, Product> productsById = catalogManagedProductLoader.requireActiveWithCompany(productIds);
 
         for (SaleItemRequest itemReq : req.items()) {
-            Product product = productRepository.findById(itemReq.productId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemReq.productId()));
-            if (!product.isActive()) {
-                throw new BadRequestException("Product is inactive: " + product.getName());
-            }
+            Product product = productsById.get(itemReq.productId());
             BigDecimal lineQty = checkoutQuantityResolver.normalizeQuantity(
                 product,
                 itemReq.quantity(),
@@ -220,15 +219,14 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             BigDecimal taxAmt = MoneyCalculator.vatFromInclusiveLine(lineGross, rate);
             BigDecimal netLine = lineGross.subtract(taxAmt);
 
-            SaleItem saleItem = SaleItem.builder()
-                .product(product)
-                .productName(product.getName())
+            SaleItem.SaleItemBuilder saleItemBuilder = SaleItem.builder()
                 .unitPrice(unitPrice)
                 .quantity(lineQty)
                 .discount(lineDiscount)
                 .taxAmount(taxAmt)
-                .lineTotal(lineGross)
-                .build();
+                .lineTotal(lineGross);
+            SaleItemCatalogSnapshot.apply(saleItemBuilder, product);
+            SaleItem saleItem = saleItemBuilder.build();
 
             items.add(saleItem);
             subtotal = subtotal.add(netLine);
@@ -312,8 +310,8 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         Sale saved = saleRepository.save(sale);
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {
             for (SaleItem saleItem : saved.getItems()) {
-                stockMovementPersistence.save(StockMovement.builder()
-                    .product(saleItem.getProduct())
+                stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), productsById.get(saleItem.getProductId()))
+                    
                     .store(store)
                     .movementType(StockMovementType.SALE)
                     .quantity(saleItem.getQuantity().negate())
