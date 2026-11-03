@@ -1,19 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useStoreFloorSync } from '../../pos/hooks/useStoreFloorSync';
-import { playPosSound } from '../../pos/utils/posSounds';
 import { groupReadyDisplayOrders } from '../utils/groupReadyDisplayOrders';
-
-const FRESH_MS = 12_000;
+import { useReadyDisplayFreshKeys } from './useReadyDisplayFreshKeys';
 
 export function useReadyDisplayBoard() {
   const workspace = useRestaurantWorkspaceStore();
-  const seenReadyKeysRef = useRef(null);
-  const [freshKeys, setFreshKeys] = useState(() => new Set());
 
-  useStoreFloorSync(workspace.storeId, { syncKitchen: true });
+  useStoreFloorSync(workspace.storeId, { syncKitchen: true, pollInBackground: true });
 
   const kitchenBoardQuery = useQuery({
     queryKey: ['rst-kitchen-board', workspace.storeId],
@@ -27,7 +23,11 @@ export function useReadyDisplayBoard() {
     queryKey: ['rst-kitchen-tickets', workspace.storeId, 'ready-display'],
     queryFn: () => rstKitchenApi.listTickets(workspace.storeId).then((r) => r.data),
     enabled: workspace.storeId != null && kitchenBoardEnabled,
-    refetchInterval: kitchenBoardEnabled ? 5_000 : false,
+    // TV is often on a second monitor (unfocused): keep polling in background.
+    staleTime: 0,
+    refetchInterval: kitchenBoardEnabled ? 2_000 : false,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
   });
 
   const board = useMemo(
@@ -35,58 +35,14 @@ export function useReadyDisplayBoard() {
     [ticketsQuery.data],
   );
 
-  useEffect(() => {
-    const readyKeys = board.ready.map((row) => row.key);
-    if (seenReadyKeysRef.current == null) {
-      seenReadyKeysRef.current = new Set(readyKeys);
-      return undefined;
-    }
-
-    const arrived = [];
-    for (const key of readyKeys) {
-      if (!seenReadyKeysRef.current.has(key)) {
-        seenReadyKeysRef.current.add(key);
-        arrived.push(key);
-      }
-    }
-
-    const cookingKeys = new Set(board.cooking.map((row) => row.key));
-    for (const key of [...seenReadyKeysRef.current]) {
-      if (!readyKeys.includes(key) && !cookingKeys.has(key)) {
-        seenReadyKeysRef.current.delete(key);
-      }
-    }
-
-    if (!arrived.length) return undefined;
-
-    playPosSound('ready');
-    setFreshKeys((prev) => {
-      const next = new Set(prev);
-      for (const key of arrived) next.add(key);
-      return next;
-    });
-
-    const timer = window.setTimeout(() => {
-      setFreshKeys((prev) => {
-        const next = new Set(prev);
-        for (const key of arrived) next.delete(key);
-        return next;
-      });
-    }, FRESH_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [board]);
-
-  useEffect(() => {
-    seenReadyKeysRef.current = null;
-    setFreshKeys(new Set());
-  }, [workspace.storeId]);
+  const { freshReadyKeys, freshCookingKeys } = useReadyDisplayFreshKeys(board, workspace.storeId);
 
   return {
     workspace,
     cooking: board.cooking,
     ready: board.ready,
-    freshKeys,
+    freshReadyKeys,
+    freshCookingKeys,
     isLoading: (workspace.storeId == null && workspace.isLoading) || ticketsQuery.isLoading,
     isError: ticketsQuery.isError,
     kitchenBoardEnabled,

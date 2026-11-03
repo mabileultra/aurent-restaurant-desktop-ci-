@@ -1,9 +1,10 @@
 .rst-rdy {
   --rdy-bg: #0b1220;
   --rdy-panel: #121a2b;
-  --rdy-cooking: #94a3b8;
+  --rdy-cooking: #fbbf24;
+  --rdy-cooking-glow: rgba(251, 191, 36, 0.4);
   --rdy-ready: #34d399;
-  --rdy-ready-glow: rgba(52, 211, 153, 0.35);
+  --rdy-ready-glow: rgba(52, 211, 153, 0.45);
   --rdy-text: #f8fafc;
   --rdy-muted: #94a3b8;
   min-height: 100vh;
@@ -11,8 +12,8 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(52, 211, 153, 0.08), transparent 55%),
-    radial-gradient(ellipse 70% 45% at 90% 10%, rgba(148, 163, 184, 0.1), transparent 50%),
+    radial-gradient(ellipse 80% 50% at 80% 0%, rgba(52, 211, 153, 0.1), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 15% 8%, rgba(251, 191, 36, 0.12), transparent 50%),
     var(--rdy-bg);
   color: var(--rdy-text);
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -94,9 +95,14 @@
   overflow: hidden;
 }
 
+.rst-rdy-col--cooking {
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.1);
+}
+
 .rst-rdy-col--ready {
-  border-color: rgba(52, 211, 153, 0.35);
-  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.12);
 }
 
 .rst-rdy-col__head {
@@ -110,11 +116,11 @@
 }
 
 .rst-rdy-col--cooking .rst-rdy-col__head {
-  background: rgba(148, 163, 184, 0.08);
+  background: rgba(251, 191, 36, 0.14);
 }
 
 .rst-rdy-col--ready .rst-rdy-col__head {
-  background: rgba(52, 211, 153, 0.12);
+  background: rgba(52, 211, 153, 0.16);
 }
 
 .rst-rdy-col__title {
@@ -154,6 +160,10 @@
   background: rgba(15, 23, 42, 0.55);
 }
 
+.rst-rdy-col--cooking .rst-rdy-col__count {
+  color: var(--rdy-cooking);
+}
+
 .rst-rdy-col--ready .rst-rdy-col__count {
   color: var(--rdy-ready);
 }
@@ -188,16 +198,31 @@
   background: rgba(15, 23, 42, 0.65);
   border: 1px solid rgba(148, 163, 184, 0.2);
   text-align: center;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
+}
+
+.rst-rdy-col--cooking .rst-rdy-num {
+  border-color: rgba(251, 191, 36, 0.55);
+  background: rgba(120, 53, 15, 0.42);
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.18);
 }
 
 .rst-rdy-col--ready .rst-rdy-num {
-  border-color: rgba(52, 211, 153, 0.45);
-  background: rgba(6, 78, 59, 0.35);
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(6, 78, 59, 0.48);
+  box-shadow: 0 0 18px rgba(52, 211, 153, 0.2);
 }
 
 .rst-rdy-num.is-new {
-  animation: rst-rdy-pulse 1.2s ease-in-out 3;
-  box-shadow: 0 0 0 2px var(--rdy-ready-glow);
+  animation: rst-rdy-pulse 1.1s ease-in-out 4;
+}
+
+.rst-rdy-col--cooking .rst-rdy-num.is-new {
+  box-shadow: 0 0 0 3px var(--rdy-cooking-glow), 0 0 28px var(--rdy-cooking-glow);
+}
+
+.rst-rdy-col--ready .rst-rdy-num.is-new {
+  box-shadow: 0 0 0 3px var(--rdy-ready-glow), 0 0 28px var(--rdy-ready-glow);
 }
 
 .rst-rdy-num__hash {
@@ -214,8 +239,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+.rst-rdy-col--cooking .rst-rdy-num__value {
+  color: var(--rdy-cooking);
+  text-shadow: 0 0 18px rgba(251, 191, 36, 0.35);
+}
+
 .rst-rdy-col--ready .rst-rdy-num__value {
   color: var(--rdy-ready);
+  text-shadow: 0 0 18px rgba(52, 211, 153, 0.4);
 }
 
 .rst-rdy-num__place {

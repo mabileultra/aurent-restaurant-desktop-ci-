@@ -23,7 +23,7 @@ export default function ReadyDisplayColumn({
             <ReadyDisplayNumber
               key={order.key}
               order={order}
-              highlight={variant === 'ready' && freshKeys?.has(order.key)}
+              highlight={Boolean(freshKeys?.has(order.key))}
             />
           ))}
         </ul>

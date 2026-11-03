@@ -83,6 +83,7 @@ export default function ReadyDisplayPage() {
           subtitle={t('rst.readyDisplay.cookingHint')}
           orders={board.cooking}
           emptyLabel={t('rst.readyDisplay.cookingEmpty')}
+          freshKeys={board.freshCookingKeys}
         />
         <ReadyDisplayColumn
           variant="ready"
@@ -90,7 +91,7 @@ export default function ReadyDisplayPage() {
           subtitle={t('rst.readyDisplay.readyHint')}
           orders={board.ready}
           emptyLabel={t('rst.readyDisplay.readyEmpty')}
-          freshKeys={board.freshKeys}
+          freshKeys={board.freshReadyKeys}
         />
       </main>
     </div>
