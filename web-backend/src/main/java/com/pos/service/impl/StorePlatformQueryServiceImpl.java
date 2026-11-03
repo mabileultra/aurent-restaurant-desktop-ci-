@@ -39,18 +39,19 @@ public class StorePlatformQueryServiceImpl implements StorePlatformQueryService 
         String status,
         String businessType,
         String regionCode,
+        String districtCode,
         Integer companyId
     ) {
         Integer scopedCompanyId = tenantAccess.resolveScopedCompanyId(companyId);
         Specification<Store> base = StoreSpecifications.filter(
-            search, scopedCompanyId, businessType, regionCode, null, null
+            search, scopedCompanyId, businessType, regionCode, districtCode, null
         );
         long total = storeRepository.count(base);
         long active = storeRepository.count(
             base.and(StoreSpecifications.filter(null, null, null, null, null, "ACTIVE"))
         );
         long inactive = Math.max(0, total - active);
-        long companies = countCompanies(scopedCompanyId, search, status, businessType, regionCode);
+        long companies = countCompanies(scopedCompanyId, search, status, businessType, regionCode, districtCode);
         return new StoreStatsResponse(total, active, inactive, companies);
     }
 
@@ -60,6 +61,7 @@ public class StorePlatformQueryServiceImpl implements StorePlatformQueryService 
         String status,
         String businessType,
         String regionCode,
+        String districtCode,
         Pageable pageable
     ) {
         if (!tenantAccess.isPlatformOperator()) {
@@ -82,7 +84,7 @@ public class StorePlatformQueryServiceImpl implements StorePlatformQueryService 
             pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name").ascending()
         );
         Page<Company> page = companyRepository.findAll(
-            CompanySpecifications.filter(search, status, businessType, regionCode),
+            CompanySpecifications.filter(search, status, businessType, regionCode, districtCode),
             sorted
         );
         List<Integer> ids = page.getContent().stream().map(Company::getId).toList();
@@ -98,12 +100,15 @@ public class StorePlatformQueryServiceImpl implements StorePlatformQueryService 
         String search,
         String status,
         String businessType,
-        String regionCode
+        String regionCode,
+        String districtCode
     ) {
         if (scopedCompanyId != null) {
             return companyRepository.existsById(scopedCompanyId) ? 1L : 0L;
         }
-        return companyRepository.count(CompanySpecifications.filter(search, status, businessType, regionCode));
+        return companyRepository.count(
+            CompanySpecifications.filter(search, status, businessType, regionCode, districtCode)
+        );
     }
 
     private Map<Integer, long[]> loadCounts(List<Integer> companyIds) {

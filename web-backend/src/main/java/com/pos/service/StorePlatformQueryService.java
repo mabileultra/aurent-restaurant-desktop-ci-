@@ -12,6 +12,7 @@ public interface StorePlatformQueryService {
         String status,
         String businessType,
         String regionCode,
+        String districtCode,
         Integer companyId
     );
 
@@ -20,6 +21,7 @@ public interface StorePlatformQueryService {
         String status,
         String businessType,
         String regionCode,
+        String districtCode,
         Pageable pageable
     );
 }

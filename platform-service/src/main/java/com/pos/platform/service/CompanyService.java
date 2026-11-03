@@ -1,6 +1,7 @@
 package com.pos.platform.service;
 
 import com.pos.platform.dto.company.CompanyResponse;
+import com.pos.platform.dto.company.CompanyStatsResponse;
 import com.pos.platform.dto.company.CreateCompanyRequest;
 import com.pos.platform.dto.company.UpdateCompanyRequest;
 import com.pos.platform.dto.shared.PageResponse;
@@ -15,7 +16,15 @@ public interface CompanyService {
         String businessType,
         String regionCode,
         String districtCode,
+        Boolean active,
         Pageable pageable
+    );
+
+    CompanyStatsResponse stats(
+        String search,
+        String businessType,
+        String regionCode,
+        String districtCode
     );
 
     List<CompanyResponse> listAll();

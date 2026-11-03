@@ -49,10 +49,11 @@ public class StoreController {
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
         @RequestParam(required = false) Integer companyId
     ) {
         return ResponseEntity.ok(storePlatformQueryService.stats(
-            search, status, businessType, regionCode, companyId
+            search, status, businessType, regionCode, districtCode, companyId
         ));
     }
 
@@ -65,10 +66,11 @@ public class StoreController {
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
         @PageableDefault(size = 10) Pageable pageable
     ) {
         return ResponseEntity.ok(storePlatformQueryService.listByCompany(
-            search, status, businessType, regionCode, pageable
+            search, status, businessType, regionCode, districtCode, pageable
         ));
     }
 
@@ -82,10 +84,11 @@ public class StoreController {
         @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String regionCode,
         @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String status,
         @PageableDefault(size = 14) Pageable pageable
     ) {
         return ResponseEntity.ok(storeService.listManaged(
-            search, companyId, businessType, regionCode, districtCode, pageable
+            search, companyId, businessType, regionCode, districtCode, status, pageable
         ));
     }
 
