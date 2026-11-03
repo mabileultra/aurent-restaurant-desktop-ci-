@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { guessBusinessTypeFromMessage } from '../../utils/leadFormatUtils';
+import { generateSecurePassword } from '../../utils/passwordGenerator';
 import PlatformLeadConvertSidebar from './PlatformLeadConvertSidebar';
 import PlatformLeadBusinessTypeChips, { BUSINESS_TYPE_OPTIONS } from './PlatformLeadBusinessTypeChips';
 import PlatformLeadAdminSection from './PlatformLeadAdminSection';
@@ -23,13 +24,16 @@ export default function PlatformLeadConvertToCompanyView({
   const [branchName, setBranchName] = useState('Asosiy filial');
   const [createAdmin, setCreateAdmin] = useState(true);
   const [adminName, setAdminName] = useState(lead?.name || '');
+  const [adminEmail, setAdminEmail] = useState(lead?.email || '');
   const [adminLogin, setAdminLogin] = useState(() => {
     const raw = (lead?.email ? lead.email.split('@')[0] : lead?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     return raw || 'admin';
   });
-  const [markDone, setMarkDone] = useState(true);
+  const [adminPassword, setAdminPassword] = useState(() => generateSecurePassword(12));
 
   if (!lead) return null;
+
+  const handleRegeneratePassword = () => setAdminPassword(generateSecurePassword(12));
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -45,8 +49,14 @@ export default function PlatformLeadConvertToCompanyView({
         businessType: selectedType,
       },
       branchName: branchName.trim() || 'Asosiy filial',
-      adminUser: createAdmin ? { name: adminName.trim(), login: adminLogin.trim() } : null,
-      markDone,
+      adminUser: createAdmin
+        ? {
+            name: adminName.trim(),
+            login: adminLogin.trim(),
+            email: adminEmail.trim(),
+            password: adminPassword,
+          }
+        : null,
     });
   };
 
@@ -136,8 +146,11 @@ export default function PlatformLeadConvertToCompanyView({
             onAdminNameChange={setAdminName}
             adminLogin={adminLogin}
             onAdminLoginChange={setAdminLogin}
-            markDone={markDone}
-            onMarkDoneChange={setMarkDone}
+            adminEmail={adminEmail}
+            onAdminEmailChange={setAdminEmail}
+            adminPassword={adminPassword}
+            onAdminPasswordChange={setAdminPassword}
+            onRegeneratePassword={handleRegeneratePassword}
           />
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
@@ -148,14 +161,14 @@ export default function PlatformLeadConvertToCompanyView({
               <button
                 type="button"
                 onClick={onBack}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
+                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
               >
                 Bekor qilish
               </button>
               <button
                 type="submit"
                 disabled={!companyName.trim() || isSubmitting}
-                className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition-opacity disabled:opacity-40 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+                className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition-opacity disabled:opacity-40 hover:bg-slate-800 dark:bg-white dark:text-slate-900 cursor-pointer"
               >
                 {isSubmitting ? 'Yaratilmoqda…' : 'Kompaniya yaratish'}
               </button>

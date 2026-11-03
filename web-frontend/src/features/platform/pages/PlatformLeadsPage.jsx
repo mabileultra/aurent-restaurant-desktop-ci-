@@ -6,6 +6,7 @@ import PlatformLeadsSidebarList from '../components/leads/PlatformLeadsSidebarLi
 import PlatformLeadDetailPane from '../components/leads/PlatformLeadDetailPane';
 import PlatformLeadConvertToCompanyView from '../components/leads/PlatformLeadConvertToCompanyView';
 import PlatformLeadMobileDetailView from '../components/leads/PlatformLeadMobileDetailView';
+import UserCredentialsCreatedModal from '../../tenant/components/users/UserCredentialsCreatedModal';
 import { usePlatformLeadsPage } from '../hooks/usePlatformLeadsPage';
 
 export default function PlatformLeadsPage() {
@@ -14,6 +15,13 @@ export default function PlatformLeadsPage() {
   if (p.viewMode === 'convert_company' && p.convertTargetLead) {
     return (
       <PageLayout spacing="space-y-4">
+        {p.createdCredentials && (
+          <UserCredentialsCreatedModal
+            credentials={p.createdCredentials}
+            t={p.t}
+            onClose={p.dismissCredentials}
+          />
+        )}
         <PlatformLeadConvertToCompanyView
           lead={p.convertTargetLead}
           onBack={() => p.setViewMode('split')}
@@ -28,6 +36,13 @@ export default function PlatformLeadsPage() {
   if (p.viewMode === 'mobile_detail' && p.selectedLead) {
     return (
       <PageLayout spacing="space-y-4">
+        {p.createdCredentials && (
+          <UserCredentialsCreatedModal
+            credentials={p.createdCredentials}
+            t={p.t}
+            onClose={p.dismissCredentials}
+          />
+        )}
         <PlatformLeadMobileDetailView
           lead={p.selectedLead}
           onBack={() => p.setViewMode('split')}
@@ -54,6 +69,15 @@ export default function PlatformLeadsPage() {
       title={p.t('platform.leads.title')}
       subtitle={p.t('platform.leads.subtitle')}
     >
+      {/* 0. One-time credentials display modal */}
+      {p.createdCredentials && (
+        <UserCredentialsCreatedModal
+          credentials={p.createdCredentials}
+          t={p.t}
+          onClose={p.dismissCredentials}
+        />
+      )}
+
       {/* 1. Unanswered SLA Banner */}
       <PlatformLeadsHeaderAlert unansweredCount={p.unansweredCount} t={p.t} />
 

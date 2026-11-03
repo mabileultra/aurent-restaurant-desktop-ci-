@@ -31,15 +31,18 @@ describe('leadFormatUtils', () => {
     expect(formatLeadDateTime(fixedNow.toISOString())).toContain('oktabr');
   });
 
-  it('formats preferred time correctly for raw digit strings and time ranges', () => {
+  it('formats preferred time correctly for raw digit strings and time ranges without guessing non-4-digit strings', () => {
     expect(formatPreferredTime(null)).toBe('—');
     expect(formatPreferredTime('')).toBe('—');
     expect(formatPreferredTime('1200')).toBe('12:00');
     expect(formatPreferredTime('0930')).toBe('09:30');
-    expect(formatPreferredTime('900')).toBe('09:00');
-    expect(formatPreferredTime('111')).toBe('01:11');
     expect(formatPreferredTime('14:30')).toBe('14:30');
     expect(formatPreferredTime('10:00 - 12:00')).toBe('10:00 – 12:00');
+
+    // Ambiguous non-4-digit values remain raw and untouched
+    expect(formatPreferredTime('111')).toBe('111');
+    expect(formatPreferredTime('900')).toBe('900');
+    expect(formatPreferredTime('ertalab')).toBe('ertalab');
   });
 
   it('formats lead sources, types, and statuses in readable Uzbek', () => {

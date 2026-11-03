@@ -354,4 +354,20 @@ describe('PlatformDesktopNotificationsPage', () => {
     expect(html).toContain('Texnik tanaffus');
     expect(html).toContain('Kassalardan zudlik bilan olib tashlanadi');
   });
+
+  it('renders extend confirmation dialog when extendConfirmItem is non-null', () => {
+    currentHookState = {
+      ...mockBaseHook,
+      extendConfirmItem: {
+        id: 'item-extend-1',
+        title: 'Foydali maslahat',
+        body: 'Kassada ishlash qoidalari',
+        kind: 'MESSAGE',
+      },
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopNotificationsPage));
+    expect(html).toContain('Xabar muddatini uzaytirish (+24 soat)');
+    expect(html).toContain('Foydali maslahat');
+    expect(html).toContain('Ha, 24 soatga uzaytirish');
+  });
 });

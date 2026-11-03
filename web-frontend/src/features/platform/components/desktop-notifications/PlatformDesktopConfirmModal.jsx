@@ -99,7 +99,9 @@ export default function PlatformDesktopConfirmModal({ p }) {
 
     targetLabel = targetCount != null
       ? `${t('platform.desktopNotifications.targetAll')} · ${targetCount} ta faol${
-          p.onlineRegistersCount != null ? ` (${t('platform.desktopNotifications.onlineShort', { defaultValue: 'onlayn' })}: ${p.onlineRegistersCount} ta)` : ''
+          p.onlineRegistersCount != null && p.onlineRegistersCount > 0
+            ? ` (${t('platform.desktopNotifications.onlineShort', { defaultValue: 'onlayn' })}: ${p.onlineRegistersCount} ta)`
+            : ''
         }`
       : t('platform.desktopNotifications.registersCountUnknown', { defaultValue: 'Barcha faol kassalar' });
 

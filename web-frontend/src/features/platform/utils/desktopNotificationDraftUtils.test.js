@@ -17,7 +17,7 @@ describe('desktopNotificationDraftUtils', () => {
       expect(restoreDraftFromStorage('{invalidJson', {})).toBe(false);
     });
 
-    it('restores all targeting, scheduling, and message fields into setters', () => {
+    it('restores message fields and forces safe ALL and NOW defaults for Tez kunda features', () => {
       const setters = {
         setTitle: vi.fn(),
         setBody: vi.fn(),
@@ -43,12 +43,12 @@ describe('desktopNotificationDraftUtils', () => {
         customHours: '48',
         targetScope: 'SELECT',
         targetType: 'STORES',
-        selectedCompanyIds: [],
+        selectedCompanyIds: [999999],
         selectedStoreIds: [1, 2],
-        selectedCompanies: [],
+        selectedCompanies: [{ id: 999999, name: 'Ghost' }],
         selectedStores: [{ id: 1, name: 'Filial 1' }],
         scheduleType: 'SCHEDULED',
-        scheduleDate: '2026-11-02',
+        scheduleDate: '2020-01-01',
         scheduleTime: '10:00',
       };
 
@@ -60,18 +60,36 @@ describe('desktopNotificationDraftUtils', () => {
       expect(setters.setKind).toHaveBeenCalledWith('UPDATE');
       expect(setters.setDuration).toHaveBeenCalledWith('custom');
       expect(setters.setCustomHours).toHaveBeenCalledWith('48');
-      expect(setters.setTargetScope).toHaveBeenCalledWith('SELECT');
-      expect(setters.setTargetType).toHaveBeenCalledWith('STORES');
-      expect(setters.setSelectedStoreIds).toHaveBeenCalledWith([1, 2]);
-      expect(setters.setSelectedStores).toHaveBeenCalledWith([{ id: 1, name: 'Filial 1' }]);
-      expect(setters.setScheduleType).toHaveBeenCalledWith('SCHEDULED');
-      expect(setters.setScheduleDate).toHaveBeenCalledWith('2026-11-02');
-      expect(setters.setScheduleTime).toHaveBeenCalledWith('10:00');
+      // Must force ALL and NOW and reset phantom entities
+      expect(setters.setTargetScope).toHaveBeenCalledWith('ALL');
+      expect(setters.setSelectedCompanyIds).toHaveBeenCalledWith([]);
+      expect(setters.setSelectedStoreIds).toHaveBeenCalledWith([]);
+      expect(setters.setSelectedCompanies).toHaveBeenCalledWith([]);
+      expect(setters.setSelectedStores).toHaveBeenCalledWith([]);
+      expect(setters.setScheduleType).toHaveBeenCalledWith('NOW');
+      expect(setters.setScheduleDate).toHaveBeenCalledWith('');
+      expect(setters.setScheduleTime).toHaveBeenCalledWith('09:00');
+    });
+
+    it('returns false when draft only has phantom targetScope or schedule without title/body', () => {
+      const setters = {
+        setTargetScope: vi.fn(),
+        setScheduleType: vi.fn(),
+      };
+      const ghostDraft = {
+        title: '',
+        body: '',
+        targetScope: 'SELECT',
+        selectedCompanyIds: [999999],
+        scheduleType: 'SCHEDULED',
+      };
+      const result = restoreDraftFromStorage(JSON.stringify(ghostDraft), setters);
+      expect(result).toBe(false);
     });
   });
 
   describe('serializeDraftToStorage', () => {
-    it('returns null if form is completely empty', () => {
+    it('returns null if form has no title or body', () => {
       const emptyState = {
         title: '',
         body: '',
@@ -83,7 +101,7 @@ describe('desktopNotificationDraftUtils', () => {
       expect(serializeDraftToStorage(emptyState)).toBeNull();
     });
 
-    it('serializes state to JSON string when there is content', () => {
+    it('serializes state to JSON string with safe defaults for Tez kunda fields', () => {
       const state = {
         title: 'Sarlavha',
         body: 'Matn',
@@ -96,8 +114,8 @@ describe('desktopNotificationDraftUtils', () => {
         selectedStoreIds: [],
         selectedCompanies: [{ id: 10, name: 'A' }],
         selectedStores: [],
-        scheduleType: 'NOW',
-        scheduleDate: '',
+        scheduleType: 'SCHEDULED',
+        scheduleDate: '2026-12-01',
         scheduleTime: '09:00',
       };
 
@@ -105,8 +123,9 @@ describe('desktopNotificationDraftUtils', () => {
       expect(typeof serialized).toBe('string');
       const parsed = JSON.parse(serialized);
       expect(parsed.title).toBe('Sarlavha');
-      expect(parsed.targetScope).toBe('SELECT');
-      expect(parsed.selectedCompanyIds).toEqual([10]);
+      expect(parsed.targetScope).toBe('ALL');
+      expect(parsed.scheduleType).toBe('NOW');
+      expect(parsed.selectedCompanyIds).toEqual([]);
     });
   });
 });

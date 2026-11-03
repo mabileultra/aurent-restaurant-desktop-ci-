@@ -6,14 +6,10 @@ export function restoreDraftFromStorage(saved, setters) {
     const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
     const restoredTitle = parsed.title || parsed.titleUz || '';
     const restoredBody = parsed.body || parsed.bodyUz || '';
-    const hasMeaningfulContent = Boolean(
-      restoredTitle ||
-      restoredBody ||
-      parsed.targetScope === 'SELECT' ||
-      parsed.scheduleType === 'SCHEDULED' ||
-      (Array.isArray(parsed.selectedCompanyIds) && parsed.selectedCompanyIds.length > 0) ||
-      (Array.isArray(parsed.selectedStoreIds) && parsed.selectedStoreIds.length > 0)
-    );
+
+    // Only restore meaningful content (title or body).
+    // Phantom IDs or 'SELECT' / 'SCHEDULED' from legacy drafts must not trigger draft restoration notice.
+    const hasMeaningfulContent = Boolean(restoredTitle?.trim() || restoredBody?.trim());
 
     if (restoredTitle) setters.setTitle?.(restoredTitle);
     if (restoredBody) setters.setBody?.(restoredBody);
@@ -21,18 +17,20 @@ export function restoreDraftFromStorage(saved, setters) {
     if (parsed.duration) setters.setDuration?.(parsed.duration);
     if (parsed.customHours) setters.setCustomHours?.(parsed.customHours);
 
-    // Targeting restoration
-    if (parsed.targetScope) setters.setTargetScope?.(parsed.targetScope);
-    if (parsed.targetType) setters.setTargetType?.(parsed.targetType);
-    if (Array.isArray(parsed.selectedCompanyIds)) setters.setSelectedCompanyIds?.(parsed.selectedCompanyIds);
-    if (Array.isArray(parsed.selectedStoreIds)) setters.setSelectedStoreIds?.(parsed.selectedStoreIds);
-    if (Array.isArray(parsed.selectedCompanies)) setters.setSelectedCompanies?.(parsed.selectedCompanies);
-    if (Array.isArray(parsed.selectedStores)) setters.setSelectedStores?.(parsed.selectedStores);
+    // Targeting: 'SELECT' is a 'Tez kunda' feature.
+    // Force 'ALL' and clear any phantom company/store selections.
+    setters.setTargetScope?.('ALL');
+    setters.setTargetType?.('COMPANIES');
+    setters.setSelectedCompanyIds?.([]);
+    setters.setSelectedStoreIds?.([]);
+    setters.setSelectedCompanies?.([]);
+    setters.setSelectedStores?.([]);
 
-    // Scheduling restoration
-    if (parsed.scheduleType) setters.setScheduleType?.(parsed.scheduleType);
-    if (parsed.scheduleDate) setters.setScheduleDate?.(parsed.scheduleDate);
-    if (parsed.scheduleTime) setters.setScheduleTime?.(parsed.scheduleTime);
+    // Scheduling: 'SCHEDULED' is a 'Tez kunda' feature.
+    // Force 'NOW' and reset scheduled date/time.
+    setters.setScheduleType?.('NOW');
+    setters.setScheduleDate?.('');
+    setters.setScheduleTime?.('09:00');
 
     return hasMeaningfulContent;
   } catch {
@@ -43,11 +41,7 @@ export function restoreDraftFromStorage(saved, setters) {
 export function serializeDraftToStorage(state) {
   const hasData = Boolean(
     state.title?.trim() ||
-    state.body?.trim() ||
-    state.targetScope === 'SELECT' ||
-    state.scheduleType === 'SCHEDULED' ||
-    (state.selectedCompanyIds && state.selectedCompanyIds.length > 0) ||
-    (state.selectedStoreIds && state.selectedStoreIds.length > 0)
+    state.body?.trim()
   );
 
   if (!hasData) return null;
@@ -58,14 +52,15 @@ export function serializeDraftToStorage(state) {
     kind: state.kind,
     duration: state.duration,
     customHours: state.customHours,
-    targetScope: state.targetScope,
-    targetType: state.targetType,
-    selectedCompanyIds: state.selectedCompanyIds,
-    selectedStoreIds: state.selectedStoreIds,
-    selectedCompanies: state.selectedCompanies,
-    selectedStores: state.selectedStores,
-    scheduleType: state.scheduleType,
-    scheduleDate: state.scheduleDate,
-    scheduleTime: state.scheduleTime,
+    // Always store safe defaults for 'Tez kunda' features
+    targetScope: 'ALL',
+    targetType: 'COMPANIES',
+    selectedCompanyIds: [],
+    selectedStoreIds: [],
+    selectedCompanies: [],
+    selectedStores: [],
+    scheduleType: 'NOW',
+    scheduleDate: '',
+    scheduleTime: '',
   });
 }

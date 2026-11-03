@@ -9,6 +9,7 @@ export {
   getLeadWaitUrgency,
   parseLeadTimeline,
   appendLeadTimelineEvent,
+  formatLeadSource,
   MAX_TIMELINE_LENGTH,
 } from './leadTimelineUtils';
 
@@ -77,28 +78,16 @@ export function formatPreferredTime(time) {
   if (str.includes(':')) {
     return str.replace(/\s*-\s*/, ' – ');
   }
-  const digits = str.replace(/\D/g, '');
-  if (digits.length === 4) {
-    return `${digits.slice(0, 2)}:${digits.slice(2, 4)}`;
+  // Faqat va faqat to'liq 4 xonali vaqt bo'lsa (masalan "1200" -> "12:00", "0930" -> "09:30")
+  if (/^\d{4}$/.test(str)) {
+    const hh = Number(str.slice(0, 2));
+    const mm = Number(str.slice(2, 4));
+    if (hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
+      return `${str.slice(0, 2)}:${str.slice(2, 4)}`;
+    }
   }
-  if (digits.length === 3) {
-    return `0${digits.slice(0, 1)}:${digits.slice(1, 3)}`;
-  }
+  // Boshqa barcha noaniq qiymatlar ("111", "900", "ertalab") taxmin qilinmasdan asl holda ko'rsatiladi
   return str;
-}
-
-const SOURCE_LABELS = {
-  contacts: 'Bog\'lanish sahifasi',
-  footer: 'Pastki qism (footer)',
-  hero: 'Asosiy sahifa (hero)',
-  pricing: 'Tariflar sahifasi',
-  demo: 'Demo so\'rovi',
-};
-
-export function formatLeadSource(source) {
-  if (!source) return 'Sayt';
-  const key = String(source).trim().toLowerCase();
-  return SOURCE_LABELS[key] || source;
 }
 
 const TYPE_LABELS = {

@@ -114,4 +114,26 @@ describe('useDesktopNotificationActions', () => {
     expect(platformDesktopNotificationsApi.revoke).toHaveBeenCalledWith('active-1');
     expect(toast.success).toHaveBeenCalledWith('Xabar kassalardan olib tashlandi');
   });
+
+  it('prevents prompting extend for expired notification and allows active notification', () => {
+    const hook = renderHookHelper();
+
+    hook.handleExtendPrompt({
+      id: 'expired-1',
+      status: 'EXPIRED',
+    });
+
+    expect(hook.extendConfirmItem).toBeNull();
+    expect(toast.error).toHaveBeenCalledWith('Muddati tugagan xabarni uzaytirib bo‘lmaydi');
+
+    vi.clearAllMocks();
+    const activeItem = {
+      id: 'active-2',
+      status: 'ACTIVE',
+      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+    };
+
+    hook.handleExtendPrompt(activeItem);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
 });

@@ -55,4 +55,22 @@ describe('PlatformDesktopTargetStep', () => {
     expect(html).toContain('disabled=""');
     expect(html).toContain('Tez kunda');
   });
+
+  it('keeps targetSelect button disabled with Tez kunda badge even when targetScope is SELECT', () => {
+    const selectProps = { ...mockProps, targetScope: 'SELECT' };
+    const html = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: selectProps }));
+
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('Tez kunda');
+  });
+
+  it('hides online count note when onlineRegistersCount is 0 or null', () => {
+    const zeroOnlineProps = { ...mockProps, onlineRegistersCount: 0 };
+    const htmlZero = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: zeroOnlineProps }));
+    expect(htmlZero).not.toContain('Hozir onlayn: 0');
+
+    const nullOnlineProps = { ...mockProps, onlineRegistersCount: null };
+    const htmlNull = renderToStaticMarkup(React.createElement(PlatformDesktopTargetStep, { p: nullOnlineProps }));
+    expect(htmlNull).not.toContain('Hozir onlayn');
+  });
 });

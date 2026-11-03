@@ -29,7 +29,11 @@ export default function PlatformDesktopNotificationDrawerFooter({
           disabled={isExpired}
           onClick={() => {
             if (isExpired) return;
-            p.handleExtend(item);
+            if (p.handleExtendPrompt) {
+              p.handleExtendPrompt(item);
+            } else {
+              p.handleExtend(item);
+            }
           }}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-semibold transition-colors ${
             isExpired

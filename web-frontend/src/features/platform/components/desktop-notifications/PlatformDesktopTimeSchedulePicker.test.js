@@ -47,4 +47,14 @@ describe('PlatformDesktopTimeSchedulePicker', () => {
     expect(html).toContain('Rejalashtirish');
     expect(html).not.toContain('Xabar saqlangandan');
   });
+
+  it('keeps sendSchedule button disabled with Tez kunda badge even in SCHEDULED mode', () => {
+    const scheduledProps = { ...mockProps, scheduleType: 'SCHEDULED' };
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformDesktopTimeSchedulePicker, { p: scheduledProps })
+    );
+
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('Tez kunda');
+  });
 });

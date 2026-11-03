@@ -6,6 +6,20 @@
 
 export const MAX_TIMELINE_LENGTH = 3800;
 
+const SOURCE_LABELS = {
+  contacts: 'Bog\'lanish sahifasi',
+  footer: 'Pastki qism (footer)',
+  hero: 'Asosiy sahifa (hero)',
+  pricing: 'Tariflar sahifasi',
+  demo: 'Demo so\'rovi',
+};
+
+export function formatLeadSource(source) {
+  if (!source) return 'Sayt';
+  const key = String(source).trim().toLowerCase();
+  return SOURCE_LABELS[key] || source;
+}
+
 export function resolveCurrentAuthor(user) {
   if (!user) return 'Administrator';
   const nameParts = [user.firstName, user.lastName].filter(Boolean);
@@ -43,12 +57,13 @@ export function getLeadWaitUrgency(lead, now = new Date()) {
 }
 
 export function parseLeadTimeline(managerNote, lead) {
+  const sourceLabel = formatLeadSource(lead?.source);
   const initial = lead?.createdAt
     ? [{
         id: 'initial',
         type: 'created',
         author: 'Sayt',
-        text: `Ariza saytdan keldi · ${lead.source || 'sayt'}`,
+        text: `Ariza saytdan keldi · ${sourceLabel}`,
         at: lead.createdAt,
       }]
     : [];
@@ -108,11 +123,11 @@ export function appendLeadTimelineEvent(currentNote, event, options = {}) {
   };
 
   const updated = [newEntry, ...existing];
+  const serialized = JSON.stringify(updated);
 
-  // Length safety guard: trim oldest events if exceeding maxLength
-  while (JSON.stringify(updated).length > maxLength && updated.length > 1) {
-    updated.pop();
+  if (serialized.length > maxLength) {
+    throw new Error('Izohlar tarixi maksimal chegaradan (3800 belgi) oshib ketdi. Eski tarixni saqlash uchun yangi izohni qisqaroq yozing.');
   }
 
-  return JSON.stringify(updated);
+  return serialized;
 }

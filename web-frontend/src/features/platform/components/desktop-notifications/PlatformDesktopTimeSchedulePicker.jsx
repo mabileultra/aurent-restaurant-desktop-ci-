@@ -26,24 +26,18 @@ export default function PlatformDesktopTimeSchedulePicker({ p }) {
         >
           {t('platform.desktopNotifications.sendNow')}
         </button>
+        {/* Permanently disabled "Tez kunda" button */}
         <button
           type="button"
-          disabled={!isScheduled}
-          onClick={() => p.setScheduleType('SCHEDULED')}
-          aria-pressed={isScheduled}
-          className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${
-            isScheduled
-              ? 'border-emerald-600 bg-emerald-50 text-emerald-700 dark:border-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-300 shadow-xs cursor-pointer'
-              : 'border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500 opacity-60 cursor-not-allowed'
-          }`}
+          disabled={true}
+          aria-disabled="true"
+          className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500 opacity-60 cursor-not-allowed transition-all"
           title={t('platform.desktopNotifications.comingSoonBackend', { defaultValue: 'Tez kunda (Backend kutilmoqda)' })}
         >
           <span>{t('platform.desktopNotifications.sendSchedule')}</span>
-          {!isScheduled && (
-            <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-              {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
-            </span>
-          )}
+          <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            {t('platform.desktopNotifications.comingSoon', { defaultValue: 'Tez kunda' })}
+          </span>
         </button>
       </div>
 

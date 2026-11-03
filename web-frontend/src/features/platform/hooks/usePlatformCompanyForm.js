@@ -43,7 +43,7 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
 
       if (companyId && businessTypeIds.length > 0) {
         try {
-          await companyBusinessTypeApi.assign(companyId, {
+          await companyBusinessTypeApi.setForCompany(companyId, {
             typeIds: businessTypeIds,
             defaultTypeId: defaultBusinessTypeId ?? businessTypeIds[0],
           });

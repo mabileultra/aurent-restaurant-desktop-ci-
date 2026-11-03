@@ -96,6 +96,8 @@ export function useDesktopNotificationActions({
     await handleRevoke(itemToRevoke);
   }, [revokeConfirmItem, handleRevoke]);
 
+  const [extendConfirmItem, setExtendConfirmItem] = useState(null);
+
   const handleExtend = useCallback(
     async (targetItem) => {
       const item = targetItem ?? selectedItemForDrawer;
@@ -134,15 +136,45 @@ export function useDesktopNotificationActions({
     [selectedItemForDrawer, t, queryClient]
   );
 
+  const handleExtendPrompt = useCallback(
+    (item) => {
+      const target = item ?? selectedItemForDrawer;
+      const isExpired =
+        target?.status === 'EXPIRED' ||
+        (target?.expiresAt && new Date(target.expiresAt).getTime() <= Date.now());
+      if (isExpired) {
+        toast.error(
+          t('platform.desktopNotifications.cannotExtendExpired', {
+            defaultValue: 'Muddati tugagan xabarni uzaytirib bo‘lmaydi',
+          })
+        );
+        return;
+      }
+      setExtendConfirmItem(target);
+    },
+    [selectedItemForDrawer, t]
+  );
+
+  const handleConfirmExtend = useCallback(async () => {
+    if (!extendConfirmItem?.id) return;
+    const itemToExtend = extendConfirmItem;
+    setExtendConfirmItem(null);
+    await handleExtend(itemToExtend);
+  }, [extendConfirmItem, handleExtend]);
+
   return {
     selectedItemForDrawer,
     setSelectedItemForDrawer,
     revokeConfirmItem,
     setRevokeConfirmItem,
+    extendConfirmItem,
+    setExtendConfirmItem,
     handleDuplicate,
     handleRevoke,
     handleRevokePrompt,
     handleConfirmRevoke,
     handleExtend,
+    handleExtendPrompt,
+    handleConfirmExtend,
   };
 }

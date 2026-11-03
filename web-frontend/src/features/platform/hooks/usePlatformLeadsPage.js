@@ -9,6 +9,7 @@ import {
   getLeadWaitUrgency,
   resolveCurrentAuthor,
 } from '../utils/leadTimelineUtils';
+import { calculateLeadCounts, filterAndSortLeads } from '../utils/leadFilterUtils';
 import { convertLeadToCompanyTransaction } from '../utils/leadConvertService';
 
 export function usePlatformLeadsPage() {
@@ -21,6 +22,7 @@ export function usePlatformLeadsPage() {
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const [viewMode, setViewMode] = useState('split');
   const [convertTargetLead, setConvertTargetLead] = useState(null);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
 
   const queryParams = useMemo(
     () => ({
@@ -37,32 +39,8 @@ export function usePlatformLeadsPage() {
   });
 
   const rawRows = data?.content ?? [];
-
-  const counts = useMemo(() => {
-    const res = { ALL: rawRows.length, NEW: 0, IN_PROGRESS: 0, DONE: 0, REJECTED: 0 };
-    rawRows.forEach((r) => {
-      if (r.status && typeof res[r.status] === 'number') {
-        res[r.status] += 1;
-      }
-    });
-    return res;
-  }, [rawRows]);
-
-  const rows = useMemo(() => {
-    let list = rawRows;
-    if (status) {
-      list = list.filter((r) => r.status === status);
-    }
-    if (leadType) {
-      list = list.filter((r) => r.leadType === leadType);
-    }
-    return [...list].sort((a, b) => {
-      const uA = getLeadWaitUrgency(a).isUrgent ? 1 : 0;
-      const uB = getLeadWaitUrgency(b).isUrgent ? 1 : 0;
-      if (uA !== uB) return uB - uA;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-  }, [rawRows, status, leadType]);
+  const counts = useMemo(() => calculateLeadCounts(rawRows), [rawRows]);
+  const rows = useMemo(() => filterAndSortLeads(rawRows, { status, leadType }), [rawRows, status, leadType]);
 
   const selectedLead = useMemo(() => {
     if (selectedLeadId) {
@@ -108,11 +86,26 @@ export function usePlatformLeadsPage() {
         author,
       });
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       invalidate();
       setViewMode('split');
       setConvertTargetLead(null);
-      toast.success('Kompaniya, filial va admin muvaffaqiyatli yaratildi');
+
+      if (res?.credentials) {
+        setCreatedCredentials(res.credentials);
+      }
+
+      if (res?.storeError && res?.userError) {
+        toast.error(`Kompaniya yaratildi, ammo filial (${res.storeError}) va admin (${res.userError}) yaratilmadi`);
+      } else if (res?.storeError) {
+        toast.error(`Kompaniya va admin yaratildi, ammo filial xatosi: ${res.storeError}`);
+      } else if (res?.userError) {
+        toast.error(`Kompaniya va filial yaratildi, ammo admin xatosi: ${res.userError}`);
+      } else if (res?.leadUpdateError) {
+        toast.error(`Kompaniya yaratildi, ammo ariza holati yangilanmadi: ${res.leadUpdateError}`);
+      } else {
+        toast.success('Kompaniya, filial va admin muvaffaqiyatli yaratildi');
+      }
     },
     onError: (e) => toast.error(e.response?.data?.message || e.message || t('platform.saveFailed')),
   });
@@ -176,6 +169,8 @@ export function usePlatformLeadsPage() {
     viewMode,
     setViewMode,
     convertTargetLead,
+    createdCredentials,
+    dismissCredentials: () => setCreatedCredentials(null),
     handleStatusChange,
     handleAddComment,
     handleDeleteLead: deleteMutation.mutate,

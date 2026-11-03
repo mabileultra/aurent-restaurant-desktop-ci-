@@ -4,7 +4,7 @@ import {
   getLeadWaitUrgency,
   parseLeadTimeline,
   appendLeadTimelineEvent,
-  MAX_TIMELINE_LENGTH,
+  formatLeadSource,
 } from './leadTimelineUtils';
 
 describe('leadTimelineUtils', () => {
@@ -28,11 +28,12 @@ describe('leadTimelineUtils', () => {
     expect(getLeadWaitUrgency(lead3Days, now).level).toBe('danger');
   });
 
-  it('parses lead timeline from JSON and legacy note', () => {
+  it('parses lead timeline from JSON and translates source properly', () => {
     const lead = { createdAt: '2026-11-01T10:00:00Z', source: 'contacts' };
     const emptyTimeline = parseLeadTimeline('', lead);
     expect(emptyTimeline).toHaveLength(1);
     expect(emptyTimeline[0].type).toBe('created');
+    expect(emptyTimeline[0].text).toBe('Ariza saytdan keldi · Bog\'lanish sahifasi');
 
     const legacyTimeline = parseLeadTimeline('Eski izoh matni', lead);
     expect(legacyTimeline).toHaveLength(2);
@@ -40,7 +41,7 @@ describe('leadTimelineUtils', () => {
     expect(legacyTimeline[0].at).toBe('2026-11-01T10:00:00Z');
   });
 
-  it('preserves leadCreatedAt for legacy note and trims exceeding length', () => {
+  it('preserves leadCreatedAt for legacy note and guards against history loss on length limit', () => {
     const leadCreatedAt = '2026-10-20T10:00:00Z';
     const note = appendLeadTimelineEvent('Old note', { author: 'Bobur', text: 'New note' }, { leadCreatedAt });
     const parsed = JSON.parse(note);
@@ -48,17 +49,13 @@ describe('leadTimelineUtils', () => {
     expect(parsed[0].author).toBe('Bobur');
     expect(parsed[1].at).toBe(leadCreatedAt);
 
-    // Exceeding length test
-    let giantNote = note;
-    for (let i = 0; i < 50; i++) {
-      giantNote = appendLeadTimelineEvent(
-        giantNote,
-        { author: 'Admin', text: 'Long comment test '.repeat(10) },
-        { leadCreatedAt, maxLength: 800 }
+    // Limit check: must throw error instead of silently truncating history
+    expect(() => {
+      appendLeadTimelineEvent(
+        note,
+        { author: 'Admin', text: 'Very long comment '.repeat(100) },
+        { leadCreatedAt, maxLength: 300 }
       );
-    }
-    expect(giantNote.length).toBeLessThanOrEqual(800);
-    const parsedGiant = JSON.parse(giantNote);
-    expect(parsedGiant.length).toBeGreaterThan(0);
+    }).toThrow('Izohlar tarixi maksimal chegaradan');
   });
 });

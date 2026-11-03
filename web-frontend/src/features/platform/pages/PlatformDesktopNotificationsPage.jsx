@@ -6,6 +6,7 @@ import PlatformDesktopNotificationsHistory from '../components/desktop-notificat
 import PlatformDesktopNotificationDetailDrawer from '../components/desktop-notifications/PlatformDesktopNotificationDetailDrawer';
 import PlatformDesktopConfirmModal from '../components/desktop-notifications/PlatformDesktopConfirmModal';
 import PlatformDesktopRevokeConfirmModal from '../components/desktop-notifications/PlatformDesktopRevokeConfirmModal';
+import PlatformDesktopExtendConfirmModal from '../components/desktop-notifications/PlatformDesktopExtendConfirmModal';
 import { usePlatformDesktopNotificationsPage } from '../hooks/usePlatformDesktopNotificationsPage';
 import '../../../styles/platform/desktop-notifications.css';
 
@@ -40,6 +41,9 @@ export default function PlatformDesktopNotificationsPage() {
 
       {/* Confirmation Modal before revoking from cash registers */}
       <PlatformDesktopRevokeConfirmModal p={p} />
+
+      {/* Confirmation Modal before extending notification duration */}
+      <PlatformDesktopExtendConfirmModal p={p} />
     </PageLayout>
   );
 }
