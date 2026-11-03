@@ -22,6 +22,7 @@ export default function PlatformUserStatsCards({
     {
       id: 'TOTAL',
       title: t('users.statsAll', { defaultValue: 'Jami foydalanuvchilar' }),
+      shortTitle: t('users.statsAllShort', { defaultValue: 'Jami' }),
       value: totalUsers,
       hint: hasActiveFilters
         ? t('users.statsFiltered', { defaultValue: 'Filtr bo‘yicha' })
@@ -39,6 +40,7 @@ export default function PlatformUserStatsCards({
     {
       id: 'ACTIVE',
       title: t('users.statsActive', { defaultValue: 'Faol foydalanuvchilar' }),
+      shortTitle: t('users.statsActiveShort', { defaultValue: 'Faollar' }),
       value: activeUsers,
       hint: `${activePercent}% ${t('users.statsActivePercent', { defaultValue: 'tizimda faol' })}`,
       icon: UserCheck,
@@ -53,6 +55,7 @@ export default function PlatformUserStatsCards({
     {
       id: 'MANAGEMENT',
       title: t('users.statsManagement', { defaultValue: 'Boshqaruv xodimlari' }),
+      shortTitle: t('users.statsManagementShort', { defaultValue: 'Boshqaruv' }),
       value: adminUsers,
       hint: t('users.statsManagementDesc', { defaultValue: 'Admin, menejer, operatorlar' }),
       icon: ShieldCheck,
@@ -67,6 +70,7 @@ export default function PlatformUserStatsCards({
     {
       id: 'STAFF',
       title: t('users.statsStaff', { defaultValue: 'Kassa va Operatsiya' }),
+      shortTitle: t('users.statsStaffShort', { defaultValue: 'Xodimlar' }),
       value: staffUsers,
       hint: t('users.statsStaffDesc', { defaultValue: 'Kassa, zal va oshxona' }),
       icon: Store,
@@ -105,8 +109,9 @@ export default function PlatformUserStatsCards({
             } cursor-pointer hover:shadow hover:-translate-y-0.5`}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
-                {card.title}
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <span className="sm:hidden">{card.shortTitle}</span>
+                <span className="hidden sm:inline truncate">{card.title}</span>
               </span>
               <div className={`p-2 rounded-lg shrink-0 ${card.iconBg}`}>
                 <Icon size={18} className={card.iconColor} aria-hidden />
