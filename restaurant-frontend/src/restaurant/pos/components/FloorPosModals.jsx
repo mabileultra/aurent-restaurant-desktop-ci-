@@ -164,7 +164,7 @@ export default function FloorPosModals({ p, waiterMode = false }) {
           t={p.t}
         />
       ) : null}
-      {canPay && p.paidReceipt?.sale ? (
+      {canPay && p.paidReceipt?.sale && !p.paidReceipt.cfdOnly ? (
         <RestaurantReceiptModal
           sale={p.paidReceipt.sale}
           autoPrint={Boolean(p.paidReceipt.autoPrint)}

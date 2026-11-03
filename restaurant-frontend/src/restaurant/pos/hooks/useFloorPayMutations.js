@@ -71,8 +71,12 @@ export function useFloorPayMutations({
       invalidateRecentPaid();
       playPosSound('success');
       toast.success(t('rst.order.paid'));
-      if (result?.sale && saleNeedsFiscalPrint(result.sale)) {
-        if (isCashierEscposPrintAvailable()) {
+      // Always signal guest display THANKS via paidReceipt.sale.
+      // Modal print only when fiscal needed and ESC/POS is unavailable (cfdOnly skips pane).
+      if (result?.sale) {
+        const needsFiscal = saleNeedsFiscalPrint(result.sale);
+        const escpos = needsFiscal && isCashierEscposPrintAvailable();
+        if (escpos) {
           try {
             await printFiscalReceipt({ sale: result.sale, t, useModalShell: false });
             toast.success(t('receipt.printSent'), {
@@ -89,9 +93,13 @@ export function useFloorPayMutations({
               },
             );
           }
-        } else {
-          setPaidReceipt({ sale: result.sale, autoPrint: true });
         }
+        const showPrintModal = needsFiscal && !escpos;
+        setPaidReceipt({
+          sale: result.sale,
+          autoPrint: showPrintModal,
+          cfdOnly: !showPrintModal,
+        });
       }
     },
     onError: (err) => {

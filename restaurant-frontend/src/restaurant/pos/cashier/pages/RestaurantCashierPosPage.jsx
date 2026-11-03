@@ -25,6 +25,9 @@ import '../../styles/counter-board.css';
 import '../styles/cashier-shell.css';
 import '../styles/cashier-bottom-nav.css';
 import '../../cashier-mobile/styles/cashier-mobile-shell.css';
+import '../../cashier-mobile/styles/cashier-mobile-hall.css';
+import '../../cashier-mobile/styles/cashier-mobile-nav.css';
+
 
 export default function RestaurantCashierPosPage() {
   const user = useAuthStore((s) => s.user);

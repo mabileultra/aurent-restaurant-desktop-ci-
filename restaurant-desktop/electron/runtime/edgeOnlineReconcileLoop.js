@@ -10,7 +10,9 @@ const { refreshCatalogFromCloud } = require('./edgeCatalogCloudRefresh');
 const { refreshStockFromCloud } = require('./edgeStockCloudRefresh');
 const { getOutboxCounts, flushEdgeOutbox } = require('./edgeOutboxFlush');
 const { pollAndPublishDesktopNotifications } = require('./edgeDesktopNotificationsBridge');
+const { pushHallPresence } = require('./edgeHallPresencePush');
 const { HEALTH_URL } = require('../config');
+
 
 /** Full live push/pull backup while online (Phase D). */
 const LIVE_SYNC_MS = 2_000;
@@ -112,7 +114,21 @@ function startEdgeOnlineReconcileLoop({ publishStatus, getLastStatus }) {
     });
 
     const justCameOnline = online && !wasOnline;
+    const justWentOffline = !online && wasOnline;
     wasOnline = online;
+
+    // Phones poll cloud: heartbeat while online; best-effort «switch to LAN» on drop.
+    if (liveSession && (online || justWentOffline)) {
+      try {
+        await pushHallPresence({
+          online,
+          getLastStatus,
+          force: justCameOnline || justWentOffline,
+        });
+      } catch {
+        /* next tick */
+      }
+    }
 
     // Quiet flush: on reconnect always; while online whenever queue non-empty.
     if (online && !syncInFlight && (justCameOnline || pendingOutbox > 0)) {
