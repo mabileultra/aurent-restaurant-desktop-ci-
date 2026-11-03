@@ -136,10 +136,26 @@ export default function RestaurantKitchenPage() {
     <div className={rootClass} style={zoom.rootStyle}>
       <header className="rst-pos__top">
         <div className="rst-pos__brand">
-          <span className="rst-pos__brand-name">{p.t('rst.kitchen.osTitle')}</span>
+          <span className="rst-pos__brand-name">
+            {simpleMode ? p.t('rst.kitchen.simple.title') : p.t('rst.kitchen.osTitle')}
+          </span>
           <span className="rst-pos__brand-meta">
-            {p.workspace.storeName ?? p.t('rst.floor.hall')}
-            {user?.fullName || user?.username ? ` · ${user.fullName || user.username}` : ''}
+            {simpleMode ? (
+              <>
+                {p.workspace.storeName ?? 'Aurent'}
+                {' · '}
+                <em>{p.t('rst.kitchen.hotShop')}</em>
+                {' · '}
+                {shiftLabel}
+                {' · '}
+                <span className="rst-pos__brand-live">LIVE</span>
+              </>
+            ) : (
+              <>
+                {p.workspace.storeName ?? p.t('rst.floor.hall')}
+                {user?.fullName || user?.username ? ` · ${user.fullName || user.username}` : ''}
+              </>
+            )}
           </span>
         </div>
         <div className="rst-pos__actions">
@@ -162,7 +178,7 @@ export default function RestaurantKitchenPage() {
               {p.t('rst.mobile.exit')}
             </BaseButton>
           ) : null}
-          {mobile.enabled ? null : (
+          {mobile.enabled || simpleMode ? null : (
             <span className="rst-pos__online">
               <span className="rst-pos__online-dot" aria-hidden />
               LIVE
@@ -175,38 +191,40 @@ export default function RestaurantKitchenPage() {
       </header>
 
       <div className="rst-kds-page">
-        <div className="rst-kds-top">
-          <div className="rst-kds-top__brand">
-            <div className="rst-kds-top__name">
-              <span className="rst-kds-top__mark">K</span>
-              {simpleMode ? p.t('rst.kitchen.simple.title') : p.t('rst.kitchen.osTitle')}
+        {simpleMode ? null : (
+          <div className="rst-kds-top">
+            <div className="rst-kds-top__brand">
+              <div className="rst-kds-top__name">
+                <span className="rst-kds-top__mark">K</span>
+                {p.t('rst.kitchen.osTitle')}
+              </div>
+              <div className="rst-kds-top__meta">
+                {p.workspace.storeName ?? 'Aurent'}
+                {' · '}
+                <em>{p.t('rst.kitchen.hotShop')}</em>
+                {' · '}
+                {shiftLabel}
+                {' · '}
+                <span className="rst-kds-top__live">LIVE</span>
+              </div>
             </div>
-            <div className="rst-kds-top__meta">
-              {p.workspace.storeName ?? 'Aurent'}
-              {' · '}
-              <em>{p.t('rst.kitchen.hotShop')}</em>
-              {' · '}
-              {shiftLabel}
-              {' · '}
-              <span className="rst-kds-top__live">LIVE</span>
-            </div>
-          </div>
 
-          <div className="rst-kds-stats">
-            <div className="rst-kds-stat">
-              <span>{p.t('rst.kitchen.statInWork')}</span>
-              <strong>{stats.inWork}</strong>
-            </div>
-            <div className="rst-kds-stat rst-kds-stat--late">
-              <span>{p.t('rst.kitchen.statOverdue')}</span>
-              <strong>{stats.overdue}</strong>
-            </div>
-            <div className="rst-kds-stat">
-              <span>{p.t('rst.kitchen.statReady')}</span>
-              <strong>{stats.ready}</strong>
+            <div className="rst-kds-stats">
+              <div className="rst-kds-stat">
+                <span>{p.t('rst.kitchen.statInWork')}</span>
+                <strong>{stats.inWork}</strong>
+              </div>
+              <div className="rst-kds-stat rst-kds-stat--late">
+                <span>{p.t('rst.kitchen.statOverdue')}</span>
+                <strong>{stats.overdue}</strong>
+              </div>
+              <div className="rst-kds-stat">
+                <span>{p.t('rst.kitchen.statReady')}</span>
+                <strong>{stats.ready}</strong>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {p.isError ? (
           <PosLoadRetry t={p.t} messageKey="rst.kitchen.loadFailed" onRetry={p.refetch} />
@@ -237,6 +255,7 @@ export default function RestaurantKitchenPage() {
         {simpleMode ? (
           <KitchenSimpleBoard
             phases={p.simplePhases}
+            stats={stats}
             now={now}
             waiterNameById={p.waiterNameById}
             canAdvance={p.canAdvance}
@@ -260,20 +279,16 @@ export default function RestaurantKitchenPage() {
           />
         )}
 
-        <footer className="rst-kds-foot">
-          <div>{simpleMode ? p.t('rst.kitchen.simple.hwLine') : p.t('rst.kitchen.hwLine')}</div>
-          <div className="rst-kds-foot__hints">
-            {simpleMode ? (
-              <span>{p.t('rst.kitchen.simple.hint')}</span>
-            ) : (
-              <>
-                <span><kbd>1-4</kbd> {p.t('rst.kitchen.hintColumns')}</span>
-                <span><kbd>Space</kbd> {p.t('rst.kitchen.hintAdvance')}</span>
-              </>
-            )}
-          </div>
-          <div>{p.t('rst.kitchen.syncOk')}</div>
-        </footer>
+        {simpleMode ? null : (
+          <footer className="rst-kds-foot">
+            <div>{p.t('rst.kitchen.hwLine')}</div>
+            <div className="rst-kds-foot__hints">
+              <span><kbd>1-4</kbd> {p.t('rst.kitchen.hintColumns')}</span>
+              <span><kbd>Space</kbd> {p.t('rst.kitchen.hintAdvance')}</span>
+            </div>
+            <div>{p.t('rst.kitchen.syncOk')}</div>
+          </footer>
+        )}
       </div>
     </div>
   );

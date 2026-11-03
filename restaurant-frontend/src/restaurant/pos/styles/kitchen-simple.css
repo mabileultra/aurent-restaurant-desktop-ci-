@@ -1,89 +1,144 @@
-/* Simple kitchen board (TV mode) — 3 color lanes, tap to advance. Uses restaurant tokens. */
+/* Simple kitchen board — one surface, 3 lanes, tap to advance. */
+
+.rst-pos--kitchen-simple .rst-pos__brand-meta {
+  max-width: min(52rem, 70vw);
+}
+
+.rst-pos--kitchen-simple .rst-pos__brand-meta em {
+  font-style: normal;
+  color: var(--rst-muted);
+}
+
+.rst-pos--kitchen-simple .rst-pos__brand-live {
+  color: var(--rst-ok);
+  font-weight: 800;
+}
+
+.rst-pos--kitchen-simple .rst-kds-page {
+  gap: 0.55rem;
+  padding-top: 0.35rem;
+}
+
+.rst-pos--kitchen-simple .rst-kds-stations {
+  gap: 0.55rem;
+}
+
+.rst-pos--kitchen-simple .rst-kds-stations button {
+  min-height: 2.75rem;
+  padding: 0.55rem 1.15rem;
+  font-size: 0.92rem;
+  font-weight: 750;
+  border-radius: 12px;
+  color: var(--rst-ink);
+  background: var(--rst-surface-2);
+  border-color: var(--rst-line);
+}
+
+.rst-pos--kitchen-simple .rst-kds-stations button.is-active {
+  color: var(--rst-ink);
+  background: color-mix(in srgb, var(--rst-ok) 16%, var(--rst-surface-2));
+  border-color: color-mix(in srgb, var(--rst-ok) 35%, var(--rst-line));
+  box-shadow: none;
+}
 
 .rst-ks {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0;
   min-height: 0;
   flex: 1;
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: var(--rst-surface);
+  overflow: hidden;
 }
 
 .rst-ks__lane {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-radius: var(--rst-radius-lg);
-  border: 1px solid var(--rst-line);
-  background: var(--rst-surface);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   overflow: hidden;
 }
 
-.rst-ks__lane--ARRIVED {
-  border-color: rgb(255 159 10 / 0.45);
-  box-shadow: inset 0 0 0 1px rgb(255 159 10 / 0.08);
-}
-
-.rst-ks__lane--COOKING {
-  border-color: rgb(100 210 255 / 0.45);
-  box-shadow: inset 0 0 0 1px rgb(100 210 255 / 0.08);
-}
-
-.rst-ks__lane--READY {
-  border-color: rgb(48 209 88 / 0.5);
-  box-shadow: inset 0 0 0 1px rgb(48 209 88 / 0.1);
+.rst-ks__lane + .rst-ks__lane {
+  border-left: 1px solid var(--rst-line);
 }
 
 .rst-ks__lane-title {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: baseline;
+  column-gap: 0.55rem;
+  row-gap: 0.15rem;
   margin: 0;
-  padding: 0.75rem 0.85rem;
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  padding: 0.85rem 1rem 0.7rem;
   border-bottom: 1px solid var(--rst-line);
+  background: transparent;
 }
 
-.rst-ks__lane--ARRIVED .rst-ks__lane-title {
-  color: var(--rst-occupied);
-  background: var(--rst-occupied-bg);
-}
-
-.rst-ks__lane--COOKING .rst-ks__lane-title {
-  color: var(--rst-reserved);
-  background: var(--rst-reserved-bg);
-}
-
-.rst-ks__lane--READY .rst-ks__lane-title {
-  color: var(--rst-ok);
-  background: var(--rst-ok-soft);
-}
-
-.rst-ks__lane-dot {
-  width: 0.65rem;
-  height: 0.65rem;
-  border-radius: 999px;
-  background: currentColor;
-  box-shadow: 0 0 10px currentColor;
+.rst-ks__lane-label {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
 }
 
 .rst-ks__lane-count {
-  margin-left: auto;
-  min-width: 1.6rem;
-  padding: 0.1rem 0.45rem;
-  border-radius: 999px;
-  text-align: center;
-  font-size: 0.85rem;
-  background: rgb(0 0 0 / 0.28);
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  margin: 0;
+  min-width: 1.75rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: right;
+  font-size: 1.55rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: var(--rst-ink);
+  line-height: 1;
+}
+
+.rst-ks__lane-title--late .rst-ks__lane-count {
+  color: var(--rst-blocked);
+}
+
+.rst-ks__lane-phase {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.rst-ks__lane--ARRIVED .rst-ks__lane-phase {
+  color: var(--rst-occupied);
+}
+
+.rst-ks__lane--COOKING .rst-ks__lane-phase {
+  color: var(--rst-reserved);
+}
+
+.rst-ks__lane--READY .rst-ks__lane-phase {
+  color: var(--rst-ok);
 }
 
 .rst-ks__cards {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  padding: 0.7rem;
+  padding: 0.75rem 0.85rem;
   overflow: auto;
   min-height: 0;
   flex: 1;
@@ -263,5 +318,10 @@
 @media (max-width: 960px) {
   .rst-ks {
     grid-template-columns: 1fr;
+  }
+
+  .rst-ks__lane + .rst-ks__lane {
+    border-left: 0;
+    border-top: 1px solid var(--rst-line);
   }
 }

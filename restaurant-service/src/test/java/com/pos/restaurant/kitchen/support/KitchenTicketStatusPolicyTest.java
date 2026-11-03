@@ -14,6 +14,7 @@ class KitchenTicketStatusPolicyTest {
     @Test
     void allowsForwardFlow() {
         assertDoesNotThrow(() -> policy.assertTransition(KitchenTicketStatus.NEW, KitchenTicketStatus.ACCEPTED));
+        assertDoesNotThrow(() -> policy.assertTransition(KitchenTicketStatus.NEW, KitchenTicketStatus.PREPARING));
         assertDoesNotThrow(() -> policy.assertTransition(KitchenTicketStatus.ACCEPTED, KitchenTicketStatus.PREPARING));
         assertDoesNotThrow(() -> policy.assertTransition(KitchenTicketStatus.PREPARING, KitchenTicketStatus.READY));
         assertDoesNotThrow(() -> policy.assertTransition(KitchenTicketStatus.READY, KitchenTicketStatus.SERVED));
