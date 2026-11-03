@@ -5,6 +5,7 @@ import com.pos.platform.client.dto.CompanyStoreCountMap;
 import com.pos.platform.client.dto.CompanyStoreCountResponse;
 import com.pos.platform.client.dto.CompanyStoreCountsResponse;
 import com.pos.platform.client.dto.CompanySyncRequest;
+import com.pos.platform.client.dto.CompanyUserCountResponse;
 import com.pos.shared.log.LogUtil;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -54,6 +55,16 @@ public class PosCoreClient {
             .retrieve()
             .body(CompanyStoreCountResponse.class);
         return response != null ? response.storeCount() : 0;
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public int getUserCount(Integer companyId) {
+        CompanyUserCountResponse response = posCoreRestClient.get()
+            .uri("/internal/platform/companies/{id}/user-count", companyId)
+            .retrieve()
+            .body(CompanyUserCountResponse.class);
+        return response != null ? response.userCount() : 0;
     }
 
     public int getStoreCountOrZero(Integer companyId) {

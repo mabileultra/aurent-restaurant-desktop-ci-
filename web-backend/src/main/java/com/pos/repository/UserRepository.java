@@ -60,4 +60,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     List<User> findByCompanyIdWithDetails(@Param("companyId") Integer companyId);
 
     List<User> findByCompany_IdAndPinDigest(Integer companyId, String pinDigest);
+
+    long countByCompany_Id(Integer companyId);
 }

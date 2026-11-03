@@ -15,6 +15,7 @@ import com.pos.platform.repository.spec.CompanySpecifications;
 import com.pos.platform.service.CompanyService;
 import com.pos.platform.service.support.CompanySyncSupport;
 import com.pos.platform.service.support.GeoLocationSupport;
+import com.pos.platform.support.CompanyTinValidator;
 import com.pos.platform.util.BusinessTypeParser;
 import com.pos.platform.util.CompanyLoginCodeUtil;
 import com.pos.shared.log.LogUtil;
@@ -42,6 +43,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanySyncSupport companySyncSupport;
     private final GeoLocationSupport geoLocationSupport;
     private final PosCoreClient posCoreClient;
+    private final CompanyTinValidator companyTinValidator;
 
     @Override
     public PageResponse<CompanyResponse> list(
@@ -94,7 +96,7 @@ public class CompanyServiceImpl implements CompanyService {
             .name(name)
             .loginCode(loginCode)
             .legalName(TextUtil.trimOrNull(request.legalName()))
-            .tin(TextUtil.trimOrNull(request.tin()))
+            .tin(companyTinValidator.normalizeAndValidateUnique(request.tin(), null))
             .address(TextUtil.trimOrNull(request.address()))
             .regionCode(regionCode)
             .districtCode(districtCode)
@@ -120,7 +122,9 @@ public class CompanyServiceImpl implements CompanyService {
             company.setName(name);
         }
         if (request.legalName() != null) company.setLegalName(TextUtil.trimOrNull(request.legalName()));
-        if (request.tin() != null) company.setTin(TextUtil.trimOrNull(request.tin()));
+        if (request.tin() != null) {
+            company.setTin(companyTinValidator.normalizeAndValidateUnique(request.tin(), id));
+        }
         if (request.address() != null) company.setAddress(TextUtil.trimOrNull(request.address()));
         if (request.phone() != null) company.setPhone(TextUtil.trimOrNull(request.phone()));
         if (request.businessType() != null) {
@@ -151,6 +155,14 @@ public class CompanyServiceImpl implements CompanyService {
                 "Нельзя удалить компанию: привязано магазинов — "
                     + storeCount
                     + ". Сначала удалите или отвяжите магазины (Платформа → Магазины), затем повторите."
+            );
+        }
+        int userCount = posCoreClient.getUserCount(id);
+        if (userCount > 0) {
+            throw new BadRequestException(
+                "Нельзя удалить компанию: привязано пользователей — "
+                    + userCount
+                    + ". Сначала деактивируйте или перенесите пользователей, затем повторите."
             );
         }
         companyRepository.delete(company);

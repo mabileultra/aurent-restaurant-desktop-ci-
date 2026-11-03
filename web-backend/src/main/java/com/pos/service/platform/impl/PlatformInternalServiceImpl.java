@@ -4,8 +4,10 @@ import com.pos.dto.platform.internal.CompanyStoreCountItem;
 import com.pos.dto.platform.internal.CompanyStoreCountResponse;
 import com.pos.dto.platform.internal.CompanyStoreCountsResponse;
 import com.pos.dto.platform.internal.CompanySyncRequest;
+import com.pos.dto.platform.internal.CompanyUserCountResponse;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.StoreRepository;
+import com.pos.repository.UserRepository;
 import com.pos.service.platform.PlatformCompanySyncService;
 import com.pos.service.platform.PlatformInternalService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.List;
 public class PlatformInternalServiceImpl implements PlatformInternalService {
 
     private final StoreRepository storeRepository;
+    private final UserRepository userRepository;
     private final PlatformCompanySyncService platformCompanySyncService;
 
     @Override
@@ -29,6 +32,14 @@ public class PlatformInternalServiceImpl implements PlatformInternalService {
             throw PosExceptions.badRequest("companyId is required");
         }
         return new CompanyStoreCountResponse((int) storeRepository.countByCompanyId(companyId));
+    }
+
+    @Override
+    public CompanyUserCountResponse userCount(Integer companyId) {
+        if (companyId == null) {
+            throw PosExceptions.badRequest("companyId is required");
+        }
+        return new CompanyUserCountResponse((int) userRepository.countByCompany_Id(companyId));
     }
 
     @Override

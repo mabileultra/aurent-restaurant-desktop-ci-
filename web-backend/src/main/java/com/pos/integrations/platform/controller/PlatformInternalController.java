@@ -4,6 +4,7 @@ import com.pos.dto.platform.internal.CashRegisterStatsResponse;
 import com.pos.dto.platform.internal.CompanyStoreCountResponse;
 import com.pos.dto.platform.internal.CompanyStoreCountsResponse;
 import com.pos.dto.platform.internal.CompanySyncRequest;
+import com.pos.dto.platform.internal.CompanyUserCountResponse;
 import com.pos.service.platform.CashRegisterPlatformStatsService;
 import com.pos.service.platform.PlatformInternalService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -31,6 +32,11 @@ public class PlatformInternalController {
     @GetMapping("/companies/{id}/store-count")
     public ResponseEntity<CompanyStoreCountResponse> storeCount(@PathVariable Integer id) {
         return ResponseEntity.ok(platformInternalService.storeCount(id));
+    }
+
+    @GetMapping("/companies/{id}/user-count")
+    public ResponseEntity<CompanyUserCountResponse> userCount(@PathVariable Integer id) {
+        return ResponseEntity.ok(platformInternalService.userCount(id));
     }
 
     @GetMapping("/companies/store-counts")
