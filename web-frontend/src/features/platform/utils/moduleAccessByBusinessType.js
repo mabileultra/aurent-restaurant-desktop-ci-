@@ -11,6 +11,7 @@ const RESTAURANT_MODULE_IDS = new Set([
   'restaurantRequestBill',
   'restaurantPickupLabel',
   'restaurantCustomerDisplay',
+  'restaurantReadyDisplay',
   'restaurantQuickSale',
 ]);
 

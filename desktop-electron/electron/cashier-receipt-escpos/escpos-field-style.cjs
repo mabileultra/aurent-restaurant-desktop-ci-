@@ -47,7 +47,8 @@ function withFieldStyle(printer, styles, key, printFn) {
   const st = resolveFieldStyle(styles, key);
   const large = st.sizePct >= 125;
   const small = st.sizePct <= 85;
-  const wantBold = st.boldPct >= 40 || large;
+  // Any positive жирность % must print bold (UI is 0–100; old threshold 40 looked “broken”).
+  const wantBold = st.boldPct > 0 || large;
 
   if (st.align === 'center' && typeof printer.alignCenter === 'function') printer.alignCenter();
   else if (st.align === 'right' && typeof printer.alignRight === 'function') printer.alignRight();

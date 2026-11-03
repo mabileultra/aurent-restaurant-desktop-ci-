@@ -3,6 +3,7 @@
 const ROUTE_MAP = [
   { test: (p) => p.startsWith('/rst/cashier'), id: 'restaurantPos' },
   { test: (p) => p.startsWith('/rst/pos'), id: 'restaurantPos' },
+  { test: (p) => p.startsWith('/rst/ready-display'), id: 'restaurantReadyDisplay' },
   { test: (p) => p.startsWith('/rst/kitchen'), id: 'restaurantKitchen' },
   { test: (p) => p.startsWith('/rst/admin/booking'), id: 'restaurantBooking' },
   { test: (p) => p.startsWith('/rst/admin/delivery'), id: 'restaurantDelivery' },
@@ -36,6 +37,7 @@ export const CASHIER_MODULE_IDS = [
   { id: 'restaurantRequestBill', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
   { id: 'restaurantPickupLabel', group: 'restaurant', roles: [] },
   { id: 'restaurantCustomerDisplay', group: 'restaurant', roles: [] },
+  { id: 'restaurantReadyDisplay', group: 'restaurant', roles: [] },
   { id: 'restaurantQuickSale', group: 'restaurant', roles: [] },
   { id: 'restaurantKitchen', group: 'cashier', roles: ['COOK', 'CASHIER', 'WAITER', 'MANAGER', 'ADMIN'] },
 ];

@@ -38,6 +38,7 @@ class ModuleVisibilityTest {
         assertFalse(ModuleVisibility.visible("restaurantRequestBill", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantPickupLabel", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantCustomerDisplay", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("restaurantReadyDisplay", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantQuickSale", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantPos", "PHARMACY"));
     }
@@ -51,6 +52,7 @@ class ModuleVisibilityTest {
         assertTrue(ModuleVisibility.visible("restaurantRequestBill", businessType));
         assertTrue(ModuleVisibility.visible("restaurantPickupLabel", businessType));
         assertTrue(ModuleVisibility.visible("restaurantCustomerDisplay", businessType));
+        assertTrue(ModuleVisibility.visible("restaurantReadyDisplay", businessType));
         assertTrue(ModuleVisibility.visible("restaurantQuickSale", businessType));
         assertTrue(ModuleVisibility.visible("categories", businessType));
         assertFalse(ModuleVisibility.visible("products", businessType));
@@ -65,6 +67,7 @@ class ModuleVisibilityTest {
         assertFalse(ModuleVisibility.visible("restaurantRequestBill", "CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantPickupLabel", "CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantCustomerDisplay", "CLOTHING"));
+        assertFalse(ModuleVisibility.visible("restaurantReadyDisplay", "CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantQuickSale", "CLOTHING"));
         assertFalse(ModuleVisibility.visible("restaurantPos", "CLOTHING"));
         assertTrue(ModuleVisibility.visible("products", "CLOTHING"));

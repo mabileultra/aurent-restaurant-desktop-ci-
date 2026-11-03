@@ -1,0 +1,267 @@
+/* Simple kitchen board (TV mode) — 3 color lanes, tap to advance. Uses restaurant tokens. */
+
+.rst-ks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  min-height: 0;
+  flex: 1;
+}
+
+.rst-ks__lane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: var(--rst-radius-lg);
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  overflow: hidden;
+}
+
+.rst-ks__lane--ARRIVED {
+  border-color: rgb(255 159 10 / 0.45);
+  box-shadow: inset 0 0 0 1px rgb(255 159 10 / 0.08);
+}
+
+.rst-ks__lane--COOKING {
+  border-color: rgb(100 210 255 / 0.45);
+  box-shadow: inset 0 0 0 1px rgb(100 210 255 / 0.08);
+}
+
+.rst-ks__lane--READY {
+  border-color: rgb(48 209 88 / 0.5);
+  box-shadow: inset 0 0 0 1px rgb(48 209 88 / 0.1);
+}
+
+.rst-ks__lane-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--rst-line);
+}
+
+.rst-ks__lane--ARRIVED .rst-ks__lane-title {
+  color: var(--rst-occupied);
+  background: var(--rst-occupied-bg);
+}
+
+.rst-ks__lane--COOKING .rst-ks__lane-title {
+  color: var(--rst-reserved);
+  background: var(--rst-reserved-bg);
+}
+
+.rst-ks__lane--READY .rst-ks__lane-title {
+  color: var(--rst-ok);
+  background: var(--rst-ok-soft);
+}
+
+.rst-ks__lane-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.rst-ks__lane-count {
+  margin-left: auto;
+  min-width: 1.6rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.85rem;
+  background: rgb(0 0 0 / 0.28);
+}
+
+.rst-ks__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.7rem;
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.rst-ks-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.75rem 0.8rem;
+  border-radius: var(--rst-radius);
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+}
+
+.rst-ks-card--ARRIVED {
+  border-color: rgb(255 159 10 / 0.4);
+  box-shadow: var(--rst-glow-occupied);
+}
+
+.rst-ks-card--COOKING {
+  border-color: rgb(100 210 255 / 0.4);
+  box-shadow: var(--rst-glow-reserved);
+}
+
+.rst-ks-card--READY {
+  border-color: rgb(48 209 88 / 0.45);
+  box-shadow: var(--rst-glow-free);
+}
+
+.rst-ks-card.is-overdue {
+  border-color: var(--rst-blocked);
+  box-shadow: var(--rst-glow-blocked);
+}
+
+.rst-ks-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rst-ks-card__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.55rem;
+  min-width: 0;
+}
+
+.rst-ks-card__no {
+  font-size: 1.45rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.rst-ks-card__place,
+.rst-ks-card__zone {
+  color: var(--rst-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.rst-ks-card__timer {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--rst-muted);
+}
+
+.rst-ks-card__timer.is-late {
+  color: var(--rst-blocked);
+}
+
+.rst-ks-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.rst-ks-card__phase-pill {
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+}
+
+.rst-ks-card--ARRIVED .rst-ks-card__phase-pill {
+  color: var(--rst-occupied);
+  background: var(--rst-occupied-bg);
+}
+
+.rst-ks-card--COOKING .rst-ks-card__phase-pill {
+  color: var(--rst-reserved);
+  background: var(--rst-reserved-bg);
+}
+
+.rst-ks-card--READY .rst-ks-card__phase-pill {
+  color: var(--rst-ok);
+  background: var(--rst-ok-soft);
+}
+
+.rst-ks-card__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rst-ks-card__lines li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.92rem;
+}
+
+.rst-ks-card__lines strong {
+  font-weight: 750;
+}
+
+.rst-ks-card__lines em,
+.rst-ks-card__note {
+  color: var(--rst-muted);
+  font-style: normal;
+  font-size: 0.78rem;
+}
+
+.rst-ks-card__cta {
+  min-height: 48px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.12s ease;
+}
+
+.rst-ks-card__cta:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.rst-ks-card__cta:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.rst-ks-card__cta:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.rst-ks-card__cta--ARRIVED {
+  color: #1a1005;
+  background: var(--rst-occupied);
+}
+
+.rst-ks-card__cta--COOKING {
+  color: #041018;
+  background: var(--rst-reserved);
+}
+
+.rst-ks-card__cta--READY {
+  color: #04140a;
+  background: var(--rst-ok);
+}
+
+@media (max-width: 960px) {
+  .rst-ks {
+    grid-template-columns: 1fr;
+  }
+}

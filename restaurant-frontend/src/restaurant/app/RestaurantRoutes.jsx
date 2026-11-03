@@ -8,6 +8,7 @@ import RestaurantDesktopPrintHost from './RestaurantDesktopPrintHost';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import ProtectedRoute from '../../router/guards/ProtectedRoute';
 import { TenantBillingPage } from '../../router/lazyPages';
+import HallLanFailoverHost from '../hall-lan/HallLanFailoverHost';
 import HallsAdminPage from '../admin/pages/HallsAdminPage';
 import MenuAdminPage from '../admin/pages/MenuAdminPage';
 import MenuCategoriesAdminPage from '../admin/pages/MenuCategoriesAdminPage';
@@ -32,6 +33,7 @@ import RestaurantFloorPosPage from '../pos/pages/RestaurantFloorPosPage';
 import RestaurantCashierPosPage from '../pos/cashier/pages/RestaurantCashierPosPage';
 import RestaurantKitchenPage from '../pos/pages/RestaurantKitchenPage';
 import CustomerDisplayPage from '../customer-display/pages/CustomerDisplayPage';
+import ReadyDisplayPage from '../ready-display/pages/ReadyDisplayPage';
 import RestaurantCashierGuard from './RestaurantCashierGuard';
 import RstCatalogProductsPage from '../admin/pages/RstCatalogProductsPage';
 import RstCategoriesPage from '../admin/pages/RstCategoriesPage';
@@ -56,6 +58,7 @@ export const restaurantRoutes = (
       <RestaurantAuthGuard>
         <>
           <RestaurantDesktopPrintHost />
+          <HallLanFailoverHost />
           <Outlet />
         </>
       </RestaurantAuthGuard>
@@ -97,6 +100,14 @@ export const restaurantRoutes = (
       element={(
         <BillingAccessGuard>
           <CustomerDisplayPage />
+        </BillingAccessGuard>
+      )}
+    />
+    <Route
+      path="ready-display"
+      element={(
+        <BillingAccessGuard>
+          <ReadyDisplayPage />
         </BillingAccessGuard>
       )}
     />

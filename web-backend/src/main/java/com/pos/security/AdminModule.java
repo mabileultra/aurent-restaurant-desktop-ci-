@@ -59,6 +59,8 @@ public enum AdminModule {
     /** Cafe pickup sticker. Off until Super Admin grants it. */
     RESTAURANT_PICKUP_LABEL("restaurantPickupLabel", "restaurant", Set.of()),
     RESTAURANT_CUSTOMER_DISPLAY("restaurantCustomerDisplay", "restaurant", Set.of()),
+    /** Kitchen TV: order numbers cooking → ready. Off until Super Admin grants it. */
+    RESTAURANT_READY_DISPLAY("restaurantReadyDisplay", "restaurant", Set.of()),
     RESTAURANT_QUICK_SALE("restaurantQuickSale", "restaurant", Set.of()),
     RESTAURANT_BOOKING("restaurantBooking", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
     RESTAURANT_DELIVERY("restaurantDelivery", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),

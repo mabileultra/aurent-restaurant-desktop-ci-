@@ -8,6 +8,10 @@ import { rstShiftApi } from '../../api/shift.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
+import {
+  groupTicketsBySimplePhase,
+  nextSimpleStatus,
+} from '../utils/kitchenSimpleBoard';
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
 import { playPosSound } from '../utils/posSounds';
@@ -31,7 +35,11 @@ function readStoredStation(storeId) {
   }
 }
 
-export function useKitchenPosPage() {
+/**
+ * @param {{ simpleMode?: boolean }} [options]
+ * simpleMode — TV kitchen: 2 taps (arrived→cooking→ready), skips ACCEPTED column.
+ */
+export function useKitchenPosPage({ simpleMode = false } = {}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -174,6 +182,10 @@ export function useKitchenPosPage() {
   }, [workspace.storeId, stationFilter]);
 
   const columns = groupTicketsByStatus(tickets);
+  const simplePhases = useMemo(
+    () => groupTicketsBySimplePhase(tickets),
+    [tickets],
+  );
 
   const stations = stationsQuery.data ?? [];
 
@@ -181,6 +193,8 @@ export function useKitchenPosPage() {
     t,
     workspace,
     columns,
+    simplePhases,
+    tickets,
     stations,
     stationFilter,
     setStationFilter,
@@ -197,8 +211,11 @@ export function useKitchenPosPage() {
     canAdmin: user?.role === 'ADMIN' || user?.role === 'MANAGER',
     kitchenBoardEnabled,
     kitchenBoardLoading: kitchenBoardQuery.isLoading,
+    simpleMode,
     advance: (ticket) => {
-      const next = NEXT_TICKET_STATUS[ticket.status];
+      const next = simpleMode
+        ? nextSimpleStatus(ticket)
+        : NEXT_TICKET_STATUS[ticket.status];
       if (!next) return;
       statusMutation.mutate({ ticketId: ticket.id, status: next });
     },

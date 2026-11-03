@@ -969,6 +969,18 @@
       "sortSeatsDesc": "Amount high to low",
       "sortSeatsAsc": "Amount low to high"
     },
+    "readyDisplay": {
+      "brand": "Aurent Restaurant",
+      "title": "Order board",
+      "open": "Kitchen TV",
+      "denied": "Order board is off. Enable «Kitchen TV» for this user in Super Admin.",
+      "cooking": "Preparing",
+      "cookingHint": "Orders in the kitchen",
+      "cookingEmpty": "No orders cooking",
+      "ready": "Ready",
+      "readyHint": "Ready for pickup",
+      "readyEmpty": "Nothing ready yet"
+    },
     "cfd": {
       "brand": "Aurent Restaurant",
       "open": "Customer display",
@@ -1046,7 +1058,8 @@
       "kpiGuests": "Guests",
       "kpiKitchen": "Kitchen",
       "kpiOrders": "Orders",
-      "kpiSales": "Sales",
+      "kpiSales": "Sales · {{period}}",
+      "kpiSalesFallback": "Sales",
       "kpiTables": "Tables",
       "liveKitchenEmpty": "Kitchen queue is empty",
       "liveKitchenTitle": "Kitchen now",
@@ -1064,7 +1077,9 @@
       "recentOrdersTitle": "Recent orders",
       "revenue": "Revenue",
       "shiftClosed": "Shift closed",
+      "shiftClosedWithDay": "Shift closed · {{period}}: {{revenue}}",
       "shiftOpen": "Shift open · {{sales}} checks · {{revenue}}",
+      "shiftVsDayHint": "Shift total only while the shift is open. «Sales» below is payments for the selected period (day/week), even after the shift is closed.",
       "showAllOrders": "Show all",
       "statusBilling": "Billing",
       "statusCancelled": "Cancelled",
@@ -1468,6 +1483,13 @@
       "exit": "Desktop view",
       "exitShort": "PC"
     },
+    "hallLan": {
+      "title": "Hall PC offline in the cloud — switch to LAN",
+      "hintWithUrl": "Join the hall Wi‑Fi and open the local PC address.",
+      "hintNoUrl": "Join the hall Wi‑Fi and open the LAN URL from the hall PC screen/log.",
+      "connect": "Connect to LAN",
+      "dismiss": "Later"
+    },
     "kitchen": {
       "action": {
         "ACCEPTED": "Start cooking",
@@ -1489,6 +1511,21 @@
       "servedCleared": "Issued — removed from the board",
       "shiftClosed": "Shift closed (open on the floor)",
       "shiftOpen": "Shift open",
+      "simple": {
+        "title": "Kitchen · simple board",
+        "hwLine": "Kitchen TV · 2 taps · color by status",
+        "hint": "Arrived → Cooking → Ready (on TV). No dragging.",
+        "phase": {
+          "ARRIVED": "Arrived",
+          "COOKING": "Cooking",
+          "READY": "Ready"
+        },
+        "action": {
+          "ARRIVED": "Start cooking",
+          "COOKING": "Mark ready",
+          "READY": "Served"
+        }
+      },
       "statInWork": "In progress",
       "statOverdue": "Overdue",
       "statReady": "Ready to serve",

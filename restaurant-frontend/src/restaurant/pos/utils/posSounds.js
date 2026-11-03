@@ -61,6 +61,12 @@ const PATTERNS = {
     { f: 880, d: 0.09, g: 0.18 },
     { f: 1175, d: 0.12, g: 0.16, gap: 0.05 },
   ],
+  /** TV ready board — louder ascending chime when order moves to «Готово». */
+  ready: [
+    { f: 659, d: 0.1, g: 0.2 },
+    { f: 880, d: 0.11, g: 0.2, gap: 0.04 },
+    { f: 1175, d: 0.18, g: 0.22, gap: 0.05 },
+  ],
   success: [
     { f: 523, d: 0.08, g: 0.14 },
     { f: 784, d: 0.12, g: 0.14, gap: 0.04 },
@@ -96,7 +102,7 @@ function playSteps(ctx, kind) {
 }
 
 /**
- * @param {'kitchen'|'success'|'error'} kind
+ * @param {'kitchen'|'ready'|'success'|'error'} kind
  */
 export function playPosSound(kind) {
   if (!isPosSoundsEnabled()) return;
