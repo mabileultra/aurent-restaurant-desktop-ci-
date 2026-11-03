@@ -13,13 +13,24 @@ public interface ShiftCashMovementRepository extends JpaRepository<ShiftCashMove
 
     List<ShiftCashMovement> findByShift_IdOrderByCreatedAtAsc(UUID shiftId);
 
+    /**
+     * Net cash-in minus cash-out. Direction compared via bind param —
+     * JPQL cannot use enum literal {@code Direction.IN} ({@code IN} is a keyword).
+     */
     @Query("""
         SELECT COALESCE(SUM(
-            CASE WHEN m.direction = com.pos.sales.entity.ShiftCashMovement.Direction.IN
+            CASE WHEN m.direction = :inDirection
                  THEN m.amount ELSE -m.amount END
         ), 0)
         FROM ShiftCashMovement m
         WHERE m.shift.id = :shiftId
         """)
-    BigDecimal sumNetAmountByShiftId(@Param("shiftId") UUID shiftId);
+    BigDecimal sumNetAmountByShiftId(
+        @Param("shiftId") UUID shiftId,
+        @Param("inDirection") ShiftCashMovement.Direction inDirection
+    );
+
+    default BigDecimal sumNetAmountByShiftId(UUID shiftId) {
+        return sumNetAmountByShiftId(shiftId, ShiftCashMovement.Direction.IN);
+    }
 }
