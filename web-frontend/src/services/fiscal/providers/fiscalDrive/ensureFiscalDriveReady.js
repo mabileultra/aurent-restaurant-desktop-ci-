@@ -25,7 +25,7 @@ export async function resolveFiscalDriveFactoryId(baseUrl, factoryId) {
   const ids = parseFiscalDriveFactoryIds(await listFiscalDrives(baseUrl));
   if (ids.length === 0) {
     throw fail(
-      'FiscalDriveService не видит ФМ. Подключите модуль и проверьте службу на 127.0.0.1:3449.',
+      'Вы не можете открыть смену. Вставьте фискальный модуль.',
     );
   }
   return ids[0];

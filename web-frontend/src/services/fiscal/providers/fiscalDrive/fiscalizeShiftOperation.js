@@ -1,8 +1,31 @@
-import { closeZReport, FISCAL_DRIVE_DEFAULT_BASE_URL } from './fiscalDriveHttpClient';
+import {
+  closeZReport,
+  FISCAL_DRIVE_DEFAULT_BASE_URL,
+  listFiscalDrives,
+  parseFiscalDriveFactoryIds,
+} from './fiscalDriveHttpClient';
 import { ensureFiscalDriveReady, resolveFiscalDriveFactoryId } from './ensureFiscalDriveReady';
 import { isFiscalDriveShiftAlreadyOpenError, mapFiscalDriveError } from './mapFiscalDriveError';
 
 export { isFiscalDriveShiftAlreadyOpenError };
+
+const SHIFT_NEEDS_MODULE = 'Вы не можете открыть смену. Вставьте фискальный модуль.';
+
+function moduleMissing() {
+  const err = new Error(SHIFT_NEEDS_MODULE);
+  err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
+  return err;
+}
+
+async function assertFiscalModulePresent(baseUrl) {
+  let ids = [];
+  try {
+    ids = parseFiscalDriveFactoryIds(await listFiscalDrives(baseUrl));
+  } catch {
+    throw moduleMissing();
+  }
+  if (!ids.length) throw moduleMissing();
+}
 
 function isFiscalDriveCaps(capabilities) {
   return (
@@ -25,6 +48,7 @@ export async function fiscalizeShiftOperation({ kind, capabilities }) {
 
   try {
     if (upper === 'OPEN' || upper === 'OPEN_SHIFT') {
+      await assertFiscalModulePresent(baseUrl);
       const ready = await ensureFiscalDriveReady({
         baseUrl,
         factoryId: capabilities?.factoryId,
