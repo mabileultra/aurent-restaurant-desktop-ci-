@@ -12,13 +12,16 @@ describe('isModuleVisibleForBusinessType', () => {
     expect(isModuleVisibleForBusinessType('cashierPos', 'PHARMACY')).toBe(true);
   });
 
-  it('shows restaurant modules only for restaurant, not grocery POS', () => {
+  it('shows only restaurant admin allowlist for restaurant', () => {
     expect(isModuleVisibleForBusinessType('restaurantKitchen', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantPickupLabel', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantCustomerDisplay', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantReadyDisplay', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantQuickSale', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('products', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('stockProducts', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('stockTransfers', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantPickupLabel', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantCustomerDisplay', 'PHARMACY')).toBe(false);
@@ -30,7 +33,11 @@ describe('isModuleVisibleForBusinessType', () => {
     expect(isModuleVisibleForBusinessType('restaurantReadyDisplay', 'CLOTHING')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantQuickSale', 'CLOTHING')).toBe(false);
     expect(isModuleVisibleForBusinessType('cashierPos', 'RESTAURANT')).toBe(false);
-    expect(isModuleVisibleForBusinessType('stockTransfers', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('cashierSales', 'RESTAURANT')).toBe(false);
+    expect(isModuleVisibleForBusinessType('financeDashboard', 'RESTAURANT')).toBe(false);
+    expect(isModuleVisibleForBusinessType('registersList', 'RESTAURANT')).toBe(false);
+    expect(isModuleVisibleForBusinessType('reportsSales', 'RESTAURANT')).toBe(false);
+    expect(isModuleVisibleForBusinessType('checkout', 'RESTAURANT')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantPos', 'UNIVERSAL')).toBe(true);
   });
 });

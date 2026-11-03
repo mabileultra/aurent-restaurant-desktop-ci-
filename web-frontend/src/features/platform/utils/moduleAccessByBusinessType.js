@@ -1,6 +1,7 @@
 /**
  * Какие модули суперадмин видит при выборе типа бизнеса.
- * UNIVERSAL / OTHER — полный список. Остальные типы не смешивают чужие миры.
+ * UNIVERSAL / OTHER — полный список.
+ * RESTAURANT / CANTEEN — только ресторанная админка (handbook), без retail POS.
  */
 const RESTAURANT_MODULE_IDS = new Set([
   'restaurantFloor',
@@ -15,14 +16,29 @@ const RESTAURANT_MODULE_IDS = new Set([
   'restaurantQuickSale',
 ]);
 
+/** Mirrors shared-kernel ModuleVisibility.RESTAURANT_ADMIN_VISIBLE */
+const RESTAURANT_ADMIN_VISIBLE = new Set([
+  'dashboard',
+  'products',
+  'categories',
+  'stockProducts',
+  'stockSuppliers',
+  'stockReceipts',
+  'stockInventories',
+  'stockTransfers',
+  'reportsStockLow',
+  'stores',
+  'usersList',
+  'usersPrinterSettings',
+  ...RESTAURANT_MODULE_IDS,
+]);
+
 const GROCERY_CATALOG_MODULE_IDS = new Set([
   'products',
   'categories',
   'scalesStation',
   'scalesPlu',
 ]);
-
-const GROCERY_POS_MODULE_IDS = new Set(['cashierPos']);
 
 const RESTAURANT_BUSINESS_TYPES = new Set(['RESTAURANT', 'CANTEEN']);
 
@@ -57,8 +73,7 @@ export function isModuleVisibleForBusinessType(moduleId, businessTypeCode) {
     return !RESTAURANT_MODULE_IDS.has(id) && !GROCERY_CATALOG_MODULE_IDS.has(id);
   }
   if (RESTAURANT_BUSINESS_TYPES.has(type)) {
-    if (id === 'categories') return true;
-    return !GROCERY_CATALOG_MODULE_IDS.has(id) && !GROCERY_POS_MODULE_IDS.has(id);
+    return RESTAURANT_ADMIN_VISIBLE.has(id);
   }
   return !RESTAURANT_MODULE_IDS.has(id);
 }

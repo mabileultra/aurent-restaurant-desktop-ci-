@@ -45,7 +45,7 @@ class ModuleVisibilityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"RESTAURANT", "canteen"})
-    void restaurantKeepsFloorAndCategoriesButHidesGroceryPos(String businessType) {
+    void restaurantShowsOnlyRestaurantAdminAllowlist(String businessType) {
         assertTrue(ModuleVisibility.allowsRestaurant(businessType));
         assertTrue(ModuleVisibility.visible("restaurantFloor", businessType));
         assertTrue(ModuleVisibility.visible("restaurantPos", businessType));
@@ -55,9 +55,19 @@ class ModuleVisibilityTest {
         assertTrue(ModuleVisibility.visible("restaurantReadyDisplay", businessType));
         assertTrue(ModuleVisibility.visible("restaurantQuickSale", businessType));
         assertTrue(ModuleVisibility.visible("categories", businessType));
-        assertFalse(ModuleVisibility.visible("products", businessType));
+        assertTrue(ModuleVisibility.visible("products", businessType));
+        assertTrue(ModuleVisibility.visible("stockProducts", businessType));
+        assertTrue(ModuleVisibility.visible("stockTransfers", businessType));
+        assertTrue(ModuleVisibility.visible("dashboard", businessType));
+        assertTrue(ModuleVisibility.visible("usersList", businessType));
         assertFalse(ModuleVisibility.visible("scalesPlu", businessType));
         assertFalse(ModuleVisibility.visible("cashierPos", businessType));
+        assertFalse(ModuleVisibility.visible("cashierSales", businessType));
+        assertFalse(ModuleVisibility.visible("registersList", businessType));
+        assertFalse(ModuleVisibility.visible("reportsSales", businessType));
+        assertFalse(ModuleVisibility.visible("financeDashboard", businessType));
+        assertFalse(ModuleVisibility.visible("checkout", businessType));
+        assertFalse(ModuleVisibility.visible("aiAssistant", businessType));
     }
 
     @Test

@@ -23,26 +23,29 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
     expect(BUSINESS_TYPE_NAMES_UZ.OTHER).toBe('Boshqa');
   });
 
-  it('matches exact backend roleDefault and scope numbers for RESTAURANT', () => {
+  it('matches restaurant admin allowlist scope/default sizes for RESTAURANT', () => {
     const adminScope = getScopeForRole('ADMIN', 'RESTAURANT');
     const adminDefaults = getDefaultModulesForRole('ADMIN', 'RESTAURANT');
-    expect(adminScope.size).toBe(60);
-    expect(adminDefaults.size).toBe(56);
+    expect(adminScope.size).toBe(21);
+    expect(adminDefaults.size).toBe(17);
+    expect(adminScope.has('financeDashboard')).toBe(false);
+    expect(adminScope.has('cashierSales')).toBe(false);
+    expect(adminScope.has('restaurantFloor')).toBe(true);
 
     const managerScope = getScopeForRole('MANAGER', 'RESTAURANT');
     const managerDefaults = getDefaultModulesForRole('MANAGER', 'RESTAURANT');
-    expect(managerScope.size).toBe(60);
-    expect(managerDefaults.size).toBe(47);
+    expect(managerScope.size).toBe(21);
+    expect(managerDefaults.size).toBe(14);
 
     const cashierScope = getScopeForRole('CASHIER', 'RESTAURANT');
     const cashierDefaults = getDefaultModulesForRole('CASHIER', 'RESTAURANT');
-    expect(cashierScope.size).toBe(12);
-    expect(cashierDefaults.size).toBe(7);
+    expect(cashierScope.size).toBe(10);
+    expect(cashierDefaults.size).toBe(5);
 
     const waiterScope = getScopeForRole('WAITER', 'RESTAURANT');
     const waiterDefaults = getDefaultModulesForRole('WAITER', 'RESTAURANT');
-    expect(waiterScope.size).toBe(12);
-    expect(waiterDefaults.size).toBe(6);
+    expect(waiterScope.size).toBe(10);
+    expect(waiterDefaults.size).toBe(4);
   });
 
   it('excludes super-admin platform modules from tenant role defaults', () => {
