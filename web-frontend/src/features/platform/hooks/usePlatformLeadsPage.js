@@ -11,6 +11,8 @@ import {
 } from '../utils/leadTimelineUtils';
 import { calculateLeadCounts, filterAndSortLeads } from '../utils/leadFilterUtils';
 import { convertLeadToCompanyTransaction } from '../utils/leadConvertService';
+import { notifyConvertResult } from '../utils/leadConvertToastUtils';
+import { formatApiErrorMessage } from '../../../utils/apiErrorParser';
 
 export function usePlatformLeadsPage() {
   const { t } = useTranslation();
@@ -24,13 +26,23 @@ export function usePlatformLeadsPage() {
   const [convertTargetLead, setConvertTargetLead] = useState(null);
   const [createdCredentials, setCreatedCredentials] = useState(null);
 
+  const normalizedSearch = useMemo(() => {
+    const trimmed = search.trim();
+    if (!trimmed) return undefined;
+    const digitsOnly = trimmed.replace(/\D/g, '');
+    if (/^[\d\s\-_+()]+$/.test(trimmed) && digitsOnly.length >= 3) {
+      return digitsOnly;
+    }
+    return trimmed;
+  }, [search]);
+
   const queryParams = useMemo(
     () => ({
       page: 0,
       size: 200,
-      search: search.trim() || undefined,
+      search: normalizedSearch,
     }),
-    [search]
+    [normalizedSearch]
   );
 
   const { data, isPending } = useQuery({
@@ -40,7 +52,7 @@ export function usePlatformLeadsPage() {
 
   const rawRows = data?.content ?? [];
   const counts = useMemo(() => calculateLeadCounts(rawRows), [rawRows]);
-  const rows = useMemo(() => filterAndSortLeads(rawRows, { status, leadType }), [rawRows, status, leadType]);
+  const rows = useMemo(() => filterAndSortLeads(rawRows, { status, leadType, search }), [rawRows, status, leadType, search]);
 
   const selectedLead = useMemo(() => {
     if (selectedLeadId) {
@@ -62,7 +74,7 @@ export function usePlatformLeadsPage() {
       invalidate();
       toast.success(t('platform.leads.saved', { defaultValue: 'Ariza yangilandi' }));
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+    onError: (e) => toast.error(formatApiErrorMessage(e, t('platform.saveFailed'))),
   });
 
   const deleteMutation = useMutation({
@@ -73,7 +85,7 @@ export function usePlatformLeadsPage() {
       setViewMode('split');
       toast.success(t('platform.leads.deleted', { defaultValue: 'Ariza o\'chirildi' }));
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+    onError: (e) => toast.error(formatApiErrorMessage(e, t('platform.saveFailed'))),
   });
 
   const convertMutation = useMutation({
@@ -86,28 +98,17 @@ export function usePlatformLeadsPage() {
         author,
       });
     },
+    meta: { suppressGlobalError: true },
     onSuccess: (res) => {
       invalidate();
       setViewMode('split');
       setConvertTargetLead(null);
-
       if (res?.credentials) {
         setCreatedCredentials(res.credentials);
       }
-
-      if (res?.storeError && res?.userError) {
-        toast.error(`Kompaniya yaratildi, ammo filial (${res.storeError}) va admin (${res.userError}) yaratilmadi`);
-      } else if (res?.storeError) {
-        toast.error(`Kompaniya va admin yaratildi, ammo filial xatosi: ${res.storeError}`);
-      } else if (res?.userError) {
-        toast.error(`Kompaniya va filial yaratildi, ammo admin xatosi: ${res.userError}`);
-      } else if (res?.leadUpdateError) {
-        toast.error(`Kompaniya yaratildi, ammo ariza holati yangilanmadi: ${res.leadUpdateError}`);
-      } else {
-        toast.success('Kompaniya, filial va admin muvaffaqiyatli yaratildi');
-      }
+      notifyConvertResult(res);
     },
-    onError: (e) => toast.error(e.response?.data?.message || e.message || t('platform.saveFailed')),
+    onError: (e) => toast.error(formatApiErrorMessage(e, t('platform.saveFailed'))),
   });
 
   const handleStatusChange = (leadId, nextStatus) => {

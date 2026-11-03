@@ -36,8 +36,8 @@ export function buildStoreSubmitPayload(data, isCreate) {
   const phoneDigits = digitsAfter998(data.phone);
   const payload = {
     name: data.name.trim(),
-    address: data.address?.trim() || null,
-    phone: phoneDigits ? formatUzPhone(data.phone) : null,
+    address: data.address?.trim() ? data.address.trim() : (isCreate ? null : ''),
+    phone: phoneDigits ? formatUzPhone(data.phone) : (isCreate ? null : ''),
     code: data.code?.trim() || null,
     companyId: data.companyId ? Number(data.companyId) : undefined,
     businessType: data.businessType,
@@ -83,4 +83,15 @@ export function buildDefaultStoreValues(initial) {
     businessTypeId: initial?.businessTypeId ? String(initial.businessTypeId) : '',
     active: initial?.active ?? true,
   };
+}
+
+export function findDuplicateStoreName(existingStores, { name, companyId, excludeId }) {
+  if (!existingStores?.length || !name) return null;
+  const target = name.trim().toLowerCase();
+  const cId = companyId ? Number(companyId) : null;
+  return existingStores.find(
+    (s) => Number(s.id) !== Number(excludeId) &&
+           (!cId || Number(s.companyId) === cId) &&
+           s.name?.trim().toLowerCase() === target
+  );
 }

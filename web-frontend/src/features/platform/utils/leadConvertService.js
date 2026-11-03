@@ -11,8 +11,27 @@ import { userApi } from '../../../api/user.api';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
 import { platformBusinessTypeApi } from '../../../api/platform/businessType.api';
 import { platformLeadsApi } from '../../../api/platform/leads.api';
+import { formatApiErrorMessage } from '../../../utils/apiErrorParser';
 import { appendLeadTimelineEvent } from './leadTimelineUtils';
 import { generateSecurePassword } from './passwordGenerator';
+
+const BUSINESS_TYPE_NAMES_UZ = {
+  PHARMACY: 'Dorixona',
+  RESTAURANT: 'Restoran',
+  CANTEEN: 'Oshxona / bufet',
+  RETAIL: 'Chakana savdo',
+  UNIVERSAL: 'Universal',
+  GROCERY: 'Oziq-ovqat',
+  CLOTHING: 'Kiyim-kechak',
+  CONSTRUCTION: 'Qurilish materiallari',
+  AUTO_PARTS: 'Avto ehtiyot qismlari',
+  OTHER: 'Boshqa',
+};
+
+export function resolveBusinessTypeName(code) {
+  if (!code) return '';
+  return BUSINESS_TYPE_NAMES_UZ[String(code).toUpperCase().trim()] || code;
+}
 
 export async function convertLeadToCompanyTransaction({
   lead,
@@ -54,19 +73,23 @@ export async function convertLeadToCompanyTransaction({
   }
 
   // 2. Assign Business Type constructor
+  let businessTypeError = null;
   if (company.businessType) {
     try {
-      const typesRes = await platformBusinessTypeApi.list().catch(() => null);
+      const typesRes = await platformBusinessTypeApi.list();
       const typesList = typesRes?.data || [];
       const matched = typesList.find((bt) => bt.code === company.businessType);
       if (matched?.id) {
         await companyBusinessTypeApi.setForCompany(companyId, {
-          typeIds: [matched.id],
-          defaultTypeId: matched.id,
+          businessTypeIds: [matched.id],
+          defaultBusinessTypeId: matched.id,
         });
+      } else {
+        businessTypeError = `Faoliyat turi topilmadi (${company.businessType})`;
       }
     } catch (err) {
-      console.warn('Faoliyat turini bog\'lashda ogohlantirish:', err);
+      businessTypeError = formatApiErrorMessage(err, 'Faoliyat turini biriktirishda xatolik');
+      console.error('Faoliyat turini bog\'lashda xatolik:', err);
     }
   }
 
@@ -79,11 +102,13 @@ export async function convertLeadToCompanyTransaction({
         companyId,
         name: branchName,
         businessType: company.businessType || 'UNIVERSAL',
+        regionCode: company.regionCode,
+        districtCode: company.districtCode,
         active: true,
       });
       storeId = storeRes?.data?.id ?? null;
     } catch (err) {
-      storeError = err.response?.data?.message || err.message || 'Filial yaratishda xatolik';
+      storeError = formatApiErrorMessage(err, 'Filial yaratishda xatolik');
       console.error('Filial yaratishda xatolik:', err);
     }
   }
@@ -113,7 +138,7 @@ export async function convertLeadToCompanyTransaction({
         });
         adminCreated = true;
       } catch (err) {
-        userError = err.response?.data?.message || err.message || 'Admin yaratishda xatolik';
+        userError = formatApiErrorMessage(err, 'Admin yaratishda xatolik');
         console.error('Admin yaratishda xatolik:', err);
       }
     }
@@ -124,6 +149,7 @@ export async function convertLeadToCompanyTransaction({
     `Kompaniya: «${company.name}» (ID: ${companyId})`,
     branchName ? (storeId ? `Filial: «${branchName}»` : `Filial xatosi: ${storeError}`) : null,
     adminUser?.login ? (adminCreated ? `Admin: «${adminUser.login}»` : `Admin xatosi: ${userError}`) : null,
+    businessTypeError ? `Faoliyat turi xatosi: ${businessTypeError}` : (company.businessType ? `Faoliyat turi: «${resolveBusinessTypeName(company.businessType)}»` : null),
   ].filter(Boolean).join(', ');
 
   const finalNote = appendLeadTimelineEvent(
@@ -160,6 +186,7 @@ export async function convertLeadToCompanyTransaction({
     credentials,
     storeError,
     userError,
+    businessTypeError,
     leadUpdateError,
   };
 }

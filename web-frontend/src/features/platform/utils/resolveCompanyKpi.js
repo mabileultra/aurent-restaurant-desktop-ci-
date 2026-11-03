@@ -7,6 +7,7 @@ export function resolveCompanyKpi({
   statusFilter = 'ALL',
   isFiltered = false,
   storeCountData,
+  knownInactiveCount,
 }) {
   const totalCompanies = total;
   const rawActive = rawRows.filter((r) => r.active).length;
@@ -15,7 +16,10 @@ export function resolveCompanyKpi({
   let activeCompanies;
   let inactiveCompanies;
 
-  if (total <= rawRows.length) {
+  if (knownInactiveCount != null) {
+    inactiveCompanies = knownInactiveCount;
+    activeCompanies = Math.max(0, totalCompanies - inactiveCompanies);
+  } else if (total <= rawRows.length) {
     // Current page contains entire dataset: exact counts
     activeCompanies = rawActive;
     inactiveCompanies = rawInactive;
@@ -23,8 +27,8 @@ export function resolveCompanyKpi({
     activeCompanies = total;
     inactiveCompanies = 0;
   } else if (statusFilter === 'INACTIVE') {
-    inactiveCompanies = total;
-    activeCompanies = 0;
+    inactiveCompanies = rawInactive;
+    activeCompanies = Math.max(0, totalCompanies - inactiveCompanies);
   } else {
     // Multi-page dataset: derive from page ratio / known inactive count
     inactiveCompanies = rawInactive;
@@ -34,7 +38,7 @@ export function resolveCompanyKpi({
   const filteredStoreCount = rawRows.reduce((acc, r) => acc + (r.storeCount || 0), 0);
   const totalStores = isFiltered
     ? filteredStoreCount
-    : (storeCountData ?? filteredStoreCount);
+    : (storeCountData != null ? storeCountData : null);
 
   return {
     totalCompanies,

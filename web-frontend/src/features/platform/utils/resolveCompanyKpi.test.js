@@ -44,4 +44,31 @@ describe('resolveCompanyKpi', () => {
     expect(result.activeCompanies).toBe(108);
     expect(result.totalStores).toBe(150);
   });
+
+  it('correctly calculates KPIs when knownInactiveCount is provided on INACTIVE tab', () => {
+    const result = resolveCompanyKpi({
+      total: 116,
+      rawRows: [{ id: 10, active: false, storeCount: 1 }],
+      statusFilter: 'INACTIVE',
+      isFiltered: false,
+      storeCountData: 150,
+      knownInactiveCount: 1,
+    });
+
+    expect(result.totalCompanies).toBe(116);
+    expect(result.inactiveCompanies).toBe(1);
+    expect(result.activeCompanies).toBe(115);
+  });
+
+  it('returns null for totalStores when storeCountData is null and not filtered to avoid flicker', () => {
+    const result = resolveCompanyKpi({
+      total: 114,
+      rawRows: Array.from({ length: 14 }, (_, i) => ({ id: i + 1, active: true, storeCount: 1 })),
+      statusFilter: 'ALL',
+      isFiltered: false,
+      storeCountData: null,
+    });
+
+    expect(result.totalStores).toBeNull();
+  });
 });

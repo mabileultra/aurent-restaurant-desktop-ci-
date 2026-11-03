@@ -6,6 +6,10 @@ import * as leadsHook from '../hooks/usePlatformLeadsPage';
 
 globalThis.React = React;
 
+vi.mock('../../shared/geo/RegionDistrictFields', () => ({
+  default: () => React.createElement('div', { 'data-testid': 'mock-region-district-fields' }, 'MockGeo'),
+}));
+
 describe('PlatformLeadsPage', () => {
   it('renders master-detail leads page layout', () => {
     vi.spyOn(leadsHook, 'usePlatformLeadsPage').mockReturnValue({

@@ -3,8 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import PlatformLeadConvertToCompanyView from './PlatformLeadConvertToCompanyView';
 
+vi.mock('../../../shared/geo/RegionDistrictFields', () => ({
+  default: () => React.createElement('div', { 'data-testid': 'mock-region-district-fields' }, 'GeoFieldsMock'),
+}));
+
 describe('PlatformLeadConvertToCompanyView', () => {
-  it('renders company convert form pre-filled with lead info', () => {
+  it('renders company convert form pre-filled with lead info and geo fields', () => {
     const lead = {
       id: '1',
       name: 'Nodira Yusupova',
@@ -24,7 +28,10 @@ describe('PlatformLeadConvertToCompanyView', () => {
     );
     expect(html).toContain('Arizadan kompaniya yaratish');
     expect(html).toContain('Nodira Yusupova');
+    expect(html).toContain('GeoFieldsMock');
     expect(html).toContain('xabardan taxmin qilindi');
     expect(html).toContain('Birinchi filial va admin');
+    expect(html).toContain('Kompaniya nomini kiriting');
+    expect(html).toContain('disabled=""');
   });
 });

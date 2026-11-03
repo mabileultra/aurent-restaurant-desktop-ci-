@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { isApiNetworkError } from './apiNetworkError';
+import { translateValidationError, translateRawErrorMessage } from './validationErrorTranslator';
 
 /**
  * Generates a short, readable reference code (e.g. "#ERR-500-4F2A") for tracking.
@@ -126,12 +127,12 @@ export function parseApiError(error, customFallback) {
     });
   } else if (status === 422 || (status === 400 && fieldErrors)) {
     if (fieldErrors) {
-      const firstError = Object.values(fieldErrors)[0];
-      message = firstError || i18n.t('errors.validation', {
-        defaultValue: 'Kiritilgan ma’lumotlar tekshiruvdan o‘tmadi.',
-      });
+      const firstEntry = Object.entries(fieldErrors)[0];
+      message = firstEntry
+        ? translateValidationError(firstEntry[0], firstEntry[1])
+        : i18n.t('errors.validation', { defaultValue: 'Kiritilgan ma’lumotlar tekshiruvdan o‘tmadi.' });
     } else {
-      message = rawMessage || i18n.t('errors.validation', {
+      message = translateRawErrorMessage(rawMessage) || i18n.t('errors.validation', {
         defaultValue: 'Kiritilgan ma’lumotlar tekshiruvdan o‘tmadi.',
       });
     }
@@ -144,7 +145,7 @@ export function parseApiError(error, customFallback) {
       defaultValue: 'Serverda ichki xatolik yuz berdi. Muhandislarimiz xabardor qilindi.',
     });
   } else if (rawMessage && rawMessage.length < 200) {
-    message = rawMessage;
+    message = translateRawErrorMessage(rawMessage);
   } else if (customFallback) {
     message = customFallback;
   } else {

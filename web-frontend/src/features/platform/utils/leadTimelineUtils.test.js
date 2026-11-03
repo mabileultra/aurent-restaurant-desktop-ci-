@@ -18,6 +18,10 @@ describe('leadTimelineUtils', () => {
     const now = new Date('2026-11-03T12:00:00Z');
     const leadFresh = { status: 'NEW', createdAt: '2026-11-03T10:00:00Z' };
     expect(getLeadWaitUrgency(leadFresh, now).isUrgent).toBe(false);
+    expect(getLeadWaitUrgency(leadFresh, now).waitText).toBe('2 soatdan beri javobsiz');
+
+    const lead1Min = { status: 'NEW', createdAt: '2026-11-03T11:59:00Z' };
+    expect(getLeadWaitUrgency(lead1Min, now).waitText).toBe('1 daqiqadan beri javobsiz');
 
     const lead1Day = { status: 'NEW', createdAt: '2026-11-02T10:00:00Z' };
     expect(getLeadWaitUrgency(lead1Day, now).isUrgent).toBe(true);

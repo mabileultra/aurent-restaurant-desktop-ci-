@@ -9,6 +9,7 @@ import {
   formatLeadSource,
   formatLeadStatus,
   getLeadWaitUrgency,
+  getConvertedCompanyId,
 } from '../../utils/leadFormatUtils';
 
 const MOBILE_STATUS_OPTIONS = [
@@ -34,7 +35,8 @@ export default function PlatformLeadMobileDetailView({
   const typeLabel = formatLeadType(lead.leadType);
   const sourceLabel = formatLeadSource(lead.source);
   const statusLabel = formatLeadStatus(lead.status);
-  const canConvert = lead.status !== 'DONE' && lead.status !== 'REJECTED' && ['CONNECT', 'DEMO'].includes(lead.leadType);
+  const convertedCompanyId = getConvertedCompanyId(lead);
+  const canConvert = !convertedCompanyId && lead.status !== 'DONE' && lead.status !== 'REJECTED' && ['CONNECT', 'DEMO'].includes(lead.leadType);
 
   return (
     <div className="space-y-3.5 pb-8">
@@ -116,8 +118,16 @@ export default function PlatformLeadMobileDetailView({
           })}
         </div>
 
-        {/* Convert to Company Button */}
-        {canConvert && (
+        {/* Convert to Company Button / Open Company Link */}
+        {convertedCompanyId ? (
+          <a
+            href={`/platform/companies?companyId=${convertedCompanyId}`}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-300 bg-blue-50 py-2.5 text-xs font-bold text-blue-800 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+          >
+            <Building2 size={15} />
+            <span>Kompaniyani ochish (ID: {convertedCompanyId})</span>
+          </a>
+        ) : canConvert ? (
           <button
             type="button"
             onClick={() => onConvertToCompany(lead)}
@@ -126,7 +136,7 @@ export default function PlatformLeadMobileDetailView({
             <Building2 size={15} />
             <span>Kompaniyaga aylantirish</span>
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* 7. Timeline Card */}

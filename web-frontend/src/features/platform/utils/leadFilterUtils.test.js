@@ -25,9 +25,23 @@ describe('leadFilterUtils', () => {
     expect(filtered[0].id).toBe(1);
   });
 
-  it('sorts urgent leads first, then by createdAt descending', () => {
-    const sorted = filterAndSortLeads(sampleLeads);
-    // NEW leads older than 2 days are urgent, so they appear first
-    expect(['1', '2', '3', '4', '5']).toContain(String(sorted[0].id));
+  it('sorts urgent leads with oldest/longest waiting at the top', () => {
+    const urgentLeads = [
+      { id: 14, status: 'NEW', createdAt: '2026-10-20T10:00:00Z' }, // 14 days ago
+      { id: 62, status: 'NEW', createdAt: '2026-09-02T10:00:00Z' }, // 62 days ago
+      { id: 19, status: 'NEW', createdAt: '2026-10-15T10:00:00Z' }, // 19 days ago
+    ];
+    const sorted = filterAndSortLeads(urgentLeads);
+    expect(sorted.map((l) => l.id)).toEqual([62, 19, 14]);
+  });
+
+  it('filters by phone number with spaces correctly', () => {
+    const leads = [
+      { id: 1, name: 'Ali', phone: '+998900000101', status: 'NEW' },
+      { id: 2, name: 'Vali', phone: '+998911112233', status: 'NEW' },
+    ];
+    const result = filterAndSortLeads(leads, { search: '90 000 01 01' });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(1);
   });
 });

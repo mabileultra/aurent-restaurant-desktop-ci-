@@ -31,4 +31,29 @@ describe('PlatformLeadDetailPane', () => {
     expect(html).toContain('Kompaniyaga aylantirish');
     expect(html).toContain('Arizani o&#x27;chirish');
   });
+
+  it('renders open company link instead of convert button when lead is already converted', () => {
+    const lead = {
+      id: '2',
+      name: 'Jahongir Otajonov',
+      phone: '+998 90 123 45 67',
+      status: 'IN_PROGRESS',
+      leadType: 'CONNECT',
+      createdAt: '2026-10-27T16:15:00.000Z',
+      managerNote: '[{"event":"CONVERTED_TO_COMPANY","note":"Kompaniya: «Jahongir Market» (ID: 88)"}]',
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformLeadDetailPane, {
+        lead,
+        onStatusChange: vi.fn(),
+        onAddComment: vi.fn(),
+        onConvertToCompany: vi.fn(),
+        onDeleteLead: vi.fn(),
+      })
+    );
+    expect(html).toContain('Kompaniyani ochish (ID: 88)');
+    expect(html).not.toContain('Kompaniyaga aylantirish');
+    expect(html).toContain('/platform/companies?companyId=88');
+  });
 });

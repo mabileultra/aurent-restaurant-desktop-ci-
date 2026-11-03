@@ -147,7 +147,7 @@ describe('PlatformCompaniesTable', () => {
       })
     );
 
-    expect(html).toContain('common.noData');
+    expect(html).toContain('Kompaniyalar topilmadi');
   });
 
   it('numbers rows and range by displayPage during page transition when previous data is visible', () => {

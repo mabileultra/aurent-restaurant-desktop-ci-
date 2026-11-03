@@ -42,6 +42,7 @@ export default function RegionDistrictFields({
   return (
     <div className={`grid gap-3 sm:grid-cols-2 ${className}`}>
       <BaseSelect
+        id="geo-region-select"
         label={t('geo.region')}
         required={required}
         value={regionCode || ''}
@@ -55,6 +56,7 @@ export default function RegionDistrictFields({
         ]}
       />
       <BaseSelect
+        id="geo-district-select"
         label={t('geo.district')}
         required={required}
         value={districtCode || ''}

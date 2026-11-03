@@ -1,19 +1,23 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { BaseButton, BaseModal } from '../../../../components/ui';
 import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusinessTypes';
 import { useOnlineActionGuard } from '../../../../hooks/useOnlineActionGuard';
-import { useFormDraft } from '../../../../hooks/useFormDraft';
 import FormDraftNotice from '../../../../components/shared/FormDraftNotice';
 import StoreFormModalFields from './StoreFormModalFields';
+import {
+  readStoredStoreDraft,
+  saveStoredStoreDraft,
+  removeStoredStoreDraft,
+} from '../../utils/storeFormDraftUtils';
 import {
   buildStoreFormSchema,
   buildStoreSubmitPayload,
   resolveBusinessTypeOptions,
   buildDefaultStoreValues,
+  findDuplicateStoreName,
 } from './storeFormSchema';
 
 export default function StoreFormModal({
@@ -24,20 +28,28 @@ export default function StoreFormModal({
   initial,
   companies = [],
   showCompanySelect = false,
+  existingStores = [],
   title,
 }) {
   const { t } = useTranslation();
   const { isActionBlocked, blockReason } = useOnlineActionGuard();
   const isCreate = !initial?.id;
+  const initialDraft = useMemo(() => (open && isCreate ? readStoredStoreDraft() : null), [open, isCreate]);
+  const [isDraftRestored, setIsDraftRestored] = useState(Boolean(initialDraft));
 
   const schema = useMemo(
     () => buildStoreFormSchema(t, { isCreate, showCompanySelect }),
     [t, isCreate, showCompanySelect]
   );
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
+  const initialFormValues = useMemo(() => {
+    const base = buildDefaultStoreValues(initial);
+    return initialDraft ? { ...base, ...initialDraft } : base;
+  }, [initial, initialDraft]);
+
+  const { register, handleSubmit, reset, setValue, watch, clearErrors, setError, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { active: true },
+    defaultValues: initialFormValues,
   });
 
   const watchedValues = watch();
@@ -47,16 +59,15 @@ export default function StoreFormModal({
   const watchedDistrictCode = watch('districtCode');
   const watchedPhone = watch('phone');
 
-  const { clearDraft, isDraftRestored } = useFormDraft('tenant_store_create', isCreate && open ? watchedValues : null, (saved) => {
-    if (saved && isCreate) {
-      Object.entries(saved).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '') setValue(k, v);
-      });
-    }
-  });
+  useEffect(() => {
+    if (!open || !isCreate) return undefined;
+    const timer = setTimeout(() => saveStoredStoreDraft(watchedValues), 400);
+    return () => clearTimeout(timer);
+  }, [open, isCreate, watchedValues]);
 
   const handleClearDraft = () => {
-    clearDraft();
+    removeStoredStoreDraft();
+    setIsDraftRestored(false);
     reset(buildDefaultStoreValues(null));
   };
 
@@ -91,79 +102,96 @@ export default function StoreFormModal({
     const valid = companyTypes.some((bt) => bt.code === watchedBusinessType);
     if (valid && watchedBusinessType) return;
     const defaultType = companyTypes.find((bt) => bt.defaultType) ?? companyTypes[0];
-    setValue('businessType', defaultType.code);
+    setValue('businessType', defaultType.code, { shouldValidate: true });
     setValue('businessTypeId', String(defaultType.id));
-  }, [open, showCompanySelect, watchedCompanyId, watchedBusinessType, companyTypes, typesLoading, setValue]);
+    clearErrors('businessType');
+  }, [open, showCompanySelect, watchedCompanyId, watchedBusinessType, companyTypes, typesLoading, setValue, clearErrors]);
 
   useEffect(() => {
     if (!open) {
       prevCompanyRef.current = '';
+      setIsDraftRestored(false);
       return;
     }
-    reset(buildDefaultStoreValues(initial));
-  }, [open, initial, reset]);
+    const draft = isCreate ? readStoredStoreDraft() : null;
+    reset(draft ? { ...buildDefaultStoreValues(initial), ...draft } : buildDefaultStoreValues(initial));
+    setIsDraftRestored(Boolean(draft));
+  }, [open, initial, isCreate, reset]);
 
   if (!open) return null;
 
   const handleFormSubmit = (data) => {
+    const duplicate = findDuplicateStoreName(existingStores, {
+      name: data.name,
+      companyId: data.companyId || initial?.companyId,
+      excludeId: initial?.id,
+    });
+    if (duplicate) {
+      setError('name', {
+        type: 'manual',
+        message: t('platform.duplicateStoreName', {
+          defaultValue: `Ushbu kompaniyada «${data.name.trim()}» nomli filial allaqachon mavjud`,
+        }),
+      });
+      return;
+    }
     onSubmit(buildStoreSubmitPayload(data, isCreate));
-    clearDraft();
+    removeStoredStoreDraft();
+    setIsDraftRestored(false);
   };
 
-  const modalTitle = title ?? (initial?.id ? t('stores.editTitle') : (showCompanySelect ? t('platform.addBranch', { defaultValue: 'Filial qo‘shish' }) : t('stores.addTitle')));
-
-  const modalContent = (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 p-5 dark:border-slate-800">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{modalTitle}</h2>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">
-            <X size={20} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 p-5">
-          {isCreate && isDraftRestored ? (
-            <FormDraftNotice onClear={handleClearDraft} />
-          ) : null}
-          <StoreFormModalFields
-            t={t}
-            showCompanySelect={showCompanySelect}
-            companies={companies}
-            register={register}
-            errors={errors}
-            setValue={setValue}
-            watchedCompanyId={watchedCompanyId}
-            watchedBusinessType={watchedBusinessType}
-            watchedRegionCode={watchedRegionCode}
-            watchedDistrictCode={watchedDistrictCode}
-            watchedPhone={watchedPhone}
-            typesLoading={typesLoading}
-            needsCompany={needsCompany}
-            businessTypeOptions={businessTypeOptions}
-            isCreate={isCreate}
-          />
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-lg bg-slate-100 py-2.5 text-sm text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isPending || isActionBlocked}
-              title={isActionBlocked ? blockReason : undefined}
-              className="admin-btn-primary flex flex-1 items-center justify-center gap-2 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPending && <Loader size={14} className="animate-spin" />}
-              {t('common.save')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+  const modalTitle = title ?? (
+    initial?.id
+      ? (showCompanySelect ? t('platform.editBranch', { defaultValue: 'Filialni tahrirlash' }) : t('stores.editTitle'))
+      : (showCompanySelect ? t('platform.addBranch', { defaultValue: 'Filial qo‘shish' }) : t('stores.addTitle'))
   );
 
-  return typeof document !== 'undefined' && document.body ? createPortal(modalContent, document.body) : modalContent;
+  return (
+    <BaseModal
+      open={open}
+      title={modalTitle}
+      onClose={onClose}
+      size="md"
+      closeLabel={t('common.close', { defaultValue: 'Yopish' })}
+      footer={(
+        <div className="flex gap-2 justify-end w-full">
+          <BaseButton variant="secondary" onClick={onClose} disabled={isPending}>
+            {t('common.cancel')}
+          </BaseButton>
+          <BaseButton
+            variant="primary"
+            onClick={handleSubmit(handleFormSubmit)}
+            loading={isPending}
+            disabled={isPending || isActionBlocked}
+            title={isActionBlocked ? blockReason : undefined}
+          >
+            {t('common.save')}
+          </BaseButton>
+        </div>
+      )}
+    >
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        {isCreate && isDraftRestored ? (
+          <FormDraftNotice onClear={handleClearDraft} />
+        ) : null}
+        <StoreFormModalFields
+          t={t}
+          showCompanySelect={showCompanySelect}
+          companies={companies}
+          register={register}
+          errors={errors}
+          setValue={setValue}
+          watchedCompanyId={watchedCompanyId}
+          watchedBusinessType={watchedBusinessType}
+          watchedRegionCode={watchedRegionCode}
+          watchedDistrictCode={watchedDistrictCode}
+          watchedPhone={watchedPhone}
+          typesLoading={typesLoading}
+          needsCompany={needsCompany}
+          businessTypeOptions={businessTypeOptions}
+          isCreate={isCreate}
+        />
+      </form>
+    </BaseModal>
+  );
 }

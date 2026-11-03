@@ -1,24 +1,45 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
-import { companyApi } from '../../../api/company.api';
+import { useEffect, useState } from 'react';
+import { emptyForm, toggleFormBusinessType, resolveAssignedBusinessTypes } from '../utils/companyFormUtils';
+import {
+  readStoredCompanyDraft,
+  saveStoredCompanyDraft,
+  removeStoredCompanyDraft,
+} from '../utils/companyFormDraftUtils';
+import { useCompanyFormMutations } from './useCompanyFormMutations';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
-import { emptyForm, toggleFormBusinessType, buildCompanyPayload } from '../utils/companyFormUtils';
-import { useFormDraft } from '../../../hooks/useFormDraft';
 
 export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) {
-  const qc = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [isDraftRestored, setIsDraftRestored] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState(null);
+  const [companyToToggleActive, setCompanyToToggleActive] = useState(null);
 
-  const isCreateMode = modalOpen && !editing;
-  const { clearDraft, isDraftRestored } = useFormDraft('platform_company_create', isCreateMode ? form : null, (saved) => {
-    if (isCreateMode && saved) setForm((prev) => ({ ...prev, ...saved }));
+  useEffect(() => {
+    if (!modalOpen || editing) return undefined;
+    const timer = setTimeout(() => saveStoredCompanyDraft(form), 400);
+    return () => clearTimeout(timer);
+  }, [form, modalOpen, editing]);
+
+  const { saveMutation, deleteMutation, toggleActiveMutation } = useCompanyFormMutations({
+    t,
+    form,
+    editing,
+    constructorTypes,
+    onSaveSuccess: () => {
+      setIsDraftRestored(false);
+      setModalOpen(false);
+      setEditing(null);
+    },
+    onDeleteSuccess: () => {
+      setCompanyToDelete(null);
+    },
   });
 
   const handleClearDraft = () => {
-    clearDraft();
+    removeStoredCompanyDraft();
+    setIsDraftRestored(false);
     const universal = constructorTypes.find((bt) => bt.code === 'UNIVERSAL');
     setForm({
       ...emptyForm(),
@@ -27,137 +48,54 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
     });
   };
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!form.name.trim()) throw new Error(t('platform.nameRequired'));
-      const payload = buildCompanyPayload(form, constructorTypes);
-      const { businessTypeIds = [], defaultBusinessTypeId } = form;
-
-      let companyId = editing?.id;
-      if (editing?.id) {
-        await companyApi.update(editing.id, payload);
-      } else {
-        const res = await companyApi.create(payload);
-        companyId = res.data?.id;
-      }
-
-      if (companyId && businessTypeIds.length > 0) {
-        try {
-          await companyBusinessTypeApi.setForCompany(companyId, {
-            typeIds: businessTypeIds,
-            defaultTypeId: defaultBusinessTypeId ?? businessTypeIds[0],
-          });
-        } catch {
-          // Non-blocking fallback
-        }
-      }
-
-      const defaultType = constructorTypes.find((bt) => bt.id === defaultBusinessTypeId);
-      if (!editing?.id && companyId && payload.businessType !== (defaultType?.code ?? form.businessType)) {
-        await companyApi.update(companyId, { businessType: payload.businessType });
-      }
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['companies'] });
-      qc.invalidateQueries({ queryKey: ['platform-stores-total-count'] });
-      qc.invalidateQueries({ queryKey: ['company-business-types'] });
-      clearDraft();
-      toast.success(t('platform.companySaved'));
-      setModalOpen(false);
-      setEditing(null);
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => companyApi.delete(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['companies'] });
-      qc.invalidateQueries({ queryKey: ['platform-stores-total-count'] });
-      toast.success(t('platform.companyDeleted'));
-      setMenuId?.(null);
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
   const openCreate = () => {
     setEditing(null);
+    const draft = readStoredCompanyDraft();
     const universal = constructorTypes.find((bt) => bt.code === 'UNIVERSAL');
-    setForm({
+    const base = {
       ...emptyForm(),
       businessTypeIds: universal ? [universal.id] : [],
       defaultBusinessTypeId: universal?.id ?? null,
-    });
+    };
+    if (draft) {
+      setForm({ ...base, ...draft });
+      setIsDraftRestored(true);
+    } else {
+      setForm(base);
+      setIsDraftRestored(false);
+    }
     setModalOpen(true);
   };
 
   const openEdit = async (row) => {
     setEditing(row);
-    let businessTypeIds = [];
-    let defaultBusinessTypeId = null;
+    let assignedData = null;
     try {
-      const assigned = await companyBusinessTypeApi.getForCompany(row.id).then((r) => r.data);
-      businessTypeIds = assigned.types?.map((bt) => bt.id) ?? [];
-      defaultBusinessTypeId = assigned.types?.find((bt) => bt.defaultType)?.id
-        ?? businessTypeIds[0]
-        ?? null;
-    } catch {
-      const fallback = constructorTypes.find((bt) => bt.code === (row.businessType ?? 'UNIVERSAL'));
-      if (fallback) {
-        businessTypeIds = [fallback.id];
-        defaultBusinessTypeId = fallback.id;
-      }
-    }
+      const res = await companyBusinessTypeApi.getForCompany(row.id);
+      assignedData = res?.data;
+    } catch {}
+
+    const { businessTypeIds, defaultBusinessTypeId } = resolveAssignedBusinessTypes(
+      assignedData,
+      row.businessType,
+      constructorTypes
+    );
+
     setForm({
-      name: row.name,
+      name: row.name ?? '',
       legalName: row.legalName ?? '',
       tin: row.tin ?? '',
       address: row.address ?? '',
       regionCode: row.regionCode ?? '',
       districtCode: row.districtCode ?? '',
       phone: row.phone ?? '',
-      active: row.active,
+      active: row.active ?? true,
       businessType: row.businessType ?? 'UNIVERSAL',
       businessTypeIds,
-      defaultBusinessTypeId,
+      defaultBusinessTypeId: defaultBusinessTypeId ?? businessTypeIds[0] ?? null,
     });
     setModalOpen(true);
     setMenuId?.(null);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setEditing(null);
-  };
-
-  const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const toggleBusinessType = (typeId) => {
-    setForm((prev) => toggleFormBusinessType(prev, typeId, constructorTypes));
-  };
-
-  const setDefaultBusinessType = (typeId) => {
-    setForm((prev) => {
-      const defaultType = constructorTypes.find((bt) => bt.id === typeId);
-      return {
-        ...prev,
-        defaultBusinessTypeId: typeId,
-        businessType: defaultType?.code ?? prev.businessType,
-      };
-    });
-  };
-
-  const tryDelete = (row) => {
-    const stores = row.storeCount ?? 0;
-    if (stores > 0) {
-      toast.error(t('platform.deleteCompanyBlockedStores', { count: stores }));
-      return;
-    }
-    if (window.confirm(t('platform.deleteCompanyConfirm'))) {
-      deleteMutation.mutate(row.id);
-    }
   };
 
   return {
@@ -167,12 +105,28 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
     saveMutation,
     openCreate,
     openEdit,
-    closeModal,
-    updateField,
-    toggleBusinessType,
-    setDefaultBusinessType,
-    tryDelete,
-    clearDraft,
+    closeModal: () => { setModalOpen(false); setEditing(null); },
+    updateField: (field, value) => setForm((prev) => ({ ...prev, [field]: value })),
+    toggleBusinessType: (typeId) => setForm((prev) => toggleFormBusinessType(prev, typeId, constructorTypes)),
+    setDefaultBusinessType: (typeId) => setForm((prev) => {
+      const def = constructorTypes.find((bt) => bt.id === typeId);
+      return { ...prev, defaultBusinessTypeId: typeId, businessType: def?.code ?? prev.businessType };
+    }),
+    companyToDelete,
+    setCompanyToDelete,
+    handleConfirmDelete: (comp) => deleteMutation.mutate(comp.id),
+    isDeleting: deleteMutation.isPending,
+    tryDelete: (row) => { setCompanyToDelete(row); setMenuId?.(null); },
+    companyToToggleActive,
+    setCompanyToToggleActive,
+    tryToggleActive: (comp) => { setCompanyToToggleActive(comp); setMenuId?.(null); },
+    handleConfirmToggleActive: (comp) => {
+      toggleActiveMutation.mutate(comp);
+      setCompanyToToggleActive(null);
+    },
+    toggleActive: (comp) => toggleActiveMutation.mutate(comp),
+    isTogglingActive: toggleActiveMutation.isPending,
+    clearDraft: handleClearDraft,
     isDraftRestored,
     handleClearDraft,
   };

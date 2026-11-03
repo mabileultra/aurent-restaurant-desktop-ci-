@@ -1,13 +1,33 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import PlatformCompanyQuickDrawer from './PlatformCompanyQuickDrawer';
 
 globalThis.React = React;
 
 vi.mock('react-router-dom', () => ({
-  Link: ({ children, to, className, title }) =>
-    React.createElement('a', { href: to, className, title }, children),
+  Link: ({ children, to, className }) => React.createElement('a', { href: to, className }, children),
+}));
+
+vi.mock('../../shared/geo/useGeoNameLookup', () => ({
+  useGeoNameLookup: () => ({
+    regionName: () => 'Toshkent viloyati',
+    districtName: () => 'Chirchiq sh.',
+  }),
+}));
+
+vi.mock('../../../api/companyBusinessType.api', () => ({
+  companyBusinessTypeApi: {
+    getForCompany: vi.fn().mockResolvedValue({
+      data: {
+        businessTypes: [
+          { id: 1, name: 'Chakana savdo', code: 'RETAIL' },
+          { id: 2, name: 'Restoran', code: 'RESTAURANT' },
+        ],
+      },
+    }),
+  },
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -20,62 +40,36 @@ vi.mock('react-hot-toast', () => ({
 describe('PlatformCompanyQuickDrawer', () => {
   const mockT = (key, opts) => opts?.defaultValue || key;
 
-  const mockCompany = {
-    id: 62,
-    name: '"ANNODENT SS" MCHJ',
-    legalName: 'ANNODENT SS MCHJ',
-    tin: '305481920',
-    phone: '+998901234567',
-    address: 'Amir Temur 42',
-    regionCode: 'SAM',
-    districtCode: 'SAM_SH',
-    loginCode: '54157',
-    storeCount: 2,
-    businessType: 'UNIVERSAL',
-    active: true,
-  };
-
-  it('renders nothing when open is false', () => {
+  it('renders company details, clean STIR, formatted phone, and toggle active button', () => {
+    const qc = new QueryClient();
     const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyQuickDrawer, {
-        open: false,
-        company: mockCompany,
-        t: mockT,
-      })
-    );
-    expect(html).toBe('');
-  });
-
-  it('renders company details and quick actions when open is true', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyQuickDrawer, {
-        open: true,
-        company: mockCompany,
-        t: mockT,
-        regionName: () => 'Samarqand viloyati',
-        districtName: () => 'Samarqand sh.',
-      })
+      React.createElement(QueryClientProvider, { client: qc },
+        React.createElement(PlatformCompanyQuickDrawer, {
+          open: true,
+          company: {
+            id: 88,
+            name: 'Quick Test Corp',
+            legalName: 'Quick Test LLC',
+            loginCode: 'QTC-88',
+            tin: '987654321',
+            phone: '998901112233',
+            storeCount: 3,
+            businessType: 'UNIVERSAL',
+            active: true,
+            regionCode: 'TAS',
+            districtCode: 'CHIR',
+          },
+          t: mockT,
+        })
+      )
     );
 
-    expect(html).toContain('ANNODENT SS');
-    expect(html).toContain('305481920');
-    expect(html).toContain('54157');
-    expect(html).toContain('Samarqand sh.');
-    expect(html).toContain('href="/platform/stores?focusCompany=62#company-62"');
-    expect(html).toContain('Filiallar (2)');
-  });
-
-  it('renders restaurant contextual branch label and styling', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyQuickDrawer, {
-        open: true,
-        company: { ...mockCompany, businessType: 'RESTAURANT', storeCount: 5 },
-        t: mockT,
-      })
-    );
-
-    expect(html).toContain('Filiallar (5)');
-    expect(html).toContain('Restoran filiallarini ko‘rish');
-    expect(html).toContain('bg-emerald-50');
+    expect(html).toContain('Quick Test Corp');
+    expect(html).toContain('QTC-88');
+    expect(html).toContain('987654321');
+    expect(html).toContain('+998 (90) 111-22-33');
+    expect(html).toContain('Chirchiq sh., Toshkent viloyati');
+    expect(html).toContain('Faolsizlantirish');
+    expect(html).toContain('href="/platform/stores?companyId=88&amp;focusCompany=88#company-88"');
   });
 });

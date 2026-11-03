@@ -5,6 +5,8 @@ import PlatformCompaniesPage from './PlatformCompaniesPage';
 
 globalThis.React = React;
 
+let mockHookData = {};
+
 vi.mock('../hooks/usePlatformCompaniesPage', () => ({
   usePlatformCompaniesPage: () => ({
     t: (key, opts) => {
@@ -52,6 +54,7 @@ vi.mock('../hooks/usePlatformCompaniesPage', () => ({
     setMenuId: vi.fn(),
     openEdit: vi.fn(),
     tryDelete: vi.fn(),
+    tryToggleActive: vi.fn(),
     modalOpen: false,
     editing: null,
     form: {},
@@ -62,6 +65,8 @@ vi.mock('../hooks/usePlatformCompaniesPage', () => ({
     setDefaultBusinessType: vi.fn(),
     selectedCompany: null,
     setSelectedCompany: vi.fn(),
+    companyToToggleActive: null,
+    ...mockHookData,
   }),
 }));
 
@@ -91,6 +96,7 @@ vi.mock('react-hot-toast', () => ({
 
 describe('PlatformCompaniesPage', () => {
   it('renders the modernized page with KPI cards, status tabs, and company list', () => {
+    mockHookData = {};
     const html = renderToStaticMarkup(React.createElement(PlatformCompaniesPage));
 
     // Page title with count
@@ -110,5 +116,18 @@ describe('PlatformCompaniesPage', () => {
     // Table rows
     expect(html).toContain('ANNODENT SS');
     expect(html).toContain('54157');
+  });
+
+  it('renders PlatformCompanyToggleActiveModal when companyToToggleActive is present', () => {
+    mockHookData = {
+      companyToToggleActive: {
+        id: 127,
+        name: 'Dori Darmon',
+        active: true,
+      },
+    };
+    const html = renderToStaticMarkup(React.createElement(PlatformCompaniesPage));
+    expect(html).toContain('Dori Darmon');
+    expect(html).toContain('faolsizlantirish');
   });
 });

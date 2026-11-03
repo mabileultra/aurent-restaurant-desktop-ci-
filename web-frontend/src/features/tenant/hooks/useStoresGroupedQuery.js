@@ -15,6 +15,7 @@ export function useStoresGroupedQuery({
   statusFilter = 'ALL',
   businessType = '',
   regionCode = '',
+  districtCode = '',
   companyId,
   companies = [],
   expandedIds = new Set(),
@@ -24,11 +25,12 @@ export function useStoresGroupedQuery({
       page,
       size: pageSize,
       search: search.trim() || undefined,
-      status: statusFilter !== 'ALL' ? statusFilter : undefined,
+      status: statusFilter !== 'ALL' && statusFilter !== 'INACTIVE' ? statusFilter : undefined,
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
+      districtCode: districtCode || undefined,
     }),
-    [page, pageSize, search, statusFilter, businessType, regionCode]
+    [page, pageSize, search, statusFilter, businessType, regionCode, districtCode]
   );
 
   const singleCompanyMode = companyId != null && companyId !== '';

@@ -21,7 +21,12 @@ export default function PlatformLeadBusinessTypeChips({
   return (
     <div className="space-y-1.5 pt-1">
       <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 block">
-        Faoliyat turi * — <span className="text-emerald-700 dark:text-emerald-400">xabardan taxmin qilindi: «{guessedLabel}»</span>
+        Faoliyat turi *
+        {guessedLabel ? (
+          <>
+            {' '}— <span className="text-emerald-700 dark:text-emerald-400">xabardan taxmin qilindi: «{guessedLabel}»</span>
+          </>
+        ) : null}
       </label>
       <div className="flex flex-wrap gap-1.5">
         {BUSINESS_TYPE_OPTIONS.map((bt) => {

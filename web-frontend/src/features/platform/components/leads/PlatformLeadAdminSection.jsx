@@ -47,7 +47,9 @@ export default function PlatformLeadAdminSection({
           <span>Ariza egasini admin qilib yaratish</span>
         </label>
         <p className="text-[11px] text-slate-500 pl-5">
-          {leadName} kompaniyaning birinchi administratori bo'ladi.
+          {createAdmin
+            ? `${leadName} kompaniyaning birinchi administratori bo'ladi.`
+            : "Admin hisobi yaratilmaydi (keyinchalik qo'shishingiz mumkin)."}
         </p>
         {createAdmin && (
           <div className="space-y-2 pt-1 pl-5">
@@ -110,9 +112,11 @@ export default function PlatformLeadAdminSection({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
+                    title={showPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                   >
-                    {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                    {showPassword ? <EyeOff size={13} aria-hidden /> : <Eye size={13} aria-hidden />}
                   </button>
                 </div>
               </div>

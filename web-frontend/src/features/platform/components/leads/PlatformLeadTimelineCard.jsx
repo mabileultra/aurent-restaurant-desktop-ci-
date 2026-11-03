@@ -65,8 +65,8 @@ export default function PlatformLeadTimelineCard({
 
       {/* Timeline items list */}
       <div className="relative space-y-3.5 pt-2">
-        {timeline.map((item) => (
-          <div key={item.id} className="relative flex items-start gap-2.5 text-xs">
+        {timeline.map((item, idx) => (
+          <div key={item.id || idx} className="relative flex items-start gap-2.5 text-xs">
             {/* Colored dot */}
             <span
               className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColorClass(item.type)}`}

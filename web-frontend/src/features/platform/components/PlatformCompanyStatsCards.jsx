@@ -12,11 +12,9 @@ export default function PlatformCompanyStatsCards({
   onStoresClick,
   isPending = false,
 }) {
-  const activeHint = isPending
-    ? t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })
-    : totalCompanies > 0
-      ? `${Math.round((activeCompanies / totalCompanies) * 100)}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`
-      : `0% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`;
+  const activeHint = isPending || totalCompanies === 0
+    ? '—'
+    : `${Math.round((activeCompanies / totalCompanies) * 100)}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`;
 
   const cards = [
     {
@@ -97,22 +95,22 @@ export default function PlatformCompanyStatsCards({
                 : 'border-slate-200 dark:!border-slate-800 hover:border-slate-300 dark:hover:!border-slate-700'
             } cursor-pointer hover:shadow hover:-translate-y-0.5`}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight line-clamp-2">
                 {card.title}
               </span>
               <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${card.iconBg}`}>
-                <Icon size={18} className={card.iconColor} />
+                <Icon size={16} className={card.iconColor} />
               </div>
             </div>
 
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {isPending ? '—' : Number(card.value).toLocaleString()}
+              <span className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {isPending || card.value == null ? '—' : Number(card.value).toLocaleString()}
               </span>
             </div>
 
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p className="mt-1 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 leading-tight line-clamp-1">
               {card.hint}
             </p>
           </div>

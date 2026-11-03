@@ -7,6 +7,8 @@ import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
 import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
 import PlatformCompanyStatsCards from '../components/PlatformCompanyStatsCards';
 import PlatformCompanyQuickDrawer from '../components/PlatformCompanyQuickDrawer';
+import PlatformCompanyDeleteModal from '../components/PlatformCompanyDeleteModal';
+import PlatformCompanyToggleActiveModal from '../components/PlatformCompanyToggleActiveModal';
 import { usePlatformCompaniesPage } from '../hooks/usePlatformCompaniesPage';
 import GeoFilterSelects from '../../shared/geo/GeoFilterSelects';
 
@@ -76,22 +78,12 @@ export default function PlatformCompaniesPage() {
               onClick={() => p.setStatusFilter('INACTIVE')}
               className={`px-3 py-1.5 rounded-lg transition-all ${
                 p.statusFilter === 'INACTIVE'
-                  ? p.inactiveCompanies > 0
-                    ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
-                    : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                  : p.inactiveCompanies > 0
-                    ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? (p.inactiveCompanies > 0 ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs' : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs')
+                  : (p.inactiveCompanies > 0 ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white')
               }`}
             >
               {p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}
-              <span
-                className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                  p.inactiveCompanies > 0
-                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
-              >
+              <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${p.inactiveCompanies > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
                 {p.inactiveCompanies}
               </span>
             </button>
@@ -144,7 +136,9 @@ export default function PlatformCompaniesPage() {
         onMenuOpenChange={p.setMenuId}
         onEdit={p.openEdit}
         onDelete={p.tryDelete}
+        onToggleActive={p.tryToggleActive}
         onSelectCompany={p.setSelectedCompany}
+        statusFilter={p.statusFilter}
       />
 
       {/* 4. Edit / Create Modal */}
@@ -164,16 +158,41 @@ export default function PlatformCompaniesPage() {
       />
 
       {/* 5. Quick Peek Slide-Over Drawer */}
-      <PlatformCompanyQuickDrawer
-        open={Boolean(p.selectedCompany)}
-        company={p.selectedCompany}
-        onClose={() => p.setSelectedCompany(null)}
-        onEdit={(comp) => {
-          p.setSelectedCompany(null);
-          p.openEdit(comp);
-        }}
-        t={p.t}
-      />
+      {p.selectedCompany ? (
+        <PlatformCompanyQuickDrawer
+          open={Boolean(p.selectedCompany)}
+          company={p.selectedCompany}
+          onClose={p.closeQuickDrawer}
+          onEdit={(comp) => { p.closeQuickDrawer(); p.openEdit(comp); }}
+          onToggleActive={p.tryToggleActive}
+          t={p.t}
+        />
+      ) : null}
+
+      {/* 6. Safe Delete / Deactivate Modal */}
+      {p.companyToDelete ? (
+        <PlatformCompanyDeleteModal
+          open={Boolean(p.companyToDelete)}
+          company={p.companyToDelete}
+          onClose={() => p.setCompanyToDelete(null)}
+          onConfirmDelete={p.handleConfirmDelete}
+          onToggleActive={p.tryToggleActive}
+          isDeleting={p.isDeleting}
+          t={p.t}
+        />
+      ) : null}
+
+      {/* 7. Safe Toggle Active Confirmation Modal */}
+      {p.companyToToggleActive ? (
+        <PlatformCompanyToggleActiveModal
+          open={Boolean(p.companyToToggleActive)}
+          company={p.companyToToggleActive}
+          onClose={() => p.setCompanyToToggleActive(null)}
+          onConfirm={p.handleConfirmToggleActive}
+          isToggling={p.isTogglingActive}
+          t={p.t}
+        />
+      ) : null}
     </PageLayout>
   );
 }

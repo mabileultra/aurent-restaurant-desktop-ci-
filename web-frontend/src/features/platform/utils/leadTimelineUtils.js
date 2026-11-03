@@ -30,29 +30,40 @@ export function resolveCurrentAuthor(user) {
 
 export function getLeadWaitUrgency(lead, now = new Date()) {
   if (!lead || lead.status !== 'NEW') {
-    return { isUrgent: false, waitText: null, level: null, days: 0, hours: 0 };
+    return { isUrgent: false, waitText: null, level: null, days: 0, hours: 0, mins: 0 };
   }
   try {
     const d = new Date(lead.createdAt);
     const diffMs = now.getTime() - d.getTime();
-    const hours = Math.max(0, Math.floor(diffMs / 3600000));
+    if (diffMs < 0) {
+      return { isUrgent: false, waitText: 'Hozirgina kelgan', level: 'info', days: 0, hours: 0, mins: 0 };
+    }
+    const mins = Math.floor(diffMs / 60000);
+    const hours = Math.floor(diffMs / 3600000);
     const days = Math.floor(hours / 24);
 
     if (days >= 2) {
-      return { isUrgent: true, waitText: `${days} kundan beri javobsiz`, level: 'danger', days, hours };
+      return { isUrgent: true, waitText: `${days} kundan beri javobsiz`, level: 'danger', days, hours, mins };
     }
     if (days >= 1) {
-      return { isUrgent: true, waitText: '1 kundan beri javobsiz', level: 'warning', days, hours };
+      return { isUrgent: true, waitText: '1 kundan beri javobsiz', level: 'warning', days, hours, mins };
+    }
+    if (hours >= 1) {
+      return { isUrgent: false, waitText: `${hours} soatdan beri javobsiz`, level: 'info', days, hours, mins };
+    }
+    if (mins >= 1) {
+      return { isUrgent: false, waitText: `${mins} daqiqadan beri javobsiz`, level: 'info', days, hours: 0, mins };
     }
     return {
       isUrgent: false,
-      waitText: `${Math.max(1, hours)} soatdan beri javobsiz`,
+      waitText: '1 daqiqadan kam vaqt oldin kelgan',
       level: 'info',
-      days,
-      hours,
+      days: 0,
+      hours: 0,
+      mins: 0,
     };
   } catch {
-    return { isUrgent: false, waitText: null, level: null, days: 0, hours: 0 };
+    return { isUrgent: false, waitText: null, level: null, days: 0, hours: 0, mins: 0 };
   }
 }
 
@@ -76,7 +87,12 @@ export function parseLeadTimeline(managerNote, lead) {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      const customEvents = parsed.filter((e) => e && e.type !== 'created');
+      const customEvents = parsed
+        .filter((e) => e && e.type !== 'created')
+        .map((e, idx) => ({
+          ...e,
+          id: e.id || `event-${idx}-${e.at || e.event || idx}`,
+        }));
       return [...customEvents, ...initial].sort((a, b) => new Date(b.at) - new Date(a.at));
     }
   } catch {

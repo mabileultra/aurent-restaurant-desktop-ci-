@@ -50,4 +50,20 @@ describe('storeFormSchema', () => {
     expect(payload.districtCode).toBe('UZ-TO-01');
     expect(payload.active).toBe(true);
   });
+
+  it('sends empty string on edit when address or phone is cleared so backend clears fields', () => {
+    const data = {
+      name: 'Filial 1',
+      address: '   ',
+      phone: '',
+      businessType: 'RETAIL',
+    };
+    const payloadUpdate = buildStoreSubmitPayload(data, false);
+    expect(payloadUpdate.address).toBe('');
+    expect(payloadUpdate.phone).toBe('');
+
+    const payloadCreate = buildStoreSubmitPayload(data, true);
+    expect(payloadCreate.address).toBeNull();
+    expect(payloadCreate.phone).toBeNull();
+  });
 });

@@ -12,7 +12,7 @@ const STATUS_KEYS = [
 const TYPE_KEYS = [
   { key: '', labelKey: 'platform.leads.allTypes', fallback: 'Barcha turlar' },
   { key: 'DEMO', labelKey: 'platform.leads.types.DEMO', fallback: 'Demo' },
-  { key: 'CONNECT', labelKey: 'platform.leads.types.CONNECT', fallback: 'Ulash' },
+  { key: 'CONNECT', labelKey: 'platform.leads.types.CONNECT', fallback: 'Ulanish' },
   { key: 'QUESTION', labelKey: 'platform.leads.types.QUESTION', fallback: 'Savol' },
   { key: 'EQUIPMENT', labelKey: 'platform.leads.types.EQUIPMENT', fallback: 'Uskunalar' },
 ];

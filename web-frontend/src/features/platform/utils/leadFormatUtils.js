@@ -39,6 +39,17 @@ export function buildMailtoLink(email) {
   return email ? `mailto:${String(email).trim()}` : '#';
 }
 
+export function getConvertedCompanyId(lead) {
+  if (!lead?.managerNote) return null;
+  const match = String(lead.managerNote).match(/ID:\s*(\d+)/i);
+  return match ? match[1] : null;
+}
+
+export function normalizePhoneForSearch(phone) {
+  if (!phone) return '';
+  return String(phone).replace(/\D/g, '');
+}
+
 export function formatLeadDateTime(dateString) {
   if (!dateString) return '—';
   try {
@@ -115,7 +126,7 @@ export function formatLeadStatus(status) {
 }
 
 export function guessBusinessTypeFromMessage(message) {
-  if (!message) return 'UNIVERSAL';
+  if (!message || !String(message).trim()) return null;
   const text = String(message).toLowerCase();
   if (text.includes('kiyim') || text.includes('libos') || text.includes('butik') || text.includes('moda') || text.includes('poyabzal')) {
     return 'CLOTHING';
@@ -138,5 +149,5 @@ export function guessBusinessTypeFromMessage(message) {
   if (text.includes('oziq-ovqat') || text.includes('do\'kon') || text.includes('dokon') || text.includes('minimarket') || text.includes('supermarket')) {
     return 'GROCERY';
   }
-  return 'UNIVERSAL';
+  return null;
 }

@@ -66,6 +66,8 @@ describe('leadFormatUtils', () => {
     expect(guessBusinessTypeFromMessage('Dorixona uchun skaner kerak')).toBe('PHARMACY');
     expect(guessBusinessTypeFromMessage('Oshxona / bufet uchun')).toBe('CANTEEN');
     expect(guessBusinessTypeFromMessage('Qurilish mollari do\'koni')).toBe('CONSTRUCTION');
-    expect(guessBusinessTypeFromMessage('Umumiy savol bor')).toBe('UNIVERSAL');
+    expect(guessBusinessTypeFromMessage('Umumiy savol bor')).toBeNull();
+    expect(guessBusinessTypeFromMessage('')).toBeNull();
+    expect(guessBusinessTypeFromMessage(null)).toBeNull();
   });
 });

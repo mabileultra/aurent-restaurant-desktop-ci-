@@ -33,12 +33,22 @@ export default function StoreFormModalFields({
           <BaseSelect
             label={t('stores.colCompany')}
             required
+            disabled={!isCreate}
             value={watchedCompanyId ?? ''}
-            onChange={(e) => setValue('companyId', e.target.value, { shouldValidate: true })}
+            onChange={(e) => {
+              const compId = e.target.value;
+              setValue('companyId', compId, { shouldValidate: true });
+              const found = companies.find((c) => String(c.id) === String(compId));
+              if (found?.regionCode && !watchedRegionCode) {
+                setValue('regionCode', found.regionCode, { shouldValidate: true });
+                setValue('districtCode', found.districtCode || '', { shouldValidate: true });
+              }
+            }}
             error={errors.companyId?.message}
             placeholder={t('stores.selectCompany')}
             searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
             options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
+            helperText={!isCreate ? t('platform.branchCompanyLocked', { defaultValue: 'Tahrirlashda filial kompaniyasini o‘zgartirib bo‘lmaydi' }) : undefined}
           />
         </>
       ) : null}
@@ -116,7 +126,9 @@ export default function StoreFormModalFields({
       </div>
       <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
         <input type="checkbox" {...register('active')} className="rounded border-slate-300" />
-        {t('stores.activeLabel')}
+        {showCompanySelect
+          ? t('platform.branchActive', { defaultValue: 'Filial faol' })
+          : t('stores.activeLabel')}
       </label>
     </>
   );

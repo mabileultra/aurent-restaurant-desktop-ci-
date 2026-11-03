@@ -11,6 +11,7 @@ export function useStoresPlatformStats({
   statusFilter = 'ALL',
   businessType = '',
   regionCode = '',
+  districtCode = '',
   companyId,
 } = {}) {
   const params = useMemo(
@@ -19,9 +20,10 @@ export function useStoresPlatformStats({
       status: statusFilter !== 'ALL' ? statusFilter : undefined,
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
+      districtCode: districtCode || undefined,
       companyId: companyId || undefined,
     }),
-    [search, statusFilter, businessType, regionCode, companyId]
+    [search, statusFilter, businessType, regionCode, districtCode, companyId]
   );
 
   const query = useQuery({

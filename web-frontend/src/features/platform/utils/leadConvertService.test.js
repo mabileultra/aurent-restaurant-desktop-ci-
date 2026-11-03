@@ -56,7 +56,7 @@ describe('leadConvertService', () => {
     const lead = { id: 1, status: 'NEW', name: 'Vali', email: 'vali@stroy.uz', createdAt: '2026-11-01T10:00:00Z' };
     const res = await convertLeadToCompanyTransaction({
       lead,
-      company: { name: 'Vali Stroy', businessType: 'CONSTRUCTION', phone: '+998901234567' },
+      company: { name: 'Vali Stroy', businessType: 'CONSTRUCTION', phone: '+998901234567', regionCode: 'UZ-TO', districtCode: 'UZ-TO-01' },
       branchName: 'Bosh do\'kon',
       adminUser: { login: 'valistroy', name: 'Vali', email: 'vali@stroy.uz', password: 'CustomSecurePassword1!' },
       author: 'SuperAdmin',
@@ -74,11 +74,11 @@ describe('leadConvertService', () => {
     });
 
     expect(companyApi.create).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Vali Stroy', businessType: 'CONSTRUCTION' })
+      expect.objectContaining({ name: 'Vali Stroy', businessType: 'CONSTRUCTION', regionCode: 'UZ-TO', districtCode: 'UZ-TO-01' })
     );
-    expect(companyBusinessTypeApi.setForCompany).toHaveBeenCalledWith(77, { typeIds: [5], defaultTypeId: 5 });
+    expect(companyBusinessTypeApi.setForCompany).toHaveBeenCalledWith(77, { businessTypeIds: [5], defaultBusinessTypeId: 5 });
     expect(storeApi.create).toHaveBeenCalledWith(
-      expect.objectContaining({ companyId: 77, name: 'Bosh do\'kon' })
+      expect.objectContaining({ companyId: 77, name: 'Bosh do\'kon', regionCode: 'UZ-TO', districtCode: 'UZ-TO-01' })
     );
     expect(userApi.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -136,4 +136,30 @@ describe('leadConvertService', () => {
     expect(res.adminCreated).toBe(false);
     expect(res.userError).toBe('Admin uchun haqiqiy email manzili kiritilmadi');
   });
+
+  it('captures both branch and business type errors together and writes to timeline', async () => {
+    companyApi.create.mockResolvedValueOnce({ data: { id: 79, loginCode: 'MULT01' } });
+    platformBusinessTypeApi.list.mockRejectedValueOnce(new Error('Business type service unavailable'));
+    storeApi.create.mockRejectedValueOnce(new Error('Branch validation failed'));
+    platformLeadsApi.update.mockResolvedValue({ data: { ok: true } });
+
+    const lead = { id: 4, status: 'NEW', name: 'Multi', email: 'multi@test.uz', createdAt: '2026-11-01T10:00:00Z' };
+    const res = await convertLeadToCompanyTransaction({
+      lead,
+      company: { name: 'Multi Fail', businessType: 'RETAIL' },
+      branchName: 'Filial X',
+    });
+
+    expect(res.companyId).toBe(79);
+    expect(res.storeError).toBe('Branch validation failed');
+    expect(res.businessTypeError).toBe('Business type service unavailable');
+    expect(platformLeadsApi.update).toHaveBeenCalledWith(
+      4,
+      expect.objectContaining({
+        status: 'DONE',
+        managerNote: expect.stringMatching(/Filial xatosi: Branch validation failed.*Faoliyat turi xatosi: Business type service unavailable/),
+      })
+    );
+  });
 });
+

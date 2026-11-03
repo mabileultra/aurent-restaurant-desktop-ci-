@@ -59,3 +59,30 @@ export function buildCompanyPayload(form, constructorTypes = []) {
     businessType: defaultType?.code ?? businessType,
   };
 }
+
+/**
+ * Resolves business type IDs and default ID from API response or company fallback.
+ * Backend returns: { types: [{ id, code, defaultType }], defaultTypeCode }
+ * Fallback to legacy format or row.businessType.
+ */
+export function resolveAssignedBusinessTypes(assignedData, rowBusinessType, constructorTypes = []) {
+  const typesList = assignedData?.types || assignedData?.businessTypes || [];
+  let businessTypeIds = typesList.map((t) => t.id).filter(Boolean);
+  const defaultItem = typesList.find((t) => t.defaultType || t.isDefault);
+  let defaultBusinessTypeId = defaultItem?.id || assignedData?.defaultBusinessTypeId || null;
+
+  if (businessTypeIds.length === 0 && rowBusinessType) {
+    const matched = constructorTypes.find((bt) => bt.code === rowBusinessType);
+    if (matched?.id) {
+      businessTypeIds = [matched.id];
+      defaultBusinessTypeId = matched.id;
+    }
+  }
+
+  if (!defaultBusinessTypeId && businessTypeIds.length > 0) {
+    defaultBusinessTypeId = businessTypeIds[0];
+  }
+
+  return { businessTypeIds, defaultBusinessTypeId };
+}
+
