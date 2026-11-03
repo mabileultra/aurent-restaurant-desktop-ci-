@@ -990,7 +990,8 @@
       "cookingEmpty": "Ishda buyurtma yo‘q",
       "ready": "Tayyor",
       "readyHint": "Olish mumkin",
-      "readyEmpty": "Hali tayyor buyurtma yo‘q"
+      "readyEmpty": "Hali tayyor buyurtma yo‘q",
+      "popupBlocked": "TV oynasi bloklandi. Sayt uchun popup-larga ruxsat bering yoki ikkinchi monitorda /rst/ready-display ni oching."
     },
     "cfd": {
       "brand": "Aurent Restaurant",

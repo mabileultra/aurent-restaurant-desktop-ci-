@@ -15,6 +15,7 @@ import {
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
 import { playPosSound } from '../utils/posSounds';
+import { publishKitchenTvBump } from '../../ready-display/kitchenTvSyncChannel';
 import { useStoreFloorSync } from './useStoreFloorSync';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
@@ -117,6 +118,7 @@ export function useKitchenPosPage({ simpleMode = false } = {}) {
     mutationFn: ({ ticketId, status }) => rstKitchenApi.updateTicketStatus(ticketId, status),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['rst-kitchen-tickets', workspace.storeId] });
+      publishKitchenTvBump(workspace.storeId);
       if (vars.status === 'SERVED') {
         toast.success(t('rst.kitchen.servedCleared'));
       }
@@ -174,8 +176,17 @@ export function useKitchenPosPage({ simpleMode = false } = {}) {
         arrived = true;
       }
     }
-    if (arrived) playPosSound('kitchen');
-  }, [ticketsQuery.data]);
+    if (arrived) {
+      playPosSound('kitchen');
+      publishKitchenTvBump(workspace.storeId);
+    }
+  }, [ticketsQuery.data, workspace.storeId]);
+
+  // Any kitchen ticket refresh → nudge TV window on this PC.
+  useEffect(() => {
+    if (workspace.storeId == null || !ticketsQuery.dataUpdatedAt) return;
+    publishKitchenTvBump(workspace.storeId);
+  }, [ticketsQuery.dataUpdatedAt, workspace.storeId]);
 
   useEffect(() => {
     seenNewTicketIdsRef.current = null;

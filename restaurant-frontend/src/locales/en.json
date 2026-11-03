@@ -979,7 +979,8 @@
       "cookingEmpty": "No orders cooking",
       "ready": "Ready",
       "readyHint": "Ready for pickup",
-      "readyEmpty": "Nothing ready yet"
+      "readyEmpty": "Nothing ready yet",
+      "popupBlocked": "TV window was blocked. Allow pop-ups for this site, or open /rst/ready-display manually on the second monitor."
     },
     "cfd": {
       "brand": "Aurent Restaurant",

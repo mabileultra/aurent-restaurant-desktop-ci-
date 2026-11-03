@@ -15,6 +15,7 @@ import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import { useKitchenMobileLayout } from '../kitchen-mobile/hooks/useKitchenMobileLayout';
 import PosEnterMobileButton from '../pos-mobile/components/PosEnterMobileButton';
+import toast from 'react-hot-toast';
 import { openReadyDisplayWindow } from '../../ready-display/openReadyDisplayWindow';
 import { KDS_COLUMNS } from '../utils/kitchenBoard';
 import { SIMPLE_PHASES } from '../utils/kitchenSimpleBoard';
@@ -165,7 +166,16 @@ export default function RestaurantKitchenPage() {
             </Link>
           ) : null}
           {simpleMode ? (
-            <BaseButton type="button" variant="ghost" onClick={() => openReadyDisplayWindow()}>
+            <BaseButton
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                const result = openReadyDisplayWindow();
+                if (result?.blocked) {
+                  toast.error(p.t('rst.readyDisplay.popupBlocked'));
+                }
+              }}
+            >
               {p.t('rst.readyDisplay.open')}
             </BaseButton>
           ) : null}
