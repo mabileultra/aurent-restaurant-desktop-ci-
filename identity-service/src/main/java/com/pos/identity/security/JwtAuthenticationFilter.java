@@ -1,5 +1,8 @@
 package com.pos.identity.security;
 
+import com.pos.identity.repository.UserRepository;
+import com.pos.shared.http.TenantHeaders;
+import com.pos.shared.jwt.JwtClaimsExtractor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,9 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.pos.shared.http.TenantHeaders;
-import com.pos.shared.jwt.JwtClaimsExtractor;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +24,7 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -35,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                if (jwtService.isTokenValid(token)) {
+                if (jwtService.isTokenValid(token) && isAccessVersionCurrent(token)) {
                     String role = jwtService.extractRole(token);
                     Integer companyId = JwtClaimsExtractor.resolveCompanyIdSecure(
                         jwtService.extractCompanyId(token),
@@ -58,5 +59,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             IdentityTenantContext.clear();
             SecurityContextHolder.clearContext();
         }
+    }
+
+    /** Reject tokens whose access_version claim no longer matches DB (module access changed). */
+    private boolean isAccessVersionCurrent(String token) {
+        Integer claimVersion = jwtService.extractAccessVersion(token);
+        if (claimVersion == null) {
+            return true;
+        }
+        UUID userId = jwtService.extractSubjectUserId(token);
+        Integer dbVersion = userRepository.findAccessVersionById(userId).orElse(null);
+        return dbVersion != null && dbVersion.equals(claimVersion);
     }
 }

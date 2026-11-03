@@ -1,6 +1,10 @@
 package com.pos.identity.service.impl;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
+import com.pos.identity.dto.access.BulkResetModuleAccessRequest;
+import com.pos.identity.dto.access.CopyModuleAccessRequest;
+import com.pos.identity.dto.access.ModuleAccessHistoryItem;
+import com.pos.identity.dto.access.ModuleAccessMutationResponse;
 import com.pos.identity.dto.access.ModuleAccessStatsResponse;
 import com.pos.identity.dto.access.RoleTemplateResponse;
 import com.pos.identity.dto.access.UpdateRoleTemplateRequest;
@@ -10,16 +14,14 @@ import com.pos.identity.dto.access.UserModuleAccessRow;
 import com.pos.identity.dto.access.UserModuleAccessSummary;
 import com.pos.identity.dto.shared.PageResponse;
 import com.pos.identity.entity.User;
-import com.pos.identity.entity.UserModuleAccess;
-import com.pos.identity.entity.UserModuleAccessId;
-import com.pos.identity.exception.BadRequestException;
-import com.pos.identity.repository.UserModuleAccessRepository;
-import com.pos.identity.repository.UserRepository;
 import com.pos.identity.security.RoleName;
 import com.pos.identity.service.ModuleAccessService;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessMutationSupport;
+import com.pos.identity.service.access.support.ModuleAccessHistoryWriter;
+import com.pos.identity.service.access.support.ModuleAccessSnapshotSupport;
 import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
 import com.pos.identity.service.access.support.RoleTemplateSupport;
@@ -28,25 +30,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ModuleAccessServiceImpl implements ModuleAccessService {
 
-    private final UserRepository userRepository;
-    private final UserModuleAccessRepository userModuleAccessRepository;
     private final ModuleAccessCatalog moduleAccessCatalog;
     private final ModuleAccessUserGate moduleAccessUserGate;
     private final ModuleAccessScopeResolver scopeResolver;
     private final ModuleAccessUsersPager moduleAccessUsersPager;
     private final ModuleAccessStatsSupport moduleAccessStatsSupport;
     private final RoleTemplateSupport roleTemplateSupport;
+    private final ModuleAccessSnapshotSupport snapshotSupport;
+    private final ModuleAccessHistoryWriter historyWriter;
+    private final ModuleAccessMutationSupport mutationSupport;
 
     @Override
     public List<AdminModuleCatalogItem> catalog() {
@@ -106,39 +107,47 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
             return resetUserAccess(userId);
         }
 
-        Map<String, Boolean> modules = request.modules() != null ? request.modules() : Map.of();
-        userModuleAccessRepository.deleteByUserId(userId);
-
-        List<UserModuleAccess> rows = new ArrayList<>();
-        boolean anyAllowed = false;
-        for (String moduleKey : scopeResolver.keysFor(user)) {
-            boolean allowed = Boolean.TRUE.equals(modules.get(moduleKey));
-            if (allowed) {
-                anyAllowed = true;
-            }
-            rows.add(UserModuleAccess.builder()
-                .id(new UserModuleAccessId(userId, moduleKey))
-                .user(user)
-                .allowed(allowed)
-                .build());
-        }
-        if (!anyAllowed) {
-            throw new BadRequestException("Включите хотя бы один модуль");
-        }
-        userModuleAccessRepository.saveAll(rows);
-        user.setModuleAccessCustom(true);
-        userRepository.save(user);
-        return buildDetail(userRepository.findById(userId).orElseThrow());
+        boolean beforeCustom = user.isModuleAccessCustom();
+        Map<String, Boolean> before = snapshotSupport.effectiveModules(user);
+        snapshotSupport.applyCustomModules(user, request.modules());
+        Map<String, Boolean> after = snapshotSupport.effectiveModules(user);
+        historyWriter.write("UPDATE", user, null, beforeCustom, true, before, after);
+        return buildDetail(moduleAccessUserGate.requireConfigurable(userId));
     }
 
     @Override
     @Transactional(readOnly = false)
     public UserModuleAccessDetailResponse resetUserAccess(UUID userId) {
         User user = moduleAccessUserGate.requireConfigurable(userId);
-        userModuleAccessRepository.deleteByUserId(userId);
-        user.setModuleAccessCustom(false);
-        userRepository.save(user);
+        boolean beforeCustom = user.isModuleAccessCustom();
+        Map<String, Boolean> before = snapshotSupport.effectiveModules(user);
+        snapshotSupport.resetToTemplate(user);
+        Map<String, Boolean> after = snapshotSupport.effectiveModules(user);
+        historyWriter.write("RESET", user, null, beforeCustom, false, before, after);
         return buildDetail(user);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public ModuleAccessMutationResponse copyAccess(CopyModuleAccessRequest request) {
+        return mutationSupport.copy(request);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public ModuleAccessMutationResponse bulkResetAccess(BulkResetModuleAccessRequest request) {
+        return mutationSupport.bulkReset(request);
+    }
+
+    @Override
+    public PageResponse<ModuleAccessHistoryItem> history(UUID targetUserId, Pageable pageable) {
+        return mutationSupport.history(targetUserId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public ModuleAccessHistoryItem revertHistory(UUID historyId) {
+        return mutationSupport.revert(historyId);
     }
 
     @Override
@@ -161,7 +170,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
                 .toList();
         }
 
-        Map<String, Boolean> stored = storedAccess(user.getId());
+        Map<String, Boolean> stored = snapshotSupport.storedAccess(user.getId());
         return scope.stream()
             .filter(key -> moduleAllowedForCustomAccess(user, key, stored))
             .sorted()
@@ -172,7 +181,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         if (!user.isModuleAccessCustom()) {
             return List.of();
         }
-        Map<String, Boolean> stored = storedAccess(user.getId());
+        Map<String, Boolean> stored = snapshotSupport.storedAccess(user.getId());
         return scopeResolver.keysFor(user).stream()
             .filter(key -> Boolean.TRUE.equals(stored.get(key)))
             .sorted()
@@ -190,7 +199,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         String role = user.getRole().getName();
         List<String> scope = scopeResolver.keysFor(user);
         Map<String, Boolean> stored = user.isModuleAccessCustom()
-            ? storedAccess(user.getId())
+            ? snapshotSupport.storedAccess(user.getId())
             : Map.of();
 
         List<UserModuleAccessRow> rows = scope.stream()
@@ -212,10 +221,4 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
             rows
         );
     }
-
-    private Map<String, Boolean> storedAccess(UUID userId) {
-        return userModuleAccessRepository.findByIdUserId(userId).stream()
-            .collect(Collectors.toMap(UserModuleAccess::getModuleKey, UserModuleAccess::isAllowed, (a, b) -> b));
-    }
-
 }

@@ -1,6 +1,10 @@
 package com.pos.identity.service;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
+import com.pos.identity.dto.access.BulkResetModuleAccessRequest;
+import com.pos.identity.dto.access.CopyModuleAccessRequest;
+import com.pos.identity.dto.access.ModuleAccessHistoryItem;
+import com.pos.identity.dto.access.ModuleAccessMutationResponse;
 import com.pos.identity.dto.access.ModuleAccessStatsResponse;
 import com.pos.identity.dto.access.RoleTemplateResponse;
 import com.pos.identity.dto.access.UpdateRoleTemplateRequest;
@@ -42,6 +46,14 @@ public interface ModuleAccessService {
     UserModuleAccessDetailResponse updateUserAccess(UUID userId, UpdateUserModuleAccessRequest request);
 
     UserModuleAccessDetailResponse resetUserAccess(UUID userId);
+
+    ModuleAccessMutationResponse copyAccess(CopyModuleAccessRequest request);
+
+    ModuleAccessMutationResponse bulkResetAccess(BulkResetModuleAccessRequest request);
+
+    PageResponse<ModuleAccessHistoryItem> history(UUID targetUserId, Pageable pageable);
+
+    ModuleAccessHistoryItem revertHistory(UUID historyId);
 
     List<String> resolveAllowedModuleIds(User user);
 }

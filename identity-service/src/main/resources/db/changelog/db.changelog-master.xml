@@ -14,5 +14,6 @@
     <include file="db/changelog/v7-identity-platform-analytics-role.xml"/>
     <include file="db/changelog/v8-role-module-templates.xml"/>
     <include file="db/changelog/v9-must-change-password.xml"/>
+    <include file="db/changelog/v10-module-access-history.xml"/>
 
 </databaseChangeLog>

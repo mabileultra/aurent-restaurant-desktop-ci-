@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { platformModuleAccessApi } from '../../../../../api';
 import RoleEmployeeResetConfirmDialog from './RoleEmployeeResetConfirmDialog';
 import RoleEmployeeEditDrawer from './RoleEmployeeEditDrawer';
 import RoleEmployeesFilterBar from './RoleEmployeesFilterBar';
@@ -67,6 +69,16 @@ export default function RoleEmployeesDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, confirmUser, editingUser, isBulkOpen, drawerRef]);
 
+  const selectedUsers = useMemo(
+    () => filteredUsers.filter((u) => selectedUserIds.has(u.userId || u.id)),
+    [filteredUsers, selectedUserIds]
+  );
+  const copySourceUser = useMemo(
+    () => selectedUsers.find((u) => Boolean(u.moduleAccessCustom || u.customAccess || u.hasExceptions)),
+    [selectedUsers]
+  );
+  const canCopyFromSelection = Boolean(copySourceUser) && selectedUserIds.size >= 2;
+
   if (!isOpen || !role) return null;
 
   const drawerNode = (
@@ -128,7 +140,42 @@ export default function RoleEmployeesDrawer({
 
         <RoleEmployeesBulkBar
           selectedCount={selectedUserIds.size}
+          canCopy={canCopyFromSelection}
           onApply={() => setIsBulkOpen(true)}
+          onBulkReset={async () => {
+            const ids = Array.from(selectedUserIds);
+            if (!ids.length) return;
+            try {
+              await platformModuleAccessApi.bulkReset({ userIds: ids });
+              toast.success(`${ids.length} ta xodim shablonga qaytarildi`);
+              clearSelection();
+              onUserUpdated?.();
+            } catch (err) {
+              toast.error(err?.response?.data?.message || 'Bulk reset xato');
+            }
+          }}
+          onCopy={async () => {
+            const source = copySourceUser;
+            if (!source) return;
+            const sourceId = source.userId || source.id;
+            const targets = Array.from(selectedUserIds).filter((id) => id !== sourceId);
+            if (!targets.length) {
+              toast.error('Nusxa uchun yana kamida 1 ta xodim tanlang');
+              return;
+            }
+            try {
+              await platformModuleAccessApi.copy({
+                sourceUserId: sourceId,
+                targetUserIds: targets,
+                strategy: 'REPLACE',
+              });
+              toast.success(`Huquqlar ${targets.length} ta xodimga ko‘chirildi`);
+              clearSelection();
+              onUserUpdated?.();
+            } catch (err) {
+              toast.error(err?.response?.data?.message || 'Nusxa olish xato');
+            }
+          }}
           onClear={clearSelection}
         />
 

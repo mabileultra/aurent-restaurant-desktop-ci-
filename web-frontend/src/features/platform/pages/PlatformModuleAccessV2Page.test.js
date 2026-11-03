@@ -91,7 +91,7 @@ describe('PlatformModuleAccessV2Page', () => {
     expect(html).toContain('Oshpaz');
     expect(html).toContain('Sozlash');
     expect(html).toContain('O‘zgarishlar tarixi');
-    expect(html).toContain('Tez kunda');
+    expect(html).not.toContain('Tez kunda');
   });
 
   it('renders search results section when searchTerm is active', () => {

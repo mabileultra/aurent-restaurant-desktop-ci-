@@ -14,4 +14,8 @@ export const platformModuleAccessApi = {
   getUser: (userId) => api.get(`/platform/module-access/users/${userId}`),
   updateUser: (userId, body) => api.put(`/platform/module-access/users/${userId}`, body),
   resetUser: (userId) => api.delete(`/platform/module-access/users/${userId}`),
+  copy: (body) => api.post('/platform/module-access/copy', body),
+  bulkReset: (body) => api.post('/platform/module-access/bulk-reset', body),
+  history: (params = {}) => api.get('/platform/module-access/history', { params }),
+  revertHistory: (historyId) => api.post(`/platform/module-access/history/${historyId}/revert`),
 };
