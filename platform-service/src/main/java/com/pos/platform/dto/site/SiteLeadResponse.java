@@ -20,6 +20,8 @@ public record SiteLeadResponse(
     String message,
     SiteLeadStatus status,
     String managerNote,
+    Integer companyId,
+    String rejectionReason,
     String locale
 ) {
     public static SiteLeadResponse from(SiteLead lead) {
@@ -36,6 +38,8 @@ public record SiteLeadResponse(
             lead.getMessage(),
             lead.getStatus(),
             lead.getManagerNote(),
+            lead.getCompanyId(),
+            lead.getRejectionReason(),
             lead.getLocale()
         );
     }

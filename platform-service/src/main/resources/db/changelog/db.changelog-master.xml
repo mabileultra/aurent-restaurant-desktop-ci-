@@ -19,5 +19,6 @@
     <include file="db/changelog/v12-purge-test-site-leads.xml"/>
     <include file="db/changelog/v13-desktop-broadcast-targeting.xml"/>
     <include file="db/changelog/v14-company-tin-unique.xml"/>
+    <include file="db/changelog/v15-lead-crm.xml"/>
 
 </databaseChangeLog>

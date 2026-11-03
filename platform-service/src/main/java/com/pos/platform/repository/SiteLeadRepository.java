@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public interface SiteLeadRepository extends JpaRepository<SiteLead, UUID> {
@@ -27,4 +28,8 @@ public interface SiteLeadRepository extends JpaRepository<SiteLead, UUID> {
         @Param("search") String search,
         Pageable pageable
     );
+
+    long countByStatus(SiteLeadStatus status);
+
+    long countByStatusAndCreatedAtBefore(SiteLeadStatus status, Instant before);
 }

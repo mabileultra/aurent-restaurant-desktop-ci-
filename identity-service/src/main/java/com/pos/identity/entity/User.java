@@ -69,6 +69,10 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean isActive = true;
 
+    @Column(name = "must_change_password", nullable = false)
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     @Column(name = "module_access_custom")
     @Builder.Default
     private boolean moduleAccessCustom = false;

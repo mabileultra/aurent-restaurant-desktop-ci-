@@ -50,8 +50,24 @@ export function usePlatformLeadsPage() {
     queryFn: () => platformLeadsApi.list(queryParams).then((r) => r.data),
   });
 
+  const { data: stats } = useQuery({
+    queryKey: ['platform-leads-stats'],
+    queryFn: () => platformLeadsApi.stats().then((r) => r.data),
+  });
+
   const rawRows = data?.content ?? [];
-  const counts = useMemo(() => calculateLeadCounts(rawRows), [rawRows]);
+  const counts = useMemo(() => {
+    if (stats) {
+      return {
+        ALL: stats.total ?? 0,
+        NEW: stats.newCount ?? 0,
+        IN_PROGRESS: stats.inProgressCount ?? 0,
+        DONE: stats.doneCount ?? 0,
+        REJECTED: stats.rejectedCount ?? 0,
+      };
+    }
+    return calculateLeadCounts(rawRows);
+  }, [stats, rawRows]);
   const rows = useMemo(() => filterAndSortLeads(rawRows, { status, leadType, search }), [rawRows, status, leadType, search]);
 
   const selectedLead = useMemo(() => {
@@ -62,14 +78,16 @@ export function usePlatformLeadsPage() {
     return rows[0] || null;
   }, [rows, selectedLeadId]);
 
-  const unansweredCount = useMemo(() => {
-    return rawRows.filter((r) => getLeadWaitUrgency(r).isUrgent).length;
-  }, [rawRows]);
+  const unansweredCount = stats?.unansweredCount ?? rawRows.filter((r) => getLeadWaitUrgency(r).isUrgent).length;
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['platform-leads'] });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['platform-leads'] });
+    qc.invalidateQueries({ queryKey: ['platform-leads-stats'] });
+  };
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }) => platformLeadsApi.update(id, payload),
+    mutationFn: ({ id, payload, asComment }) =>
+      asComment ? platformLeadsApi.addComment(id, payload) : platformLeadsApi.update(id, payload),
     onSuccess: () => {
       invalidate();
       toast.success(t('platform.leads.saved', { defaultValue: 'Ariza yangilandi' }));
@@ -129,17 +147,11 @@ export function usePlatformLeadsPage() {
 
   const handleAddComment = (commentText) => {
     if (!selectedLead || !commentText.trim()) return;
-    const author = resolveCurrentAuthor(useAuthStore.getState().user);
-    const note = appendLeadTimelineEvent(
-      selectedLead.managerNote,
-      {
-        type: 'comment',
-        author,
-        text: commentText.trim(),
-      },
-      { leadCreatedAt: selectedLead.createdAt }
-    );
-    updateMutation.mutate({ id: selectedLead.id, payload: { managerNote: note } });
+    updateMutation.mutate({
+      id: selectedLead.id,
+      payload: { text: commentText.trim() },
+      asComment: true,
+    });
   };
 
   const handleStartConvert = (lead) => {

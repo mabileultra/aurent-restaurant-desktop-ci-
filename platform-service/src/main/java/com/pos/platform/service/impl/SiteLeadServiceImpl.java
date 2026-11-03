@@ -1,14 +1,24 @@
 package com.pos.platform.service.impl;
 
+import com.pos.platform.domain.LeadEventType;
 import com.pos.platform.domain.SiteLeadStatus;
+import com.pos.platform.dto.site.ConvertLeadRequest;
+import com.pos.platform.dto.site.ConvertLeadResponse;
+import com.pos.platform.dto.site.CreateLeadCommentRequest;
 import com.pos.platform.dto.site.CreateSiteLeadRequest;
+import com.pos.platform.dto.site.LeadEventResponse;
+import com.pos.platform.dto.site.LeadStatsResponse;
 import com.pos.platform.dto.site.SiteLeadResponse;
 import com.pos.platform.dto.site.UpdateSiteLeadRequest;
 import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.entity.SiteLead;
 import com.pos.platform.exception.ResourceNotFoundException;
+import com.pos.platform.repository.LeadEventRepository;
 import com.pos.platform.repository.SiteLeadRepository;
 import com.pos.platform.service.SiteLeadService;
+import com.pos.platform.service.support.LeadConvertService;
+import com.pos.platform.support.LeadActorName;
+import com.pos.platform.support.LeadEventWriter;
 import com.pos.platform.support.SiteLeadPhoneNormalizer;
 import com.pos.platform.util.TextUtil;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +26,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,6 +37,9 @@ import java.util.UUID;
 public class SiteLeadServiceImpl implements SiteLeadService {
 
     private final SiteLeadRepository siteLeadRepository;
+    private final LeadEventRepository leadEventRepository;
+    private final LeadEventWriter leadEventWriter;
+    private final LeadConvertService leadConvertService;
 
     @Override
     @Transactional
@@ -39,7 +55,14 @@ public class SiteLeadServiceImpl implements SiteLeadService {
             .locale(normalizeLocale(request.locale()))
             .status(SiteLeadStatus.NEW)
             .build();
-        return SiteLeadResponse.from(siteLeadRepository.save(lead));
+        SiteLead saved = siteLeadRepository.save(lead);
+        leadEventWriter.write(
+            saved,
+            LeadEventType.CREATED,
+            "Sayt",
+            "Ariza saytdan keldi · " + saved.getSource()
+        );
+        return SiteLeadResponse.from(saved);
     }
 
     @Override
@@ -59,11 +82,22 @@ public class SiteLeadServiceImpl implements SiteLeadService {
     @Transactional
     public SiteLeadResponse update(UUID id, UpdateSiteLeadRequest request) {
         SiteLead lead = requireLead(id);
-        if (request.status() != null) {
+        SiteLeadStatus previous = lead.getStatus();
+        if (request.status() != null && request.status() != previous) {
             lead.setStatus(request.status());
+            if (request.status() == SiteLeadStatus.REJECTED && request.rejectionReason() != null) {
+                lead.setRejectionReason(TextUtil.trimOrNull(request.rejectionReason()));
+            }
+            String reason = lead.getRejectionReason();
+            String text = "Holat: " + previous + " → " + request.status()
+                + (reason != null ? ". Sabab: " + reason : "");
+            leadEventWriter.write(lead, LeadEventType.STATUS_CHANGE, LeadActorName.current(), text);
         }
         if (request.managerNote() != null) {
             lead.setManagerNote(TextUtil.trimOrNull(request.managerNote()));
+        }
+        if (request.rejectionReason() != null && request.status() == null) {
+            lead.setRejectionReason(TextUtil.trimOrNull(request.rejectionReason()));
         }
         return SiteLeadResponse.from(siteLeadRepository.save(lead));
     }
@@ -75,6 +109,45 @@ public class SiteLeadServiceImpl implements SiteLeadService {
             throw new ResourceNotFoundException("Lead not found");
         }
         siteLeadRepository.deleteById(id);
+    }
+
+    @Override
+    public LeadStatsResponse stats() {
+        long total = siteLeadRepository.count();
+        long newCount = siteLeadRepository.countByStatus(SiteLeadStatus.NEW);
+        long inProgress = siteLeadRepository.countByStatus(SiteLeadStatus.IN_PROGRESS);
+        long done = siteLeadRepository.countByStatus(SiteLeadStatus.DONE);
+        long rejected = siteLeadRepository.countByStatus(SiteLeadStatus.REJECTED);
+        long unanswered = siteLeadRepository.countByStatusAndCreatedAtBefore(
+            SiteLeadStatus.NEW,
+            Instant.now().minus(Duration.ofDays(1))
+        );
+        return new LeadStatsResponse(total, newCount, inProgress, done, rejected, unanswered);
+    }
+
+    @Override
+    @Transactional
+    public LeadEventResponse addComment(UUID id, CreateLeadCommentRequest request) {
+        SiteLead lead = requireLead(id);
+        return LeadEventResponse.from(leadEventWriter.write(
+            lead,
+            LeadEventType.COMMENT,
+            LeadActorName.current(),
+            request.text().trim()
+        ));
+    }
+
+    @Override
+    public List<LeadEventResponse> events(UUID id) {
+        requireLead(id);
+        return leadEventRepository.findByLead_IdOrderByCreatedAtDesc(id).stream()
+            .map(LeadEventResponse::from)
+            .toList();
+    }
+
+    @Override
+    public ConvertLeadResponse convert(UUID id, ConvertLeadRequest request) {
+        return leadConvertService.convert(id, request);
     }
 
     private SiteLead requireLead(UUID id) {

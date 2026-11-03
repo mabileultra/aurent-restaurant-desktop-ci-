@@ -5,5 +5,6 @@ import jakarta.validation.constraints.Size;
 
 public record UpdateSiteLeadRequest(
     SiteLeadStatus status,
-    @Size(max = 4000) String managerNote
+    @Size(max = 4000) String managerNote,
+    @Size(max = 500) String rejectionReason
 ) {}
