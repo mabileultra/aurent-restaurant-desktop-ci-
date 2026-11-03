@@ -38,6 +38,7 @@ export default function PlatformLeadsFilterToolbar({
             <button
               key={item.key}
               type="button"
+              aria-pressed={isActive}
               onClick={() => onStatusChange(item.key)}
               className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 isActive
@@ -82,6 +83,7 @@ export default function PlatformLeadsFilterToolbar({
               <button
                 key={item.key}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => onTypeChange(item.key)}
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
                   isSelected

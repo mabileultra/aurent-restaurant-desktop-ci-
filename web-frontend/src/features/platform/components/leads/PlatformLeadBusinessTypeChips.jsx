@@ -2,7 +2,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 
 export const BUSINESS_TYPE_OPTIONS = [
-  { code: 'BUILDING_MATERIALS', label: 'Qurilish materiallari' },
+  { code: 'CONSTRUCTION', label: 'Qurilish materiallari' },
   { code: 'GROCERY', label: 'Oziq-ovqat' },
   { code: 'CLOTHING', label: 'Kiyim-kechak' },
   { code: 'PHARMACY', label: 'Dorixona' },
@@ -30,6 +30,7 @@ export default function PlatformLeadBusinessTypeChips({
             <button
               key={bt.code}
               type="button"
+              aria-pressed={isChecked}
               onClick={() => onSelectType(bt.code)}
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                 isChecked

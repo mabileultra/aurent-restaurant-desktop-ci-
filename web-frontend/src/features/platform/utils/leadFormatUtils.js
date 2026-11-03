@@ -1,7 +1,16 @@
 /**
  * leadFormatUtils.js
- * Utilities for formatting, timeline handling, SLA urgency, and business type guessing for Platform Leads.
+ * Formatting utilities for phone, dates, preferred time, source/type/status labels,
+ * and business type keyword guessing for Platform Leads.
  */
+
+export {
+  resolveCurrentAuthor,
+  getLeadWaitUrgency,
+  parseLeadTimeline,
+  appendLeadTimelineEvent,
+  MAX_TIMELINE_LENGTH,
+} from './leadTimelineUtils';
 
 const UZ_MONTHS = [
   'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
@@ -61,99 +70,59 @@ export function formatLeadRelativeTime(dateString, now = new Date()) {
   }
 }
 
-export function getLeadWaitUrgency(lead, now = new Date()) {
-  if (!lead || lead.status !== 'NEW') {
-    return { isUrgent: false, waitText: null, level: null, days: 0, hours: 0 };
+export function formatPreferredTime(time) {
+  if (!time) return '—';
+  const str = String(time).trim();
+  if (!str) return '—';
+  if (str.includes(':')) {
+    return str.replace(/\s*-\s*/, ' – ');
   }
-  try {
-    const d = new Date(lead.createdAt);
-    const diffMs = now.getTime() - d.getTime();
-    const hours = Math.max(0, Math.floor(diffMs / 3600000));
-    const days = Math.floor(hours / 24);
-
-    if (days >= 2) {
-      return { isUrgent: true, waitText: `${days} kundan beri javobsiz`, level: 'danger', days, hours };
-    }
-    if (days >= 1) {
-      return { isUrgent: true, waitText: '1 kundan beri javobsiz', level: 'warning', days, hours };
-    }
-    return {
-      isUrgent: false,
-      waitText: `${Math.max(1, hours)} soatdan beri javobsiz`,
-      level: 'info',
-      days,
-      hours,
-    };
-  } catch {
-    return { isUrgent: false, waitText: null, level: null, days: 0, hours: 0 };
+  const digits = str.replace(/\D/g, '');
+  if (digits.length === 4) {
+    return `${digits.slice(0, 2)}:${digits.slice(2, 4)}`;
   }
+  if (digits.length === 3) {
+    return `0${digits.slice(0, 1)}:${digits.slice(1, 3)}`;
+  }
+  return str;
 }
 
-export function parseLeadTimeline(managerNote, lead) {
-  const initial = lead?.createdAt
-    ? [{
-        id: 'initial',
-        type: 'created',
-        author: 'Sayt',
-        text: `Ariza saytdan keldi · ${lead.source || 'sayt'}`,
-        at: lead.createdAt,
-      }]
-    : [];
+const SOURCE_LABELS = {
+  contacts: 'Bog\'lanish sahifasi',
+  footer: 'Pastki qism (footer)',
+  hero: 'Asosiy sahifa (hero)',
+  pricing: 'Tariflar sahifasi',
+  demo: 'Demo so\'rovi',
+};
 
-  if (!managerNote || !String(managerNote).trim()) {
-    return initial;
-  }
-
-  const raw = String(managerNote).trim();
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      const customEvents = parsed.filter((e) => e && e.type !== 'created');
-      return [...customEvents, ...initial].sort((a, b) => new Date(b.at) - new Date(a.at));
-    }
-  } catch {
-    // Legacy plain text note
-  }
-
-  const legacyEvent = {
-    id: 'legacy-note',
-    type: 'comment',
-    author: 'Administrator',
-    text: raw,
-    at: lead?.updatedAt || lead?.createdAt || new Date().toISOString(),
-  };
-  return [legacyEvent, ...initial];
+export function formatLeadSource(source) {
+  if (!source) return 'Sayt';
+  const key = String(source).trim().toLowerCase();
+  return SOURCE_LABELS[key] || source;
 }
 
-export function appendLeadTimelineEvent(currentNote, event) {
-  let existing = [];
-  if (currentNote && String(currentNote).trim()) {
-    try {
-      const parsed = JSON.parse(currentNote.trim());
-      if (Array.isArray(parsed)) {
-        existing = parsed.filter((e) => e && e.type !== 'created');
-      }
-    } catch {
-      existing = [{
-        id: 'legacy-note',
-        type: 'comment',
-        author: 'Administrator',
-        text: currentNote.trim(),
-        at: new Date().toISOString(),
-      }];
-    }
-  }
+const TYPE_LABELS = {
+  CONNECT: 'Ulanish',
+  DEMO: 'Demo',
+  QUESTION: 'Savol',
+  EQUIPMENT: 'Uskunalar',
+};
 
-  const newEntry = {
-    id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    type: event.type || 'comment',
-    author: event.author || 'Administrator',
-    text: event.text || '',
-    at: event.at || new Date().toISOString(),
-  };
+export function formatLeadType(type) {
+  if (!type) return '—';
+  return TYPE_LABELS[type] || type;
+}
 
-  const updated = [newEntry, ...existing];
-  return JSON.stringify(updated);
+const STATUS_LABELS = {
+  NEW: 'Yangi',
+  IN_PROGRESS: 'Jarayonda',
+  DONE: 'Yakunlangan',
+  REJECTED: 'Rad etilgan',
+};
+
+export function formatLeadStatus(status) {
+  if (!status) return '—';
+  return STATUS_LABELS[status] || status;
 }
 
 export function guessBusinessTypeFromMessage(message) {
@@ -172,7 +141,7 @@ export function guessBusinessTypeFromMessage(message) {
     return 'CANTEEN';
   }
   if (text.includes('qurilish') || text.includes('sement') || text.includes('stroy')) {
-    return 'BUILDING_MATERIALS';
+    return 'CONSTRUCTION';
   }
   if (text.includes('avto') || text.includes('zapchast') || text.includes('ehtiyot')) {
     return 'AUTO_PARTS';

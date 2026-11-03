@@ -2,7 +2,14 @@ import React from 'react';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import PlatformLeadQuickActionsBar from './PlatformLeadQuickActionsBar';
 import PlatformLeadTimelineCard from './PlatformLeadTimelineCard';
-import { formatLeadDateTime, getLeadWaitUrgency } from '../../utils/leadFormatUtils';
+import {
+  formatLeadDateTime,
+  formatPreferredTime,
+  formatLeadType,
+  formatLeadSource,
+  formatLeadStatus,
+  getLeadWaitUrgency,
+} from '../../utils/leadFormatUtils';
 
 const MOBILE_STATUS_OPTIONS = [
   { key: 'NEW', labelKey: 'platform.leads.statuses.NEW', fallback: 'Yangi', activeCls: 'bg-blue-600 text-white' },
@@ -24,8 +31,10 @@ export default function PlatformLeadMobileDetailView({
 
   const urgency = getLeadWaitUrgency(lead);
   const localeDisplay = lead.locale === 'uz' ? 'O\'zbekcha' : lead.locale === 'ru' ? 'Ruscha' : (lead.locale || '—');
-  const typeLabel = t ? t(`platform.leads.types.${lead.leadType}`, { defaultValue: lead.leadType }) : lead.leadType;
-  const sourceLabel = t ? t(`platform.leads.sources.${lead.source}`, { defaultValue: lead.source }) : lead.source;
+  const typeLabel = formatLeadType(lead.leadType);
+  const sourceLabel = formatLeadSource(lead.source);
+  const statusLabel = formatLeadStatus(lead.status);
+  const canConvert = lead.status !== 'DONE' && lead.status !== 'REJECTED' && ['CONNECT', 'DEMO'].includes(lead.leadType);
 
   return (
     <div className="space-y-3.5 pb-8">
@@ -48,8 +57,8 @@ export default function PlatformLeadMobileDetailView({
             </p>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300">
-          {t ? t(`platform.leads.statuses.${lead.status}`, { defaultValue: lead.status }) : lead.status}
+        <span className="shrink-0 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
+          {statusLabel}
         </span>
       </div>
 
@@ -60,7 +69,7 @@ export default function PlatformLeadMobileDetailView({
         </div>
       )}
 
-      {/* 3. Quick Actions Bar (Call button + 3 grid buttons) */}
+      {/* 3. Quick Actions Bar */}
       <PlatformLeadQuickActionsBar lead={lead} t={t} isMobile={true} />
 
       {/* 4. Message Card */}
@@ -74,7 +83,7 @@ export default function PlatformLeadMobileDetailView({
       <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-3 text-xs dark:bg-slate-800/50">
         <div>
           <span className="block text-[11px] font-semibold text-slate-400">Qulay vaqt</span>
-          <span className="font-medium text-slate-800 dark:text-slate-200">{lead.preferredTime || '—'}</span>
+          <span className="font-medium text-slate-800 dark:text-slate-200">{formatPreferredTime(lead.preferredTime)}</span>
         </div>
         <div>
           <span className="block text-[11px] font-semibold text-slate-400">Til</span>
@@ -92,6 +101,7 @@ export default function PlatformLeadMobileDetailView({
               <button
                 key={opt.key}
                 type="button"
+                aria-pressed={isCurrent}
                 onClick={() => onStatusChange(lead.id, opt.key)}
                 disabled={isSaving}
                 className={`rounded-xl border py-2.5 text-xs font-bold transition-all cursor-pointer ${
@@ -107,14 +117,16 @@ export default function PlatformLeadMobileDetailView({
         </div>
 
         {/* Convert to Company Button */}
-        <button
-          type="button"
-          onClick={() => onConvertToCompany(lead)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 py-2.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-pointer"
-        >
-          <Building2 size={15} />
-          <span>Kompaniyaga aylantirish</span>
-        </button>
+        {canConvert && (
+          <button
+            type="button"
+            onClick={() => onConvertToCompany(lead)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 py-2.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-pointer"
+          >
+            <Building2 size={15} />
+            <span>Kompaniyaga aylantirish</span>
+          </button>
+        )}
       </div>
 
       {/* 7. Timeline Card */}

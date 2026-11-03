@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Building2, Trash2 } from 'lucide-react';
 import PlatformLeadQuickActionsBar from './PlatformLeadQuickActionsBar';
 import PlatformLeadTimelineCard from './PlatformLeadTimelineCard';
-import { formatLeadDateTime } from '../../utils/leadFormatUtils';
+import PlatformLeadDeleteConfirmModal from './PlatformLeadDeleteConfirmModal';
+import {
+  formatLeadDateTime,
+  formatPreferredTime,
+  formatLeadType,
+  formatLeadSource,
+  formatLeadStatus,
+} from '../../utils/leadFormatUtils';
 
 const STATUS_OPTIONS = [
   { key: 'NEW', labelKey: 'platform.leads.statuses.NEW', fallback: 'Yangi', activeCls: 'bg-blue-600 text-white' },
@@ -13,24 +20,32 @@ const STATUS_OPTIONS = [
 
 export default function PlatformLeadDetailPane({
   lead,
+  hasLeads = true,
   t,
   onStatusChange,
   onAddComment,
   onConvertToCompany,
   onDeleteLead,
   isSaving,
+  isDeleting,
 }) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
   if (!lead) {
     return (
       <div className="flex h-full min-h-[300px] items-center justify-center rounded-2xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-400 dark:border-slate-800">
-        {t ? t('platform.leads.selectLead', { defaultValue: 'Arizani tanlang' }) : 'Arizani tanlang'}
+        {hasLeads
+          ? (t ? t('platform.leads.selectLead', { defaultValue: 'Arizani tanlang' }) : 'Arizani tanlang')
+          : (t ? t('platform.leads.noLeadsToDisplay', { defaultValue: 'Ko\'rsatish uchun ariza mavjud emas' }) : 'Ko\'rsatish uchun ariza mavjud emas')}
       </div>
     );
   }
 
   const localeDisplay = lead.locale === 'uz' ? 'O\'zbekcha' : lead.locale === 'ru' ? 'Ruscha' : (lead.locale || '—');
-  const typeLabel = t ? t(`platform.leads.types.${lead.leadType}`, { defaultValue: lead.leadType }) : lead.leadType;
-  const sourceLabel = t ? t(`platform.leads.sources.${lead.source}`, { defaultValue: lead.source }) : lead.source;
+  const typeLabel = formatLeadType(lead.leadType);
+  const sourceLabel = formatLeadSource(lead.source);
+  const statusLabel = formatLeadStatus(lead.status);
+  const canConvert = lead.status !== 'DONE' && lead.status !== 'REJECTED' && ['CONNECT', 'DEMO'].includes(lead.leadType);
 
   return (
     <div className="space-y-4 rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
@@ -40,8 +55,8 @@ export default function PlatformLeadDetailPane({
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
             {lead.name}
           </h2>
-          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300">
-            {t ? t(`platform.leads.statuses.${lead.status}`, { defaultValue: lead.status }) : lead.status}
+          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
+            {statusLabel}
           </span>
         </div>
         <p className="text-xs text-slate-400">
@@ -64,7 +79,7 @@ export default function PlatformLeadDetailPane({
         </div>
         <div>
           <span className="block text-[11px] font-semibold text-slate-400">Qulay vaqt</span>
-          <span className="font-medium text-slate-800 dark:text-slate-200">{lead.preferredTime || '—'}</span>
+          <span className="font-medium text-slate-800 dark:text-slate-200">{formatPreferredTime(lead.preferredTime)}</span>
         </div>
         <div>
           <span className="block text-[11px] font-semibold text-slate-400">Til</span>
@@ -82,14 +97,16 @@ export default function PlatformLeadDetailPane({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Holat</span>
-          <button
-            type="button"
-            onClick={() => onConvertToCompany(lead)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-pointer"
-          >
-            <Building2 size={14} />
-            <span>Kompaniyaga aylantirish</span>
-          </button>
+          {canConvert && (
+            <button
+              type="button"
+              onClick={() => onConvertToCompany(lead)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-pointer"
+            >
+              <Building2 size={14} />
+              <span>Kompaniyaga aylantirish</span>
+            </button>
+          )}
         </div>
 
         {/* 4 Segment Buttons */}
@@ -100,6 +117,7 @@ export default function PlatformLeadDetailPane({
               <button
                 key={opt.key}
                 type="button"
+                aria-pressed={isCurrent}
                 onClick={() => onStatusChange(lead.id, opt.key)}
                 disabled={isSaving}
                 className={`rounded-xl border py-2 text-xs font-bold transition-all cursor-pointer ${
@@ -122,13 +140,24 @@ export default function PlatformLeadDetailPane({
       <div className="flex justify-end pt-1">
         <button
           type="button"
-          onClick={() => onDeleteLead(lead.id)}
+          onClick={() => setDeleteConfirmOpen(true)}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 hover:text-rose-700 dark:text-rose-400 cursor-pointer"
         >
           <Trash2 size={13} />
           <span>Arizani o'chirish</span>
         </button>
       </div>
+
+      <PlatformLeadDeleteConfirmModal
+        isOpen={deleteConfirmOpen}
+        leadName={lead.name}
+        isDeleting={isDeleting}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          setDeleteConfirmOpen(false);
+          onDeleteLead(lead.id);
+        }}
+      />
     </div>
   );
 }

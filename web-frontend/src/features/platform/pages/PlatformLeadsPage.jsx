@@ -86,12 +86,14 @@ export default function PlatformLeadsPage() {
         <div className="hidden lg:block lg:col-span-7 xl:col-span-7 sticky top-4">
           <PlatformLeadDetailPane
             lead={p.selectedLead}
+            hasLeads={p.rows.length > 0}
             t={p.t}
             onStatusChange={p.handleStatusChange}
             onAddComment={p.handleAddComment}
             onConvertToCompany={p.handleStartConvert}
             onDeleteLead={p.handleDeleteLead}
             isSaving={p.isSaving}
+            isDeleting={p.isDeleting}
           />
         </div>
       </div>

@@ -17,13 +17,20 @@ export default function PlatformLeadQuickActionsBar({ lead, t, isMobile = false 
   const tgLink = buildTelegramLink(lead.phone);
   const mailtoLink = buildMailtoLink(lead.email);
 
-  const handleCopyPhone = () => {
+  const handleCopyPhone = async () => {
     const raw = cleanPhone(lead.phone);
     if (!raw) return;
-    navigator.clipboard?.writeText(raw);
-    setCopied(true);
-    toast.success(t ? t('platform.leads.phoneCopied', { defaultValue: 'Raqam nusxalandi' }) : 'Raqam nusxalandi');
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard API unavailable');
+      }
+      await navigator.clipboard.writeText(raw);
+      setCopied(true);
+      toast.success(t ? t('platform.leads.phoneCopied', { defaultValue: 'Raqam nusxalandi' }) : 'Raqam nusxalandi');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t ? t('platform.leads.phoneCopyFailed', { defaultValue: 'Raqamni nusxalab bo\'lmadi' }) : 'Raqamni nusxalab bo\'lmadi');
+    }
   };
 
   if (isMobile) {

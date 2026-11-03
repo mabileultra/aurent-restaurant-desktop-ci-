@@ -3,8 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { platformLeadsApi } from '../../../api/platform/leads.api';
-import { companyApi } from '../../../api/company.api';
-import { appendLeadTimelineEvent, getLeadWaitUrgency } from '../utils/leadFormatUtils';
+import { useAuthStore } from '../../../store/authStore';
+import {
+  appendLeadTimelineEvent,
+  getLeadWaitUrgency,
+  resolveCurrentAuthor,
+} from '../utils/leadTimelineUtils';
+import { convertLeadToCompanyTransaction } from '../utils/leadConvertService';
 
 export function usePlatformLeadsPage() {
   const { t } = useTranslation();
@@ -14,17 +19,16 @@ export function usePlatformLeadsPage() {
   const [status, setStatus] = useState('');
   const [leadType, setLeadType] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState(null);
-  const [viewMode, setViewMode] = useState('split'); // 'split' | 'convert_company' | 'mobile_detail'
+  const [viewMode, setViewMode] = useState('split');
   const [convertTargetLead, setConvertTargetLead] = useState(null);
 
   const queryParams = useMemo(
     () => ({
       page: 0,
-      size: 100,
+      size: 200,
       search: search.trim() || undefined,
-      status: status || undefined,
     }),
-    [search, status]
+    [search]
   );
 
   const { data, isPending } = useQuery({
@@ -34,31 +38,6 @@ export function usePlatformLeadsPage() {
 
   const rawRows = data?.content ?? [];
 
-  // Filter by leadType if chosen
-  const rows = useMemo(() => {
-    let list = rawRows;
-    if (leadType) {
-      list = list.filter((r) => r.leadType === leadType);
-    }
-    // Sort urgent NEW leads to top as requested in the design
-    return [...list].sort((a, b) => {
-      const uA = getLeadWaitUrgency(a).isUrgent ? 1 : 0;
-      const uB = getLeadWaitUrgency(b).isUrgent ? 1 : 0;
-      if (uA !== uB) return uB - uA;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-  }, [rawRows, leadType]);
-
-  // Selected lead object
-  const selectedLead = useMemo(() => {
-    if (selectedLeadId) {
-      const found = rows.find((r) => r.id === selectedLeadId);
-      if (found) return found;
-    }
-    return rows[0] || null;
-  }, [rows, selectedLeadId]);
-
-  // Status counts
   const counts = useMemo(() => {
     const res = { ALL: rawRows.length, NEW: 0, IN_PROGRESS: 0, DONE: 0, REJECTED: 0 };
     rawRows.forEach((r) => {
@@ -69,7 +48,30 @@ export function usePlatformLeadsPage() {
     return res;
   }, [rawRows]);
 
-  // Unanswered count for SLA header
+  const rows = useMemo(() => {
+    let list = rawRows;
+    if (status) {
+      list = list.filter((r) => r.status === status);
+    }
+    if (leadType) {
+      list = list.filter((r) => r.leadType === leadType);
+    }
+    return [...list].sort((a, b) => {
+      const uA = getLeadWaitUrgency(a).isUrgent ? 1 : 0;
+      const uB = getLeadWaitUrgency(b).isUrgent ? 1 : 0;
+      if (uA !== uB) return uB - uA;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }, [rawRows, status, leadType]);
+
+  const selectedLead = useMemo(() => {
+    if (selectedLeadId) {
+      const found = rows.find((r) => r.id === selectedLeadId);
+      if (found) return found;
+    }
+    return rows[0] || null;
+  }, [rows, selectedLeadId]);
+
   const unansweredCount = useMemo(() => {
     return rawRows.filter((r) => getLeadWaitUrgency(r).isUrgent).length;
   }, [rawRows]);
@@ -80,7 +82,7 @@ export function usePlatformLeadsPage() {
     mutationFn: ({ id, payload }) => platformLeadsApi.update(id, payload),
     onSuccess: () => {
       invalidate();
-      toast.success(t('platform.leads.saved'));
+      toast.success(t('platform.leads.saved', { defaultValue: 'Ariza yangilandi' }));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
@@ -91,57 +93,59 @@ export function usePlatformLeadsPage() {
       invalidate();
       setSelectedLeadId(null);
       setViewMode('split');
-      toast.success(t('platform.leads.deleted'));
+      toast.success(t('platform.leads.deleted', { defaultValue: 'Ariza o\'chirildi' }));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
 
   const convertMutation = useMutation({
-    mutationFn: async ({ leadId, company, markDone }) => {
-      await companyApi.create(company);
-      if (markDone) {
-        const lead = rawRows.find((r) => r.id === leadId);
-        const note = appendLeadTimelineEvent(lead?.managerNote, {
-          type: 'status_change',
-          author: 'Administrator',
-          text: `Kompaniyaga aylantirildi: «${company.name}». Holat: Yakunlangan`,
-        });
-        await platformLeadsApi.update(leadId, { status: 'DONE', managerNote: note });
-      }
+    mutationFn: async (payload) => {
+      const lead = rawRows.find((r) => r.id === payload.leadId);
+      const author = resolveCurrentAuthor(useAuthStore.getState().user);
+      return convertLeadToCompanyTransaction({
+        ...payload,
+        lead,
+        author,
+      });
     },
     onSuccess: () => {
       invalidate();
       setViewMode('split');
       setConvertTargetLead(null);
-      toast.success(t('platform.leads.companyCreated', { defaultValue: 'Kompaniya muvaffaqiyatli yaratildi' }));
+      toast.success('Kompaniya, filial va admin muvaffaqiyatli yaratildi');
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+    onError: (e) => toast.error(e.response?.data?.message || e.message || t('platform.saveFailed')),
   });
 
   const handleStatusChange = (leadId, nextStatus) => {
     const lead = rawRows.find((r) => r.id === leadId);
     if (!lead || lead.status === nextStatus) return;
-    const note = appendLeadTimelineEvent(lead.managerNote, {
-      type: 'status_change',
-      author: 'Administrator',
-      text: `Holat: ${t(`platform.leads.statuses.${lead.status}`)} → ${t(`platform.leads.statuses.${nextStatus}`)}`,
-    });
+    const author = resolveCurrentAuthor(useAuthStore.getState().user);
+    const note = appendLeadTimelineEvent(
+      lead.managerNote,
+      {
+        type: 'status_change',
+        author,
+        text: `Holat: ${t(`platform.leads.statuses.${lead.status}`, { defaultValue: lead.status })} → ${t(`platform.leads.statuses.${nextStatus}`, { defaultValue: nextStatus })}`,
+      },
+      { leadCreatedAt: lead.createdAt }
+    );
     updateMutation.mutate({ id: leadId, payload: { status: nextStatus, managerNote: note } });
   };
 
   const handleAddComment = (commentText) => {
     if (!selectedLead || !commentText.trim()) return;
-    const note = appendLeadTimelineEvent(selectedLead.managerNote, {
-      type: 'comment',
-      author: 'Administrator',
-      text: commentText.trim(),
-    });
+    const author = resolveCurrentAuthor(useAuthStore.getState().user);
+    const note = appendLeadTimelineEvent(
+      selectedLead.managerNote,
+      {
+        type: 'comment',
+        author,
+        text: commentText.trim(),
+      },
+      { leadCreatedAt: selectedLead.createdAt }
+    );
     updateMutation.mutate({ id: selectedLead.id, payload: { managerNote: note } });
-  };
-
-  const handleDeleteLead = (id) => {
-    if (!window.confirm(t('platform.leads.deleteConfirm'))) return;
-    deleteMutation.mutate(id);
   };
 
   const handleStartConvert = (lead) => {
@@ -174,7 +178,7 @@ export function usePlatformLeadsPage() {
     convertTargetLead,
     handleStatusChange,
     handleAddComment,
-    handleDeleteLead,
+    handleDeleteLead: deleteMutation.mutate,
     handleStartConvert,
     handleSelectLeadMobile,
     handleConvertSubmit: convertMutation.mutate,
