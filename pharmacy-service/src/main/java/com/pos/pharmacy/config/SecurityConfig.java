@@ -1,6 +1,7 @@
 package com.pos.pharmacy.config;
 
 import com.pos.pharmacy.security.JwtAuthenticationFilter;
+import com.pos.pharmacy.security.PharmacyInboundApiKeyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final PharmacyInboundApiKeyFilter inboundApiKeyFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,9 +29,11 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/internal/pharmacy/**").permitAll()
                 .requestMatchers("/pharmacy/**").authenticated()
                 .anyRequest().denyAll()
             )
+            .addFilterBefore(inboundApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }

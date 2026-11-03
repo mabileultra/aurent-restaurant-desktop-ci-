@@ -1,6 +1,9 @@
 package com.pos.taxanalytics.service.impl;
 
 import com.pos.exception.PosExceptions;
+import com.pos.taxanalytics.client.TaxAnalyticsPharmacyClient;
+import com.pos.taxanalytics.client.TaxAnalyticsRestaurantClient;
+import com.pos.taxanalytics.client.dto.TaxAnalyticsCompanyMoneyDto;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompaniesResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyProductResponse;
@@ -13,6 +16,8 @@ import com.pos.taxanalytics.support.TaxAnalyticsCompanyDays;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks.DayTurnover;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalMerge;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekMath;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +41,9 @@ import java.util.Map;
 public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyService {
 
     private final TaxAnalyticsCompanyQueryRepository repository;
+    private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
+    private final TaxAnalyticsRestaurantClient restaurantClient;
+    private final TaxAnalyticsPharmacyClient pharmacyClient;
 
     @Override
     public TaxAnalyticsCompaniesResponse list(
@@ -52,10 +61,27 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
         int safePage = Math.min(Math.max(page, 0), 10_000);
         int safeSize = Math.min(Math.max(size, 1), 100);
-        long total = repository.countCompanies(regionCode, districtCode, connectionStatus, search);
-        List<TaxAnalyticsCompanyRowResponse> rows = repository.listCompanies(
-            range, week, regionCode, districtCode, connectionStatus, search, safeSize, safePage * safeSize
-        ).stream().map(TaxAnalyticsCompanyServiceImpl::toRow).toList();
+        // Connection filter applied after restaurant/pharmacy merge (grocery SQL alone misses edge Multikassa).
+        boolean filterConnected = connectionStatus != null && !connectionStatus.isBlank();
+        TaxAnalyticsVerticalSnapshotLoader.Pair vertical = verticalLoader.load(
+            range.from(), range.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
+        );
+        Map<Integer, TaxAnalyticsCompanyMoneyDto> restaurant = TaxAnalyticsVerticalMerge.index(vertical.restaurant());
+        Map<Integer, TaxAnalyticsCompanyMoneyDto> pharmacy = TaxAnalyticsVerticalMerge.index(vertical.pharmacy());
+        Set<Integer> connected = TaxAnalyticsVerticalMerge.connectedIds(vertical.restaurant(), vertical.pharmacy());
+
+        List<TaxAnalyticsCompanyRowResponse> all = repository.listCompanies(
+            range, week, regionCode, districtCode, filterConnected ? null : connectionStatus, search, 10_000, 0
+        ).stream().map(row -> {
+            TaxAnalyticsCompanyRowResponse base = toRow(row);
+            int companyId = base.companyId();
+            TaxAnalyticsCompanyMoneyDto mergedExtra = sumExtras(restaurant.get(companyId), pharmacy.get(companyId));
+            return TaxAnalyticsVerticalMerge.mergeRow(base, mergedExtra, connected.contains(companyId));
+        }).filter(row -> matchesConnection(row.connected(), connectionStatus)).toList();
+        long total = all.size();
+        int fromIdx = Math.min(safePage * safeSize, all.size());
+        int toIdx = Math.min(fromIdx + safeSize, all.size());
+        List<TaxAnalyticsCompanyRowResponse> rows = all.subList(fromIdx, toIdx);
         return new TaxAnalyticsCompaniesResponse(
             range.key(),
             range.from().toString(),
@@ -71,6 +97,19 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         );
     }
 
+    private static boolean matchesConnection(boolean connected, String connectionStatus) {
+        if (connectionStatus == null || connectionStatus.isBlank()) {
+            return true;
+        }
+        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            return connected;
+        }
+        if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            return !connected;
+        }
+        return true;
+    }
+
     @Override
     public TaxAnalyticsCompanyDetailResponse detail(int companyId, String period, LocalDate from, LocalDate to) {
         Map<String, Object> company = repository.findCompany(companyId);
@@ -78,6 +117,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             throw PosExceptions.notFound("Company", companyId);
         }
         TaxAnalyticsPeriod range = TaxAnalyticsPeriod.resolve(period, from, to);
+        TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
         Map<String, Object> turnover = repository.periodTurnover(companyId, range);
         LocalDate today = LocalDate.now(TaxAnalyticsWeekWindow.ZONE);
         LocalDate thisMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -92,8 +132,23 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
                 TaxAnalyticsWeekMath.decimal(day.get("non_fiscal_turnover"))
             ));
         }
-        BigDecimal fiscal = TaxAnalyticsWeekMath.decimal(turnover.get("fiscal_turnover"));
-        BigDecimal nonFiscal = TaxAnalyticsWeekMath.decimal(turnover.get("non_fiscal_turnover"));
+        TaxAnalyticsVerticalMerge.mergeDays(byDate, restaurantClient.daily(companyId, seriesStart, today));
+        TaxAnalyticsVerticalMerge.mergeDays(byDate, pharmacyClient.daily(companyId, seriesStart, today));
+
+        TaxAnalyticsVerticalSnapshotLoader.Pair vertical = verticalLoader.load(
+            range.from(), range.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
+        );
+        TaxAnalyticsCompanyMoneyDto extra = sumExtras(
+            TaxAnalyticsVerticalMerge.index(vertical.restaurant()).get(companyId),
+            TaxAnalyticsVerticalMerge.index(vertical.pharmacy()).get(companyId)
+        );
+        boolean connected = connected(company.get("connected"))
+            || TaxAnalyticsVerticalMerge.connectedIds(vertical.restaurant(), vertical.pharmacy()).contains(companyId);
+
+        BigDecimal fiscal = TaxAnalyticsWeekMath.decimal(turnover.get("fiscal_turnover"))
+            .add(extra == null ? BigDecimal.ZERO : nz(extra.fiscalTurnover()));
+        BigDecimal nonFiscal = TaxAnalyticsWeekMath.decimal(turnover.get("non_fiscal_turnover"))
+            .add(extra == null ? BigDecimal.ZERO : nz(extra.nonFiscalTurnover()));
         return new TaxAnalyticsCompanyDetailResponse(
             companyId,
             text(company.get("name")),
@@ -104,7 +159,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             blankToNull(company.get("district_code")),
             blankToNull(company.get("district_name_ru")),
             blankToNull(company.get("district_name_uz")),
-            connected(company.get("connected")),
+            connected,
             range.key(),
             range.from().toString(),
             range.to().toString(),
@@ -153,6 +208,25 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         );
     }
 
+    private static TaxAnalyticsCompanyMoneyDto sumExtras(
+        TaxAnalyticsCompanyMoneyDto restaurant,
+        TaxAnalyticsCompanyMoneyDto pharmacy
+    ) {
+        if (restaurant == null) {
+            return pharmacy;
+        }
+        if (pharmacy == null) {
+            return restaurant;
+        }
+        return new TaxAnalyticsCompanyMoneyDto(
+            restaurant.companyId(),
+            nz(restaurant.fiscalTurnover()).add(nz(pharmacy.fiscalTurnover())),
+            nz(restaurant.nonFiscalTurnover()).add(nz(pharmacy.nonFiscalTurnover())),
+            nz(restaurant.weekTurnover()).add(nz(pharmacy.weekTurnover())),
+            nz(restaurant.prevWeekTurnover()).add(nz(pharmacy.prevWeekTurnover()))
+        );
+    }
+
     private static TaxAnalyticsCompanyRowResponse toRow(Map<String, Object> row) {
         BigDecimal fiscal = TaxAnalyticsWeekMath.decimal(row.get("fiscal_turnover"));
         BigDecimal nonFiscal = TaxAnalyticsWeekMath.decimal(row.get("non_fiscal_turnover"));
@@ -183,6 +257,10 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
 
     private static boolean connected(Object value) {
         return value instanceof Number number && number.intValue() == 1;
+    }
+
+    private static BigDecimal nz(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private static String text(Object value) {

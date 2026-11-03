@@ -1,18 +1,24 @@
-# Tax analytics — «connected»
+# Tax analytics — connected + vertical turnover
 
 ## Source of data
 
-Platform `/platform/analytics` reads **Aurent** `companies` + grocery `sales` in web-backend. It is **not** the GNК/Soliq registry and does not call external tax APIs.
+Platform `/platform/analytics` and `/platform/analytics/companies` merge:
 
-## Connected flag
+| Vertical | Where | Turnover | Connected |
+|---|---|---|---|
+| Grocery / product | `pos_db.sales` | fiscal via `fiscal_status` | Multikassa enabled **or** FiscalDrive (`TaxAnalyticsConnectedSql`) |
+| Pharmacy | `pharmacy-service` `/internal/pharmacy/tax-analytics/*` | pharmacy `sales` | companies with `FISCALIZED` sales |
+| Restaurant | `restaurant-service` `/internal/rst/tax-analytics/*` | `floor_order_payments` on `CLOSED` orders | `edge_multikassa.enabled` |
 
-A company is connected when any of its stores has a cash register with:
+Companies still come from `pos_db.companies`. Not a GNК registry.
 
-- Multikassa settings `enabled = TRUE`, **or**
-- FiscalDrive settings row **and** `cash_registers.fiscal_provider = 'FISCAL_DRIVE'`
+## Must
 
-SQL lives in `TaxAnalyticsConnectedSql` — keep Multikassa and FiscalDrive in sync; do not drop FiscalDrive again after its migration shipped.
+- Keep Multikassa **and** FiscalDrive in `TaxAnalyticsConnectedSql`.
+- Merge restaurant/pharmacy through `TaxAnalyticsVerticalSnapshotLoader` + `TaxAnalyticsVerticalMerge` — do not query foreign DBs from web-backend JDBC.
+- Vertical HTTP failures are best-effort (warn + zeros); grocery still returns.
 
-## Not connected
+## Must NOT
 
-Not-connected companies still appear in enterprise/company lists (LEFT JOIN). Turnover is only from POS `sales` — zeros mean no completed sales in the period, not a filter that hides the row.
+- Treat restaurant payments without OFD proof as fiscal (they stay non-fiscal until payment carries fiscal status).
+- Drop pharmacy/restaurant internal endpoints without replacing the merge path.

@@ -11,5 +11,8 @@ import org.springframework.stereotype.Component;
 @Setter
 public class PharmacyInternalProperties {
 
-  private String internalApiKey = "pos-internal-dev-key-change-in-prod";
+    private String baseUrl = "http://localhost:8089/api/v1";
+    private String internalApiKey = "pos-internal-dev-key-change-in-prod";
+    private int connectTimeoutMs = 3000;
+    private int readTimeoutMs = 12000;
 }

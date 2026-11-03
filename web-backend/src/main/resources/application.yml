@@ -90,7 +90,12 @@ app:
     base-url: ${RESTAURANT_SERVICE_URL:http://localhost:8087/api/v1}
     internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
     connect-timeout-ms: 3000
-    read-timeout-ms: 8000
+    read-timeout-ms: 12000
+  pharmacy:
+    base-url: ${PHARMACY_SERVICE_URL:http://localhost:8089/api/v1}
+    internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
+    connect-timeout-ms: 3000
+    read-timeout-ms: 12000
   # Wave 4–5: outbound + dual-read/write. Keep enabled=false until backfill+verify green.
   # read-mode: LOCAL_ONLY | REMOTE_FIRST | REMOTE_ONLY
   # write-mode: LOCAL_ONLY | DUAL | REMOTE_ONLY (strict sync mirror; local DB still written)

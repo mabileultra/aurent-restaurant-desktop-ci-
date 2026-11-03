@@ -713,6 +713,7 @@ services:
       CRM_SERVICE_URL: http://crm-service:8083/api/v1
       POS_INTERNAL_API_KEY: ${POS_INTERNAL_API_KEY:-pos-internal-dev-key-change-in-prod}
       RESTAURANT_SERVICE_URL: http://restaurant-service:8087/api/v1
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8089/api/v1
       # Catalog dual-path (Wave 6). Keep ENABLED=false until staging soak green.
       CATALOG_SERVICE_ENABLED: ${CATALOG_SERVICE_ENABLED:-false}
       CATALOG_SERVICE_READ_MODE: ${CATALOG_SERVICE_READ_MODE:-REMOTE_FIRST}
