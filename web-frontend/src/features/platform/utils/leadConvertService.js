@@ -124,12 +124,15 @@ export async function convertLeadToCompanyTransaction({
     } else {
       finalPassword = adminUser.password || generateSecurePassword(12);
       try {
+        const nameParts = (adminUser.name || '').trim().split(/\s+/).filter(Boolean);
+        const firstName = nameParts[0] || 'Admin';
+        const lastName = nameParts.slice(1).join(' ');
         await userApi.create({
           companyId: Number(companyId),
           username: adminUser.login,
           password: finalPassword,
-          firstName: adminUser.name || 'Admin',
-          lastName: '—',
+          firstName,
+          ...(lastName ? { lastName } : {}),
           email: emailToUse,
           role: 'ADMIN',
           active: true,
