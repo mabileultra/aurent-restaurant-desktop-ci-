@@ -165,18 +165,30 @@ export default function RestaurantPrinterSettings({
     }
     setTesting(key);
     try {
+      // Include §B§ / §E§ so staff can verify bold / double-height on thermal (profile styles use the same markers).
       await printTicketLines({
         title: t('rst.admin.printersTest'),
         lines: [
           t('rst.admin.printersTestOk'),
           name,
           new Date().toLocaleString(),
+          '---',
+          `§B§${t('rst.admin.printersTestBold')}`,
+          `§E§${t('rst.admin.printersTestEmph')}`,
+          t('rst.admin.printersTestNormal'),
         ],
         printerName: name,
+        titleEmph: true,
       });
       toast.success(t('rst.admin.printersTestOk'));
-    } catch {
-      toast.error(t('rst.admin.printersTestFailed'));
+    } catch (err) {
+      const detail = String(err?.message || err || '').trim();
+      toast.error(
+        detail
+          ? `${t('rst.admin.printersTestFailed')}: ${detail}`
+          : t('rst.admin.printersTestFailed'),
+        { duration: 12_000 },
+      );
     } finally {
       setTesting('');
     }

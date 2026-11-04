@@ -867,7 +867,10 @@
       "menuImportTasnifShortIdle": "?",
       "menuCategoryPhoto": "Фото раздела",
       "menuCategoryPhotoHint": "Показывается на кассе в карточках категорий (до 400 КБ).",
-      "category": "Категория"
+      "category": "Категория",
+      "printersTestBold": "ЖИРНЫЙ образец",
+      "printersTestEmph": "КРУПНЫЙ+ЖИРНЫЙ образец",
+      "printersTestNormal": "Обычный текст"
     },
     "audit": {
       "colDetail": "Событие",
