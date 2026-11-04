@@ -59,7 +59,9 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 4. Code is one-time, ~60s TTL, audience bound to company `PHARMACY`.
 
 Helper on main: `web-frontend/src/utils/pharmacyAppRedirect.js` (`redirectToPharmacyApp`).
-Silent auto-hop / WorldGate cutover — later sprint (flag + offline drain).
+Explicit UI (no silent hop): `PharmacySpaLaunchButton` on `/pharm` POS topbar + stock layout;
+entry URL `/auth/pharmacy-handoff?next=…` (requires aurent session).
+WorldGate cutover (block `/pharm` UI) — later, after offline drain + lab flag.
 
 ---
 

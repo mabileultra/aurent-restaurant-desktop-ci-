@@ -3,8 +3,6 @@
  */
 import { authApi } from '../api/auth.api';
 import { getPharmacyAppUrl } from '../config/pharmacyAppUrl';
-import { PHARM_POS_PATH } from '../pharmacy/app/pharmacyPaths';
-
 /** Paths that belong on the pharmacy product after cutover. */
 export function isPharmacySpaPath(path) {
   const p = String(path || '');
@@ -32,20 +30,27 @@ export async function redirectToPharmacyApp(path, { audience = 'PHARMACY' } = {}
   return true;
 }
 
-function mapMainPathToPharmacyPath(path) {
+export function mapMainPathToPharmacyPath(path) {
   const p = String(path || '');
   if (p.startsWith('/pharm/pos') || p === '/pharm' || p === '/cashier/pharmacy') {
     return '/pos';
   }
-  if (p.startsWith('/pharm/stock/products') || p.includes('/stock/products')) {
+  if (p.startsWith('/pharm/stock/products') || p.endsWith('/stock/products')) {
     return '/stock/products';
+  }
+  if (p.startsWith('/pharm/stock/receipts')) {
+    return p.replace(/^\/pharm/, '');
+  }
+  if (p.startsWith('/pharm/stock/asl')) {
+    return p.replace(/^\/pharm/, '');
   }
   if (p.startsWith('/pharm/stock')) {
     return p.replace(/^\/pharm/, '') || '/stock/products';
   }
-  if (p.startsWith('/')) {
-    // Already a pharmacy-SPA path (/pos, /stock/…)
-    if (p === '/pos' || p.startsWith('/stock')) return p;
+  if (p === '/dashboard' || p.startsWith('/dashboard')) return '/dashboard';
+  if (p === '/returns' || p.startsWith('/sales')) {
+    return p.startsWith('/returns') ? '/returns' : '/sales';
   }
-  return PHARM_POS_PATH.replace(/^\/pharm/, '') || '/pos';
+  if (p === '/pos' || p.startsWith('/stock') || p.startsWith('/dashboard')) return p;
+  return '/pos';
 }

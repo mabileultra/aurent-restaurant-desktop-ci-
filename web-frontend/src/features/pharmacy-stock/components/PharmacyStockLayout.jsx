@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import PharmacySpaLaunchButton from '../../pharmacy-cashier/components/PharmacySpaLaunchButton';
 import '../styles/pharmacy-stock.css';
 
 export function PharmacyStockBackLink({ to, children, iconOnly = false }) {
@@ -51,7 +52,10 @@ export default function PharmacyStockLayout({
             {subtitle ? <p className="pharmacy-stock__subtitle">{subtitle}</p> : null}
           </div>
         </div>
-        {actions ? <div className="pharmacy-stock__actions">{actions}</div> : null}
+        <div className="pharmacy-stock__actions flex flex-wrap items-center gap-2">
+          <PharmacySpaLaunchButton />
+          {actions}
+        </div>
       </header>
       {children}
     </div>

@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
 import PharmacyTopbarShortcuts from '../../../features/pharmacy-cashier/components/PharmacyTopbarShortcuts';
+import PharmacySpaLaunchButton from '../../../features/pharmacy-cashier/components/PharmacySpaLaunchButton';
 import { isPharmPosPath } from '../../../pharmacy/app/pharmacyPaths';
 
 export default function CashierPosTopbar({
@@ -53,6 +54,7 @@ export default function CashierPosTopbar({
           </p>
         </div>
         <div className="cashier-topbar__actions">
+          {isPharmacyRegister ? <PharmacySpaLaunchButton compact className="d-none d-md-inline-flex" /> : null}
           <CashierNotificationsBell />
           {storeId && !shiftIsOpen && shift?.status !== 'OPEN' ? (
             <button type="button" className="cashier-pos-topbar__open-shift" onClick={openShift}>
