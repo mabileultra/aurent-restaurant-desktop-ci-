@@ -13,9 +13,22 @@ import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
 import { prefetchAppHome } from '../../../utils/prefetchAppHome';
+import { isPharmacyOnlyCompany } from '../../../utils/isPharmacyOnlyCompany';
+import { isPharmacyAppSplitEnabled, pharmacyAppHref } from '../../../config/pharmacyAppUrl';
 
 async function resolvePostLoginPath(role, businessPayload) {
-  return resolveAppHomePath(role, businessPayload?.defaultTypeCode);
+  const path = resolveAppHomePath(role, businessPayload?.defaultTypeCode);
+  // Кассир аптеки на старом desktop остаётся на aurent (force-update).
+  if (String(role || '').toUpperCase() === 'CASHIER') return path;
+  if (isPharmacyAppSplitEnabled() && isPharmacyOnlyCompany(businessPayload)) {
+    const target = path.startsWith('/cashier') ? '/dashboard' : path;
+    const href = pharmacyAppHref(target);
+    if (href) {
+      window.location.replace(href);
+      return target;
+    }
+  }
+  return path;
 }
 
 export function useLoginPage() {

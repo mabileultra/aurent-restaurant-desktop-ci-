@@ -5,14 +5,12 @@ export const PHARMACY_QUICK_LINK_IDS = {
   DMED: 'dmed',
   IKPU: 'ikpu',
   ANALOGS: 'analogs',
-  ASL_PORTAL: 'asl_portal',
   MYGOV: 'mygov',
 };
 
 export const PHARMACY_EXTERNAL_URLS = {
   dmed: 'https://dmed.uz/uz',
   ikpu: 'https://tasnif.soliq.uz/',
-  aslPortal: 'https://xtrace.aslbelgisi.uz',
   mygov: 'https://my.gov.uz/',
 };
 

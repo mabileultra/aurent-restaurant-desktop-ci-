@@ -245,7 +245,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
         throw new Error(
           t('products.pharmacyUsePharmStock', {
             defaultValue:
-              'Аптечные товары добавляйте в «Склад → Аптечные товары» (/pharm/stock/products)',
+              'Аптечные товары добавляйте в приложении аптеки (p-aurent)',
           }),
         );
       }

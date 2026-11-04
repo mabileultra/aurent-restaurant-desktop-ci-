@@ -1,21 +1,25 @@
 const { BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { PRODUCTION_ORIGIN } = require('../../config/publicUrl');
+const { PRODUCTION_RESTAURANT_ORIGIN } = require('../../config/desktopUrls');
 const { parseServerUrl } = require('../core/serverUrl');
 const { saveServerConfig, userConfigPath } = require('../config/desktopConfig');
+const { normalizeAppWorld, APP_WORLD_RESTAURANT } = require('../config/loginUrl');
 
 const DEFAULT_WEB_PORT = '443';
 const DEFAULT_API_PORT = '443';
 
 function readExistingForForm(existing) {
-  const defaults = parseServerUrl(PRODUCTION_ORIGIN);
-  const world = existing?.appWorld === 'restaurant' ? 'restaurant' : 'main';
+  const world = normalizeAppWorld(existing?.appWorld);
+  const defaults = parseServerUrl(
+    world === APP_WORLD_RESTAURANT ? PRODUCTION_RESTAURANT_ORIGIN : PRODUCTION_ORIGIN
+  );
   let parsed = {
     host: defaults.host,
     webPort: defaults.port || DEFAULT_WEB_PORT,
     apiPort: defaults.port || DEFAULT_API_PORT,
     companyLoginCode: '',
-    appWorld: world,
+    appWorld: world === APP_WORLD_RESTAURANT ? APP_WORLD_RESTAURANT : 'main',
   };
 
   if (existing?.cashierUrl) {
@@ -25,7 +29,7 @@ function readExistingForForm(existing) {
       webPort: existing.webPort || web.port || DEFAULT_WEB_PORT,
       apiPort: existing.apiPort || DEFAULT_API_PORT,
       companyLoginCode: existing.companyLoginCode || '',
-      appWorld: world,
+      appWorld: parsed.appWorld,
     };
   } else if (existing?.backendOrigin) {
     const api = parseServerUrl(existing.backendOrigin);
@@ -34,7 +38,7 @@ function readExistingForForm(existing) {
       webPort: existing.webPort || DEFAULT_WEB_PORT,
       apiPort: existing.apiPort || api.port || DEFAULT_API_PORT,
       companyLoginCode: existing.companyLoginCode || '',
-      appWorld: world,
+      appWorld: parsed.appWorld,
     };
   }
 
@@ -44,9 +48,9 @@ function readExistingForForm(existing) {
 function buildSetupHtml(current) {
   const { host, webPort, apiPort, companyLoginCode, appWorld } = readExistingForForm(current);
   const intro =
-    'Укажите адрес сервера и тип кассы. Ресторан открывается на r-aurent без перехода между сайтами.';
+    'Магазин — aurent.uz. Ресторан — r-aurent.uz. Аптека: установите новый клиент Aurent Pharmacy (старый десктоп для аптек больше не поддерживается).';
   const hint =
-    'Порт <strong>443</strong> для HTTPS (www.aurent.uz). Для HTTP в локальной сети — <strong>8081</strong>. Проверка: <strong>/api/v1/actuator/health</strong> → {"status":"UP"}.';
+    'Порт <strong>443</strong> для HTTPS. Проверка: <strong>/api/v1/actuator/health</strong> → {"status":"UP"}.';
 
   return `data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html>
 <html lang="ru">
@@ -81,9 +85,9 @@ function buildSetupHtml(current) {
   <h1>Настройка сервера Aurent</h1>
   <p>${intro}</p>
   <form id="f">
-    <label for="appWorld">Тип кассы</label>
+    <label for="appWorld">Тип кассы / канал</label>
     <select id="appWorld" name="appWorld" required>
-      <option value="main"${appWorld !== 'restaurant' ? ' selected' : ''}>Магазин / аптека (aurent.uz)</option>
+      <option value="main"${appWorld !== 'restaurant' ? ' selected' : ''}>Магазин (aurent.uz)</option>
       <option value="restaurant"${appWorld === 'restaurant' ? ' selected' : ''}>Ресторан (r-aurent.uz)</option>
     </select>
     <label for="host">Адрес API-сервера (IP или домен)</label>
@@ -104,13 +108,20 @@ function buildSetupHtml(current) {
   </form>
   <p class="hint">${hint}</p>
   <script>
+    const HOSTS = { main: 'www.aurent.uz', restaurant: 'r-aurent.uz' };
+    const worldEl = document.getElementById('appWorld');
+    const hostEl = document.getElementById('host');
+    worldEl.addEventListener('change', () => {
+      const next = HOSTS[worldEl.value];
+      if (next) hostEl.value = next;
+    });
     document.getElementById('f').addEventListener('submit', (e) => {
       e.preventDefault();
-      const host = document.getElementById('host').value.trim();
+      const host = hostEl.value.trim();
       const webPort = document.getElementById('webPort').value.trim() || '443';
       const apiPort = document.getElementById('apiPort').value.trim() || webPort;
       const companyLoginCode = document.getElementById('companyLoginCode').value.replace(/\\D/g, '').slice(0, 5);
-      const appWorld = document.getElementById('appWorld').value;
+      const appWorld = worldEl.value;
       window.setupApi.save({ host, webPort, apiPort, companyLoginCode, appWorld });
     });
   </script>

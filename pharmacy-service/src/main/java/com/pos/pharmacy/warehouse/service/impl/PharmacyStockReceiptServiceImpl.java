@@ -12,7 +12,16 @@ import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacySqlConstraintError;
 import com.pos.pharmacy.warehouse.domain.PharmacyReceiptMassField;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
-import com.pos.pharmacy.warehouse.dto.*;
+import com.pos.pharmacy.warehouse.dto.CreatePharmacyStockReceiptRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptActivateRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptActivateResult;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptMassUpdateRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptPaymentDto;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptRevalueRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptRevalueResult;
+import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
+import com.pos.pharmacy.warehouse.dto.UpdatePharmacyStockReceiptRequest;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
 import com.pos.pharmacy.warehouse.entity.Supplier;
@@ -20,6 +29,7 @@ import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.repository.SupplierRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptPaymentWriter;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptActivation;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptLotDetach;
@@ -68,6 +78,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final PharmacyReceiptPostedPriceSync postedPriceSync;
     private final PharmacyReceiptPostedPriceGuard postedPriceGuard;
     private final PharmacyReceiptNumberAllocator receiptNumberAllocator;
+    private final PharmacyReceiptPaymentWriter paymentWriter;
     private final TenantSupport tenant;
     private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
 
@@ -87,7 +98,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             .invoiceDate(request.invoiceDate())
             .contractNumber(PharmacyReceiptSupport.trimToNull(request.contractNumber()))
             .financialDiscount(request.financialDiscount())
-            .paymentType(PharmacyPaymentType.normalize(request.paymentType()))
+            .paymentType(PharmacyPaymentType.CASH)
             .supplierId(request.supplierId())
             .storeId(request.storeId())
             .notes(PharmacyReceiptSupport.trimToNull(request.notes()))
@@ -96,7 +107,8 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             .totalCost(BigDecimal.ZERO)
             .totalRetail(BigDecimal.ZERO)
             .build());
-        return pharmacyReceipt.toResponse(receipt);
+        applyPayments(receipt, request.paymentType(), request.payments());
+        return pharmacyReceipt.toResponse(stockReceiptRepository.save(receipt));
     }
 
     @Override
@@ -130,13 +142,25 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         if (request.financialDiscount() != null) {
             receipt.setFinancialDiscount(request.financialDiscount());
         }
-        if (request.paymentType() != null) {
-            receipt.setPaymentType(PharmacyPaymentType.normalize(request.paymentType()));
+        if (request.payments() != null || request.paymentType() != null) {
+            applyPayments(receipt, request.paymentType(), request.payments());
         }
         if (request.notes() != null) {
             receipt.setNotes(PharmacyReceiptSupport.trimToNull(request.notes()));
         }
         return pharmacyReceipt.toResponse(stockReceiptRepository.save(receipt));
+    }
+
+    private void applyPayments(
+        StockReceipt receipt,
+        String paymentType,
+        List<PharmacyReceiptPaymentDto> payments
+    ) {
+        if (payments != null && !payments.isEmpty()) {
+            paymentWriter.applySplit(receipt, payments);
+            return;
+        }
+        paymentWriter.applySingle(receipt, paymentType);
     }
 
     @Override

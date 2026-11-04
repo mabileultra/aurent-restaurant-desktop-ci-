@@ -1,51 +1,45 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { AlertTriangle } from 'lucide-react';
-import { pharmacyWarehouseApi } from '../../../api';
+import { pharmacyWarehouseApi, supplierApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { BaseButton } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
+import { useCompanyStores } from '../../../hooks/useCompanyStores';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyProductModal from '../components/PharmacyProductModal';
 import PharmacyProductDeleteModal from '../components/PharmacyProductDeleteModal';
+import PharmacyProductsImportConfirmModal from '../components/PharmacyProductsImportConfirmModal';
+import PharmacyProductsTable from '../components/PharmacyProductsTable';
 import PharmacyStockLayout from '../components/PharmacyStockLayout';
-import {
-  PharmacyEditCell,
-  PharmacySelectAllTh,
-  PharmacySelectCell,
-  PharmacySelectionBar,
-} from '../components/PharmacyTableSelect';
-import { productAtc } from '../hooks/usePharmacyCatalogOptions';
+import { PharmacySelectionBar } from '../components/PharmacyTableSelect';
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { usePharmacyProductDelete } from '../hooks/usePharmacyProductDelete';
+import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import {
   PHARM_DEFAULT_PAGE_SIZE,
   PHARM_PAGE_SIZES,
 } from '../utils/pharmacyTablePage';
-import {
-  formatMoney,
-  productCountry,
-  productDosageForm,
-  productManufacturer,
-  productUnitsInPack,
-} from '../utils/pharmacyReceiptPricing';
-
-const PAGE_SIZES = PHARM_PAGE_SIZES;
+import { downloadPharmacyProductsCsv } from '../utils/pharmacyProductsExportCsv';
 
 export default function PharmacyProductsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const qc = useQueryClient();
+  const { onlyStore, resolveStoreId } = useCompanyStores();
   const [search, setSearch] = useState('');
   const [scope, setScope] = useState('ACTIVE');
+  const [supplierId, setSupplierId] = useState('');
+  const [receiptId, setReceiptId] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PHARM_DEFAULT_PAGE_SIZE);
-  const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [creating, setCreating] = useState(false);
   const [bulkVatOpen, setBulkVatOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const filters = useMemo(() => ([
     { value: '', label: t('pharmacyStock.filterAll') },
@@ -53,22 +47,56 @@ export default function PharmacyProductsPage() {
     { value: 'DELETED', label: t('pharmacyStock.filterInactive') },
   ]), [t]);
 
+  const suppliersQuery = useQuery({
+    queryKey: ['suppliers-all'],
+    queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
+  });
+
+  const receiptsQuery = useQuery({
+    queryKey: ['pharmacy-receipts-filter'],
+    queryFn: () => pharmacyWarehouseApi.listReceipts({ page: 0, size: 100 }).then((r) => r.data),
+  });
+
   const listQuery = useQuery({
-    queryKey: ['pharmacy-products', search, scope, page, pageSize],
+    queryKey: ['pharmacy-products', search, scope, supplierId, receiptId, page, pageSize],
     queryFn: () => pharmacyWarehouseApi.listProducts({
       search: search.trim() || undefined,
       page,
       size: pageSize,
       scope,
       activeOnly: scope === 'ACTIVE',
+      fromReceipts: true,
+      supplierId: supplierId || undefined,
+      receiptId: receiptId || undefined,
     }).then((r) => r.data),
   });
 
   const rows = listQuery.data?.content ?? [];
   const total = listQuery.data?.totalElements ?? rows.length;
-  const totalPages = listQuery.data?.totalPages ?? 1;
-  const selection = usePharmacyRowSelection(rows, `${search}:${scope}:${pageSize}`);
-  const productDelete = usePharmacyProductDelete(t, { onDone: () => selection.clearSelection() });
+  const totalPages = Math.max(1, listQuery.data?.totalPages ?? 1);
+  const selection = usePharmacyRowSelection(
+    rows,
+    `${search}:${scope}:${supplierId}:${receiptId}:${pageSize}`,
+  );
+  const productDelete = usePharmacyProductDelete(t, {
+    onDone: () => {
+      selection.clearSelection();
+      qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
+    },
+  });
+
+  const suppliers = useMemo(() => {
+    const raw = suppliersQuery.data;
+    if (Array.isArray(raw)) return raw;
+    return raw?.content ?? [];
+  }, [suppliersQuery.data]);
+
+  const receipts = useMemo(() => {
+    const raw = receiptsQuery.data;
+    const all = Array.isArray(raw) ? raw : (raw?.content ?? []);
+    if (!supplierId) return all;
+    return all.filter((r) => String(r.supplierId || '') === String(supplierId));
+  }, [receiptsQuery.data, supplierId]);
 
   const bulkVatMutation = useMutation({
     mutationFn: (taxRate) => pharmacyWarehouseApi.bulkTaxRate({
@@ -85,6 +113,33 @@ export default function PharmacyProductsPage() {
     onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
+  const importMutation = useMutation({
+    mutationFn: () => {
+      const storeId = resolveStoreId(onlyStore?.id);
+      if (!storeId) {
+        throw new Error(t('stockModal.pickStore'));
+      }
+      return pharmacyWarehouseApi.createDraft({
+        storeId,
+        receiptType: 'OPENING',
+        paymentType: 'CASH',
+      });
+    },
+    onSuccess: (res) => {
+      toast.success(t('pharmacyStock.importDraftCreated', { no: res.data.receiptNumber }));
+      setImportOpen(false);
+      navigate(PHARMACY_STOCK_PATHS.receiptPick(res.data.id), { state: { openImport: true } });
+    },
+    onError: (e) => toast.error(
+      e?.message && !e?.response ? e.message : resolvePharmacyApiError(e, t),
+    ),
+  });
+
+  const refreshLists = () => {
+    qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
+    qc.invalidateQueries({ queryKey: ['pharmacy-products'] });
+  };
+
   return (
     <PharmacyStockLayout
       title={t('pharmacyStock.productsTitle')}
@@ -92,8 +147,17 @@ export default function PharmacyProductsPage() {
     >
       <PharmacyListToolbar
         t={t}
-        createLabel={t('pharmacyStock.toolbarCreate')}
-        onCreate={() => setCreateOpen(true)}
+        createLabel={t('pharmacyStock.addProduct')}
+        onCreate={() => setCreating(true)}
+        onImport={() => setImportOpen(true)}
+        onExport={() => {
+          if (!rows.length) {
+            toast.error(t('pharmacyStock.exportEmpty'));
+            return;
+          }
+          downloadPharmacyProductsCsv(rows);
+          toast.success(t('pharmacyStock.exportDone', { count: rows.length }));
+        }}
         onRefresh={() => listQuery.refetch()}
         search={search}
         onSearchChange={(value) => {
@@ -108,6 +172,45 @@ export default function PharmacyProductsPage() {
           setPage(0);
         }}
       />
+
+      <div className="pharmacy-stock__toolbar pharmacy-stock__toolbar--secondary">
+        <label className="pharmacy-stock__filter-field">
+          <span>{t('stockReports.colSupplier')}</span>
+          <select
+            value={supplierId}
+            onChange={(e) => {
+              setSupplierId(e.target.value);
+              setReceiptId('');
+              setPage(0);
+            }}
+          >
+            <option value="">{t('pharmacyStock.filterAllSuppliers')}</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </label>
+        <label className="pharmacy-stock__filter-field">
+          <span>{t('pharmacyStock.filterByReceipt')}</span>
+          <select
+            value={receiptId}
+            onChange={(e) => {
+              setReceiptId(e.target.value);
+              setPage(0);
+            }}
+          >
+            <option value="">{t('pharmacyStock.filterAllReceipts')}</option>
+            {receipts.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.receiptNumber}
+                {r.documentDate ? ` · ${r.documentDate}` : ''}
+                {r.supplierName ? ` · ${r.supplierName}` : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <PharmacySelectionBar t={t} selection={selection}>
         <BaseButton size="sm" variant="secondary" onClick={() => setBulkVatOpen(true)}>
           {t('pharmacyStock.bulkVat')}
@@ -122,92 +225,33 @@ export default function PharmacyProductsPage() {
         </BaseButton>
       </PharmacySelectionBar>
 
-      <div className="pharmacy-stock__panel flex min-h-0 flex-1 flex-col">
-        <div className="pharmacy-stock__table-wrap min-h-0 flex-1">
-          <table className="pharmacy-stock__table">
-            <thead>
-              <tr>
-                <PharmacySelectAllTh t={t} selection={selection} disabled={rows.length === 0} />
-                <th>№</th>
-                <th>{t('pharmacyStock.colName')}</th>
-                <th className="text-right">{t('stockModule.colQty')}</th>
-                <th>{t('pharmacyStock.retailPrice')}</th>
-                <th>{t('pharmacyStock.colManufacturer')}</th>
-                <th>{t('pharmacyStock.colForm')}</th>
-                <th>{t('pharmacyStock.productAtc')}</th>
-                <th>{t('pharmacyStock.productBarcodes')}</th>
-                <th>{t('pharmacyStock.productMxik')}</th>
-                <th>{t('pharmacyStock.unitsInPack')}</th>
-                <th>{t('pharmacyStock.colCountry')}</th>
-                <th className="pharmacy-stock__row-actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {listQuery.isLoading ? (
-                <tr>
-                  <td colSpan={13}>
-                    <div className="pharmacy-stock__empty">{t('common.loading')}</div>
-                  </td>
-                </tr>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={13}>
-                    <div className="pharmacy-stock__empty">{t('pharmacyStock.catalogEmpty')}</div>
-                  </td>
-                </tr>
-              ) : rows.map((p, idx) => (
-                <tr
-                  key={p.id}
-                  className={`pharmacy-stock__row--clickable${selection.isSelected(p.id) ? ' pharmacy-stock__row--selected' : ''}${p.active === false ? ' pharmacy-stock__row--inactive' : ''}`}
-                  onClick={() => setEditing(p)}
-                >
-                  <PharmacySelectCell t={t} row={p} selection={selection} />
-                  <td>{page * pageSize + idx + 1}</td>
-                  <td className="font-semibold">
-                    {p.name}
-                    {p.active === false ? (
-                      <span className="pharmacy-stock__inline-badge">{t('pharmacyStock.productInactive')}</span>
-                    ) : null}
-                  </td>
-                  <td className={`text-right font-semibold ${p.lowStock ? 'text-red-600' : ''}`}>
-                    {p.stockQuantity ?? 0}
-                    {p.lowStock ? <AlertTriangle size={12} className="ml-1 inline" /> : null}
-                  </td>
-                  <td>{formatMoney(p.sellingPrice)}</td>
-                  <td>{productManufacturer(p) || '—'}</td>
-                  <td>{productDosageForm(p) || '—'}</td>
-                  <td>{productAtc(p) || '—'}</td>
-                  <td>{p.barcode || '—'}</td>
-                  <td>{p.ikpu || '—'}</td>
-                  <td>{productUnitsInPack(p) || 1}</td>
-                  <td>{productCountry(p) || '—'}</td>
-                  <PharmacyEditCell
-                    t={t}
-                    onEdit={() => setEditing(p)}
-                    onDelete={p.active !== false ? () => productDelete.ask(p) : undefined}
-                  />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <TablePagination
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          pageSizeOptions={PAGE_SIZES}
-        />
-      </div>
+      <PharmacyProductsTable
+        t={t}
+        rows={rows}
+        loading={listQuery.isLoading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        pageSizes={PHARM_PAGE_SIZES}
+        selection={selection}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(0);
+        }}
+        onEdit={setEditing}
+        onDelete={(row) => productDelete.ask(row)}
+      />
 
       <PharmacyProductModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        open={creating}
+        product={null}
+        overlayClassName="!z-[60]"
+        onClose={() => setCreating(false)}
         onSaved={() => {
-          setCreateOpen(false);
-          listQuery.refetch();
+          setCreating(false);
+          refreshLists();
         }}
       />
       <PharmacyProductModal
@@ -222,7 +266,7 @@ export default function PharmacyProductsPage() {
         } : undefined}
         onSaved={() => {
           setEditing(null);
-          listQuery.refetch();
+          refreshLists();
         }}
       />
       <PharmacyProductDeleteModal
@@ -243,6 +287,13 @@ export default function PharmacyProductsPage() {
         max={100}
         saving={bulkVatMutation.isPending}
         onSubmit={(value) => bulkVatMutation.mutate(value)}
+      />
+      <PharmacyProductsImportConfirmModal
+        open={importOpen}
+        onClose={() => !importMutation.isPending && setImportOpen(false)}
+        t={t}
+        saving={importMutation.isPending}
+        onConfirm={() => importMutation.mutate()}
       />
     </PharmacyStockLayout>
   );

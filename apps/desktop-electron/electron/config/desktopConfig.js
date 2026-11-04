@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 const { buildOrigin, buildHealthUrl, parseServerUrl } = require('../core/serverUrl');
-const { resolveDesktopUrls, PRODUCTION_RESTAURANT_ORIGIN } = require('../../config/desktopUrls');
+const {
+  resolveDesktopUrls,
+  PRODUCTION_RESTAURANT_ORIGIN,
+} = require('../../config/desktopUrls');
 const { resolveUiMode, UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./uiMode');
 const { resolveOfflineFirst } = require('./offlineFirst');
 const {

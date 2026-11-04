@@ -25,7 +25,9 @@ public enum PharmacyReceiptErrors implements PharmacyErrorCode {
     PHARM_RECEIPT_PERCENT_RANGE(HttpStatus.BAD_REQUEST, "Процент вне допустимого диапазона"),
     PHARM_RECEIPT_FIELD_REQUIRED(HttpStatus.BAD_REQUEST, "Поле обязательно"),
     PHARM_RECEIPT_FIELD_NOT_NUMBER(HttpStatus.BAD_REQUEST, "Поле должно быть числом"),
-    PHARM_RECEIPT_PAYMENT_TYPE(HttpStatus.BAD_REQUEST, "Тип оплаты: CASH, DEBT или TRANSFER"),
+    PHARM_RECEIPT_PAYMENT_TYPE(HttpStatus.BAD_REQUEST, "Тип оплаты: CASH, CARD, TRANSFER или DEBT"),
+    PHARM_RECEIPT_PAYMENT_METHOD(HttpStatus.BAD_REQUEST, "Метод платежа: CASH, CARD или TRANSFER"),
+    PHARM_RECEIPT_PAYMENT_EXCEEDS(HttpStatus.BAD_REQUEST, "Сумма оплат больше суммы прихода"),
     PHARM_RECEIPT_AMOUNT_TOO_LARGE(
         HttpStatus.BAD_REQUEST,
         "Сумма слишком большая. В цену или количество попал ИКПУ или штрихкод."

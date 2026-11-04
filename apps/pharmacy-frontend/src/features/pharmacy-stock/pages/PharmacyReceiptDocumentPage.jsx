@@ -418,6 +418,7 @@ export default function PharmacyReceiptDocumentPage() {
         t={t}
         suppliers={suppliers}
         initial={receipt}
+        totalCost={receipt?.totalCost}
         saving={updateMutation.isPending}
         onSubmit={(body) => updateMutation.mutate(body)}
       />

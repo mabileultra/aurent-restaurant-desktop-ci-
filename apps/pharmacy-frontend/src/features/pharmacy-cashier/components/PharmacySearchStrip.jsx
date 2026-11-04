@@ -14,7 +14,6 @@ import '../styles/pharmacy-search-strip.css';
 
 const STRIP_TOGGLES = [
   { id: PHARMACY_QUICK_LINK_IDS.DMED, labelKey: 'pharmacyCashier.searchStrip.dmed' },
-  { id: PHARMACY_QUICK_LINK_IDS.ASL_PORTAL, labelKey: 'pharmacyCashier.searchStrip.asl' },
   { id: PHARMACY_QUICK_LINK_IDS.IKPU, labelKey: 'pharmacyCashier.searchStrip.ikpu' },
 ];
 

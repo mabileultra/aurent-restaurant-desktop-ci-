@@ -6,6 +6,7 @@ export default function PharmacyListToolbar({
   createLabel,
   onCreate,
   onImport,
+  onExport,
   onRefresh,
   search,
   onSearchChange,
@@ -52,6 +53,12 @@ export default function PharmacyListToolbar({
       {onImport ? (
         <button type="button" className="pharmacy-stock__tb-btn pharmacy-stock__tb-btn--import" onClick={onImport}>
           <span>{t('pharmacyStock.import')}</span>
+        </button>
+      ) : null}
+
+      {onExport ? (
+        <button type="button" className="pharmacy-stock__tb-btn pharmacy-stock__tb-btn--import" onClick={onExport}>
+          <span>{t('pharmacyStock.export')}</span>
         </button>
       ) : null}
 

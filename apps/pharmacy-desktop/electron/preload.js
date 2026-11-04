@@ -13,6 +13,7 @@ function readOfflineFirstFlag() {
 
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
+  product: 'pharmacy',
   // Snapshot at load (compat). Prefer *Flag() after LF toggle — booleans freeze at expose.
   offlineFirst: readOfflineFirstFlag(),
   offlineFirstFlag: () => readOfflineFirstFlag(),

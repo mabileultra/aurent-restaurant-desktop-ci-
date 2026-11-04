@@ -13,14 +13,14 @@ import {
   PHARM_SALES_PATH,
   PHARM_STOCK_PATHS,
 } from './pharmacyPaths';
+import { pharmacyReportRoutes } from './pharmacyReportRoutes';
+import { pharmacyOfficeRoutes } from './pharmacyOfficeRoutes';
 
 const PharmacyPosPage = lazy(() => import('../../features/pharmacy-cashier/pages/PharmacyPosPage'));
 const PharmacyProductsPage = lazy(() => import('../../features/pharmacy-stock/pages/PharmacyProductsPage'));
 const PharmacyReceiptsPage = lazy(() => import('../../features/pharmacy-stock/pages/PharmacyReceiptsPage'));
 const PharmacyReceiptDocumentPage = lazy(() => import('../../features/pharmacy-stock/pages/PharmacyReceiptDocumentPage'));
 const PharmacyReceiptPickPage = lazy(() => import('../../features/pharmacy-stock/pages/PharmacyReceiptPickPage'));
-const PharmacyAslWithdrawMonitorPage = lazy(() => import('../../features/pharmacy-stock/pages/PharmacyAslWithdrawMonitorPage'));
-const PharmacyAslRequestLogPage = lazy(() => import('../../features/pharmacy-stock/pages/PharmacyAslRequestLogPage'));
 const ReturnsPage = lazy(() => import('../../features/sales/pages/ReturnsPage'));
 const SalesLedgerPage = lazy(() => import('../../features/sales/pages/SalesLedgerPage'));
 const DashboardPage = lazy(() => import('../../features/dashboard/pages/DashboardPage'));
@@ -69,10 +69,10 @@ export function PharmacyRoutes() {
           <Route path={PHARM_STOCK_PATHS.receiptsNew} element={<PharmacyReceiptDocumentPage />} />
           <Route path="/stock/receipts/:id" element={<PharmacyReceiptDocumentPage />} />
           <Route path="/stock/receipts/:id/pick" element={<PharmacyReceiptPickPage />} />
-          <Route path={PHARM_STOCK_PATHS.aslMarks} element={<PharmacyAslWithdrawMonitorPage />} />
-          <Route path={PHARM_STOCK_PATHS.aslRequests} element={<PharmacyAslRequestLogPage />} />
           <Route path={PHARM_SALES_PATH} element={<SalesLedgerPage />} />
           <Route path={PHARM_RETURNS_PATH} element={<ReturnsPage />} />
+          {pharmacyReportRoutes()}
+          {pharmacyOfficeRoutes()}
         </Route>
 
         <Route path="*" element={<Navigate to={PHARM_DASHBOARD_PATH} replace />} />

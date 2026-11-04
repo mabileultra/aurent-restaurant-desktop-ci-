@@ -88,12 +88,15 @@ async function resolveCashierStartUrl({
     return {
       url: remoteUrl,
       source: 'remote-fallback',
-      reason: 'local_server_failed',
-      error: String(err?.message || err),
+      reason: 'bundled_failed',
       uiOrigin: remoteOrigin,
       localServer: null,
+      error: err?.message || String(err),
     };
   }
 }
 
-module.exports = { resolveCashierStartUrl, wantsBundledRestaurantUi };
+module.exports = {
+  resolveCashierStartUrl,
+  wantsBundledRestaurantUi,
+};

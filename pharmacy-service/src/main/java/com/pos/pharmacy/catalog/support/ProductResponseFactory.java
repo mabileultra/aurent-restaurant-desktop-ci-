@@ -51,6 +51,7 @@ public class ProductResponseFactory {
             product.getImageUrl(),
             product.isActive(),
             product.getCreatedAt(),
+            product.getUpdatedAt(),
             product.getExternalProductId(),
             product.getIkpu(),
             product.getIkpuStatus(),

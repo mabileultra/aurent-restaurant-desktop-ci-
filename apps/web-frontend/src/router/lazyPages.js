@@ -6,7 +6,6 @@ export const DesktopInstallerPage = lazy(() => import('../features/desktop/pages
 export const ReceiptPage = lazy(() => import('../features/receipt/pages/ReceiptPage'));
 
 export const PosPage = lazy(() => import('../features/cashier/pages/PosPage'));
-export const PharmacyPosPage = lazy(() => import('../features/pharmacy-cashier/pages/PharmacyPosPage'));
 export const CashierMySalesPage = lazy(() => import('../features/cashier/pages/CashierMySalesPage'));
 export const HandbookPage = lazy(() => import('../features/handbook/pages/HandbookPage'));
 export const SupportPage = lazy(() => import('../features/support/pages/SupportPage'));
@@ -38,12 +37,6 @@ export const ProductsPage = lazy(() => import('../features/catalog/pages/Product
 export const CategoriesPage = lazy(() => import('../features/catalog/pages/CategoriesPage'));
 export const StockProductsPage = lazy(() => import('../features/stock/pages/StockProductsPage'));
 export const StockReceiptCreatePage = lazy(() => import('../features/stock/pages/StockReceiptCreatePage'));
-export const PharmacyReceiptsPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptsPage'));
-export const PharmacyReceiptDocumentPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptDocumentPage'));
-export const PharmacyReceiptPickPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptPickPage'));
-export const PharmacyProductsPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyProductsPage'));
-export const PharmacyAslWithdrawMonitorPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyAslWithdrawMonitorPage'));
-export const PharmacyAslRequestLogPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyAslRequestLogPage'));
 export const StockInventoryCreatePage = lazy(() => import('../features/stock/pages/StockInventoryCreatePage'));
 export const StockTransferCreatePage = lazy(() => import('../features/stock/pages/StockTransferCreatePage'));
 export const SuppliersPage = lazy(() => import('../features/catalog/pages/SuppliersPage'));

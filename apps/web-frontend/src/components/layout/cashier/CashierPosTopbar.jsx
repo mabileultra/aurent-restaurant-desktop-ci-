@@ -4,9 +4,6 @@ import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
-import PharmacyTopbarShortcuts from '../../../features/pharmacy-cashier/components/PharmacyTopbarShortcuts';
-import PharmacySpaLaunchButton from '../../../features/pharmacy-cashier/components/PharmacySpaLaunchButton';
-import { isPharmPosPath } from '../../../pharmacy/app/pharmacyPaths';
 
 export default function CashierPosTopbar({
   t,
@@ -25,7 +22,6 @@ export default function CashierPosTopbar({
 }) {
   const location = useLocation();
   const isRestaurantRegister = location.pathname.startsWith('/rst/pos');
-  const isPharmacyRegister = isPharmPosPath(location.pathname);
 
   return (
     <header className="cashier-topbar cashier-topbar--pos cashier-topbar--compact">
@@ -39,22 +35,13 @@ export default function CashierPosTopbar({
               storeName={storeName}
               shiftOpenBadge={shiftOpenBadge}
               shift={shift}
-              pharmacyBadge={isPharmacyRegister}
             />
-            {isPharmacyRegister ? <PharmacyTopbarShortcuts /> : null}
           </div>
           <p className="cashier-topbar__pos-title mb-0 fw-semibold d-md-none">
-            {t(
-              isPharmacyRegister
-                ? 'pharmacyCashier.title'
-                : isRestaurantRegister
-                  ? 'restaurantCashier.title'
-                  : 'pos.navSale',
-            )}
+            {t(isRestaurantRegister ? 'restaurantCashier.title' : 'pos.navSale')}
           </p>
         </div>
         <div className="cashier-topbar__actions">
-          {isPharmacyRegister ? <PharmacySpaLaunchButton compact className="d-none d-md-inline-flex" /> : null}
           <CashierNotificationsBell />
           {storeId && !shiftIsOpen && shift?.status !== 'OPEN' ? (
             <button type="button" className="cashier-pos-topbar__open-shift" onClick={openShift}>

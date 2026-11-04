@@ -18,7 +18,7 @@ export default function PharmacyReceiptDocumentCard({
   deleteDisabled,
 }) {
   const totals = receiptDisplayTotals(receipt);
-  const payment = paymentTypeLabel(receipt.paymentType, t);
+  const payment = paymentTypeLabel(receipt.paymentType, t, receipt);
 
   return (
     <aside className="pharmacy-stock__aside pharmacy-receipt-document-card">

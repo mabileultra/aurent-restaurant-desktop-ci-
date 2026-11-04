@@ -25,7 +25,7 @@ import { resolvePosRoute } from './posRouteResolver';
 import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
-import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
+import { buildPharmacySaleExtras } from '../../features/cashier/utils/buildPharmacySaleExtras';
 import { assertCartMarksNotPunched } from '../../features/marking';
 import { buildShiftPrintReport } from '../../features/cashier/utils/buildShiftPrintReport';
 

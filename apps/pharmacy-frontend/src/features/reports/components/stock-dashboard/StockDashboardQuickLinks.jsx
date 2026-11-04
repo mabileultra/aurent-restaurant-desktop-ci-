@@ -1,0 +1,22 @@
+import { Link } from 'react-router-dom';
+
+const LINKS = [
+  { to: '/reports/sales/by-products', key: 'linkSalesByProducts' },
+  { to: '/reports/stock/turnover', key: 'linkTurnover' },
+  { to: '/reports/stock/movements', key: 'linkMovements' },
+  { to: '/reports/stock/receipts', key: 'linkReceipts' },
+  { to: '/reports/stock/balances', key: 'linkBalances' },
+  { to: '/reports/stock/low', key: 'linkLowStock' },
+];
+
+export default function StockDashboardQuickLinks({ t }) {
+  return (
+    <div className="flex flex-wrap gap-3 text-sm">
+      {LINKS.map(({ to, key }) => (
+        <Link key={to} to={to} className="admin-link">
+          {t(`stockReports.${key}`, { defaultValue: key })}
+        </Link>
+      ))}
+    </div>
+  );
+}

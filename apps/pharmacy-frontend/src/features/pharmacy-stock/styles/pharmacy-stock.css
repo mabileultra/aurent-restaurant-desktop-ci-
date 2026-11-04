@@ -546,6 +546,37 @@
   border-color: rgba(148, 163, 184, 0.25);
 }
 
+.pharmacy-stock__toolbar--secondary {
+  margin-top: 0.5rem;
+}
+
+.pharmacy-stock__filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 12rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-stock__filter-field select {
+  height: 2.15rem;
+  border: 1px solid var(--pharm-line);
+  border-radius: 0.45rem;
+  padding: 0 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--admin-text, #0f172a);
+  background: #fff;
+}
+
+.dark .pharmacy-stock__filter-field select {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #e2e8f0;
+}
+
 .pharmacy-stock__tb-btn {
   display: inline-flex;
   align-items: center;

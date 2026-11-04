@@ -11,9 +11,10 @@ const APP_WORLD_RESTAURANT = 'restaurant';
 
 function normalizeAppWorld(raw) {
   const v = String(raw || '').trim().toLowerCase();
-  if (v === APP_WORLD_RESTAURANT || v === 'rst' || v === 'restaurant') {
+  if (v === APP_WORLD_RESTAURANT || v === 'rst') {
     return APP_WORLD_RESTAURANT;
   }
+  // Бывший канал pharmacy на старом десктопе → main (force-update в SPA).
   return APP_WORLD_MAIN;
 }
 

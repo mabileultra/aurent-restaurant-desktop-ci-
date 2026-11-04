@@ -21,5 +21,6 @@
     <include file="db/changelog/v14-stock-marks-mark-key-text.xml"/>
     <include file="db/changelog/v15-pharmacy-shift-cash-register.xml"/>
     <include file="db/changelog/v16-sold-marks-mark-key-text.xml"/>
+    <include file="db/changelog/v17-stock-receipt-payments.xml"/>
 
 </databaseChangeLog>

@@ -3,15 +3,14 @@ import { Plus } from 'lucide-react';
 import { BaseButton, BaseModal } from '../../../components/ui';
 import { useCompanyStores } from '../../../hooks/useCompanyStores';
 import SupplierModal from '../../catalog/components/suppliers/SupplierModal';
+import PharmacyReceiptPaymentFields from './PharmacyReceiptPaymentFields';
+import { buildPaymentPayload, paymentFormFromReceipt } from '../utils/pharmacyReceiptPayments';
+import {
+  emptyHeaderForm,
+  normalizeHeaderInitial,
+  todayInputValue,
+} from '../utils/pharmacyReceiptHeaderForm';
 import '../styles/pharmacy-stock.css';
-
-function todayInputValue() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
 
 /**
  * Модалка шапки поступления «Поступление | Новый» (как в Oson).
@@ -23,11 +22,12 @@ export default function PharmacyReceiptHeaderModal({
   t,
   suppliers,
   initial,
+  totalCost,
   saving,
   onSubmit,
 }) {
   const { stores, onlyStore, needsStorePick, resolveStoreId } = useCompanyStores();
-  const [form, setForm] = useState(() => emptyForm());
+  const [form, setForm] = useState(() => emptyHeaderForm());
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
   const [localSuppliers, setLocalSuppliers] = useState([]);
 
@@ -38,8 +38,8 @@ export default function PharmacyReceiptHeaderModal({
     setSupplierModalOpen(false);
     setLocalSuppliers([]);
     setForm({
-      ...emptyForm(),
-      ...normalizeInitial(initial),
+      ...emptyHeaderForm(),
+      ...normalizeHeaderInitial(initial),
       storeId: initial?.storeId
         ? String(initial.storeId)
         : onlyStore
@@ -50,7 +50,7 @@ export default function PharmacyReceiptHeaderModal({
         ? String(initial.defaultMarkupPercent)
         : '18',
       receiptType: initial?.receiptType || 'RECEIPT',
-      paymentType: initial?.paymentType || 'CASH',
+      payment: paymentFormFromReceipt(initial),
     });
   }, [open, initial, onlyStore]);
 
@@ -97,7 +97,7 @@ export default function PharmacyReceiptHeaderModal({
       financialDiscount: form.financialDiscount !== ''
         ? Number(form.financialDiscount)
         : undefined,
-      paymentType: form.paymentType || 'CASH',
+      ...buildPaymentPayload(form.payment),
       notes: form.notes.trim() || undefined,
     });
   };
@@ -178,21 +178,12 @@ export default function PharmacyReceiptHeaderModal({
             </label>
           </div>
 
-          <div className="pharm-line-modal__row pharm-line-modal__row--2">
-            <label className="pharm-line-modal__field">
-              <span className="pharm-line-modal__label">{t('pharmacyStock.paymentType')}</span>
-              <select
-                className="pharm-line-modal__input"
-                value={form.paymentType}
-                onChange={(e) => patch('paymentType', e.target.value)}
-              >
-                <option value="CASH">{t('pharmacyStock.paymentCash')}</option>
-                <option value="DEBT">{t('pharmacyStock.paymentDebt')}</option>
-                <option value="TRANSFER">{t('pharmacyStock.paymentTransfer')}</option>
-              </select>
-            </label>
-            <span />
-          </div>
+          <PharmacyReceiptPaymentFields
+            t={t}
+            form={form.payment}
+            onChange={(payment) => patch('payment', payment)}
+            totalCost={totalCost ?? initial?.totalCost}
+          />
 
           <div>
             <h3 className="pharm-line-modal__section-title" style={{ marginTop: 4 }}>
@@ -286,33 +277,4 @@ export default function PharmacyReceiptHeaderModal({
       />
     </>
   );
-}
-
-function emptyForm() {
-  return {
-    supplierId: '',
-    storeId: '',
-    documentDate: todayInputValue(),
-    receiptType: 'RECEIPT',
-    defaultMarkupPercent: '18',
-    invoiceNumber: '',
-    invoiceDate: '',
-    contractNumber: '',
-    financialDiscount: '',
-    paymentType: 'CASH',
-    notes: '',
-  };
-}
-
-function normalizeInitial(initial) {
-  if (!initial) return {};
-  return {
-    supplierId: initial.supplierId != null ? String(initial.supplierId) : '',
-    invoiceNumber: initial.invoiceNumber || '',
-    invoiceDate: initial.invoiceDate || '',
-    contractNumber: initial.contractNumber || '',
-    financialDiscount: initial.financialDiscount != null ? String(initial.financialDiscount) : '',
-    paymentType: initial.paymentType === 'CREDIT' ? 'DEBT' : (initial.paymentType || 'CASH'),
-    notes: initial.notes || '',
-  };
 }

@@ -22,12 +22,25 @@ export function receiptTypeLabel(receiptType, t) {
   return t('pharmacyStock.receiptTypeReceipt');
 }
 
-export function paymentTypeLabel(paymentType, t) {
-  if (paymentType === 'DEBT' || paymentType === 'CREDIT') {
-    return t('pharmacyStock.paymentDebt');
+function methodLabel(method, t) {
+  if (method === 'DEBT' || method === 'CREDIT') return t('pharmacyStock.paymentDebt');
+  if (method === 'TRANSFER') return t('pharmacyStock.paymentTransfer');
+  if (method === 'CARD') return t('pharmacyStock.paymentCard');
+  if (method === 'CASH') return t('pharmacyStock.paymentCash');
+  return method || null;
+}
+
+export function paymentTypeLabel(paymentType, t, receipt) {
+  const payments = Array.isArray(receipt?.payments) ? receipt.payments : [];
+  const debt = Number(receipt?.debtAmount) || 0;
+  if (payments.length > 0) {
+    const parts = payments
+      .filter((p) => p?.method)
+      .map((p) => methodLabel(p.method, t))
+      .filter(Boolean);
+    if (debt > 0) parts.push(t('pharmacyStock.paymentDebt'));
+    if (parts.length > 1) return parts.join(' + ');
+    if (parts.length === 1) return parts[0];
   }
-  if (paymentType === 'CASH' || paymentType === 'CASHLESS') {
-    return t('pharmacyStock.paymentCash');
-  }
-  return paymentType || null;
+  return methodLabel(paymentType, t);
 }

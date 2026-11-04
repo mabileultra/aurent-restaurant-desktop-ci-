@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
@@ -30,6 +30,7 @@ import '../styles/pharmacy-receipt-pick.css';
 
 export default function PharmacyReceiptPickPage() {
   const { id } = useParams();
+  const location = useLocation();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -108,6 +109,12 @@ export default function PharmacyReceiptPickPage() {
       }
     },
   });
+
+  useEffect(() => {
+    if (!location.state?.openImport || !isDraft) return;
+    importer.openFile();
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.openImport, isDraft]);
   const revalue = usePharmacyReceiptRevalue({
     receiptId: id,
     lines: docLines,

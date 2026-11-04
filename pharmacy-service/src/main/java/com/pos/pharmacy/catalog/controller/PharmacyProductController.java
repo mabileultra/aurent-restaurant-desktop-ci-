@@ -7,12 +7,15 @@ import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.common.ApiResponse;
-import com.pos.pharmacy.common.PageResponse;
+import com.pos.shared.api.PageLimits;
+import com.pos.shared.api.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,9 +40,21 @@ public class PharmacyProductController {
         @RequestParam(defaultValue = "false") boolean activeOnly,
         @RequestParam(required = false) String scope,
         @RequestParam(required = false) Integer storeId,
-        @PageableDefault(size = 50) Pageable pageable
+        @RequestParam(defaultValue = "false") boolean fromReceipts,
+        @RequestParam(required = false) UUID supplierId,
+        @RequestParam(required = false) UUID receiptId,
+        @PageableDefault(size = PageLimits.DEFAULT_SIZE) Pageable pageable
     ) {
-        return ResponseEntity.ok(pharmacyProductService.list(search, activeOnly, scope, storeId, pageable));
+        Pageable bounded = PageRequest.of(
+            PageLimits.normalizePage(pageable.getPageNumber()),
+            PageLimits.normalizeSize(pageable.getPageSize()),
+            pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name")
+        );
+        return ResponseEntity.ok(
+            pharmacyProductService.list(
+                search, activeOnly, scope, storeId, fromReceipts, supplierId, receiptId, bounded
+            )
+        );
     }
 
     @GetMapping("/low-stock")

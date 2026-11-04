@@ -1,4 +1,3 @@
-import { Navigate } from 'react-router-dom';
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { useCashierStoreTypeQuery } from '../../hooks/useCashierStoreTypeQuery';
 import { normalizeBusinessTypeCode } from '../../config/productCatalogConfig';
@@ -25,9 +24,6 @@ export default function CashierRetailPosGuard({ children }) {
   if (type === 'RESTAURANT' || type === 'CANTEEN') {
     return <CashierSpaNavigate to="/rst/pos" />;
   }
-  if (type === 'PHARMACY') {
-    return <Navigate to="/pharm/pos" replace />;
-  }
-
+  // PHARMACY: остаёмся на /cashier/pos — PharmacyLegacyDesktopForceGate покажет обязательное обновление.
   return children;
 }

@@ -9,10 +9,6 @@ export function prefetchAppHome(path) {
     void import('../features/platform/pages/PlatformCompaniesPage');
     return;
   }
-  if (path.startsWith('/pharm/')) {
-    void import('../features/pharmacy-stock/pages/PharmacyProductsPage');
-    return;
-  }
   if (path.startsWith('/finance')) {
     void import('../features/finance/pages/FinanceDashboardPage');
     return;

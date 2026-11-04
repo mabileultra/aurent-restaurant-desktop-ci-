@@ -3,7 +3,6 @@ import CashierRoute from './guards/CashierRoute';
 import CashierHomeRedirect from './guards/CashierHomeRedirect';
 import CashierRetailPosGuard from './guards/CashierRetailPosGuard';
 import CashierLayout from '../components/layout/CashierLayout';
-import { PHARM_POS_PATH } from '../pharmacy/app/pharmacyPaths';
 import {
   PosPage,
   CashierMySalesPage,
@@ -30,7 +29,7 @@ export const cashierRoutes = (
       )}
     />
     <Route path="restaurant" element={<Navigate to="/rst/pos" replace />} />
-    <Route path="pharmacy" element={<Navigate to={PHARM_POS_PATH} replace />} />
+    <Route path="pharmacy" element={<Navigate to="/cashier/pos" replace />} />
     <Route path="kitchen" element={<Navigate to="/rst/pos" replace />} />
     <Route path="sales" element={<CashierMySalesPage />} />
     <Route path="handbook" element={<HandbookPage scope="cashier" />} />

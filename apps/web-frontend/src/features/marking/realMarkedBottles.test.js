@@ -20,7 +20,7 @@ import { toOfdMarkingLabel } from '../../services/fiscal/shared/ofdMarkingLabel'
 import { buildFiscalDriveItem } from '../../services/fiscal/providers/fiscalDrive/buildFiscalDriveItem';
 import { buildSaleOperationBody } from '../../services/multikassa/buildMultikassaOperations';
 import { expandMarkedFiscalItems } from '../../services/fiscal/shared/expandMarkedFiscalItems';
-import { assessQtyMarkingScan } from '../pharmacy-cashier/utils/pharmacyQtyMarkingScan';
+import { assessQtyMarkingScan } from './utils/pharmacyQtyMarkingScan';
 import {
   attachMarkToProduct,
   clearSoldMarks,

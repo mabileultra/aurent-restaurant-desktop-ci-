@@ -1,8 +1,7 @@
 /**
  * Base URL of the standalone pharmacy SPA.
- * Empty = pharmacy stays inside web-frontend (/pharm).
  * Local: http://localhost:5175
- * Prod/lab: https://p-aurent.uz
+ * Prod:  https://p-aurent.uz
  */
 export function getPharmacyAppUrl() {
   const raw = String(import.meta.env.VITE_PHARMACY_APP_URL || '').trim();
@@ -12,4 +11,12 @@ export function getPharmacyAppUrl() {
 
 export function isPharmacyAppSplitEnabled() {
   return Boolean(getPharmacyAppUrl());
+}
+
+/** Absolute URL on p-aurent (path must start with /). */
+export function pharmacyAppHref(path = '/') {
+  const base = getPharmacyAppUrl();
+  if (!base) return '';
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${p}`;
 }

@@ -14,7 +14,6 @@ import { usePosCartHandlers } from './pos/usePosCartHandlers';
 import { usePosCheckout } from './pos/usePosCheckout';
 import { usePosSearchMarkAutoSubmit } from './pos/usePosSearchMarkAutoSubmit';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
-import { usePharmacyIntegrationConfig } from '../../pharmacy-cashier/hooks/usePharmacyIntegrationConfig';
 import { useCashierCashMovement } from './useCashierCashMovement';
 
 export function usePosPage() {
@@ -24,7 +23,6 @@ export function usePosPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { storeId, noAssignment, multipleAssignment } = useCashierStore();
-  const integration = usePharmacyIntegrationConfig(storeId);
   const [posPane, setPosPane] = useState('register');
   const [payOpen, setPayOpen] = useState(false);
   const [payFlowOptions, setPayFlowOptions] = useState(null);

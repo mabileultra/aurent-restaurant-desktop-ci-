@@ -1,16 +1,7 @@
-import { Route, Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import ProtectedRoute from './guards/ProtectedRoute';
 import CheckoutRedirect from './guards/CheckoutRedirect';
 import AppShellLayout from '../components/layout/AppShellLayout';
-import PharmacyStockReceiptRedirect from '../features/pharmacy-stock/components/PharmacyStockReceiptRedirect';
-import PharmacyTenantGuard from '../features/pharmacy-stock/components/PharmacyTenantGuard';
-import { PHARMACY_STOCK_PATHS } from '../features/pharmacy-stock/pharmacyStockPaths';
-
-function PharmacyStockLegacyRedirect() {
-  const { pathname } = useLocation();
-  const next = pathname.replace(/^\/pharmacy\/stock/, '/pharm/stock');
-  return <Navigate to={next || '/pharm/stock/products'} replace />;
-}
 import {
   DashboardPage,
   AiAssistantPage,
@@ -18,12 +9,6 @@ import {
   CategoriesPage,
   StockProductsPage,
   StockReceiptCreatePage,
-  PharmacyReceiptsPage,
-  PharmacyReceiptDocumentPage,
-  PharmacyReceiptPickPage,
-  PharmacyProductsPage,
-  PharmacyAslWithdrawMonitorPage,
-  PharmacyAslRequestLogPage,
   StockInventoryCreatePage,
   StockTransferCreatePage,
   SuppliersPage,
@@ -105,9 +90,7 @@ export const adminRoutes = (
       path="products"
       element={(
         <ProtectedRoute module="products">
-          <PharmacyStockReceiptRedirect to={PHARMACY_STOCK_PATHS.products}>
-            <ProductsPage />
-          </PharmacyStockReceiptRedirect>
+          <ProductsPage />
         </ProtectedRoute>
       )}
     />
@@ -115,9 +98,7 @@ export const adminRoutes = (
       path="categories"
       element={(
         <ProtectedRoute module="categories">
-          <PharmacyStockReceiptRedirect to={PHARMACY_STOCK_PATHS.products}>
-            <CategoriesPage />
-          </PharmacyStockReceiptRedirect>
+          <CategoriesPage />
         </ProtectedRoute>
       )}
     />
@@ -125,9 +106,7 @@ export const adminRoutes = (
       path="scales/station"
       element={(
         <ProtectedRoute module="scalesStation">
-          <PharmacyStockReceiptRedirect to={PHARMACY_STOCK_PATHS.products}>
-            <ScalesStationPage />
-          </PharmacyStockReceiptRedirect>
+          <ScalesStationPage />
         </ProtectedRoute>
       )}
     />
@@ -135,9 +114,7 @@ export const adminRoutes = (
       path="scales/plu"
       element={(
         <ProtectedRoute module="scalesPlu">
-          <PharmacyStockReceiptRedirect to={PHARMACY_STOCK_PATHS.products}>
-            <ScalesPluPage />
-          </PharmacyStockReceiptRedirect>
+          <ScalesPluPage />
         </ProtectedRoute>
       )}
     />
@@ -145,9 +122,7 @@ export const adminRoutes = (
       path="stock/products"
       element={(
         <ProtectedRoute module="stockProducts">
-          <PharmacyStockReceiptRedirect to={PHARMACY_STOCK_PATHS.products}>
-            <StockProductsPage />
-          </PharmacyStockReceiptRedirect>
+          <StockProductsPage />
         </ProtectedRoute>
       )}
     />
@@ -155,9 +130,7 @@ export const adminRoutes = (
       path="stock/receipts/new"
       element={(
         <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyStockReceiptRedirect>
-            <StockReceiptCreatePage />
-          </PharmacyStockReceiptRedirect>
+          <StockReceiptCreatePage />
         </ProtectedRoute>
       )}
     />
@@ -165,73 +138,10 @@ export const adminRoutes = (
       path="stock/receipts/:id/edit"
       element={(
         <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyStockReceiptRedirect>
-            <StockReceiptCreatePage />
-          </PharmacyStockReceiptRedirect>
+          <StockReceiptCreatePage />
         </ProtectedRoute>
       )}
     />
-    <Route
-      path="pharm/stock/receipts"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyTenantGuard>
-            <PharmacyReceiptsPage />
-          </PharmacyTenantGuard>
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="pharm/stock/receipts/:id"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyTenantGuard>
-            <PharmacyReceiptDocumentPage />
-          </PharmacyTenantGuard>
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="pharm/stock/receipts/:id/pick"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyTenantGuard>
-            <PharmacyReceiptPickPage />
-          </PharmacyTenantGuard>
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="pharm/stock/products"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="stockProducts">
-          <PharmacyTenantGuard>
-            <PharmacyProductsPage />
-          </PharmacyTenantGuard>
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="pharm/stock/asl-marks"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyTenantGuard>
-            <PharmacyAslWithdrawMonitorPage />
-          </PharmacyTenantGuard>
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="pharm/stock/asl-requests"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
-          <PharmacyTenantGuard>
-            <PharmacyAslRequestLogPage />
-          </PharmacyTenantGuard>
-        </ProtectedRoute>
-      )}
-    />
-    <Route path="pharmacy/stock/*" element={<PharmacyStockLegacyRedirect />} />
     <Route
       path="stock/inventories/new"
       element={(

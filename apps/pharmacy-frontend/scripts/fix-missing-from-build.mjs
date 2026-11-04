@@ -30,7 +30,7 @@ function runBuild() {
 const ERR_RE = /Could not resolve "([^"]+)" from "([^"]+)"/;
 
 let copied = 0;
-for (let i = 0; i < 80; i += 1) {
+for (let i = 0; i < 200; i += 1) {
   const res = runBuild();
   const out = `${res.stdout || ''}\n${res.stderr || ''}`;
   if (res.status === 0) {

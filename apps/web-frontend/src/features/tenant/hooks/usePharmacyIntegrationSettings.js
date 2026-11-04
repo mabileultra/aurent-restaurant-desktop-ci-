@@ -3,12 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
-import { PHARMACY_EXTERNAL_URLS } from '../../pharmacy-cashier/constants/pharmacyQuickLinks';
 
 const EMPTY_FORM = {
-  aslEnabled: false,
-  aslApiBaseUrl: PHARMACY_EXTERNAL_URLS.aslPortal,
-  aslApiKey: '',
   dmedEnabled: true,
   dmedExternalId: '',
 };
@@ -28,9 +24,6 @@ export function usePharmacyIntegrationSettings({ store, open, onSaved }) {
   useEffect(() => {
     if (!data) return;
     setForm({
-      aslEnabled: data.aslEnabled,
-      aslApiBaseUrl: data.aslApiBaseUrl || PHARMACY_EXTERNAL_URLS.aslPortal,
-      aslApiKey: '',
       dmedEnabled: data.dmedEnabled,
       dmedExternalId: data.dmedExternalId || '',
     });
@@ -53,16 +46,11 @@ export function usePharmacyIntegrationSettings({ store, open, onSaved }) {
 
   const submit = (e) => {
     e.preventDefault();
-    const payload = {
-      aslEnabled: form.aslEnabled,
-      aslApiBaseUrl: form.aslApiBaseUrl,
+    saveMutation.mutate({
+      aslEnabled: false,
       dmedEnabled: form.dmedEnabled,
       dmedExternalId: form.dmedExternalId || null,
-    };
-    if (form.aslApiKey.trim()) {
-      payload.aslApiKey = form.aslApiKey.trim();
-    }
-    saveMutation.mutate(payload);
+    });
   };
 
   return {
@@ -72,7 +60,5 @@ export function usePharmacyIntegrationSettings({ store, open, onSaved }) {
     submit,
     isLoading,
     saving: saveMutation.isPending,
-    maskedKey: data?.aslApiKeyMasked,
-    hasAslApiKey: data?.hasAslApiKey,
   };
 }

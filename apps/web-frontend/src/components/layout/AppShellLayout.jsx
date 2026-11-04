@@ -25,13 +25,15 @@ import {
   ORDER_CHILDREN,
   REGISTER_CHILDREN,
   USER_CHILDREN,
-  REPORT_SALES_CHILDREN,
-  REPORT_STOCK_CHILDREN,
+  reportSalesChildrenForBusinessType,
+  reportStockChildrenForBusinessType,
   REST_NAV,
 } from './layoutNavConfig';
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
+import PharmacyLegacyDesktopForceGate from '../../features/desktop/components/PharmacyLegacyDesktopForceGate';
+import PharmacyOfficeRedirect from '../../router/guards/PharmacyOfficeRedirect';
 import '../../styles/cashier/modals/index.css';
 
 export default function AppShellLayout() {
@@ -40,7 +42,7 @@ export default function AppShellLayout() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { hasModule } = useModuleAccess();
-  const { businessType } = useCompanyBusinessType();
+  const { businessType, isPharmacyCompany } = useCompanyBusinessType();
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(VIEWPORT_MEDIA.desktop).matches
@@ -81,11 +83,11 @@ export default function AppShellLayout() {
   const goodsNav = filterByModule(goodsChildrenForBusinessType(businessType));
   const stockNav = filterByModule(stockChildrenForBusinessType(businessType));
   const ordersNav = filterByModule(ORDER_CHILDREN);
-  const financeNav = filterByModule(FINANCE_CHILDREN);
-  const registersNav = filterByModule(REGISTER_CHILDREN);
-  const reportsSalesNav = filterByModule(REPORT_SALES_CHILDREN);
-  const reportsStockNav = filterByModule(REPORT_STOCK_CHILDREN);
-  const usersNav = filterByModule(USER_CHILDREN);
+  const financeNav = isPharmacyCompany ? [] : filterByModule(FINANCE_CHILDREN);
+  const registersNav = isPharmacyCompany ? [] : filterByModule(REGISTER_CHILDREN);
+  const reportsSalesNav = filterByModule(reportSalesChildrenForBusinessType(businessType));
+  const reportsStockNav = filterByModule(reportStockChildrenForBusinessType(businessType));
+  const usersNav = isPharmacyCompany ? [] : filterByModule(USER_CHILDREN);
 
   useEffect(() => {
     const mq = window.matchMedia(VIEWPORT_MEDIA.desktop);
@@ -106,7 +108,7 @@ export default function AppShellLayout() {
   useEffect(() => setMobileNavOpen(false), [location.pathname]);
   useEffect(() => {
     if (GOODS_ROUTES.includes(location.pathname)) setGoodsOpen(true);
-    if (STOCK_ROUTES.includes(location.pathname) || location.pathname.startsWith('/pharm/stock/')) {
+    if (STOCK_ROUTES.includes(location.pathname)) {
       setStockOpen(true);
     }
     if (REPORT_ROUTES.includes(location.pathname)) setReportsOpen(true);
@@ -144,9 +146,11 @@ export default function AppShellLayout() {
   const subLinkClass = ({ isActive }) =>
     `admin-nav-sublink ${isActive ? 'admin-nav-sublink--active' : ''}`;
 
-  const visibleRest = filterByModule(REST_NAV).filter(
-    (item) => item.to !== '/billing' || user?.role === 'ADMIN'
-  );
+  const visibleRest = isPharmacyCompany
+    ? []
+    : filterByModule(REST_NAV).filter(
+      (item) => item.to !== '/billing' || user?.role === 'ADMIN'
+    );
   const roleLabel = user?.role ? t(`roles.${user.role}`, user.role) : '';
 
   return (
@@ -164,8 +168,8 @@ export default function AppShellLayout() {
         onLogout={handleLogout}
         topLinkClass={topLinkClass}
         subLinkClass={subLinkClass}
-        showDashboard={hasModule('dashboard')}
-        showAssistant={hasModule('aiAssistant')}
+        showDashboard={!isPharmacyCompany && hasModule('dashboard')}
+        showAssistant={!isPharmacyCompany && hasModule('aiAssistant')}
         inAssistantSection={location.pathname.startsWith('/assistant')}
         showGoods={goodsNav.length > 0}
         showStock={stockNav.length > 0}
@@ -175,7 +179,7 @@ export default function AppShellLayout() {
         showReports={reportsSalesNav.length > 0 || reportsStockNav.length > 0}
         showUsers={usersNav.length > 0}
         inGoodsSection={GOODS_ROUTES.includes(location.pathname)}
-        inStockSection={STOCK_ROUTES.includes(location.pathname) || location.pathname.startsWith('/pharm/stock/')}
+        inStockSection={STOCK_ROUTES.includes(location.pathname)}
         inOrdersSection={ORDER_ROUTES.includes(location.pathname)}
         inFinanceSection={FINANCE_ROUTES.includes(location.pathname)}
         inRegistersSection={REGISTER_ROUTES.includes(location.pathname)}
@@ -227,10 +231,13 @@ export default function AppShellLayout() {
         />
         <main className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 print:!bg-white print:p-4">
           <BillingAccessGuard>
-            <ShellOutlet />
+            <PharmacyOfficeRedirect>
+              <ShellOutlet />
+            </PharmacyOfficeRedirect>
           </BillingAccessGuard>
         </main>
       </div>
+      <PharmacyLegacyDesktopForceGate />
     </div>
   );
 }

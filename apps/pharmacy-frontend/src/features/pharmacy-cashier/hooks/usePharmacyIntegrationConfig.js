@@ -6,7 +6,6 @@ import { useShouldUseOfflinePos } from '../../../store/connectivityStore';
 const DEFAULT_CAPABILITIES = {
   aslMarkingEnabled: false,
   dmedEnabled: true,
-  aslPortalUrl: PHARMACY_EXTERNAL_URLS.aslPortal,
   dmedPortalUrl: PHARMACY_EXTERNAL_URLS.dmed,
   ikpuPortalUrl: PHARMACY_EXTERNAL_URLS.ikpu,
 };
@@ -26,12 +25,11 @@ export function usePharmacyIntegrationConfig(storeId) {
   const externalUrls = {
     dmed: capabilities.dmedPortalUrl || PHARMACY_EXTERNAL_URLS.dmed,
     ikpu: capabilities.ikpuPortalUrl || PHARMACY_EXTERNAL_URLS.ikpu,
-    aslPortal: capabilities.aslPortalUrl || PHARMACY_EXTERNAL_URLS.aslPortal,
     mygov: PHARMACY_EXTERNAL_URLS.mygov,
   };
 
   return {
-    capabilities,
+    capabilities: { ...capabilities, aslMarkingEnabled: false },
     externalUrls,
     isLoading: !skipOnline && query.isLoading,
     isError: query.isError,

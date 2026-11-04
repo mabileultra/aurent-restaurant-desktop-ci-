@@ -37,6 +37,7 @@ public record ProductResponse(
     String imageUrl,
     boolean active,
     Instant createdAt,
+    Instant updatedAt,
     String externalProductId,
     String ikpu,
     String ikpuStatus,

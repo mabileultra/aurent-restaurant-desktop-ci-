@@ -5,7 +5,7 @@ import { mapFiscalDriveError } from '../../services/fiscal/providers/fiscalDrive
 import {
   resolveCashierMarkingMissMessage,
   resolveMarkingVerifyUserMessage,
-} from '../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
+} from './utils/resolveMarkingVerifyUserMessage';
 
 const POS_KEYS = [
   'markingNotFound',

@@ -8,7 +8,7 @@ import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.catalog.service.ProductCatalogService;
 import com.pos.pharmacy.catalog.support.ProductListScope;
-import com.pos.pharmacy.common.PageResponse;
+import com.pos.shared.api.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,10 +30,13 @@ public class PharmacyProductServiceImpl implements PharmacyProductService {
         boolean activeOnly,
         String scope,
         Integer storeId,
+        boolean fromReceipts,
+        UUID supplierId,
+        UUID receiptId,
         Pageable pageable
     ) {
         Boolean active = ProductListScope.activeFilter(scope, activeOnly);
-        return catalogService.list(search, active, storeId, pageable);
+        return catalogService.list(search, active, storeId, fromReceipts, supplierId, receiptId, pageable);
     }
 
     @Override

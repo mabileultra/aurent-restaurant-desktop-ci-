@@ -9,13 +9,11 @@ const DEFAULT_API_PORT = '443';
 
 function readExistingForForm(existing) {
   const defaults = parseServerUrl(PRODUCTION_ORIGIN);
-  const world = existing?.appWorld === 'restaurant' ? 'restaurant' : 'main';
   let parsed = {
-    host: defaults.host,
+    host: defaults.host || 'p-aurent.uz',
     webPort: defaults.port || DEFAULT_WEB_PORT,
     apiPort: defaults.port || DEFAULT_API_PORT,
     companyLoginCode: '',
-    appWorld: world,
   };
 
   if (existing?.cashierUrl) {
@@ -25,7 +23,6 @@ function readExistingForForm(existing) {
       webPort: existing.webPort || web.port || DEFAULT_WEB_PORT,
       apiPort: existing.apiPort || DEFAULT_API_PORT,
       companyLoginCode: existing.companyLoginCode || '',
-      appWorld: world,
     };
   } else if (existing?.backendOrigin) {
     const api = parseServerUrl(existing.backendOrigin);
@@ -34,7 +31,6 @@ function readExistingForForm(existing) {
       webPort: existing.webPort || DEFAULT_WEB_PORT,
       apiPort: existing.apiPort || api.port || DEFAULT_API_PORT,
       companyLoginCode: existing.companyLoginCode || '',
-      appWorld: world,
     };
   }
 
@@ -42,17 +38,17 @@ function readExistingForForm(existing) {
 }
 
 function buildSetupHtml(current) {
-  const { host, webPort, apiPort, companyLoginCode, appWorld } = readExistingForForm(current);
+  const { host, webPort, apiPort, companyLoginCode } = readExistingForForm(current);
   const intro =
-    'Укажите адрес сервера и тип кассы. Ресторан открывается на r-aurent без перехода между сайтами.';
+    'Aurent Pharmacy (тест): UI на <strong>p-aurent.uz</strong>. Старые клиенты на aurent.uz не трогаем — этот клиент только для нового канала.';
   const hint =
-    'Порт <strong>443</strong> для HTTPS (www.aurent.uz). Для HTTP в локальной сети — <strong>8081</strong>. Проверка: <strong>/api/v1/actuator/health</strong> → {"status":"UP"}.';
+    'Порт <strong>443</strong> HTTPS. Для lab укажите IP тестового сервера. Health: <strong>/api/v1/actuator/health</strong>.';
 
   return `data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Aurent — настройка сервера</title>
+  <title>Aurent Pharmacy — сервер</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -63,7 +59,7 @@ function buildSetupHtml(current) {
     h1 { font-size: 1.25rem; margin: 0 0 8px; }
     p { margin: 0 0 16px; color: #475569; font-size: 0.9rem; line-height: 1.45; }
     label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: #334155; }
-    input, select {
+    input {
       width: 100%; padding: 10px 12px; margin-bottom: 14px;
       border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem;
       background: #fff;
@@ -78,17 +74,12 @@ function buildSetupHtml(current) {
   </style>
 </head>
 <body>
-  <h1>Настройка сервера Aurent</h1>
+  <h1>Настройка Aurent Pharmacy</h1>
   <p>${intro}</p>
   <form id="f">
-    <label for="appWorld">Тип кассы</label>
-    <select id="appWorld" name="appWorld" required>
-      <option value="main"${appWorld !== 'restaurant' ? ' selected' : ''}>Магазин / аптека (aurent.uz)</option>
-      <option value="restaurant"${appWorld === 'restaurant' ? ' selected' : ''}>Ресторан (r-aurent.uz)</option>
-    </select>
-    <label for="host">Адрес API-сервера (IP или домен)</label>
-    <input id="host" name="host" placeholder="www.aurent.uz или IP сервера" value="${host}" required autocomplete="off" />
-    <label for="companyLoginCode">Код компании (для входа кассиров)</label>
+    <label for="host">Адрес сервера (домен или IP)</label>
+    <input id="host" name="host" placeholder="p-aurent.uz" value="${host}" required autocomplete="off" />
+    <label for="companyLoginCode">Код компании</label>
     <input id="companyLoginCode" name="companyLoginCode" placeholder="10000" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" value="${companyLoginCode}" required autocomplete="off" style="letter-spacing:0.08em;font-family:ui-monospace,monospace;" />
     <div class="row">
       <div>
@@ -110,8 +101,7 @@ function buildSetupHtml(current) {
       const webPort = document.getElementById('webPort').value.trim() || '443';
       const apiPort = document.getElementById('apiPort').value.trim() || webPort;
       const companyLoginCode = document.getElementById('companyLoginCode').value.replace(/\\D/g, '').slice(0, 5);
-      const appWorld = document.getElementById('appWorld').value;
-      window.setupApi.save({ host, webPort, apiPort, companyLoginCode, appWorld });
+      window.setupApi.save({ host, webPort, apiPort, companyLoginCode, appWorld: 'pharmacy' });
     });
   </script>
 </body>
@@ -123,11 +113,11 @@ function showSetupWindow(existing) {
     let settled = false;
     const win = new BrowserWindow({
       width: 440,
-      height: 620,
+      height: 560,
       resizable: false,
       center: true,
       show: false,
-      title: 'Aurent — настройка сервера',
+      title: 'Aurent Pharmacy — сервер',
       autoHideMenuBar: true,
       webPreferences: {
         contextIsolation: true,

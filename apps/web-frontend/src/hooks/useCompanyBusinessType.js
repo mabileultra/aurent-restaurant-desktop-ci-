@@ -3,7 +3,7 @@ import { companyBusinessTypeApi } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { useTenantScope } from './useTenantScope';
 import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
-import { isPharmacyBusinessType } from '../pharmacy/app/pharmacyPaths';
+import { isPharmacyBusinessType } from '../utils/isPharmacyBusinessType';
 
 const EMPTY = { types: [], defaultTypeCode: 'UNIVERSAL' };
 

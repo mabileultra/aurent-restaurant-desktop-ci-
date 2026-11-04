@@ -12,6 +12,7 @@ import CashierPosTopbar from './cashier/CashierPosTopbar';
 import CashierSecondaryTopbar from './cashier/CashierSecondaryTopbar';
 import { useCashierLayoutShell } from './cashier/useCashierLayoutShell';
 import OfflineSyncProgressBanner from '../../features/cashier/components/OfflineSyncProgressBanner';
+import PharmacyLegacyDesktopForceGate from '../../features/desktop/components/PharmacyLegacyDesktopForceGate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/cashier/index.css';
 
@@ -67,6 +68,7 @@ function CashierLayoutShell() {
       </div>
 
       <OfflineSyncProgressBanner />
+      <PharmacyLegacyDesktopForceGate />
 
       <CashierShiftModal
         open={p.open}

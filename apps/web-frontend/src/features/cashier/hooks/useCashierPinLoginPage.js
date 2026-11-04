@@ -75,7 +75,7 @@ export function useCashierPinLoginPage() {
         toast.error(t('login.wrongAppUnknown'));
         return;
       }
-      navigate(path.startsWith('/pharm') ? path : '/cashier', { replace: true });
+      navigate(path.startsWith('/cashier') ? path : '/cashier', { replace: true });
     })();
 
     return () => {
@@ -150,7 +150,7 @@ export function useCashierPinLoginPage() {
         freshLoginRef.current = false;
         return;
       }
-      navigate(path.startsWith('/pharm') ? path : path.startsWith('/cashier') ? path : '/cashier', { replace: true });
+      navigate(path.startsWith('/cashier') ? path : '/cashier', { replace: true });
       window.setTimeout(() => {
         freshLoginRef.current = false;
       }, 4000);

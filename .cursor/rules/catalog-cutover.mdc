@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Catalog cutover
 
-**Status (2026-11-02):** Waves 1–5.8 engineering done. Prod SoT = **web-backend**. Next = **Wave 6 — Production Readiness & Soak** (not code-first). Do **not** re-open Wave 1–2.
+**Status (2026-11-04):** Waves 1–6 ops largely green on prod/lab. Prod: `read=REMOTE_ONLY` + `write=DUAL`, overnight sales OK, counts match. Lab: failover (catalog down) exercised. Offline cashier soak accepted as OK by operator. **Next = Wave 7 write-cutover (code).** Do **not** re-open Wave 1–2. Do **not** drop `products` until Wave 7 green on lab→prod.
 
 ## Wave ownership
 
@@ -17,9 +17,17 @@ alwaysApply: false
 | 3 catalog-service + API + outbox | Done (import deferred) |
 | 4 Client / dual-path / desktop feed | Done |
 | 5 Cutover dials 5.1–5.8 | Done |
-| **6 Production readiness & soak** | **In progress** — local DUAL/verify/failover/offline-feed OK; staging/prod soak pending |
-| 7 Full write-cutover + drop local `products` | After Wave 6 green |
+| **6 Production readiness & soak** | **Done enough** — prod read REMOTE_ONLY soak; lab failover; offline accepted |
+| **7 Full write-cutover + drop local `products`** | **Next** — see phases below |
 | Later | Excel/UZ import; desktop Kafka consumer (optional) |
+
+## Wave 7 phases (do in order)
+
+1. **Dial** — new write mode (e.g. `CATALOG_PRIMARY`); keep today’s `REMOTE_ONLY` = strict mirror (do not redefine).
+2. **Create/Update/Deactivate product (+ category)** — upsert **catalog first**; local `products` becomes mirror (or skip card fields later). Stock/price-at-store stay in web-backend.
+3. **Lab soak** — `CATALOG_PRIMARY` + read `REMOTE_ONLY`; verify + sales + admin CRUD.
+4. **Prod flip** — only with «подтверждаю прод»; still no drop.
+5. **Drop/truncate local `products`** — last; backup + rollback plan first.
 
 ## Critical: `write-mode=REMOTE_ONLY` ≠ Catalog SoT
 

@@ -3,8 +3,8 @@ import {
   lineDiscountAmount,
   lineSubtotal,
 } from '../../store/cartStore';
-import { resolveCheckoutLineItems } from '../../features/pharmacy-cashier/utils/pharmacyCheckoutItems';
-import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
+import { resolveCheckoutLineItems } from '../../features/cashier/utils/pharmacyCheckoutItems';
+import { buildPharmacySaleExtras } from '../../features/cashier/utils/buildPharmacySaleExtras';
 
 function mapLineItems(cartItems) {
   return cartItems.map((item) => {

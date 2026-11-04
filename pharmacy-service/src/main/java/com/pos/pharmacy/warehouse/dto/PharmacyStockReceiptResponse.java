@@ -18,6 +18,8 @@ public record PharmacyStockReceiptResponse(
     String contractNumber,
     BigDecimal financialDiscount,
     String paymentType,
+    List<PharmacyReceiptPaymentDto> payments,
+    BigDecimal debtAmount,
     UUID supplierId,
     String supplierName,
     Integer storeId,

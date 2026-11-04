@@ -24,6 +24,7 @@ public class PharmacyReceiptResponseMapper {
 
     private final ProductAttributeService productAttributeService;
     private final SupplierRepository supplierRepository;
+    private final PharmacyReceiptPaymentWriter paymentWriter;
 
     public PharmacyStockReceiptResponse toResponse(StockReceipt receipt) {
         Supplier supplier = resolveSupplier(receipt.getSupplierId());
@@ -75,6 +76,8 @@ public class PharmacyReceiptResponseMapper {
             receipt.getContractNumber(),
             receipt.getFinancialDiscount(),
             receipt.getPaymentType(),
+            paymentWriter.toDtos(receipt),
+            paymentWriter.debtAmount(receipt),
             receipt.getSupplierId(),
             supplier != null ? supplier.getName() : null,
             receipt.getStoreId(),

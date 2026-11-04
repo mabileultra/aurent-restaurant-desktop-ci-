@@ -12,7 +12,12 @@ export const PHARMACY_ADMIN_NAV = [
   { to: PHARM_POS_PATH, labelKey: 'nav.cashier', fallback: 'Касса' },
   { to: PHARM_STOCK_PATHS.products, labelKey: 'nav.stockPharmacyProducts', fallback: 'Товары' },
   { to: PHARM_STOCK_PATHS.receipts, labelKey: 'nav.stockPharmacyReceipts', fallback: 'Приход' },
-  { to: PHARM_STOCK_PATHS.aslMarks, labelKey: 'nav.stockPharmacyAslMarks', fallback: 'ASL' },
   { to: PHARM_SALES_PATH, labelKey: 'nav.sales', fallback: 'Продажи' },
   { to: PHARM_RETURNS_PATH, labelKey: 'nav.returns', fallback: 'Возвраты' },
+  { to: '/reports', labelKey: 'nav.reportsHub', fallback: 'Отчёты' },
+  { to: '/finance/dashboard', labelKey: 'nav.financeDashboard', fallback: 'Финансы' },
+  { to: '/cash-registers/list', labelKey: 'nav.registersList', fallback: 'Кассы' },
+  { to: '/users/list', labelKey: 'nav.usersList', fallback: 'Пользователи' },
+  { to: '/stores', labelKey: 'nav.stores', fallback: 'Магазины' },
+  { to: '/billing', labelKey: 'nav.billing', fallback: 'Биллинг' },
 ];

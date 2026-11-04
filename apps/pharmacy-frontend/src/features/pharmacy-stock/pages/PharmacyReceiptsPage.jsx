@@ -147,7 +147,7 @@ export default function PharmacyReceiptsPage() {
                 <th>{t('pharmacyStock.colDate')}</th>
                 <th>{t('stockReports.colSupplier')}</th>
                 <th>{t('stockReports.colStore')}</th>
-                <th>{t('pharmacyStock.colPurchaseSum')}</th>
+                <th>{t('pharmacyStock.colLinePurchase')}</th>
                 <th>{t('pharmacyStock.colRetailSum')}</th>
                 <th>{t('pharmacyStock.colQty')}</th>
                 <th />

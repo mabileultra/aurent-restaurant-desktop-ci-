@@ -8,6 +8,7 @@ import {
   PharmacySelectCell,
 } from './PharmacyTableSelect';
 import { formatMoney } from '../utils/pharmacyReceiptPricing';
+import { linePurchaseSum, lineRetailSum } from '../utils/pharmacyReceiptTotals';
 import { PHARM_PAGE_SIZES } from '../utils/pharmacyTablePage';
 import '../styles/pharmacy-receipt-pick.css';
 
@@ -68,11 +69,7 @@ export default function PharmacyReceiptPickLinesPanel({
                   <div className="pharmacy-stock__empty">{t('pharmacyStock.pickAddedEmpty')}</div>
                 </td>
               </tr>
-            ) : linesPage.rows.map((line, idx) => {
-              const qty = Number(line.quantity) || 0;
-              const purchase = Number(line.purchasePriceWithVat ?? line.purchasePrice) || 0;
-              const retail = Number(line.retailPrice ?? line.unitSellingPrice) || 0;
-              return (
+            ) : linesPage.rows.map((line, idx) => (
                 <tr
                   key={line.id}
                   className={linesSelect.isSelected(line.id) ? 'pharmacy-stock__row--selected' : undefined}
@@ -87,14 +84,13 @@ export default function PharmacyReceiptPickLinesPanel({
                   <td>{formatMoney(line.purchasePrice)}</td>
                   <td>{line.vatPercent ?? '—'}</td>
                   <td>{line.markupPercent ?? '—'}</td>
-                  <td>{formatMoney(purchase * qty)}</td>
-                  <td>{formatMoney(retail * qty)}</td>
+                  <td>{formatMoney(linePurchaseSum(line))}</td>
+                  <td>{formatMoney(lineRetailSum(line))}</td>
                   <td>{line.batchNumber || '—'}</td>
                   <td>{line.expiryDate || '—'}</td>
                   <PharmacyEditCell t={t} onEdit={() => onEditLine(line)} />
                 </tr>
-              );
-            })}
+            ))}
           </tbody>
         </table>
       </div>

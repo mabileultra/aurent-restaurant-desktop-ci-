@@ -4,6 +4,8 @@ import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession, resetClientSessionState } from '../../../utils/authSession';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
+import { isPharmacyOnlyCompany } from '../../../utils/isPharmacyOnlyCompany';
+import { isPharmacyAppSplitEnabled, pharmacyAppHref } from '../../../config/pharmacyAppUrl';
 import {
   readHandoffFromHash,
   clearHandoffHash,
@@ -41,6 +43,19 @@ export default function AuthAcceptPage() {
       let path = next || resolveAppHomePath(handoff.user?.role, businessPayload?.defaultTypeCode);
       // Retired /rst targets must not open main shell — fall back to dashboard.
       if (String(path).startsWith('/rst')) path = '/dashboard';
+      const role = String(handoff.user?.role || '').toUpperCase();
+      if (
+        role !== 'CASHIER'
+        && isPharmacyAppSplitEnabled()
+        && isPharmacyOnlyCompany(businessPayload)
+      ) {
+        const target = path.startsWith('/cashier') ? '/dashboard' : path;
+        const href = pharmacyAppHref(target);
+        if (href) {
+          window.location.replace(href);
+          return;
+        }
+      }
       if (!cancelled) navigate(path, { replace: true });
     })();
     return () => { cancelled = true; };

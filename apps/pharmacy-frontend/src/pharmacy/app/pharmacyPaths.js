@@ -13,8 +13,6 @@ export const PHARM_STOCK_PATHS = {
   receipt: (id) => `/stock/receipts/${id}`,
   receiptPick: (id) => `/stock/receipts/${id}/pick`,
   products: PHARM_STOCK_PRODUCTS_PATH,
-  aslMarks: '/stock/asl-marks',
-  aslRequests: '/stock/asl-requests',
 };
 
 export { isPharmacyBusinessType } from '@aurent/shared-tenant';
