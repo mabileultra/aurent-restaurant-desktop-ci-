@@ -1,6 +1,12 @@
 /**
- * @aurent/shared-fiscal
- * Planned: OFD / fiscal provider transport shared by apps.
- * Vertical receipt business rules stay in each app.
+ * @aurent/shared-fiscal — pure OFD / fiscal helpers (no cart/store imports).
+ * Provider adapters and marked-line expansion stay in apps.
  */
-export {};
+export { toIdentificationMarkingCode, toOfdMarkingLabel } from './ofdMarkingLabel.js';
+export {
+  toTiyin,
+  isFiscalDateTime,
+  formatFiscalDateTime,
+  toFiscalRefundDateTime,
+} from './fiscalMoney.js';
+export { resolveLinePackageCode } from './resolveLinePackageCode.js';

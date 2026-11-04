@@ -3,11 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Aurent shared package scaffold — fill only with proven cross-app logic.",
+  "description": "Base UI primitives (input/classes); no vertical screens.",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js"
   },
-  "files": ["src"],
-  "sideEffects": false
+  "files": [
+    "src"
+  ],
+  "sideEffects": false,
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "clsx": "^2.1.0"
+  },
+  "dependencies": {}
 }

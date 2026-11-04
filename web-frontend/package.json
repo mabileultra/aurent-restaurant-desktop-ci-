@@ -33,7 +33,15 @@
     "react-router-dom": "^6.21.0",
     "recharts": "^2.10.1",
     "zod": "^3.22.4",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "@aurent/shared-auth": "workspace:*",
+    "@aurent/shared-api": "workspace:*",
+    "@aurent/shared-offline": "workspace:*",
+    "@aurent/shared-marking": "workspace:*",
+    "@aurent/shared-fiscal": "workspace:*",
+    "@aurent/shared-types": "workspace:*",
+    "@aurent/shared-tenant": "workspace:*",
+    "@aurent/shared-ui": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

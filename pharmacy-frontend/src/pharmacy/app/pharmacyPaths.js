@@ -17,9 +17,7 @@ export const PHARM_STOCK_PATHS = {
   aslRequests: '/stock/asl-requests',
 };
 
-export function isPharmacyBusinessType(code) {
-  return String(code || '').trim().toUpperCase() === 'PHARMACY';
-}
+export { isPharmacyBusinessType } from '@aurent/shared-tenant';
 
 export function isPharmPosPath(pathname) {
   const p = String(pathname || '');

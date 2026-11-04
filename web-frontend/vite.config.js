@@ -1,6 +1,7 @@
 // vite.config.js
 import fs from 'node:fs';
 import path from 'node:path';
+import { aurentPackageAliases } from '../packages/aurentAliases.mjs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -44,12 +45,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), serviceWorkerVersionPlugin()],
     resolve: {
-      alias: {
-        '@aurent/shared-auth': path.resolve(__dirname, '../packages/shared-auth/src/index.js'),
-        '@aurent/shared-api': path.resolve(__dirname, '../packages/shared-api/src/index.js'),
-        '@aurent/shared-offline': path.resolve(__dirname, '../packages/shared-offline/src/index.js'),
-        '@aurent/shared-marking': path.resolve(__dirname, '../packages/shared-marking/src/index.js'),
-      },
+      alias: aurentPackageAliases(),
     },
     server: {
       port: 5173,

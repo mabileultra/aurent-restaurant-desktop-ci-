@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Offline sync transport plumbing (phases); sale rules stay in apps.",
+  "description": "Offline sync transport plumbing.",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js"
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "sideEffects": false
 }

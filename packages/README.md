@@ -1,49 +1,35 @@
 # Shared packages (`@aurent/*`)
 
-Gradual extracts (Vite alias, root workspace not active yet). Docker context = repo root for web + pharmacy.
+Active **pnpm workspace** (root `pnpm-workspace.yaml`). Apps depend via `"workspace:*"`.
 
-**Live:** `@aurent/shared-auth`, `@aurent/shared-api` (idempotency + network error), `@aurent/shared-offline` (sync phases), `@aurent/shared-marking` (KM parse).
+Vite also resolves via `packages/aurentAliases.mjs` (Docker + local).
 
-## Packages
+## Live packages
 
-| Package | Scope |
-|---------|--------|
-| `@aurent/shared-auth` | Handoff / session helpers (no JWT in URL) |
-| `@aurent/shared-api` | Axios patterns, idempotency, error envelope |
-| `@aurent/shared-ui` | Base* primitives only — not screens |
-| `@aurent/shared-fiscal` | Fiscal / OFD transport |
-| `@aurent/shared-marking` | Technical KM helpers; pharmacy rules stay in app |
-| `@aurent/shared-offline` | Sync transport / queue plumbing; sale rules stay in app |
-| `@aurent/shared-tenant` | Company / store scope helpers |
-| `@aurent/shared-types` | Shared DTOs / constants |
+| Package | Contents |
+|---------|----------|
+| `@aurent/shared-auth` | Identity one-time handoff (no JWT in URL) |
+| `@aurent/shared-api` | Idempotency + network error helpers |
+| `@aurent/shared-offline` | Sync phases + `drainPagedFeed` transport loop |
+| `@aurent/shared-marking` | Technical KM / GTIN parse |
+| `@aurent/shared-fiscal` | Pure OFD helpers (label, money, package code) |
+| `@aurent/shared-types` | `BUSINESS_TYPE`, `FISCAL_PROVIDER`, … |
+| `@aurent/shared-tenant` | Pharmacy/restaurant tenant scope helpers |
+| `@aurent/shared-ui` | `uiClasses` + `BaseInput` only |
 
 ## Rules
 
 1. Extract only when **≥2 apps** need the same module.
-2. Vertical business rules (pharmacy marking, pharmacy offline sales, grocery POS) stay in the app.
-3. Prefer: duplicate briefly → extract → delete the bridge copy.
-4. Do not put grocery UI into `shared-ui`.
+2. Vertical business rules stay in the app (pharmacy marking sold-gate, grocery POS, cart fiscal expand).
+3. Prefer: duplicate → extract → re-export thin shim in the old path.
+4. Do **not** put screens / Spinner / BaseButton (app-coupled) into `shared-ui` yet.
+5. `pharmacy-frontend` `sync:from-main` remains a temporary bridge for non-extracted modules.
 
-## Wire an app (later)
+## Install
 
-```json
-{
-  "dependencies": {
-    "@aurent/shared-auth": "workspace:*"
-  }
-}
+```bash
+# from repo root
+pnpm install
 ```
 
-```js
-import { /* … */ } from '@aurent/shared-auth';
-```
-
-From repo root: `pnpm install` (after first extract that apps actually import).
-
-## Workspace activation
-
-Do **not** enable a root `pnpm-workspace.yaml` until the first real extract + Docker COPY of `packages/` is ready.
-Local app installs (`cd web-frontend && pnpm i`) currently stay isolated.
-
-When ready: copy `pnpm-workspace.example.yaml` → `pnpm-workspace.yaml`, then add `"@aurent/…": "workspace:*"` in apps and update Dockerfiles to include `packages/`.
-
+App folders stay at repo root (see `apps/README.md`) so deploy paths keep working.

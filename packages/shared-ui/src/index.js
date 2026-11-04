@@ -1,6 +1,5 @@
 /**
- * @aurent/shared-ui
- * Planned: Base* kit only (button/input/modal primitives).
- * Do NOT move grocery/pharmacy/restaurant screens here.
+ * @aurent/shared-ui — Base* primitives only (no grocery/pharmacy screens).
  */
-export {};
+export { inputCls, labelCls, fieldErrorCls } from './uiClasses.js';
+export { default as BaseInput } from './BaseInput.jsx';

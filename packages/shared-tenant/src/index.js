@@ -1,5 +1,10 @@
 /**
- * @aurent/shared-tenant
- * Planned: company/store scope helpers shared across verticals.
+ * @aurent/shared-tenant — company / store vertical scope helpers.
  */
-export {};
+export {
+  BUSINESS_TYPE,
+  isPharmacyBusinessType,
+  isRestaurantBusinessType,
+  normalizeBusinessType,
+  isPharmacyTenant,
+} from './businessScope.js';

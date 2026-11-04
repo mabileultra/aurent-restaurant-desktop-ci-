@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
+import { aurentPackageAliases } from '../packages/aurentAliases.mjs';
 
 /**
  * Prefer new tests under /test (mirror of src).
@@ -7,22 +8,14 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   resolve: {
-    alias: {
-      '@aurent/shared-auth': path.resolve(__dirname, '../packages/shared-auth/src/index.js'),
-      '@aurent/shared-api': path.resolve(__dirname, '../packages/shared-api/src/index.js'),
-      '@aurent/shared-offline': path.resolve(__dirname, '../packages/shared-offline/src/index.js'),
-      '@aurent/shared-marking': path.resolve(__dirname, '../packages/shared-marking/src/index.js'),
-    },
+    alias: aurentPackageAliases(),
   },
   test: {
     environment: 'node',
     include: [
       'test/**/*.test.js',
       'src/**/*.test.js',
-      '../packages/shared-auth/src/**/*.test.js',
-      '../packages/shared-api/src/**/*.test.js',
-      '../packages/shared-offline/src/**/*.test.js',
-      '../packages/shared-marking/src/**/*.test.js',
+      '../packages/*/src/**/*.test.js',
     ],
     exclude: ['node_modules', 'dist'],
   },
