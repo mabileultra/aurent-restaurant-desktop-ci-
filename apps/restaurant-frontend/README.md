@@ -22,7 +22,7 @@
 ## Dev
 
 ```bash
-cd restaurant-frontend
+cd apps/restaurant-frontend
 pnpm install
 pnpm run dev
 ```

@@ -6,10 +6,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const APP_ICON = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.png');
-const BRAND_APP = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'app-icon.png');
-const SVG = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.svg');
-const LOGO2 = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'logo2.png');
+const APP_ICON = path.join(ROOT, '..', 'apps', 'web-frontend', 'public', 'desktop', 'icon.png');
+const BRAND_APP = path.join(ROOT, '..', 'apps', 'web-frontend', 'public', 'brand', 'app-icon.png');
+const SVG = path.join(ROOT, '..', 'apps', 'web-frontend', 'public', 'desktop', 'icon.svg');
+const LOGO2 = path.join(ROOT, '..', 'apps', 'web-frontend', 'public', 'brand', 'logo2.png');
 const BUILD = path.join(ROOT, 'build');
 
 const ICO_SIZES = [16, 24, 32, 48, 64, 128, 256];

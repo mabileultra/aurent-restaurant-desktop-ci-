@@ -9,7 +9,7 @@ import { dirname, join } from 'path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const handbook = readFileSync(join(root, 'web-frontend/src/config/moduleHandbook.js'), 'utf8');
+const handbook = readFileSync(join(root, 'apps/web-frontend/src/config/moduleHandbook.js'), 'utf8');
 const adminModule = readFileSync(
   join(root, 'identity-service/src/main/java/com/pos/identity/security/AdminModule.java'),
   'utf8'

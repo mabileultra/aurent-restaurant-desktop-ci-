@@ -17,9 +17,12 @@
 
 ```
 postsystem/
+├── apps/
+│   ├── web-frontend/            # aurent.uz — платформа + grocery
+│   ├── restaurant-frontend/     # r-aurent.uz
+│   └── pharmacy-frontend/       # p-aurent.uz
+├── packages/                    # @aurent/shared-*
 ├── web-backend/                 # POS core API
-├── web-frontend/                # aurent.uz — платформа, grocery, pharmacy, finance
-├── restaurant-frontend/         # r-aurent.uz — зал / кухня / админка ресторана
 ├── restaurant-service/          # API ресторана (/rst)
 ├── desktop-electron/            # Оболочка кассы
 ├── deploy/                      # Деплой + STACK-MAP.md
@@ -37,12 +40,13 @@ docker compose up -d --build
 
 # Или по отдельности:
 cd web-backend && mvn spring-boot:run
-cd web-frontend && pnpm install && pnpm run dev
+cd apps/web-frontend && pnpm install && pnpm run dev
 ```
 
 API: `http://localhost:8080/api/v1`  
 Веб: `http://localhost:5173` (Docker: порт 5173 → nginx 80)  
-Ресторан (отдельный фронт): `cd restaurant-frontend && pnpm run dev` → `http://localhost:5174`
+Ресторан: `cd apps/restaurant-frontend && pnpm run dev` → `http://localhost:5174`  
+Аптека: `cd apps/pharmacy-frontend && pnpm run dev` → `http://localhost:5175`
 
 Демо-логин после init БД: `admin` / `password`
 

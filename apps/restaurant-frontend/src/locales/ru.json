@@ -66,6 +66,11 @@
     "pinFor": "PIN — {{name}}",
     "rosterEmpty": "Нет сотрудников с PIN. Выдайте PIN менеджеру, кассиру, официанту или повару в штате.",
     "rosterFailed": "Не удалось загрузить сотрудников",
+    "rosterOfflineEmpty": "Локальный список пуст. Нужен интернет один раз (или вход админа), чтобы скопировать сотрудников на этот ПК.",
+    "edgeNeedsOnlineOnce": "Первый вход нужен с интернетом — скопируем сотрудников и каталог на этот ПК. Потом можно без сети.",
+    "edgeBootstrap": "Копируем сотрудников и каталог с облака…",
+    "edgeBootstrapDone": "Локальные сотрудники и каталог готовы",
+    "edgeBootstrapPartial": "Облако недоступно — работаем с локальной копией",
     "adminCard": "Админка",
     "adminBadge": "Логин / пароль",
     "adminTitle": "Админка",
@@ -745,6 +750,9 @@
       "printersSaved": "Принтеры сохранены",
       "printersTest": "Тест",
       "printersTestOk": "Тест отправлен на принтер",
+      "printersTestBold": "ЖИРНЫЙ образец",
+      "printersTestEmph": "КРУПНЫЙ+ЖИРНЫЙ образец",
+      "printersTestNormal": "Обычный текст",
       "printersTestFailed": "Тест не напечатался. Проверьте имя принтера и драйвер Windows.",
       "printersTestPick": "Сначала выберите принтер",
       "receiptPrinter": "Чек после оплаты",
@@ -867,10 +875,7 @@
       "menuImportTasnifShortIdle": "?",
       "menuCategoryPhoto": "Фото раздела",
       "menuCategoryPhotoHint": "Показывается на кассе в карточках категорий (до 400 КБ).",
-      "category": "Категория",
-      "printersTestBold": "ЖИРНЫЙ образец",
-      "printersTestEmph": "КРУПНЫЙ+ЖИРНЫЙ образец",
-      "printersTestNormal": "Обычный текст"
+      "category": "Категория"
     },
     "audit": {
       "colDetail": "Событие",
@@ -1023,14 +1028,14 @@
       "brand": "Aurent Restaurant",
       "title": "Табло заказов",
       "open": "TV кухни",
+      "popupBlocked": "Окно TV заблокировано браузером. Разрешите всплывающие окна для этого сайта или откройте /rst/ready-display вручную на втором мониторе.",
       "denied": "Табло заказов не включено. Включите модуль «Кухня TV» в суперадмине для этого пользователя.",
       "cooking": "Готовится",
       "cookingHint": "Заказы на кухне",
       "cookingEmpty": "Нет заказов в работе",
       "ready": "Готово",
       "readyHint": "Можно забирать",
-      "readyEmpty": "Пока ничего не готово",
-      "popupBlocked": "Окно TV заблокировано браузером. Разрешите всплывающие окна для этого сайта или откройте /rst/ready-display вручную на втором мониторе."
+      "readyEmpty": "Пока ничего не готово"
     },
     "cfd": {
       "brand": "Aurent Restaurant",

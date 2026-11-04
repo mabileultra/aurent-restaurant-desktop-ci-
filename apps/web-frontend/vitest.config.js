@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
-import { aurentPackageAliases } from '../packages/aurentAliases.mjs';
+import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
 
 /**
  * Prefer new tests under /test (mirror of src).
@@ -15,7 +15,7 @@ export default defineConfig({
     include: [
       'test/**/*.test.js',
       'src/**/*.test.js',
-      '../packages/*/src/**/*.test.js',
+      '../../packages/*/src/**/*.test.js',
     ],
     exclude: ['node_modules', 'dist'],
   },

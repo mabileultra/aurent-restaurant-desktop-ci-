@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { aurentPackageAliases } from '../packages/aurentAliases.mjs';
+import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 

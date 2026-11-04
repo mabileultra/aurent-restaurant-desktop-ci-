@@ -3,7 +3,7 @@ set -euo pipefail
 
 DESKTOP_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 POSTSYSTEM_ROOT="${POSTSYSTEM_ROOT:-$(cd "$DESKTOP_ROOT/.." && pwd)}"
-FRONTEND="$POSTSYSTEM_ROOT/web-frontend"
+FRONTEND="$POSTSYSTEM_ROOT/apps/web-frontend"
 
 cd "$DESKTOP_ROOT"
 
@@ -19,7 +19,7 @@ export AURENT_API_URL="${AURENT_API_URL:-http://localhost:8080/api/v1}"
 
 if ! curl -sf "$AURENT_WEB_URL" >/dev/null 2>&1; then
   echo "Frontend not running at $AURENT_WEB_URL"
-  echo "Start: cd web-frontend && pnpm dev"
+  echo "Start: cd apps/web-frontend && pnpm dev"
 fi
 
 exec pnpm start

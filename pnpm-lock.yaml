@@ -8,59 +8,32 @@ importers:
 
   .: {}
 
-  packages/shared-api: {}
-
-  packages/shared-auth: {}
-
-  packages/shared-fiscal: {}
-
-  packages/shared-marking: {}
-
-  packages/shared-offline: {}
-
-  packages/shared-tenant:
-    dependencies:
-      '@aurent/shared-types':
-        specifier: workspace:*
-        version: link:../shared-types
-
-  packages/shared-types: {}
-
-  packages/shared-ui:
-    dependencies:
-      clsx:
-        specifier: ^2.1.0
-        version: 2.1.1
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-
-  pharmacy-frontend:
+  apps/pharmacy-frontend:
     dependencies:
       '@aurent/shared-api':
         specifier: workspace:*
-        version: link:../packages/shared-api
+        version: link:../../packages/shared-api
       '@aurent/shared-auth':
         specifier: workspace:*
-        version: link:../packages/shared-auth
+        version: link:../../packages/shared-auth
       '@aurent/shared-fiscal':
         specifier: workspace:*
-        version: link:../packages/shared-fiscal
+        version: link:../../packages/shared-fiscal
       '@aurent/shared-marking':
         specifier: workspace:*
-        version: link:../packages/shared-marking
+        version: link:../../packages/shared-marking
       '@aurent/shared-offline':
         specifier: workspace:*
-        version: link:../packages/shared-offline
+        version: link:../../packages/shared-offline
       '@aurent/shared-tenant':
         specifier: workspace:*
-        version: link:../packages/shared-tenant
+        version: link:../../packages/shared-tenant
       '@aurent/shared-types':
         specifier: workspace:*
-        version: link:../packages/shared-types
+        version: link:../../packages/shared-types
       '@aurent/shared-ui':
         specifier: workspace:*
-        version: link:../packages/shared-ui
+        version: link:../../packages/shared-ui
       '@hookform/resolvers':
         specifier: ^3.3.3
         version: 3.10.0(react-hook-form@7.91.0(react@18.3.1))
@@ -153,7 +126,7 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(jiti@1.21.7)
 
-  restaurant-frontend:
+  apps/restaurant-frontend:
     dependencies:
       '@hookform/resolvers':
         specifier: ^3.3.3
@@ -241,32 +214,32 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(jiti@1.21.7)
 
-  web-frontend:
+  apps/web-frontend:
     dependencies:
       '@aurent/shared-api':
         specifier: workspace:*
-        version: link:../packages/shared-api
+        version: link:../../packages/shared-api
       '@aurent/shared-auth':
         specifier: workspace:*
-        version: link:../packages/shared-auth
+        version: link:../../packages/shared-auth
       '@aurent/shared-fiscal':
         specifier: workspace:*
-        version: link:../packages/shared-fiscal
+        version: link:../../packages/shared-fiscal
       '@aurent/shared-marking':
         specifier: workspace:*
-        version: link:../packages/shared-marking
+        version: link:../../packages/shared-marking
       '@aurent/shared-offline':
         specifier: workspace:*
-        version: link:../packages/shared-offline
+        version: link:../../packages/shared-offline
       '@aurent/shared-tenant':
         specifier: workspace:*
-        version: link:../packages/shared-tenant
+        version: link:../../packages/shared-tenant
       '@aurent/shared-types':
         specifier: workspace:*
-        version: link:../packages/shared-types
+        version: link:../../packages/shared-types
       '@aurent/shared-ui':
         specifier: workspace:*
-        version: link:../packages/shared-ui
+        version: link:../../packages/shared-ui
       '@hookform/resolvers':
         specifier: ^3.3.3
         version: 3.10.0(react-hook-form@7.91.0(react@18.3.1))
@@ -358,6 +331,33 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.7(jiti@1.21.7)
+
+  packages/shared-api: {}
+
+  packages/shared-auth: {}
+
+  packages/shared-fiscal: {}
+
+  packages/shared-marking: {}
+
+  packages/shared-offline: {}
+
+  packages/shared-tenant:
+    dependencies:
+      '@aurent/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+
+  packages/shared-types: {}
+
+  packages/shared-ui:
+    dependencies:
+      clsx:
+        specifier: ^2.1.0
+        version: 2.1.1
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
 
 packages:
 

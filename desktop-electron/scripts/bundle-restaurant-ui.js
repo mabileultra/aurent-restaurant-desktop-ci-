@@ -3,7 +3,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const desktopRoot = path.join(__dirname, '..');
-const frontendRoot = path.join(desktopRoot, '..', 'restaurant-frontend');
+const frontendRoot = path.join(desktopRoot, '..', 'apps', 'restaurant-frontend');
 const dest = path.join(desktopRoot, 'ui-restaurant');
 const dist = path.join(frontendRoot, 'dist');
 

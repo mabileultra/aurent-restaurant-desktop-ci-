@@ -66,7 +66,13 @@
     "pinFor": "PIN — {{name}}",
     "rosterEmpty": "No staff with a PIN. Assign a PIN to a manager, cashier, waiter, or cook in Staff.",
     "rosterFailed": "Could not load staff",
+    "rosterOfflineEmpty": "Local staff list is empty. Go online once (or admin login) to copy staff onto this PC.",
+    "edgeNeedsOnlineOnce": "First sign-in needs internet — we copy staff and catalog to this PC. After that you can work offline.",
+    "edgeBootstrap": "Copying staff and catalog from the cloud…",
+    "edgeBootstrapDone": "Local staff and catalog are ready",
+    "edgeBootstrapPartial": "Cloud unavailable — using the local copy",
     "adminCard": "Admin",
+
     "adminBadge": "Login / password",
     "adminTitle": "Admin",
     "adminHint": "Username and password",
@@ -698,6 +704,9 @@
       "printersSaved": "Printers saved",
       "printersTest": "Test",
       "printersTestOk": "Test sent to the printer",
+      "printersTestBold": "BOLD sample",
+      "printersTestEmph": "LARGE+BOLD sample",
+      "printersTestNormal": "Normal text",
       "printersTestFailed": "Test did not print. Check the printer name and Windows driver.",
       "printersTestPick": "Pick a printer first",
       "receiptPrinter": "Receipt after payment",
@@ -820,10 +829,7 @@
       "menuImportTasnifShortIdle": "?",
       "menuCategoryPhoto": "Section photo",
       "menuCategoryPhotoHint": "Shown on POS category cards (up to 400 KB).",
-      "category": "Category",
-      "printersTestBold": "BOLD sample",
-      "printersTestEmph": "LARGE+BOLD sample",
-      "printersTestNormal": "Normal text"
+      "category": "Category"
     },
     "audit": {
       "colDetail": "Event",
@@ -976,14 +982,14 @@
       "brand": "Aurent Restaurant",
       "title": "Order board",
       "open": "Kitchen TV",
+      "popupBlocked": "TV window was blocked. Allow pop-ups for this site, or open /rst/ready-display manually on the second monitor.",
       "denied": "Order board is off. Enable «Kitchen TV» for this user in Super Admin.",
       "cooking": "Preparing",
       "cookingHint": "Orders in the kitchen",
       "cookingEmpty": "No orders cooking",
       "ready": "Ready",
       "readyHint": "Ready for pickup",
-      "readyEmpty": "Nothing ready yet",
-      "popupBlocked": "TV window was blocked. Allow pop-ups for this site, or open /rst/ready-display manually on the second monitor."
+      "readyEmpty": "Nothing ready yet"
     },
     "cfd": {
       "brand": "Aurent Restaurant",

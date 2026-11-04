@@ -32,4 +32,4 @@ Vite also resolves via `packages/aurentAliases.mjs` (Docker + local).
 pnpm install
 ```
 
-App folders stay at repo root (see `apps/README.md`) so deploy paths keep working.
+SPA apps live under `apps/` (see `apps/README.md`).

@@ -62,7 +62,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: |
             restaurant-desktop/pnpm-lock.yaml
-            restaurant-frontend/pnpm-lock.yaml
+            apps/restaurant-frontend/pnpm-lock.yaml
+            pnpm-lock.yaml
 
       - name: Build jar + UI (no JRE / no electron)
         env:

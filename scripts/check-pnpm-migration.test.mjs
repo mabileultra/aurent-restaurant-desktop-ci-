@@ -9,8 +9,9 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 const REQUIRED_PNPM_PACKAGES = [
-  'web-frontend',
-  'restaurant-frontend',
+  'apps/web-frontend',
+  'apps/restaurant-frontend',
+  'apps/pharmacy-frontend',
   'desktop-electron',
   'restaurant-desktop',
   'telegram-support-bot',
@@ -18,15 +19,17 @@ const REQUIRED_PNPM_PACKAGES = [
 ];
 
 const REQUIRED_WORKSPACES = [
-  'web-frontend',
-  'restaurant-frontend',
+  'apps/web-frontend',
+  'apps/restaurant-frontend',
+  'apps/pharmacy-frontend',
   'desktop-electron',
   'restaurant-desktop',
 ];
 
 const DOCKERFILES = [
-  'web-frontend/Dockerfile',
-  'restaurant-frontend/Dockerfile',
+  'apps/web-frontend/Dockerfile',
+  'apps/restaurant-frontend/Dockerfile',
+  'apps/pharmacy-frontend/Dockerfile',
   'telegram-support-bot/Dockerfile',
   'telegram-web-support-bot/Dockerfile',
 ];

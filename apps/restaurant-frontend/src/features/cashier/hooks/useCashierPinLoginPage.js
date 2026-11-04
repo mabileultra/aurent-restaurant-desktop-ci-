@@ -22,6 +22,11 @@ import { logoutAndResetSession, resetClientSessionState } from '../../../utils/a
 import { normalizePin, PIN_MAX } from '../utils/cashierPinUtils';
 import { clearPersistedRestaurantStoreId } from '../../../restaurant/shared/hooks/usePersistedRestaurantStoreId';
 import { applyRestaurantDesktopCompanyCode } from '../utils/applyRestaurantDesktopCompanyCode';
+import {
+  shouldFailAdminBootstrapHard,
+  shouldRefreshEdgeFromCloud,
+} from '../utils/edgeAdminCloudRefreshGate';
+
 
 const PIN_ROLES = new Set(['MANAGER', 'CASHIER', 'WAITER', 'COOK']);
 const ADMIN_PASSWORD_ROLES = new Set(['ADMIN', 'MANAGER', 'SUPER_ADMIN']);
@@ -285,9 +290,14 @@ export function useCashierPinLoginPage() {
           /* fall through */
         }
       }
-      const msg = resolveAuthErrorMessage(err, t) || t('cashierLogin.rosterFailed', {
-        defaultValue: 'Не удалось загрузить сотрудников',
-      });
+      const networkish = !err?.response;
+      const msg = (isRestaurantDesktop() && networkish)
+        ? t('cashierLogin.rosterOfflineEmpty', {
+          defaultValue: 'Локальный список пуст. Нужен интернет один раз (или вход админа), чтобы скопировать сотрудников на этот ПК.',
+        })
+        : (resolveAuthErrorMessage(err, t) || t('cashierLogin.rosterFailed', {
+          defaultValue: 'Не удалось загрузить сотрудников',
+        }));
       if (rosterRef.current.length) {
         setRosterError('');
       } else {
@@ -346,7 +356,7 @@ export function useCashierPinLoginPage() {
     setLoading(true);
     setAdminError('');
     try {
-      // Restaurant desktop: admin online login refreshes local edge + live cloud session.
+      // Restaurant desktop: refresh edge from cloud when needed; stay local when offline + ready.
       if (isRestaurantDesktop() && typeof window.aurentRestaurant?.bootstrapStaffFromCloud === 'function') {
         let needsBootstrap = true;
         let liveSession = false;
@@ -357,7 +367,14 @@ export function useCashierPinLoginPage() {
         } catch {
           needsBootstrap = true;
         }
-        const mustRefreshCloud = needsBootstrap || !liveSession || navigator.onLine !== false;
+        const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+        if (offline && needsBootstrap) {
+          setAdminError(t('cashierLogin.edgeNeedsOnlineOnce', {
+            defaultValue: 'Первый вход нужен с интернетом — скопируем сотрудников и каталог на этот ПК. Потом можно без сети.',
+          }));
+          return;
+        }
+        const mustRefreshCloud = shouldRefreshEdgeFromCloud({ needsBootstrap, liveSession, offline });
         if (mustRefreshCloud) {
           toast.loading(t('cashierLogin.edgeBootstrap', {
             defaultValue: 'Копируем сотрудников и каталог с облака…',
@@ -388,8 +405,8 @@ export function useCashierPinLoginPage() {
             }
           } catch (bootErr) {
             toast.dismiss('edge-bootstrap');
-            // Without live session sync will stay dead — fail hard if empty OR no session.
-            if (needsBootstrap || !liveSession) throw bootErr;
+            // Empty local hall → fail. Local ready but no liveSession → continue offline.
+            if (shouldFailAdminBootstrapHard({ needsBootstrap })) throw bootErr;
             toast.error(bootErr?.message || t('cashierLogin.edgeBootstrapPartial', {
               defaultValue: 'Облако недоступно — работаем с локальной копией',
             }));

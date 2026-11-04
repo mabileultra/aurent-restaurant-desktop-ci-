@@ -7,11 +7,11 @@ RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY packages ./packages
-COPY web-frontend/package.json ./web-frontend/
+COPY apps/web-frontend/package.json ./apps/web-frontend/
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --filter pos-frontend...
 
-COPY web-frontend ./web-frontend
-WORKDIR /repo/web-frontend
+COPY apps/web-frontend ./apps/web-frontend
+WORKDIR /repo/apps/web-frontend
 ARG VITE_API_URL=/api/v1
 ARG VITE_SUPPORT_PHONE=
 ARG VITE_SUPPORT_TELEGRAM_BOT=
@@ -33,7 +33,7 @@ ENV VITE_SENTRY_RELEASE=$VITE_SENTRY_RELEASE
 RUN pnpm run build
 
 FROM nginx:1.27-alpine
-COPY --from=build /repo/web-frontend/dist /usr/share/nginx/html
-COPY web-frontend/nginx-maps.conf /etc/nginx/conf.d/00-maps.conf
-COPY web-frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /repo/apps/web-frontend/dist /usr/share/nginx/html
+COPY apps/web-frontend/nginx-maps.conf /etc/nginx/conf.d/00-maps.conf
+COPY apps/web-frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

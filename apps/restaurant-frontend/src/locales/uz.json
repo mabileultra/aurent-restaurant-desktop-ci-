@@ -66,7 +66,13 @@
     "pinFor": "PIN — {{name}}",
     "rosterEmpty": "PIN li xodim yo‘q. Shtatda menejer, kassir, ofitsiant yoki oshpazga PIN bering.",
     "rosterFailed": "Xodimlarni yuklab bo‘lmadi",
+    "rosterOfflineEmpty": "Mahalliy ro‘yxat bo‘sh. Xodimlarni shu PKga nusxalash uchun bir marta internet (yoki admin kirish) kerak.",
+    "edgeNeedsOnlineOnce": "Birinchi kirish uchun internet kerak — xodimlar va katalog shu PKga nusxalanadi. Keyin oflaynda ishlash mumkin.",
+    "edgeBootstrap": "Bulutdan xodimlar va katalog nusxalanmoqda…",
+    "edgeBootstrapDone": "Mahalliy xodimlar va katalog tayyor",
+    "edgeBootstrapPartial": "Bulut yo‘q — mahalliy nusxa bilan ishlaymiz",
     "adminCard": "Admin",
+
     "adminBadge": "Login / parol",
     "adminTitle": "Admin",
     "adminHint": "Login va parol",
@@ -709,6 +715,9 @@
       "printersSaved": "Printerlar saqlandi",
       "printersTest": "Test",
       "printersTestOk": "Test printerga yuborildi",
+      "printersTestBold": "QALIN namuna",
+      "printersTestEmph": "KATTA+QALIN namuna",
+      "printersTestNormal": "Oddiy matn",
       "printersTestFailed": "Test chiqmadi. Printer nomi va Windows drayverini tekshiring.",
       "printersTestPick": "Avval printerni tanlang",
       "receiptPrinter": "To‘lovdan keyingi chek",
@@ -831,10 +840,7 @@
       "menuImportTasnifShortIdle": "?",
       "menuCategoryPhoto": "Bo'lim fotosi",
       "menuCategoryPhotoHint": "Kassada kategoriya kartalarida ko‘rinadi (400 KB gacha).",
-      "category": "Kategoriya",
-      "printersTestBold": "QALIN namuna",
-      "printersTestEmph": "KATTA+QALIN namuna",
-      "printersTestNormal": "Oddiy matn"
+      "category": "Kategoriya"
     },
     "audit": {
       "colDetail": "Hodisa",
@@ -987,14 +993,14 @@
       "brand": "Aurent Restaurant",
       "title": "Buyurtmalar tablosi",
       "open": "Oshxona TV",
+      "popupBlocked": "TV oynasi bloklandi. Sayt uchun popup-larga ruxsat bering yoki ikkinchi monitorda /rst/ready-display ni oching.",
       "denied": "Buyurtmalar tablosi o‘chirilgan. Superadminda shu foydalanuvchi uchun «Oshxona TV» modulini yoqing.",
       "cooking": "Tayyorlanmoqda",
       "cookingHint": "Oshxonadagi buyurtmalar",
       "cookingEmpty": "Ishda buyurtma yo‘q",
       "ready": "Tayyor",
       "readyHint": "Olish mumkin",
-      "readyEmpty": "Hali tayyor buyurtma yo‘q",
-      "popupBlocked": "TV oynasi bloklandi. Sayt uchun popup-larga ruxsat bering yoki ikkinchi monitorda /rst/ready-display ni oching."
+      "readyEmpty": "Hali tayyor buyurtma yo‘q"
     },
     "cfd": {
       "brand": "Aurent Restaurant",

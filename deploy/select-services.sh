@@ -57,13 +57,18 @@ classify() {
       JAVA_EXPAND=1
       return 0
       ;;
-    web-frontend|web-frontend/*)
+    web-frontend|web-frontend/*|apps/web-frontend|apps/web-frontend/*)
       mark frontend
       ;;
-    restaurant-frontend|restaurant-frontend/*)
+    restaurant-frontend|restaurant-frontend/*|apps/restaurant-frontend|apps/restaurant-frontend/*)
       mark restaurant-frontend
       ;;
-    pharmacy-frontend|pharmacy-frontend/*)
+    pharmacy-frontend|pharmacy-frontend/*|apps/pharmacy-frontend|apps/pharmacy-frontend/*)
+      mark pharmacy-frontend
+      ;;
+    packages|packages/*)
+      mark frontend
+      mark restaurant-frontend
       mark pharmacy-frontend
       ;;
     web-backend|web-backend/*)

@@ -21,9 +21,9 @@ Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-auren
 
 | Каталог | Назначение | Dev | Prod |
 |---------|------------|-----|------|
-| `web-frontend` | Main SPA | `:5173` | aurent.uz |
-| `restaurant-frontend` | Restaurant SPA | `:5174` | r-aurent.uz |
-| `pharmacy-frontend` | Pharmacy SPA | `:5175` | p-aurent.uz |
+| `apps/web-frontend` | Main SPA | `:5173` | aurent.uz |
+| `apps/restaurant-frontend` | Restaurant SPA | `:5174` | r-aurent.uz |
+| `apps/pharmacy-frontend` | Pharmacy SPA | `:5175` | p-aurent.uz |
 | `desktop-electron` | Оболочка кассы → грузит aurent (потом handoff на r/p) | — | установщик |
 
 ### Legacy

@@ -1,10 +1,10 @@
-# Apps (logical)
+# Apps
 
-SPA apps stay at repo root for Docker/deploy paths:
+| Path | Product |
+|------|---------|
+| `web-frontend/` | aurent.uz — platform + grocery |
+| `restaurant-frontend/` | r-aurent.uz |
+| `pharmacy-frontend/` | p-aurent.uz |
 
-- `../web-frontend` → aurent.uz
-- `../restaurant-frontend` → r-aurent.uz
-- `../pharmacy-frontend` → p-aurent.uz
-
-They are **pnpm workspace members** via root `pnpm-workspace.yaml`.
-Physical move into `apps/` is optional later; do not do it casually (breaks compose contexts).
+Shared code: `../packages/@aurent/*`.  
+From repo root: `pnpm install`, then `cd apps/web-frontend && pnpm dev`.
