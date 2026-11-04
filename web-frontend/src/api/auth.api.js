@@ -7,4 +7,6 @@ export const authApi = {
   refresh: () => api.post('/auth/refresh'),
   verifyPassword: (data) => api.post('/auth/verify-password', data),
   verifyPin: (data) => api.post('/auth/verify-pin', data),
+  /** One-time SPA handoff code (JWT stays off the URL). */
+  createHandoff: (data) => api.post('/auth/handoff', data),
 };

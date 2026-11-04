@@ -31,6 +31,12 @@
 
 Разные origin = разные IndexedDB/SW. Cutover только после синхронизации очереди на старом клиенте.
 
-## Handoff
+## Handoff (Sprint 2)
 
-Целевой протокол: one-time code через Identity (audience=`pharmacy`), обмен на сессию. Не копировать `#handoff=` с JWT из restaurant без замены.
+1. Main (authenticated): `POST /api/v1/auth/handoff` `{ "audience": "PHARMACY" }` → `{ code, expiresInSeconds }`.
+2. Redirect: `p-aurent.uz/auth/accept?code=…&next=/pos` — **no JWT in URL**.
+3. Pharmacy: `POST /api/v1/auth/handoff/exchange` `{ "code" }` → `AuthResponse` (new JWT in SPA storage).
+4. Code is one-time, ~60s TTL, audience bound to company `PHARMACY`.
+
+Helper on main: `web-frontend/src/utils/pharmacyAppRedirect.js` (`redirectToPharmacyApp`).
+Silent auto-hop / WorldGate cutover — later sprint (flag + offline drain).
