@@ -15,8 +15,8 @@ const REQUIRED_PNPM_PACKAGES = [
   'apps/desktop-electron',
   'apps/restaurant-desktop',
   'apps/pharmacy-desktop',
-  'telegram-support-bot',
-  'telegram-web-support-bot',
+  'bots/telegram-support-bot',
+  'bots/telegram-web-support-bot',
 ];
 
 const REQUIRED_WORKSPACES = [
@@ -32,8 +32,8 @@ const DOCKERFILES = [
   'apps/web-frontend/Dockerfile',
   'apps/restaurant-frontend/Dockerfile',
   'apps/pharmacy-frontend/Dockerfile',
-  'telegram-support-bot/Dockerfile',
-  'telegram-web-support-bot/Dockerfile',
+  'bots/telegram-support-bot/Dockerfile',
+  'bots/telegram-web-support-bot/Dockerfile',
 ];
 
 const WORKFLOW_FILES = [

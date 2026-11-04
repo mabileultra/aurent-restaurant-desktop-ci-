@@ -25,6 +25,9 @@ postsystem/
 │   ├── restaurant-desktop/      # Electron ресторан
 │   └── pharmacy-desktop/        # Electron аптека
 ├── packages/                    # @aurent/shared-*
+├── bots/
+│   ├── telegram-support-bot/    # аптечный Telegram-бот
+│   └── telegram-web-support-bot/# поддержка web/CRM
 ├── web-backend/                 # POS core API
 ├── restaurant-service/          # API ресторана (/rst)
 ├── deploy/                      # Деплой + STACK-MAP.md

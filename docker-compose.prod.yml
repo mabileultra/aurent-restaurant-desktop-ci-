@@ -877,7 +877,7 @@ services:
   # Аптечный бот: поиск лекарств + поддержка аптеки
   telegram-support-bot:
     build:
-      context: ./telegram-support-bot
+      context: ./bots/telegram-support-bot
       dockerfile: Dockerfile
     container_name: aurent-pharmacy-telegram-bot
     mem_limit: 96m
@@ -905,7 +905,7 @@ services:
   # Бот поддержки веб-приложения (страница «Поддержка» в CRM/POS)
   telegram-web-support-bot:
     build:
-      context: ./telegram-web-support-bot
+      context: ./bots/telegram-web-support-bot
       dockerfile: Dockerfile
     container_name: aurent-web-support-telegram-bot
     mem_limit: 96m

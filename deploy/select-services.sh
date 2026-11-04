@@ -104,10 +104,14 @@ classify() {
     api-gateway|api-gateway/*)
       mark api-gateway
       ;;
-    telegram-support-bot|telegram-support-bot/*)
+    telegram-support-bot|telegram-support-bot/*|bots/telegram-support-bot|bots/telegram-support-bot/*)
       mark telegram-support-bot
       ;;
-    telegram-web-support-bot|telegram-web-support-bot/*)
+    telegram-web-support-bot|telegram-web-support-bot/*|bots/telegram-web-support-bot|bots/telegram-web-support-bot/*)
+      mark telegram-web-support-bot
+      ;;
+    bots|bots/*)
+      mark telegram-support-bot
       mark telegram-web-support-bot
       ;;
     deploy/*|scripts/*|.github/*|docs/*|downloads/*|desktop-electron|desktop-electron/*|apps/desktop-electron|apps/desktop-electron/*|restaurant-desktop|restaurant-desktop/*|apps/restaurant-desktop|apps/restaurant-desktop/*|pharmacy-desktop|pharmacy-desktop/*|apps/pharmacy-desktop|apps/pharmacy-desktop/*|*.md|.env.example|.gitignore|.gitattributes|LICENSE)
