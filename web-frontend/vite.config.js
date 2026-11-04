@@ -18,11 +18,23 @@ function serviceWorkerVersionPlugin() {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const identityProxy = env.VITE_DEV_IDENTITY_PROXY || process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081';
   const platformProxy = env.VITE_DEV_PLATFORM_PROXY || process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084';
   const apiProxy = env.VITE_DEV_API_PROXY || process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088';
+
+  let visualizerPlugin = null;
+  if (env.ANALYZE === 'true' || process.env.ANALYZE === 'true') {
+    const { visualizer } = await import('rollup-plugin-visualizer');
+    visualizerPlugin = visualizer({
+      filename: 'dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap',
+    });
+  }
 
   const configureProxy = (proxy) => {
     proxy.on('error', (err, req, res) => {
@@ -42,7 +54,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react(), serviceWorkerVersionPlugin()],
+    plugins: [react(), serviceWorkerVersionPlugin(), visualizerPlugin].filter(Boolean),
     server: {
       port: 5173,
       // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).
@@ -119,16 +131,9 @@ export default defineConfig(({ mode }) => {
           // caused production white screens via circular chunk init
           // (createContext undefined / Cannot access before initialization).
           if (!id.includes('node_modules')) return;
-          if (id.includes('recharts')) return 'charts';
-          if (
-            id.includes('react')
-            || id.includes('react-dom')
-            || id.includes('react-router')
-            || id.includes('@tanstack/react-query')
-            || id.includes('react-hook-form')
-            || id.includes('zod')
-            || id.includes('@hookform')
-          ) {
+          if (/[\\/]clsx[\\/]/.test(id)) return 'vendor';
+          if (/recharts|react-smooth|[\\/]d3-|victory-vendor|decimal\.js-light|[\\/]lodash[\\/]|fast-equals|eventemitter3|internmap/.test(id)) return 'charts';
+          if (/[\\/](react|react-dom|scheduler|react-router|react-router-dom|@remix-run|@tanstack|react-hook-form|@hookform|zod)[\\/]/.test(id)) {
             return 'vendor';
           }
         },

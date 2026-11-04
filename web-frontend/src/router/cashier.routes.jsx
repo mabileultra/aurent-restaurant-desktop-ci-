@@ -2,8 +2,10 @@ import { Route, Navigate } from 'react-router-dom';
 import CashierRoute from './guards/CashierRoute';
 import CashierHomeRedirect from './guards/CashierHomeRedirect';
 import CashierRetailPosGuard from './guards/CashierRetailPosGuard';
-import CashierLayout from '../components/layout/CashierLayout';
+import { lazyPage as lazy } from './lazyWithRetry';
 import { PHARM_POS_PATH } from '../pharmacy/app/pharmacyPaths';
+
+const CashierLayout = lazy(() => import('../components/layout/CashierLayout'));
 import {
   PosPage,
   CashierMySalesPage,

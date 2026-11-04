@@ -50,7 +50,7 @@
 .bc-deferral__title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); }
 .bc-deferral__quick { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .bc-deferral__quick .bc-btn { height: 2rem; padding: 0 0.6rem; }
-.bc-deferral__row { display: grid; grid-template-columns: 9.5rem 1fr; gap: 0.5rem; }
+.bc-deferral__row { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5rem; }
 
 /* Buttons */
 .bc-btn {

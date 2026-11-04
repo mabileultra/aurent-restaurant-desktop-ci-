@@ -3,30 +3,22 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { platformBillingApi } from '../../../api';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { unwrapBillingCollectionsPage } from '../utils/unwrapBillingCollectionsPage';
+import {
+  COLLECTIONS_QUERY_KEY,
+  COLLECTION_TABS,
+  DATE_FIELDS,
+  PAYMENT_METHODS,
+  TAB_COUNT_FIELD,
+  rowKey,
+  tabParams,
+} from './billingCollectionsConstants';
 
-export const COLLECTION_TABS = ['ALL', 'OVERDUE', 'DUE_SOON', 'ACTIVE', 'NEW', 'SUSPENDED'];
-export const PAYMENT_METHODS = ['CLICK', 'PAYME', 'BANK_TRANSFER', 'CASH', 'OTHER'];
-export const DATE_FIELDS = ['NEXT_CHARGE', 'LAST_PAYMENT', 'CREATED'];
-export const COLLECTIONS_QUERY_KEY = 'platform-billing-collections';
-
-const TAB_COUNT_FIELD = {
-  ALL: 'totalCompanies',
-  OVERDUE: 'overdueCount',
-  DUE_SOON: 'dueSoonCount',
-  ACTIVE: 'activeCount',
-  NEW: 'newCompanies',
-  SUSPENDED: 'suspendedCount',
+export {
+  COLLECTION_TABS,
+  PAYMENT_METHODS,
+  DATE_FIELDS,
+  COLLECTIONS_QUERY_KEY,
 };
-
-function tabParams(tab) {
-  if (tab === 'ALL') return {};
-  if (tab === 'NEW') return { newOnly: true };
-  return { state: tab };
-}
-
-function rowKey(row) {
-  return row?.billing?.companyId;
-}
 
 export function useBillingCollections() {
   const [tab, setTabState] = useState('ALL');
@@ -85,8 +77,11 @@ export function useBillingCollections() {
     enabled: false,
   });
 
+  // Filter out companies whose monthly total is 0 (e.g. 404 Toys)
   const upcoming = useMemo(
-    () => [...(upcomingQ.data || [])].sort((a, b) => (a.daysUntilDue ?? 0) - (b.daysUntilDue ?? 0)),
+    () => [...(upcomingQ.data || [])]
+      .filter((r) => Number(r.billing?.monthlyTotal || 0) > 0)
+      .sort((a, b) => (a.daysUntilDue ?? 0) - (b.daysUntilDue ?? 0)),
     [upcomingQ.data],
   );
 
@@ -133,7 +128,13 @@ export function useBillingCollections() {
   };
 
   const overview = overviewQ.data;
-  const tabCount = (key) => overview?.[TAB_COUNT_FIELD[key]] ?? null;
+  const tabCount = (key) => {
+    // When searching on the active tab, show filtered count
+    if (debouncedSearch && key === tab) {
+      return total;
+    }
+    return overview?.[TAB_COUNT_FIELD[key]] ?? null;
+  };
 
   return {
     overview,
@@ -162,15 +163,9 @@ export function useBillingCollections() {
       setSelectedMap(new Map());
     },
     resetFilters: () => {
-      setPlanIdState('');
-      setMethodState('');
-      setFromState('');
-      setToState('');
-      setSearchState('');
-      setRegionCodeState('');
-      setDistrictCodeState('');
-      setPage(0);
-      setSelectedMap(new Map());
+      setPlanIdState(''); setMethodState(''); setFromState(''); setToState('');
+      setSearchState(''); setRegionCodeState(''); setDistrictCodeState('');
+      setPage(0); setSelectedMap(new Map());
     },
     params: filterParams,
     selectedIds,

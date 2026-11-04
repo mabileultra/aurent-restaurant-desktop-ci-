@@ -143,6 +143,7 @@ describe('BillingReportsView', () => {
     // 2. 4 ta KPI kartochkasi
     expect(html).toContain('bc-report-kpi-card--revenue');
     expect(html).toContain('bc-report-kpi-card--expected');
+    expect(html).toContain('(7 kun)'); // Explicit 7 days period in label
     expect(html).toContain('bc-report-kpi-card--debt');
     expect(html).toContain('bc-report-kpi-card--methods');
     expect(html).toContain('34\u00A0000\u00A0000'); // Month revenue formatted
@@ -163,5 +164,27 @@ describe('BillingReportsView', () => {
     expect(html).toContain('Pro');
     expect(html).toContain('ID: 101');
     expect(html).toContain('To‘lov qo‘shish');
+  });
+
+  it('formats small non-zero payment shares as <1%', () => {
+    mockReportsQuery = {
+      isLoading: false,
+      data: {
+        revenue: { month: 10000000 },
+        expected: { next7Days: 1000000 },
+        debt: { total: 0 },
+        methods: [
+          { method: 'CLICK', amount: 1000, percent: 0 },
+          { method: 'PAYME', amount: 3010, percent: 0.03 },
+        ],
+      },
+    };
+    mockCompaniesQuery = { isLoading: false, data: [] };
+
+    const html = renderToStaticMarkup(
+      React.createElement(BillingReportsView, { t: mockT, money: mockMoney, p: mockP })
+    );
+
+    expect(html).toContain('&lt;1%');
   });
 });

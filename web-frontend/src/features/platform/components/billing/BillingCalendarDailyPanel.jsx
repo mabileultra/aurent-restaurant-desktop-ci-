@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, FileSpreadsheet, Plus, User } from 'lucide-react';
-import { STATE_TONE, dueHint, initials } from './billingCollectionsUi';
-import { formatDayTitle, shiftDay } from './billingCalendarUtils';
+import { ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react';
+import { classifyCalendarItem, formatDayTitle, shiftDay } from './billingCalendarUtils';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
+import BillingCalendarDailyCompanyRow from './BillingCalendarDailyCompanyRow';
+import BillingCalendarDailyTabs from './BillingCalendarDailyTabs';
 
 export default function BillingCalendarDailyPanel({
   t,
@@ -18,9 +19,11 @@ export default function BillingCalendarDailyPanel({
   onSwitchToList,
 }) {
   const k = (key, opts) => t(`platform.billing.collections.calendar.${key}`, opts);
-  const [tab, setTab] = useState('ALL'); // 'ALL' | 'SUCCESS' | 'LOW_BALANCE' | 'OTHER'
+  const [tab, setTab] = useState('ALL');
 
   const rawItems = dayData?.items || [];
+  const todayIso = new Date().toLocaleDateString('sv-SE');
+  const isFuture = Boolean(picked && picked > todayIso);
 
   // Lookup region codes for display
   const regionCodes = useMemo(() => {
@@ -29,9 +32,9 @@ export default function BillingCalendarDailyPanel({
       .filter(Boolean);
   }, [rawItems, companyMap]);
 
-  const { regionName, districtName } = useGeoNameLookup(regionCodes);
+  const { regionName } = useGeoNameLookup(regionCodes);
 
-  // Compute stats and enrich items
+  // Compute stats and enrich items using single source of truth
   const { enrichedItems, counts, totalAmount } = useMemo(() => {
     let sum = 0;
     let success = 0;
@@ -47,35 +50,19 @@ export default function BillingCalendarDailyPanel({
       const company = companyMap[item.companyId];
       const b = company?.billing;
       const balance = Number(b?.balance ?? 0);
-      const isOverdue = item.paymentState === 'OVERDUE' || balance < 0;
-      const hasDeferral = Boolean(b?.deferralUntil);
-      const isLowBalance = isOverdue || (balance < amt && item.paymentState !== 'ACTIVE');
+      const category = classifyCalendarItem(item, company, isFuture);
 
-      let category = 'PLANNED';
-      if (item.paymentState === 'SUSPENDED') {
-        category = 'SUSPENDED';
-        suspended++;
-      } else if (hasDeferral) {
-        category = 'DEFERRAL';
-        deferral++;
-      } else if (isLowBalance) {
-        category = 'LOW_BALANCE';
-        lowBal++;
-      } else if (item.paymentState === 'ACTIVE') {
-        category = 'SUCCESS';
-        success++;
-      } else {
-        category = 'PLANNED';
-        planned++;
-      }
+      if (category === 'SUSPENDED') suspended++;
+      else if (category === 'DEFERRAL') deferral++;
+      else if (category === 'LOW_BALANCE') lowBal++;
+      else if (category === 'SUCCESS') success++;
+      else planned++;
 
       return {
         ...item,
         company,
         billing: b,
         balance,
-        hasDeferral,
-        isLowBalance,
         category,
       };
     });
@@ -92,7 +79,7 @@ export default function BillingCalendarDailyPanel({
       },
       totalAmount: sum,
     };
-  }, [rawItems, companyMap]);
+  }, [rawItems, companyMap, isFuture]);
 
   const filteredItems = useMemo(() => {
     if (tab === 'ALL') return enrichedItems;
@@ -140,60 +127,12 @@ export default function BillingCalendarDailyPanel({
 
         {/* Filter Pills Tabs */}
         {enrichedItems.length > 0 && (
-          <div className="bc-cal-side-tabs">
-            <button
-              type="button"
-              className={`bc-cal-side-tab ${tab === 'ALL' ? 'is-active' : ''}`}
-              onClick={() => setTab('ALL')}
-            >
-              {k('tabAll', { defaultValue: 'Barchasi' })} ({counts.all})
-            </button>
-            {counts.success > 0 && (
-              <button
-                type="button"
-                className={`bc-cal-side-tab bc-cal-side-tab--success ${tab === 'SUCCESS' ? 'is-active' : ''}`}
-                onClick={() => setTab('SUCCESS')}
-              >
-                {k('tabSuccess', { defaultValue: 'Muvaffaqiyatli' })} ({counts.success})
-              </button>
-            )}
-            {counts.lowBalance > 0 && (
-              <button
-                type="button"
-                className={`bc-cal-side-tab bc-cal-side-tab--danger ${tab === 'LOW_BALANCE' ? 'is-active' : ''}`}
-                onClick={() => setTab('LOW_BALANCE')}
-              >
-                {k('tabLowBalance', { defaultValue: 'Yetishmovchilik' })} ({counts.lowBalance})
-              </button>
-            )}
-            {counts.deferral > 0 && (
-              <button
-                type="button"
-                className={`bc-cal-side-tab bc-cal-side-tab--warning ${tab === 'DEFERRAL' ? 'is-active' : ''}`}
-                onClick={() => setTab('DEFERRAL')}
-              >
-                {k('tabDeferral', { defaultValue: 'Kechiktirilgan' })} ({counts.deferral})
-              </button>
-            )}
-            {counts.planned > 0 && (
-              <button
-                type="button"
-                className={`bc-cal-side-tab bc-cal-side-tab--info ${tab === 'PLANNED' ? 'is-active' : ''}`}
-                onClick={() => setTab('PLANNED')}
-              >
-                {k('tabPlanned', { defaultValue: 'Kutilmoqda' })} ({counts.planned})
-              </button>
-            )}
-            {counts.suspended > 0 && (
-              <button
-                type="button"
-                className={`bc-cal-side-tab bc-cal-side-tab--neutral ${tab === 'SUSPENDED' ? 'is-active' : ''}`}
-                onClick={() => setTab('SUSPENDED')}
-              >
-                {k('tabSuspended', { defaultValue: 'To‘xtatilgan' })} ({counts.suspended})
-              </button>
-            )}
-          </div>
+          <BillingCalendarDailyTabs
+            tab={tab}
+            setTab={setTab}
+            counts={counts}
+            k={k}
+          />
         )}
       </header>
 
@@ -209,86 +148,26 @@ export default function BillingCalendarDailyPanel({
           </div>
         ) : (
           <ul className="bc-cal-companies-list">
-            {filteredItems.map((item, idx) => {
-              const comp = item.company;
-              const b = item.billing;
-              const name = item.companyName || b?.companyName || `#${item.companyId}`;
-              const plan = b?.planName || t('platform.billing.collections.customPlan', { defaultValue: 'Individual' });
-              const region = comp?.regionCode ? regionName(comp.regionCode) : '';
-              const state = item.paymentState;
-              const stateTone = STATE_TONE[state] || 'neutral';
-
-              return (
-                <li key={`${item.companyId}-${item.amount || 0}-${idx}`} className="bc-cal-company-item">
-                  <div
-                    className="bc-cal-company-card"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onOpenCompany(item.companyId, comp)}
-                    onKeyDown={(e) => e.key === 'Enter' && onOpenCompany(item.companyId, comp)}
-                  >
-                    {/* Avatar */}
-                    <div className={`bc-cal-company-avatar bc-avatar--${stateTone}`}>
-                      {initials(name)}
-                    </div>
-
-                    {/* Middle details */}
-                    <div className="bc-cal-company-info">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="bc-cal-company-name" title={name}>
-                          {name}
-                        </span>
-                        <span className={`bc-badge bc-badge--${stateTone} text-[10px]`}>
-                          {t(`platform.billing.collections.states.${state}`, { defaultValue: state })}
-                        </span>
-                      </div>
-
-                      <div className="bc-cal-company-meta">
-                        <span>ID: {item.companyId}</span>
-                        {comp?.companyTin ? (
-                          <>
-                            <span className="bc-dot-sep">·</span>
-                            <span>STIR: {comp.companyTin}</span>
-                          </>
-                        ) : null}
-                        {region ? (
-                          <>
-                            <span className="bc-dot-sep">·</span>
-                            <span>{region}</span>
-                          </>
-                        ) : null}
-                      </div>
-
-                      <div className="bc-cal-company-plan">
-                        <span>{t('platform.billing.collections.colPlan', { defaultValue: 'Tarif' })}: <strong>{plan}</strong></span>
-                      </div>
-                    </div>
-
-                    {/* Right side: Amount & Balance */}
-                    <div className="bc-cal-company-financials">
-                      <div className="bc-cal-company-amount font-bold">
-                        {money(item.amount)} {currency}
-                      </div>
-                      <div className={`bc-cal-company-balance ${item.balance < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
-                        {k('balanceLabel', {
-                          amount: money(item.balance),
-                          currency,
-                          defaultValue: `Balans: ${money(item.balance)} ${currency}`,
-                        })}
-                      </div>
-                      <div className="bc-cal-company-arrow">
-                        <ChevronRight size={15} />
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
+            {filteredItems.map((item, idx) => (
+              <BillingCalendarDailyCompanyRow
+                key={`${item.companyId}-${item.amount || 0}-${idx}`}
+                item={item}
+                company={item.company}
+                billing={item.billing}
+                regionName={regionName}
+                isFuture={isFuture}
+                money={money}
+                currency={currency}
+                t={t}
+                k={k}
+                onOpenCompany={onOpenCompany}
+              />
+            ))}
           </ul>
         )}
       </div>
 
-      {/* Footer: Action button to open full list or quick payment */}
+      {/* Footer: Action button */}
       <footer className="bc-cal-side-panel__footer">
         <button
           type="button"
@@ -299,7 +178,7 @@ export default function BillingCalendarDailyPanel({
           <span>
             {k('openDayList', {
               date: dayTitle,
-              defaultValue: `${dayTitle} dagi kompaniyalar ro‘yxatini ochish`,
+              defaultValue: `${dayTitle} dagi barcha kompaniyalar ro‘yxati`,
             })}
           </span>
         </button>

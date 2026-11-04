@@ -1,5 +1,7 @@
 import { LogOut } from 'lucide-react';
-import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
+import CashierThemeToggle from '../../../features/cashier/components/CashierThemeToggle';
+import CashierDesktopMenu from '../../../features/cashier/components/CashierDesktopMenu';
+import CashierNotificationsBell from '../../../features/cashier/components/notifications/CashierNotificationsBell';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';

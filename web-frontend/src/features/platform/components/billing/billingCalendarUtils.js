@@ -1,128 +1,77 @@
-export const UZ_MONTHS = [
-  'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
-  'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'
-];
+import {
+  RU_MONTHS,
+  RU_MONTHS_GENITIVE,
+  RU_WEEKDAYS,
+  UZ_MONTHS,
+  UZ_MONTHS_GENITIVE,
+  UZ_WEEKDAYS,
+} from './billingCalendarConstants';
+import {
+  buildMonthGrid,
+  formatDayTitle,
+  formatMonthTitle,
+  monthKey,
+  shiftDay,
+  shiftMonth,
+} from './billingCalendarDateUtils';
 
-export const RU_MONTHS = [
-  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-];
-
-export const UZ_MONTHS_GENITIVE = [
-  'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
-  'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'
-];
-
-export const RU_MONTHS_GENITIVE = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-];
-
-export function monthKey(date) {
-  if (typeof date === 'string' && /^\d{4}-\d{2}/.test(date)) {
-    return date.slice(0, 7);
-  }
-  const d = date instanceof Date ? date : new Date(date);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-export function shiftMonth(key, delta) {
-  const [y, m] = key.split('-').map(Number);
-  const target = new Date(y, m - 1 + delta, 1);
-  return monthKey(target);
-}
-
-export function shiftDay(iso, delta) {
-  const [y, m, d] = iso.split('-').map(Number);
-  const next = new Date(y, m - 1, d + delta);
-  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
-}
-
-export function formatMonthTitle(key, lang) {
-  const [y, m] = key.split('-').map(Number);
-  const monthIdx = m - 1;
-  const isUz = !lang || String(lang).startsWith('uz');
-  const monthName = isUz ? UZ_MONTHS[monthIdx] : RU_MONTHS[monthIdx];
-  return `${monthName} ${y}`;
-}
-
-export function formatDayTitle(iso, lang) {
-  if (!iso) return '—';
-  const [y, m, d] = iso.split('-').map(Number);
-  const monthIdx = m - 1;
-  const isUz = !lang || String(lang).startsWith('uz');
-  if (isUz) {
-    return `${d}-${UZ_MONTHS_GENITIVE[monthIdx]}, ${y}`;
-  }
-  return `${d} ${RU_MONTHS_GENITIVE[monthIdx]} ${y}`;
-}
+export {
+  UZ_MONTHS,
+  RU_MONTHS,
+  UZ_MONTHS_GENITIVE,
+  RU_MONTHS_GENITIVE,
+  UZ_WEEKDAYS,
+  RU_WEEKDAYS,
+  monthKey,
+  shiftMonth,
+  shiftDay,
+  formatMonthTitle,
+  formatDayTitle,
+  buildMonthGrid,
+};
 
 /**
- * Builds Monday-aligned grid (7 columns) with full padding of previous and next month days.
+ * Standard classification for a billing calendar item.
+ * For future dates: items have NOT been charged yet.
+ * If balance < amount -> LOW_BALANCE (Balans yetmaydi); otherwise PLANNED (Rejalashtirilgan).
+ * Never classifies future dates as SUCCESS (Yechildi).
  */
-export function buildMonthGrid(key) {
-  const [y, m] = key.split('-').map(Number);
-  const first = new Date(y, m - 1, 1);
-  // 0 = Monday, 6 = Sunday
-  const lead = (first.getDay() + 6) % 7;
-  const daysInCurrent = new Date(y, m, 0).getDate();
-  const daysInPrev = new Date(y, m - 1, 0).getDate();
+export function classifyCalendarItem(item, company, isFuture = false) {
+  const amt = Number(item?.amount || 0);
+  const balance = company ? Number(company.billing?.balance ?? 0) : 0;
+  const hasDeferral = Boolean(company?.billing?.deferralUntil);
+  const isOverdue = item?.paymentState === 'OVERDUE' || balance < 0;
 
-  const prevMonthKey = shiftMonth(key, -1);
-  const nextMonthKey = shiftMonth(key, 1);
+  if (item?.paymentState === 'SUSPENDED') return 'SUSPENDED';
+  if (hasDeferral) return 'DEFERRAL';
 
-  const cells = [];
-
-  // Previous month trailing days
-  for (let i = lead - 1; i >= 0; i--) {
-    const dayNum = daysInPrev - i;
-    const iso = `${prevMonthKey}-${String(dayNum).padStart(2, '0')}`;
-    cells.push({
-      iso,
-      dayNum,
-      isOtherMonth: true,
-      isPrevMonth: true,
-    });
+  if (isFuture) {
+    return balance < amt ? 'LOW_BALANCE' : 'PLANNED';
   }
 
-  // Current month days
-  for (let d = 1; d <= daysInCurrent; d++) {
-    const iso = `${key}-${String(d).padStart(2, '0')}`;
-    cells.push({
-      iso,
-      dayNum: d,
-      isOtherMonth: false,
-    });
+  if (isOverdue || (balance < amt && item?.paymentState !== 'ACTIVE')) {
+    return 'LOW_BALANCE';
   }
-
-  // Next month leading days
-  let nextDayNum = 1;
-  while (cells.length % 7 !== 0 || cells.length < 35) {
-    const iso = `${nextMonthKey}-${String(nextDayNum).padStart(2, '0')}`;
-    cells.push({
-      iso,
-      dayNum: nextDayNum,
-      isOtherMonth: true,
-      isNextMonth: true,
-    });
-    nextDayNum++;
+  if (item?.paymentState === 'ACTIVE') {
+    return 'SUCCESS';
   }
-
-  return cells;
+  return 'PLANNED';
 }
 
 /**
  * Determines dominant status tone and dot count for a calendar day
  */
-export function getDayStatusInfo(items = [], companyMap = {}) {
+export function getDayStatusInfo(items = [], companyMap = {}, dayIso = null, todayIso = null) {
   if (!items || !items.length) return null;
+
+  const effectiveToday = todayIso || new Date().toLocaleDateString('sv-SE');
+  const isFuture = Boolean(dayIso && effectiveToday && dayIso > effectiveToday);
 
   let successCount = 0;
   let lowBalanceCount = 0;
   let deferralCount = 0;
   let plannedCount = 0;
   let suspendedCount = 0;
-
   let totalAmount = 0;
 
   for (const item of items) {
@@ -130,24 +79,16 @@ export function getDayStatusInfo(items = [], companyMap = {}) {
     totalAmount += amt;
 
     const company = companyMap[item.companyId];
-    const balance = company ? Number(company.billing?.balance ?? 0) : 0;
-    const isOverdue = item.paymentState === 'OVERDUE' || balance < 0;
-    const hasDeferral = Boolean(company?.billing?.deferralUntil);
+    const category = classifyCalendarItem(item, company, isFuture);
 
-    if (item.paymentState === 'SUSPENDED') {
-      suspendedCount++;
-    } else if (hasDeferral) {
-      deferralCount++;
-    } else if (isOverdue || (balance < amt && item.paymentState !== 'ACTIVE')) {
-      lowBalanceCount++;
-    } else if (item.paymentState === 'ACTIVE') {
-      successCount++;
-    } else {
-      plannedCount++;
-    }
+    if (category === 'SUSPENDED') suspendedCount++;
+    else if (category === 'DEFERRAL') deferralCount++;
+    else if (category === 'LOW_BALANCE') lowBalanceCount++;
+    else if (category === 'SUCCESS') successCount++;
+    else plannedCount++;
   }
 
-  // Primary tone hierarchy for visual dot: Red (alert) > Orange (deferral) > Green (success) > Blue (planned) > Gray
+  // Primary tone hierarchy for visual dot: Red > Orange > Green > Blue > Gray
   let tone = 'info';
   if (lowBalanceCount > 0) tone = 'danger';
   else if (deferralCount > 0) tone = 'warning';
@@ -170,40 +111,38 @@ export function getDayStatusInfo(items = [], companyMap = {}) {
 /**
  * Computes 5 executive KPI statistics for the monthly calendar
  */
-export function computeCalendarKpis(days = [], totalAmount = 0, totalCount = 0, companyMap = {}) {
+export function computeCalendarKpis(days = [], totalAmount = 0, totalCount = 0, companyMap = {}, todayIso = null) {
+  const effectiveToday = todayIso || new Date().toLocaleDateString('sv-SE');
+
   let successAmount = 0;
   let successCount = 0;
-
   let lowBalanceAmount = 0;
   let lowBalanceCount = 0;
-
   let deferralAmount = 0;
   let deferralCount = 0;
-
   let suspendedAmount = 0;
   let suspendedCount = 0;
-
   let plannedAmount = 0;
   let plannedCount = 0;
 
   for (const day of days) {
+    const dayIso = day.date || day.iso;
+    const isFuture = Boolean(dayIso && effectiveToday && dayIso > effectiveToday);
     for (const item of (day.items || [])) {
       const amt = Number(item.amount || 0);
       const company = companyMap[item.companyId];
-      const balance = company ? Number(company.billing?.balance ?? 0) : 0;
-      const isOverdue = item.paymentState === 'OVERDUE' || balance < 0;
-      const hasDeferral = Boolean(company?.billing?.deferralUntil);
+      const category = classifyCalendarItem(item, company, isFuture);
 
-      if (item.paymentState === 'SUSPENDED') {
+      if (category === 'SUSPENDED') {
         suspendedAmount += amt;
         suspendedCount++;
-      } else if (hasDeferral) {
+      } else if (category === 'DEFERRAL') {
         deferralAmount += amt;
         deferralCount++;
-      } else if (isOverdue || (balance < amt && item.paymentState !== 'ACTIVE')) {
+      } else if (category === 'LOW_BALANCE') {
         lowBalanceAmount += amt;
         lowBalanceCount++;
-      } else if (item.paymentState === 'ACTIVE') {
+      } else if (category === 'SUCCESS') {
         successAmount += amt;
         successCount++;
       } else {

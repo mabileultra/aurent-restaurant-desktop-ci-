@@ -3,9 +3,11 @@ import PharmacyAuthGuard from './PharmacyAuthGuard';
 import PharmacyPosGuard from './PharmacyPosGuard';
 import CashierRoute from '../../router/guards/CashierRoute';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
-import CashierLayout from '../../components/layout/CashierLayout';
+import { lazyPage as lazy } from '../../router/lazyWithRetry';
 import { PharmacyPosPage } from '../../router/lazyPages';
 import { PHARM_POS_PATH } from './pharmacyPaths';
+
+const CashierLayout = lazy(() => import('../../components/layout/CashierLayout'));
 
 /**
  * Аптечный UI-мир: `/pharm/**`.

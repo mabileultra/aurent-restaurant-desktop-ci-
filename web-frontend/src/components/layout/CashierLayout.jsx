@@ -1,9 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
-import {
-  CashierLockOverlay,
-  CashierShiftModal,
-} from '../../features/cashier';
+import CashierLockOverlay from '../../features/cashier/components/CashierLockOverlay';
+import CashierShiftModal from '../../features/cashier/components/CashierShiftModal';
 import { CashierShiftModalProvider } from '../../contexts/CashierShiftModalContext';
 import { CashierLockProvider } from '../../contexts/CashierLockContext';
 import { PosShellProvider } from '../../contexts/PosShellContext';
