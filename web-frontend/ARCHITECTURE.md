@@ -95,7 +95,7 @@ export default function UsersPage() {
 4. Page `< 110` lines — composition only
 5. Route in `router/<shell>.routes.jsx` + `router/lazyPages.js`
 6. Export page hook from `features/<name>/index.js` when reused
-7. i18n keys in `locales/ru.json` / `uz.json`
+7. i18n keys in domain modules (`locales/{ru,uz}/<domain>.json`)
 
 ## State
 
