@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   fetchInstallerManifest,
   fetchRestaurantInstallerManifest,
+  fetchPharmacyInstallerManifest,
 } from '../utils/installerManifestApi';
 import { formatInstallerDate } from '../utils/installerFormatUtils';
 
@@ -30,6 +31,10 @@ export function useDesktopInstallerPage() {
     'restaurant-desktop-installer-manifest',
     fetchRestaurantInstallerManifest
   );
+  const pharmacy = useManifestQuery(
+    'pharmacy-desktop-installer-manifest',
+    fetchPharmacyInstallerManifest
+  );
 
-  return { cashier, restaurant };
+  return { cashier, restaurant, pharmacy };
 }

@@ -74,7 +74,7 @@ cmd_update() {
     if [[ "$domain_build" -eq 1 ]]; then
       touch .restaurant-domain-configured
       # Bake VITE_* + CORS + new publish ports
-      extra="frontend,restaurant-frontend,backend,finance-service"
+      extra="frontend,restaurant-frontend,pharmacy-frontend,backend,finance-service"
       if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
         DEPLOY_SERVICES="${DEPLOY_SERVICES},${extra}"
       else

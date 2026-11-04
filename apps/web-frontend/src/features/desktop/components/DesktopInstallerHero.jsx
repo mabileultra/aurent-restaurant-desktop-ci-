@@ -5,6 +5,7 @@ export default function DesktopInstallerHero({
   t,
   cashier,
   restaurant,
+  pharmacy,
 }) {
   return (
     <section className="installer-hero">
@@ -51,6 +52,21 @@ export default function DesktopInstallerHero({
               isLoading={restaurant.isLoading}
               isError={restaurant.isError}
               unavailableText={t('installer.restaurantComingSoon')}
+            />
+          </div>
+          <div role="listitem">
+            <DesktopProductCard
+              t={t}
+              title={t('installer.pharmacyTitle')}
+              brand={t('installer.heroTitleBrand')}
+              description={t('installer.pharmacySubtitle')}
+              accent="green"
+              manifest={pharmacy.manifest}
+              version={pharmacy.version}
+              releasedAt={pharmacy.releasedAt}
+              isLoading={pharmacy.isLoading}
+              isError={pharmacy.isError}
+              unavailableText={t('installer.pharmacyComingSoon')}
             />
           </div>
         </div>

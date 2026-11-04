@@ -1,11 +1,12 @@
-#!/usr/bin/env node
 /**
- * Генерирует downloads/desktop/manifest.json для страницы /install.
- * Usage: node scripts/generate-manifest.js --dist ./dist --out ../downloads/desktop/manifest.json
+ * Generates downloads/pharmacy-desktop/manifest.json for aurent.uz /install (pharmacy).
+ * Usage: node scripts/generate-manifest.js --dist ./dist --out ../downloads/pharmacy-desktop/manifest.json
  */
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+
+const PUBLIC_PREFIX = '/downloads/pharmacy-desktop';
 
 function parseArgs(argv) {
   const args = { dist: path.join(__dirname, '../dist'), out: null };
@@ -19,7 +20,7 @@ function parseArgs(argv) {
     }
   }
   if (!args.out) {
-    args.out = path.resolve(args.dist, '../manifest.json');
+    args.out = path.resolve(__dirname, '../../downloads/pharmacy-desktop/manifest.json');
   }
   return args;
 }
@@ -52,14 +53,9 @@ function readPackageVersion() {
   return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version || null;
 }
 
-/**
- * Prefer: exact package version in name → highest semver in name → newest mtime.
- * Avoids old Setup-*.exe winning after scp flattens mtimes.
- */
 function pickBest(distDir, pattern, preferredVersion = null) {
   const matched = fs.readdirSync(distDir).filter((name) => pattern.test(name));
   if (matched.length === 0) return null;
-
   matched.sort((a, b) => {
     const verA = parseSemver(a);
     const verB = parseSemver(b);
@@ -81,23 +77,11 @@ function buildEntry(distDir, fileName) {
   const fullPath = path.join(distDir, fileName);
   const stat = fs.statSync(fullPath);
   return {
-    url: `/downloads/desktop/${fileName}`,
+    url: `${PUBLIC_PREFIX}/${fileName}`,
     fileName,
     size: stat.size,
     sha256: sha256File(fullPath),
   };
-}
-
-function readVersion(distDir) {
-  const pkgVersion = readPackageVersion();
-  if (pkgVersion) return pkgVersion;
-  const yml = fs.readdirSync(distDir).find((name) => name === 'latest.yml');
-  if (yml) {
-    const content = fs.readFileSync(path.join(distDir, yml), 'utf8');
-    const match = content.match(/^version:\s*(.+)$/m);
-    if (match) return match[1].trim();
-  }
-  return '0.0.0';
 }
 
 function main() {
@@ -109,10 +93,15 @@ function main() {
 
   const preferredVersion = readPackageVersion();
   const winName = pickBest(dist, /\.exe$/i, preferredVersion);
+  const macUniversal = pickBest(dist, /mac-universal\.dmg$/i, preferredVersion);
+  const macArm64 = pickBest(dist, /mac-arm64\.dmg$/i, preferredVersion);
+  const macX64 = pickBest(dist, /mac-x64\.dmg$/i, preferredVersion);
+  const macFallback = pickBest(dist, /\.dmg$/i, preferredVersion);
   const zipName = pickBest(dist, /\.zip$/i, preferredVersion);
 
   const fileVersion =
     parseSemver(winName || '')?.raw
+    || parseSemver(macUniversal || macArm64 || macX64 || macFallback || '')?.raw
     || parseSemver(zipName || '')?.raw
     || preferredVersion
     || '0.0.0';
@@ -121,14 +110,30 @@ function main() {
     version: fileVersion,
     releasedAt: new Date().toISOString(),
   };
-
   if (winName) manifest.windows = buildEntry(dist, winName);
+  if (macArm64) manifest.macArm64 = buildEntry(dist, macArm64);
+  if (macX64) manifest.macX64 = buildEntry(dist, macX64);
+  // Single `mac` for older clients; when both arch builds exist prefer x64 as safer default.
+  if (macUniversal) {
+    manifest.mac = buildEntry(dist, macUniversal);
+  } else if (macArm64 && macX64) {
+    manifest.mac = buildEntry(dist, macX64);
+  } else if (macX64) {
+    manifest.mac = buildEntry(dist, macX64);
+  } else if (macArm64) {
+    manifest.mac = buildEntry(dist, macArm64);
+  } else if (macFallback) {
+    manifest.mac = buildEntry(dist, macFallback);
+  }
   if (zipName) manifest.zip = buildEntry(dist, zipName);
 
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   console.log(`manifest → ${out} (v${manifest.version})`);
-  console.log(`  win=${winName || '-'} zip=${zipName || '-'}`);
+  console.log(
+    `  win=${winName || '-'} mac=${manifest.mac?.fileName || '-'} `
+    + `arm64=${macArm64 || '-'} x64=${macX64 || '-'} zip=${zipName || '-'}`
+  );
 }
 
 main();

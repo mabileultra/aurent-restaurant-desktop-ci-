@@ -1,5 +1,6 @@
 export const INSTALLER_MANIFEST_URL = '/downloads/desktop/manifest.json';
 export const RESTAURANT_INSTALLER_MANIFEST_URL = '/downloads/restaurant-desktop/manifest.json';
+export const PHARMACY_INSTALLER_MANIFEST_URL = '/downloads/pharmacy-desktop/manifest.json';
 
 async function fetchManifest(url) {
   const res = await fetch(url, { cache: 'no-store' });
@@ -15,4 +16,8 @@ export async function fetchInstallerManifest() {
 
 export async function fetchRestaurantInstallerManifest() {
   return fetchManifest(RESTAURANT_INSTALLER_MANIFEST_URL);
+}
+
+export async function fetchPharmacyInstallerManifest() {
+  return fetchManifest(PHARMACY_INSTALLER_MANIFEST_URL);
 }
