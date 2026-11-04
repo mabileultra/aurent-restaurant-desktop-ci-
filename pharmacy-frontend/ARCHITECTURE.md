@@ -60,3 +60,34 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 
 Helper on main: `web-frontend/src/utils/pharmacyAppRedirect.js` (`redirectToPharmacyApp`).
 Silent auto-hop / WorldGate cutover — later sprint (flag + offline drain).
+
+---
+
+## Later: monorepo shared packages (do not start until Phase 4 product shape is stable)
+
+Target layout (pnpm workspace):
+
+```
+packages/
+  shared-auth/      # handoff client, session helpers (no JWT-in-URL)
+  shared-api/       # axios client patterns, idempotency, error envelope
+  shared-ui/        # Base* kit only (buttons/inputs/modals) — not grocery screens
+  shared-fiscal/    # fiscal provider transport / shared OFD helpers
+  shared-marking/   # technical KM verify client — pharmacy rules stay in pharmacy-frontend
+  shared-offline/   # sync transport / queue plumbing — pharmacy sale rules stay in pharmacy
+  shared-tenant/    # store/company scope helpers
+  shared-types/     # shared DTOs / constants
+
+apps/
+  web-frontend/         # aurent.uz — platform + grocery
+  restaurant-frontend/  # r-aurent.uz
+  pharmacy-frontend/    # p-aurent.uz
+```
+
+### Rules when we do it
+
+1. Extract **only** proven-shared logic — not grocery UI into `shared-ui`.
+2. Pharmacy / restaurant **business rules** stay in their apps.
+3. Do not block current pharmacy cutover work on a big-bang package move.
+4. Prefer: duplicate briefly → extract when 2+ apps need the same file → then package.
+5. `pharmacy-frontend` sync-from-main scripts are a bridge; packages replace that bridge over time.
