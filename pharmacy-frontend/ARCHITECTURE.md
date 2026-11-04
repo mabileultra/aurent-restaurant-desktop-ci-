@@ -66,9 +66,10 @@ WorldGate cutover (block `/pharm` UI) — later, after offline drain + lab flag.
 
 ---
 
-## Later: monorepo shared packages (do not start until Phase 4 product shape is stable)
+## Monorepo shared packages (scaffold)
 
-Target layout (pnpm workspace):
+Scaffold: `packages/@aurent/*` stubs + `pnpm-workspace.example.yaml` (not active yet — keeps app installs isolated).  
+**Apps not wired yet** — no imports; `sync:from-main` still the bridge.
 
 ```
 packages/
@@ -81,16 +82,18 @@ packages/
   shared-tenant/    # store/company scope helpers
   shared-types/     # shared DTOs / constants
 
-apps/
-  web-frontend/         # aurent.uz — platform + grocery
-  restaurant-frontend/  # r-aurent.uz
-  pharmacy-frontend/    # p-aurent.uz
+# workspace members (paths stay flat; logical “apps/”):
+web-frontend/         # aurent.uz — platform + grocery
+restaurant-frontend/  # r-aurent.uz
+pharmacy-frontend/    # p-aurent.uz
 ```
 
-### Rules when we do it
+See `packages/README.md`.
+
+### Rules
 
 1. Extract **only** proven-shared logic — not grocery UI into `shared-ui`.
 2. Pharmacy / restaurant **business rules** stay in their apps.
-3. Do not block current pharmacy cutover work on a big-bang package move.
+3. Do not block pharmacy cutover / domain on a big-bang package move.
 4. Prefer: duplicate briefly → extract when 2+ apps need the same file → then package.
 5. `pharmacy-frontend` sync-from-main scripts are a bridge; packages replace that bridge over time.

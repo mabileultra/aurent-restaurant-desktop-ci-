@@ -1,0 +1,10 @@
+{
+  "name": "aurent-pos",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Aurent multi-vertical repo. Shared package scaffolds live in packages/@aurent/*. Activate pnpm workspace via pnpm-workspace.example.yaml when first real extract lands.",
+  "packageManager": "pnpm@10.18.2",
+  "engines": {
+    "node": ">=18"
+  }
+}

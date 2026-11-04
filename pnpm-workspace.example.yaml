@@ -1,0 +1,10 @@
+# Rename to pnpm-workspace.yaml when first @aurent/* extract is wired into apps + Docker.
+# Until then: leave absent so `cd web-frontend && pnpm i` stays isolated.
+packages:
+  - 'packages/*'
+  - 'web-frontend'
+  - 'restaurant-frontend'
+  - 'pharmacy-frontend'
+
+allowBuilds:
+  esbuild: true
