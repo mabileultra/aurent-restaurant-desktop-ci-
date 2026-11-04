@@ -1,8 +1,8 @@
 import PosOrderDiscountModal from '../../cashier/components/PosOrderDiscountModal';
 import { PosReturnModal } from '../../../components/pos';
-import WeightEntryModal from '../../cashier/components/WeightEntryModal';
 import ShiftCashMovementModal from '../../cashier/components/ShiftCashMovementModal';
 import PharmacyQtyModal from '../components/PharmacyQtyModal';
+import PharmacyWeightEntryModal from '../components/PharmacyWeightEntryModal';
 import PharmacyRegisterWorkspace from '../components/PharmacyRegisterWorkspace';
 import { usePharmacyPosPage } from '../hooks/usePharmacyPosPage';
 import { useCashierCashMovement } from '../../cashier/hooks/useCashierCashMovement';
@@ -104,7 +104,7 @@ export default function PharmacyPosPage() {
         onClose={p.cartHandlers.closeQtyModal}
       />
 
-      <WeightEntryModal
+      <PharmacyWeightEntryModal
         open={!!p.cartHandlers.weightModalProduct}
         product={p.cartHandlers.weightModalProduct}
         unitPrice={p.cartHandlers.weightModalProduct?.sellingPrice}

@@ -5,7 +5,7 @@ import ReturnDetailModal from '../ReturnDetailModal';
 import ReturnReasonModal from '../ReturnReasonModal';
 
 export default function ReturnsModals({
-  catalogKind = 'grocery',
+  catalogKind = 'pharmacy',
   filtersOpen,
   onFiltersClose,
   filters,

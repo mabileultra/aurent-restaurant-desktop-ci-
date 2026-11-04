@@ -1,4 +1,4 @@
-import { ean13CheckDigit } from '../../scales/utils/weightBarcode';
+import { ean13CheckDigit } from './ean13';
 
 /**
  * Внутренний аптечный EAN-13 (префикс 29 — локальные коды).

@@ -11,7 +11,7 @@ import {
 } from '../../../services/cashierEscpos';
 import { FiscalReceiptBody, ThermalPrintSettingsPanel } from '../../../components/receipt';
 
-export default function SaleFiscalPrintModal({ saleId, onClose, catalogKind = 'grocery' }) {
+export default function SaleFiscalPrintModal({ saleId, onClose, catalogKind = 'pharmacy' }) {
   const { t } = useTranslation();
   const [printSettingsOpen, setPrintSettingsOpen] = useState(false);
   const [printing, setPrinting] = useState(false);

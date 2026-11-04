@@ -28,7 +28,7 @@ export default function ReturnDetailModal({
   returnId,
   reasonPreview,
   onClose,
-  catalogKind = 'grocery',
+  catalogKind = 'pharmacy',
 }) {
   const { t } = useTranslation();
   const client = catalogKind === 'pharmacy' ? pharmacySalesApi : returnApi;

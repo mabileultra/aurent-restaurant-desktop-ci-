@@ -36,7 +36,9 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 - Admin chrome: `src/pharmacy/app/PharmacyAdminShell`.
 - Always `catalogKind: 'pharmacy'` on this SPA (`pharmacy/config/vertical.js`).
 - `useCompanyBusinessType` / `useCashierStoreProfile` force pharmacy world (no grocery flicker).
-- Next: strip grocery-only modules (scales/PLU/grocery grid) from the import graph.
+- Scale PLU stubbed (`tryResolveWeightPluProduct` → null); pharmacy weight modal has no hardware scales.
+- Pharmacy barcodes use local `ean13` (not scales utils).
+- Next: delete unused `features/scales` / `scales/` trees from this package when nothing imports them.
 
 ### Запрещено
 

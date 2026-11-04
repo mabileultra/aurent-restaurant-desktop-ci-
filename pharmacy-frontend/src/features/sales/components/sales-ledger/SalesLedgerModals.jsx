@@ -7,7 +7,7 @@ import SalesLedgerRowMenu from './SalesLedgerRowMenu';
 
 export default function SalesLedgerModals({
   t,
-  catalogKind = 'grocery',
+  catalogKind = 'pharmacy',
   filtersOpen,
   onFiltersClose,
   filters,

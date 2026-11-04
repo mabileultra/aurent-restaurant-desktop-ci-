@@ -33,7 +33,8 @@ export function useDashboardPage() {
   const { t } = useTranslation();
   const dateLocale = useDateFnsLocale();
   const { tenantKey, tenantReady } = useTenantScope();
-  const { isPharmacyCompany, isLoading: businessTypeLoading } = useCompanyBusinessType();
+  const { isLoading: businessTypeLoading } = useCompanyBusinessType();
+  const isPharmacyCompany = true;
   const today = todayStr();
 
   const presets = useMemo(

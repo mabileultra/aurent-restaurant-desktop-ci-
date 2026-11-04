@@ -78,7 +78,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
       categoryFilterId,
       search.trim(),
       catalogMode,
-      catalogKind || 'grocery',
+      catalogKind || 'pharmacy',
     ],
     queryFn: ({ pageParam, signal }) =>
       posFetchProductsPage({
@@ -122,7 +122,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
       storeId,
       categoryFilterId,
       search.trim(),
-      catalogKind || 'grocery',
+      catalogKind || 'pharmacy',
       catalogMode,
     ].join('|'),
   });

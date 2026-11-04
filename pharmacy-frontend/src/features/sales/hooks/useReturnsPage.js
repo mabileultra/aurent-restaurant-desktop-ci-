@@ -11,8 +11,9 @@ import { RETURNS_DEFAULT_FILTERS, SALES_PAGE_SIZE_DEFAULT } from '../constants';
 export function useReturnsPage() {
   const { t } = useTranslation();
   const { tenantKey, tenantReady } = useTenantScope();
-  const { isPharmacyCompany, isLoading: businessTypeLoading } = useCompanyBusinessType();
-  const catalogKind = isPharmacyCompany ? 'pharmacy' : 'grocery';
+  const { isLoading: businessTypeLoading } = useCompanyBusinessType();
+  const catalogKind = 'pharmacy';
+  const isPharmacyCompany = true;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(SALES_PAGE_SIZE_DEFAULT);
