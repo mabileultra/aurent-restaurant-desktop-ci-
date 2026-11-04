@@ -1,35 +1,31 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ArrowRight, QrCode, X } from 'lucide-react';
-import { fmtMoney } from '../utils/analyticsFormat';
-
-const DEFAULT_RECEIPTS = [
-  { saleId: 1, receiptNo: 'RCP-20261024-0201', time: '15:27', amount: 2400000, hasQr: true },
-  { saleId: 2, receiptNo: 'RCP-20261024-0200', time: '15:26', amount: 24700000, hasQr: true },
-  { saleId: 3, receiptNo: 'RCP-20261024-0199', time: '15:26', amount: 24700000, hasQr: true },
-  { saleId: 4, receiptNo: 'RCP-20261024-0198', time: '15:25', amount: 24700000, hasQr: true },
-  { saleId: 5, receiptNo: 'RCP-20261024-0197', time: '15:25', amount: 24700000, hasQr: true },
-  { saleId: 6, receiptNo: 'RCP-20261024-0196', time: '15:25', amount: 24700000, hasQr: true },
-  { saleId: 7, receiptNo: 'RCP-20261024-0195', time: '15:24', amount: 24700000, hasQr: true },
-  { saleId: 8, receiptNo: 'RCP-20261024-0194', time: '15:24', amount: 24700000, hasQr: true },
-];
+import { fmtDayFull, fmtMoney } from '../utils/analyticsFormat';
 
 export default function AnalyticsCompanyReceiptsDrawer({
-  date = '2026-10-24',
-  dateTitle = '24-oktabr, shanba — cheklar',
-  storeName = 'Farina Invest do‘koni',
-  receipts = DEFAULT_RECEIPTS,
-  total = 51,
-  totalAmount = 1190000000,
+  date = '',
+  storeName = 'Do‘kon',
+  receipts = [],
+  total = 0,
+  totalAmount,
   onClose,
   onSelectReceipt,
 }) {
   const [filterKind, setFilterKind] = useState('ALL'); // 'ALL' | 'QR' | 'NO_QR'
 
+  const computedTotalAmount = useMemo(() => {
+    if (totalAmount != null) return totalAmount;
+    return receipts.reduce((sum, r) => sum + Number(r.totalAmount || r.amount || 0), 0);
+  }, [totalAmount, receipts]);
+
   const filtered = receipts.filter((r) => {
-    if (filterKind === 'QR') return r.hasQr;
-    if (filterKind === 'NO_QR') return !r.hasQr;
+    const hasQr = r.hasQr || r.fiscalStatus === 'FISCAL' || r.fiscalStatus === 'CONFIRMED';
+    if (filterKind === 'QR') return hasQr;
+    if (filterKind === 'NO_QR') return !hasQr;
     return true;
   });
+
+  const dateTitle = date ? `${fmtDayFull(date)} — cheklar` : 'Cheklar ro‘yxati';
 
   return (
     <div className="an-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }} aria-label="Kungi cheklar paneli">
@@ -37,7 +33,7 @@ export default function AnalyticsCompanyReceiptsDrawer({
         <div>
           <h3 className="an-card-title">{dateTitle}</h3>
           <p className="an-card-sub">
-            {total} ta chek · {fmtMoney(totalAmount)} · {storeName}
+            {total || receipts.length} ta chek · {fmtMoney(computedTotalAmount)} · {storeName}
           </p>
         </div>
         {onClose && (
@@ -86,26 +82,41 @@ export default function AnalyticsCompanyReceiptsDrawer({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
-              <tr
-                key={r.receiptNo || r.saleId}
-                style={{ cursor: 'pointer' }}
-                onClick={() => onSelectReceipt && onSelectReceipt(r)}
-              >
-                <td style={{ fontWeight: 600, color: '#0f172a' }}>{r.receiptNo}</td>
-                <td style={{ color: '#64748b' }}>{r.time || '15:26'}</td>
-                <td><strong>{fmtMoney(r.amount)}</strong></td>
-                <td>
-                  {r.hasQr ? (
-                    <span className="an-badge an-badge--green">
-                      <QrCode size={11} aria-hidden /> QR bilan
-                    </span>
-                  ) : (
-                    <span className="an-badge an-badge--amber">QR’siz</span>
-                  )}
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
+                  Cheklar topilmadi
                 </td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((r) => {
+                const receiptNo = r.receiptNumber || r.receiptNo || (r.saleId ? String(r.saleId).slice(0, 8) : 'Chek');
+                const time = r.createdAt ? r.createdAt.substring(11, 16) : (r.time || '—');
+                const amount = Number(r.totalAmount || r.amount || 0);
+                const hasQr = r.hasQr || r.fiscalStatus === 'FISCAL';
+
+                return (
+                  <tr
+                    key={r.saleId || r.receiptNumber || receiptNo}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => onSelectReceipt && onSelectReceipt(r)}
+                  >
+                    <td style={{ fontWeight: 600, color: '#0f172a' }}>{receiptNo}</td>
+                    <td style={{ color: '#64748b' }}>{time}</td>
+                    <td><strong>{fmtMoney(amount)}</strong></td>
+                    <td>
+                      {hasQr ? (
+                        <span className="an-badge an-badge--green">
+                          <QrCode size={11} aria-hidden /> QR bilan
+                        </span>
+                      ) : (
+                        <span className="an-badge an-badge--amber">QR’siz</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -119,13 +130,13 @@ export default function AnalyticsCompanyReceiptsDrawer({
         borderTop: '1px solid #f1f5f9',
         fontSize: '0.75rem',
       }}>
-        <span style={{ color: '#64748b' }}>1–{filtered.length} / {total}</span>
+        <span style={{ color: '#64748b' }}>1–{filtered.length} / {total || receipts.length}</span>
         <button
           type="button"
           style={{
             border: 'none',
             background: 'none',
-            color: '#047857',
+            color: '#2563EB',
             fontWeight: 600,
             cursor: 'pointer',
             display: 'inline-flex',

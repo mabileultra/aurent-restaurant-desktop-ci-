@@ -1,103 +1,122 @@
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { Check, AlertTriangle } from 'lucide-react';
+import { fmtDeltaBadge, fmtMoney, fmtNum } from '../utils/analyticsFormat';
 
-export default function AnalyticsBottomStatsCards() {
+export default function AnalyticsBottomStatsCards({
+  growingRegions = [],
+  decliningRegions = [],
+  kpi,
+}) {
+  const newConnections = Number(kpi?.newConnections || 0);
+  const newConnDelta = fmtDeltaBadge(kpi?.newConnectionsDeltaPct);
+  const errors = Number(kpi?.connectionErrors || 0);
+
+  const topGrowing = growingRegions.slice(0, 2);
+  const topDeclining = decliningRegions.slice(0, 2);
+
   return (
-    <div className="an-4bottom-grid" aria-label="Qo‘shimcha tahlil bloklari">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
       {/* 1. Eng ko'p o'sgan hududlar */}
-      <div className="an-card">
-        <h4 className="an-card-title" style={{ fontSize: '0.9rem', marginBottom: '0.85rem' }}>
-          Eng ko‘p o‘sgan hududlar
-        </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 600 }}>
-              <span>Samarqand viloyati</span>
-              <span style={{ color: '#16a34a' }}>↑ 714,5%</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>
-              +3,68 mlrd · 514,5 mln → 4,19 mlrd
-            </div>
-          </div>
-
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 600 }}>
-              <span>Hududi ko‘rsatilmagan</span>
-              <span style={{ color: '#16a34a' }}>↑ 142,0%</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>
-              +120,4 mln · 84,8 mln → 205,2 mln
-            </div>
-          </div>
-        </div>
-      </div>
+      <section className="card" aria-labelledby="gr" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <h2 id="gr" className="t" style={{ fontSize: '14px' }}>Eng ko‘p o‘sgan hududlar</h2>
+        {topGrowing.length === 0 ? (
+          <div style={{ fontSize: '13px', color: '#6B7280', margin: 'auto 0' }}>O‘sgan hudud qayd etilmadi</div>
+        ) : (
+          topGrowing.map((r) => {
+            const delta = fmtDeltaBadge(r.turnoverDeltaPct);
+            return (
+              <div key={r.code || r.nameUz}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                  <span>{r.nameUz || r.nameRu}</span>
+                  <span className={delta.dir}>{delta.text}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+                  Aylanma: {fmtMoney(r.totalTurnover)} · {r.enterprises || 0} korxona
+                </div>
+              </div>
+            );
+          })
+        )}
+      </section>
 
       {/* 2. Aylanmasi pasaygan hududlar */}
-      <div className="an-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <h4 className="an-card-title" style={{ fontSize: '0.9rem' }}>
-          Aylanmasi pasaygan hududlar
-        </h4>
-        <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-          <div style={{
-            width: '2rem',
-            height: '2rem',
-            borderRadius: '999px',
-            background: '#ecfdf5',
-            color: '#16a34a',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '0.4rem',
-          }}>
-            <CheckCircle2 size={18} strokeWidth={2.4} />
+      <section className="card" aria-labelledby="dc" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <h2 id="dc" className="t" style={{ fontSize: '14px' }}>Aylanmasi pasaygan hududlar</h2>
+        {topDeclining.length === 0 ? (
+          <div style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '6px', padding: '6px 0' }}>
+            <span style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: '#E7F6EE',
+              color: '#16A36A',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Check className="ic" style={{ width: 18, height: 18 }} />
+            </span>
+            <span style={{ fontSize: '13px', fontWeight: 600 }}>Pasaygan hudud yo‘q</span>
+            <span style={{ fontSize: '12px', color: '#6B7280' }}>
+              Tanlangan davrda barcha faol hududlarda aylanma barqaror
+            </span>
           </div>
-          <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' }}>Pasaygan hudud yo‘q</div>
-          <p style={{ fontSize: '0.73rem', color: '#64748b', margin: '0.25rem 0 0' }}>
-            Tanlangan davrda barcha faol hududlarda aylanma o‘sgan
-          </p>
-        </div>
-      </div>
+        ) : (
+          topDeclining.map((r) => {
+            const delta = fmtDeltaBadge(r.turnoverDeltaPct);
+            return (
+              <div key={r.code || r.nameUz}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                  <span>{r.nameUz || r.nameRu}</span>
+                  <span className={delta.dir}>{delta.text}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+                  Aylanma: {fmtMoney(r.totalTurnover)} · {r.enterprises || 0} korxona
+                </div>
+              </div>
+            );
+          })
+        )}
+      </section>
 
       {/* 3. Yangi ulanishlar */}
-      <div className="an-card">
-        <h4 className="an-card-title" style={{ fontSize: '0.9rem', marginBottom: '0.85rem' }}>
-          Yangi ulanishlar
-        </h4>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.45rem', height: 60 }}>
-            <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginBottom: 2 }}>8</span>
-              <div style={{ width: 22, height: 35, background: '#cbd5e1', borderRadius: '3px 3px 0 0' }} />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2563eb', display: 'block', marginBottom: 2 }}>12</span>
-              <div style={{ width: 22, height: 50, background: '#2563eb', borderRadius: '3px 3px 0 0' }} />
-            </div>
+      <section className="card" aria-labelledby="nw" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <h2 id="nw" className="t" style={{ fontSize: '14px' }}>Yangi ulanishlar</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '18px', minHeight: '64px' }}>
+          <div style={{ fontSize: '32px', fontWeight: 700, color: '#1F2937' }}>
+            {fmtNum(newConnections)}
           </div>
-          <div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#16a34a' }}>+4 ta · ↑ 50%</div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>
-              oldingi davr → joriy davr
-            </div>
+          <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.5 }}>
+            <span className={newConnDelta.dir} style={{ fontWeight: 600 }}>
+              {newConnDelta.text}
+            </span>
+            <br />
+            oldingi davrga nisbatan
           </div>
         </div>
-      </div>
+      </section>
 
       {/* 4. Fiskal ulanishdagi xatoliklar */}
-      <div className="an-card">
-        <h4 className="an-card-title" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-          Fiskal ulanishdagi xatoliklar
-        </h4>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
-          <span style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>0</span>
-          <span className="an-badge an-badge--green" style={{ fontSize: '0.75rem' }}>
-            ✓ Faol xato yo‘q
-          </span>
+      <section className="card" aria-labelledby="er" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <h2 id="er" className="t" style={{ fontSize: '14px' }}>Fiskal ulanishdagi xatoliklar</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span className="v">{fmtNum(errors)}</span>
+          {errors === 0 ? (
+            <span className="badge ok">
+              <Check className="ic" style={{ width: 13, height: 13 }} />
+              Faol xato yo‘q
+            </span>
+          ) : (
+            <span className="badge no">
+              <AlertTriangle className="ic" style={{ width: 13, height: 13 }} />
+              {errors} ta xato
+            </span>
+          )}
         </div>
-        <p style={{ fontSize: '0.73rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
-          Xato paydo bo‘lsa, korxona nomi va xato turi shu yerda ro‘yxat bo‘lib chiqadi
-        </p>
-      </div>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>
+          {errors === 0 ? 'Barcha kassa apparatlari fiskal modulga muvaffaqiyatli ulangan' : 'Ba‘zi kassalarda ulanish uzilgan'}
+        </span>
+      </section>
     </div>
   );
 }

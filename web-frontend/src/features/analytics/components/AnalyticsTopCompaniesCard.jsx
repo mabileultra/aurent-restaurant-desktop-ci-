@@ -1,72 +1,102 @@
 import React from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { fmtMoney } from '../utils/analyticsFormat';
+import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
 
-const TOP10 = [
-  { rank: 1, name: 'Farina Invest', amount: 2040000000, share: 46.4, fiscal: 1990000000, nonFiscal: 50000000 },
-  { rank: 2, name: 'MAKON RBB', amount: 808900000, share: 18.4, fiscal: 808900000, nonFiscal: 0 },
-  { rank: 3, name: 'Aminjon Samarqand XK', amount: 600700000, share: 13.7, fiscal: 595000000, nonFiscal: 5700000 },
-  { rank: 4, name: 'Makon Mobile', amount: 512400000, share: 11.7, fiscal: 508000000, nonFiscal: 4400000 },
-  { rank: 5, name: '“ANNODENT SS” MCHJ', amount: 147000000, share: 3.3, fiscal: 138000000, nonFiscal: 9000000 },
-  { rank: 6, name: 'OOO “OZODA”', amount: 42500000, share: 1.0, fiscal: 42200000, nonFiscal: 300000 },
-  { rank: 7, name: 'MCHJ NARZIKULOV SAM MARKET', amount: 42200000, share: 1.0, fiscal: 39700000, nonFiscal: 2500000 },
-  { rank: 8, name: 'Sharks Avenue', amount: 37000000, share: 0.8, fiscal: 0, nonFiscal: 37000000, notConnected: true },
-  { rank: 9, name: '404 Toys', amount: 26900000, share: 0.6, fiscal: 0, nonFiscal: 26900000, notConnected: true },
-  { rank: 10, name: 'Sam Maftuna Farzona', amount: 26700000, share: 0.6, fiscal: 26700000, nonFiscal: 0 },
-];
-
-export default function AnalyticsTopCompaniesCard() {
-  const maxAmount = TOP10[0].amount;
+export default function AnalyticsTopCompaniesCard({
+  companies = [],
+  periodLabel = '30 kun',
+}) {
+  const list = Array.isArray(companies) ? companies.slice(0, 10) : [];
+  const maxAmount = list.length > 0 ? Math.max(...list.map((c) => Number(c.totalTurnover || 0)), 1) : 1;
+  const totalSum = list.reduce((sum, c) => sum + Number(c.totalTurnover || 0), 0);
 
   return (
-    <div className="an-card" aria-label="TOP-10 korxona">
-      <div className="an-card-head">
+    <section
+      className="card"
+      aria-labelledby="top10"
+      style={{
+        flex: '3 1 560px',
+        minWidth: 0,
+        padding: '18px 20px',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
         <div>
-          <h3 className="an-card-title">Aylanma bo‘yicha TOP-10 korxona</h3>
-          <p className="an-card-sub">30 kun · bosilsa korxona detalizatsiyasi ochiladi</p>
+          <h2 id="top10" className="t">Aylanma bo‘yicha TOP-10 korxona</h2>
+          <p className="s">{periodLabel} · bosilsa korxona detalizatsiyasi ochiladi</p>
         </div>
-
-        <Link
-          to="/platform/analytics/companies"
-          style={{ fontSize: '0.8rem', fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}
-        >
-          Barchasi ›
+        <Link to="/platform/analytics/companies" className="btn">
+          <span>Barchasi</span>
+          <ChevronRight className="ic" />
         </Link>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-        {TOP10.map((c) => {
-          const widthPct = (c.amount / maxAmount) * 100;
-          const fiscalWidthPct = c.fiscal > 0 ? (c.fiscal / c.amount) * 100 : 0;
-          return (
-            <div key={c.rank} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <span style={{ width: '1.2rem', fontSize: '0.78rem', color: '#94a3b8', textAlign: 'right' }}>
-                {c.rank}
-              </span>
-              <div style={{ width: '11rem', minWidth: '10rem', fontSize: '0.8rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {c.name}
-                {c.notConnected && (
-                  <span className="an-badge an-badge--red" style={{ marginLeft: 6, fontSize: '0.65rem' }}>
-                    Ulanmagan
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', marginTop: '14px' }}>
+        {list.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: '#6B7280', fontSize: '13px' }}>
+            Tanlangan davr uchun ma‘lumot mavjud emas
+          </div>
+        ) : (
+          list.map((c, idx) => {
+            const amount = Number(c.totalTurnover || 0);
+            const fiscal = Number(c.fiscalTurnover || 0);
+            const nonFiscal = Number(c.nonFiscalTurnover || 0);
+            const totalWidth = Math.max(2, (amount / maxAmount) * 100);
+            const fw = amount > 0 ? Math.min(100, (fiscal / amount) * 100) : 0;
+            const nw = amount > 0 ? Math.min(100, (nonFiscal / amount) * 100) : 0;
+            const share = totalSum > 0 ? fmtPercent((amount / totalSum) * 100) : '0,0%';
+
+            return (
+              <Link
+                key={c.companyId || c.tin || idx}
+                to={`/platform/analytics/companies/${c.companyId}`}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '22px minmax(0, 210px) minmax(0, 1fr) 76px 46px',
+                  gap: '10px',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  color: '#1F2937',
+                  fontSize: '12.5px',
+                }}
+              >
+                <span style={{ color: '#6B7280', fontWeight: 600 }}>{idx + 1}</span>
+
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                    {c.name}
                   </span>
-                )}
-              </div>
-              <div style={{ flex: 1, height: 8, background: '#f1f5f9', borderRadius: 4, display: 'flex', overflow: 'hidden' }}>
-                <div style={{ width: `${widthPct}%`, display: 'flex', height: '100%' }}>
-                  <div style={{ width: `${fiscalWidthPct}%`, background: '#2563eb', height: '100%' }} />
-                  <div style={{ width: `${100 - fiscalWidthPct}%`, background: '#f59e0b', height: '100%' }} />
-                </div>
-              </div>
-              <span style={{ width: '4.8rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: '#0f172a' }}>
-                {fmtMoney(c.amount, { showCurrency: false })}
-              </span>
-              <span style={{ width: '2.8rem', textAlign: 'right', fontSize: '0.75rem', color: '#64748b' }}>
-                {c.share}%
-              </span>
-            </div>
-          );
-        })}
+                  {!c.connected && (
+                    <span className="badge no" style={{ fontSize: '10.5px', padding: '1px 6px' }}>
+                      Ulanmagan
+                    </span>
+                  )}
+                </span>
+
+                <span role="img" aria-label={`${c.name} aylanma`} style={{ display: 'flex', gap: 2, height: 12 }}>
+                  <span style={{ width: `${totalWidth}%`, display: 'flex', height: '100%' }}>
+                    {fw > 0 && (
+                      <span style={{ width: `${fw}%`, minWidth: 3, background: '#2563EB', borderRadius: nw > 0 ? '4px 0 0 4px' : '4px' }} />
+                    )}
+                    {nw > 0 && (
+                      <span style={{ width: `${nw}%`, minWidth: 3, background: '#EA7A2B', borderRadius: fw > 0 ? '0 4px 4px 0' : '4px' }} />
+                    )}
+                  </span>
+                </span>
+
+                <span className="r" style={{ fontWeight: 600 }}>
+                  {fmtMoney(amount, { showCurrency: false })}
+                </span>
+
+                <span className="r" style={{ color: '#6B7280' }}>
+                  {share}
+                </span>
+              </Link>
+            );
+          })
+        )}
       </div>
-    </div>
+    </section>
   );
 }

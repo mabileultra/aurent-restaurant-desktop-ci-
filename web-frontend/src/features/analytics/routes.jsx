@@ -15,6 +15,7 @@ export function AnalyticsRoutes() {
       <Route path="regions" element={<AnalyticsRegionsPage />} />
       <Route path="companies" element={<AnalyticsCompaniesPage />} />
       <Route path="companies/:companyId" element={<AnalyticsCompanyDetailPage />} />
+      <Route path="comparison" element={<AnalyticsComparePage />} />
       <Route path="compare" element={<AnalyticsComparePage />} />
       <Route path="receipts" element={<AnalyticsReceiptsPage />} />
       <Route path="reports" element={<AnalyticsReportsPage />} />

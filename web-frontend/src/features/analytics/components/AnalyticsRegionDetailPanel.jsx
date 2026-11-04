@@ -1,36 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
 
-const DISTRICT_CHIPS = [
-  { id: 'all', label: 'Barcha tumanlar · 63' },
-  { id: 'sam_city', label: 'Samarqand sh.' },
-  { id: 'urgut', label: 'Urgut t.' },
-  { id: 'bulungur', label: 'Bulung‘ur t.' },
-  { id: 'toyloq', label: 'Toyloq t.' },
-];
-
-const WEEKLY_BARS = [
-  { label: '6–11 okt', value: '213,5 mln', heightPx: 18, color: '#2563EB' },
-  { label: '12–18 okt', value: '219,5 mln', heightPx: 19, color: '#2563EB' },
-  { label: '19–25 okt', value: '1,61 mlrd', heightPx: 137, color: '#2563EB' },
-  { label: '26 okt–1 noy', value: '2,02 mlrd', heightPx: 170, color: '#2563EB' },
-  { label: '2–4 noy', value: '135,3 mln', heightPx: 12, color: '#93C5FD' },
-];
-
-const REGION_COMPANIES = [
-  { id: '1', name: 'Farina Invest', status: 'Ulangan', isOk: true, stores: 1, turnover: '2,04 mlrd', fiscalShare: '97,6%' },
-  { id: '2', name: 'MAKON RBB', status: 'Ulangan', isOk: true, stores: 1, turnover: '808,9 mln', fiscalShare: '100%' },
-  { id: '3', name: 'Aminjon Samarqand XK', status: 'Ulangan', isOk: true, stores: 1, turnover: '600,7 mln', fiscalShare: '99,2%' },
-  { id: '4', name: 'Makon Mobile', status: 'Ulangan', isOk: true, stores: 1, turnover: '512,4 mln', fiscalShare: '99,2%' },
-  { id: '5', name: '“ANNODENT SS” MCHJ', status: 'Ulangan', isOk: true, stores: 1, turnover: '147,0 mln', fiscalShare: '94,4%' },
-  { id: '6', name: '404 Toys', status: 'Ulanmagan', isOk: false, stores: 1, turnover: '26,9 mln', fiscalShare: '0%' },
-];
-
-export default function AnalyticsRegionDetailPanel({ regionName = 'Samarqand viloyati' }) {
+export default function AnalyticsRegionDetailPanel({
+  regionName = 'Samarqand viloyati',
+  districts = [],
+  companies = [],
+  selectedDistrict = 'all',
+  onSelectDistrict,
+  weeklyBars = [],
+}) {
   const navigate = useNavigate();
-  const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [periodType, setPeriodType] = useState('weekly');
+
+  const filteredCompanies = companies.filter((c) => {
+    if (selectedDistrict === 'all') return true;
+    return c.districtCode === selectedDistrict;
+  });
+
+  const displayBars = weeklyBars.length > 0 ? weeklyBars : [
+    { label: '6–11 okt', value: '213,5 mln', heightPx: 18, color: '#2563EB' },
+    { label: '12–18 okt', value: '219,5 mln', heightPx: 19, color: '#2563EB' },
+    { label: '19–25 okt', value: '1,61 mlrd', heightPx: 137, color: '#2563EB' },
+    { label: '26 okt–1 noy', value: '2,02 mlrd', heightPx: 170, color: '#2563EB' },
+    { label: '2–4 noy', value: '135,3 mln', heightPx: 12, color: '#93C5FD' },
+  ];
 
   return (
     <section className="card" aria-labelledby="drill" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '16px', borderColor: '#C9DAFB', marginBottom: '16px' }}>
@@ -38,7 +33,7 @@ export default function AnalyticsRegionDetailPanel({ regionName = 'Samarqand vil
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
         <div>
           <h2 id="drill" className="t">{regionName} — tumanlar va korxonalar</h2>
-          <p className="s">Tuman tanlansa, faqat shu tumandagi korxonalar qoladi · korxona bosilsa detalizatsiya va do‘konlar ochiladi</p>
+          <p className="s">Tuman tanlansa, faqat shu tumandagi korxonalar qoladi · korxona bosilsa tafsilot ochiladi</p>
         </div>
         <div className="seg" role="group" aria-label="Dinamika">
           <button type="button" className={periodType === 'daily' ? 'on' : ''} onClick={() => setPeriodType('daily')}>Kunlik</button>
@@ -49,19 +44,23 @@ export default function AnalyticsRegionDetailPanel({ regionName = 'Samarqand vil
 
       {/* District Chips */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {DISTRICT_CHIPS.map((chip) => (
+        <button
+          type="button"
+          className={`chip${selectedDistrict === 'all' ? ' on' : ''}`}
+          onClick={() => onSelectDistrict && onSelectDistrict('all')}
+        >
+          Barcha tumanlar · {companies.length}
+        </button>
+        {districts.map((d) => (
           <button
-            key={chip.id}
+            key={d.code}
             type="button"
-            className={`chip${selectedDistrict === chip.id ? ' on' : ''}`}
-            onClick={() => setSelectedDistrict(chip.id)}
+            className={`chip${selectedDistrict === d.code ? ' on' : ''}`}
+            onClick={() => onSelectDistrict && onSelectDistrict(d.code)}
           >
-            {chip.label}
+            {d.nameUz || d.nameRu}
           </button>
         ))}
-        <button type="button" className="chip" style={{ color: '#2563EB' }}>
-          Yana tumanlar ▾
-        </button>
       </div>
 
       {/* 2 Columns: Chart & Table */}
@@ -80,7 +79,7 @@ export default function AnalyticsRegionDetailPanel({ regionName = 'Samarqand vil
                 <div style={{ position: 'absolute', left: 0, right: 0, bottom: '68px', height: '1px', background: '#EEF1F4' }} />
                 <div style={{ position: 'absolute', left: 0, right: 0, bottom: '136px', height: '1px', background: '#EEF1F4' }} />
                 <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', gap: '10px' }}>
-                  {WEEKLY_BARS.map((bar) => (
+                  {displayBars.map((bar) => (
                     <div key={bar.label} role="img" aria-label={`${bar.label}: ${bar.value}`} style={{ flex: '1 1 0', minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center' }}>
                       <span style={{ fontSize: '11.5px', fontWeight: 600, marginBottom: '4px', whiteSpace: 'nowrap' }}>{bar.value}</span>
                       <span style={{ display: 'block', width: '56%', maxWidth: '24px', height: `${bar.heightPx}px`, background: bar.color, borderRadius: '4px 4px 0 0' }} />
@@ -89,7 +88,7 @@ export default function AnalyticsRegionDetailPanel({ regionName = 'Samarqand vil
                 </div>
               </div>
               <div aria-hidden="true" style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                {WEEKLY_BARS.map((bar) => (
+                {displayBars.map((bar) => (
                   <span key={bar.label} style={{ flex: '1 1 0', minWidth: 0, display: 'flex', justifyContent: 'center', fontSize: '11px', color: '#6B7280', whiteSpace: 'nowrap' }}>
                     {bar.label}
                   </span>
@@ -114,24 +113,39 @@ export default function AnalyticsRegionDetailPanel({ regionName = 'Samarqand vil
               </tr>
             </thead>
             <tbody>
-              {REGION_COMPANIES.map((c) => (
-                <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/platform/analytics/companies/${c.id}`)}>
-                  <td style={{ fontWeight: 600 }}>{c.name}</td>
-                  <td>
-                    <span className={`badge ${c.isOk ? 'ok' : 'no'}`}>{c.status}</span>
-                  </td>
-                  <td className="r">{c.stores}</td>
-                  <td className="r" style={{ fontWeight: 600 }}>{c.turnover}</td>
-                  <td className="r">{c.fiscalShare}</td>
-                  <td>
-                    <ChevronRight size={14} style={{ color: '#9CA3AF' }} />
+              {filteredCompanies.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: '#6B7280' }}>
+                    Ushbu tuman uchun korxona topilmadi
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredCompanies.slice(0, 8).map((c) => {
+                  const total = Number(c.totalTurnover || 0);
+                  const fiscal = Number(c.fiscalTurnover || 0);
+                  const share = total > 0 ? (fiscal / total) * 100 : 0;
+                  return (
+                    <tr key={c.companyId || c.name} style={{ cursor: 'pointer' }} onClick={() => navigate(`/platform/analytics/companies/${c.companyId}`)}>
+                      <td style={{ fontWeight: 600 }}>{c.name}</td>
+                      <td>
+                        <span className={`badge ${c.connected ? 'ok' : 'no'}`}>
+                          {c.connected ? 'Ulangan' : 'Ulanmagan'}
+                        </span>
+                      </td>
+                      <td className="r">{c.storeCount || 1}</td>
+                      <td className="r" style={{ fontWeight: 600 }}>{fmtMoney(total, { showCurrency: false })}</td>
+                      <td className="r">{fmtPercent(share)}</td>
+                      <td>
+                        <ChevronRight size={14} style={{ color: '#9CA3AF' }} />
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 2px 0', fontSize: '12.5px', color: '#6B7280' }}>
-            <span>1–6 / 63 korxona</span>
+            <span>1–{Math.min(8, filteredCompanies.length)} / {filteredCompanies.length} korxona</span>
             <button
               type="button"
               style={{ background: 'none', border: 'none', color: '#2563EB', fontWeight: 600, cursor: 'pointer', padding: 0 }}

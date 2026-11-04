@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { Bookmark, Filter, RotateCcw, Search } from 'lucide-react';
+import { ChevronDown, Download, RotateCcw, Search, SlidersHorizontal } from 'lucide-react';
 import PlatformSelect from '../../platform/components/PlatformSelect';
 
 export default function AnalyticsFiltersBar({
-  search = '',
-  onSearchChange,
   regionCode = '',
   onRegionChange,
-  districtCode = '',
-  onDistrictChange,
   connectionStatus = '',
   onConnectionStatusChange,
+  companyType = 'all',
+  onCompanyTypeChange,
+  activity = 'all',
+  onActivityChange,
+  search = '',
+  onSearchChange,
   regions = [],
-  districts = [],
+  asOfDate = '4-noyabr holatiga',
+  onExport,
   onReset,
-  onApply,
   showExtraFilters = false,
   setShowExtraFilters,
 }) {
@@ -22,115 +24,138 @@ export default function AnalyticsFiltersBar({
   const isOpen = showExtraFilters !== undefined ? showExtraFilters : internalOpen;
   const toggleOpen = () => (setShowExtraFilters ? setShowExtraFilters(!isOpen) : setInternalOpen(!isOpen));
 
+  const selectedRegion = regions.find((r) => (r.code || r.regionCode) === regionCode);
+  const regionLabel = selectedRegion ? (selectedRegion.nameUz || selectedRegion.name) : 'Respublika';
+
+  const fiscalLabel = connectionStatus === 'CONNECTED'
+    ? 'Ulangan'
+    : connectionStatus === 'NOT_CONNECTED'
+      ? 'Ulanmagan'
+      : 'Barchasi';
+
   return (
-    <div style={{ marginBottom: '1.25rem' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-        {/* Search input */}
-        <div style={{
-          flex: '1 1 220px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.45rem',
-          background: '#ffffff',
-          border: '1px solid #e2e8f0',
-          borderRadius: '0.55rem',
-          padding: '0 0.65rem',
-          height: '2.35rem',
-        }}>
-          <Search size={15} color="#94a3b8" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Firma nomi, STIR yoki ID"
-            style={{
-              border: 'none',
-              outline: 'none',
-              fontSize: '0.82rem',
-              width: '100%',
-              background: 'transparent',
-            }}
-          />
-        </div>
-
-        {/* Region Select */}
-        <div style={{ minWidth: '150px' }}>
-          <PlatformSelect
-            value={regionCode}
-            onChange={(e) => onRegionChange(e.target.value)}
-            placeholder="Viloyat: Barchasi"
-            options={[
-              { value: '', label: 'Viloyat: Barchasi' },
-              ...regions.map((r) => ({ value: r.code || r.regionCode, label: r.nameUz || r.nameRu || r.name })),
-            ]}
-            cleanGeo
-          />
-        </div>
-
-        {/* District Select if region selected */}
-        {districts.length > 0 && (
-          <div style={{ minWidth: '150px' }}>
-            <PlatformSelect
-              value={districtCode}
-              onChange={(e) => onDistrictChange(e.target.value)}
-              placeholder="Tuman: Barchasi"
-              options={[
-                { value: '', label: 'Tuman: Barchasi' },
-                ...districts.map((d) => ({ value: d.code, label: d.nameUz || d.nameRu || d.name })),
-              ]}
-              cleanGeo
-            />
-          </div>
-        )}
-
-        {/* Fiscal status select */}
-        <div style={{ minWidth: '160px' }}>
-          <PlatformSelect
-            value={connectionStatus}
-            onChange={(e) => onConnectionStatusChange(e.target.value)}
-            placeholder="Fiskal holat: Barchasi"
-            options={[
-              { value: '', label: 'Fiskal holat: Barchasi' },
-              { value: 'CONNECTED', label: 'Ulangan' },
-              { value: 'NOT_CONNECTED', label: 'Ulanmagan' },
-            ]}
-          />
-        </div>
-
-        {/* Toggle extra filters */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Primary Canonical Filter Row (Matching Page 1 Design) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
         <button
           type="button"
-          onClick={toggleOpen}
-          className={`an-period-btn${isOpen ? ' is-active' : ''}`}
-          style={{ height: '2.35rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+          className="f"
+          aria-haspopup="listbox"
+          onClick={() => {
+            if (regions.length > 0 && onRegionChange) {
+              const next = regionCode ? '' : (regions[0]?.code || 'samarkand');
+              onRegionChange(next);
+            }
+          }}
         >
-          <Filter size={14} />
-          <span>Barcha filtrlar</span>
+          Hudud: <b>{regionLabel}</b>
+          <ChevronDown className="ic" />
         </button>
 
-        {onReset && (
-          <button
-            type="button"
-            onClick={onReset}
-            style={{
-              height: '2.35rem',
-              padding: '0 0.75rem',
-              background: '#fff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.55rem',
-              cursor: 'pointer',
-              color: '#64748b',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.3rem',
-              fontSize: '0.8rem',
-            }}
-          >
-            <RotateCcw size={13} />
-            <span>Tozalash</span>
-          </button>
-        )}
+        <button
+          type="button"
+          className="f"
+          aria-haspopup="listbox"
+          onClick={() => onCompanyTypeChange && onCompanyTypeChange(companyType === 'all' ? 'llc' : 'all')}
+        >
+          Korxona turi: <b>{companyType === 'llc' ? 'MCHJ' : 'Barchasi'}</b>
+          <ChevronDown className="ic" />
+        </button>
+
+        <button
+          type="button"
+          className="f"
+          aria-haspopup="listbox"
+          onClick={() => onActivityChange && onActivityChange(activity === 'all' ? 'retail' : 'all')}
+        >
+          Faoliyat: <b>{activity === 'retail' ? 'Chakana savdo' : 'Barchasi'}</b>
+          <ChevronDown className="ic" />
+        </button>
+
+        <button
+          type="button"
+          className="f"
+          aria-haspopup="listbox"
+          onClick={() => {
+            if (onConnectionStatusChange) {
+              const next = connectionStatus === '' ? 'CONNECTED' : connectionStatus === 'CONNECTED' ? 'NOT_CONNECTED' : '';
+              onConnectionStatusChange(next);
+            }
+          }}
+        >
+          Fiskal holat: <b>{fiscalLabel}</b>
+          <ChevronDown className="ic" />
+        </button>
+
+        <button
+          type="button"
+          className="f"
+          aria-expanded={isOpen}
+          onClick={toggleOpen}
+          style={{ color: '#1D4ED8', borderColor: '#C9DAFB', background: '#F5F8FF' }}
+        >
+          <SlidersHorizontal className="ic" />
+          <span>Qo‘shimcha filtrlar</span>
+        </button>
+
+        <span style={{ flex: '1 1 auto' }} />
+
+        <span style={{ fontSize: '12px', color: '#6B7280', whiteSpace: 'nowrap' }}>
+          Ma’lumot: {asOfDate}
+        </span>
+
+        <button
+          type="button"
+          className="btn"
+          onClick={onExport}
+        >
+          <Download className="ic" style={{ color: '#2563EB' }} />
+          <span>Eksport</span>
+        </button>
       </div>
+
+      {/* Expandable Extra Filters Drawer */}
+      {isOpen && (
+        <div className="card" style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+          <div style={{ flex: '1 1 240px', display: 'flex', alignItems: 'center', gap: '6px', background: '#F9FAFB', border: '1px solid #E5E9EE', borderRadius: 8, padding: '0 10px', height: 34 }}>
+            <Search size={14} color="#94A3B8" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+              placeholder="Firma nomi, STIR yoki ID qidirish..."
+              style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '12.5px', width: '100%', color: '#1F2937' }}
+            />
+          </div>
+
+          {regions.length > 0 && (
+            <div style={{ minWidth: 180 }}>
+              <PlatformSelect
+                value={regionCode}
+                onChange={(e) => onRegionChange && onRegionChange(e.target.value)}
+                placeholder="Hudud: Barchasi"
+                options={[
+                  { value: '', label: 'Respublika (barchasi)' },
+                  ...regions.map((r) => ({ value: r.code || r.regionCode, label: r.nameUz || r.name })),
+                ]}
+                cleanGeo
+              />
+            </div>
+          )}
+
+          {onReset && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="btn"
+              style={{ color: '#6B7280' }}
+            >
+              <RotateCcw size={13} />
+              <span>Tozalash</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

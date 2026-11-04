@@ -1,19 +1,11 @@
 import React from 'react';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
-const DEFAULT_BUCKETS = [
-  { label: '0–20%', count: 10 },
-  { label: '20–40%', count: 3 },
-  { label: '40–60%', count: 3 },
-  { label: '60–80%', count: 1 },
-  { label: '80–100%', count: 13 },
-];
-
 export default function AnalyticsCompanyDistributionChart({
-  buckets = DEFAULT_BUCKETS,
-  zeroCount = 10,
-  highCount = 13,
-  totalSelling = 30,
+  buckets = [],
+  zeroCount = 0,
+  highCount = 0,
+  totalSelling = 0,
 }) {
   const maxCount = Math.max(...buckets.map((b) => b.count), 1);
 
@@ -58,7 +50,7 @@ export default function AnalyticsCompanyDistributionChart({
                 style={{
                   width: 32,
                   height: `${heightPct}%`,
-                  background: isHigh ? '#047857' : '#059669',
+                  background: isHigh ? '#2563EB' : '#93C5FD',
                   borderRadius: '4px 4px 0 0',
                   transition: 'height 0.3s ease',
                 }}
@@ -78,10 +70,10 @@ export default function AnalyticsCompanyDistributionChart({
           alignItems: 'center',
           gap: '0.5rem',
           padding: '0.45rem 0.65rem',
-          background: '#fef3c7',
+          background: '#FEF3C7',
           borderRadius: '0.5rem',
           fontSize: '0.75rem',
-          color: '#92400e',
+          color: '#92400E',
         }}>
           <AlertCircle size={14} aria-hidden />
           <span><strong>{zeroCount} ta</strong> firmada fiskal chek umuman yo‘q (0%)</span>
@@ -92,10 +84,10 @@ export default function AnalyticsCompanyDistributionChart({
           alignItems: 'center',
           gap: '0.5rem',
           padding: '0.45rem 0.65rem',
-          background: '#ecfdf5',
+          background: '#EFF6FF',
           borderRadius: '0.5rem',
           fontSize: '0.75rem',
-          color: '#065f46',
+          color: '#1D4ED8',
         }}>
           <CheckCircle2 size={14} aria-hidden />
           <span><strong>{highCount} ta</strong> firmada fiskal ulush 80% dan yuqori</span>

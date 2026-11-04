@@ -36,22 +36,31 @@ export default function AnalyticsTurnoverLineChart({ onSelectDay }) {
   }, []);
 
   return (
-    <div className="an-card" style={{ position: 'relative' }} aria-label="Aylanma dinamikasi grafigi">
-      <div className="an-card-head">
+    <section
+      className="card"
+      aria-labelledby="dyn"
+      style={{
+        flex: '2 1 620px',
+        minWidth: 0,
+        padding: '18px 20px',
+        position: 'relative',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
         <div>
-          <h3 className="an-card-title">Kunlar bo‘yicha aylanma dinamikasi</h3>
-          <p className="an-card-sub">Umumiy aylanma, so‘m · nuqta ustiga olib boring, bosilsa kun detali ochiladi</p>
+          <h2 id="dyn" className="t">Kunlar bo‘yicha aylanma dinamikasi</h2>
+          <p className="s">Umumiy aylanma, so‘m · nuqta ustiga olib boring, bosilsa kun detali ochiladi</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ width: 14, height: 2.5, background: '#2563eb', display: 'inline-block' }} />
-            <span>Kunlik aylanma</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ width: 14, height: 2.5, background: '#ea580c', display: 'inline-block' }} />
-            <span>7 kunlik o‘rtacha</span>
-          </div>
+        <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#4B5563', alignItems: 'center' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#2563EB' }} />
+            Kunlik aylanma
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#EA7A2B' }} />
+            7 kunlik o‘rtacha
+          </span>
         </div>
       </div>
 
@@ -138,23 +147,18 @@ export default function AnalyticsTurnoverLineChart({ onSelectDay }) {
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: '0.75rem',
-        marginTop: '0.5rem',
-        borderTop: '1px solid #f1f5f9',
-        fontSize: '0.78rem',
-        color: '#475569',
+        gap: '10px 28px',
+        marginTop: 14,
+        paddingTop: 12,
+        borderTop: '1px solid #F0F2F5',
+        fontSize: '12.5px',
+        color: '#6B7280',
       }}>
-        <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
-          <span>Kunlik o‘rtacha <strong>146,5 mln</strong></span>
-          <span>Eng yuqori kun <strong>24-okt · 1,22 mlrd</strong></span>
-          <span>Savdo bo‘lgan kunlar <strong>28 / 30</strong></span>
-        </div>
-        <div style={{ color: '#d97706', fontWeight: 500 }}>
-          3–4-noyabr: cheklar kelmagan
-        </div>
+        <span>Kunlik o‘rtacha <b style={{ color: '#1F2937' }}>146,5 mln</b></span>
+        <span>Eng yuqori kun <b style={{ color: '#1F2937' }}>24-okt · 1,22 mlrd</b></span>
+        <span>Savdo bo‘lgan kunlar <b style={{ color: '#1F2937' }}>28 / 30</b></span>
+        <span style={{ color: '#B45309' }}>3–4-noyabr: cheklar kelmagan</span>
       </div>
-    </div>
+    </section>
   );
 }
