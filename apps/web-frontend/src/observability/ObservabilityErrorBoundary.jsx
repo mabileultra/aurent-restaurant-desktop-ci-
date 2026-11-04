@@ -53,6 +53,7 @@ export default class ObservabilityErrorBoundary extends Component {
     }
 
     if (this.state.hasError) {
+      const errCode = buildErrorReferenceCode(null, this.state.error);
       const lang = i18n?.language || 'uz';
       const isUz = lang.startsWith('uz');
       const isOfflineError = this.state.isOffline || (typeof navigator !== 'undefined' && !navigator.onLine);
