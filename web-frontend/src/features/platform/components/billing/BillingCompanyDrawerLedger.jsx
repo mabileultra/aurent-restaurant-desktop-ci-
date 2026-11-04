@@ -4,6 +4,7 @@ import {
   MinusCircle,
   PlusCircle,
 } from 'lucide-react';
+import { localizeLedgerDescription } from '../../utils/localizeLedgerDescription';
 
 const LEDGER_ICON = {
   TOP_UP: PlusCircle,
@@ -56,7 +57,7 @@ export function LedgerTimeline({ p, limit }) {
                 </p>
                 <p className="text-[11px] text-slate-400 truncate">
                   {e.paymentMethod ? `${t(`platform.billing.collections.methods.${e.paymentMethod}`)} · ` : ''}
-                  {e.description || '—'}
+                  {localizeLedgerDescription(e.description, t) || '—'}
                 </p>
               </div>
             </div>

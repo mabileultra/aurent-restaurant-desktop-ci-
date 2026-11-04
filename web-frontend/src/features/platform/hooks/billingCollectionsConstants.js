@@ -2,6 +2,7 @@ export const COLLECTION_TABS = ['ALL', 'OVERDUE', 'DUE_SOON', 'ACTIVE', 'NEW', '
 export const PAYMENT_METHODS = ['CLICK', 'PAYME', 'BANK_TRANSFER', 'CASH', 'OTHER'];
 export const DATE_FIELDS = ['NEXT_CHARGE', 'LAST_PAYMENT', 'CREATED'];
 export const COLLECTIONS_QUERY_KEY = 'platform-billing-collections';
+export const MAX_BILLING_AMOUNT = 1_000_000_000;
 
 export const TAB_COUNT_FIELD = {
   ALL: 'totalCompanies',

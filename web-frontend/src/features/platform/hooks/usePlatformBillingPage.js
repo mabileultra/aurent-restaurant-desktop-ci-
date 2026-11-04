@@ -7,6 +7,7 @@ import { useBillingCollections } from './useBillingCollections';
 import { useBillingCollectionActions } from './useBillingCollectionActions';
 import { usePlatformBillingQueries } from './usePlatformBillingQueries';
 import { usePlatformBillingModals } from './usePlatformBillingModals';
+import { MAX_BILLING_AMOUNT } from './billingCollectionsConstants';
 
 function money(v) {
   const n = Number(v || 0);
@@ -147,14 +148,21 @@ export function usePlatformBillingPage() {
     companyPaymentsLoading: queries.companyPaymentsLoading,
     adjustAmount: modals.adjustAmount,
     setAdjustAmount: (val) => modals.setAdjustAmount(formatMoneyInputDigits(val)),
-    adjustAmountValid: parseMoneyInput(modals.adjustAmount) != null,
+    adjustAmountValid: Boolean(
+      parseMoneyInput(modals.adjustAmount) != null &&
+      parseMoneyInput(modals.adjustAmount) > 0 &&
+      parseMoneyInput(modals.adjustAmount) <= MAX_BILLING_AMOUNT
+    ),
     adjustNote: modals.adjustNote,
     setAdjustNote: modals.setAdjustNote,
     assignPlanId: modals.assignPlanId,
     pickPlan: modals.pickPlan,
     monthlyAmount: modals.monthlyAmount,
     setMonthlyAmount: (val) => modals.setMonthlyAmount(formatMoneyInputDigits(val)),
-    monthlyAmountValid: parseMoneyInput(modals.monthlyAmount, { allowZero: true }) != null,
+    monthlyAmountValid: Boolean(
+      parseMoneyInput(modals.monthlyAmount, { allowZero: true }) != null &&
+      (parseMoneyInput(modals.monthlyAmount, { allowZero: true }) || 0) <= MAX_BILLING_AMOUNT
+    ),
     periodStartOn: modals.periodStartOn,
     setPeriodStartOn: modals.setPeriodStartOn,
     periodStartValid: /^\d{4}-\d{2}-\d{2}$/.test(modals.periodStartOn || ''),
@@ -173,10 +181,10 @@ export function usePlatformBillingPage() {
     approve: (id) => approveM.mutate(id),
     reject: (id) => rejectM.mutate(id),
     assignPlan: () => assignM.mutate(),
-    credit: () => topUpM.mutate(),
-    debit: () => chargeM.mutate(),
-    block: () => blockM.mutate(true),
-    unblock: () => blockM.mutate(false),
+    credit: () => topUpM.mutateAsync(),
+    debit: () => chargeM.mutateAsync(),
+    block: () => blockM.mutateAsync(true),
+    unblock: () => blockM.mutateAsync(false),
     busy: approveM.isPending || rejectM.isPending || assignM.isPending
       || topUpM.isPending || chargeM.isPending || blockM.isPending,
   };

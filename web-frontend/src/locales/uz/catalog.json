@@ -102,7 +102,8 @@
       "any": "—",
       "yes": "Ha",
       "no": "Yo‘q",
-      "reset": "Tiklash"
+      "reset": "Tiklash",
+      "businessFields": "Biznes maydonlari"
     },
     "bulkVat": {
       "title": "QQSni o‘zgartirish",
@@ -271,6 +272,7 @@
     "sectionFiscal": "Soliq va tasnif",
     "sectionFiscalHint": "IKPU va qadoq kodlari — Multikassa/OFD fiskal cheki uchun.",
     "sectionPrices": "Do‘konlar va narxlar",
+    "sectionBusinessFields": "Qo‘shimcha maydonlar",
     "sectionBarcodes": "Shtrix kodlar",
     "pluLabel": "PLU kodi (tarozilar)",
     "pluHint": "Savdo tarozilari uchun 1–5 raqamli kod",
@@ -279,6 +281,9 @@
     "retailPrice": "Chakana narx",
     "retailPriceDefaultHint": "Kassa uchun asosiy narx (do‘kon narxlari bloki o‘chirilgan).",
     "retailPriceWithStoresHint": "Asosiy chakana narx. Do‘kon narxi bo‘sh bo‘lsa — shu qo‘yiladi.",
+    "minMarginHint": "Ushbu biznes turi uchun minimal ustama: {{percent}}%",
+    "minMarginError": "Ustama kamida {{percent}}% bo‘lishi kerak",
+    "maxDiscountError": "Chegirma {{percent}}% dan oshmasligi kerak",
     "externalId": "Mahsulot ID",
     "externalIdAutoHint": "IKPU va qadoq kodidan avtomatik to‘ldiriladi (o‘zgartirish mumkin).",
     "ikpu": "IKPU",

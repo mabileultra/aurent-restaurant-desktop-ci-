@@ -27,13 +27,19 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
   const [viewMode, setViewMode] = useState('calendar');
   const [listDayFilter, setListDayFilter] = useState(null);
 
+  const handleMonthChange = (newMonth) => {
+    if (!newMonth) return;
+    setMonth(newMonth);
+    setListDayFilter(null);
+    const thisMonthKey = monthKey(new Date());
+    setPicked(newMonth === thisMonthKey ? todayIso : `${newMonth}-01`);
+  };
+
   const handleSelectDay = (iso) => {
     if (!iso) return;
     setPicked(iso);
     const targetMonth = monthKey(iso);
-    if (targetMonth && targetMonth !== month) {
-      setMonth(targetMonth);
-    }
+    if (targetMonth && targetMonth !== month) setMonth(targetMonth);
   };
 
   const q = useQuery({
@@ -77,8 +83,9 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
       hasActiveFilters ? 0 : Number(q.data?.totalAmount || 0),
       hasActiveFilters ? 0 : Number(q.data?.totalCount || 0),
       companyMap,
+      todayIso,
     );
-  }, [filteredDays, hasActiveFilters, q.data?.totalAmount, q.data?.totalCount, companyMap]);
+  }, [filteredDays, hasActiveFilters, q.data?.totalAmount, q.data?.totalCount, companyMap, todayIso]);
 
   const byDate = useMemo(
     () => Object.fromEntries(filteredDays.map((d) => [d.date, d])),
@@ -93,13 +100,9 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
   };
 
   const handleOpenCompany = (companyId, companyRow) => {
-    if (companyRow && p?.selectCompany) {
-      p.selectCompany(companyRow);
-    } else if (p?.openCompanyById) {
-      p.openCompanyById(companyId);
-    } else if (onOpenCompany) {
-      onOpenCompany(companyId);
-    }
+    if (companyRow && p?.selectCompany) p.selectCompany(companyRow);
+    else if (p?.openCompanyById) p.openCompanyById(companyId);
+    else if (onOpenCompany) onOpenCompany(companyId);
   };
 
   const handleOpenPaymentModal = (companyId) => {
@@ -113,13 +116,11 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
       <BillingCalendarToolbar
         t={t}
         month={month}
-        setMonth={setMonth}
+        setMonth={handleMonthChange}
         onToday={handleToday}
         viewMode={viewMode}
         setViewMode={(mode) => {
-          if (mode === 'list') {
-            setListDayFilter(null);
-          }
+          if (mode === 'list') setListDayFilter(null);
           setViewMode(mode);
         }}
         statusFilter={filter.statusFilter}
@@ -141,7 +142,7 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
           <BillingCalendarGrid
             t={t}
             month={month}
-            setMonth={setMonth}
+            setMonth={handleMonthChange}
             picked={picked}
             setPicked={handleSelectDay}
             byDate={byDate}

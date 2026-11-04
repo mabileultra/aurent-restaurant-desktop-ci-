@@ -54,23 +54,35 @@ export default function BillingCompanyDrawerMetrics({ p, row, b, k, currency }) 
         </div>
 
         {/* Metric 3: Joriy balans */}
-        <div className="bg-slate-50/80 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 flex flex-col justify-between">
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{k('currentBalance')}</span>
-          <div
-            className={`text-base font-bold mt-1 ${
-              Number(b.balance) < 0 ? 'text-rose-600' : 'text-emerald-700 dark:text-emerald-400'
-            }`}
-          >
-            {money(b.balance)} {currency}
-          </div>
-          <div className="mt-2 text-[10px] font-medium">
-            {Number(b.balance) < 0 ? (
-              <span className="text-rose-600">Qarzdorlik mavjud</span>
-            ) : (
-              <span className="text-emerald-600 dark:text-emerald-400">Qarzdorlik yo'q</span>
-            )}
-          </div>
-        </div>
+        {(() => {
+          const isPaymentOverdue = (row?.paymentState || b?.paymentState) === 'OVERDUE';
+          const isNegativeBalance = Number(b.balance) < 0;
+          return (
+            <div className="bg-slate-50/80 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{k('currentBalance')}</span>
+              <div
+                className={`text-base font-bold mt-1 ${
+                  isNegativeBalance
+                    ? 'text-rose-600'
+                    : isPaymentOverdue
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-emerald-700 dark:text-emerald-400'
+                }`}
+              >
+                {money(b.balance)} {currency}
+              </div>
+              <div className="mt-2 text-[10px] font-medium">
+                {isNegativeBalance ? (
+                  <span className="text-rose-600">Qarzdorlik mavjud</span>
+                ) : isPaymentOverdue ? (
+                  <span className="text-amber-600 dark:text-amber-400">To‘lov muddati o‘tgan</span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-400">Qarzdorlik yo'q</span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Metric 4: Keyingi to'lov */}
         <div className="bg-slate-50/80 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 flex flex-col justify-between">

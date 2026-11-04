@@ -54,4 +54,34 @@ describe('i18n integrity and namespace coverage', () => {
     await i18n.changeLanguage('uz');
     expect(i18n.t('platform.companies.title')).toBeTruthy();
   });
+
+  it('has matching top-level keys across ru and uz dictionaries', () => {
+    const ruKeys = Object.keys(ru).sort();
+    const uzKeys = Object.keys(uz).sort();
+    expect(uzKeys).toEqual(ruKeys);
+  });
+
+  it('has 100% key parity across all nested leaf keys in ru and uz dictionaries', () => {
+    function getLeafKeys(obj, prefix = '') {
+      let keys = [];
+      for (const [k, v] of Object.entries(obj)) {
+        const full = prefix ? `${prefix}.${k}` : k;
+        if (v && typeof v === 'object' && !Array.isArray(v)) {
+          keys = keys.concat(getLeafKeys(v, full));
+        } else {
+          keys.push(full);
+        }
+      }
+      return keys;
+    }
+
+    const ruLeaf = new Set(getLeafKeys(ru));
+    const uzLeaf = new Set(getLeafKeys(uz));
+
+    const missingInUz = [...ruLeaf].filter((k) => !uzLeaf.has(k));
+    const missingInRu = [...uzLeaf].filter((k) => !ruLeaf.has(k));
+
+    expect(missingInUz).toEqual([]);
+    expect(missingInRu).toEqual([]);
+  });
 });
