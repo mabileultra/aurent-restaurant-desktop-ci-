@@ -69,7 +69,7 @@ WorldGate cutover (block `/pharm` UI) — later, after offline drain + lab flag.
 ## Monorepo shared packages (scaffold)
 
 Scaffold: `packages/@aurent/*` + `pnpm-workspace.example.yaml` (workspace not active yet).  
-**First extract:** `@aurent/shared-auth` used by web + pharmacy via Vite alias; Docker context = repo root.
+**Live extracts (Vite alias):** `@aurent/shared-auth`, `@aurent/shared-api`, `@aurent/shared-offline`. Docker context = repo root.
 
 ```
 packages/

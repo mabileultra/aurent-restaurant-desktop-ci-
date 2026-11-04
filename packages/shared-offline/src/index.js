@@ -1,6 +1,5 @@
 /**
- * @aurent/shared-offline
- * Planned: sync transport / queue plumbing.
- * Pharmacy (and grocery) sale offline rules stay in each app.
+ * @aurent/shared-offline — sync transport plumbing.
+ * Pharmacy / grocery offline sale rules stay in each app.
  */
-export {};
+export { SYNC_PHASE, SYNC_PHASE_I18N, isActiveSyncPhase } from './syncPhase.js';

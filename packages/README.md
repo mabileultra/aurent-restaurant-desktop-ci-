@@ -1,7 +1,8 @@
 # Shared packages (`@aurent/*`)
 
-Gradual extracts. First live package: **`@aurent/shared-auth`** (Identity one-time handoff helpers).  
-Wired via Vite alias (not root workspace yet). Docker build context = repo root for web + pharmacy.
+Gradual extracts (Vite alias, root workspace not active yet). Docker context = repo root for web + pharmacy.
+
+**Live:** `@aurent/shared-auth`, `@aurent/shared-api` (idempotency), `@aurent/shared-offline` (sync phases).
 
 ## Packages
 

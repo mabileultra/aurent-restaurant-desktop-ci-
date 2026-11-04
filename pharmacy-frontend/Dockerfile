@@ -1,11 +1,13 @@
 # Pharmacy frontend — separate SPA (p-aurent.uz)
-# Build context: repo root (needs packages/shared-auth)
+# Build context: repo root (needs packages/shared-*)
 FROM node:20-alpine AS build
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY packages/shared-auth /packages/shared-auth
+COPY packages/shared-api /packages/shared-api
+COPY packages/shared-offline /packages/shared-offline
 COPY pharmacy-frontend/package.json pharmacy-frontend/pnpm-lock.yaml* pharmacy-frontend/pnpm-workspace.yaml* ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
   if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi

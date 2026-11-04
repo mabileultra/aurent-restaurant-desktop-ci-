@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:1
-# Build context: repo root (needs packages/shared-auth)
+# Build context: repo root (needs packages/shared-*)
 FROM node:20-alpine AS build
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY packages/shared-auth /packages/shared-auth
+COPY packages/shared-api /packages/shared-api
+COPY packages/shared-offline /packages/shared-offline
 COPY web-frontend/package.json web-frontend/pnpm-lock.yaml web-frontend/pnpm-workspace.yaml* ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 

@@ -1,6 +1,9 @@
 /**
- * @aurent/shared-api
- * Planned: axios factory, idempotency keys, error envelope helpers.
- * Keep vertical endpoint modules in each app.
+ * @aurent/shared-api — HTTP cross-cutting helpers (idempotency today).
+ * Vertical endpoint modules stay in each app.
  */
-export {};
+export {
+  generateIdempotencyKey,
+  IDEMPOTENCY_HEADER,
+  isFinancialOrCriticalEndpoint,
+} from './idempotencyKey.js';
