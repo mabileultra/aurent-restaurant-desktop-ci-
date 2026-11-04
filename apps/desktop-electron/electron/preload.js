@@ -71,11 +71,19 @@ contextBridge.exposeInMainWorld('desktopCashier', {
 
   checkForUpdates: () => invoke('desktop:checkForUpdates'),
   quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),
+  /** Grocery → pharmacy cutover: download pharmacy installer, silent install, relaunch. */
+  migrateToPharmacyDesktop: (payload) => invoke('desktop:migrateToPharmacyDesktop', payload || {}),
   onDesktopUpdate: (callback) => {
     if (typeof callback !== 'function') return () => {};
     const handler = (_event, payload) => callback(payload);
     ipcRenderer.on('desktop:update', handler);
     return () => ipcRenderer.removeListener('desktop:update', handler);
+  },
+  onPharmacyMigrate: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_event, payload) => callback(payload);
+    ipcRenderer.on('desktop:pharmacy-migrate', handler);
+    return () => ipcRenderer.removeListener('desktop:pharmacy-migrate', handler);
   },
 
   offlineGetStatus: () => invoke('offline:get-status'),

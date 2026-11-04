@@ -24,7 +24,6 @@ export default function PharmacyReceiptLineFields({
   t,
   line,
   productName,
-  stockLocked = false,
 }) {
   const {
     form,
@@ -52,7 +51,6 @@ export default function PharmacyReceiptLineFields({
                 inputMode="numeric"
                 className="pharm-line-modal__input pharm-line-modal__input--num"
                 value={form.packs}
-                disabled={stockLocked}
                 onChange={(e) => patch('packs', stripLineMoney(e.target.value))}
               />
               <span className="pharm-line-modal__plus" aria-hidden>+</span>
@@ -60,7 +58,6 @@ export default function PharmacyReceiptLineFields({
                 inputMode="numeric"
                 className="pharm-line-modal__input pharm-line-modal__input--num"
                 value={form.units}
-                disabled={stockLocked}
                 onChange={(e) => patch('units', stripLineMoney(e.target.value))}
               />
             </div>
@@ -68,7 +65,6 @@ export default function PharmacyReceiptLineFields({
           <MoneyField
             label={t('pharmacyStock.unitsInPack')}
             value={form.unitsInPack}
-            readOnly={stockLocked}
             onChange={(v) => patch('unitsInPack', v)}
           />
         </div>
@@ -135,7 +131,6 @@ export default function PharmacyReceiptLineFields({
             <input
               className="pharm-line-modal__input"
               value={form.batchNumber}
-              disabled={stockLocked}
               onChange={(e) => patch('batchNumber', e.target.value)}
             />
           </label>
@@ -146,7 +141,6 @@ export default function PharmacyReceiptLineFields({
               form={form}
               setForm={setForm}
               patch={patch}
-              disabled={stockLocked}
             />
           </label>
         </div>
@@ -233,7 +227,7 @@ function ExpirySmartInput({ t, form, setForm, patch, disabled = false }) {
     if (!calendarOpen) return undefined;
     const onDown = (e) => {
       if (wrapRef.current?.contains(e.target)) return;
-      if (e.target?.closest?.('.pharm-expiry-cal')) return;
+      if (e.target?.closest?.('.pharm-expiry-cal, .pharm-expiry-cal-portal')) return;
       setCalendarOpen(false);
     };
     document.addEventListener('mousedown', onDown);
@@ -277,7 +271,11 @@ function ExpirySmartInput({ t, form, setForm, patch, disabled = false }) {
       </div>
       {calendarOpen && pos
         ? createPortal(
-          <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 80 }}>
+          <div
+            className="pharm-expiry-cal-portal"
+            style={{ position: 'fixed', top: pos.top, left: pos.left }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <PharmacyExpiryCalendar
               selectedIso={form.expiryDate}
               locale={i18n.language}

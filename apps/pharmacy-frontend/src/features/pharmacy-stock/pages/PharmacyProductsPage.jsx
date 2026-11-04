@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { pharmacyWarehouseApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { BaseButton } from '../../../components/ui';
@@ -13,6 +13,7 @@ import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyProductModal from '../components/PharmacyProductModal';
 import PharmacyProductDeleteModal from '../components/PharmacyProductDeleteModal';
 import PharmacyProductsImportConfirmModal from '../components/PharmacyProductsImportConfirmModal';
+import PharmacyProductsSupplierCards from '../components/PharmacyProductsSupplierCards';
 import PharmacyProductsTable from '../components/PharmacyProductsTable';
 import PharmacyStockLayout from '../components/PharmacyStockLayout';
 import { PharmacySelectionBar } from '../components/PharmacyTableSelect';
@@ -24,12 +25,14 @@ import {
   PHARM_PAGE_SIZES,
 } from '../utils/pharmacyTablePage';
 import { downloadPharmacyProductsCsv } from '../utils/pharmacyProductsExportCsv';
+import { productReceiptOrigin } from '../utils/productReceiptOrigin';
 
 export default function PharmacyProductsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { onlyStore, resolveStoreId } = useCompanyStores();
+  const { stores, onlyStore, resolveStoreId } = useCompanyStores();
+  const storeId = resolveStoreId(onlyStore?.id) ?? stores?.[0]?.id ?? null;
   const [search, setSearch] = useState('');
   const [scope, setScope] = useState('ACTIVE');
   const [supplierId, setSupplierId] = useState('');
@@ -47,14 +50,18 @@ export default function PharmacyProductsPage() {
     { value: 'DELETED', label: t('pharmacyStock.filterInactive') },
   ]), [t]);
 
-  const suppliersQuery = useQuery({
-    queryKey: ['suppliers-all'],
-    queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
+  const supplierStatsQuery = useQuery({
+    queryKey: ['pharmacy-product-supplier-stats'],
+    queryFn: () => pharmacyWarehouseApi.productSupplierStats().then((r) => r.data),
   });
 
   const receiptsQuery = useQuery({
-    queryKey: ['pharmacy-receipts-filter'],
-    queryFn: () => pharmacyWarehouseApi.listReceipts({ page: 0, size: 100 }).then((r) => r.data),
+    queryKey: ['pharmacy-receipts-filter', supplierId],
+    queryFn: () => pharmacyWarehouseApi.listReceipts({
+      page: 0,
+      size: 100,
+      supplierId: supplierId || undefined,
+    }).then((r) => r.data),
   });
 
   const listQuery = useQuery({
@@ -65,7 +72,7 @@ export default function PharmacyProductsPage() {
       size: pageSize,
       scope,
       activeOnly: scope === 'ACTIVE',
-      fromReceipts: true,
+      fromReceipts: false,
       supplierId: supplierId || undefined,
       receiptId: receiptId || undefined,
     }).then((r) => r.data),
@@ -82,21 +89,14 @@ export default function PharmacyProductsPage() {
     onDone: () => {
       selection.clearSelection();
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
+      qc.invalidateQueries({ queryKey: ['pharmacy-product-supplier-stats'] });
     },
   });
 
-  const suppliers = useMemo(() => {
-    const raw = suppliersQuery.data;
-    if (Array.isArray(raw)) return raw;
-    return raw?.content ?? [];
-  }, [suppliersQuery.data]);
-
   const receipts = useMemo(() => {
     const raw = receiptsQuery.data;
-    const all = Array.isArray(raw) ? raw : (raw?.content ?? []);
-    if (!supplierId) return all;
-    return all.filter((r) => String(r.supplierId || '') === String(supplierId));
-  }, [receiptsQuery.data, supplierId]);
+    return Array.isArray(raw) ? raw : (raw?.content ?? []);
+  }, [receiptsQuery.data]);
 
   const bulkVatMutation = useMutation({
     mutationFn: (taxRate) => pharmacyWarehouseApi.bulkTaxRate({
@@ -128,7 +128,7 @@ export default function PharmacyProductsPage() {
     onSuccess: (res) => {
       toast.success(t('pharmacyStock.importDraftCreated', { no: res.data.receiptNumber }));
       setImportOpen(false);
-      navigate(PHARMACY_STOCK_PATHS.receiptPick(res.data.id), { state: { openImport: true } });
+      navigate(PHARMACY_STOCK_PATHS.receipt(res.data.id), { state: { openImport: true } });
     },
     onError: (e) => toast.error(
       e?.message && !e?.response ? e.message : resolvePharmacyApiError(e, t),
@@ -138,6 +138,7 @@ export default function PharmacyProductsPage() {
   const refreshLists = () => {
     qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
     qc.invalidateQueries({ queryKey: ['pharmacy-products'] });
+    qc.invalidateQueries({ queryKey: ['pharmacy-product-supplier-stats'] });
   };
 
   return (
@@ -145,11 +146,23 @@ export default function PharmacyProductsPage() {
       title={t('pharmacyStock.productsTitle')}
       subtitle={t('pharmacyStock.productsSubtitle')}
     >
+      <PharmacyProductsSupplierCards
+        t={t}
+        stats={supplierStatsQuery.data}
+        selectedSupplierId={supplierId}
+        onSelectSupplier={(id) => {
+          setSupplierId(id);
+          setReceiptId('');
+          setPage(0);
+        }}
+      />
+
       <PharmacyListToolbar
         t={t}
         createLabel={t('pharmacyStock.addProduct')}
         onCreate={() => setCreating(true)}
         onImport={() => setImportOpen(true)}
+        importLabel={t('pharmacyStock.importOpening')}
         onExport={() => {
           if (!rows.length) {
             toast.error(t('pharmacyStock.exportEmpty'));
@@ -158,7 +171,10 @@ export default function PharmacyProductsPage() {
           downloadPharmacyProductsCsv(rows);
           toast.success(t('pharmacyStock.exportDone', { count: rows.length }));
         }}
-        onRefresh={() => listQuery.refetch()}
+        onRefresh={() => {
+          listQuery.refetch();
+          supplierStatsQuery.refetch();
+        }}
         search={search}
         onSearchChange={(value) => {
           setSearch(value);
@@ -174,22 +190,6 @@ export default function PharmacyProductsPage() {
       />
 
       <div className="pharmacy-stock__toolbar pharmacy-stock__toolbar--secondary">
-        <label className="pharmacy-stock__filter-field">
-          <span>{t('stockReports.colSupplier')}</span>
-          <select
-            value={supplierId}
-            onChange={(e) => {
-              setSupplierId(e.target.value);
-              setReceiptId('');
-              setPage(0);
-            }}
-          >
-            <option value="">{t('pharmacyStock.filterAllSuppliers')}</option>
-            {suppliers.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-        </label>
         <label className="pharmacy-stock__filter-field">
           <span>{t('pharmacyStock.filterByReceipt')}</span>
           <select
@@ -241,13 +241,17 @@ export default function PharmacyProductsPage() {
           setPage(0);
         }}
         onEdit={setEditing}
+        onOpenReceipt={(row) => {
+          const origin = productReceiptOrigin(row);
+          if (origin.receiptId) navigate(PHARMACY_STOCK_PATHS.receipt(origin.receiptId));
+        }}
         onDelete={(row) => productDelete.ask(row)}
       />
 
       <PharmacyProductModal
         open={creating}
         product={null}
-        overlayClassName="!z-[60]"
+        storeId={storeId}
         onClose={() => setCreating(false)}
         onSaved={() => {
           setCreating(false);
@@ -257,13 +261,8 @@ export default function PharmacyProductsPage() {
       <PharmacyProductModal
         open={Boolean(editing)}
         product={editing}
-        overlayClassName="!z-[60]"
+        storeId={storeId}
         onClose={() => setEditing(null)}
-        onDelete={editing?.active !== false ? () => {
-          const current = editing;
-          setEditing(null);
-          productDelete.ask(current);
-        } : undefined}
         onSaved={() => {
           setEditing(null);
           refreshLists();

@@ -65,6 +65,9 @@ public class ProductReceiptOriginLoader {
             if (o.receiptNumber() != null) {
                 attrs.put(ProductReceiptOriginAttrs.RECEIPT_NUMBER, o.receiptNumber());
             }
+            if (o.receiptType() != null && !o.receiptType().isBlank()) {
+                attrs.put(ProductReceiptOriginAttrs.RECEIPT_TYPE, o.receiptType());
+            }
             if (o.supplierId() != null) {
                 attrs.put(ProductReceiptOriginAttrs.SUPPLIER_ID, o.supplierId().toString());
                 String name = supplierNames.get(o.supplierId());

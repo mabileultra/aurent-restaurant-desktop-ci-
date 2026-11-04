@@ -14,6 +14,10 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
+    long countByCompanyId(Integer companyId);
+
+    long countByCompanyIdAndActive(Integer companyId, boolean active);
+
     Optional<Product> findByCompanyIdAndSku(Integer companyId, String sku);
 
     List<Product> findByCompanyIdAndSkuIn(Integer companyId, Collection<String> skus);

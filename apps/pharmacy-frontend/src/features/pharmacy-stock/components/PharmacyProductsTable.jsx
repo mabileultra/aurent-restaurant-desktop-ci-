@@ -1,10 +1,10 @@
 import { AlertTriangle } from 'lucide-react';
 import TablePagination from '../../../components/shared/TablePagination';
 import {
-  PharmacyEditCell,
   PharmacySelectAllTh,
   PharmacySelectCell,
 } from './PharmacyTableSelect';
+import PharmacyReceiptLineRowMenu from './PharmacyReceiptLineRowMenu';
 import { productAtc } from '../hooks/usePharmacyCatalogOptions';
 import { productReceiptOrigin } from '../utils/productReceiptOrigin';
 import {
@@ -18,6 +18,7 @@ import {
   productManufacturer,
   productUnitsInPack,
 } from '../utils/pharmacyReceiptPricing';
+import { receiptTypeLabel } from '../utils/pharmacyReceiptDisplayMeta';
 
 export default function PharmacyProductsTable({
   t,
@@ -32,6 +33,7 @@ export default function PharmacyProductsTable({
   onPageChange,
   onPageSizeChange,
   onEdit,
+  onOpenReceipt,
   onDelete,
 }) {
   return (
@@ -94,7 +96,14 @@ export default function PharmacyProductsTable({
                       </span>
                     ) : null}
                   </td>
-                  <td>{origin.supplierName || '—'}</td>
+                  <td>
+                    {origin.supplierName || '—'}
+                    {origin.receiptType === 'OPENING' ? (
+                      <span className="pharmacy-stock__inline-badge">
+                        {receiptTypeLabel(origin.receiptType, t)}
+                      </span>
+                    ) : null}
+                  </td>
                   <td>{origin.receiptNumber || '—'}</td>
                   <td>{origin.documentDate || '—'}</td>
                   <td className={`text-right font-semibold ${p.lowStock ? 'text-red-600' : ''}`}>
@@ -110,11 +119,17 @@ export default function PharmacyProductsTable({
                   <td>{productUnitsInPack(p) || 1}</td>
                   <td>{productCountry(p) || '—'}</td>
                   <td title={p.updatedAt || ''}>{formatProductUpdatedAt(p.updatedAt || p.createdAt)}</td>
-                  <PharmacyEditCell
-                    t={t}
-                    onEdit={() => onEdit(p)}
-                    onDelete={p.active !== false ? () => onDelete(p) : undefined}
-                  />
+                  <td className="pharmacy-stock__row-actions" onClick={(e) => e.stopPropagation()}>
+                    <div className="pharmacy-stock__icon-row">
+                      <PharmacyReceiptLineRowMenu
+                        t={t}
+                        onAboutProduct={() => onEdit(p)}
+                        onOpenReceipt={origin.receiptId ? () => onOpenReceipt?.(p) : undefined}
+                        onEdit={() => onEdit(p)}
+                        onDelete={p.active !== false ? () => onDelete(p) : undefined}
+                      />
+                    </div>
+                  </td>
                 </tr>
               );
             })}

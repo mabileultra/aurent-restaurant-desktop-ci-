@@ -25,6 +25,7 @@ export default function PharmacyReceiptHeaderModal({
   totalCost,
   saving,
   onSubmit,
+  storeLocked = false,
 }) {
   const { stores, onlyStore, needsStorePick, resolveStoreId } = useCompanyStores();
   const [form, setForm] = useState(() => emptyHeaderForm());
@@ -169,6 +170,7 @@ export default function PharmacyReceiptHeaderModal({
               <select
                 className="pharm-line-modal__input"
                 value={form.storeId}
+                disabled={storeLocked}
                 onChange={(e) => patch('storeId', e.target.value)}
               >
                 {storeOptions.map((o) => (

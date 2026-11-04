@@ -5,6 +5,9 @@ import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.warehouse.dto.PharmacyFefoHintResponse;
 import com.pos.pharmacy.warehouse.dto.PharmacyLotResponse;
 import com.pos.pharmacy.warehouse.entity.StockLot;
+import com.pos.pharmacy.warehouse.entity.StockReceipt;
+import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
+import com.pos.pharmacy.warehouse.repository.StockLotRepository;
 import com.pos.pharmacy.warehouse.support.PharmacyLotFefoSupport;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,18 +27,19 @@ import java.util.stream.Collectors;
 public class PharmacyLotController {
 
     private final PharmacyLotFefoSupport pharmacyLotFefoSupport;
+    private final StockLotRepository stockLotRepository;
     private final ProductCatalogService productCatalogService;
     private final TenantSupport tenant;
 
     @GetMapping
-    @Operation(summary = "Доступные партии товара (FEFO)")
+    @Operation(summary = "Доступные партии товара (FEFO) + источник документа")
     public ResponseEntity<List<PharmacyLotResponse>> listLots(
         @RequestParam Integer storeId,
         @RequestParam UUID productId
     ) {
         tenant.requireCompanyId();
         productCatalogService.requireActive(productId);
-        List<PharmacyLotResponse> lots = pharmacyLotFefoSupport.listAvailable(productId, storeId).stream()
+        List<PharmacyLotResponse> lots = stockLotRepository.findAvailableWithSource(productId, storeId).stream()
             .map(this::toResponse)
             .toList();
         return ResponseEntity.ok(lots);
@@ -65,6 +69,8 @@ public class PharmacyLotController {
     }
 
     private PharmacyLotResponse toResponse(StockLot lot) {
+        StockReceiptLine line = lot.getReceiptLine();
+        StockReceipt receipt = line != null ? line.getReceipt() : null;
         return new PharmacyLotResponse(
             lot.getId(),
             lot.getProduct().getId(),
@@ -73,7 +79,11 @@ public class PharmacyLotController {
             lot.getExpiryDate(),
             lot.getQuantity(),
             lot.getPurchasePrice(),
-            lot.getUnitSellingPrice()
+            lot.getUnitSellingPrice(),
+            line != null ? line.getId() : null,
+            receipt != null ? receipt.getId() : null,
+            receipt != null ? receipt.getReceiptNumber() : null,
+            receipt != null ? receipt.getReceiptType() : null
         );
     }
 }

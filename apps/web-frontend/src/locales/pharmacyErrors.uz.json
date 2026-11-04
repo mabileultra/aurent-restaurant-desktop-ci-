@@ -27,7 +27,6 @@
   "PHARM_RECEIPT_REVALUE_PARAMS": "QQS va/yoki ustamani kiriting",
   "PHARM_RECEIPT_MASS_FIELD_REQUIRED": "Ommaviy o‘zgartirish uchun maydonni tanlang",
   "PHARM_RECEIPT_MASS_FIELD_UNKNOWN": "Noma’lum ommaviy o‘zgartirish maydoni",
-  "PHARM_RECEIPT_POSTED_FIELD_LOCKED": "O‘tkazilgandan so‘ng faqat narxlarni o‘zgartirish mumkin. Miqdor, seriya va muddatni emas.",
   "PHARM_RECEIPT_QTY_POSITIVE": "Miqdor noldan katta bo‘lishi kerak",
   "PHARM_RECEIPT_EXPIRY_FORMAT": "Yaroqlilik muddati: YYYY-MM-DD",
   "PHARM_RECEIPT_AMOUNT_NEGATIVE": "Summa manfiy bo‘lishi mumkin emas",

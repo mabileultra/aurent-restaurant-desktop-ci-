@@ -3,10 +3,13 @@ package com.pos.pharmacy.catalog.controller;
 import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
+import com.pos.pharmacy.catalog.dto.PharmacyProductSupplierStatsResponse;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.common.ApiResponse;
+import com.pos.pharmacy.warehouse.dto.PharmacyStockMovementResponse;
+import com.pos.pharmacy.warehouse.support.PharmacyStockMovementQuery;
 import com.pos.shared.api.PageLimits;
 import com.pos.shared.api.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +35,7 @@ import java.util.UUID;
 public class PharmacyProductController {
 
     private final PharmacyProductService pharmacyProductService;
+    private final PharmacyStockMovementQuery stockMovementQuery;
 
     @GetMapping
     @Operation(summary = "Список аптечных товаров")
@@ -57,6 +61,12 @@ public class PharmacyProductController {
         );
     }
 
+    @GetMapping("/supplier-stats")
+    @Operation(summary = "Карточки поставщиков для фильтра каталога")
+    public ResponseEntity<PharmacyProductSupplierStatsResponse> supplierStats() {
+        return ResponseEntity.ok(pharmacyProductService.supplierStats());
+    }
+
     @GetMapping("/low-stock")
     @Operation(summary = "Аптечные товары с остатком ниже порога")
     public ResponseEntity<List<ProductResponse>> listLowStock(
@@ -72,6 +82,17 @@ public class PharmacyProductController {
         @RequestParam(required = false) Integer storeId
     ) {
         return ResponseEntity.ok(pharmacyProductService.getByBarcode(barcode, storeId));
+    }
+
+    @GetMapping("/{id}/movements")
+    @Operation(summary = "Журнал складских движений по товару")
+    public ResponseEntity<List<PharmacyStockMovementResponse>> movements(
+        @PathVariable UUID id,
+        @RequestParam(required = false) Integer storeId,
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        pharmacyProductService.get(id, storeId);
+        return ResponseEntity.ok(stockMovementQuery.listForProduct(id, storeId, limit));
     }
 
     @GetMapping("/{id}")

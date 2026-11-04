@@ -15,6 +15,8 @@ export const DEFAULT_STOCK_FLOW_PATHS = {
   stockDashboard: '/reports/stock',
   lifecycleReport: '/reports/stock/lifecycle',
   suppliers: '/stock/suppliers',
+  transfersNew: '/stock/transfers/new',
+  transfersReport: '/reports/stock/transfers',
 };
 
 const StockFlowPathsContext = createContext(DEFAULT_STOCK_FLOW_PATHS);

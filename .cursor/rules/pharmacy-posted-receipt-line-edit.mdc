@@ -1,0 +1,35 @@
+---
+description: After POSTED receipt, line qty/batch/expiry/prices all editable and synced to lot
+globs:
+  - pharmacy-service/**/PharmacyStockReceipt*
+  - pharmacy-service/**/PharmacyReceipt*
+  - apps/pharmacy-frontend/src/features/pharmacy-stock/**
+alwaysApply: false
+---
+
+# Posted receipt line edit
+
+## Invariant
+
+On a **POSTED** pharmacy receipt, editing a line must apply **all** fields from the request: quantity, unitsInPack, batch, expiry, and prices — then `PharmacyReceiptPostedPriceSync` updates the linked lot and store stock.
+
+## Must
+
+- Use `PharmacyReceiptSupport.applyLine` for both DRAFT and POSTED `updateLine`.
+- Pass `previousQuantities` into posted sync when qty may change.
+- Keep FE line modal fields editable when `canEditPrices` (draft or posted).
+
+## Must NOT
+
+- Reintroduce `applyPrices` (or any helper that copies old qty/batch/expiry and ignores the request) for POSTED updates.
+- Lock qty/batch/expiry in the UI after post (`stockLocked` / `PHARM_RECEIPT_POSTED_FIELD_LOCKED`).
+- Treat “save succeeded but values unchanged” as UI-only — that was the old prices-only path.
+
+## Symptom of regression
+
+User edits qty/series/expiry on a posted line, toast says saved, reopen shows previous values.
+
+## Related
+
+Broader lot / movement rules: `.cursor/rules/pharmacy-lot-management.mdc`
+(stock only via RECEIPT | OPENING | SALE | RETURN | ADJUSTMENT | TRANSFER).

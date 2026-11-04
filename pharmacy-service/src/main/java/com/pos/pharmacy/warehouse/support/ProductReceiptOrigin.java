@@ -8,6 +8,7 @@ public record ProductReceiptOrigin(
     UUID productId,
     UUID receiptId,
     String receiptNumber,
+    String receiptType,
     UUID supplierId,
     LocalDate documentDate,
     Instant createdAt

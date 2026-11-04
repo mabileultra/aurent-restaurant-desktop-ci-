@@ -12,11 +12,11 @@ import PharmacyReceiptDeleteModal from '../components/PharmacyReceiptDeleteModal
 import PharmacyReceiptHeaderModal from '../components/PharmacyReceiptHeaderModal';
 import PharmacyStockLayout, { PharmacyStatusBadge } from '../components/PharmacyStockLayout';
 import {
-  PharmacyEditCell,
   PharmacySelectAllTh,
   PharmacySelectCell,
   PharmacySelectionBar,
 } from '../components/PharmacyTableSelect';
+import PharmacyReceiptLineRowMenu from '../components/PharmacyReceiptLineRowMenu';
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import { formatMoney } from '../utils/pharmacyReceiptPricing';
@@ -189,11 +189,15 @@ export default function PharmacyReceiptsPage() {
                   <td>{formatMoney(row.totalCost)}</td>
                   <td>{formatMoney(row.totalRetail)}</td>
                   <td>{row.totalQuantity ?? 0}</td>
-                  <PharmacyEditCell
-                    t={t}
-                    onEdit={() => navigate(PHARMACY_STOCK_PATHS.receipt(row.id))}
-                    onDelete={() => setPendingDelete([row])}
-                  />
+                  <td className="pharmacy-stock__row-actions" onClick={(e) => e.stopPropagation()}>
+                    <div className="pharmacy-stock__icon-row">
+                      <PharmacyReceiptLineRowMenu
+                        t={t}
+                        onEdit={() => navigate(PHARMACY_STOCK_PATHS.receipt(row.id))}
+                        onDelete={() => setPendingDelete([row])}
+                      />
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

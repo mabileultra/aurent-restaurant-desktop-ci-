@@ -13,7 +13,7 @@ export default function LoginPage() {
           Войдите на платформе — сессия передаётся одноразовым кодом (без JWT в URL).
         </p>
         <p style={{ margin: '1.25rem 0 0' }}>
-          <a href={`${mainUrl}/login`}>Войти на aurent.uz</a>
+          <a href={`${mainUrl}/login`}>Войти на платформе</a>
         </p>
       </div>
     </main>

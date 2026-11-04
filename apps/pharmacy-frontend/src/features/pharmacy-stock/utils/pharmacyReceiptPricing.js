@@ -4,6 +4,7 @@ import {
   productUnitsInPack,
   productAttr,
 } from '../../pharmacy-cashier/utils/pharmacyProductMeta';
+import { formatIsoToDisplay, normalizeExpiryIso } from './smartExpiryInput';
 
 export function productManufacturer(product) {
   return productAttr(product, 'manufacturer', 'производитель', 'producer');
@@ -125,7 +126,7 @@ export function emptyLineForm(product, defaultMarkup = 20) {
 export function lineToForm(line, defaultMarkup = 20) {
   const unitsInPack = Number(line?.unitsInPack) > 0 ? Number(line.unitsInPack) : 1;
   const { packs, units } = qtyToPacksAndUnits(line?.quantity, unitsInPack);
-  const expiry = line?.expiryDate ? String(line.expiryDate).slice(0, 10) : '';
+  const expiry = normalizeExpiryIso(line?.expiryDate);
   return {
     productId: line?.productId || '',
     productName: line?.productName || '',
@@ -144,7 +145,7 @@ export function lineToForm(line, defaultMarkup = 20) {
     unitRetailPrice: line?.unitRetailPrice != null ? String(line.unitRetailPrice) : '',
     batchNumber: line?.batchNumber || '',
     expiryDate: expiry,
-    expiryInput: expiry,
+    expiryInput: formatIsoToDisplay(expiry),
   };
 }
 

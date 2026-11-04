@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/** Партия склада + provenance источника (RECEIPT / OPENING). */
 public record PharmacyLotResponse(
     UUID id,
     UUID productId,
@@ -12,5 +13,9 @@ public record PharmacyLotResponse(
     LocalDate expiryDate,
     BigDecimal quantity,
     BigDecimal purchasePrice,
-    BigDecimal unitSellingPrice
+    BigDecimal unitSellingPrice,
+    UUID receiptLineId,
+    UUID receiptId,
+    String receiptNumber,
+    String receiptType
 ) {}

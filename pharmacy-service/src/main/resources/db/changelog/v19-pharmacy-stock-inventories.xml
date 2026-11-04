@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-190-stock-inventories" author="pos">
+        <createTable tableName="stock_inventories">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inventory_number" type="VARCHAR(40)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT"/>
+            <column name="total_lines" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_difference" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pharm_inv_company_created" tableName="stock_inventories">
+            <column name="company_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_inv_store" tableName="stock_inventories">
+            <column name="store_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-191-stock-inventory-lines" author="pos">
+        <createTable tableName="stock_inventory_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="inventory_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(500)"/>
+            <column name="product_sku" type="VARCHAR(80)"/>
+            <column name="system_quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="counted_quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="difference" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="stock_inventory_lines"
+            baseColumnNames="inventory_id"
+            referencedTableName="stock_inventories"
+            referencedColumnNames="id"
+            constraintName="fk_inv_lines_inventory"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_pharm_inv_lines_inventory" tableName="stock_inventory_lines">
+            <column name="inventory_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-192-stock-movements" author="pos">
+        <createTable tableName="stock_movements">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lot_id" type="UUID"/>
+            <column name="movement_type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reference_type" type="VARCHAR(32)"/>
+            <column name="reference_id" type="UUID"/>
+            <column name="notes" type="TEXT"/>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pharm_movements_product_created" tableName="stock_movements">
+            <column name="company_id"/>
+            <column name="product_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_movements_ref" tableName="stock_movements">
+            <column name="reference_type"/>
+            <column name="reference_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -28,71 +28,26 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
     @Query("""
         SELECT s FROM Sale s
         WHERE s.companyId = :companyId
-          AND s.cashierId = :cashierId
-          AND s.storeId = :storeId
-        ORDER BY s.createdAt DESC
-        """)
-    Page<Sale> findMySalesByStore(
-        @Param("companyId") Integer companyId,
-        @Param("cashierId") UUID cashierId,
-        @Param("storeId") Integer storeId,
-        Pageable pageable
-    );
-
-    @EntityGraph(attributePaths = {"items", "items.product"})
-    @Query("""
-        SELECT s FROM Sale s
-        WHERE s.companyId = :companyId
-          AND s.cashierId = :cashierId
-          AND s.storeId = :storeId
-          AND s.cashierShiftId = :shiftId
-        ORDER BY s.createdAt DESC
-        """)
-    Page<Sale> findMySalesByStoreAndShift(
-        @Param("companyId") Integer companyId,
-        @Param("cashierId") UUID cashierId,
-        @Param("storeId") Integer storeId,
-        @Param("shiftId") UUID shiftId,
-        Pageable pageable
-    );
-
-    @EntityGraph(attributePaths = {"items", "items.product"})
-    @Query("""
-        SELECT s FROM Sale s
-        WHERE s.companyId = :companyId
-          AND s.cashierId = :cashierId
-        ORDER BY s.createdAt DESC
-        """)
-    Page<Sale> findMySalesAll(
-        @Param("companyId") Integer companyId,
-        @Param("cashierId") UUID cashierId,
-        Pageable pageable
-    );
-
-    @EntityGraph(attributePaths = {"items", "items.product"})
-    @Query("""
-        SELECT s FROM Sale s
-        WHERE s.companyId = :companyId
-          AND s.cashierId = :cashierId
-          AND s.cashierShiftId = :shiftId
-        ORDER BY s.createdAt DESC
-        """)
-    Page<Sale> findMySalesByShift(
-        @Param("companyId") Integer companyId,
-        @Param("cashierId") UUID cashierId,
-        @Param("shiftId") UUID shiftId,
-        Pageable pageable
-    );
-
-    @EntityGraph(attributePaths = {"items", "items.product"})
-    @Query("""
-        SELECT s FROM Sale s
-        WHERE s.companyId = :companyId
           AND (:storeId IS NULL OR s.storeId = :storeId)
           AND s.createdAt >= :fromInstant
           AND s.createdAt < :toInstant
           AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
           AND (:status IS NULL OR s.status = :status)
+          AND (
+            :paymentSettlement IS NULL
+            OR (
+              :paymentSettlement = 'FULL'
+              AND (s.receiptType IS NULL OR CAST(s.receiptType AS string) = 'SALE')
+            )
+            OR (
+              :paymentSettlement = 'ADVANCE'
+              AND CAST(s.receiptType AS string) = 'ADVANCE'
+            )
+            OR (
+              :paymentSettlement = 'CREDIT'
+              AND CAST(s.receiptType AS string) = 'CREDIT'
+            )
+          )
           AND (
             :search IS NULL
             OR LOWER(s.receiptNumber) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
@@ -119,10 +74,101 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
         @Param("toInstant") java.time.Instant toInstant,
         @Param("paymentMethod") com.pos.pharmacy.sales.domain.SaleEnums.PaymentMethod paymentMethod,
         @Param("status") com.pos.pharmacy.sales.domain.SaleEnums.SaleStatus status,
+        @Param("paymentSettlement") String paymentSettlement,
         @Param("search") String search,
         @Param("receiptNumber") String receiptNumber,
         @Param("cashierName") String cashierName,
         @Param("saleId") UUID saleId,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.companyId = :companyId
+          AND s.cashierId = :cashierId
+          AND (:storeId IS NULL OR s.storeId = :storeId)
+          AND s.createdAt >= :fromInstant
+          AND s.createdAt < :toInstant
+          AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
+          AND (:status IS NULL OR s.status = :status)
+          AND (
+            :paymentSettlement IS NULL
+            OR (
+              :paymentSettlement = 'FULL'
+              AND (s.receiptType IS NULL OR CAST(s.receiptType AS string) = 'SALE')
+            )
+            OR (
+              :paymentSettlement = 'ADVANCE'
+              AND CAST(s.receiptType AS string) = 'ADVANCE'
+            )
+            OR (
+              :paymentSettlement = 'CREDIT'
+              AND CAST(s.receiptType AS string) = 'CREDIT'
+            )
+          )
+          AND (
+            :receiptNumber IS NULL
+            OR LOWER(s.receiptNumber) LIKE LOWER(CONCAT('%', CAST(:receiptNumber AS string), '%'))
+          )
+        ORDER BY s.createdAt DESC
+        """)
+    Page<Sale> searchMySales(
+        @Param("companyId") Integer companyId,
+        @Param("cashierId") UUID cashierId,
+        @Param("storeId") Integer storeId,
+        @Param("fromInstant") java.time.Instant fromInstant,
+        @Param("toInstant") java.time.Instant toInstant,
+        @Param("paymentMethod") com.pos.pharmacy.sales.domain.SaleEnums.PaymentMethod paymentMethod,
+        @Param("status") com.pos.pharmacy.sales.domain.SaleEnums.SaleStatus status,
+        @Param("paymentSettlement") String paymentSettlement,
+        @Param("receiptNumber") String receiptNumber,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.companyId = :companyId
+          AND s.cashierId = :cashierId
+          AND s.cashierShiftId = :shiftId
+          AND (:storeId IS NULL OR s.storeId = :storeId)
+          AND s.createdAt >= :fromInstant
+          AND s.createdAt < :toInstant
+          AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
+          AND (:status IS NULL OR s.status = :status)
+          AND (
+            :paymentSettlement IS NULL
+            OR (
+              :paymentSettlement = 'FULL'
+              AND (s.receiptType IS NULL OR CAST(s.receiptType AS string) = 'SALE')
+            )
+            OR (
+              :paymentSettlement = 'ADVANCE'
+              AND CAST(s.receiptType AS string) = 'ADVANCE'
+            )
+            OR (
+              :paymentSettlement = 'CREDIT'
+              AND CAST(s.receiptType AS string) = 'CREDIT'
+            )
+          )
+          AND (
+            :receiptNumber IS NULL
+            OR LOWER(s.receiptNumber) LIKE LOWER(CONCAT('%', CAST(:receiptNumber AS string), '%'))
+          )
+        ORDER BY s.createdAt DESC
+        """)
+    Page<Sale> searchMySalesByShift(
+        @Param("companyId") Integer companyId,
+        @Param("cashierId") UUID cashierId,
+        @Param("shiftId") UUID shiftId,
+        @Param("storeId") Integer storeId,
+        @Param("fromInstant") java.time.Instant fromInstant,
+        @Param("toInstant") java.time.Instant toInstant,
+        @Param("paymentMethod") com.pos.pharmacy.sales.domain.SaleEnums.PaymentMethod paymentMethod,
+        @Param("status") com.pos.pharmacy.sales.domain.SaleEnums.SaleStatus status,
+        @Param("paymentSettlement") String paymentSettlement,
+        @Param("receiptNumber") String receiptNumber,
         Pageable pageable
     );
 

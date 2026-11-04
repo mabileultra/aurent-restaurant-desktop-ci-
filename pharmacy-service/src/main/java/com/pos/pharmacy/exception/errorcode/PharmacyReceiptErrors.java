@@ -15,10 +15,6 @@ public enum PharmacyReceiptErrors implements PharmacyErrorCode {
     PHARM_RECEIPT_REVALUE_PARAMS(HttpStatus.BAD_REQUEST, "Укажите НДС и/или наценку"),
     PHARM_RECEIPT_MASS_FIELD_REQUIRED(HttpStatus.BAD_REQUEST, "Укажите поле для массового изменения"),
     PHARM_RECEIPT_MASS_FIELD_UNKNOWN(HttpStatus.BAD_REQUEST, "Неизвестное поле массового изменения"),
-    PHARM_RECEIPT_POSTED_FIELD_LOCKED(
-        HttpStatus.BAD_REQUEST,
-        "После проведения можно менять только цены. Количество, серия и срок нельзя."
-    ),
     PHARM_RECEIPT_QTY_POSITIVE(HttpStatus.BAD_REQUEST, "Количество должно быть больше нуля"),
     PHARM_RECEIPT_EXPIRY_FORMAT(HttpStatus.BAD_REQUEST, "Срок годности: ГГГГ-ММ-ДД"),
     PHARM_RECEIPT_AMOUNT_NEGATIVE(HttpStatus.BAD_REQUEST, "Сумма не может быть отрицательной"),

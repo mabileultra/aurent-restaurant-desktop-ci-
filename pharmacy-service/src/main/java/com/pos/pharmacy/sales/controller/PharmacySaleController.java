@@ -75,10 +75,12 @@ public class PharmacySaleController {
         @RequestParam(required = false) String cashierName,
         @RequestParam(required = false) String paymentMethod,
         @RequestParam(required = false) String status,
+        @RequestParam(required = false) String paymentSettlement,
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(queryService.listSales(
-            from, to, storeId, search, receiptNumber, saleId, cashierName, paymentMethod, status, pageable
+            from, to, storeId, search, receiptNumber, saleId, cashierName,
+            paymentMethod, status, paymentSettlement, pageable
         ));
     }
 
@@ -104,9 +106,17 @@ public class PharmacySaleController {
     public ResponseEntity<PageResponse<SaleResponse>> mySales(
         @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) UUID shiftId,
+        @RequestParam(required = false) String receiptNumber,
+        @RequestParam(required = false) String paymentMethod,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String paymentSettlement,
+        @RequestParam(required = false) LocalDate from,
+        @RequestParam(required = false) LocalDate to,
         @PageableDefault(size = 50) Pageable pageable
     ) {
-        return ResponseEntity.ok(queryService.mySales(storeId, shiftId, pageable));
+        return ResponseEntity.ok(queryService.mySales(
+            storeId, shiftId, receiptNumber, paymentMethod, status, paymentSettlement, from, to, pageable
+        ));
     }
 
     @GetMapping("/{id}")

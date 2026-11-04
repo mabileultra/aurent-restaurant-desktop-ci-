@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-180-stock-transfers" author="pos">
+        <createTable tableName="stock_transfers">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transfer_number" type="VARCHAR(40)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="from_store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="to_store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_store_name" type="VARCHAR(200)"/>
+            <column name="to_store_name" type="VARCHAR(200)"/>
+            <column name="source_receipt_id" type="UUID"/>
+            <column name="source_receipt_number" type="VARCHAR(40)"/>
+            <column name="notes" type="TEXT"/>
+            <column name="total_quantity" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pharm_transfers_company_created" tableName="stock_transfers">
+            <column name="company_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_transfers_source_receipt" tableName="stock_transfers">
+            <column name="source_receipt_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-181-stock-transfer-lines" author="pos">
+        <createTable tableName="stock_transfer_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="transfer_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(500)"/>
+            <column name="product_sku" type="VARCHAR(80)"/>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="stock_transfer_lines"
+            baseColumnNames="transfer_id"
+            referencedTableName="stock_transfers"
+            referencedColumnNames="id"
+            constraintName="fk_transfer_lines_transfer"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_pharm_transfer_lines_transfer" tableName="stock_transfer_lines">
+            <column name="transfer_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

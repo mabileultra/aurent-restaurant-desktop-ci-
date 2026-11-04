@@ -114,8 +114,12 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     @Override
     public PharmacyStockReceiptResponse updateDraft(UUID id, UpdatePharmacyStockReceiptRequest request) {
         StockReceipt receipt = requireAccessible(id);
-        pharmacyReceipt.requireDraft(receipt);
-        if (request.storeId() != null) {
+        boolean posted = StockReceiptStatus.POSTED.equals(receipt.getStatus());
+        if (!posted) {
+            pharmacyReceipt.requireDraft(receipt);
+        }
+        // После проведения склад уже на store — менять точку нельзя.
+        if (request.storeId() != null && !posted) {
             receipt.setStoreId(request.storeId());
         }
         if (request.supplierId() != null) {
@@ -171,15 +175,25 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<PharmacyStockReceiptResponse> list(Integer storeId, String status, String search, Pageable pageable) {
+    public PageResponse<PharmacyStockReceiptResponse> list(
+        Integer storeId,
+        String status,
+        String search,
+        UUID supplierId,
+        Pageable pageable
+    ) {
         Integer companyId = tenant.requireCompanyId();
         String statusFilter = StringUtils.hasText(status) ? status.trim() : null;
         String searchPattern = StringUtils.hasText(search)
             ? "%" + search.trim().toLowerCase() + "%"
             : null;
-        Page<StockReceipt> page = stockReceiptRepository.findReceipts(
-            companyId, storeId, statusFilter, searchPattern, pageable
-        );
+        Page<StockReceipt> page = supplierId != null
+            ? stockReceiptRepository.findReceiptsBySupplier(
+                companyId, storeId, statusFilter, supplierId, searchPattern, pageable
+            )
+            : stockReceiptRepository.findReceipts(
+                companyId, storeId, statusFilter, searchPattern, pageable
+            );
         return PageResponse.from(page.map(pharmacyReceipt::toSummary));
     }
 
@@ -228,22 +242,20 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             .filter(line -> line.getId().equals(lineId))
             .findFirst()
             .orElseThrow(() -> PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_LINE_NOT_FOUND));
-        Product product;
         Map<UUID, BigDecimal> previousQuantities = Map.of();
-        if (StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
-            product = existing.getProduct();
-            if (product == null) {
-                product = productCatalogService.requireActive(lineReq.productId());
-            }
-            if (existing.getId() != null && existing.getQuantity() != null) {
-                previousQuantities = Map.of(existing.getId(), existing.getQuantity());
-            }
-            pharmacyReceipt.applyLine(existing, product, lineReq);
-        } else {
+        boolean posted = StockReceiptStatus.POSTED.equals(receipt.getStatus());
+        if (!posted) {
             pharmacyReceipt.requireDraft(receipt);
-            product = productCatalogService.requireActive(lineReq.productId());
-            pharmacyReceipt.applyLine(existing, product, lineReq);
         }
+        if (posted && existing.getId() != null && existing.getQuantity() != null) {
+            previousQuantities = Map.of(existing.getId(), existing.getQuantity());
+        }
+        Product product = existing.getProduct();
+        if (product == null || !posted) {
+            product = productCatalogService.requireActive(lineReq.productId());
+        }
+        // POSTED: все поля строки + sync в партию/остаток (не applyPrices — он глушил qty/серию/срок).
+        pharmacyReceipt.applyLine(existing, product, lineReq);
         PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getPurchasePrice(), "цена закупки");
         PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getPurchasePriceWithVat(), "цена с НДС");
         PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getRetailPrice(), "розничная цена");
@@ -319,14 +331,23 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     @Override
     public PharmacyStockReceiptResponse removeLine(UUID id, UUID lineId) {
         StockReceipt receipt = requireAccessibleDetailed(id);
-        pharmacyReceipt.requireDraft(receipt);
+        boolean posted = StockReceiptStatus.POSTED.equals(receipt.getStatus());
+        if (!posted) {
+            pharmacyReceipt.requireDraft(receipt);
+        }
+        // detachLots списывает остаток партии (и для POSTED, и для черновика с уже созданными lots).
         pharmacyReceiptLotDetach.detachLotsForLines(receipt.getStoreId(), List.of(lineId));
         boolean removed = receipt.getLines().removeIf(line -> line.getId().equals(lineId));
         if (!removed) {
             throw PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_LINE_NOT_FOUND);
         }
         pharmacyReceipt.recalculateTotals(receipt);
-        return pharmacyReceipt.toResponse(stockReceiptRepository.save(receipt));
+        StockReceipt saved = stockReceiptRepository.save(receipt);
+        if (posted) {
+            catalogCacheEvictor.onStoreStockChanged(saved.getCompanyId(), saved.getStoreId());
+            catalogCacheEvictor.onProductChanged(saved.getCompanyId());
+        }
+        return pharmacyReceipt.toResponse(saved);
     }
 
     @Override

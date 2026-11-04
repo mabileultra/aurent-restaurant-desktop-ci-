@@ -10,10 +10,7 @@ import {
   toLinePayload,
   validateLineForm,
 } from '../utils/pharmacyReceiptPricing';
-import {
-  formatIsoToDisplay,
-  parseSmartExpiryInput,
-} from '../utils/smartExpiryInput';
+import { parseSmartExpiryInput } from '../utils/smartExpiryInput';
 
 export function usePharmacyReceiptLineForm({
   open,
@@ -31,9 +28,6 @@ export function usePharmacyReceiptLineForm({
     setDocMarkup(docMk);
     if (existingLine) {
       const next = lineToForm(existingLine, defaultMarkup);
-      if (next.expiryDate) {
-        next.expiryInput = formatIsoToDisplay(next.expiryDate);
-      }
       setForm(next);
       const base = next.purchasePriceWithVat
         || calcPurchaseWithVat(next.purchasePrice, next.vatPercent);

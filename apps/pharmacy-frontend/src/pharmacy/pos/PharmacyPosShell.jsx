@@ -1,5 +1,5 @@
-import { Outlet } from 'react-router-dom';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
+import PharmacyShellOutlet from '../app/PharmacyShellOutlet';
 import {
   CashierLockOverlay,
   CashierShiftModal,
@@ -35,7 +35,7 @@ function PharmacyPosShellInner() {
           toggleCashierTheme={p.toggleCashierTheme}
         />
         <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
-          <Outlet />
+          <PharmacyShellOutlet />
         </main>
       </div>
 

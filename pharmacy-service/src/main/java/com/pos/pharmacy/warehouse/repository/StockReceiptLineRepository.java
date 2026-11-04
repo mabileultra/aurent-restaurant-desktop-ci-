@@ -14,7 +14,7 @@ public interface StockReceiptLineRepository extends JpaRepository<StockReceiptLi
 
     @Query("""
         SELECT new com.pos.pharmacy.warehouse.support.ProductReceiptOrigin(
-          l.product.id, r.id, r.receiptNumber, r.supplierId, r.documentDate, r.createdAt
+          l.product.id, r.id, r.receiptNumber, r.receiptType, r.supplierId, r.documentDate, r.createdAt
         )
         FROM StockReceiptLine l
         JOIN l.receipt r
@@ -31,4 +31,16 @@ public interface StockReceiptLineRepository extends JpaRepository<StockReceiptLi
         @Param("productId") UUID productId,
         @Param("status") String status
     );
+
+    /** Distinct products per supplier from pharmacy receipts (company scope). */
+    @Query("""
+        SELECT r.supplierId, COUNT(DISTINCT l.product.id)
+        FROM StockReceiptLine l
+        JOIN l.receipt r
+        WHERE r.companyId = :companyId
+          AND r.supplierId IS NOT NULL
+        GROUP BY r.supplierId
+        ORDER BY COUNT(DISTINCT l.product.id) DESC
+        """)
+    List<Object[]> countDistinctProductsBySupplier(@Param("companyId") Integer companyId);
 }

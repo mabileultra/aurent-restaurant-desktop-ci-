@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { warehouseApi } from '../../../api';
+import { pharmacyWarehouseApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
@@ -23,8 +23,8 @@ export function useStockInventoriesReportPage() {
   );
 
   const query = useQuery({
-    queryKey: ['stock-inventories-list', params],
-    queryFn: () => warehouseApi.listInventories(params).then((r) => r.data),
+    queryKey: ['pharmacy-inventories-list', params],
+    queryFn: () => pharmacyWarehouseApi.listInventories(params).then((r) => r.data),
     enabled: rangeEnabled,
     placeholderData: keepPreviousData,
   });

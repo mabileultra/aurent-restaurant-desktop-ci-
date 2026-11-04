@@ -3,6 +3,7 @@ package com.pos.pharmacy.catalog.service;
 import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
+import com.pos.pharmacy.catalog.dto.PharmacyProductSupplierStatsResponse;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.shared.api.PageResponse;
@@ -24,6 +25,8 @@ public interface PharmacyProductService {
         UUID receiptId,
         Pageable pageable
     );
+
+    PharmacyProductSupplierStatsResponse supplierStats();
 
     List<ProductResponse> listLowStock(int limit);
 

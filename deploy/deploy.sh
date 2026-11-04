@@ -19,10 +19,15 @@ STAGING_OVERLAY="${STAGING_OVERLAY:-docker-compose.staging.yml}"
 SUBCOMMAND="${1:-deploy}"
 
 compose() {
+  # Optional host-local overlay (e.g. lab: hide telegram bots that run on prod).
+  local override=()
+  if [[ -f docker-compose.override.yml ]]; then
+    override=(-f docker-compose.override.yml)
+  fi
   if [[ "${STAGING:-}" == "1" ]]; then
-    docker compose -f "$COMPOSE_FILE" -f "$STAGING_OVERLAY" --env-file "$ENV_FILE" "$@"
+    docker compose -f "$COMPOSE_FILE" -f "$STAGING_OVERLAY" "${override[@]}" --env-file "$ENV_FILE" "$@"
   else
-    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+    docker compose -f "$COMPOSE_FILE" "${override[@]}" --env-file "$ENV_FILE" "$@"
   fi
 }
 
@@ -623,14 +628,24 @@ if ! recreate_service pharmacy-frontend; then
   exit 1
 fi
 
-if [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
+# Lab/shared hosts: set ENABLE_TELEGRAM_BOTS=false so prod-owned tokens are not polled here (409 / crash loop).
+telegram_bots_enabled=true
+case "${ENABLE_TELEGRAM_BOTS:-true}" in
+  0|false|FALSE|no|NO|off|OFF) telegram_bots_enabled=false ;;
+esac
+
+if [[ "$telegram_bots_enabled" != "true" ]]; then
+  echo "==> ENABLE_TELEGRAM_BOTS=false — telegram-боты пропущены."
+elif [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
   echo "==> Telegram-бот поддержки веба (CRM/POS)..."
   compose up -d --build telegram-web-support-bot
 else
   echo "==> TELEGRAM_WEB_SUPPORT_BOT_TOKEN не задан — веб-бот поддержки пропущен."
 fi
 
-if [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || -n "${TELEGRAM_BOTS:-}" ]]; then
+if [[ "$telegram_bots_enabled" != "true" ]]; then
+  :
+elif [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || ( -n "${TELEGRAM_BOTS:-}" && "${TELEGRAM_BOTS}" != "[]" && "${TELEGRAM_BOTS}" != "false" ) ]]; then
   echo "==> Telegram-бот(ы) аптеки (по компаниям)..."
   compose up -d --build telegram-support-bot
 else

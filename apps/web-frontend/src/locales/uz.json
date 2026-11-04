@@ -866,11 +866,28 @@
     "badge": "Majburiy yangilanish",
     "title": "Yangi Aurent Pharmacy o‘rnating",
     "body": "Dorixona uchun eski desktop endi ishlamaydi. Yangi klientni yuklab o‘rnating va qayta kiring. Bu oynani yopib bo‘lmaydi.",
+    "autoBody": "Tizim yangi dorixona desktopini o‘zi yuklab o‘rnatadi va qayta ishga tushiradi. Kutib turing.",
     "version": "Versiya {{version}}",
-    "download": "Yangi desktopni yuklash",
+    "download": "Qo‘lda yuklash",
     "loading": "Havola tayyorlanmoqda…",
     "manifestError": "Fayl olinmadi — yuklash papkasi ochiladi. Yoki /install dan yuklang.",
-    "hint": "O‘rnatgach Aurent Pharmacy ni oching va server sifatida p-aurent.uz ni ko‘rsating."
+    "hint": "O‘rnatgach Aurent Pharmacy ni oching va server sifatida p-aurent.uz ni ko‘rsating.",
+    "autoHint": "Avto o‘rnatish ishlamasa — qo‘lda yuklab o‘rnatuvchini ishga tushiring.",
+    "autoStarting": "Yangilanish tayyorlanmoqda…",
+    "autoDownloading": "Yangi desktop yuklanmoqda… {{percent}}%",
+    "autoDownloadingIndeterminate": "Yangi desktop yuklanmoqda…",
+    "autoInstalling": "Aurent Pharmacy o‘rnatilmoqda…",
+    "autoLaunching": "Yangi desktop ishga tushirilmoqda…",
+    "retryAuto": "Avto o‘rnatishni qayta urinish",
+    "autoError": {
+      "generic": "Avto o‘rnatish muvaffaqiyatsiz. Pastdan qo‘lda yuklang.",
+      "network": "Yuklashda tarmoq xatosi. Internetni tekshiring.",
+      "checksum": "Fayl buzilgan (checksum). Qayta urining yoki qo‘lda yuklang.",
+      "install-timeout": "O‘rnatish juda uzoq. O‘rnatuvchini qo‘lda yakunlang.",
+      "windows-only": "Avto migratsiya faqat Windows uchun.",
+      "busy": "Yangilanish allaqachon ketmoqda…",
+      "bad-url": "O‘rnatuvchi havolasi yo‘q. /install dan yuklang."
+    }
   },
   "installer": {
     "pageTitle": "Ilovalar",

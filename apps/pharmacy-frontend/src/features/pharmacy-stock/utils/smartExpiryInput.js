@@ -74,10 +74,33 @@ export function expiryFormatExamples(now = new Date()) {
     .map(([sample, iso]) => toSuggest(sample, iso));
 }
 
+/** Нормализация API-даты (ISO / datetime / LocalDate) → yyyy-MM-dd. */
+export function normalizeExpiryIso(raw) {
+  if (raw == null || raw === '') return '';
+  if (Array.isArray(raw) && raw.length >= 3) {
+    const y = Number(raw[0]);
+    const m = Number(raw[1]);
+    const d = Number(raw[2]);
+    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return '';
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  const text = String(raw).trim();
+  const m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  const dmy = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+  if (dmy) {
+    let year = Number(dmy[3]);
+    if (year < 100) year += 2000;
+    return toIso(year, Number(dmy[2]), Number(dmy[1])) || '';
+  }
+  return '';
+}
+
 export function formatIsoToDisplay(iso) {
-  if (!iso) return '';
-  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return iso;
+  const normalized = normalizeExpiryIso(iso);
+  if (!normalized) return '';
+  const m = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return String(iso);
   return `${m[3]}.${m[2]}.${m[1]}`;
 }
 

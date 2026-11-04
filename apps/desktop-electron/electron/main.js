@@ -8,6 +8,7 @@ const { app, BrowserWindow, ipcMain, shell, dialog, net, session } = require('el
 const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow, isQuittingForUpdate } = require('./autoUpdaterBridge');
+const { registerPharmacyMigrateIpc } = require('./pharmacyMigrateBridge');
 const {
   loadDesktopConfig,
   saveUiMode,
@@ -357,6 +358,7 @@ app.whenReady().then(async () => {
   const { registerScaleIpc } = require('./scales/index.cjs');
   registerScaleIpc(ipcMain, getMainWindow);
   initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
+  registerPharmacyMigrateIpc();
 
   app.on('activate', async () => {
     if (isQuittingForUpdate()) return;

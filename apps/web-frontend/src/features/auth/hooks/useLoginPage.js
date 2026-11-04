@@ -14,7 +14,8 @@ import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
 import { prefetchAppHome } from '../../../utils/prefetchAppHome';
 import { isPharmacyOnlyCompany } from '../../../utils/isPharmacyOnlyCompany';
-import { isPharmacyAppSplitEnabled, pharmacyAppHref } from '../../../config/pharmacyAppUrl';
+import { isPharmacyAppSplitEnabled } from '../../../config/pharmacyAppUrl';
+import { redirectToPharmacyApp } from '../../../utils/redirectToPharmacyApp';
 
 async function resolvePostLoginPath(role, businessPayload) {
   const path = resolveAppHomePath(role, businessPayload?.defaultTypeCode);
@@ -22,11 +23,7 @@ async function resolvePostLoginPath(role, businessPayload) {
   if (String(role || '').toUpperCase() === 'CASHIER') return path;
   if (isPharmacyAppSplitEnabled() && isPharmacyOnlyCompany(businessPayload)) {
     const target = path.startsWith('/cashier') ? '/dashboard' : path;
-    const href = pharmacyAppHref(target);
-    if (href) {
-      window.location.replace(href);
-      return target;
-    }
+    if (await redirectToPharmacyApp(target)) return target;
   }
   return path;
 }

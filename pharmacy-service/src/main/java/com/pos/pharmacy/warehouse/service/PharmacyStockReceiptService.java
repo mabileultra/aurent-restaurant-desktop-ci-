@@ -23,7 +23,13 @@ public interface PharmacyStockReceiptService {
 
     PharmacyStockReceiptResponse getById(UUID id);
 
-    PageResponse<PharmacyStockReceiptResponse> list(Integer storeId, String status, String search, Pageable pageable);
+    PageResponse<PharmacyStockReceiptResponse> list(
+        Integer storeId,
+        String status,
+        String search,
+        UUID supplierId,
+        Pageable pageable
+    );
 
     PharmacyStockReceiptResponse replaceLines(UUID id, List<PharmacyStockReceiptLineRequest> lines);
 

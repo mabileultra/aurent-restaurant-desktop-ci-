@@ -43,4 +43,27 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
         @Param("searchPattern") String searchPattern,
         Pageable pageable
     );
+
+    /** Отдельный метод: PostgreSQL не типизирует null UUID в {@code (:id IS NULL OR …)}. */
+    @Query("""
+        SELECT r FROM StockReceipt r
+        WHERE r.companyId = :companyId
+          AND (:storeId IS NULL OR r.storeId = :storeId)
+          AND (:status IS NULL OR r.status = :status)
+          AND r.supplierId = :supplierId
+          AND (
+            :searchPattern IS NULL
+            OR LOWER(r.receiptNumber) LIKE :searchPattern
+            OR LOWER(COALESCE(r.invoiceNumber, '')) LIKE :searchPattern
+          )
+        ORDER BY r.createdAt DESC
+        """)
+    Page<StockReceipt> findReceiptsBySupplier(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("status") String status,
+        @Param("supplierId") UUID supplierId,
+        @Param("searchPattern") String searchPattern,
+        Pageable pageable
+    );
 }

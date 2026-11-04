@@ -1,229 +1,18 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { pharmacyWarehouseApi, storeApi, supplierApi } from '../../../api';
-import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
-import { invalidateProductCaches } from '../../../utils/productCache';
-import { notifyPharmacyCatalogChanged } from '../utils/pharmacyCatalogChangedNotify';
 import { BaseButton } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
-import PharmacyProductModal from '../components/PharmacyProductModal';
-import PharmacyProductDeleteModal from '../components/PharmacyProductDeleteModal';
-import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
-import PharmacyReceiptActivateModal from '../components/PharmacyReceiptActivateModal';
-import PharmacyReceiptDeleteModal from '../components/PharmacyReceiptDeleteModal';
-import PharmacyReceiptHeaderModal from '../components/PharmacyReceiptHeaderModal';
-import PharmacyReceiptLineBulkBar from '../components/PharmacyReceiptLineBulkBar';
-import PharmacyReceiptMassEditBar from '../components/PharmacyReceiptMassEditBar';
-import PharmacyReceiptLineModal from '../components/PharmacyReceiptLineModal';
 import PharmacyReceiptDocumentCard from '../components/PharmacyReceiptDocumentCard';
+import PharmacyReceiptDocumentLinesPanel from '../components/PharmacyReceiptDocumentLinesPanel';
+import PharmacyReceiptDocumentModals from '../components/PharmacyReceiptDocumentModals';
 import PharmacyReceiptMarksBar from '../components/PharmacyReceiptMarksBar';
-import PharmacyReceiptMarkScanModal from '../components/PharmacyReceiptMarkScanModal';
 import PharmacyStockLayout, { PharmacyStatusBadge } from '../components/PharmacyStockLayout';
-import {
-  PharmacyEditCell,
-  PharmacySelectAllTh,
-  PharmacySelectCell,
-} from '../components/PharmacyTableSelect';
-import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
-import { usePharmacyProductDelete } from '../hooks/usePharmacyProductDelete';
-import { usePharmacyReceiptRevalue } from '../hooks/usePharmacyReceiptRevalue';
-import { usePharmacyReceiptMassEdit } from '../hooks/usePharmacyReceiptMassEdit';
-import { usePharmacyReceiptMarks } from '../hooks/usePharmacyReceiptMarks';
-import { usePharmacyImportMarksAsk } from '../hooks/usePharmacyImportMarksAsk';
-import { usePharmacyIntegrationConfig } from '../../pharmacy-cashier/hooks/usePharmacyIntegrationConfig';
+import { usePharmacyReceiptDocumentPage } from '../hooks/usePharmacyReceiptDocumentPage';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
-import {
-  formatMoney,
-  linesReadyForActivate,
-} from '../utils/pharmacyReceiptPricing';
-import { linePurchaseSum, lineRetailSum, receiptDisplayTotals } from '../utils/pharmacyReceiptTotals';
-import {
-  resolveStoreName,
-  resolveSupplierName,
-} from '../utils/pharmacyReceiptDisplayMeta';
-import {
-  flattenReceiptMarks,
-  receiptMarksProgress,
-} from '../utils/pharmacyReceiptMarks';
-import { PHARM_PAGE_SIZES, useClientTablePage } from '../utils/pharmacyTablePage';
-import { productStubFromReceiptLine } from '../utils/productStubFromReceiptLine';
-import PharmacyReceiptImportMarksVerifyModal from '../components/PharmacyReceiptImportMarksVerifyModal';
+import PharmacyReceiptDocumentAddFlow from '../components/PharmacyReceiptDocumentAddFlow';
 import '../styles/pharmacy-import-marks-ask.css';
+import '../styles/pharmacy-receipt-marks-bar.css';
 
 export default function PharmacyReceiptDocumentPage() {
-  const { id } = useParams();
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const qc = useQueryClient();
-  const [editOpen, setEditOpen] = useState(false);
-  const [activateOpen, setActivateOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editingLine, setEditingLine] = useState(null);
-  const [aboutProduct, setAboutProduct] = useState(null);
-  const [markScanOpen, setMarkScanOpen] = useState(false);
-
-  const receiptQuery = useQuery({
-    queryKey: ['pharmacy-receipt', id],
-    queryFn: () => pharmacyWarehouseApi.getReceipt(id).then((r) => r.data),
-    enabled: Boolean(id),
-  });
-
-  const suppliersQuery = useQuery({
-    queryKey: ['suppliers-all'],
-    queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
-  });
-
-  const storesQuery = useQuery({
-    queryKey: ['stores-all'],
-    queryFn: () => storeApi.getAll().then((r) => r.data),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (body) => pharmacyWarehouseApi.updateDraft(id, body),
-    onSuccess: (res) => {
-      toast.success(t('pharmacyStock.saved'));
-      qc.setQueryData(['pharmacy-receipt', id], res.data);
-      setEditOpen(false);
-    },
-    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
-  });
-
-  const updateLineMutation = useMutation({
-    mutationFn: async ({ lineId, payload }) => {
-      await pharmacyWarehouseApi.updateLine(id, lineId, payload);
-      const fresh = await pharmacyWarehouseApi.getReceipt(id, { timeout: 180000 });
-      return fresh.data;
-    },
-    onSuccess: (data) => {
-      toast.success(t('pharmacyStock.saved'));
-      qc.setQueryData(['pharmacy-receipt', id], data);
-      invalidateProductCaches(qc);
-      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-line' });
-      setEditingLine(null);
-    },
-    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
-  });
-
-  const deleteDraftMutation = useMutation({
-    mutationFn: () => pharmacyWarehouseApi.deleteDraft(id),
-    onSuccess: () => {
-      toast.success(t('pharmacyStock.deleteDraftDone'));
-      setDeleteOpen(false);
-      qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
-      navigate(PHARMACY_STOCK_PATHS.receipts);
-    },
-    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
-  });
-
-  const removeLineMutation = useMutation({
-    mutationFn: (lineId) => pharmacyWarehouseApi.removeLine(id, lineId),
-    onSuccess: (res) => {
-      qc.setQueryData(['pharmacy-receipt', id], res.data);
-    },
-    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
-  });
-
-  const receiptPreview = receiptQuery.data;
-  const integration = usePharmacyIntegrationConfig(receiptPreview?.storeId);
-  const aslEnabled = false;
-  const aslReady = Boolean(receiptPreview?.storeId) && !integration.isLoading;
-  const receiptMarks = usePharmacyReceiptMarks({ t });
-  const { hydrateMarks } = receiptMarks;
-
-  const importMarksAsk = usePharmacyImportMarksAsk({
-    receiptId: id,
-    lines: receiptPreview?.lines,
-    storeId: receiptPreview?.storeId,
-    aslEnabled,
-    aslReady,
-    hydrateMarks,
-    t,
-    showHint: Boolean(location.state?.importMarksHint),
-  });
-
-  const activateMutation = useMutation({
-    mutationFn: async () => {
-      const marks = flattenReceiptMarks(receiptMarks.marksByLineId, receiptQuery.data?.lines ?? []);
-      const posted = await pharmacyWarehouseApi.activate(
-        id,
-        marks.length ? { marks } : {},
-      );
-      const fresh = await pharmacyWarehouseApi.getReceipt(id, { timeout: 180000 });
-      return { posted: posted.data, receipt: fresh.data };
-    },
-    onSuccess: ({ posted, receipt: data }) => {
-      toast.success(t('pharmacyStock.activated', { no: posted.receiptNumber || data.receiptNumber }));
-      invalidateProductCaches(qc);
-      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-activate' });
-      qc.setQueryData(['pharmacy-receipt', id], data);
-      qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
-      setActivateOpen(false);
-    },
-    onError: (e) => toast.error(resolvePharmacyApiError(e, t, 'pharmacyStock.activateFailed')),
-  });
-
-  const receiptRaw = receiptQuery.data;
-  const suppliers = suppliersQuery.data?.content ?? [];
-  const stores = Array.isArray(storesQuery.data) ? storesQuery.data : (storesQuery.data?.content ?? []);
-  const receipt = receiptRaw
-    ? {
-        ...receiptRaw,
-        storeName: resolveStoreName(receiptRaw, stores),
-        supplierName: resolveSupplierName(receiptRaw, suppliers),
-      }
-    : null;
-  const isDraft = receipt?.status === 'DRAFT';
-  const isPosted = receipt?.status === 'POSTED';
-  const canEditPrices = isDraft || isPosted;
-  const canActivate = linesReadyForActivate(receipt?.lines);
-  const marksProgress = receiptMarksProgress(receipt?.lines ?? [], receiptMarks.marksByLineId);
-  const linesPage = useClientTablePage(receipt?.lines ?? [], id);
-  const linesSelect = usePharmacyRowSelection(linesPage.rows, id);
-  const productDelete = usePharmacyProductDelete(t, {
-    onDone: () => receiptQuery.refetch(),
-  });
-  const revalue = usePharmacyReceiptRevalue({
-    receiptId: id,
-    lines: receipt?.lines ?? [],
-    selection: linesSelect,
-    t,
-    onUpdated: (data) => {
-      qc.setQueryData(['pharmacy-receipt', id], data);
-      invalidateProductCaches(qc);
-      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-revalue' });
-    },
-  });
-  const mass = usePharmacyReceiptMassEdit({
-    receiptId: id,
-    lines: receipt?.lines ?? [],
-    selection: linesSelect,
-    t,
-    onUpdated: (data) => {
-      qc.setQueryData(['pharmacy-receipt', id], data);
-      invalidateProductCaches(qc);
-      notifyPharmacyCatalogChanged({ storeId: data?.storeId, reason: 'receipt-mass' });
-    },
-  });
-
-  const removeSelectedLines = useMutation({
-    mutationFn: async (lineIds) => {
-      let last = receiptQuery.data;
-      for (const lineId of lineIds) {
-        const res = await pharmacyWarehouseApi.removeLine(id, lineId);
-        last = res.data;
-      }
-      return last;
-    },
-    onSuccess: (data) => {
-      qc.setQueryData(['pharmacy-receipt', id], data);
-      linesSelect.clearSelection();
-    },
-    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
-  });
+  const d = usePharmacyReceiptDocumentPage();
+  const { t, receipt, receiptQuery } = d;
 
   if (receiptQuery.isLoading) {
     return (
@@ -244,16 +33,6 @@ export default function PharmacyReceiptDocumentPage() {
     );
   }
 
-  const docTotals = receiptDisplayTotals(receipt);
-
-  const openActivate = () => {
-    if (!canActivate) {
-      toast.error(t('pharmacyStock.activateNeedLots'));
-      return;
-    }
-    setActivateOpen(true);
-  };
-
   return (
     <PharmacyStockLayout
       backTo={PHARMACY_STOCK_PATHS.receipts}
@@ -262,16 +41,21 @@ export default function PharmacyReceiptDocumentPage() {
       title={`${t('pharmacyStock.documentTitle')} · ${receipt.receiptNumber}`}
       badge={<PharmacyStatusBadge status={receipt.status} t={t} />}
       subtitle={[receipt.storeName, receipt.supplierName].filter(Boolean).join(' · ') || undefined}
-      actions={isDraft ? (
-        <BaseButton onClick={openActivate} disabled={!receipt.lines?.length}>
+      actions={d.isDraft ? (
+        <BaseButton onClick={d.openActivate} disabled={!receipt.lines?.length}>
           {t('pharmacyStock.activate')}
         </BaseButton>
       ) : null}
     >
-      {!canActivate && isDraft && receipt.lines?.length ? (
+      {!d.canActivate && d.isDraft && receipt.lines?.length ? (
         <p className="pharmacy-stock__alert">{t('pharmacyStock.activateNeedLots')}</p>
       ) : null}
-      {isPosted ? (
+      {receipt.receiptType === 'OPENING' ? (
+        <p className="pharmacy-stock__alert pharmacy-stock__alert--info">
+          {t('pharmacyStock.openingDocumentBanner')}
+        </p>
+      ) : null}
+      {d.isPosted ? (
         <p className="pharmacy-stock__alert">{t('pharmacyStock.postedPricesHint')}</p>
       ) : null}
 
@@ -279,260 +63,95 @@ export default function PharmacyReceiptDocumentPage() {
         <PharmacyReceiptDocumentCard
           t={t}
           receipt={receipt}
-          canEdit={isDraft}
-          onEdit={() => setEditOpen(true)}
-          onDelete={() => setDeleteOpen(true)}
-          onClose={() => navigate(PHARMACY_STOCK_PATHS.receipts)}
-          deleteDisabled={deleteDraftMutation.isPending}
+          canEdit={d.canEditPrices}
+          onEdit={() => d.setEditOpen(true)}
+          onDelete={() => d.setDeleteOpen(true)}
+          onClose={() => d.navigate(PHARMACY_STOCK_PATHS.receipts)}
+          deleteDisabled={d.deleteDraftMutation.isPending}
         />
 
         <section className="pharmacy-stock__doc-main">
-          {isDraft ? (
-            <div className="pharmacy-receipt-document-toolbar">
-              <BaseButton onClick={() => navigate(PHARMACY_STOCK_PATHS.receiptPick(id))}>
-                {t('pharmacyStock.pickProducts')}
-              </BaseButton>
+          <PharmacyReceiptDocumentAddFlow
+            receiptId={d.id}
+            storeId={receipt.storeId}
+            defaultMarkup={receipt.defaultMarkupPercent ?? 20}
+            isDraft={d.isDraft}
+            onRefresh={() => receiptQuery.refetch()}
+            marksSlot={(
               <PharmacyReceiptMarksBar
                 t={t}
                 lines={receipt?.lines ?? []}
-                marksByLineId={receiptMarks.marksByLineId}
-                onScan={() => setMarkScanOpen(true)}
+                marksByLineId={d.receiptMarks.marksByLineId}
+                onScan={() => d.setMarkScanOpen(true)}
               />
-              <BaseButton variant="secondary" onClick={() => receiptQuery.refetch()}>
-                {t('common.refresh')}
-              </BaseButton>
-            </div>
-          ) : null}
+            )}
+          />
 
-          <div className="pharmacy-stock__panel flex min-h-0 flex-col">
-            <div className="pharmacy-stock__panel-head">
-              <span>{t('pharmacyStock.inDocument')}</span>
-              <span>{receipt.lines?.length ?? 0}</span>
-            </div>
-            {canEditPrices ? (
-              <PharmacyReceiptLineBulkBar
-                t={t}
-                selection={linesSelect}
-                canRevalue={revalue.canOpen}
-                onVat={revalue.openVat}
-                onMarkup={revalue.openMarkup}
-                deleting={removeSelectedLines.isPending}
-                onDelete={isDraft ? () => {
-                  const ids = linesSelect.selectedRows.map((row) => row.id);
-                  if (!ids.length) return;
-                  if (!window.confirm(t('pharmacyStock.deleteSelectedConfirm', { count: ids.length }))) return;
-                  removeSelectedLines.mutate(ids);
-                } : undefined}
-              />
-            ) : null}
-            {canEditPrices ? <PharmacyReceiptMassEditBar t={t} mass={mass} /> : null}
-            <div className="pharmacy-stock__table-wrap">
-              <table className="pharmacy-stock__table">
-                <thead>
-                  <tr>
-                    <PharmacySelectAllTh t={t} selection={linesSelect} disabled={!canEditPrices || !(receipt.lines ?? []).length} />
-                    <th>№</th>
-                    <th>{t('pharmacyStock.colName')}</th>
-                    <th>{t('pharmacyStock.colManufacturer')}</th>
-                    <th>{t('pharmacyStock.colCountry')}</th>
-                    <th>{t('pharmacyStock.colQty')}</th>
-                    <th>{t('pharmacyStock.unitsInPack')}</th>
-                    <th>{t('pharmacyStock.purchasePrice')}</th>
-                    <th>{t('pharmacyStock.vatRate')}</th>
-                    <th>{t('pharmacyStock.markupPercent')}</th>
-                    <th>{t('pharmacyStock.retailPrice')}</th>
-                    <th>{t('pharmacyStock.colLinePurchase')}</th>
-                    <th>{t('pharmacyStock.colLineRetail')}</th>
-                    <th>{t('pharmacyStock.batch')}</th>
-                    <th>{t('pharmacyStock.expiry')}</th>
-                    <th className="pharmacy-stock__row-actions" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {(receipt.lines ?? []).length === 0 ? (
-                    <tr>
-                      <td colSpan={16}>
-                        <div className="pharmacy-stock__empty">{t('pharmacyStock.noLines')}</div>
-                      </td>
-                    </tr>
-                  ) : linesPage.rows.map((line, idx) => (
-                    <tr
-                      key={line.id}
-                      className={`${linesSelect.isSelected(line.id) ? 'pharmacy-stock__row--selected' : ''} pharmacy-stock__row--clickable`}
-                      onClick={() => setEditingLine(line)}
-                    >
-                      <PharmacySelectCell t={t} row={line} selection={linesSelect} disabled={!canEditPrices} />
-                      <td>{linesPage.startIndex + idx + 1}</td>
-                      <td className="font-semibold">{line.productName}</td>
-                      <td>{line.manufacturer || '—'}</td>
-                      <td>{line.country || '—'}</td>
-                      <td>{line.quantity}</td>
-                      <td>{line.unitsInPack ?? '—'}</td>
-                      <td>{formatMoney(line.purchasePrice)}</td>
-                      <td>{line.vatPercent ?? '—'}</td>
-                      <td>{line.markupPercent ?? '—'}</td>
-                      <td>{formatMoney(line.retailPrice ?? line.unitSellingPrice)}</td>
-                      <td>{formatMoney(linePurchaseSum(line))}</td>
-                      <td>{formatMoney(lineRetailSum(line))}</td>
-                      <td>{line.batchNumber || '—'}</td>
-                      <td>{line.expiryDate || '—'}</td>
-                      <PharmacyEditCell
-                        t={t}
-                        onEdit={() => setEditingLine(line)}
-                        onDelete={isDraft ? () => {
-                          if (!window.confirm(t('pharmacyStock.deleteLineConfirm', { name: line.productName }))) return;
-                          removeLineMutation.mutate(line.id);
-                        } : undefined}
-                      />
-                    </tr>
-                  ))}
-                </tbody>
-                {(receipt.lines ?? []).length > 0 ? (
-                  <tfoot>
-                    <tr className="pharmacy-stock__totals-row">
-                      <td colSpan={11}>{t('pharmacyStock.invoiceTotal')}</td>
-                      <td>{formatMoney(docTotals.purchase)}</td>
-                      <td>{formatMoney(docTotals.retail)}</td>
-                      <td colSpan={3} />
-                    </tr>
-                  </tfoot>
-                ) : null}
-              </table>
-            </div>
-            <TablePagination
-              page={linesPage.page}
-              pageSize={linesPage.pageSize}
-              total={linesPage.total}
-              totalPages={linesPage.totalPages}
-              onPageChange={linesPage.setPage}
-              onPageSizeChange={linesPage.setPageSize}
-              pageSizeOptions={PHARM_PAGE_SIZES}
-            />
-          </div>
+          <PharmacyReceiptDocumentLinesPanel
+            receipt={receipt}
+            canEditPrices={d.canEditPrices}
+            linesPage={d.linesPage}
+            linesSelect={d.linesSelect}
+            revalue={d.revalue}
+            mass={d.mass}
+            docTotals={d.docTotals}
+            deletingSelected={d.removeSelectedLines.isPending}
+            onAskDeleteSelected={() => {
+              const rows = d.linesSelect.selectedRows;
+              if (!rows.length) return;
+              d.setLineToDelete({
+                ids: rows.map((row) => row.id),
+                name: rows.length === 1
+                  ? rows[0].productName
+                  : t('pharmacyStock.deleteSelectedConfirm', { count: rows.length }),
+                multi: rows.length > 1,
+              });
+            }}
+            onEditLine={d.setEditingLine}
+            onAskDeleteLine={(line) => d.setLineToDelete({
+              ids: [line.id],
+              name: line.productName,
+              multi: false,
+            })}
+            onAboutProduct={d.setAboutProduct}
+          />
         </section>
       </div>
 
-      <PharmacyReceiptHeaderModal
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
+      <PharmacyReceiptDocumentModals
         t={t}
-        suppliers={suppliers}
-        initial={receipt}
-        totalCost={receipt?.totalCost}
-        saving={updateMutation.isPending}
-        onSubmit={(body) => updateMutation.mutate(body)}
-      />
-
-      <PharmacyReceiptLineModal
-        open={Boolean(editingLine)}
-        onClose={() => {
-          setEditingLine(null);
-          setAboutProduct(null);
-        }}
-        t={t}
-        existingLine={editingLine}
-        defaultMarkup={receipt.defaultMarkupPercent ?? 20}
-        saving={updateLineMutation.isPending}
-        onAboutProduct={() => setAboutProduct(productStubFromReceiptLine(editingLine))}
-        onSave={(payload) => updateLineMutation.mutate({ lineId: editingLine.id, payload })}
-      />
-
-      <PharmacyProductModal
-        open={Boolean(aboutProduct)}
-        product={aboutProduct}
-        overlayClassName="!z-[60]"
-        storeId={receipt.storeId}
-        onClose={() => setAboutProduct(null)}
-        onDelete={aboutProduct ? () => {
-          const current = aboutProduct;
-          setAboutProduct(null);
-          productDelete.ask(current);
-        } : undefined}
-        onSaved={() => {
-          setAboutProduct(null);
-          receiptQuery.refetch();
-        }}
-      />
-      <PharmacyProductDeleteModal
-        open={productDelete.pending.length > 0}
-        onClose={productDelete.close}
-        t={t}
-        saving={productDelete.deleting}
-        products={productDelete.pending}
-        onConfirm={productDelete.confirm}
-      />
-
-      <PharmacyReceiptActivateModal
-        open={activateOpen}
-        onClose={() => setActivateOpen(false)}
-        t={t}
-        saving={activateMutation.isPending}
-        marksProgress={marksProgress}
-        onConfirm={() => activateMutation.mutate()}
-      />
-      <PharmacyReceiptDeleteModal
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        t={t}
-        saving={deleteDraftMutation.isPending}
-        numbers={[receipt.receiptNumber]}
-        posted={receipt.status === 'POSTED'}
-        onConfirm={() => deleteDraftMutation.mutate()}
-      />
-      {canEditPrices ? (
-        <>
-          <PharmacyBulkNumberModal
-            open={revalue.mode === 'vat'}
-            onClose={revalue.close}
-            t={t}
-            title={t('pharmacyStock.bulkVatTitle')}
-            hint={t('pharmacyStock.bulkVatHint', { count: revalue.targetCount })}
-            fieldLabel={t('pharmacyStock.bulkVatField')}
-            max={100}
-            saving={revalue.saving}
-            onSubmit={revalue.submit}
-          />
-          <PharmacyBulkNumberModal
-            open={revalue.mode === 'markup'}
-            onClose={revalue.close}
-            t={t}
-            title={t('pharmacyStock.bulkRevalueTitle')}
-            hint={t('pharmacyStock.bulkRevalueHint', { count: revalue.targetCount })}
-            fieldLabel={t('pharmacyStock.bulkRevalueField')}
-            max={1000}
-            saving={revalue.saving}
-            onSubmit={revalue.submit}
-          />
-        </>
-      ) : null}
-      <PharmacyReceiptMarkScanModal
-        open={isDraft && markScanOpen}
-        onClose={() => setMarkScanOpen(false)}
-        t={t}
-        lines={receipt?.lines ?? []}
-        marksByLineId={receiptMarks.marksByLineId}
-        storeId={receipt?.storeId}
-        aslEnabled={aslEnabled}
-        acceptVerifiedMark={receiptMarks.acceptVerifiedMark}
-        onRemove={receiptMarks.removeMark}
-        disabled={activateMutation.isPending}
-      />
-      <PharmacyReceiptImportMarksVerifyModal
-        open={importMarksAsk.askOpen}
-        onClose={importMarksAsk.closeAsk}
-        t={t}
-        markCount={importMarksAsk.markCount}
-        etaSeconds={importMarksAsk.etaSeconds}
-        aslEnabled={aslEnabled}
-        aslReady={aslReady}
-        verifying={importMarksAsk.verifying}
-        progress={importMarksAsk.progress}
-        resultSummary={importMarksAsk.resultSummary}
-        onVerify={importMarksAsk.runVerify}
-        onSkip={importMarksAsk.skipVerify}
-        onContinueWithoutVerify={importMarksAsk.continueWithoutVerify}
-        onDiscard={importMarksAsk.discardMarks}
-        onConfirmResult={importMarksAsk.confirmResult}
+        receipt={receipt}
+        isDraft={d.isDraft}
+        isPosted={d.isPosted}
+        canEditPrices={d.canEditPrices}
+        suppliers={d.suppliers}
+        editOpen={d.editOpen}
+        setEditOpen={d.setEditOpen}
+        editingLine={d.editingLine}
+        setEditingLine={d.setEditingLine}
+        aboutProduct={d.aboutProduct}
+        setAboutProduct={d.setAboutProduct}
+        lineToDelete={d.lineToDelete}
+        setLineToDelete={d.setLineToDelete}
+        activateOpen={d.activateOpen}
+        setActivateOpen={d.setActivateOpen}
+        deleteOpen={d.deleteOpen}
+        setDeleteOpen={d.setDeleteOpen}
+        markScanOpen={d.markScanOpen}
+        setMarkScanOpen={d.setMarkScanOpen}
+        updateMutation={d.updateMutation}
+        updateLineMutation={d.updateLineMutation}
+        removeLineMutation={d.removeLineMutation}
+        removeSelectedLines={d.removeSelectedLines}
+        activateMutation={d.activateMutation}
+        deleteDraftMutation={d.deleteDraftMutation}
+        revalue={d.revalue}
+        receiptMarks={d.receiptMarks}
+        aslEnabled={d.aslEnabled}
+        aslReady={d.aslReady}
+        importMarksAsk={d.importMarksAsk}
+        marksProgress={d.marksProgress}
+        onReceiptRefetch={() => receiptQuery.refetch()}
       />
     </PharmacyStockLayout>
   );

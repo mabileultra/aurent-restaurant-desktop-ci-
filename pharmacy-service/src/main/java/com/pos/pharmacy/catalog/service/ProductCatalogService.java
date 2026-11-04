@@ -88,9 +88,10 @@ public class ProductCatalogService {
                 companyId, q, CatalogSearchFold.FROM, CatalogSearchFold.TO, active, bounded
             );
         List<Product> rows = page.getContent();
-        Map<UUID, Map<String, String>> origins = receiptScoped
-            ? productReceiptOriginLoader.loadAttrMaps(rows.stream().map(Product::getId).toList())
-            : Map.of();
+        // Origin always (deep-link + OPENING badge), not only when receipt-filtered.
+        Map<UUID, Map<String, String>> origins = productReceiptOriginLoader.loadAttrMaps(
+            rows.stream().map(Product::getId).toList()
+        );
         List<ProductResponse> content = listResponseAssembler.assemble(rows, storeId, origins);
         return new PageResponse<>(
             content,

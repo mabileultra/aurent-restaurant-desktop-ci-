@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { warehouseApi } from '../../../api';
+import { pharmacyWarehouseApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
@@ -36,8 +36,8 @@ export function useStockTransfersReportPage() {
   );
 
   const query = useQuery({
-    queryKey: ['stock-transfers-list', params],
-    queryFn: () => warehouseApi.listTransfers(params).then((r) => r.data),
+    queryKey: ['pharmacy-stock-transfers-list', params],
+    queryFn: () => pharmacyWarehouseApi.listTransfers(params).then((r) => r.data),
     enabled: rangeEnabled,
     placeholderData: keepPreviousData,
   });
@@ -52,6 +52,23 @@ export function useStockTransfersReportPage() {
     resetPage();
   };
 
+  const storeNameById = useMemo(() => {
+    const map = new Map();
+    for (const store of stores) {
+      map.set(Number(store.id), store.name);
+    }
+    return map;
+  }, [stores]);
+
+  const rows = useMemo(() => {
+    const raw = query.data?.content ?? [];
+    return raw.map((row) => ({
+      ...row,
+      fromStoreName: row.fromStoreName || storeNameById.get(Number(row.fromStoreId)) || row.fromStoreId,
+      toStoreName: row.toStoreName || storeNameById.get(Number(row.toStoreId)) || row.toStoreId,
+    }));
+  }, [query.data?.content, storeNameById]);
+
   return {
     from,
     to,
@@ -65,7 +82,7 @@ export function useStockTransfersReportPage() {
     setPage,
     pageSize,
     setPageSize,
-    rows: query.data?.content ?? [],
+    rows,
     total: query.data?.totalElements ?? 0,
     totalPages: query.data?.totalPages ?? 0,
     isPending: query.isPending,

@@ -27,7 +27,6 @@
   "PHARM_RECEIPT_REVALUE_PARAMS": "Укажите НДС и/или наценку",
   "PHARM_RECEIPT_MASS_FIELD_REQUIRED": "Укажите поле для массового изменения",
   "PHARM_RECEIPT_MASS_FIELD_UNKNOWN": "Неизвестное поле массового изменения",
-  "PHARM_RECEIPT_POSTED_FIELD_LOCKED": "После проведения можно менять только цены. Количество, серия и срок нельзя.",
   "PHARM_RECEIPT_QTY_POSITIVE": "Количество должно быть больше нуля",
   "PHARM_RECEIPT_EXPIRY_FORMAT": "Срок годности: ГГГГ-ММ-ДД",
   "PHARM_RECEIPT_AMOUNT_NEGATIVE": "Сумма не может быть отрицательной",

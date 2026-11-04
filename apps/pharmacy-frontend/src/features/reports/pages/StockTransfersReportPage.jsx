@@ -2,12 +2,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
 import { Plus } from 'lucide-react';
-import { stockReportApi } from '../../../api';
 import { BaseSelect } from '../../../components/ui';
 import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
-import ReportExportButton from '../components/ReportExportButton';
 import { useStockTransfersReportPage } from '../hooks/useStockTransfersReportPage';
 
 export default function StockTransfersReportPage() {
@@ -22,11 +20,6 @@ export default function StockTransfersReportPage() {
           <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.transfersSubtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <ReportExportButton
-            fetchBlob={() => stockReportApi.exportTransfers(r.exportParams)}
-            filenamePrefix="stock_transfers"
-            disabled={!r.from || !r.to}
-          />
           <Link to="/stock/transfers/new" className="admin-btn-primary px-4 py-2 text-sm">
             <Plus size={16} />
             {t('stockReports.newTransferDoc')}

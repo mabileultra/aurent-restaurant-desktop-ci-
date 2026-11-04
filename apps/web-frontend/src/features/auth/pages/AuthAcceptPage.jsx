@@ -5,7 +5,8 @@ import { logoutAndResetSession, resetClientSessionState } from '../../../utils/a
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
 import { isPharmacyOnlyCompany } from '../../../utils/isPharmacyOnlyCompany';
-import { isPharmacyAppSplitEnabled, pharmacyAppHref } from '../../../config/pharmacyAppUrl';
+import { isPharmacyAppSplitEnabled } from '../../../config/pharmacyAppUrl';
+import { redirectToPharmacyApp } from '../../../utils/redirectToPharmacyApp';
 import {
   readHandoffFromHash,
   clearHandoffHash,
@@ -50,11 +51,7 @@ export default function AuthAcceptPage() {
         && isPharmacyOnlyCompany(businessPayload)
       ) {
         const target = path.startsWith('/cashier') ? '/dashboard' : path;
-        const href = pharmacyAppHref(target);
-        if (href) {
-          window.location.replace(href);
-          return;
-        }
+        if (await redirectToPharmacyApp(target)) return;
       }
       if (!cancelled) navigate(path, { replace: true });
     })();

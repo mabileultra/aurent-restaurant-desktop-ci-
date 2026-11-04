@@ -15,6 +15,7 @@ export const pharmacyWarehouseApi = {
   listLots: (params) => api.get('/pharmacy/lots', { params }),
   fefoHints: (params) => api.get('/pharmacy/lots/fefo-hints', { params }),
   listProducts: (params, config) => api.get('/pharmacy/products', { params, ...config }),
+  productSupplierStats: () => api.get('/pharmacy/products/supplier-stats'),
   getLowStock: (params) => api.get('/pharmacy/products/low-stock', { params }),
   getProduct: (id, params) => api.get(`/pharmacy/products/${id}`, { params }),
   getByBarcode: (barcode, storeId) =>
@@ -27,6 +28,15 @@ export const pharmacyWarehouseApi = {
   deactivate: (id) => api.delete(`/pharmacy/products/${id}`),
   bulkDeactivate: (body) => api.patch('/pharmacy/products/bulk/deactivate', body),
   activate: (id, body) => api.post(`/pharmacy/receipts/${id}/activate`, body ?? null, { timeout: 180000 }),
+  createTransfer: (data) => api.post('/pharmacy/transfers', data, { timeout: 180000 }),
+  createTransferFromReceipt: (data) => api.post('/pharmacy/transfers/from-receipt', data, { timeout: 180000 }),
+  listTransfers: (params) => api.get('/pharmacy/transfers', { params }),
+  getTransfer: (id) => api.get(`/pharmacy/transfers/${id}`),
+  createInventory: (data) => api.post('/pharmacy/inventories', data, { timeout: 180000 }),
+  getInventory: (id) => api.get(`/pharmacy/inventories/${id}`),
+  listInventories: (params) => api.get('/pharmacy/inventories', { params }),
+  listProductMovements: (productId, params) =>
+    api.get(`/pharmacy/products/${productId}/movements`, { params }),
   importParse: (id, file) => {
     const fd = new FormData();
     fd.append('file', file);

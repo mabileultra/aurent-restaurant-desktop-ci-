@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { productApi } from '../../api';
+import { pharmacyWarehouseApi } from '../../api';
 
 const DEBOUNCE_MS = 300;
 
@@ -30,23 +30,24 @@ export function useProductLookupSelect({
   }, [query]);
 
   const selectedQuery = useQuery({
-    queryKey: ['product-lookup-selected', value, storeId],
+    queryKey: ['pharmacy-product-lookup-selected', value, storeId],
     queryFn: () =>
-      productApi
-        .getById(value, storeId != null && storeId !== '' ? { storeId } : undefined)
+      pharmacyWarehouseApi
+        .getProduct(value, storeId != null && storeId !== '' ? { storeId } : undefined)
         .then((r) => r.data),
     enabled: !!value,
   });
 
   const searchQuery = useQuery({
-    queryKey: ['product-lookup-search', debouncedQuery, storeId],
+    queryKey: ['pharmacy-product-lookup-search', debouncedQuery, storeId],
     queryFn: () =>
-      productApi
-        .getAll({
+      pharmacyWarehouseApi
+        .listProducts({
           search: debouncedQuery,
           page: 0,
           size: pageSize,
           activeOnly: true,
+          scope: 'ACTIVE',
           ...(storeId != null && storeId !== '' ? { storeId } : {}),
         })
         .then((r) => r.data),

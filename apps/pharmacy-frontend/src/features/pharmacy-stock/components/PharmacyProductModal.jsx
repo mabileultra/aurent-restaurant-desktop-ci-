@@ -20,6 +20,8 @@ import { usePharmacyReceiptLineForm } from '../hooks/usePharmacyReceiptLineForm'
 import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
 import PharmacyReceiptLineFields from './PharmacyReceiptLineFields';
 import PharmacyProductAboutFields from './PharmacyProductAboutFields';
+import PharmacyProductLotsPanel from './PharmacyProductLotsPanel';
+import PharmacyProductMovementsPanel from './PharmacyProductMovementsPanel';
 import PharmacyProductModalFooter from './PharmacyProductModalFooter';
 import PharmacyProductSaveConfirmModal from './PharmacyProductSaveConfirmModal';
 import '../styles/pharmacy-stock.css';
@@ -164,26 +166,34 @@ export default function PharmacyProductModal({
   };
 
   const aboutFields = (
-    <PharmacyProductAboutFields
-      t={t}
-      form={form}
-      patch={patch}
-      mxikQuery={mxik.mxikQuery}
-      setMxikQuery={mxik.setMxikQuery}
-      mxikResults={mxik.mxikResults}
-      mxikLoading={mxik.mxikLoading}
-      onSearchMxik={() => mxik.searchMxik(form.ikpu)}
-      onPickMxik={mxik.pickMxik}
-      onChoosePackage={mxik.choosePackage}
-      onCreateBarcode={createBarcode}
-      showActive={isEdit}
-    />
+    <>
+      <PharmacyProductAboutFields
+        t={t}
+        form={form}
+        patch={patch}
+        mxikQuery={mxik.mxikQuery}
+        setMxikQuery={mxik.setMxikQuery}
+        mxikResults={mxik.mxikResults}
+        mxikLoading={mxik.mxikLoading}
+        onSearchMxik={() => mxik.searchMxik(form.ikpu)}
+        onPickMxik={mxik.pickMxik}
+        onChoosePackage={mxik.choosePackage}
+        onCreateBarcode={createBarcode}
+        showActive={isEdit}
+      />
+      {isEdit && product?.id ? (
+        <>
+          <PharmacyProductLotsPanel t={t} productId={product.id} storeId={storeId} />
+          <PharmacyProductMovementsPanel t={t} productId={product.id} storeId={storeId} />
+        </>
+      ) : null}
+    </>
   );
 
   return (
     <>
       <BaseModal
-        open={open}
+        open={open && !(includeLine && aboutOpen)}
         onClose={onClose}
         title={
           isEdit
@@ -214,13 +224,14 @@ export default function PharmacyProductModal({
           ? <PharmacyReceiptLineFields t={t} line={line} productName={form.name} />
           : aboutFields}
       </BaseModal>
+      {/* When creating with receipt line: swap to product card instead of stacking under the line modal (z-100). */}
       {includeLine && aboutOpen ? (
         <BaseModal
           open={aboutOpen}
           onClose={() => setAboutOpen(false)}
           title={t('pharmacyStock.productModalEditTitle')}
           size="md"
-          overlayClassName="!z-[70]"
+          overlayClassName="!z-[110]"
           className="pharmacy-stock pharm-product-modal"
           bodyClassName="pharm-product-modal__body"
           footer={(
