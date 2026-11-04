@@ -12,8 +12,8 @@ const REQUIRED_PNPM_PACKAGES = [
   'apps/web-frontend',
   'apps/restaurant-frontend',
   'apps/pharmacy-frontend',
-  'desktop-electron',
-  'restaurant-desktop',
+  'apps/desktop-electron',
+  'apps/restaurant-desktop',
   'telegram-support-bot',
   'telegram-web-support-bot',
 ];
@@ -22,8 +22,8 @@ const REQUIRED_WORKSPACES = [
   'apps/web-frontend',
   'apps/restaurant-frontend',
   'apps/pharmacy-frontend',
-  'desktop-electron',
-  'restaurant-desktop',
+  'apps/desktop-electron',
+  'apps/restaurant-desktop',
 ];
 
 const DOCKERFILES = [

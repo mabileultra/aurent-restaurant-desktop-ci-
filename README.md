@@ -8,7 +8,7 @@
 |-------|------------|
 | Backend | Java 17, Spring Boot 3, PostgreSQL |
 | Frontend | React, Vite (main + restaurant SPA) |
-| Касса | Electron (`desktop-electron/`) — оболочка вокруг web-frontend |
+| Касса | Electron (`apps/desktop-electron/`) — оболочка вокруг web SPA |
 | Деплой | Docker Compose |
 
 **Карта prod / что не ломать:** [`deploy/STACK-MAP.md`](deploy/STACK-MAP.md)
@@ -20,11 +20,12 @@ postsystem/
 ├── apps/
 │   ├── web-frontend/            # aurent.uz — платформа + grocery
 │   ├── restaurant-frontend/     # r-aurent.uz
-│   └── pharmacy-frontend/       # p-aurent.uz
+│   ├── pharmacy-frontend/       # p-aurent.uz
+│   ├── desktop-electron/        # Electron касса
+│   └── restaurant-desktop/      # Electron ресторан
 ├── packages/                    # @aurent/shared-*
 ├── web-backend/                 # POS core API
 ├── restaurant-service/          # API ресторана (/rst)
-├── desktop-electron/            # Оболочка кассы
 ├── deploy/                      # Деплой + STACK-MAP.md
 ├── docker-compose.yml
 └── docker-compose.prod.yml
@@ -79,7 +80,7 @@ bash deploy/deploy.sh
 
 ## Касса
 
-Desktop-приложение: **`desktop-electron/`** в этом репозитории. По умолчанию окно открывает сайт кассы (как у клиентов). Локальный UI — только тест, см. `desktop-electron/README.md`.
+Desktop: **`apps/desktop-electron/`** (касса) и **`apps/restaurant-desktop/`** (ресторан). Старый `aurent-cashier-desktop/` не трогаем.
 
 ```bash
 bash scripts/start-cashier-desktop.sh
