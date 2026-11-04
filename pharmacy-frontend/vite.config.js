@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
         '@aurent/shared-auth': path.resolve(__dirname, '../packages/shared-auth/src/index.js'),
         '@aurent/shared-api': path.resolve(__dirname, '../packages/shared-api/src/index.js'),
         '@aurent/shared-offline': path.resolve(__dirname, '../packages/shared-offline/src/index.js'),
+        '@aurent/shared-marking': path.resolve(__dirname, '../packages/shared-marking/src/index.js'),
       },
     },
     server: {

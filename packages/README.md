@@ -2,7 +2,7 @@
 
 Gradual extracts (Vite alias, root workspace not active yet). Docker context = repo root for web + pharmacy.
 
-**Live:** `@aurent/shared-auth`, `@aurent/shared-api` (idempotency), `@aurent/shared-offline` (sync phases).
+**Live:** `@aurent/shared-auth`, `@aurent/shared-api` (idempotency + network error), `@aurent/shared-offline` (sync phases), `@aurent/shared-marking` (KM parse).
 
 ## Packages
 
