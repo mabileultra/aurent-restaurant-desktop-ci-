@@ -1,6 +1,7 @@
 # Shared packages (`@aurent/*`)
 
-Scaffold only — **no big-bang move** from `web-frontend`. Apps keep working as today; `pharmacy-frontend` still uses `sync:from-main` until real extracts land.
+Gradual extracts. First live package: **`@aurent/shared-auth`** (Identity one-time handoff helpers).  
+Wired via Vite alias (not root workspace yet). Docker build context = repo root for web + pharmacy.
 
 ## Packages
 

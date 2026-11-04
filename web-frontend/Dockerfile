@@ -1,14 +1,15 @@
 # syntax=docker/dockerfile:1
-# Build
+# Build context: repo root (needs packages/shared-auth)
 FROM node:20-alpine AS build
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
+COPY packages/shared-auth /packages/shared-auth
+COPY web-frontend/package.json web-frontend/pnpm-lock.yaml web-frontend/pnpm-workspace.yaml* ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
-COPY . .
+COPY web-frontend/ .
 ARG VITE_API_URL=/api/v1
 ARG VITE_SUPPORT_PHONE=
 ARG VITE_SUPPORT_TELEGRAM_BOT=
@@ -29,9 +30,8 @@ ENV VITE_SENTRY_TRACES_SAMPLE_RATE=$VITE_SENTRY_TRACES_SAMPLE_RATE
 ENV VITE_SENTRY_RELEASE=$VITE_SENTRY_RELEASE
 RUN pnpm run build
 
-# Serve
 FROM nginx:1.27-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx-maps.conf /etc/nginx/conf.d/00-maps.conf
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY web-frontend/nginx-maps.conf /etc/nginx/conf.d/00-maps.conf
+COPY web-frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

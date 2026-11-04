@@ -588,8 +588,8 @@ services:
 
   frontend:
     build:
-      context: ./web-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: web-frontend/Dockerfile
       args:
         VITE_API_URL: /api/v1
         VITE_RESTAURANT_APP_URL: ${VITE_RESTAURANT_APP_URL:-http://localhost:5174}
@@ -619,8 +619,8 @@ services:
 
   pharmacy-frontend:
     build:
-      context: ./pharmacy-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: pharmacy-frontend/Dockerfile
       args:
         VITE_API_URL: /api/v1
         VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-http://localhost:5173}

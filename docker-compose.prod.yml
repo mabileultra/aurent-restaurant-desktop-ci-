@@ -811,8 +811,8 @@ services:
 
   frontend:
     build:
-      context: ./web-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: web-frontend/Dockerfile
       args:
         VITE_API_URL: /api/v1
         VITE_SUPPORT_PHONE: ${VITE_SUPPORT_PHONE:-}
@@ -858,8 +858,8 @@ services:
 
   pharmacy-frontend:
     build:
-      context: ./pharmacy-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: pharmacy-frontend/Dockerfile
       args:
         VITE_API_URL: /api/v1
         VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-https://aurent.uz}

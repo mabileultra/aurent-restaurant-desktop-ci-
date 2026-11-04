@@ -43,6 +43,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), serviceWorkerVersionPlugin()],
+    resolve: {
+      alias: {
+        '@aurent/shared-auth': path.resolve(__dirname, '../packages/shared-auth/src/index.js'),
+      },
+    },
     server: {
       port: 5173,
       // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).

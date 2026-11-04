@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -13,6 +14,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@aurent/shared-auth': path.resolve(__dirname, '../packages/shared-auth/src/index.js'),
+      },
+    },
     server: {
       port: 5175,
       proxy: {

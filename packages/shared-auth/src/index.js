@@ -1,6 +1,9 @@
 /**
- * @aurent/shared-auth
- * Planned: handoff create/exchange client, session helpers (no JWT in URL).
- * Keep vertical login/PIN screens in each app.
+ * @aurent/shared-auth — cross-SPA Identity handoff (one-time code, no JWT in URL).
+ * Vertical login screens and path maps stay in each app.
  */
-export {};
+export { HANDOFF_AUDIENCE } from './audiences.js';
+export { safeNextPath } from './safeNextPath.js';
+export { readHandoffCodeFromSearch, clearHandoffCodeFromUrl } from './handoffCode.js';
+export { buildHandoffAcceptUrl } from './buildHandoffAcceptUrl.js';
+export { createHandoff, exchangeHandoff } from './handoffApi.js';

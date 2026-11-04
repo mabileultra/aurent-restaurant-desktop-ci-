@@ -1,8 +1,10 @@
 /**
  * Cross-origin handoff to pharmacy SPA via Identity one-time code (no JWT in URL).
  */
+import { buildHandoffAcceptUrl, HANDOFF_AUDIENCE } from '@aurent/shared-auth';
 import { authApi } from '../api/auth.api';
 import { getPharmacyAppUrl } from '../config/pharmacyAppUrl';
+
 /** Paths that belong on the pharmacy product after cutover. */
 export function isPharmacySpaPath(path) {
   const p = String(path || '');
@@ -13,7 +15,7 @@ export function isPharmacySpaPath(path) {
  * Create handoff code and navigate to p-aurent /auth/accept?code=…&next=…
  * @returns {Promise<boolean>} true if navigation started
  */
-export async function redirectToPharmacyApp(path, { audience = 'PHARMACY' } = {}) {
+export async function redirectToPharmacyApp(path, { audience = HANDOFF_AUDIENCE.PHARMACY } = {}) {
   const base = getPharmacyAppUrl();
   if (!base) return false;
 
@@ -22,11 +24,12 @@ export async function redirectToPharmacyApp(path, { audience = 'PHARMACY' } = {}
     throw new Error('Handoff code missing');
   }
 
-  const nextPath = mapMainPathToPharmacyPath(path);
-  const url = new URL('/auth/accept', `${base}/`);
-  url.searchParams.set('code', data.code);
-  url.searchParams.set('next', nextPath);
-  window.location.assign(url.toString());
+  const target = buildHandoffAcceptUrl(base, {
+    code: data.code,
+    next: mapMainPathToPharmacyPath(path),
+  });
+  if (!target) return false;
+  window.location.assign(target);
   return true;
 }
 

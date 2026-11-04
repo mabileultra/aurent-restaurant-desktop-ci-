@@ -1,3 +1,4 @@
+import { createHandoff } from '@aurent/shared-auth';
 import { api } from './client';
 
 export const authApi = {
@@ -8,5 +9,5 @@ export const authApi = {
   verifyPassword: (data) => api.post('/auth/verify-password', data),
   verifyPin: (data) => api.post('/auth/verify-pin', data),
   /** One-time SPA handoff code (JWT stays off the URL). */
-  createHandoff: (data) => api.post('/auth/handoff', data),
+  createHandoff: (data) => createHandoff(api, data),
 };
