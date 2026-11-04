@@ -24,9 +24,13 @@ export const PlatformBusinessTypesPage = lazy(() => import('../features/platform
 export const PlatformReferenceBooksPage = lazy(() => import('../features/platform/pages/PlatformReferenceBooksPage'));
 export const PlatformLeadsPage = lazy(() => import('../features/platform/pages/PlatformLeadsPage'));
 export const PlatformBillingPage = lazy(() => import('../features/platform/pages/PlatformBillingPage'));
-export const PlatformAnalyticsPage = lazy(() => import('../features/platform/pages/PlatformAnalyticsPage'));
-export const PlatformCompanyAnalyticsPage = lazy(() => import('../features/platform/pages/PlatformCompanyAnalyticsPage'));
-export const PlatformCompanyAnalyticsDetailPage = lazy(() => import('../features/platform/pages/PlatformCompanyAnalyticsDetailPage'));
+export const PlatformAnalyticsPage = lazy(() => import('../features/analytics/pages/AnalyticsOverviewPage'));
+export const PlatformAnalyticsRegionsPage = lazy(() => import('../features/analytics/pages/AnalyticsRegionsPage'));
+export const PlatformCompanyAnalyticsPage = lazy(() => import('../features/analytics/pages/AnalyticsCompaniesPage'));
+export const PlatformCompanyAnalyticsDetailPage = lazy(() => import('../features/analytics/pages/AnalyticsCompanyDetailPage'));
+export const PlatformAnalyticsComparePage = lazy(() => import('../features/analytics/pages/AnalyticsComparePage'));
+export const PlatformAnalyticsReceiptsPage = lazy(() => import('../features/analytics/pages/AnalyticsReceiptsPage'));
+export const PlatformAnalyticsReportsPage = lazy(() => import('../features/analytics/pages/AnalyticsReportsPage'));
 export const TenantBillingPage = lazy(() => import('../features/billing/pages/TenantBillingPage'));
 
 export const PublicHomePage = lazy(() => import('../features/public-site/pages/PublicHomePage'));
