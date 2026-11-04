@@ -85,26 +85,18 @@ export async function resolveCashierCompanyCode(searchParams) {
   return '';
 }
 
+/** Pharmacy SPA login (handoff / password later). Not grocery /cashier/login. */
+export const PHARMACY_LOGIN_PATH = '/login';
+
 export function cashierLoginPath() {
-  if (isDesktopCashier()) return CASHIER_LOGIN_PATH;
-  try {
-    const fromStorage = localStorage.getItem(COMPANY_CODE_STORAGE_KEY);
-    if (fromStorage) {
-      return `${CASHIER_LOGIN_PATH}?${new URLSearchParams({ companyLoginCode: fromStorage })}`;
-    }
-  } catch {
-    /* ignore */
-  }
-  return CASHIER_LOGIN_PATH;
+  // This package is pharmacy-frontend — always stay on pharmacy origin login.
+  if (isDesktopCashier()) return PHARMACY_LOGIN_PATH;
+  return PHARMACY_LOGIN_PATH;
 }
 
 /** Куда отправлять при logout / 401 в контексте кассы или десктопа. */
 export function defaultLoginPath() {
-  if (isDesktopCashier()) return cashierLoginPath();
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier')) {
-    return cashierLoginPath();
-  }
-  return adminLoginPath();
+  return PHARMACY_LOGIN_PATH;
 }
 
 export function redirectToLogin() {

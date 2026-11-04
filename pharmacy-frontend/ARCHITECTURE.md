@@ -30,6 +30,13 @@ node scripts/fix-missing-from-build.mjs   # close Vite graph if needed
 
 Do not delete `/pharm` on aurent until offline drain + cutover.
 
+### Phase 4 — product shape (in progress)
+
+- POS chrome: `src/pharmacy/pos/PharmacyPosShell` (not grocery `CashierLayout`).
+- Admin chrome: `src/pharmacy/app/PharmacyAdminShell`.
+- Always `catalogKind: 'pharmacy'` on this SPA.
+- Next: strip grocery-only deps (scales/PLU/grocery grid) from the import graph.
+
 ### Запрещено
 
 - Копировать весь `web-frontend`

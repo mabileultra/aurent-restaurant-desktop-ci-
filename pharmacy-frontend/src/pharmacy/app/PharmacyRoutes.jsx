@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AuthAcceptPage from '../../features/auth/pages/AuthAcceptPage';
 import LoginPage from '../../features/auth/pages/LoginPage';
-import CashierLayout from '../../components/layout/CashierLayout';
+import PharmacyPosShell from '../pos/PharmacyPosShell';
 import PharmacyAuthGuard from './PharmacyAuthGuard';
 import PharmacyAdminShell from './PharmacyAdminShell';
 import {
@@ -35,7 +35,7 @@ function Authed({ children }) {
 
 /**
  * Pharmacy product routes on p-aurent.uz.
- * Sprint 3: POS + stock/ASL + returns + sales + dashboard (synced from main).
+ * Phase 4: own PharmacyPosShell (not grocery CashierLayout).
  */
 export function PharmacyRoutes() {
   return (
@@ -48,7 +48,7 @@ export function PharmacyRoutes() {
           path={PHARM_POS_PATH}
           element={(
             <Authed>
-              <CashierLayout />
+              <PharmacyPosShell />
             </Authed>
           )}
         >
