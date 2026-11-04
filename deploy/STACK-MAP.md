@@ -6,13 +6,14 @@
 
 | Домен | Что | Контейнер | Порт на хосте |
 |-------|-----|-----------|---------------|
-| **https://aurent.uz** | Main SPA (платформа, grocery POS, pharmacy, finance, лендинг) | `aurent-pos-frontend` | `8088→80` |
+| **https://aurent.uz** | Main SPA (платформа, grocery POS, finance, лендинг; pharmacy UI → cutover) | `aurent-pos-frontend` | `8088→80` |
 | **https://r-aurent.uz** | Restaurant SPA (зал, кухня, админка ресторана) | `aurent-restaurant-frontend` | `5174→80` |
+| **https://p-aurent.uz** | Pharmacy SPA (касса, склад, ASL) — Sprint 1 foundation | `aurent-pharmacy-frontend` | `5175→80` |
 | API | Gateway | `aurent-api-gateway` | `8080` |
 
-Host nginx: `/etc/nginx/sites-available/aurent-pos` → upstreams `8088` / `5174`.
+Host nginx: `/etc/nginx/sites-available/aurent-pos` → upstreams `8088` / `5174` / `5175`.
 
-Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-aurent.uz/auth/accept#handoff=…`.
+Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-aurent.uz/auth/accept#handoff=…`. Pharmacy: `VITE_PHARMACY_APP_URL` → p-aurent (безопасный code exchange — отдельный sprint).
 
 ---
 
@@ -22,7 +23,8 @@ Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-auren
 |---------|------------|-----|------|
 | `web-frontend` | Main SPA | `:5173` | aurent.uz |
 | `restaurant-frontend` | Restaurant SPA | `:5174` | r-aurent.uz |
-| `desktop-electron` | Оболочка кассы → грузит aurent (потом handoff на r-aurent) | — | установщик |
+| `pharmacy-frontend` | Pharmacy SPA | `:5175` | p-aurent.uz |
+| `desktop-electron` | Оболочка кассы → грузит aurent (потом handoff на r/p) | — | установщик |
 
 ### Legacy
 

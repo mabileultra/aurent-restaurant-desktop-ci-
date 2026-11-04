@@ -63,6 +63,9 @@ classify() {
     restaurant-frontend|restaurant-frontend/*)
       mark restaurant-frontend
       ;;
+    pharmacy-frontend|pharmacy-frontend/*)
+      mark pharmacy-frontend
+      ;;
     web-backend|web-backend/*)
       mark backend
       ;;
@@ -138,6 +141,7 @@ backend
 api-gateway
 frontend
 restaurant-frontend
+pharmacy-frontend
 telegram-web-support-bot
 telegram-support-bot
 "

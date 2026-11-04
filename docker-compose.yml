@@ -593,6 +593,7 @@ services:
       args:
         VITE_API_URL: /api/v1
         VITE_RESTAURANT_APP_URL: ${VITE_RESTAURANT_APP_URL:-http://localhost:5174}
+        VITE_PHARMACY_APP_URL: ${VITE_PHARMACY_APP_URL:-http://localhost:5175}
     container_name: masterpiece-pos-frontend
     depends_on:
       api-gateway:
@@ -615,6 +616,20 @@ services:
         condition: service_healthy
     ports:
       - "5174:80"
+
+  pharmacy-frontend:
+    build:
+      context: ./pharmacy-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+        VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-http://localhost:5173}
+    container_name: masterpiece-pharmacy-frontend
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    ports:
+      - "5175:80"
 
 volumes:
   pos_pg_data:

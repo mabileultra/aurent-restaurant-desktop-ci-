@@ -115,6 +115,7 @@ declare -A CONTAINER_NAMES=(
   [api-gateway]=aurent-api-gateway
   [frontend]=aurent-pos-frontend
   [restaurant-frontend]=aurent-restaurant-frontend
+  [pharmacy-frontend]=aurent-pharmacy-frontend
 )
 
 recreate_service() {
@@ -361,9 +362,11 @@ ensure_env_default() {
 }
 
 ensure_env_default VITE_RESTAURANT_APP_URL 'https://r-aurent.uz'
+ensure_env_default VITE_PHARMACY_APP_URL 'https://p-aurent.uz'
 ensure_env_default VITE_MAIN_APP_URL 'https://aurent.uz'
 ensure_env_default RESTAURANT_HTTP_PORT '5174'
-ensure_env_default APP_CORS_ALLOWED_ORIGIN_PATTERNS 'https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*'
+ensure_env_default PHARMACY_HTTP_PORT '5175'
+ensure_env_default APP_CORS_ALLOWED_ORIGIN_PATTERNS 'https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,https://p-aurent.uz,https://www.p-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*'
 
 # If HTTP_PORT still binds bare :80 while host nginx is expected for dual-domain, hint only.
 if grep -qE '^HTTP_PORT=80$' "$ENV_FILE" 2>/dev/null; then
@@ -614,6 +617,12 @@ if ! recreate_service restaurant-frontend; then
   exit 1
 fi
 
+echo "==> pharmacy-frontend..."
+if ! recreate_service pharmacy-frontend; then
+  compose_logs_tail pharmacy-frontend 80
+  exit 1
+fi
+
 if [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
   echo "==> Telegram-бот поддержки веба (CRM/POS)..."
   compose up -d --build telegram-web-support-bot
@@ -637,6 +646,7 @@ echo ""
 echo "Проверка:"
 echo "  Web:       http://${SERVER_IP:-localhost}:${HTTP_PORT:-80}/"
 echo "  Restaurant:http://${SERVER_IP:-localhost}:${RESTAURANT_HTTP_PORT:-5174}/"
+echo "  Pharmacy:  http://${SERVER_IP:-localhost}:${PHARMACY_HTTP_PORT:-5175}/"
 echo "  API (gw):  http://${SERVER_IP:-localhost}:${API_PORT:-8080}/api/v1/actuator/health"
 echo "  Identity:  http://127.0.0.1:8081/api/v1/actuator/health (localhost)"
 echo "  Finance:   http://127.0.0.1:8082/api/v1/swagger-ui.html (localhost)"
