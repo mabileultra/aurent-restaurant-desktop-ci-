@@ -3,6 +3,7 @@ import {
   calculateAttentionItems,
   calculateDailyMetrics,
   calculateFiscalDistribution,
+  calculateResultsTotals,
   calculateTop5Share,
 } from './analyticsCalculations';
 
@@ -48,4 +49,18 @@ describe('analyticsCalculations', () => {
     expect(attention.connectedNoReceipts.count).toBe(1);
     expect(attention.missingRegion.count).toBe(1);
   });
+
+  it('calculates results totals and percentages accurately', () => {
+    const rows = [
+      { fiscalTurnover: 4000, nonFiscalTurnover: 1000, totalTurnover: 5000 },
+      { fiscalTurnover: 2000, nonFiscalTurnover: 3000, totalTurnover: 5000 },
+    ];
+    const totals = calculateResultsTotals(rows);
+    expect(totals.fiscalTurnover).toBe(6000);
+    expect(totals.nonFiscalTurnover).toBe(4000);
+    expect(totals.totalTurnover).toBe(10000);
+    expect(totals.fiscalPct).toBe(60);
+    expect(totals.nonFiscalPct).toBe(40);
+  });
 });
+

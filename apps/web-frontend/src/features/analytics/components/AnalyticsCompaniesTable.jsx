@@ -2,10 +2,11 @@ import React from 'react';
 import { ChevronRight, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
+import { exportToCsv } from '../utils/analyticsExport';
 
 export default function AnalyticsCompaniesTable({
   rows = [],
-  total = 114,
+  total = 0,
   page = 0,
   size = 10,
   setPage,
@@ -20,20 +21,41 @@ export default function AnalyticsCompaniesTable({
     navigate(`/platform/analytics/companies/${companyId}`);
   };
 
+  const handleExport = () => {
+    if (onExport) {
+      onExport();
+      return;
+    }
+    const headers = ['#', 'Firma', 'STIR', 'Hudud', 'Fiskal holat', 'Umumiy aylanma', 'Fiskal ulush'];
+    const data = rows.map((r, index) => {
+      const totalTurnover = Number(r.totalTurnover || 0);
+      const fiscalTurnover = Number(r.fiscalTurnover || 0);
+      const fiscalShare = totalTurnover > 0 ? (fiscalTurnover / totalTurnover) * 100 : (r.connected ? 100 : 0);
+      return [
+        page * size + index + 1,
+        r.name,
+        r.tin || '',
+        r.regionNameUz || r.regionNameRu || 'Ko‘rsatilmagan',
+        r.connected ? 'Ulangan' : 'Ulanmagan',
+        fmtMoney(totalTurnover),
+        fmtPercent(fiscalShare),
+      ];
+    });
+    exportToCsv('kompaniyalar-analitika', headers, data);
+  };
+
   return (
     <div className="an-card" aria-label="Firmalar ro‘yxati">
       <div className="an-card-head">
         <div>
           <h3 className="an-card-title">Firmalar ro‘yxati <span style={{ color: '#64748b', fontWeight: 500 }}>{total} ta</span></h3>
-          <p className="an-card-sub">Haftalar dushanbadan yakshanbagacha to‘liq taqqoslanadi; joriy hafta alohida ustunda.</p>
+          <p className="an-card-sub">Aylanma bo‘yicha tartiblangan · bosilsa korxona detalizatsiyasi ochiladi</p>
         </div>
 
-        {onExport ? (
-          <button type="button" className="an-export-btn" onClick={onExport}>
-            <Download size={14} aria-hidden />
-            <span>Excel</span>
-          </button>
-        ) : null}
+        <button type="button" className="an-export-btn" onClick={handleExport}>
+          <Download size={14} aria-hidden />
+          <span>Excel / CSV</span>
+        </button>
       </div>
 
       <div className="an-table-wrap">
@@ -46,18 +68,17 @@ export default function AnalyticsCompaniesTable({
               <th>Fiskal holat</th>
               <th>Umumiy aylanma</th>
               <th>Fiskal ulush</th>
-              <th>19–25 okt</th>
-              <th>26 okt – 1 noy</th>
+              <th>Oldingi hafta</th>
+              <th>Haftalik aylanma</th>
               <th>Haftalik o‘zgarish</th>
-              <th>Joriy hafta · 3 kun</th>
               <th aria-label="Amal" />
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={11} style={{ textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda…</td></tr>
+              <tr><td colSpan={10} style={{ textAlign: 'center', color: '#94a3b8', padding: '24px' }}>Yuklanmoqda…</td></tr>
             ) : rows.length === 0 ? (
-              <tr><td colSpan={11} style={{ textAlign: 'center', color: '#94a3b8' }}>Firmalar topilmadi</td></tr>
+              <tr><td colSpan={10} style={{ textAlign: 'center', color: '#94a3b8', padding: '24px' }}>Firmalar topilmadi</td></tr>
             ) : rows.map((r, index) => {
               const rowNum = page * size + index + 1;
               const totalTurnover = Number(r.totalTurnover || 0);
@@ -68,7 +89,7 @@ export default function AnalyticsCompaniesTable({
 
               return (
                 <tr
-                  key={r.companyId}
+                  key={r.companyId || r.tin || index}
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleRowClick(r.companyId)}
                 >
@@ -95,9 +116,9 @@ export default function AnalyticsCompaniesTable({
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       <div style={{ width: 40, height: 4, background: '#e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${fiscalShare}%`, height: '100%', background: '#059669' }} />
+                        <div style={{ width: `${fiscalShare}%`, height: '100%', background: '#2563EB' }} />
                       </div>
-                      <span style={{ fontSize: '0.75rem' }}>{fiscalShare.toFixed(1)}%</span>
+                      <span style={{ fontSize: '0.75rem' }}>{fmtPercent(fiscalShare)}</span>
                     </div>
                   </td>
                   <td>{r.prevWeekTurnover ? fmtMoney(r.prevWeekTurnover) : '0'}</td>
@@ -106,12 +127,11 @@ export default function AnalyticsCompaniesTable({
                     {isNew ? (
                       <span className="an-badge an-badge--amber">Yangi</span>
                     ) : weekChange != null ? (
-                      <span style={{ color: weekChange >= 0 ? '#059669' : '#dc2626', fontWeight: 600 }}>
+                      <span style={{ color: weekChange >= 0 ? '#2563EB' : '#DC2626', fontWeight: 600 }}>
                         {weekChange >= 0 ? '↑' : '↓'} {fmtPercent(Math.abs(weekChange))}
                       </span>
                     ) : '—'}
                   </td>
-                  <td>{fmtMoney(r.currentWeekTurnover || 0)}</td>
                   <td><ChevronRight size={16} color="#94a3b8" /></td>
                 </tr>
               );
@@ -120,51 +140,41 @@ export default function AnalyticsCompaniesTable({
         </table>
       </div>
 
-      {/* Pagination Footer */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '0.75rem',
-        marginTop: '0.85rem',
-        fontSize: '0.8rem',
-        color: '#64748b',
-      }}>
-        <div>Ko‘rsatilmoqda {page * size + 1}–{Math.min((page + 1) * size, total)} / {total}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {[10, 20, 50, 100].map((sz) => (
+      {/* Pagination controls */}
+      {maxPages > 1 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0.75rem 1rem',
+          borderTop: '1px solid #f1f5f9',
+          fontSize: '0.8rem',
+        }}>
+          <span style={{ color: '#64748b' }}>
+            Sahifa {page + 1} / {maxPages}
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
-              key={sz}
               type="button"
-              className={`an-period-btn${size === sz ? ' is-active' : ''}`}
-              style={{ padding: '0.2rem 0.5rem' }}
-              onClick={() => setSize(sz)}
+              className="an-btn an-btn--outline"
+              disabled={page <= 0}
+              onClick={() => setPage && setPage((p) => Math.max(0, p - 1))}
+              style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}
             >
-              {sz}
+              Oldingi
             </button>
-          ))}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.5rem' }}>
             <button
               type="button"
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
-              style={{ border: '1px solid #e2e8f0', background: '#fff', borderRadius: 4, padding: '0.2rem 0.5rem', cursor: 'pointer' }}
-            >
-              ‹
-            </button>
-            <span>{page + 1} / {maxPages}</span>
-            <button
-              type="button"
+              className="an-btn an-btn--outline"
               disabled={page >= maxPages - 1}
-              onClick={() => setPage(page + 1)}
-              style={{ border: '1px solid #e2e8f0', background: '#fff', borderRadius: 4, padding: '0.2rem 0.5rem', cursor: 'pointer' }}
+              onClick={() => setPage && setPage((p) => Math.min(maxPages - 1, p + 1))}
+              style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}
             >
-              ›
+              Keyingi
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

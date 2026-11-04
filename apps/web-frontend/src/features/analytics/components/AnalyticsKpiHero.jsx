@@ -1,89 +1,109 @@
 import React from 'react';
-import { fmtMoney, fmtNum } from '../utils/analyticsFormat';
+import { fmtDeltaBadge, fmtMoney, fmtNum, fmtPercent } from '../utils/analyticsFormat';
 
-export default function AnalyticsKpiHero({ kpi, loading = false }) {
-  const totalTurnover = Number(kpi?.totalTurnover || 4400000000);
-  const fiscalTurnover = Number(kpi?.fiscalTurnover || 4240000000);
-  const nonFiscalTurnover = Number(kpi?.nonFiscalTurnover || 154000000);
-  const totalEnterprises = kpi?.totalEnterprises || 114;
-  const connected = kpi?.connected || 32;
-  const notConnected = kpi?.notConnected || 82;
-  const newConnections = kpi?.newConnections || 12;
+export default function AnalyticsKpiHero({
+  kpi,
+  totals,
+  loading = false,
+}) {
+  const totalEnterprises = Number(kpi?.totalEnterprises || 0);
+  const connected = Number(kpi?.connected || 0);
+  const notConnected = Number(kpi?.notConnected || 0);
+  const totalTurnover = Number(kpi?.totalTurnover ?? totals?.totalTurnover ?? 0);
+  const fiscalTurnover = Number(totals?.fiscalTurnover || 0);
+  const nonFiscalTurnover = Number(totals?.nonFiscalTurnover || 0);
+  const newConnections = Number(kpi?.newConnections || 0);
 
-  const connectedPct = totalEnterprises > 0 ? ((connected / totalEnterprises) * 100).toFixed(1) : '28.1';
-  const notConnectedPct = totalEnterprises > 0 ? ((notConnected / totalEnterprises) * 100).toFixed(1) : '71.9';
-  const fiscalPct = totalTurnover > 0 ? ((fiscalTurnover / totalTurnover) * 100).toFixed(1) : '96.5';
-  const nonFiscalPct = totalTurnover > 0 ? ((nonFiscalTurnover / totalTurnover) * 100).toFixed(1) : '3.5';
+  const connectedPct = kpi?.connectedSharePct != null
+    ? fmtPercent(kpi.connectedSharePct)
+    : (totalEnterprises > 0 ? fmtPercent((connected / totalEnterprises) * 100) : '0,0%');
+
+  const notConnectedPct = kpi?.notConnectedSharePct != null
+    ? fmtPercent(kpi.notConnectedSharePct)
+    : (totalEnterprises > 0 ? fmtPercent((notConnected / totalEnterprises) * 100) : '0,0%');
+
+  const fiscalPct = totals?.fiscalPct != null
+    ? fmtPercent(totals.fiscalPct)
+    : (totalTurnover > 0 ? fmtPercent((fiscalTurnover / totalTurnover) * 100) : '0,0%');
+
+  const nonFiscalPct = totals?.nonFiscalPct != null
+    ? fmtPercent(totals.nonFiscalPct)
+    : (totalTurnover > 0 ? fmtPercent((nonFiscalTurnover / totalTurnover) * 100) : '0,0%');
+
+  const turnoverDelta = fmtDeltaBadge(kpi?.totalTurnoverDeltaPct);
+  const newConnDelta = fmtDeltaBadge(kpi?.newConnectionsDeltaPct);
 
   return (
-    <section className="an-7kpi-grid" aria-label="Asosiy KPI ko‘rsatkichlari">
+    <section className="an-7kpi-grid" aria-label="Asosiy ko‘rsatkichlar">
       {/* 1. Jami korxonalar */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">Jami korxonalar</p>
-        <div className="an-kpi-val">{loading ? '…' : fmtNum(totalEnterprises)}</div>
-        <p className="an-kpi-meta">30 tasida savdo bor</p>
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <span className="k">Jami korxonalar</span>
+        <span className="v">{loading ? '…' : fmtNum(totalEnterprises)}</span>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>
+          {connected > 0 ? `${fmtNum(connected)} tasida ulanish bor` : 'Korxonalar soni'}
+        </span>
       </div>
 
       {/* 2. Fiskal tizimga ulangan */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">Fiskal tizimga ulangan</p>
-        <div className="an-kpi-val">
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <span className="k">Fiskal tizimga ulangan</span>
+        <span className="v">
           {loading ? '…' : fmtNum(connected)}{' '}
-          <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}>{connectedPct}%</span>
-        </div>
-        <div style={{ width: '100%', height: 4, background: '#e2e8f0', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
-          <div style={{ width: `${connectedPct}%`, height: '100%', background: '#2563eb' }} />
-        </div>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563' }}>{connectedPct}</span>
+        </span>
+        <span role="img" aria-label={`Ulanish darajasi ${connectedPct}`} style={{ height: 5, borderRadius: 9, background: '#E3EBFD', display: 'flex' }}>
+          <span style={{ width: `${Math.min(100, (connected / (totalEnterprises || 1)) * 100)}%`, background: '#2563EB', borderRadius: 9 }} />
+        </span>
       </div>
 
       {/* 3. Ulanmagan */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">Ulanmagan</p>
-        <div className="an-kpi-val">
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <span className="k">Ulanmagan</span>
+        <span className="v">
           {loading ? '…' : fmtNum(notConnected)}{' '}
-          <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}>{notConnectedPct}%</span>
-        </div>
-        <p className="an-kpi-meta" style={{ color: '#dc2626', fontWeight: 500 }}>
-          9 tasida nofiskal savdo
-        </p>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563' }}>{notConnectedPct}</span>
+        </span>
+        <span style={{ fontSize: '12px', color: notConnected > 0 ? '#B42318' : '#16A34A' }}>
+          {notConnected > 0 ? `${fmtNum(notConnected)} korxona ulanmagan` : 'Barchasi ulangan'}
+        </span>
       </div>
 
       {/* 4. Umumiy aylanma */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">Umumiy aylanma</p>
-        <div className="an-kpi-val">{loading ? '…' : fmtMoney(totalTurnover, { showCurrency: false })}</div>
-        <p className="an-kpi-meta an-kpi-delta-up">
-          ↑ 633,6% +3,80 mlrd
-        </p>
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px', borderColor: '#C9DAFB' }}>
+        <span className="k">Umumiy aylanma</span>
+        <span className="v">{loading ? '…' : fmtMoney(totalTurnover, { showCurrency: false })}</span>
+        <span style={{ fontSize: '12px' }}>
+          <span className={turnoverDelta.dir}>{turnoverDelta.text}</span>
+        </span>
       </div>
 
       {/* 5. Fiskal aylanma */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">
-          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#2563eb', display: 'inline-block' }} />
-          <span>Fiskal aylanma</span>
-        </p>
-        <div className="an-kpi-val">{loading ? '…' : fmtMoney(fiscalTurnover, { showCurrency: false })}</div>
-        <p className="an-kpi-meta">{fiscalPct}% ulush</p>
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <span className="k" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#2563EB' }} />
+          Fiskal aylanma
+        </span>
+        <span className="v">{loading ? '…' : fmtMoney(fiscalTurnover, { showCurrency: false })}</span>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{fiscalPct} ulush</span>
       </div>
 
       {/* 6. Nofiskal aylanma */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">
-          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#f59e0b', display: 'inline-block' }} />
-          <span>Nofiskal aylanma</span>
-        </p>
-        <div className="an-kpi-val">{loading ? '…' : fmtMoney(nonFiscalTurnover, { showCurrency: false })}</div>
-        <p className="an-kpi-meta">{nonFiscalPct}% ulush</p>
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <span className="k" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: '#EA7A2B' }} />
+          Nofiskal aylanma
+        </span>
+        <span className="v">{loading ? '…' : fmtMoney(nonFiscalTurnover, { showCurrency: false })}</span>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{nonFiscalPct} ulush</span>
       </div>
 
       {/* 7. Yangi ulanishlar */}
-      <div className="an-kpi-card">
-        <p className="an-kpi-label">Yangi ulanishlar</p>
-        <div className="an-kpi-val">{loading ? '…' : fmtNum(newConnections)}</div>
-        <p className="an-kpi-meta an-kpi-delta-up">
-          ↑ 50% +4 ta
-        </p>
+      <div className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <span className="k">Yangi ulanishlar</span>
+        <span className="v">{loading ? '…' : fmtNum(newConnections)}</span>
+        <span style={{ fontSize: '12px' }}>
+          <span className={newConnDelta.dir}>{newConnDelta.text}</span>
+        </span>
       </div>
     </section>
   );

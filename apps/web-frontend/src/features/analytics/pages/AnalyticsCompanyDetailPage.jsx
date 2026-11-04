@@ -12,7 +12,8 @@ export default function AnalyticsCompanyDetailPage() {
   const page = useAnalyticsCompanyDetail();
 
   return (
-    <div className="an-container">
+    <div className="an-shell">
+      <main className="an-main">
       <AnalyticsCompanyDetailHeader
         company={page.detail}
         period={page.period}
@@ -48,6 +49,7 @@ export default function AnalyticsCompanyDetailPage() {
           weeks={page.detail?.weeks}
         />
       </div>
+      </main>
     </div>
   );
 }

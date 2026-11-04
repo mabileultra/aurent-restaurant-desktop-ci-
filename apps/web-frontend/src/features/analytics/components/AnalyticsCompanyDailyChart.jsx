@@ -3,7 +3,7 @@ import { fmtDayFull, fmtDayShort, fmtMoney } from '../utils/analyticsFormat';
 
 export default function AnalyticsCompanyDailyChart({
   days = [],
-  selectedDay = '2026-10-24',
+  selectedDay = '',
   onSelectDay,
 }) {
   const chartData = useMemo(() => {
@@ -17,23 +17,32 @@ export default function AnalyticsCompanyDailyChart({
         total: Number(d.totalTurnover || 0),
       }));
     }
-
-    // Default realistic mock for Farina Invest (PDF page 5)
-    return [
-      { date: '2026-10-06', label: '6-okt', fullDate: '6-okt, 2026', fiscal: 0, nonFiscal: 0, total: 0 },
-      { date: '2026-10-13', label: '13-okt', fullDate: '13-okt, 2026', fiscal: 0, nonFiscal: 0, total: 0 },
-      { date: '2026-10-20', label: '20-okt', fullDate: '20-okt, 2026', fiscal: 0, nonFiscal: 0, total: 0 },
-      { date: '2026-10-23', label: '23-okt', fullDate: '23-okt, 2026', fiscal: 0, nonFiscal: 49400000, total: 49400000 },
-      { date: '2026-10-24', label: '24-okt', fullDate: '24-oktabr, shanba', fiscal: 1190000000, nonFiscal: 0, total: 1190000000 },
-      { date: '2026-10-27', label: '27-okt', fullDate: '27-okt, 2026', fiscal: 380000000, nonFiscal: 0, total: 380000000 },
-      { date: '2026-10-31', label: '31-okt', fullDate: '31-okt, 2026', fiscal: 420000000, nonFiscal: 0, total: 420000000 },
-      { date: '2026-11-03', label: '3-noy', fullDate: '3-noy, 2026', fiscal: 100500000, nonFiscal: 0, total: 100500000 },
-    ];
+    return [];
   }, [days]);
 
   const maxVal = useMemo(() => {
+    if (chartData.length === 0) return 1000;
     const max = Math.max(...chartData.map((d) => d.total), 1);
     return max * 1.15;
+  }, [chartData]);
+
+  const peakDay = useMemo(() => {
+    if (chartData.length === 0) return null;
+    return chartData.reduce((max, d) => (d.total > (max?.total || 0) ? d : max), chartData[0]);
+  }, [chartData]);
+
+  const selectedItem = useMemo(() => {
+    return chartData.find((d) => d.date === selectedDay) || chartData[0];
+  }, [chartData, selectedDay]);
+
+  const activeDaysCount = useMemo(() => {
+    return chartData.filter((d) => d.total > 0).length;
+  }, [chartData]);
+
+  const avgDailyTurnover = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    const sum = chartData.reduce((s, d) => s + d.total, 0);
+    return sum / chartData.length;
   }, [chartData]);
 
   return (
@@ -57,68 +66,80 @@ export default function AnalyticsCompanyDailyChart({
       </div>
 
       <div className="an-chart-container">
-        <div className="an-chart-bars" style={{ height: 170 }}>
-          {chartData.map((item) => {
-            const isSelected = selectedDay === item.date;
-            const fiscalHeight = (item.fiscal / maxVal) * 100;
-            const nonFiscalHeight = (item.nonFiscal / maxVal) * 100;
+        {chartData.length === 0 ? (
+          <div style={{ height: 170, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
+            Kunlik aylanma ma‘lumoti mavjud emas
+          </div>
+        ) : (
+          <>
+            <div className="an-chart-bars" style={{ height: 170 }}>
+              {chartData.map((item) => {
+                const isSelected = selectedDay === item.date;
+                const fiscalHeight = (item.fiscal / maxVal) * 100;
+                const nonFiscalHeight = (item.nonFiscal / maxVal) * 100;
 
-            return (
-              <div
-                key={item.date}
-                className="an-chart-col"
-                onClick={() => onSelectDay && onSelectDay(item.date)}
-                title={`${item.fullDate}: ${fmtMoney(item.total)}`}
-              >
-                {isSelected && (
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#047857', marginBottom: '0.2rem' }}>
-                    1,19 mlrd
-                  </span>
-                )}
-                <div
-                  className="an-chart-bar-stack"
+                return (
+                  <div
+                    key={item.date}
+                    className="an-chart-col"
+                    onClick={() => onSelectDay && onSelectDay(item.date)}
+                    title={`${item.fullDate}: ${fmtMoney(item.total)}`}
+                  >
+                    {isSelected && item.total > 0 && (
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2563EB', marginBottom: '0.2rem' }}>
+                        {fmtMoney(item.total, { showCurrency: false })}
+                      </span>
+                    )}
+                    <div
+                      className="an-chart-bar-stack"
+                      style={{
+                        border: isSelected ? '2px solid #2563EB' : 'none',
+                        transform: isSelected ? 'scale(1.05)' : 'none',
+                      }}
+                    >
+                      <div className="an-chart-bar-fiscal" style={{ height: `${fiscalHeight}%` }} />
+                      <div className="an-chart-bar-nonfiscal" style={{ height: `${nonFiscalHeight}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="an-chart-date-labels">
+              {chartData.map((item) => (
+                <span
+                  key={item.date}
                   style={{
-                    border: isSelected ? '2px solid #047857' : 'none',
-                    transform: isSelected ? 'scale(1.05)' : 'none',
+                    fontWeight: selectedDay === item.date ? 700 : 400,
+                    color: selectedDay === item.date ? '#2563EB' : '#94a3b8',
                   }}
                 >
-                  <div className="an-chart-bar-fiscal" style={{ height: `${fiscalHeight}%` }} />
-                  <div className="an-chart-bar-nonfiscal" style={{ height: `${nonFiscalHeight}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="an-chart-date-labels">
-          {chartData.map((item) => (
-            <span
-              key={item.date}
-              style={{
-                fontWeight: selectedDay === item.date ? 700 : 400,
-                color: selectedDay === item.date ? '#047857' : '#94a3b8',
-              }}
-            >
-              {item.label}
-            </span>
-          ))}
-        </div>
+                  {item.label}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="an-chart-metrics">
         <div>
           <div className="an-metric-block-label">Eng yuqori kun</div>
-          <div className="an-metric-block-val">24-okt · 1,19 mlrd</div>
-        </div>
-        <div>
-          <div className="an-metric-block-label">O‘tgan hafta</div>
           <div className="an-metric-block-val">
-            652,1 mln <span style={{ color: '#dc2626', fontSize: '0.8rem' }}>↓ 49,4%</span>
+            {peakDay && peakDay.total > 0 ? `${peakDay.label} · ${fmtMoney(peakDay.total, { showCurrency: false })}` : '—'}
           </div>
         </div>
         <div>
-          <div className="an-metric-block-label">Joriy hafta · 3 kun</div>
-          <div className="an-metric-block-val">100,5 mln</div>
+          <div className="an-metric-block-label">Kunlik o‘rtacha</div>
+          <div className="an-metric-block-val">
+            {fmtMoney(avgDailyTurnover, { showCurrency: false })}
+          </div>
+        </div>
+        <div>
+          <div className="an-metric-block-label">Savdo bo‘lgan kunlar</div>
+          <div className="an-metric-block-val">
+            {activeDaysCount} / {chartData.length} kun
+          </div>
         </div>
       </div>
     </div>

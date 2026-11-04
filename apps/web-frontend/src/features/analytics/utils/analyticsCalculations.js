@@ -102,3 +102,24 @@ export function calculateAttentionItems(companies = []) {
     },
   };
 }
+
+export function calculateResultsTotals(rows = []) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { fiscalTurnover: 0, nonFiscalTurnover: 0, totalTurnover: 0, fiscalPct: 0, nonFiscalPct: 0 };
+  }
+  let fiscalTurnover = 0;
+  let nonFiscalTurnover = 0;
+  let totalTurnover = 0;
+  rows.forEach((r) => {
+    fiscalTurnover += Number(r.fiscalTurnover || 0);
+    nonFiscalTurnover += Number(r.nonFiscalTurnover || 0);
+    totalTurnover += Number(r.totalTurnover || 0);
+  });
+  if (totalTurnover === 0) {
+    totalTurnover = fiscalTurnover + nonFiscalTurnover;
+  }
+  const fiscalPct = totalTurnover > 0 ? Math.min(100, (fiscalTurnover / totalTurnover) * 100) : 0;
+  const nonFiscalPct = totalTurnover > 0 ? Math.min(100, (nonFiscalTurnover / totalTurnover) * 100) : 0;
+  return { fiscalTurnover, nonFiscalTurnover, totalTurnover, fiscalPct, nonFiscalPct };
+}
+

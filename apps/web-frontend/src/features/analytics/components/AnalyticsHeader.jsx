@@ -1,6 +1,8 @@
 import React from 'react';
-import { ArrowLeftRight, BarChart2, Calendar } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
+import AnalyticsTabs from './AnalyticsTabs';
 import PlatformDateRangePicker from '../../platform/components/PlatformDateRangePicker';
+import { useAnalyticsPeriodStore } from '../hooks/useAnalyticsPeriodStore';
 
 const PERIOD_KEYS = [
   { key: 'today', label: 'Bugun' },
@@ -12,56 +14,88 @@ const PERIOD_KEYS = [
 ];
 
 export default function AnalyticsHeader({
-  period = '30d',
+  period,
   setPeriod,
   customFrom,
   customTo,
   onCustomChange,
-  compareLabel = 'Taqqoslash: 6-sen – 5-okt',
+  compareLabel,
   t,
 }) {
+  const storePeriod = useAnalyticsPeriodStore((s) => s.period);
+  const setStorePeriod = useAnalyticsPeriodStore((s) => s.setPeriod);
+  const storeCustomFrom = useAnalyticsPeriodStore((s) => s.customFrom);
+  const storeCustomTo = useAnalyticsPeriodStore((s) => s.customTo);
+  const setCustomRange = useAnalyticsPeriodStore((s) => s.setCustomRange);
+  const labels = useAnalyticsPeriodStore((s) => s.getLabels());
+
+  const activePeriod = period || storePeriod;
+  const activeSetPeriod = setPeriod || setStorePeriod;
+  const activeFrom = customFrom !== undefined ? customFrom : storeCustomFrom;
+  const activeTo = customTo !== undefined ? customTo : storeCustomTo;
+  const activeCustomChange = onCustomChange || setCustomRange;
+  const activeCompareLabel = compareLabel || labels.compareLabel;
+
   return (
-    <header className="an-header">
-      <div className="an-brand-row">
-        <div className="an-brand-icon">
-          <BarChart2 size={20} strokeWidth={2.4} aria-hidden />
+    <header className="an-header-wrap">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            background: '#2563EB',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <svg className="ic" viewBox="0 0 24 24" style={{ width: 18, height: 18 }}>
+              <path d="M5 20V11M11 20V5M17 20v-7" />
+            </svg>
+          </span>
+          <div>
+            <div style={{ fontSize: '11.5px', color: '#6B7280' }}>Super Admin › Analitika</div>
+            <div style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-.01em', color: '#1F2937' }}>
+              Aurent Analytics
+            </div>
+          </div>
         </div>
-        <div className="an-brand-text">
-          <span className="an-brand-sub">Super Admin › Analitika</span>
-          <h1 className="an-brand-title">Aurent Analytics</h1>
-        </div>
-      </div>
 
-      <div className="an-header-bar">
-        <div className="an-period-group" role="group" aria-label="Davr tanlash">
-          {PERIOD_KEYS.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`an-period-btn${period === item.key ? ' is-active' : ''}`}
-              onClick={() => setPeriod && setPeriod(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        {/* Controls: Segmented + DatePicker + Compare */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="seg" role="group" aria-label="Davr">
+            {PERIOD_KEYS.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={activePeriod === item.key ? 'on' : ''}
+                aria-pressed={activePeriod === item.key}
+                onClick={() => activeSetPeriod(item.key)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <PlatformDateRangePicker
-            from={customFrom}
-            to={customTo}
-            onChange={onCustomChange}
-            placeholder="6-okt – 4-noy, 2026"
+            from={activeFrom}
+            to={activeTo}
+            onChange={activeCustomChange}
+            placeholder={labels.currentLabel}
             align="right"
             t={t}
           />
 
-          <div className="an-compare-pill">
-            <ArrowLeftRight size={13} color="#64748b" aria-hidden />
-            <span>{compareLabel}</span>
-          </div>
+          <button type="button" className="btn" style={{ color: '#4B5563' }}>
+            <ArrowLeftRight className="ic" style={{ width: 14, height: 14 }} aria-hidden />
+            <span>{activeCompareLabel}</span>
+          </button>
         </div>
       </div>
+
+      <AnalyticsTabs />
     </header>
   );
 }
