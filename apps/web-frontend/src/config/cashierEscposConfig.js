@@ -1,5 +1,5 @@
 /**
- * Конфиг автопечати чека ESC/POS (только aurent-cashier-desktop).
+ * Конфиг автопечати чека ESC/POS (Electron desktop-electron / pharmacy-desktop).
  * Не смешивать с printReceipt.js (window.print).
  */
 

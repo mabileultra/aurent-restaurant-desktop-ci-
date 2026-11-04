@@ -1,6 +1,6 @@
 # Весы (фронтенд)
 
-Мост к Electron-модулю `aurent-cashier-desktop/electron/scales/`.
+Мост к Electron-модулю `apps/desktop-electron/electron/scales/`.
 
 - `scaleBridge.js` — вызовы `window.desktopCashier.*` (любая модель → вес в кг)
 - `useScaleWeight.js` — подписка на показания при открытой модалке / станции
@@ -20,7 +20,7 @@
 
 Много моделей = **семейства** (MASSA-K, CAS, Digi, Rongta…), не файл на каждую модель.
 
-- Контракт: `aurent-cashier-desktop/electron/scales/adapters/`
+- Контракт: `apps/desktop-electron/electron/scales/`
 - Каталог семейств: `GET /scales/sync/adapters`
 - Пакет PLU: `GET /scales/sync/export`
 - UI: **Коды PLU** → «Выгрузить на умные весы»

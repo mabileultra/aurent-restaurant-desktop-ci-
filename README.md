@@ -81,7 +81,7 @@ bash deploy/deploy.sh
 
 ## Касса
 
-Desktop: **`apps/desktop-electron/`** (grocery), **`apps/restaurant-desktop/`**, **`apps/pharmacy-desktop/`** (аптека). Старый `aurent-cashier-desktop/` не трогаем.
+Desktop: **`apps/desktop-electron/`** (grocery), **`apps/restaurant-desktop/`**, **`apps/pharmacy-desktop/`** (аптека).
 
 ```bash
 bash scripts/start-cashier-desktop.sh

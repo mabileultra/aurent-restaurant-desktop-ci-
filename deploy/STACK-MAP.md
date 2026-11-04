@@ -33,7 +33,6 @@ Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-auren
 | Что | Где | Статус |
 |-----|-----|--------|
 | Дубль restaurant UI | `web-frontend/src/restaurant` | **Удалён** (фаза 7). На aurent `/rst/*` → handoff на r-aurent |
-| Старый Electron | `aurent-cashier-desktop` | Не трогать без отдельной задачи |
 
 Handoff на aurent: `router/restaurant.routes.jsx` + `RestaurantSpaHandoff` + `VITE_RESTAURANT_APP_URL`.
 

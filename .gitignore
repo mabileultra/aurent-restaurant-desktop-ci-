@@ -102,8 +102,6 @@ Thumbs.db
 
 
 # Sibling desktop app nested by mistake
-aurent-cashier-desktop/
-
 # Electron desktop (desktop-electron/)
 desktop-electron/node_modules/
 desktop-electron/dist/
