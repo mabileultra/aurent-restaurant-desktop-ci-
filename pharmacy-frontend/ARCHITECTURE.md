@@ -34,8 +34,9 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 
 - POS chrome: `src/pharmacy/pos/PharmacyPosShell` (not grocery `CashierLayout`).
 - Admin chrome: `src/pharmacy/app/PharmacyAdminShell`.
-- Always `catalogKind: 'pharmacy'` on this SPA.
-- Next: strip grocery-only deps (scales/PLU/grocery grid) from the import graph.
+- Always `catalogKind: 'pharmacy'` on this SPA (`pharmacy/config/vertical.js`).
+- `useCompanyBusinessType` / `useCashierStoreProfile` force pharmacy world (no grocery flicker).
+- Next: strip grocery-only modules (scales/PLU/grocery grid) from the import graph.
 
 ### Запрещено
 

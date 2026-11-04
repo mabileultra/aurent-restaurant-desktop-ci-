@@ -23,8 +23,9 @@ import { resetCashierDocumentUiState } from '../../utils/resetCashierDocumentUiS
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import { displayCashierName, formatShiftOpenedAt } from '../../components/layout/cashier/cashierLayoutUtils';
 import { useCashierUiScale } from '../../features/cashier/hooks/useCashierUiScale';
+import { PHARMACY_CATALOG_KIND } from '../config/vertical';
 
-const CATALOG_KIND = 'pharmacy';
+const CATALOG_KIND = PHARMACY_CATALOG_KIND;
 
 /**
  * Pharmacy POS chrome state — always pharmacy catalog, login stays on this SPA.

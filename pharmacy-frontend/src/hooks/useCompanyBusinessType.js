@@ -3,9 +3,8 @@ import { companyBusinessTypeApi } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { useTenantScope } from './useTenantScope';
 import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
-import { isPharmacyBusinessType } from '../pharmacy/app/pharmacyPaths';
 
-const EMPTY = { types: [], defaultTypeCode: 'UNIVERSAL' };
+const EMPTY = { types: [], defaultTypeCode: 'PHARMACY' };
 
 /**
  * Разрешённые типы бизнеса компании.
@@ -31,15 +30,14 @@ export function useCompanyBusinessType() {
   });
 
   const types = query.data?.types ?? EMPTY.types;
-  const defaultTypeCode = query.data?.defaultTypeCode ?? EMPTY.defaultTypeCode;
+  // pharmacy-frontend is a single-vertical SPA — never treat the tenant as grocery here.
+  const defaultTypeCode = 'PHARMACY';
   const typeCodes = types
     .map((item) => normalizeBusinessTypeCode(item?.code))
     .filter(Boolean);
-  const hasPharmacyType = typeCodes.some((code) => isPharmacyBusinessType(code));
-  // Аптечный мир: дефолт PHARMACY, либо в компании только аптека.
-  const isPharmacyCompany = isPharmacyBusinessType(defaultTypeCode)
-    || (hasPharmacyType && typeCodes.length === 1);
-  const businessType = isPharmacyCompany ? 'PHARMACY' : defaultTypeCode;
+  const hasPharmacyType = true;
+  const isPharmacyCompany = true;
+  const businessType = 'PHARMACY';
 
   return {
     types,
