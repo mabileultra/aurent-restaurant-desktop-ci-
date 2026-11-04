@@ -11,14 +11,28 @@ export const useAuthStore = create(
 
       setAuth: (token, user) => set({ token, user }),
       setToken: (token) => set({ token }),
-      logout: () => set({ token: null, user: null }),
+      patchUser: (partial) =>
+        set((state) => (state.user ? { user: { ...state.user, ...partial } } : {})),
       setHasHydrated: (value) => set({ _hasHydrated: value }),
+      logout: () => set({ token: null, user: null }),
 
       isAuthenticated: () => !!get().token,
+      isAdmin: () => get().user?.role === 'ADMIN',
+      isSuperAdmin: () => get().user?.role === 'SUPER_ADMIN',
+      isPlatformUser: () => ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(get().user?.role),
+      isManager: () => ['ADMIN', 'MANAGER'].includes(get().user?.role),
+      isCashier: () => get().user?.role === 'CASHIER',
     }),
     {
       name: 'pharmacy-auth',
       partialize: (state) => ({ token: state.token, user: state.user }),
+      merge: (persisted, current) => {
+        const saved = persisted ?? {};
+        if (current.token) {
+          return { ...current, token: current.token, user: current.user ?? saved.user };
+        }
+        return { ...current, ...saved };
+      },
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

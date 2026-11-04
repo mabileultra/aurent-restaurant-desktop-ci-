@@ -1,0 +1,486 @@
+/*
+ * POS desktop — стабильная колонка оплаты + читаемые тексты.
+ * Только .cashier-app--pos-desktop + --pos-screen.
+ * Клавиатура не сжимается (min-height); ширина колонки фиксирована.
+ */
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen {
+  --cashier-pay-w: 360px;
+  --pos-keypad-digit-size: 1.875rem;
+  --pos-keypad-action-size: 1rem;
+  --pos-keypad-gap: 6px;
+  --pos-keypad-key-min: 64px;
+
+  /* Блок К оплате / Получено / Сдача — чуть выше, без раздува */
+  --pos-pay-cash-lock-gap: 8px;
+  --pos-pay-cash-lock-pad: 14px 14px;
+  --pos-pay-cash-received-h: 60px;
+
+  /* Только текст крупнее — размеры колонок/кнопок не трогаем */
+  --pos-density-cart-head-font: 0.8125rem;
+  --pos-density-cart-name: 1.0625rem;
+  --pos-density-cart-sku: 0.8125rem;
+  --pos-density-cart-money: 1.125rem;
+  --pos-density-row-name: 1.0625rem;
+  --pos-density-row-code: 0.8125rem;
+  --pos-density-row-price: 1.0625rem;
+  --pos-density-product-name: 1rem;
+  --pos-density-product-price: 1rem;
+  --pos-density-product-code: 0.8125rem;
+  --pos-density-nav-font: 1.0625rem;
+  --pos-density-qty-font: 1rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen .cashier-register__stage {
+  --cashier-pay-w: 360px;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-register__split--register
+  .cashier-register__stage,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-register__split--catalog
+  .cashier-register__stage {
+  grid-template-columns: minmax(0, 1fr) var(--cashier-pay-w);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-register__split--register
+  .cashier-register__actions-col,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-register__split--catalog
+  .cashier-register__actions-col {
+  width: var(--cashier-pay-w);
+  min-width: var(--cashier-pay-w);
+  max-width: var(--cashier-pay-w);
+  flex: 0 0 var(--cashier-pay-w);
+  box-sizing: border-box;
+}
+
+/* Клавиатура фиксирована: при нехватке высоты скролл колонки, не сжатие сетки */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Верх pay-block чуть компактнее — место под клавиатуру, ширина колонки та же */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__pay-block {
+  gap: 6px;
+  padding: 6px;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-methods__tile {
+  min-height: 44px;
+  padding: 4px 4px;
+  gap: 2px;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-methods__tile-label {
+  font-size: 0.875rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-card-providers__btn {
+  min-height: 40px;
+}
+
+/* Клавиатура: не схлопывать flex-ом (было ~106px) */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__keypad-wrap {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: calc(var(--pos-keypad-key-min) * 4 + var(--pos-keypad-gap) * 3);
+  max-height: none;
+  height: auto;
+  overflow: visible;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__keypad-wrap
+  .pos-keypad {
+  flex: 0 0 auto;
+  min-height: calc(var(--pos-keypad-key-min) * 4 + var(--pos-keypad-gap) * 3);
+  max-height: none;
+  height: auto;
+  overflow: visible;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__keypad-wrap
+  .pos-keypad__grid {
+  flex: 0 0 auto;
+  min-height: calc(var(--pos-keypad-key-min) * 4 + var(--pos-keypad-gap) * 3);
+  height: calc(var(--pos-keypad-key-min) * 4 + var(--pos-keypad-gap) * 3);
+  grid-template-rows: repeat(4, minmax(var(--pos-keypad-key-min), 1fr));
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__keypad-wrap
+  .pos-keypad__key {
+  min-height: var(--pos-keypad-key-min);
+  font-size: var(--pos-keypad-digit-size);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__keypad-wrap
+  .pos-keypad__key--action {
+  font-size: var(--pos-keypad-action-size);
+}
+
+/* Суммы: чуть воздуха + крупнее текст */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-register-pay-cash {
+  gap: var(--pos-pay-cash-lock-gap);
+  padding: var(--pos-pay-cash-lock-pad);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__received-box,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__change-box {
+  min-height: var(--pos-pay-cash-received-h);
+  padding: 10px 12px;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__due-label {
+  font-size: 1rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__due-value {
+  font-size: 2rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__currency-badge {
+  font-size: 0.8125rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__received-label,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__change-label,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__summary-row {
+  font-size: 0.875rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__received-value
+  .auto-fit-text__inner,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail
+  .pos-pay-cash__change-value
+  .auto-fit-text__inner {
+  font-size: 1.5rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-rail__tool {
+  font-size: 1.0625rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-footer__sale {
+  font-size: 1.1875rem;
+}
+
+/* «Печать чека» — компактный размер, ровный ряд checkbox + icon + text */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-pay-footer
+  .pos-pay-print-toggle--footer {
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  width: auto;
+  min-width: 6.75rem;
+  max-width: 8.75rem;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-pay-print-toggle--footer
+  .pos-pay-print-toggle__box {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-pay-print-toggle--footer
+  svg.pos-pay-print-toggle__icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  display: block;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-pay-print-toggle--footer
+  .pos-pay-print-toggle__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.015em;
+  text-align: left;
+  white-space: normal;
+}
+
+/* Чек / фильтры / finder / поиск */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__title {
+  font-size: 1.125rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__client,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__check-badge {
+  font-size: 0.875rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__search-input,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__f2,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__card-btn {
+  font-size: 0.9375rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder__picker-title {
+  font-size: 1rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-quick-filters__label,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-quick-filters__chip-name {
+  font-size: 0.9375rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-cart-table__head
+  .pos-cart-table__col {
+  font-size: var(--pos-density-cart-head-font);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-cart-table__name {
+  font-size: var(--pos-density-cart-name);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-cart-table__sku {
+  font-size: var(--pos-density-cart-sku);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-cart-table__price-btn,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-cart-table__price-btn span,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-cart-table__sum,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-qty-control__val,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-qty-control__input {
+  font-size: var(--pos-density-cart-money);
+}
+
+/*
+ * Qty / удалить — выше визуально (scale),
+ * layout строки и соседние колонки не меняются.
+ */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--qty,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--remove {
+  overflow: visible;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--qty
+  .pos-qty-control {
+  transform: scale(1.12, 1.36);
+  transform-origin: center center;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-cart-table__col--remove
+  .pos-cart-table__remove-btn {
+  transform: scale(1.12, 1.36);
+  transform-origin: center center;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-order-panel__totals-foot {
+  gap: 6px;
+  padding: 6px 10px 8px;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-order-panel__totals-stat-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-order-panel__totals-stat-box {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-order-panel__totals-stat-tax {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-order-panel--register
+  .pos-order-panel__foot-btn {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-product-row__name,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-product-card__name {
+  font-size: var(--pos-density-product-name);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-product-row__price,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-product-card__price {
+  font-size: var(--pos-density-product-price);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-product-row__code,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-product-card__code {
+  font-size: var(--pos-density-product-code);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__btn,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__btn span,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__btn--keyboard
+  .cashier-bottom-nav__keyboard-label {
+  font-size: var(--pos-density-nav-font);
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-zoom__value,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__kkm {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-zoom__btn {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__btn {
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__btn--toggle
+  svg,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .cashier-bottom-nav__btn--icon
+  svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.5;
+}
+
+/* Топбар: общий стиль в shell/shell-topbar-readable.css */
+
+/* Не отдавать место клавиатуры обратно при низкой колонке */
+@container pay-shell (max-height: 820px) {
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .cashier-register__pay-shell {
+    --pos-keypad-digit-size: 1.875rem;
+    --pos-keypad-action-size: 1rem;
+    --pos-keypad-key-min: 60px;
+  }
+
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .pos-register-pay-rail__keypad-wrap,
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .pos-register-pay-rail__keypad-wrap
+    .pos-keypad,
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .pos-register-pay-rail__keypad-wrap
+    .pos-keypad__grid {
+    flex-shrink: 0;
+    min-height: calc(var(--pos-keypad-key-min) * 4 + var(--pos-keypad-gap) * 3);
+  }
+
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .pos-register-pay-rail__keypad-wrap
+    .pos-keypad__grid {
+    height: calc(var(--pos-keypad-key-min) * 4 + var(--pos-keypad-gap) * 3);
+    grid-template-rows: repeat(4, minmax(var(--pos-keypad-key-min), 1fr));
+  }
+
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .pos-register-pay-rail__keypad-wrap
+    .pos-keypad__key {
+    min-height: var(--pos-keypad-key-min);
+    font-size: 1.875rem;
+  }
+
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+    .pos-register-pay-rail__keypad-wrap
+    .pos-keypad__key--action {
+    font-size: 1rem;
+  }
+}

@@ -1,0 +1,25 @@
+.app-boot-placeholder {
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.app-boot-placeholder--dark {
+  background: #0c1018;
+  color: #cbd5e1;
+}
+
+.app-boot-placeholder--light {
+  background: #f8fafc;
+  color: #334155;
+}
+
+/* Backward compatibility for pin */
+.app-boot-placeholder--pin {
+  background: #f8fafc;
+  color: #334155;
+}

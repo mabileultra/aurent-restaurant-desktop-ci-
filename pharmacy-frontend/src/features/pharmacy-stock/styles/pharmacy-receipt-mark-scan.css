@@ -1,0 +1,125 @@
+.pharmacy-receipt-mark-scan {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pharmacy-receipt-mark-scan__lead {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-receipt-mark-scan__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-receipt-mark-scan__field input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--pharm-border, #d8dee6);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-receipt-mark-scan__field input:focus {
+  outline: none;
+  border-color: var(--pharm-brand, #006847);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pharm-brand, #006847) 18%, transparent);
+}
+
+.pharmacy-receipt-mark-scan__ok {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--pharm-ok, #15803d);
+}
+
+.pharmacy-receipt-mark-scan__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 42vh;
+  overflow: auto;
+}
+
+.pharmacy-receipt-mark-scan__line {
+  border: 1px solid var(--pharm-border, #e2e8f0);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.pharmacy-receipt-mark-scan__line.is-ready {
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 40%, #e2e8f0);
+}
+
+.pharmacy-receipt-mark-scan__line.is-pinned {
+  border-color: var(--pharm-brand, #006847);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pharm-brand, #006847) 16%, transparent);
+}
+
+.pharmacy-receipt-mark-scan__pick {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pharmacy-receipt-mark-scan__pick strong {
+  font-size: 0.8125rem;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-receipt-mark-scan__pick span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-receipt-mark-scan__codes {
+  list-style: none;
+  margin: 0;
+  padding: 0 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pharmacy-receipt-mark-scan__codes li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.6875rem;
+}
+
+.pharmacy-receipt-mark-scan__codes button {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.pharmacy-receipt-mark-scan__empty {
+  margin: 0;
+  padding: 0 10px 8px;
+  font-size: 0.75rem;
+  color: var(--pharm-muted, #64748b);
+}

@@ -1,0 +1,115 @@
+/* POS terminal — доп. правила поверх pos-profiles.css */
+@media (min-width: 1024px) and (max-width: 1366px) and (max-height: 900px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-gap: 8px;
+    --cashier-pad: 8px;
+    --cashier-pay-w: clamp(280px, 30vw, 360px);
+    --cashier-cart-cols: minmax(0, 2.5fr) minmax(3.5rem, 0.72fr) minmax(5.75rem, 0.68fr) minmax(4.25rem, 0.92fr) minmax(2.5rem, 3rem);
+    --cashier-cart-cols-register: minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem);
+  }
+
+  .cashier-app.cashier-app--pos-screen .cashier-register__split--register .cashier-register__stage {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, var(--cashier-pay-w, 360px));
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-card {
+    min-height: clamp(72px, 16cqi, 88px);
+    height: auto;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-order-panel__head {
+    padding: 10px 12px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-cart-table__col {
+    padding: 6px 8px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-cart-table__head .pos-cart-table__col {
+    padding: 7px 8px;
+    font-size: 0.6875rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__name {
+    font-size: 0.8125rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__sku {
+    font-size: 0.625rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-order-panel__grand span:last-child {
+    font-size: 1.35rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen .cashier-topbar__pos-title {
+    display: none !important;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-category-nav__pill {
+    padding: 5px 10px;
+    font-size: 0.6875rem;
+  }
+}
+
+/* Узкий каталог (~телефон): одна колонка, карточка на всю ширину */
+@container pos-catalog (max-width: 540px) {
+  .pos-category-browse {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pos-category-tile--all {
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pos-category-tile--all .pos-category-tile__hint {
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .pos-product-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .pos-product-card {
+    min-height: clamp(92px, 18cqi, 112px);
+    height: 100%;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pos-product-card__name {
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+
+  .pos-product-card__code {
+    margin-top: 0;
+  }
+
+  .pos-product-card__price {
+    align-self: flex-end;
+    margin-top: 4px;
+  }
+}
+
+/* Средние экраны (широкий но не ultrawide) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .cashier-app:not(.cashier-app--pos-screen) {
+    --cashier-pay-w: clamp(300px, 28vw, 400px);
+  }
+
+  .cashier-register__split--register .cashier-register__stage {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, var(--cashier-pay-w, 400px));
+  }
+}
+

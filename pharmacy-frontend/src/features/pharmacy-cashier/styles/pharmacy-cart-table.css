@@ -1,0 +1,252 @@
+.pharmacy-cart-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-cart-table__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pharmacy-cart-table__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--pharm-ink);
+}
+
+.pharmacy-cart-table__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 3px 6px;
+  text-align: left;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pharm-muted);
+  background: var(--pharm-surface);
+  border: 1px solid var(--pharm-border);
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__piece-price-hint {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--pharm-muted);
+}
+
+.pharmacy-cart-table__piece-qty {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__piece-qty-main {
+  font-weight: 700;
+}
+
+.pharmacy-cart-table__piece-qty-pack {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--pharm-muted);
+}
+
+.pharmacy-cart-table__table tbody td {
+  padding: 2px 6px;
+  border: 1px solid var(--pharm-border);
+  color: var(--pharm-ink);
+  vertical-align: middle;
+  background: var(--pharm-cell-bg);
+}
+
+.pharmacy-cart-table__row {
+  cursor: pointer;
+  min-height: 28px;
+}
+
+.pharmacy-cart-table__row:hover td:not([class*='pharmacy-cart-table__cell--']) {
+  background: var(--pharm-hover);
+}
+
+.pharmacy-cart-table__row.is-selected td {
+  box-shadow: inset 0 0 0 1px var(--pharm-accent);
+}
+
+.pharmacy-cart-table__name {
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.pharmacy-cart-table__name .pharmacy-cart-table__cell-text--name {
+  display: inline;
+}
+
+.pharmacy-cart-table__recipe-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 0 5px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--pharm-warn-strong);
+  color: var(--pharm-warn-text);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--pharm-muted);
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__price-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: right;
+}
+
+.pharmacy-cart-table__price-btn:hover .pharmacy-cart-table__money {
+  color: var(--pos-green, #15803d);
+}
+
+.pharmacy-cart-table__price-input {
+  width: 100%;
+  max-width: 5.5rem;
+  margin-left: auto;
+  padding: 3px 6px;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--pos-green, #15803d);
+  border-radius: 6px;
+  text-align: right;
+  background: var(--pharm-cell-bg, var(--pharm-surface, #fff));
+  color: var(--pharm-ink, #111);
+  caret-color: var(--pharm-ink, #111);
+}
+
+.pharmacy-cart-table__price-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-green, #15803d) 40%, transparent);
+}
+
+.pharmacy-cart-table__cell--ok {
+  background: var(--pharm-ok) !important;
+  color: var(--pharm-ok-text) !important;
+  font-weight: 700;
+}
+
+.pharmacy-cart-table__cell--warn {
+  background: var(--pharm-warn) !important;
+  color: var(--pharm-warn-text) !important;
+  font-weight: 700;
+}
+
+.pharmacy-cart-table__cell--danger {
+  background: var(--pharm-danger) !important;
+  color: var(--pharm-danger-text) !important;
+  font-weight: 700;
+}
+
+.pharmacy-cart-table__cell--info {
+  background: var(--pharm-info) !important;
+  color: var(--pharm-info-text) !important;
+  font-weight: 800;
+}
+
+.pharmacy-cart-table__row:hover .pharmacy-cart-table__cell--ok {
+  background: var(--pharm-ok-strong) !important;
+}
+
+.pharmacy-cart-table__row:hover .pharmacy-cart-table__cell--warn {
+  background: var(--pharm-warn-strong) !important;
+}
+
+.pharmacy-cart-table__row:hover .pharmacy-cart-table__cell--danger {
+  background: var(--pharm-danger-strong) !important;
+}
+
+.pharmacy-cart-table__row:hover .pharmacy-cart-table__cell--info {
+  background: var(--pharm-info-strong) !important;
+}
+
+.pharmacy-cart-table__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pharmacy-cart-table__qty-btn,
+.pharmacy-cart-table__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 5px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pharmacy-cart-table__qty-btn:hover,
+.pharmacy-cart-table__remove:hover {
+  background: var(--pharm-hover);
+}
+
+.pharmacy-cart-table__qty-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pharmacy-cart-table__remove {
+  color: #ff8a80;
+}
+
+.cashier-app.cashier-app--light .pharmacy-cart-table__remove {
+  color: #b42318;
+}
+
+.pharmacy-cart-table__empty {
+  margin: 0;
+  padding: 1.25rem 0.75rem;
+  text-align: center;
+  color: var(--pharm-muted);
+  font-size: 0.8125rem;
+}

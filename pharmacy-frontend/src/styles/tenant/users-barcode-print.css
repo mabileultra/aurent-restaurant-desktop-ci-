@@ -1,0 +1,114 @@
+.barcode-print-page {
+  max-width: 72rem;
+  width: 100%;
+}
+
+.barcode-print-page__header {
+  margin-bottom: 1.25rem;
+}
+
+.barcode-print-page__grid {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.barcode-print-page__settings {
+  min-width: 0;
+}
+
+.barcode-print-page__workspace {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.barcode-print-page__card {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: #fff;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+.dark .barcode-print-page__card {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42);
+}
+
+.barcode-print-page__card-title {
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.dark .barcode-print-page__card-title {
+  color: rgb(148 163 184);
+}
+
+.shelflabel-settings--sidebar .shelflabel-settings__preset-grid {
+  grid-template-columns: 1fr !important;
+}
+
+.shelflabel-settings--sidebar .shelflabel-settings__group-title {
+  font-size: 0.65rem;
+}
+
+.shelflabel-settings--sidebar .shelflabel-settings__printer-guide {
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.shelflabel-settings--sidebar .shelflabel-settings__offset-hint {
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+/* Десктоп: правая часть фиксирована, скролл только в левой колонке настроек */
+@media (min-width: 1024px) {
+  .admin-main:has(.barcode-print-page) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .barcode-print-page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .barcode-print-page__header {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+  }
+
+  .barcode-print-page__grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .barcode-print-page__settings {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.35rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .barcode-print-page__workspace {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}

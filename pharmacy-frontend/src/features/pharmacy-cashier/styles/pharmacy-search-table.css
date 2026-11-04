@@ -1,0 +1,267 @@
+.pharmacy-search {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-search.is-stale .pharmacy-search__table {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.pharmacy-search__field-wrap {
+  flex-shrink: 0;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--pharm-border);
+}
+
+.pharmacy-search__field {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 6px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.pharmacy-search__field::placeholder {
+  color: var(--pharm-muted);
+}
+
+.pharmacy-search__field:focus {
+  border-color: var(--pharm-accent);
+  box-shadow: 0 0 0 2px rgb(46 196 182 / 0.18);
+}
+
+.cashier-app.cashier-app--light .pharmacy-search__field:focus {
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+}
+
+.pharmacy-search__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pharmacy-search__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--pharm-ink);
+}
+
+.pharmacy-search__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 3px 6px;
+  text-align: left;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pharm-muted);
+  background: var(--pharm-surface);
+  border: 1px solid var(--pharm-border);
+  white-space: nowrap;
+}
+
+.pharmacy-search__table tbody td {
+  padding: 2px 6px;
+  border: 1px solid var(--pharm-border);
+  color: var(--pharm-ink);
+  vertical-align: middle;
+  background: var(--pharm-cell-bg);
+}
+
+.pharmacy-search__row {
+  cursor: pointer;
+  min-height: 26px;
+}
+
+.pharmacy-search__row:hover td:not([class*='pharmacy-search__cell--']) {
+  background: var(--pharm-hover);
+}
+
+.pharmacy-search__row.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pharmacy-search__row.is-disabled:hover td {
+  background: var(--pharm-cell-bg);
+}
+
+.pharmacy-search__name {
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.pharmacy-search__mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--pharm-muted);
+  white-space: nowrap;
+}
+
+.pharmacy-search__hint {
+  font-weight: 700;
+  color: var(--pharm-accent);
+  white-space: nowrap;
+}
+
+.pharmacy-search__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pharmacy-search__cell--ok {
+  background: var(--pharm-ok) !important;
+  color: var(--pharm-ok-text) !important;
+  font-weight: 700;
+}
+
+.pharmacy-search__cell--warn {
+  background: var(--pharm-warn) !important;
+  color: var(--pharm-warn-text) !important;
+  font-weight: 700;
+}
+
+.pharmacy-search__cell--danger {
+  background: var(--pharm-danger) !important;
+  color: var(--pharm-danger-text) !important;
+  font-weight: 700;
+}
+
+.pharmacy-search__cell--info {
+  background: var(--pharm-info) !important;
+  color: var(--pharm-info-text) !important;
+  font-weight: 800;
+}
+
+.pharmacy-search__row:hover .pharmacy-search__cell--ok {
+  background: var(--pharm-ok-strong) !important;
+}
+
+.pharmacy-search__row:hover .pharmacy-search__cell--warn {
+  background: var(--pharm-warn-strong) !important;
+}
+
+.pharmacy-search__row:hover .pharmacy-search__cell--danger {
+  background: var(--pharm-danger-strong) !important;
+}
+
+.pharmacy-search__row:hover .pharmacy-search__cell--info {
+  background: var(--pharm-info-strong) !important;
+}
+
+.pharmacy-search__status,
+.pharmacy-search__empty {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: var(--pharm-muted);
+  font-size: 0.8125rem;
+}
+
+.pharmacy-search__more {
+  display: flex;
+  justify-content: center;
+  padding: 6px;
+  border-top: 1px solid var(--pharm-border);
+}
+
+.pharmacy-search__more-btn {
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 6px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  cursor: pointer;
+}
+
+.pharmacy-search__more-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.pharmacy-search__table--stock tbody td {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.pharmacy-search__table--stock .pharmacy-search__row {
+  min-height: 22px;
+}
+
+.pharmacy-search__table--stock .pharmacy-search__cell-text--name,
+html.app-viewport--canonical .pharmacy-search__table--stock .pharmacy-search__cell-text--name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table--stock .pharmacy-search__cell-text--name,
+html.app-viewport--canonical .pharmacy-search__table--stock .pharmacy-search__cell-text--name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table--stock .pharmacy-search__cell-text--name {
+  -webkit-line-clamp: 1;
+  max-height: 1.25em;
+  white-space: nowrap;
+}
+
+.pharmacy-search__name-block {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.pharmacy-search__name-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: var(--pharm-muted);
+  line-height: 1.15;
+}
+
+.pharmacy-search__recipe-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--pharm-warn-strong);
+  color: var(--pharm-warn-text);
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pharmacy-search__badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.pharmacy-search__row.is-recipe td:not([class*='pharmacy-search__cell--']) {
+  background: var(--pharm-recipe) !important;
+}
+

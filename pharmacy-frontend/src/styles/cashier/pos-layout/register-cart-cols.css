@@ -1,0 +1,67 @@
+/*
+ * Чек (register) — ширины колонок таблицы
+ * name | price | qty | sum | remove
+ *
+ * Фиксированные rem съедали всё место — имя сжималось до 0.
+ * minmax(min, max): числовые колонки не шире max, имя не уже min.
+ */
+
+.cashier-app .pos-order-panel--register .pos-cart-table {
+  --pos-cart-cols: var(
+    --cashier-cart-cols-register,
+    minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem)
+  );
+}
+
+@container order-panel (min-width: 560px) {
+  .pos-order-panel--register .pos-cart-table {
+    --pos-cart-cols: minmax(4.5rem, 1fr) minmax(6rem, 9.5rem) minmax(7.25rem, 8.75rem) minmax(6rem, 10rem) minmax(2.75rem, 3.5rem);
+  }
+}
+
+@container order-panel (min-width: 720px) {
+  .pos-order-panel--register .pos-cart-table {
+    --pos-cart-cols: minmax(5rem, 1.15fr) minmax(6.25rem, 10rem) minmax(7.5rem, 9rem) minmax(6.25rem, 10.5rem) minmax(2.75rem, 3.5rem);
+  }
+}
+
+@container order-panel (min-width: 960px) {
+  .pos-order-panel--register .pos-cart-table {
+    --pos-cart-cols: minmax(5.5rem, 1.25fr) minmax(6.5rem, 11rem) minmax(7.5rem, 9.25rem) minmax(6.5rem, 11.5rem) minmax(2.75rem, 3.5rem);
+  }
+}
+
+@container order-panel (max-width: 480px) {
+  .pos-order-panel--register .pos-cart-table {
+    --pos-cart-cols: minmax(3.5rem, 1fr) minmax(5.25rem, 7.5rem) minmax(7rem, 8.5rem) minmax(5.25rem, 7.75rem) minmax(2.5rem, 3.25rem);
+  }
+
+  .pos-order-panel--register .pos-order-panel__list {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pos-order-panel--register .pos-cart-table {
+    min-width: min(100%, 22.5rem);
+  }
+
+  .cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col,
+  .cashier-app .pos-order-panel--register .pos-cart-table__col {
+    padding: 9px 6px;
+  }
+
+  .cashier-app .pos-order-panel--register .pos-cart-table__col--name {
+    padding-left: 10px;
+  }
+}
+
+@container order-panel (min-width: 720px) {
+  .cashier-app .pos-order-panel--register .pos-cart-table__price-btn,
+  .cashier-app .pos-order-panel--register .pos-cart-table__price-btn span {
+    font-size: clamp(0.875rem, 2.6cqi, 1.0625rem);
+  }
+
+  .cashier-app .pos-order-panel--register .pos-cart-table__sum {
+    font-size: clamp(0.875rem, 2.8cqi, 1.0625rem);
+  }
+}

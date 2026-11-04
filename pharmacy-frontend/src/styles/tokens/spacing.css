@@ -1,0 +1,32 @@
+/* Shell spacing — масштабируется профилем viewport */
+
+:root {
+  --shell-font-size: 14px;
+  --shell-gap: 10px;
+  --shell-pad: 16px;
+  --shell-sidebar-w: 240px;
+  --shell-sidebar-w-collapsed: 64px;
+  --shell-header-h: 56px;
+}
+
+html.app-viewport--desktop {
+  --shell-font-size: 14px;
+  --shell-gap: 10px;
+  --shell-pad: 14px;
+}
+
+/* Эталон 1024×768 — все оболочки */
+html.app-viewport--canonical {
+  --shell-font-size: 13px;
+  --shell-gap: 8px;
+  --shell-pad: 12px;
+  --shell-sidebar-w: 200px;
+  --shell-sidebar-w-collapsed: 56px;
+  --shell-header-h: 48px;
+}
+
+html.app-viewport--compact {
+  --shell-font-size: 14px;
+  --shell-gap: 8px;
+  --shell-pad: 12px;
+}

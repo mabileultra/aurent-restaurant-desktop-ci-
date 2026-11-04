@@ -1,0 +1,30 @@
+/* Иконки интеграций аптечной кассы */
+
+.pharmacy-integration-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pharmacy-integration-icon--admin {
+  width: 22px;
+  height: 22px;
+}
+
+.pharmacy-integration-icon--dmed {
+  width: 34px;
+  height: 16px;
+}
+
+.pharmacy-integration-icon--asl_portal {
+  width: 24px;
+  height: 24px;
+}
+
+.pharmacy-integration-more__icon.pharmacy-integration-icon--asl_portal {
+  width: 22px;
+  height: 22px;
+}

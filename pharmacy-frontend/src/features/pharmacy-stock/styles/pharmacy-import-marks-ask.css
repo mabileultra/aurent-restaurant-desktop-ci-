@@ -1,0 +1,135 @@
+.pharmacy-import-marks-ask__text,
+.pharmacy-import-marks-ask__hint,
+.pharmacy-import-marks-ask__warn {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.pharmacy-import-marks-ask__hint,
+.pharmacy-import-marks-ask__warn {
+  margin-top: 0.75rem;
+}
+
+.pharmacy-import-marks-ask__hint {
+  color: #64748b;
+}
+
+.pharmacy-import-marks-ask__warn {
+  color: #b45309;
+}
+
+.pharmacy-import-marks-ask__progress {
+  margin-top: 1rem;
+}
+
+.pharmacy-import-marks-ask__progress-label {
+  margin: 0 0 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pharmacy-import-marks-ask__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.pharmacy-import-marks-ask__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #006847;
+  transition: width 0.2s ease;
+}
+
+.pharmacy-import-marks-ask__stats {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #0f172a;
+}
+
+.pharmacy-import-marks-ask__rejected {
+  margin-top: 0.85rem;
+}
+
+.pharmacy-import-marks-ask__rejected-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.pharmacy-import-marks-ask__rejected-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.pharmacy-import-marks-ask__rejected-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.75rem;
+}
+
+.pharmacy-import-marks-ask__rejected-list li:last-child {
+  border-bottom: none;
+}
+
+.pharmacy-import-marks-ask__rejected-list code {
+  font-size: 0.72rem;
+  word-break: break-all;
+  color: #0f172a;
+}
+
+.pharmacy-import-marks-ask__rejected-list span {
+  color: #b45309;
+}
+
+html.dark .pharmacy-import-marks-ask__hint,
+html.cashier-theme--dark .pharmacy-import-marks-ask__hint {
+  color: #94a3b8;
+}
+
+html.dark .pharmacy-import-marks-ask__warn,
+html.cashier-theme--dark .pharmacy-import-marks-ask__warn,
+html.dark .pharmacy-import-marks-ask__rejected-list span,
+html.cashier-theme--dark .pharmacy-import-marks-ask__rejected-list span {
+  color: #fbbf24;
+}
+
+html.dark .pharmacy-import-marks-ask__progress-label,
+html.cashier-theme--dark .pharmacy-import-marks-ask__progress-label,
+html.dark .pharmacy-import-marks-ask__stats,
+html.cashier-theme--dark .pharmacy-import-marks-ask__stats,
+html.dark .pharmacy-import-marks-ask__rejected-title,
+html.cashier-theme--dark .pharmacy-import-marks-ask__rejected-title,
+html.dark .pharmacy-import-marks-ask__rejected-list code,
+html.cashier-theme--dark .pharmacy-import-marks-ask__rejected-list code {
+  color: #f1f5f9;
+}
+
+html.dark .pharmacy-import-marks-ask__bar,
+html.cashier-theme--dark .pharmacy-import-marks-ask__bar {
+  background: #334155;
+}
+
+html.dark .pharmacy-import-marks-ask__rejected-list,
+html.cashier-theme--dark .pharmacy-import-marks-ask__rejected-list {
+  border-color: #334155;
+}
+
+html.dark .pharmacy-import-marks-ask__rejected-list li,
+html.cashier-theme--dark .pharmacy-import-marks-ask__rejected-list li {
+  border-bottom-color: #1e293b;
+}

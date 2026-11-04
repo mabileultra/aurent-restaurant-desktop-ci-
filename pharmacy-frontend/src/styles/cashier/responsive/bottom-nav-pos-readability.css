@@ -1,0 +1,68 @@
+/*
+ * POS — нижнее меню: чуть крупнее текст и иконки (читаемость без «огромных» кнопок).
+ */
+
+.cashier-app.cashier-app--pos-screen,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
+  --cashier-bottom-nav-h: 52px;
+  --pos-density-nav-btn-pad: 4px 5px;
+  --pos-density-nav-font: 0.6875rem;
+  --pos-density-nav-icon: 18px;
+  --pos-density-nav-radius: 9px;
+  --pos-density-nav-gap: 5px;
+}
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen {
+  --cashier-bottom-nav-h: 52px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed),
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: 52px;
+}
+
+@media (min-width: 1024px) {
+  .cashier-app.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed),
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed) {
+    --cashier-bottom-nav-h: 52px;
+  }
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn {
+  gap: 3px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn span,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn span {
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn--primary,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn--primary {
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label {
+  font-size: 0.625rem;
+}
+
+/* Electron — перебиваем shell-desktop compact */
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-bottom-nav__btn {
+  gap: 3px;
+  padding: var(--pos-density-nav-btn-pad);
+  font-size: var(--pos-density-nav-font);
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-bottom-nav__btn svg {
+  width: var(--pos-density-nav-icon) !important;
+  height: var(--pos-density-nav-icon) !important;
+}
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-bottom-nav__btn--primary {
+  font-size: 0.75rem;
+}

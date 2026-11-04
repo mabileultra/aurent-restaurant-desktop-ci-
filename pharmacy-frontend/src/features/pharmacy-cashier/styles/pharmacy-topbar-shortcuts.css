@@ -1,0 +1,152 @@
+/* Хоткеи в topbar — только аптека; адаптив под ширину */
+
+.pharmacy-topbar-shortcuts {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px 10px;
+  margin-left: 4px;
+  min-width: 0;
+  max-width: min(42vw, 520px);
+  overflow: hidden;
+}
+
+.pharmacy-topbar-shortcuts__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--pharm-muted, var(--pos-muted, #64748b));
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pharmacy-topbar-shortcuts__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55rem;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
+  border-radius: 5px;
+  background: var(--pharm-elevated, var(--pos-surface-elevated, #fff));
+  color: var(--pharm-ink, var(--pos-text, #1a2e28));
+  font-family: inherit;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgb(15 40 30 / 0.06);
+}
+
+.pharmacy-topbar-shortcuts__kbd--pay {
+  min-width: 2.5rem;
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
+  background: var(--pharm-brand-soft, rgb(0 104 71 / 0.12));
+  color: var(--pharm-brand, #006847);
+  box-shadow: none;
+}
+
+.pharmacy-topbar-shortcuts__item--pay .pharmacy-topbar-shortcuts__label {
+  color: var(--pharm-brand, #006847);
+  font-weight: 700;
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pharmacy-topbar-shortcuts__kbd:not(.pharmacy-topbar-shortcuts__kbd--pay) {
+  background: #fff;
+  border-color: #d8e0dc;
+  color: #334155;
+}
+
+.cashier-app.cashier-app--pharmacy-pos .cashier-topbar__terminal-strip {
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__shift-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--cashier-topbar-control-h, 40px);
+  padding: 0 10px;
+  border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-muted, var(--pos-muted, #64748b));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__shift-chip svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  color: var(--pharm-muted, var(--pos-muted, #64748b));
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__shift-chip {
+  background: #fff;
+  border-color: #d8e0dc;
+}
+
+/* Адаптив: сначала прячем подписи хоткеев, потом часть хоткеев, потом смену */
+@media (max-width: 1480px) {
+  .pharmacy-topbar-shortcuts__label {
+    display: none;
+  }
+
+  .pharmacy-topbar-shortcuts {
+    gap: 6px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 1280px) {
+  .pharmacy-topbar-shortcuts__item:not(.pharmacy-topbar-shortcuts__item--pay):nth-child(n + 3) {
+    display: none;
+  }
+
+  .cashier-app--pharmacy-pos .cashier-topbar__store-pill--pharmacy .cashier-topbar__store-name {
+    max-width: 9rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  .cashier-app--pharmacy-pos .cashier-topbar__shift-chip {
+    display: none;
+  }
+
+  .pharmacy-topbar-shortcuts__item:not(.pharmacy-topbar-shortcuts__item--pay) {
+    display: none;
+  }
+}
+
+@media (max-width: 992px) {
+  .pharmacy-topbar-shortcuts {
+    display: none !important;
+  }
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-name {
+  max-width: 11rem;
+}
+
+@media (max-width: 1360px) {
+  .cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-name {
+    max-width: 7.5rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-text {
+    display: none;
+  }
+}

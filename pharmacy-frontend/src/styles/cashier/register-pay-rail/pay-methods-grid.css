@@ -1,0 +1,94 @@
+/* Pay rail — method tiles (shared layout; colors via --pay-*) */
+
+.pos-register-pay-rail__pay-block {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--pay-block-border);
+  background: var(--pay-block-bg);
+}
+
+.pos-register-pay-methods {
+  flex-shrink: 0;
+}
+
+.pos-register-pay-methods__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.pos-register-pay-methods__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 1.2cqi, 5px);
+  min-height: clamp(48px, 14cqi, 60px);
+  height: auto;
+  padding: clamp(6px, 2cqi, 8px) clamp(4px, 1.5cqi, 8px);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pay-tile-fg);
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
+}
+
+.pos-register-pay-methods__tile:hover:not(:disabled) {
+  background: var(--pay-tile-hover-bg);
+  color: var(--pay-tile-hover-fg);
+}
+
+.pos-register-pay-methods__tile:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pos-register-pay-methods__tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: clamp(26px, 8cqi, 32px);
+  height: clamp(26px, 8cqi, 32px);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+}
+
+.pos-register-pay-methods__tile--cashless .pos-register-pay-methods__tile-icon {
+  color: var(--pay-tile-cashless);
+}
+
+.pos-register-pay-methods__tile--credit .pos-register-pay-methods__tile-icon {
+  color: var(--pay-tile-credit);
+}
+
+.pos-register-pay-methods__tile--advance .pos-register-pay-methods__tile-icon {
+  color: var(--pay-tile-advance);
+}
+
+.pos-register-pay-methods__tile--corporate .pos-register-pay-methods__tile-icon {
+  color: var(--pay-tile-corporate);
+}
+
+.pos-register-pay-methods__tile-label {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: clamp(0.5625rem, 2.2cqi, 0.6875rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+}

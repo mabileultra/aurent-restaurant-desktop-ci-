@@ -1,0 +1,80 @@
+/* Модалка смены — компактная (не терминал на весь экран) */
+html.cashier-theme--dark .pos-pay-modal--shift-terminal,
+html.cashier-theme--light .pos-pay-modal--shift-terminal {
+  width: min(92vw, 400px) !important;
+  max-width: 400px !important;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__head,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__head {
+  padding: 12px 14px 10px;
+  gap: 10px;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-pay-modal__title,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-pay-modal__title {
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-pay-modal__close,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-pay-modal__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__meta,
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__status,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__meta,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__status {
+  padding: 10px 14px 0;
+  font-size: 0.8125rem;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__status,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__status {
+  padding-bottom: 8px;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__hint,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__hint {
+  margin: 0 14px 12px;
+  padding: 8px 10px;
+  font-size: 0.6875rem;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__actions,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__actions {
+  gap: 6px;
+  padding: 0 14px 14px;
+}
+
+/* X + Z в одну строку, закрыть смену — на всю ширину */
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__actions:has(.pos-shift-action:nth-child(3)),
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__actions:has(.pos-shift-action:nth-child(3)) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__actions .pos-shift-action--danger,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__actions .pos-shift-action--danger {
+  grid-column: 1 / -1;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action {
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action svg,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action svg {
+  width: 15px;
+  height: 15px;
+}

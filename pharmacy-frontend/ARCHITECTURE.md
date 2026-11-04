@@ -16,9 +16,19 @@
 ### Разрешено
 
 - `src/pharmacy/**` — домен (POS, stock, ASL, returns, dashboard)
+- `src/features/pharmacy-cashier/**`, `src/features/pharmacy-stock/**`
 - `src/api/**` — HTTP к gateway / pharmacy-service / identity
 - Auth bootstrap + безопасный Identity handoff (не JWT в URL)
 - Собственный AppShell / router / Docker image
+
+### Sync from main (Sprint 3)
+
+```bash
+pnpm run sync:from-main          # seed + transitive copy
+node scripts/fix-missing-from-build.mjs   # close Vite graph if needed
+```
+
+Do not delete `/pharm` on aurent until offline drain + cutover.
 
 ### Запрещено
 

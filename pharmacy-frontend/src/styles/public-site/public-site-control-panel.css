@@ -1,0 +1,42 @@
+.public-control-panel {
+  padding: 3rem 0;
+}
+
+.public-control-panel__inner {
+  padding: 3rem 1.75rem 2.5rem;
+  border-radius: var(--ps-radius-lg);
+  background:
+    radial-gradient(ellipse 100% 70% at 50% 100%, rgb(255 255 255 / 0.15), transparent 55%),
+    linear-gradient(180deg, #15803d 0%, #166534 55%, #14532d 100%);
+  border: 1px solid rgb(22 101 52 / 0.25);
+  box-shadow: 0 32px 80px rgb(22 101 52 / 0.2);
+  text-align: center;
+}
+
+.public-control-panel__title {
+  margin: 0 0 1rem;
+  font-size: clamp(1.6rem, 3.5vw, 2.35rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.public-control-panel__text {
+  margin: 0 auto 2rem;
+  max-width: 48rem;
+  color: rgb(255 255 255 / 0.92);
+  line-height: 1.65;
+  font-size: 0.98rem;
+}
+
+.public-control-panel__visual {
+  margin: 0 auto 2rem;
+  max-width: 940px;
+}
+
+@media (min-width: 768px) {
+  .public-control-panel__inner {
+    padding: 4rem 2.5rem 3rem;
+  }
+}

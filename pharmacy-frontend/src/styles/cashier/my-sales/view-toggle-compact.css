@@ -1,0 +1,33 @@
+/*
+ * Мои продажи — компактный вид список/карточки.
+ * После responsive-touch (иначе min 40px побеждает).
+ */
+
+.cashier-app.cashier-app--touch .cashier-page--my-sales .cashier-sales-view-toggle.pos-topbar-views,
+.cashier-app .cashier-page--my-sales .cashier-sales-view-toggle.pos-topbar-views {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-page--my-sales .cashier-sales-view-toggle .pos-topbar-views__btn,
+.cashier-app .cashier-page--my-sales .cashier-sales-view-toggle .pos-topbar-views__btn {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  max-width: 28px !important;
+  max-height: 28px !important;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-page--my-sales .cashier-sales-view-toggle .pos-topbar-views__btn svg,
+.cashier-app .cashier-page--my-sales .cashier-sales-view-toggle .pos-topbar-views__btn svg {
+  width: 15px;
+  height: 15px;
+}

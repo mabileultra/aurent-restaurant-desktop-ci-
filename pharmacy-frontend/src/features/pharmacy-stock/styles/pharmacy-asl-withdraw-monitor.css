@@ -1,0 +1,171 @@
+.pharmacy-asl-monitor__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  margin: 0.75rem 0 1rem;
+}
+
+.pharmacy-asl-monitor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pharmacy-asl-monitor__field select {
+  min-width: 180px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.875rem;
+  background: #fff;
+  color: #0f172a;
+}
+
+.pharmacy-asl-monitor__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: #0f172a;
+}
+
+.pharmacy-asl-monitor__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.pharmacy-asl-monitor__alert {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.pharmacy-asl-monitor__table thead th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.pharmacy-asl-monitor__table tbody td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.pharmacy-asl-monitor__row--warn {
+  background: #fffbeb;
+}
+
+.pharmacy-asl-monitor__product {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pharmacy-asl-monitor__muted {
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.pharmacy-asl-monitor__code {
+  font-size: 0.72rem;
+  word-break: break-all;
+}
+
+.pharmacy-asl-monitor__asl {
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.pharmacy-asl-monitor__err {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  color: #b45309;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pharmacy-asl-monitor__badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.pharmacy-asl-monitor__badge--ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.pharmacy-asl-monitor__badge--neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.pharmacy-asl-monitor__badge--muted {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+html.dark .pharmacy-asl-monitor__field,
+html.cashier-theme--dark .pharmacy-asl-monitor__field,
+html.dark .pharmacy-asl-monitor__hint,
+html.cashier-theme--dark .pharmacy-asl-monitor__hint,
+html.dark .pharmacy-asl-monitor__muted,
+html.cashier-theme--dark .pharmacy-asl-monitor__muted {
+  color: #94a3b8;
+}
+
+html.dark .pharmacy-asl-monitor__field select,
+html.cashier-theme--dark .pharmacy-asl-monitor__field select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+html.dark .pharmacy-asl-monitor__check,
+html.cashier-theme--dark .pharmacy-asl-monitor__check,
+html.dark .pharmacy-asl-monitor__product,
+html.cashier-theme--dark .pharmacy-asl-monitor__product {
+  color: #f1f5f9;
+}
+
+html.dark .pharmacy-asl-monitor__table thead th,
+html.cashier-theme--dark .pharmacy-asl-monitor__table thead th {
+  background: #1e293b;
+  border-bottom-color: #334155;
+  color: #94a3b8;
+}
+
+html.dark .pharmacy-asl-monitor__table tbody td,
+html.cashier-theme--dark .pharmacy-asl-monitor__table tbody td {
+  border-bottom-color: #1e293b;
+}
+
+html.dark .pharmacy-asl-monitor__row--warn,
+html.cashier-theme--dark .pharmacy-asl-monitor__row--warn {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+html.dark .pharmacy-asl-monitor__alert,
+html.cashier-theme--dark .pharmacy-asl-monitor__alert {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fdba74;
+}

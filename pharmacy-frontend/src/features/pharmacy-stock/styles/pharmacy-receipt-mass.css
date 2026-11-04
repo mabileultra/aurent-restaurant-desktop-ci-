@@ -1,0 +1,58 @@
+.pharm-mass {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #e6edf5;
+  background: #f8fafc;
+}
+
+.pharm-mass__label {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pharm-mass__select,
+.pharm-mass__input {
+  height: 2rem;
+  border: 1px solid #d7dee8;
+  border-radius: 0.4rem;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.8rem;
+}
+
+.pharm-mass__select {
+  min-width: 9rem;
+  padding: 0 0.45rem;
+}
+
+.pharm-mass__input {
+  width: 8rem;
+  padding: 0 0.5rem;
+}
+
+.pharm-mass__btn {
+  height: 2rem;
+  padding: 0 0.8rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.pharm-mass__btn:disabled {
+  opacity: 0.55;
+}
+
+.pharm-mass__confirm {
+  margin: 0;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}

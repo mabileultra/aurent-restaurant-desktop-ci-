@@ -1,0 +1,125 @@
+/*
+ * Register cart — компактные строки чека (эталон 1024×768).
+ * Меньше padding, qty и delete — больше позиций на экране.
+ */
+
+.cashier-app .pos-order-panel--register {
+  --pos-cart-row-py: 5px;
+  --pos-cart-row-px: 6px;
+  --pos-cart-head-py: 6px;
+  --pos-cart-qty-h: 34px;
+  --pos-cart-qty-btn: 32px;
+  --pos-cart-remove: 32px;
+}
+
+.cashier-app .pos-order-panel--register .pos-order-panel__head {
+  padding: 8px 12px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col,
+.cashier-app .pos-order-panel--register .pos-cart-table__col {
+  padding: var(--pos-cart-row-py) var(--pos-cart-row-px);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col {
+  padding: var(--pos-cart-head-py) var(--pos-cart-row-px);
+  font-size: 0.625rem;
+  line-height: 1.15;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--name,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--name {
+  padding-left: 10px;
+  padding-right: 6px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--qty,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--qty {
+  padding: 4px 2px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--remove,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--remove {
+  padding: 4px 2px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__name {
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__sku {
+  margin-top: 1px;
+  font-size: 0.5625rem;
+  line-height: 1.2;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app .pos-order-panel--register .pos-cart-table__price-btn span,
+.cashier-app .pos-order-panel--register .pos-cart-table__sum {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control {
+  min-height: var(--pos-cart-qty-h);
+  max-width: 7.25rem;
+  border-radius: 8px;
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__btn {
+  width: var(--pos-cart-qty-btn);
+  height: var(--pos-cart-qty-btn);
+  min-width: var(--pos-cart-qty-btn);
+  min-height: var(--pos-cart-qty-btn);
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__val,
+.cashier-app .pos-order-panel--register .pos-qty-control__input {
+  min-height: var(--pos-cart-qty-btn);
+  padding: 2px 1px;
+  font-size: 0.8125rem;
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control__num {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__remove-btn {
+  width: var(--pos-cart-remove);
+  height: var(--pos-cart-remove);
+  border-radius: 8px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__remove-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__disc {
+  font-size: 0.625rem;
+  padding: 1px 8px 4px;
+}
+
+@media (min-width: 1024px) and (max-width: 1280px) and (max-height: 820px) {
+  .cashier-app.cashier-app--pos-screen .pos-order-panel--register {
+    --pos-cart-row-py: 4px;
+    --pos-cart-qty-h: 32px;
+    --pos-cart-qty-btn: 30px;
+    --pos-cart-remove: 30px;
+    --cashier-cart-cols-register: minmax(3rem, 1fr) minmax(4.75rem, 7rem) minmax(6.25rem, 7.5rem) minmax(4.75rem, 7.25rem) minmax(2.25rem, 3rem);
+  }
+}
+
+/* Touch — не сжимаем ниже минимума для пальца */
+.cashier-app.cashier-app--touch .pos-order-panel--register {
+  --pos-cart-qty-h: 40px;
+  --pos-cart-qty-btn: 38px;
+  --pos-cart-remove: 38px;
+}

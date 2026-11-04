@@ -1,0 +1,21 @@
+.pharmacy-product-delete__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.pharmacy-product-delete__note {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #b45309;
+}
+
+.dark .pharmacy-product-delete__text {
+  color: #cbd5e1;
+}
+
+.dark .pharmacy-product-delete__note {
+  color: #fbbf24;
+}
