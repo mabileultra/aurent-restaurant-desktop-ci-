@@ -12,7 +12,9 @@ import {
 
 export default function BillingRevenueChart({ t, revenue, expected, money, currency }) {
   const k = (key) => t(`platform.billing.collections.reports.${key}`);
+  const annualRevenue = Number(revenue?.year || 0);
 
+  // Operational periods: DAY, WEEK, MONTH (YEAR excluded from bar scale to prevent distorting smaller periods)
   const chartData = [
     {
       period: k('periods.DAY'),
@@ -29,26 +31,31 @@ export default function BillingRevenueChart({ t, revenue, expected, money, curre
       revenue: Number(revenue?.month || 0),
       expected: Number(expected?.next30Days || 0),
     },
-    {
-      period: k('periods.YEAR'),
-      revenue: Number(revenue?.year || 0),
-      expected: 0,
-    },
   ];
 
   const formatTooltipValue = (val) => `${money(val)} ${currency}`;
 
   return (
     <div className="bc-chart-card">
-      <div className="bc-chart-card__head">
+      <div className="bc-chart-card__head flex items-center justify-between gap-3">
         <div>
           <h3 className="bc-chart-card__title">
-            {t('platform.billing.collections.reports.dynamicsTitle', { defaultValue: 'Tushum va kutilmalar dinamikasi' })}
+            {t('platform.billing.collections.reports.dynamicsTitle', { defaultValue: 'Tushum va kutilmalar taqqoslanishi' })}
           </h3>
           <p className="bc-chart-card__sub">
-            {t('platform.billing.collections.reports.dynamicsSub', { defaultValue: 'Haqiqiy tushgan mablag‘lar va yaqin to‘lovlar prognozi' })}
+            {t('platform.billing.collections.reports.dynamicsSub', { defaultValue: 'Kunlik, haftalik va oylik operatsion oraliqlar' })}
           </p>
         </div>
+        {annualRevenue > 0 ? (
+          <div className="text-right shrink-0 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">
+              {k('periods.YEAR')} {k('revenue')}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+              {money(annualRevenue)} {currency}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="bc-chart-container" style={{ width: '100%', height: 260 }}>

@@ -1,23 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, CalendarClock, Download, Plus, Search } from 'lucide-react';
+import { AlertCircle, CalendarClock, Download, Search } from 'lucide-react';
 import { platformBillingApi } from '../../../../api';
 import { COLLECTIONS_QUERY_KEY } from '../../hooks/useBillingCollections';
 import {
   BILLING_COLLECTIONS_ENRICH_SIZE,
   unwrapBillingCollectionsPage,
 } from '../../utils/unwrapBillingCollectionsPage';
-import { STATE_TONE, dueHint, initials } from './billingCollectionsUi';
+import BillingActionableLedgerRow from './BillingActionableLedgerRow';
 
 export default function BillingActionableLedger({ t, money, p }) {
-  const [filter, setFilter] = useState('ALL'); // 'ALL' | 'OVERDUE' | 'DUE_SOON'
+  const [filter, setFilter] = useState('ALL');
   const [search, setSearch] = useState('');
 
   const currency = t('billing.currency');
   const sum = (v) => `${money(v)} ${currency}`;
   const formatDate = p?.formatDate || ((d) => (d ? new Date(d).toLocaleDateString() : '—'));
 
-  // Fetch all companies to identify overdue and due soon
   const listQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'companies', 'actionable-ledger'],
     queryFn: () => platformBillingApi
@@ -28,13 +27,17 @@ export default function BillingActionableLedger({ t, money, p }) {
 
   const allRows = useMemo(() => (Array.isArray(listQ.data) ? listQ.data : []), [listQ.data]);
 
-  // Filter only companies that need attention: OVERDUE, DUE_SOON, or negative balance
+  // Filter only companies that need attention: OVERDUE, or DUE_SOON with monthlyTotal > 0
   const dueCompanies = useMemo(() => {
     return allRows.filter((r) => {
       const b = r?.billing || {};
-      const isOverdue = r.paymentState === 'OVERDUE' || Number(b.balance) < 0;
+      const monthly = Number(b.monthlyTotal || 0);
+      const balance = Number(b.balance || 0);
+      const isOverdue = r.paymentState === 'OVERDUE' || balance < 0;
+      if (isOverdue) return true;
+      if (monthly <= 0) return false;
       const isDueSoon = r.paymentState === 'DUE_SOON' || (r.daysUntilDue != null && r.daysUntilDue <= 30);
-      return isOverdue || isDueSoon;
+      return isDueSoon;
     });
   }, [allRows]);
 
@@ -88,7 +91,6 @@ export default function BillingActionableLedger({ t, money, p }) {
         </div>
 
         <div className="bc-ledger-card__actions flex flex-wrap items-center gap-2">
-          {/* Filter Pills */}
           <div className="bc-ledger-tabs">
             <button
               type="button"
@@ -115,7 +117,6 @@ export default function BillingActionableLedger({ t, money, p }) {
             </button>
           </div>
 
-          {/* Quick Search */}
           <div className="bc-ledger-search">
             <Search size={14} aria-hidden />
             <input
@@ -125,7 +126,6 @@ export default function BillingActionableLedger({ t, money, p }) {
             />
           </div>
 
-          {/* Export button */}
           <button
             type="button"
             className="bc-btn bc-btn--outline bc-btn--sm"
@@ -139,7 +139,6 @@ export default function BillingActionableLedger({ t, money, p }) {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bc-table-wrap">
         <table className="bc-table">
           <thead>
@@ -163,66 +162,17 @@ export default function BillingActionableLedger({ t, money, p }) {
                 </td>
               </tr>
             ) : (
-              filteredRows.map((row, index) => {
-                const b = row?.billing || {};
-                const companyId = b.companyId || row.companyId || index;
-                const hint = dueHint(row, t);
-                const isOverdue = row.paymentState === 'OVERDUE' || Number(b.balance) < 0;
-
-                return (
-                  <tr
-                    key={companyId}
-                    className="bc-row hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer"
-                    onClick={() => p?.selectCompany?.(row)}
-                  >
-                    <td>
-                      <div className="bc-company">
-                        <span className={`bc-avatar bc-avatar--${STATE_TONE[row.paymentState] || 'neutral'}`}>
-                          {initials(b.companyName)}
-                        </span>
-                        <span>
-                          <span className="bc-company__name">{b.companyName || `#${companyId}`}</span>
-                          <span className="bc-company__meta">ID: {companyId}</span>
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      {b.planName ? (
-                        <span className="bc-pill bc-pill--plan">{b.planName}</span>
-                      ) : (
-                        <span className="bc-muted">—</span>
-                      )}
-                    </td>
-                    <td className="bc-num font-semibold">{sum(b.monthlyTotal)}</td>
-                    <td className={`bc-num font-semibold ${isOverdue ? 'bc-text--danger' : ''}`}>
-                      {sum(b.balance)}
-                    </td>
-                    <td>
-                      <span className="bc-date">{formatDate(b.nextChargeAt)}</span>
-                      {hint ? (
-                        <span className={`bc-sub bc-text--${hint.tone} block text-xs`}>{hint.text}</span>
-                      ) : null}
-                    </td>
-                    <td>
-                      <span className={`bc-badge bc-badge--${STATE_TONE[row.paymentState] || 'neutral'}`}>
-                        {t(`platform.billing.collections.states.${row.paymentState}`, { defaultValue: row.paymentState })}
-                      </span>
-                    </td>
-                    <td className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="bc-btn bc-btn--primary bc-btn--sm inline-flex items-center gap-1"
-                        onClick={() => {
-                          p?.openPaymentModal?.(b.companyId, { returnToDrawer: false });
-                        }}
-                      >
-                        <Plus size={13} aria-hidden />
-                        <span>{t('platform.billing.collections.addPayment', { defaultValue: 'To‘lov qo‘shish' })}</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
+              filteredRows.map((row, index) => (
+                <BillingActionableLedgerRow
+                  key={row.billing?.companyId || row.companyId || index}
+                  row={row}
+                  index={index}
+                  p={p}
+                  t={t}
+                  sum={sum}
+                  formatDate={formatDate}
+                />
+              ))
             )}
           </tbody>
         </table>

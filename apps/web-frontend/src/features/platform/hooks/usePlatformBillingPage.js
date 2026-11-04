@@ -1,16 +1,12 @@
-import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { platformBillingApi } from '../../../api';
 import { formatMoneyInputDigits, parseMoneyInput } from '../../billing/utils/parseMoneyInput';
-import { shiftIsoDate, toIsoDate } from '../components/BillingPeriodCalendar';
-import {
-  BILLING_COLLECTIONS_ENRICH_SIZE,
-  unwrapBillingCollectionsPage,
-} from '../utils/unwrapBillingCollectionsPage';
-import { COLLECTIONS_QUERY_KEY, useBillingCollections } from './useBillingCollections';
+import { useBillingCollections } from './useBillingCollections';
 import { useBillingCollectionActions } from './useBillingCollectionActions';
+import { usePlatformBillingQueries } from './usePlatformBillingQueries';
+import { usePlatformBillingModals } from './usePlatformBillingModals';
 
 function money(v) {
   const n = Number(v || 0);
@@ -21,11 +17,6 @@ function sameMoney(a, b) {
   return Number(a || 0) === Number(b || 0);
 }
 
-function periodStartFromCharge(iso) {
-  if (!iso) return toIsoDate(new Date());
-  return shiftIsoDate(toIsoDate(iso), -30);
-}
-
 function errorText(e, t) {
   return e?.response?.data?.message || e?.message || t('platform.billing.actionFailed');
 }
@@ -33,65 +24,21 @@ function errorText(e, t) {
 export function usePlatformBillingPage() {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language?.startsWith('uz') ? 'uz-UZ' : 'ru-RU';
-  const qc = useQueryClient();
   const collections = useBillingCollections();
 
-  const [selectedCompanyId, setSelectedCompanyId] = useState(null);
-  const [selectedCompanyRow, setSelectedCompanyRow] = useState(null);
-  const [drawerTab, setDrawerTab] = useState('overview');
-  const [adjustAmount, setAdjustAmount] = useState('');
-  const [adjustNote, setAdjustNote] = useState('');
-  const [assignPlanId, setAssignPlanId] = useState('');
-  const [monthlyAmount, setMonthlyAmount] = useState('');
-  const [periodStartOn, setPeriodStartOn] = useState(() => toIsoDate(new Date()));
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentTargetCompanyId, setPaymentTargetCompanyId] = useState(null);
-  const [returnToDrawerOnClose, setReturnToDrawerOnClose] = useState(false);
-
-  const plansQ = useQuery({
-    queryKey: ['platform-billing-plans'],
-    queryFn: () => platformBillingApi.plans({ activeOnly: false }).then((r) => r.data),
+  const modals = usePlatformBillingModals({
+    collections,
+    plans: [],
+    money,
   });
 
-  const topUpsQ = useQuery({
-    queryKey: ['platform-billing-topups'],
-    queryFn: () => platformBillingApi.topUps({ status: 'PENDING', size: 30 }).then((r) => r.data),
-    enabled: false,
+  const queries = usePlatformBillingQueries({
+    selectedCompanyId: modals.selectedCompanyId,
+    paymentModalOpen: modals.paymentModalOpen,
   });
 
-  const ledgerQ = useQuery({
-    queryKey: ['platform-billing-ledger', selectedCompanyId],
-    queryFn: () => platformBillingApi
-      .ledger(selectedCompanyId, { size: 20, sort: 'createdAt,desc' })
-      .then((r) => r.data),
-    enabled: selectedCompanyId != null,
-  });
-
-  const companyPaymentsQ = useQuery({
-    queryKey: ['platform-billing-payments', selectedCompanyId],
-    queryFn: () => platformBillingApi
-      .payments({ companyId: selectedCompanyId, size: 20, sort: 'createdAt,desc' })
-      .then((r) => r.data),
-    enabled: selectedCompanyId != null,
-  });
-
-  const allCompaniesQ = useQuery({
-    queryKey: [COLLECTIONS_QUERY_KEY, 'companies', 'all'],
-    queryFn: () => platformBillingApi
-      .collectionsCompanies({ page: 0, size: BILLING_COLLECTIONS_ENRICH_SIZE })
-      .then((r) => unwrapBillingCollectionsPage(r.data).content),
-    enabled: paymentModalOpen,
-  });
-
-  const invalidate = () => {
-    qc.invalidateQueries({ queryKey: [COLLECTIONS_QUERY_KEY] });
-    qc.invalidateQueries({ queryKey: ['platform-billing-topups'] });
-    qc.invalidateQueries({ queryKey: ['platform-billing-payments'] });
-    qc.invalidateQueries({ queryKey: ['platform-billing-ledger'] });
-    qc.invalidateQueries({ queryKey: ['platform-billing-plans'] });
-  };
-
-  const plans = plansQ.data || [];
+  const plans = queries.plans;
+  const invalidate = queries.invalidate;
 
   const mutation = (fn, successKey, after) => ({
     mutationFn: fn,
@@ -107,122 +54,57 @@ export function usePlatformBillingPage() {
   const rejectM = useMutation(mutation((id) => platformBillingApi.rejectTopUp(id), 'platform.billing.topUpRejected'));
 
   const assignM = useMutation(mutation(() => {
-    const monthly = parseMoneyInput(monthlyAmount, { allowZero: true });
+    const monthly = parseMoneyInput(modals.monthlyAmount, { allowZero: true });
     if (monthly == null) throw new Error(t('platform.billing.invalidAmount'));
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(periodStartOn || '')) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(modals.periodStartOn || '')) {
       throw new Error(t('platform.billing.invalidPeriodStart'));
     }
-    const plan = plans.find((item) => item.id === assignPlanId);
+    const plan = plans.find((item) => item.id === modals.assignPlanId);
     const usePlan = Boolean(plan && sameMoney(monthly, plan.monthlyPrice));
-    return platformBillingApi.assignPlan(selectedCompanyId, {
-      planId: usePlan ? assignPlanId : null,
+    return platformBillingApi.assignPlan(modals.selectedCompanyId, {
+      planId: usePlan ? modals.assignPlanId : null,
       addonMonthlyAmount: usePlan ? 0 : monthly,
       billingEnabled: true,
       autoChargeEnabled: true,
-      periodStartOn,
+      periodStartOn: modals.periodStartOn,
     });
   }, 'platform.billing.monthlySaved'));
 
-  const clearAdjust = () => {
-    setAdjustAmount('');
-    setAdjustNote('');
-  };
-
   const adjustOptions = (apiCall) => mutation(() => {
-    const value = parseMoneyInput(adjustAmount);
+    const value = parseMoneyInput(modals.adjustAmount);
     if (value == null) throw new Error(t('platform.billing.invalidAmount'));
-    return apiCall(selectedCompanyId, { amount: value, description: adjustNote || undefined });
-  }, 'platform.billing.balanceUpdated', clearAdjust);
+    return apiCall(modals.selectedCompanyId, { amount: value, description: modals.adjustNote || undefined });
+  }, 'platform.billing.balanceUpdated', modals.clearAdjust);
 
   const topUpM = useMutation(adjustOptions(platformBillingApi.topUp));
   const chargeM = useMutation(adjustOptions(platformBillingApi.charge));
 
   const blockM = useMutation(mutation(
-    (blocked) => (blocked ? platformBillingApi.block(selectedCompanyId) : platformBillingApi.unblock(selectedCompanyId)),
+    (blocked) => (blocked ? platformBillingApi.block(modals.selectedCompanyId) : platformBillingApi.unblock(modals.selectedCompanyId)),
     'platform.billing.statusUpdated',
   ));
 
-  const openPaymentModal = (companyId, opts = {}) => {
-    const rawId =
-      typeof companyId === 'number' || (typeof companyId === 'string' && companyId !== '')
-        ? companyId
-        : typeof companyId === 'object' && companyId !== null && 'companyId' in companyId
-        ? companyId.companyId
-        : null;
-    const targetId = rawId != null ? rawId : selectedCompanyId;
-    setPaymentTargetCompanyId(targetId || null);
-
-    const fromDrawer =
-      opts.returnToDrawer ??
-      Boolean(selectedCompanyId && (rawId == null || String(rawId) === String(selectedCompanyId)));
-    setReturnToDrawerOnClose(fromDrawer);
-
-    setPaymentModalOpen(true);
-  };
-
-  const closePaymentModal = () => {
-    setPaymentModalOpen(false);
-    setPaymentTargetCompanyId(null);
-    if (!returnToDrawerOnClose) {
-      setSelectedCompanyId(null);
-      setSelectedCompanyRow(null);
-    }
-    setReturnToDrawerOnClose(false);
-  };
-
   const manualPaymentM = useMutation(mutation(
     ({ companyId, amount, method, transactionId, comment }) => {
+      // Avoid duplicate method prepending since UI already renders the method badge
       const description = [
-        t(`platform.billing.collections.methods.${method}`),
         transactionId?.trim() ? `TXN ${transactionId.trim()}` : null,
         comment?.trim(),
       ].filter(Boolean).join(' · ');
       return platformBillingApi.topUp(companyId, { amount, description, method });
     },
     'platform.billing.collections.paymentAdded',
-    () => closePaymentModal(),
+    () => modals.closePaymentModal(),
   ));
 
   const grantDeferralM = useMutation(mutation(
-    ({ until, reason }) => platformBillingApi.grantDeferral(selectedCompanyId, { until, reason: reason || undefined }),
+    ({ until, reason }) => platformBillingApi.grantDeferral(modals.selectedCompanyId, { until, reason: reason || undefined }),
     'platform.billing.collections.deferral.granted',
   ));
   const cancelDeferralM = useMutation(mutation(
-    () => platformBillingApi.cancelDeferral(selectedCompanyId),
+    () => platformBillingApi.cancelDeferral(modals.selectedCompanyId),
     'platform.billing.collections.deferral.cancelled',
   ));
-
-  const selectedRow = useMemo(
-    () => collections.rows.find((r) => r.billing.companyId === selectedCompanyId) || selectedCompanyRow || null,
-    [collections.rows, selectedCompanyId, selectedCompanyRow],
-  );
-  const selected = selectedRow?.billing || null;
-
-  const selectCompany = (row) => {
-    const b = row?.billing || {};
-    setSelectedCompanyId(b.companyId || null);
-    setSelectedCompanyRow(row || null);
-    setDrawerTab('overview');
-    setAssignPlanId(b.planId || '');
-    setMonthlyAmount(formatMoneyInputDigits(String(Math.round(Number(b.monthlyTotal || 0)))) || '0');
-    setPeriodStartOn(b.periodStartOn || periodStartFromCharge(b.nextChargeAt));
-    clearAdjust();
-  };
-
-  const prepaidCover = useMemo(() => {
-    const monthly = parseMoneyInput(monthlyAmount, { allowZero: true });
-    const balance = Number(selected?.balance || 0);
-    if (monthly == null) return null;
-    if (monthly <= 0) return { kind: 'zero' };
-    if (balance < monthly) return { kind: 'empty' };
-    return { kind: 'ok', balance: money(balance), monthly: money(monthly), months: Math.floor(balance / monthly) };
-  }, [monthlyAmount, selected]);
-
-  const pickPlan = (planId) => {
-    setAssignPlanId(planId);
-    const plan = plans.find((item) => item.id === planId);
-    if (plan) setMonthlyAmount(formatMoneyInputDigits(String(Math.round(Number(plan.monthlyPrice || 0)))) || '0');
-  };
 
   const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString(dateLocale) : '—');
   const formatDateTime = (iso) => (iso ? new Date(iso).toLocaleString(dateLocale) : '—');
@@ -237,48 +119,51 @@ export function usePlatformBillingPage() {
     formatDateTime,
     collections,
     plans,
-    topUps: topUpsQ.data?.content || [],
-    selectedRow,
-    selected,
-    selectedCompanyId,
-    selectCompany,
+    topUps: queries.topUps,
+    companyDetail: queries.companyDetail,
+    selectedRow: modals.selectedRow,
+    selected: modals.selected,
+    selectedCompanyId: modals.selectedCompanyId,
+    selectCompany: modals.selectCompany,
     closeDrawer: () => {
-      setSelectedCompanyId(null);
-      setSelectedCompanyRow(null);
-      setReturnToDrawerOnClose(false);
-      setPaymentTargetCompanyId(null);
+      modals.setSelectedCompanyId(null);
+      modals.setSelectedCompanyRow(null);
     },
-    openCompanyById: (companyId) => {
-      collections.resetFilters();
-      collections.setTab('ALL');
-      setSelectedCompanyId(companyId);
-      setDrawerTab('overview');
+    openCompanyById: (companyId, company = null) => {
+      modals.setSelectedCompanyId(companyId);
+      if (company) {
+        modals.setSelectedCompanyRow({
+          ...company,
+          billing: company.billing || company,
+        });
+      }
+      modals.setDrawerTab('overview');
     },
-    drawerTab,
-    setDrawerTab,
-    ledger: ledgerQ.data?.content || [],
-    ledgerLoading: ledgerQ.isLoading,
-    companyPayments: companyPaymentsQ.data?.content || [],
-    companyPaymentsLoading: companyPaymentsQ.isLoading,
-    adjustAmount,
-    setAdjustAmount: (val) => setAdjustAmount(formatMoneyInputDigits(val)),
-    adjustAmountValid: parseMoneyInput(adjustAmount) != null,
-    adjustNote,
-    setAdjustNote,
-    assignPlanId,
-    pickPlan,
-    monthlyAmount,
-    setMonthlyAmount: (val) => setMonthlyAmount(formatMoneyInputDigits(val)),
-    monthlyAmountValid: parseMoneyInput(monthlyAmount, { allowZero: true }) != null,
-    periodStartOn,
-    setPeriodStartOn,
-    periodStartValid: /^\d{4}-\d{2}-\d{2}$/.test(periodStartOn || ''),
-    prepaidCover,
-    paymentModalOpen,
-    paymentTargetCompanyId,
-    allCompanies: allCompaniesQ.data || [],
-    openPaymentModal,
-    closePaymentModal,
+    drawerTab: modals.drawerTab,
+    setDrawerTab: modals.setDrawerTab,
+    ledger: queries.ledger,
+    ledgerLoading: queries.ledgerLoading,
+    companyPayments: queries.companyPayments,
+    companyPaymentsLoading: queries.companyPaymentsLoading,
+    adjustAmount: modals.adjustAmount,
+    setAdjustAmount: (val) => modals.setAdjustAmount(formatMoneyInputDigits(val)),
+    adjustAmountValid: parseMoneyInput(modals.adjustAmount) != null,
+    adjustNote: modals.adjustNote,
+    setAdjustNote: modals.setAdjustNote,
+    assignPlanId: modals.assignPlanId,
+    pickPlan: modals.pickPlan,
+    monthlyAmount: modals.monthlyAmount,
+    setMonthlyAmount: (val) => modals.setMonthlyAmount(formatMoneyInputDigits(val)),
+    monthlyAmountValid: parseMoneyInput(modals.monthlyAmount, { allowZero: true }) != null,
+    periodStartOn: modals.periodStartOn,
+    setPeriodStartOn: modals.setPeriodStartOn,
+    periodStartValid: /^\d{4}-\d{2}-\d{2}$/.test(modals.periodStartOn || ''),
+    prepaidCover: modals.prepaidCover,
+    paymentModalOpen: modals.paymentModalOpen,
+    paymentTargetCompanyId: modals.paymentTargetCompanyId,
+    allCompanies: queries.allCompanies,
+    openPaymentModal: modals.openPaymentModal,
+    closePaymentModal: modals.closePaymentModal,
     submitManualPayment: (payload) => manualPaymentM.mutate(payload),
     manualPaymentBusy: manualPaymentM.isPending,
     actions,

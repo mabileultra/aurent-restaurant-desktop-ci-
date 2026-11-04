@@ -1,12 +1,47 @@
+import React, { useMemo } from 'react';
 import BillingPeriodCalendar from '../BillingPeriodCalendar';
 import PlatformSelect from '../PlatformSelect';
 import {
   formatMoneyInputDigits,
+  parseMoneyInput,
   preventNonNumericKey,
 } from '../../../billing/utils/parseMoneyInput';
 
 export default function BillingCompanyManage({ p }) {
   const { t } = p;
+  const todayIso = new Date().toLocaleDateString('sv-SE');
+
+  const pastMonthsInfo = useMemo(() => {
+    if (!p.periodStartOn || p.periodStartOn >= todayIso) return null;
+    const start = new Date(p.periodStartOn);
+    const today = new Date(todayIso);
+    const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return null;
+    const periods = Math.min(12, Math.floor(diffDays / 30) + 1);
+    const monthly = parseMoneyInput(p.monthlyAmount, { allowZero: true }) || 0;
+    const totalCost = periods * monthly;
+    const balance = Number(p.selected?.balance || 0);
+    const isCovered = balance >= totalCost;
+    return {
+      periods,
+      totalCost,
+      isCovered,
+      balance,
+    };
+  }, [p.periodStartOn, p.monthlyAmount, p.selected?.balance, todayIso]);
+
+  const handleDebit = () => {
+    if (window.confirm(t('platform.billing.confirmDebit', { defaultValue: 'Haqiqatan ham ushbu summani yechib olmoqchimisiz?' }))) {
+      p.debit();
+    }
+  };
+
+  const handleBlock = () => {
+    if (window.confirm(t('platform.billing.confirmBlock', { defaultValue: 'Haqiqatan ham ushbu kompaniyani bloklamoqchimisiz?' }))) {
+      p.block();
+    }
+  };
+
   return (
     <div className="billing-manage bc-manage">
       <p className="billing-manage__hint">{t('platform.billing.monthlyHint')}</p>
@@ -37,9 +72,25 @@ export default function BillingCompanyManage({ p }) {
           searchable={p.plans.length > 5}
         />
       </div>
+
       <label className="billing-field-label">{t('platform.billing.periodStart')}</label>
       <BillingPeriodCalendar value={p.periodStartOn} onChange={p.setPeriodStartOn} locale={p.dateLocale} t={t} />
-      <p className="billing-manage__hint">{t('platform.billing.periodStartHint')}</p>
+
+      {pastMonthsInfo ? (
+        <div className={`p-2.5 rounded-lg text-xs border ${pastMonthsInfo.isCovered ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 text-emerald-800 dark:text-emerald-300' : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 text-amber-800 dark:text-amber-300'}`}>
+          <div className="font-semibold mb-0.5">
+            Orqaga tanlangan sana: {pastMonthsInfo.periods} ta oy ({p.money(pastMonthsInfo.totalCost)} {t('billing.currency')})
+          </div>
+          <div>
+            {pastMonthsInfo.isCovered
+              ? `Balans yetarli (${p.money(pastMonthsInfo.balance)} ${t('billing.currency')}) — o‘tkazib yuborilgan oylar darhol yechiladi.`
+              : `Balans yetarli emas (${p.money(pastMonthsInfo.balance)} ${t('billing.currency')}) — yetmagan oylar uchun kompaniya qarzdorlik/grace holatiga o‘tadi.`}
+          </div>
+        </div>
+      ) : (
+        <p className="billing-manage__hint">{t('platform.billing.periodStartHint')}</p>
+      )}
+
       {p.prepaidCover?.kind === 'ok' ? (
         <p className="billing-manage__hint billing-manage__hint--ok">{t('platform.billing.prepaidHint', p.prepaidCover)}</p>
       ) : null}
@@ -79,7 +130,7 @@ export default function BillingCompanyManage({ p }) {
           <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmountValid} onClick={p.credit}>
             {t('platform.billing.credit')}
           </button>
-          <button type="button" className="billing-btn billing-btn--blue" disabled={p.busy || !p.adjustAmountValid} onClick={p.debit}>
+          <button type="button" className="billing-btn billing-btn--blue" disabled={p.busy || !p.adjustAmountValid} onClick={handleDebit}>
             {t('platform.billing.debit')}
           </button>
           {p.selected.status === 'BLOCKED' ? (
@@ -87,7 +138,7 @@ export default function BillingCompanyManage({ p }) {
               {t('platform.billing.unblock')}
             </button>
           ) : (
-            <button type="button" className="billing-btn billing-btn--danger" disabled={p.busy} onClick={p.block}>
+            <button type="button" className="billing-btn billing-btn--danger" disabled={p.busy} onClick={handleBlock}>
               {t('platform.billing.block')}
             </button>
           )}

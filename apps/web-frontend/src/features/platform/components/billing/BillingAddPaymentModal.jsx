@@ -8,6 +8,8 @@ import {
 } from '../../../billing/utils/parseMoneyInput';
 import { PAYMENT_METHODS } from '../../hooks/useBillingCollections';
 
+export const MAX_PAYMENT_AMOUNT = 1_000_000_000;
+
 export default function BillingAddPaymentModal({ t, companies, initialCompanyId, busy, onClose, onSubmit }) {
   const k = (key, opts) => t(`platform.billing.collections.${key}`, opts);
   const companyList = Array.isArray(companies) ? companies : [];
@@ -22,8 +24,11 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
   const [method, setMethod] = useState('BANK_TRANSFER');
   const [transactionId, setTransactionId] = useState('');
   const [comment, setComment] = useState('');
+
   const parsed = parseMoneyInput(amount);
-  const valid = Boolean(companyId) && parsed != null;
+  const isZero = amount.trim() !== '' && parsed === 0;
+  const isTooLarge = parsed != null && parsed > MAX_PAYMENT_AMOUNT;
+  const valid = Boolean(companyId) && parsed != null && parsed > 0 && !isTooLarge;
 
   const submit = (e) => {
     e.preventDefault();
@@ -73,7 +78,18 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
               onChange={(e) => setAmount(formatMoneyInputDigits(e.target.value))}
               placeholder="1 000 000"
               required
+              data-autofocus={Boolean(companyId)}
             />
+            {isZero && (
+              <p className="text-xs text-rose-500 mt-1 font-medium">
+                {t('platform.billing.amountMustBePositive', { defaultValue: 'To‘lov summasi 0 dan katta bo‘lishi kerak' })}
+              </p>
+            )}
+            {isTooLarge && (
+              <p className="text-xs text-rose-500 mt-1 font-medium">
+                {t('platform.billing.amountTooLarge', { defaultValue: 'Maksimal to‘lov summasi 1 000 000 000 so‘m' })}
+              </p>
+            )}
           </label>
           <label className="bc-form__field">
             <span>{k('colMethod')} *</span>

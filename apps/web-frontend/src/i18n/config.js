@@ -2,17 +2,20 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-import ru from '../locales/ru';
-import uz from '../locales/uz';
+import resourcesToBackend from 'i18next-resources-to-backend';
 
 i18n
   .use(LanguageDetector)
+  .use(
+    resourcesToBackend((language) => {
+      if (language === 'uz') {
+        return import('../locales/uz/index.js');
+      }
+      return import('../locales/ru/index.js');
+    })
+  )
   .use(initReactI18next)
   .init({
-    resources: {
-      ru: { translation: ru },
-      uz: { translation: uz },
-    },
     fallbackLng: 'ru',
     supportedLngs: ['ru', 'uz'],
     nonExplicitSupportedLngs: true,
@@ -21,6 +24,9 @@ i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
       lookupLocalStorage: 'pos-lang',
+    },
+    react: {
+      useSuspense: false,
     },
   });
 

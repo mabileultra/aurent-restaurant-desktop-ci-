@@ -46,7 +46,7 @@ export default function BillingReportsKpis({ t, r = {}, sum, period }) {
       {/* 2. Kutilayotgan to'lovlar KPI */}
       <div className="bc-report-kpi-card bc-report-kpi-card--expected">
         <div className="bc-report-kpi-card__top">
-          <span className="bc-report-kpi-card__label">{k('expected')}</span>
+          <span className="bc-report-kpi-card__label">{k('expected')} (7 kun)</span>
           <span className="bc-report-kpi-card__icon bc-kpi--info">
             <CalendarClock size={18} aria-hidden />
           </span>

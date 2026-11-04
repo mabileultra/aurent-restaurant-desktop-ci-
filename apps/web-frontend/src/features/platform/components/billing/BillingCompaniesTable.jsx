@@ -1,67 +1,11 @@
-import { useState } from 'react';
-import { CalendarClock, ChevronDown, ChevronRight, Copy, Download, Layers, X } from 'lucide-react';
+import React from 'react';
+import { ChevronRight } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import { PlatformErrorState } from '../../../../components/ui';
 import { STATE_TONE, activeDeferralDay, balanceTone, dueHint, initials } from './billingCollectionsUi';
-
-function ExportMenu({ k, disabled, busy, onExcel, onCsv }) {
-  const [open, setOpen] = useState(false);
-  const pick = (fn) => () => {
-    setOpen(false);
-    fn();
-  };
-  return (
-    <div className="bc-menu">
-      <button
-        type="button"
-        className="bc-btn bc-btn--outline"
-        disabled={disabled || busy}
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        <Download size={15} aria-hidden />
-        {k('export')}
-        <ChevronDown size={14} aria-hidden />
-      </button>
-      {open ? (
-        <div className="bc-menu__list" role="menu">
-          <button type="button" role="menuitem" onClick={pick(onExcel)}>Excel (.xlsx)</button>
-          <button type="button" role="menuitem" onClick={pick(onCsv)}>CSV</button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function BulkBar({ p }) {
-  const { t, collections: c, actions: a } = p;
-  const k = (key, opts) => t(`platform.billing.collections.${key}`, opts);
-  if (!c.selectedIds.size) return null;
-  return (
-    <div className="bc-bulk">
-      <span className="bc-bulk__count">{k('bulk.selected', { count: c.selectedIds.size })}</span>
-      <button type="button" className="bc-btn bc-btn--outline" onClick={a.copyBulkReminders}>
-        <Copy size={15} aria-hidden />{k('bulk.reminders')}
-      </button>
-      <ExportMenu
-        k={k}
-        busy={a.exporting}
-        onExcel={() => a.exportExcel(true)}
-        onCsv={() => a.exportCsv(true)}
-      />
-      <button type="button" className="bc-btn bc-btn--outline" onClick={() => a.openBulk('plan')}>
-        <Layers size={15} aria-hidden />{k('bulk.changePlan')}
-      </button>
-      <button type="button" className="bc-btn bc-btn--outline" onClick={() => a.openBulk('date')}>
-        <CalendarClock size={15} aria-hidden />{k('bulk.changeDate')}
-      </button>
-      <button type="button" className="bc-btn bc-btn--ghost" onClick={c.clearSelection}>
-        <X size={15} aria-hidden />{k('bulk.clear')}
-      </button>
-    </div>
-  );
-}
+import BillingCompanyMobileCard from './BillingCompanyMobileCard';
+import { BulkBar, ExportMenu } from './BillingCompaniesTableBulkBar';
 
 export default function BillingCompaniesTable({ p }) {
   const { t, money, formatDate, collections: c, actions: a } = p;
@@ -83,7 +27,35 @@ export default function BillingCompaniesTable({ p }) {
         />
       </header>
       <BulkBar p={p} />
-      <div className="overflow-x-auto">
+
+      {/* Mobile view (< 768px): Card layout without horizontal scrolling */}
+      <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 space-y-2">
+        {c.loading ? (
+          <p className="p-4 text-center text-xs text-slate-400">{t('common.loading')}</p>
+        ) : c.isError ? (
+          <div className="p-4">
+            <PlatformErrorState size="sm" error={c.error} onRetry={c.refetch} retryLoading={c.loading} />
+          </div>
+        ) : c.pagedRows.length === 0 ? (
+          <p className="p-4 text-center text-xs text-slate-400">{t('platform.billing.emptyCompanies')}</p>
+        ) : (
+          c.pagedRows.map((row) => (
+            <BillingCompanyMobileCard
+              key={row.billing?.companyId}
+              row={row}
+              p={p}
+              c={c}
+              regionName={regionName}
+              districtName={districtName}
+              k={k}
+              currency={currency}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Desktop view (>= 768px): Traditional high-density table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="bc-table">
           <thead>
             <tr>
@@ -113,12 +85,7 @@ export default function BillingCompaniesTable({ p }) {
             ) : c.isError ? (
               <tr>
                 <td colSpan={11} className="p-4">
-                  <PlatformErrorState
-                    size="sm"
-                    error={c.error}
-                    onRetry={c.refetch}
-                    retryLoading={c.loading}
-                  />
+                  <PlatformErrorState size="sm" error={c.error} onRetry={c.refetch} retryLoading={c.loading} />
                 </td>
               </tr>
             ) : c.pagedRows.length === 0 ? (

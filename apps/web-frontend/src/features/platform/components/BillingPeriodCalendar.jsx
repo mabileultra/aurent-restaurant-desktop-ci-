@@ -1,5 +1,6 @@
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { formatMonthTitle } from './billing/billingCalendarUtils';
 
 function pad(n) {
   return String(n).padStart(2, '0');
@@ -66,10 +67,11 @@ export default function BillingPeriodCalendar({ value, onChange, locale, t }) {
     () => monthGrid(cursor.getFullYear(), cursor.getMonth()),
     [cursor],
   );
-  const title = cursor.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  const monthKeyStr = `${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}`;
+  const title = formatMonthTitle(monthKeyStr, locale);
   const display = Number.isNaN(selectedDate.getTime())
     ? ''
-    : selectedDate.toLocaleDateString(locale);
+    : `${pad(selectedDate.getDate())}.${pad(selectedDate.getMonth() + 1)}.${selectedDate.getFullYear()}`;
 
   const pick = (day) => {
     if (!day) return;
