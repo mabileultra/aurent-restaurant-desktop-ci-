@@ -47,6 +47,17 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
+  // Never intercept or cache Vite development modules, HMR, or node_modules chunks
+  if (
+    url.port === '5173' ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.includes('/node_modules/') ||
+    url.pathname.startsWith('/src/') ||
+    url.searchParams.has('v')
+  ) {
+    return;
+  }
+
   // Dynamic API calls are strictly network-only (never serve stale financial/auth data from SW cache)
   if (url.pathname.startsWith('/api/')) {
     return;

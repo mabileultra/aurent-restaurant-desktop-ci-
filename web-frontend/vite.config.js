@@ -121,24 +121,40 @@ export default defineConfig(async ({ mode }) => {
         },
       },
     },
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          // Only split node_modules. App-level cashier/cash-registers manualChunks
-          // caused production white screens via circular chunk init
-          // (createContext undefined / Cannot access before initialization).
-          if (!id.includes('node_modules')) return;
-          if (/[\\/]clsx[\\/]/.test(id)) return 'vendor';
-          if (/recharts|react-smooth|[\\/]d3-|victory-vendor|decimal\.js-light|[\\/]lodash[\\/]|fast-equals|eventemitter3|internmap/.test(id)) return 'charts';
-          if (/[\\/](react|react-dom|scheduler|react-router|react-router-dom|@remix-run|@tanstack|react-hook-form|@hookform|zod)[\\/]/.test(id)) {
-            return 'vendor';
-          }
+    resolve: {
+      dedupe: ['react', 'react-dom', 'react-router-dom', 'react-i18next'],
+    },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react-router-dom',
+        'react-i18next',
+        '@tanstack/react-query',
+        'react-hot-toast',
+      ],
+    },
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Only split node_modules. App-level cashier/cash-registers manualChunks
+            // caused production white screens via circular chunk init
+            // (createContext undefined / Cannot access before initialization).
+            if (!id.includes('node_modules')) return;
+            if (/[\\/]clsx[\\/]/.test(id)) return 'vendor';
+            if (/recharts|react-smooth|[\\/]d3-|victory-vendor|decimal\.js-light|[\\/]lodash[\\/]|fast-equals|eventemitter3|internmap/.test(id)) return 'charts';
+            if (
+              /[\\/](react|react-dom|scheduler|react-router|react-router-dom|react-i18next|use-sync-external-store|@remix-run|@tanstack|react-hook-form|@hookform|zod|react-hot-toast)[\\/]/.test(id)
+            ) {
+              return 'vendor';
+            }
+          },
         },
       },
     },
-  },
 };
 });

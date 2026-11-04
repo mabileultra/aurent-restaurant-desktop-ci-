@@ -156,7 +156,11 @@ export function usePlatformBillingPage() {
     adjustNote: modals.adjustNote,
     setAdjustNote: modals.setAdjustNote,
     assignPlanId: modals.assignPlanId,
-    pickPlan: modals.pickPlan,
+    pickPlan: (planId) => {
+      modals.setAssignPlanId(planId);
+      const plan = plans.find((item) => item.id === planId);
+      if (plan) modals.setMonthlyAmount(formatMoneyInputDigits(String(Math.round(Number(plan.monthlyPrice || 0)))) || '0');
+    },
     monthlyAmount: modals.monthlyAmount,
     setMonthlyAmount: (val) => modals.setMonthlyAmount(formatMoneyInputDigits(val)),
     monthlyAmountValid: Boolean(
