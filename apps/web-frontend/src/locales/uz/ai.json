@@ -1,0 +1,17 @@
+{
+  "aiAssistant": {
+    "title": "Direktor uchun AI-assistent",
+    "subtitle": "Tizim ma'lumotlari bo'yicha to'liq javob va maslahatlar",
+    "hint": "Mavzu bo'yicha so'rang: mahsulotlar, savdo, do'kon, inventarizatsiya. Raqamlar va 3–5 aniq tavsiya beriladi.",
+    "inputPlaceholder": "Xabar…",
+    "thinking": "O‘ylayapman…",
+    "clearChat": "Chatni tozalash",
+    "chartTitle": "Oxirgi analitik javob bo‘yicha grafik",
+    "pageTitle": "AI-assistent",
+    "pageIntro": "Sotuv, qaytarish va ombor bo‘yicha qisqa ham aniq javoblar uchun alohida chat.",
+    "errors": {
+      "failed": "Assistentdan javob olib bo‘lmadi",
+      "validation": "Xabar yuborilmadi (chat tarixi juda uzun). «Chatni tozalash» ni bosing va qayta so‘rang."
+    }
+  }
+}
