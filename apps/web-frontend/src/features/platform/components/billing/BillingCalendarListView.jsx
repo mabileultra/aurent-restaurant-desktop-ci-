@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Calendar, Download, Search } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Calendar, Download } from 'lucide-react';
 import { formatDayTitle } from './billingCalendarUtils';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import BillingCalendarListRow from './BillingCalendarListRow';
@@ -18,7 +18,6 @@ export default function BillingCalendarListView({
   onOpenPaymentModal,
   p,
 }) {
-  const [search, setSearch] = useState('');
   const todayIso = new Date().toLocaleDateString('sv-SE');
 
   // Flatten all items across all days of the month
@@ -47,18 +46,9 @@ export default function BillingCalendarListView({
   const { regionName } = useGeoNameLookup(regionCodes);
 
   const filteredItems = useMemo(() => {
-    return allMonthlyItems.filter((item) => {
-      if (selectedDate && item.date !== selectedDate) return false;
-
-      if (search.trim()) {
-        const q = search.toLowerCase().trim();
-        const name = (item.companyName || item.billing?.companyName || '').toLowerCase();
-        const id = String(item.companyId || '');
-        if (!name.includes(q) && !id.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [allMonthlyItems, selectedDate, search]);
+    if (!selectedDate) return allMonthlyItems;
+    return allMonthlyItems.filter((item) => item.date === selectedDate);
+  }, [allMonthlyItems, selectedDate]);
 
   const isExporting = Boolean(p?.actions?.exporting);
   const handleExport = () => {
@@ -103,17 +93,6 @@ export default function BillingCalendarListView({
         </div>
 
         <div className="bc-ledger-card__actions flex flex-wrap items-center gap-2">
-          <div className="bc-ledger-search">
-            <Search size={14} aria-hidden />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('common.search', { defaultValue: 'Qidiruv…' })}
-              aria-label={t('common.search', { defaultValue: 'Qidiruv…' })}
-            />
-          </div>
-
           <button
             type="button"
             className="bc-btn bc-btn--outline bc-btn--sm"

@@ -1,46 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useState } from 'react';
 import BillingPeriodCalendar from '../BillingPeriodCalendar';
 import PlatformSelect from '../PlatformSelect';
+import BillingCompanyManageConfirmModal from './BillingCompanyManageConfirmModal';
 import {
   formatMoneyInputDigits,
   parseMoneyInput,
   preventNonNumericKey,
 } from '../../../billing/utils/parseMoneyInput';
+import { MAX_BILLING_AMOUNT } from '../../hooks/billingCollectionsConstants';
 
 export default function BillingCompanyManage({ p }) {
   const { t } = p;
-  const todayIso = new Date().toLocaleDateString('sv-SE');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null });
 
-  const pastMonthsInfo = useMemo(() => {
-    if (!p.periodStartOn || p.periodStartOn >= todayIso) return null;
-    const start = new Date(p.periodStartOn);
-    const today = new Date(todayIso);
-    const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-    if (diffDays <= 0) return null;
-    const periods = Math.min(12, Math.floor(diffDays / 30) + 1);
-    const monthly = parseMoneyInput(p.monthlyAmount, { allowZero: true }) || 0;
-    const totalCost = periods * monthly;
-    const balance = Number(p.selected?.balance || 0);
-    const isCovered = balance >= totalCost;
-    return {
-      periods,
-      totalCost,
-      isCovered,
-      balance,
-    };
-  }, [p.periodStartOn, p.monthlyAmount, p.selected?.balance, todayIso]);
+  const parsedAdjust = parseMoneyInput(p.adjustAmount);
+  const isAdjustTooLarge = parsedAdjust != null && parsedAdjust > MAX_BILLING_AMOUNT;
+  const isAdjustZero = p.adjustAmount?.trim() !== '' && parsedAdjust === 0;
+  const canAdjust = Boolean(p.adjustAmountValid && !isAdjustTooLarge && !isAdjustZero && parsedAdjust > 0);
 
-  const handleDebit = () => {
-    if (window.confirm(t('platform.billing.confirmDebit', { defaultValue: 'Haqiqatan ham ushbu summani yechib olmoqchimisiz?' }))) {
-      p.debit();
-    }
+  const handleConfirmAction = () => {
+    if (confirmModal.type === 'debit') return p.debit();
+    if (confirmModal.type === 'credit') return p.credit();
+    if (confirmModal.type === 'block') return p.block();
   };
 
-  const handleBlock = () => {
-    if (window.confirm(t('platform.billing.confirmBlock', { defaultValue: 'Haqiqatan ham ushbu kompaniyani bloklamoqchimisiz?' }))) {
-      p.block();
-    }
-  };
+  const companyDisplayName =
+    p.selected?.companyName ||
+    p.selectedRow?.billing?.companyName ||
+    p.selectedRow?.companyName ||
+    (p.selected?.companyId ? `#${p.selected.companyId}` : '');
 
   return (
     <div className="billing-manage bc-manage">
@@ -55,6 +43,7 @@ export default function BillingCompanyManage({ p }) {
           type="text"
           inputMode="numeric"
           autoComplete="off"
+          maxLength={15}
           value={p.monthlyAmount}
           onKeyDown={preventNonNumericKey}
           onChange={(e) => p.setMonthlyAmount(formatMoneyInputDigits(e.target.value))}
@@ -75,21 +64,7 @@ export default function BillingCompanyManage({ p }) {
 
       <label className="billing-field-label">{t('platform.billing.periodStart')}</label>
       <BillingPeriodCalendar value={p.periodStartOn} onChange={p.setPeriodStartOn} locale={p.dateLocale} t={t} />
-
-      {pastMonthsInfo ? (
-        <div className={`p-2.5 rounded-lg text-xs border ${pastMonthsInfo.isCovered ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 text-emerald-800 dark:text-emerald-300' : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 text-amber-800 dark:text-amber-300'}`}>
-          <div className="font-semibold mb-0.5">
-            Orqaga tanlangan sana: {pastMonthsInfo.periods} ta oy ({p.money(pastMonthsInfo.totalCost)} {t('billing.currency')})
-          </div>
-          <div>
-            {pastMonthsInfo.isCovered
-              ? `Balans yetarli (${p.money(pastMonthsInfo.balance)} ${t('billing.currency')}) — o‘tkazib yuborilgan oylar darhol yechiladi.`
-              : `Balans yetarli emas (${p.money(pastMonthsInfo.balance)} ${t('billing.currency')}) — yetmagan oylar uchun kompaniya qarzdorlik/grace holatiga o‘tadi.`}
-          </div>
-        </div>
-      ) : (
-        <p className="billing-manage__hint">{t('platform.billing.periodStartHint')}</p>
-      )}
+      <p className="billing-manage__hint">{t('platform.billing.periodStartHint')}</p>
 
       {p.prepaidCover?.kind === 'ok' ? (
         <p className="billing-manage__hint billing-manage__hint--ok">{t('platform.billing.prepaidHint', p.prepaidCover)}</p>
@@ -108,17 +83,30 @@ export default function BillingCompanyManage({ p }) {
       <div className="billing-manage__topup">
         <label className="billing-field-label" htmlFor="platform-topup-amount">{t('platform.billing.topUpAmount')}</label>
         <div className="grid gap-2">
-          <input
-            id="platform-topup-amount"
-            className="billing-input"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            value={p.adjustAmount}
-            onKeyDown={preventNonNumericKey}
-            onChange={(e) => p.setAdjustAmount(formatMoneyInputDigits(e.target.value))}
-            placeholder={t('platform.billing.topUpAmountPlaceholder')}
-          />
+          <div>
+            <input
+              id="platform-topup-amount"
+              className={`billing-input ${isAdjustTooLarge ? 'border-rose-500' : ''}`}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={15}
+              value={p.adjustAmount}
+              onKeyDown={preventNonNumericKey}
+              onChange={(e) => p.setAdjustAmount(formatMoneyInputDigits(e.target.value))}
+              placeholder={t('platform.billing.topUpAmountPlaceholder')}
+            />
+            {isAdjustTooLarge && (
+              <p className="text-xs text-rose-600 mt-1">
+                Maksimal summa: {p.money(MAX_BILLING_AMOUNT)} {t('billing.currency')}
+              </p>
+            )}
+            {isAdjustZero && (
+              <p className="text-xs text-amber-600 mt-1">
+                Summa 0 dan katta bo‘lishi kerak
+              </p>
+            )}
+          </div>
           <input
             className="billing-input"
             value={p.adjustNote}
@@ -127,23 +115,50 @@ export default function BillingCompanyManage({ p }) {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmountValid} onClick={p.credit}>
+          <button
+            type="button"
+            className="billing-btn billing-btn--ok"
+            disabled={p.busy || !canAdjust}
+            onClick={() => setConfirmModal({ isOpen: true, type: 'credit' })}
+          >
             {t('platform.billing.credit')}
           </button>
-          <button type="button" className="billing-btn billing-btn--blue" disabled={p.busy || !p.adjustAmountValid} onClick={handleDebit}>
+          <button
+            type="button"
+            className="billing-btn billing-btn--blue"
+            disabled={p.busy || !canAdjust}
+            onClick={() => setConfirmModal({ isOpen: true, type: 'debit' })}
+          >
             {t('platform.billing.debit')}
           </button>
-          {p.selected.status === 'BLOCKED' ? (
+          {p.selected?.status === 'BLOCKED' ? (
             <button type="button" className="billing-btn billing-btn--violet" disabled={p.busy} onClick={p.unblock}>
               {t('platform.billing.unblock')}
             </button>
           ) : (
-            <button type="button" className="billing-btn billing-btn--danger" disabled={p.busy} onClick={handleBlock}>
+            <button
+              type="button"
+              className="billing-btn billing-btn--danger"
+              disabled={p.busy}
+              onClick={() => setConfirmModal({ isOpen: true, type: 'block' })}
+            >
               {t('platform.billing.block')}
             </button>
           )}
         </div>
       </div>
+
+      <BillingCompanyManageConfirmModal
+        isOpen={confirmModal.isOpen}
+        type={confirmModal.type}
+        companyName={companyDisplayName}
+        formattedAmount={p.money(parsedAdjust || 0)}
+        currency={t('billing.currency')}
+        busy={p.busy}
+        onConfirm={handleConfirmAction}
+        onClose={() => setConfirmModal({ isOpen: false, type: null })}
+        t={t}
+      />
     </div>
   );
 }

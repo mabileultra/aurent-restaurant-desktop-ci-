@@ -38,7 +38,13 @@
     "view": "Ochish",
     "saving": "Saqlanmoqda…",
     "deleting": "O‘chirilmoqda…",
-    "refresh": "Yangilash"
+    "refresh": "Yangilash",
+    "yes": "Ha",
+    "no": "Yo‘q",
+    "select": "Tanlash",
+    "add": "Qo‘shish",
+    "disable": "O‘chirish",
+    "enable": "Yoqish"
   },
   "nav": {
     "dashboard": "Asosiy",
@@ -104,6 +110,8 @@
     "rstOs": "Restaurant OS",
     "restaurantHall": "Zal",
     "restaurantKitchen": "Oshxona",
+    "restaurantBooking": "Stol band qilish",
+    "restaurantDelivery": "Yetkazib berish",
     "users": "Foydalanuvchilar",
     "usersGroup": "Foydalanuvchilar",
     "usersList": "Foydalanuvchilar ro‘yxati",

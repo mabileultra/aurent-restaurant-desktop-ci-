@@ -16,7 +16,8 @@ i18n
   )
   .use(initReactI18next)
   .init({
-    fallbackLng: 'ru',
+    fallbackLng: false,
+    lng: (typeof window !== 'undefined' && localStorage.getItem('pos-lang')) || 'uz',
     supportedLngs: ['ru', 'uz'],
     nonExplicitSupportedLngs: true,
     interpolation: { escapeValue: false },

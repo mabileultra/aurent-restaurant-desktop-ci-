@@ -37,7 +37,8 @@ export default function BillingCalendarGrid({
         {/* Days grid */}
         <div className="bc-cal-grid">
           {cells.map((cell) => {
-            const { iso, dayNum, isOtherMonth, isPrevMonth, isNextMonth } = cell;
+            const { iso, dayNum = '', isOtherMonth = false } = cell || {};
+            if (!iso) return null;
             const dayData = byDate[iso];
             const items = dayData?.items || [];
             const info = items.length > 0 ? getDayStatusInfo(items, companyMap, iso, todayIso) : null;
