@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../store/authStore';
 import { isPharmacyAppSplitEnabled } from '../../../config/pharmacyAppUrl';
 import { redirectToPharmacyApp } from '../../../utils/pharmacyAppRedirect';
+import { getPharmacyHandoffDrainBlock } from '../../../utils/pharmacyOfflineDrainGate';
 import { PHARM_POS_PATH } from '../../../pharmacy/app/pharmacyPaths';
 import '../../../styles/auth/auth-accept.css';
 
@@ -33,6 +34,20 @@ export default function PharmacyHandoffStartPage() {
         setError(t('pharmacyCashier.spaLaunchNeedLogin', {
           defaultValue: 'Сначала войдите на aurent.uz',
         }));
+        return;
+      }
+      const drain = getPharmacyHandoffDrainBlock();
+      if (drain.blocked) {
+        setError(
+          drain.reason === 'syncing'
+            ? t('pharmacyCashier.spaLaunchWaitSync', {
+              defaultValue: 'Дождитесь синхронизации офлайн-чеков, затем откройте новую аптеку',
+            })
+            : t('pharmacyCashier.spaLaunchDrainPending', {
+              defaultValue: 'Сначала дождитесь выгрузки {{count}} офлайн-чека(ов) — иначе они останутся на aurent',
+              count: drain.pending,
+            }),
+        );
         return;
       }
       try {

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { ExternalLink } from 'lucide-react';
 import { isPharmacyAppSplitEnabled } from '../../../config/pharmacyAppUrl';
 import { redirectToPharmacyApp } from '../../../utils/pharmacyAppRedirect';
+import { getPharmacyHandoffDrainBlock } from '../../../utils/pharmacyOfflineDrainGate';
 import '../styles/pharmacy-spa-launch.css';
 
 /**
@@ -19,6 +20,20 @@ export default function PharmacySpaLaunchButton({ className = '', compact = fals
 
   const onClick = async () => {
     if (busy) return;
+    const drain = getPharmacyHandoffDrainBlock();
+    if (drain.blocked) {
+      toast.error(
+        drain.reason === 'syncing'
+          ? t('pharmacyCashier.spaLaunchWaitSync', {
+            defaultValue: 'Дождитесь синхронизации офлайн-чеков, затем откройте новую аптеку',
+          })
+          : t('pharmacyCashier.spaLaunchDrainPending', {
+            defaultValue: 'Сначала дождитесь выгрузки {{count}} офлайн-чека(ов) — иначе они останутся на aurent',
+            count: drain.pending,
+          }),
+      );
+      return;
+    }
     setBusy(true);
     try {
       const started = await redirectToPharmacyApp(location.pathname);

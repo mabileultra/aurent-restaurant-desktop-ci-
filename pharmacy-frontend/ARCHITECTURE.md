@@ -33,7 +33,7 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 ### Phase 4 — product shape (in progress)
 
 - POS chrome: `src/pharmacy/pos/PharmacyPosShell` (not grocery `CashierLayout`).
-- Admin chrome: `src/pharmacy/app/PharmacyAdminShell`.
+- Admin chrome: `src/pharmacy/app/PharmacyAdminShell` + `pharmacy-admin-shell.css` / `pharmacyAdminNav.js`.
 - Always `catalogKind: 'pharmacy'` on this SPA (`pharmacy/config/vertical.js`).
 - `useCompanyBusinessType` / `useCashierStoreProfile` force pharmacy world (no grocery flicker).
 - Scale PLU stubbed (`tryResolveWeightPluProduct` → null); pharmacy weight modal has no hardware scales.
@@ -50,6 +50,7 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 ## Offline
 
 Разные origin = разные IndexedDB/SW. Cutover только после синхронизации очереди на старом клиенте.
+Handoff gate (main): `pharmacyOfflineDrainGate` — блокирует CTA / `/auth/pharmacy-handoff`, пока `pendingSales > 0` или идёт sync.
 
 ## Handoff (Sprint 2)
 
