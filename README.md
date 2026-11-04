@@ -21,8 +21,9 @@ postsystem/
 │   ├── web-frontend/            # aurent.uz — платформа + grocery
 │   ├── restaurant-frontend/     # r-aurent.uz
 │   ├── pharmacy-frontend/       # p-aurent.uz
-│   ├── desktop-electron/        # Electron касса
-│   └── restaurant-desktop/      # Electron ресторан
+│   ├── desktop-electron/        # Electron grocery-касса
+│   ├── restaurant-desktop/      # Electron ресторан
+│   └── pharmacy-desktop/        # Electron аптека
 ├── packages/                    # @aurent/shared-*
 ├── web-backend/                 # POS core API
 ├── restaurant-service/          # API ресторана (/rst)
@@ -80,7 +81,7 @@ bash deploy/deploy.sh
 
 ## Касса
 
-Desktop: **`apps/desktop-electron/`** (касса) и **`apps/restaurant-desktop/`** (ресторан). Старый `aurent-cashier-desktop/` не трогаем.
+Desktop: **`apps/desktop-electron/`** (grocery), **`apps/restaurant-desktop/`**, **`apps/pharmacy-desktop/`** (аптека). Старый `aurent-cashier-desktop/` не трогаем.
 
 ```bash
 bash scripts/start-cashier-desktop.sh

@@ -48,4 +48,4 @@ Root `pnpm-workspace.yaml` + `packages/@aurent/*`.
 Apps use `workspace:*`; Vite aliases via `packages/aurentAliases.mjs`.
 
 See `packages/README.md` for the live package table and rules.
-Layout: `apps/pharmacy-frontend` (+ siblings); shared: `packages/@aurent/*`.
+Layout: `apps/pharmacy-frontend` + desktop shell `apps/pharmacy-desktop`; shared: `packages/@aurent/*`.
