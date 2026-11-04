@@ -38,7 +38,7 @@ Do not delete `/pharm` on aurent until offline drain + cutover.
 - `useCompanyBusinessType` / `useCashierStoreProfile` force pharmacy world (no grocery flicker).
 - Scale PLU stubbed (`tryResolveWeightPluProduct` → null); pharmacy weight modal has no hardware scales.
 - Pharmacy barcodes use local `ean13` (not scales utils).
-- Next: delete unused `features/scales` / `scales/` trees from this package when nothing imports them.
+- Removed dead `scales/`, `features/scales/`, grocery `PosPage` / scale `WeightEntryModal` from this package.
 
 ### Запрещено
 
