@@ -22,7 +22,10 @@ public class CatalogPrimaryProductWriteSupport {
         return properties.catalogPrimaryWrite();
     }
 
-    /** Ensure UUID exists so catalog-service can own the same id as local mirror. */
+    /**
+     * Ensure UUID exists so catalog-service and local mirror share one id.
+     * Relies on {@link Product} using assigned ids (no {@code @GeneratedValue}).
+     */
     public void ensureId(Product product) {
         if (!enabled() || product == null || product.getId() != null) {
             return;
