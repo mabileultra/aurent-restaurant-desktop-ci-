@@ -1,0 +1,92 @@
+/* Центральная рабочая область аптечной кассы */
+
+.pharmacy-cashier__context-pane {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+  border: 1px solid var(--pharm-border, #dddcd5);
+  border-radius: var(--pharm-radius, 10px);
+  background: var(--pharm-elevated, #f8f7f3);
+}
+
+.pharmacy-cashier__context-pane--empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.pharmacy-cashier__context-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  color: var(--pharm-muted, #7a817c);
+  text-align: center;
+}
+
+.pharmacy-cashier__context-empty p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--pharm-ink, #26332d);
+}
+
+.pharmacy-cashier__context-empty span {
+  max-width: 28rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.pharmacy-cashier__context-card {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  overflow: auto;
+}
+
+.pharmacy-cashier__context-name {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #26332d);
+}
+
+.pharmacy-cashier__context-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.pharmacy-cashier__context-meta dt {
+  color: var(--pharm-muted, #7a817c);
+  font-weight: 600;
+}
+
+.pharmacy-cashier__context-meta dd {
+  margin: 0;
+  color: var(--pharm-ink, #26332d);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pharmacy-cashier__context-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+}
+
+.pharmacy-cashier__context-notice {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pharm-ink, #26332d);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

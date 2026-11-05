@@ -1,0 +1,136 @@
+/* Light theme — secondary pages */
+.cashier-app.cashier-app--light {
+  --cashier-panel-surface: var(--pos-surface-elevated);
+  --cashier-panel-surface-2: var(--pos-surface);
+  --cashier-panel-border: var(--pos-border);
+  --cashier-panel-text: var(--pos-ink);
+  --cashier-panel-muted: var(--pos-muted);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-stats {
+  border-color: var(--pos-border);
+  background: linear-gradient(135deg, var(--pos-surface-hover) 0%, var(--pos-surface-elevated) 55%, var(--pos-surface) 100%);
+  box-shadow: 0 1px 4px rgb(30 58 95 / 0.06);
+}
+
+.cashier-app.cashier-app--light .handbook-page__nav-btn--active {
+  background: var(--pos-surface-active);
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .handbook-page__summary,
+.cashier-app.cashier-app--light .handbook-page__list,
+.cashier-app.cashier-app--light .support-page__steps-list {
+  color: var(--pos-muted);
+}
+
+.cashier-app.cashier-app--light .support-card__link,
+.cashier-app.cashier-app--light .support-card__value {
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-strip {
+  border-color: var(--pos-border);
+  background: var(--pos-surface-elevated);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-strip__icon {
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-strip__value--sum {
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-mobile-card {
+  border-radius: var(--pos-control-radius, 10px);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-filters-card.is-active {
+  border-color: rgb(30 58 95 / 0.28);
+  box-shadow: 0 0 0 3px rgb(30 58 95 / 0.08);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-filters-card__badge {
+  background: var(--pos-surface-hover);
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-stats__icon {
+  background: var(--pos-green-gradient, var(--pos-green));
+  color: var(--pos-on-green);
+  border: none;
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-stats__title,
+.cashier-app.cashier-app--light .cashier-sales-shift-stats__value {
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-stats__value--sum {
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-table__row:hover,
+.cashier-app.cashier-app--light .cashier-sales-table__row:hover td {
+  background: #f8faf9;
+}
+
+.cashier-app.cashier-app--light .cashier-sales-table__row:nth-child(even),
+.cashier-app.cashier-app--light .cashier-sales-table__row:nth-child(even) td {
+  background: #fafbfc;
+}
+
+.cashier-app.cashier-app--light .cashier-sales-pagination__btn.is-active {
+  background: var(--pos-green-gradient, var(--pos-green));
+  border-color: transparent;
+  color: var(--pos-on-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-pagination__btn:hover:not(:disabled) {
+  border-color: rgb(0 104 71 / 0.28);
+  color: var(--pos-green);
+  background: var(--pos-green-soft);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-table__return {
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-table__return:hover:not(:disabled) {
+  background: var(--pos-green-soft);
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane__return {
+  background: var(--pos-green-gradient, var(--pos-green));
+  box-shadow: 0 4px 12px rgb(0 80 55 / 0.22);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane__return:hover:not(:disabled) {
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
+  box-shadow: 0 6px 16px rgb(0 80 55 / 0.26);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane__body {
+  background: linear-gradient(180deg, #eef3f8 0%, #e6edf5 100%);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+}
+
+.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max,
+.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__max {
+  background: var(--pos-surface-hover);
+  border-color: rgb(30 58 95 / 0.28);
+  color: var(--pos-ink);
+}
+
+.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max:hover:not(:disabled),
+.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__max:hover:not(:disabled) {
+  background: var(--pos-surface-active);
+  border-color: var(--pos-ink);
+}
+

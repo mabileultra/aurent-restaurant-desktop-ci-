@@ -1,0 +1,15 @@
+{
+  "name": "@aurent/shared-fiscal",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OFD / fiscal transport helpers (not provider adapters).",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src"
+  ],
+  "sideEffects": false
+}

@@ -1,0 +1,162 @@
+/*
+ * Общая шапка кассира (касса + Мои продажи + др.).
+ * Раньше крупный topbar был только на --pos-desktop/--pos-screen.
+ */
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact {
+  --cashier-topbar-control-h: 38px;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__store-pill,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__store-pill {
+  height: 38px;
+  min-height: 38px;
+  max-width: min(320px, 34vw);
+  gap: 10px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__store-dot,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__store-dot {
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.2);
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__store-name,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__store-name {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__store-sep,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__store-sep {
+  height: 20px;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__shift-meta,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__shift-meta {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  gap: 6px;
+  color: var(--pos-muted, #94a3b8);
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__shift-meta svg,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__shift-meta svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cashier-app.cashier-app--terminal.cashier-app--touch .cashier-topbar--compact .cashier-topbar__shift-meta,
+.cashier-app.cashier-app--terminal.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__shift-meta {
+  color: #cbd5e1;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-pos-topbar__cashier,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-pos-topbar__cashier {
+  height: 38px;
+  min-height: 38px;
+  max-width: min(260px, 30vw);
+  gap: 8px;
+  padding: 0 12px 0 4px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-pos-topbar__cashier-name,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-pos-topbar__cashier-name {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-pos-topbar__cashier-role,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-pos-topbar__cashier-role {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-pos-topbar__avatar,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-pos-topbar__avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-theme-toggle.cashier-topbar__theme,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-theme-toggle.cashier-topbar__theme {
+  height: 38px;
+  min-height: 38px;
+  padding: 3px;
+  gap: 3px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-theme-toggle__opt,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-theme-toggle__opt {
+  width: 32px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-theme-toggle__opt svg,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-theme-toggle__opt svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.25;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-notifications__trigger,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-notifications__trigger {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-notifications__trigger svg,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-notifications__trigger svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.25;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-lang-switch.cashier-topbar__lang,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-lang-switch.cashier-topbar__lang {
+  height: 38px;
+  min-height: 38px;
+  padding: 3px;
+  gap: 3px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-lang-switch__btn,
+.cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-lang-switch__btn {
+  min-width: 2.75rem;
+  min-height: 30px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.cashier-app.cashier-app--terminal.cashier-app--touch .cashier-lang-switch__btn,
+.cashier-app.cashier-app--terminal.cashier-app--desktop .cashier-lang-switch__btn {
+  color: #94a3b8;
+}
+
+.cashier-app.cashier-app--terminal.cashier-app--touch .cashier-lang-switch__btn.is-active,
+.cashier-app.cashier-app--terminal.cashier-app--desktop .cashier-lang-switch__btn.is-active {
+  color: var(--pos-on-green, #fff);
+}

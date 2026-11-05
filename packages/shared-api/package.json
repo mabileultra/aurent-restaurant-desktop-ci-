@@ -1,0 +1,13 @@
+{
+  "name": "@aurent/shared-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cross-app HTTP helpers (idempotency keys).",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
+  "sideEffects": false
+}

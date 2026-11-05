@@ -1,0 +1,115 @@
+/* Аптека: только левая колонка (чек + поиск). Оплата — общий CashierPayColumn / page-grid. */
+
+@import './pharmacy-tables-theme.css';
+@import './pharmacy-tables-layout.css';
+@import './pharmacy-viewport.css';
+@import './pharmacy-tables-compact.css';
+@import './pharmacy-tables-compact-browser.css';
+@import './pharmacy-compact-shell.css';
+@import './pharmacy-shell-chrome.css';
+@import './pharmacy-search-strip.css';
+@import './pharmacy-pay-rail.css';
+@import './pharmacy-pay-stack.css';
+@import './pharmacy-context-pane.css';
+@import './pharmacy-topbar-shortcuts.css';
+@import './pharmacy-cart-pane-head.css';
+@import './pharmacy-parked-cards.css';
+@import './pharmacy-stock-count.css';
+@import './pharmacy-pos-board.css';
+@import '../../../styles/cashier/cart/parked-bar.css';
+
+.pharmacy-cashier__split {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.pharmacy-cashier__main,
+.cashier-register__split--register .cashier-register__order-col.pharmacy-cashier__main {
+  display: grid;
+  /* Чек — полоса, контекст — короткая подсказка, остатки забирают остаток высоты */
+  grid-template-rows: minmax(120px, 22%) minmax(88px, 120px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  align-content: stretch;
+  gap: var(--cashier-gap, 8px);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.pharmacy-cashier__cart-pane,
+.pharmacy-cashier__search-pane {
+  min-height: 0;
+  min-width: 0;
+  height: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--pharm-elevated);
+  border: 1px solid var(--pharm-border);
+  border-radius: var(--pharm-radius, 10px);
+  overflow: hidden;
+  outline: none;
+}
+
+.pharmacy-cashier__cart-pane:focus-visible {
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.28));
+}
+
+.pharmacy-cashier__pane-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--pharm-border);
+  background: var(--pharm-surface);
+}
+
+.pharmacy-cashier__pane-head--search {
+  gap: 8px;
+}
+
+.pharmacy-cashier__pane-head--search .pharmacy-search-strip {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__cart-pane,
+.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__search-pane,
+.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__context-pane {
+  background: var(--pharm-elevated, #f8f7f3);
+  box-shadow: none;
+}
+
+/* Статус-ячейки: чуть плотнее типографика под бейджи макета */
+.pharmacy-cashier .pharmacy-cart-table__cell--ok,
+.pharmacy-cashier .pharmacy-cart-table__cell--warn,
+.pharmacy-cashier .pharmacy-cart-table__cell--danger,
+.pharmacy-cashier .pharmacy-cart-table__cell--info,
+.pharmacy-cashier .pharmacy-search__cell--ok,
+.pharmacy-cashier .pharmacy-search__cell--warn,
+.pharmacy-cashier .pharmacy-search__cell--danger,
+.pharmacy-cashier .pharmacy-search__cell--info {
+  font-size: 0.6875rem;
+  letter-spacing: 0.01em;
+}
+
+/* Строка РЕЦЕПТ (класс is-recipe навешивается в таблице) */
+.pharmacy-cart-table__row.is-recipe td:not([class*='pharmacy-cart-table__cell--']) {
+  background: var(--pharm-recipe) !important;
+}
+
+.pharmacy-cart-table__row.is-recipe td {
+  border-color: var(--pharm-recipe-border);
+}

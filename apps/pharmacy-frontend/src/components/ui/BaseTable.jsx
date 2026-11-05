@@ -1,0 +1,47 @@
+import clsx from 'clsx';
+
+export default function BaseTable({
+  children,
+  footer,
+  isLoading = false,
+  isEmpty = false,
+  loadingMessage,
+  emptyMessage,
+  colSpan = 1,
+  minWidth,
+  className,
+  tableClassName,
+}) {
+  return (
+    <div
+      className={clsx(
+        'admin-table-shell',
+        className
+      )}
+    >
+      <div className="overflow-x-auto">
+        <table
+          className={clsx('w-full text-sm', tableClassName)}
+          style={minWidth ? { minWidth } : undefined}
+        >
+          {isLoading || isEmpty ? (
+            <tbody>
+              <tr>
+                <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
+                  {isLoading ? loadingMessage : emptyMessage}
+                </td>
+              </tr>
+            </tbody>
+          ) : (
+            children
+          )}
+        </table>
+      </div>
+      {footer ? (
+        <div className="base-table__footer relative z-20 overflow-visible bg-white dark:bg-slate-900">
+          {footer}
+        </div>
+      ) : null}
+    </div>
+  );
+}

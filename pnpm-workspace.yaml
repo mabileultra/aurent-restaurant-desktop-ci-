@@ -1,0 +1,9 @@
+# SPA apps live under apps/; shared libs under packages/.
+packages:
+  - 'packages/*'
+  - 'apps/web-frontend'
+  - 'apps/restaurant-frontend'
+  - 'apps/pharmacy-frontend'
+
+allowBuilds:
+  esbuild: true

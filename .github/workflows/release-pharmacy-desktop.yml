@@ -1,0 +1,171 @@
+# Aurent Pharmacy Windows installer → /downloads/pharmacy-desktop/
+# НЕ путать с Release Desktop (grocery) и Release Restaurant Desktop.
+name: Release Pharmacy Desktop
+
+on:
+  push:
+    tags:
+      - 'pharmacy-desktop-v*'
+  workflow_dispatch:
+    inputs:
+      skip_deploy:
+        description: 'Only build artifacts (no upload to server)'
+        required: false
+        default: false
+        type: boolean
+      manifest_only:
+        description: 'Only regenerate manifest.json on server (no rebuild)'
+        required: false
+        default: false
+        type: boolean
+      update_base_url:
+        description: 'electron-updater base (empty = https://aurent.uz)'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: pharmacy-desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UPDATE_BASE_URL: ${{ inputs.update_base_url || secrets.DEPLOY_PUBLIC_URL || 'https://aurent.uz' }}
+  REMOTE_DIR: /opt/aurent-pos/downloads/pharmacy-desktop
+  CI_DEPLOY_REPO: mabileultra/aurent-restaurant-desktop-ci-
+
+jobs:
+  build-win:
+    if: ${{ github.repository == 'mabileultra/aurent-restaurant-desktop-ci-' && inputs.manifest_only != true }}
+    runs-on: windows-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: |
+            apps/pharmacy-desktop/pnpm-lock.yaml
+            apps/pharmacy-frontend/pnpm-lock.yaml
+            pnpm-lock.yaml
+
+      - name: Cache Electron
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: electron-pharmacy-win-${{ hashFiles('apps/pharmacy-desktop/pnpm-lock.yaml') }}
+
+      - name: Install workspace + build Windows (bundles pharmacy SPA UI)
+        env:
+          UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm install --filter aurent-pharmacy-desktop...
+          cd apps/pharmacy-desktop
+          pnpm run dist:win
+          ls -la dist || true
+          test -f dist/latest.yml
+          compgen -G 'dist/Aurent-Pharmacy-*-win-*.exe' >/dev/null
+
+      - name: Upload Windows artifacts (skip_deploy)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_deploy == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurent-pharmacy-desktop-win
+          path: |
+            apps/pharmacy-desktop/dist/*.exe
+            apps/pharmacy-desktop/dist/*.blockmap
+            apps/pharmacy-desktop/dist/latest.yml
+          if-no-files-found: error
+
+      - name: Setup SSH
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        shell: bash
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Upload Windows installers to server
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?DEPLOY_HOST secret missing}"
+          test -f ~/.ssh/deploy_key || { echo "deploy_key missing" >&2; exit 1; }
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          SSH_OPTS=(-i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20)
+          ssh "${SSH_OPTS[@]}" "${DEPLOY_USER}@${DEPLOY_HOST}" "mkdir -p ${REMOTE_DIR}"
+          scp "${SSH_OPTS[@]}" \
+            apps/pharmacy-desktop/dist/*.exe \
+            apps/pharmacy-desktop/dist/*.blockmap \
+            apps/pharmacy-desktop/dist/latest.yml \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
+          echo "Upload OK → ${REMOTE_DIR}"
+
+      - name: Cleanup SSH key
+        if: always()
+        shell: bash
+        run: rm -f ~/.ssh/deploy_key
+
+  publish-manifest:
+    needs: [build-win]
+    if: >-
+      always() &&
+      github.repository == 'mabileultra/aurent-restaurant-desktop-ci-' &&
+      (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
+      (inputs.manifest_only == true || needs.build-win.result == 'success') &&
+      (startsWith(github.ref, 'refs/tags/pharmacy-desktop-v') || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Pull installers, write manifest, push back
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          mkdir -p apps/pharmacy-desktop/dist
+          VERSION="$(node -p "require('./apps/pharmacy-desktop/package.json').version")"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/Aurent-Pharmacy-${VERSION}-*" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/latest.yml" \
+            apps/pharmacy-desktop/dist/ || true
+          bash deploy/publish-pharmacy-desktop.sh
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            downloads/pharmacy-desktop/manifest.json \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/manifest.json"
+          echo "Pharmacy desktop published"
+          cat downloads/pharmacy-desktop/manifest.json
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

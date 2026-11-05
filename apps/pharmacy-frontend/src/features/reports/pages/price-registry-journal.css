@@ -1,0 +1,37 @@
+.price-registry-journal__row--pending {
+  background: color-mix(in srgb, #f59e0b 8%, transparent);
+}
+
+.price-registry-journal__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.price-registry-journal__badge.is-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.price-registry-journal__badge.is-applied {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.price-registry-journal__badge.is-skipped_ok {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.price-registry-journal__badge.is-unmatched {
+  background: #f1f5f9;
+  color: #64748b;
+}

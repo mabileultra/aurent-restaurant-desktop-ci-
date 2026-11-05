@@ -1,0 +1,85 @@
+/* Ширины колонок чека (ТЗ: маркировка / цена / срок / НДС / производитель) */
+
+.pharmacy-cart-table__table--receipt {
+  min-width: 1100px;
+}
+
+.pharmacy-cart-table__table--receipt thead th {
+  white-space: nowrap;
+  font-size: 0.625rem;
+}
+
+.pharmacy-cart-table__table thead th.pharmacy-cart-table__num {
+  text-align: right;
+  padding-left: 6px;
+  padding-right: 10px;
+}
+
+.pharmacy-cart-table__num {
+  padding-left: 6px !important;
+  padding-right: 10px !important;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.pharmacy-cart-table__idx {
+  color: var(--pharm-muted);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pharmacy-cart-table__money {
+  display: block;
+  width: 100%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.pharmacy-cart-table__select {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--pharm-brand, #245b45);
+  cursor: pointer;
+}
+
+.pharmacy-cart-table__mark-status {
+  display: inline-block;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: var(--pharm-muted);
+  text-transform: uppercase;
+}
+
+.pharmacy-cart-table__mark-status.is-ok {
+  color: var(--pharm-ok-text, #174936);
+}
+
+.pharmacy-cart-table__qty-ctrl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  width: 100%;
+}
+
+.pharmacy-cart-table__foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--pharm-border, #dddcd5);
+  background: var(--pharm-surface, #f2f1ec);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #26332d);
+}
+
+.pharmacy-cart-table__foot strong {
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--pharm-brand, #245b45);
+}

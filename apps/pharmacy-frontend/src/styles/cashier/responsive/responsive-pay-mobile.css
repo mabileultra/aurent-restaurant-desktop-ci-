@@ -1,0 +1,27 @@
+/* Мобильная оплата — полная высота вместо 34vh / 300px */
+
+@media (max-width: 799px) {
+  .cashier-register__split--register:has(.cashier-register__actions-col--pay) .cashier-register__stage {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .cashier-register__split--register:has(.cashier-register__actions-col--pay) .cashier-register__order-col {
+    display: none;
+  }
+
+  .cashier-register__split--register .cashier-register__actions-col--pay {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 4;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .cashier-register__split--register .cashier-register__actions-col--pay .cashier-register__pay-shell,
+  .cashier-register__split--register .cashier-register__actions-col--pay .cashier-register__pay-pane--flow,
+  .cashier-register__split--register .cashier-register__actions-col--pay .pos-pay-panel--register-rail {
+    min-height: 0;
+    height: 100%;
+  }
+}

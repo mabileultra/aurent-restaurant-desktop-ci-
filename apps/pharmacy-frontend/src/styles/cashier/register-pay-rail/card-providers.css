@@ -1,0 +1,89 @@
+/* Pay rail — card providers (shared layout; colors via --pay-*) */
+.pos-register-card-providers {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(5px, 1.8cqi, 8px);
+}
+
+.pos-register-card-providers__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(40px, 12cqi, 52px);
+  height: auto;
+  padding: clamp(6px, 2cqi, 10px) clamp(6px, 2cqi, 12px);
+  border: 1.5px solid var(--pay-provider-border);
+  border-radius: 16px;
+  background: var(--pay-provider-bg);
+  cursor: pointer;
+  box-shadow: var(--pay-provider-shadow);
+  overflow: hidden;
+  transition: transform 0.1s, border-color 0.12s, background 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+
+.pos-register-card-providers__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(0.97);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.12);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn:hover:not(:disabled) {
+  filter: brightness(0.96);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+.pos-register-card-providers__btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pos-register-card-providers__btn:disabled {
+  cursor: not-allowed;
+}
+
+.pos-register-card-providers__btn.is-soon {
+  opacity: 0.55;
+}
+
+.pos-register-card-providers__logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 88%;
+  max-height: clamp(16px, 5cqi, 22px);
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  filter: var(--pay-provider-logo-filter);
+}
+
+.pos-register-card-providers__btn--humo .pos-register-card-providers__logo {
+  max-height: clamp(14px, 4.5cqi, 18px);
+}
+
+.pos-register-card-providers__btn--payme {
+  background: var(--pay-provider-payme-bg);
+  border-color: var(--pay-provider-payme-border);
+}
+
+.pos-register-card-providers__btn--click {
+  background: var(--pay-provider-click-bg);
+  border-color: var(--pay-provider-click-border);
+}
+
+.pos-register-card-providers__btn--uzcard {
+  background: var(--pay-provider-uzcard-bg);
+  border-color: var(--pay-provider-uzcard-border);
+}
+
+.pos-register-card-providers__btn--humo {
+  background: var(--pay-provider-humo-bg);
+  border-color: var(--pay-provider-humo-border);
+}
+
+.pos-register-card-providers--remainder .pos-register-card-providers__btn:not(:disabled):not(.is-soon) {
+  border-color: var(--pay-provider-uzcard-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pay-provider-uzcard-border) 25%, transparent),
+    0 2px 8px color-mix(in srgb, var(--pay-provider-uzcard-border) 18%, transparent);
+}

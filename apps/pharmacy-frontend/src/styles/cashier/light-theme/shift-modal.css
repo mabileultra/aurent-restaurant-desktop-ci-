@@ -1,0 +1,145 @@
+/* Light theme — shift modal (portal on body → html.cashier-theme--light) */
+html.cashier-theme--light .pos-pay-modal--shift-terminal {
+  width: min(96vw, 520px) !important;
+  max-width: 520px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: var(--pos-radius-lg, 16px);
+  border: 1px solid var(--pos-border, #d1d9e6);
+  background: var(--pos-surface-elevated, #fbfcfe);
+  color: var(--pos-text, #1e3a5f);
+  box-shadow: 0 16px 48px rgb(0 80 55 / 0.12);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--pos-border, #d1d9e6);
+  background: linear-gradient(180deg, #eef8f3 0%, var(--pos-surface-elevated, #fbfcfe) 100%);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-pay-modal__title {
+  margin: 0;
+  flex: 1;
+  text-align: left;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pos-text, #1e3a5f);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-pay-modal__close {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: var(--pos-control-radius, 10px);
+  background: var(--pos-surface-elevated, #fbfcfe);
+  color: var(--pos-muted, #5a6f8c);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-pay-modal__close:hover {
+  border-color: rgb(248 113 113 / 0.45);
+  background: rgb(248 113 113 / 0.08);
+  color: #dc2626;
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__meta,
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__status {
+  margin: 0;
+  padding: 14px 18px 0;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--pos-muted, #5a6f8c);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__status {
+  padding-bottom: 10px;
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__status .is-open {
+  color: var(--pos-green, #006847);
+  font-weight: 700;
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__hint {
+  margin: 0 18px 16px;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--pos-muted, #5a6f8c);
+  background: var(--pos-green-soft, rgb(0 104 71 / 0.12));
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: var(--pos-control-radius, 10px);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .cashier-shift-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 18px 18px;
+  margin: 0;
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: var(--pos-control-radius, 12px);
+  border: 1px solid var(--pos-border, #d1d9e6);
+  background: var(--pos-surface-elevated, #fbfcfe);
+  color: var(--pos-text, #1e3a5f);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action:hover:not(:disabled) {
+  background: var(--pos-green-soft, rgb(0 104 71 / 0.12));
+  border-color: rgb(0 104 71 / 0.28);
+  color: var(--pos-green, #006847);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action--primary {
+  background: var(--pos-green-gradient, var(--pos-green, #006847));
+  border-color: transparent;
+  color: var(--pos-on-green, #fff);
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action--primary:hover:not(:disabled) {
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover, #005538));
+  border-color: transparent;
+  color: var(--pos-on-green, #fff);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action--danger {
+  background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
+  border-color: #f87171;
+  color: #fff;
+  box-shadow: 0 2px 10px rgb(185 28 28 / 0.2);
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action--danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border-color: #fca5a5;
+  color: #fff;
+}
+
+html.cashier-theme--light .pos-pay-modal--shift-terminal .pos-shift-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

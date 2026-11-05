@@ -1,0 +1,46 @@
+/* Pay rail — light-only leftovers (column shell). Colors live in pay-rail-theme.css */
+.cashier-app.cashier-app--light .cashier-register__split--register .cashier-register__actions-col:not(.cashier-register__actions-col--pay) {
+  background: #fff;
+  border-color: var(--pos-border);
+  box-shadow: 0 2px 12px rgb(15 23 42 / 0.06);
+}
+
+.cashier-app.cashier-app--light .pos-pay-print-toggle {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.cashier-app.cashier-app--light .pos-pay-print-toggle:hover:not(:has(input:disabled)) {
+  background: #dbeafe;
+  border-color: #60a5fa;
+}
+
+.cashier-app.cashier-app--light .pos-pay-print-toggle__box {
+  background: #fff;
+  border-color: #93c5fd;
+}
+
+.cashier-app.cashier-app--light .pos-pay-print-toggle__input:checked + .pos-pay-print-toggle__box {
+  border-color: var(--pos-green);
+  background: var(--pos-green-soft);
+}
+
+.cashier-app.cashier-app--light .pos-pay-print-toggle__icon {
+  color: #2563eb;
+}
+
+.cashier-app.cashier-app--light .pos-pay-print-toggle__text {
+  color: #1e3a5f;
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-footer__sale,
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary {
+  background: var(--pos-green-gradient, var(--pos-green));
+  color: var(--pos-on-green);
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.28);
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-footer__sale:hover:not(:disabled),
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary:hover:not(:disabled) {
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
+}

@@ -1,0 +1,31 @@
+/* Global entry — design tokens, admin modules, Tailwind */
+@import './styles/tokens/index.css';
+@import './styles/admin/index.css';
+@import './styles/admin/buttons.css';
+@import './styles/shared/base-select.css';
+@import './styles/shared/product-lookup-select.css';
+@import './styles/stock/document-lines.css';
+@import './styles/stock/inventory-document.css';
+@import './styles/shared/page-search-field.css';
+@import './styles/shared/on-screen-keyboard.css';
+@import './styles/shared/brand-logo.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+  * { box-sizing: border-box; }
+  body {
+    @apply bg-slate-100 text-slate-900 dark:bg-[#0b1210] dark:text-slate-100;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-slate-200 dark:bg-slate-900; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-400 dark:bg-slate-700; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-500 dark:bg-slate-600; }
+}

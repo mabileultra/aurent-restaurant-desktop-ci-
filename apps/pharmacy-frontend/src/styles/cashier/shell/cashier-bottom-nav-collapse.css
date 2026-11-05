@@ -1,0 +1,197 @@
+/* Сворачиваемая нижняя панель кассы */
+
+.cashier-bottom-nav-shell {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.cashier-bottom-nav-shell.is-collapsed {
+  --cashier-bottom-nav-h: 48px;
+}
+
+.cashier-bottom-nav-shell.is-collapsed .cashier-bottom-nav {
+  grid-template-columns: minmax(44px, 5.5cqi) minmax(44px, 5.5cqi) minmax(44px, 5.5cqi);
+  max-width: 220px;
+}
+
+.cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: clamp(64px, 7.5vh, 76px);
+}
+
+.cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(0, 1.15fr)
+    repeat(6, minmax(0, 1fr))
+    minmax(44px, 5cqi);
+}
+
+.cashier-bottom-nav__btn--keyboard {
+  gap: 2px;
+  padding-top: clamp(5px, 1cqi, 8px);
+  padding-bottom: clamp(5px, 1cqi, 8px);
+}
+
+.cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label {
+  display: inline;
+  font-size: inherit;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.cashier-bottom-nav__btn--toggle {
+  padding: 0;
+}
+
+.cashier-bottom-nav__aside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.cashier-bottom-nav__aside .offline-topbar {
+  min-height: var(--cashier-bottom-nav-h, 52px);
+  min-width: 7.25rem;
+  padding: 0 10px;
+  border-radius: var(--pos-control-radius, 12px);
+  box-sizing: border-box;
+}
+
+.cashier-bottom-nav__aside .offline-topbar__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar {
+  min-height: 28px;
+  min-width: 7.25rem;
+  padding: 0 10px;
+  border-radius: 999px;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__label {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.cashier-bottom-nav__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--cashier-bottom-nav-h, 52px);
+  padding: 0 12px;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-control-radius, 12px);
+  background: #fff;
+  color: var(--pos-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+
+.cashier-bottom-nav__status.is-toggle:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--pos-green) 40%, var(--pos-border));
+  box-shadow: 0 1px 6px rgb(0 80 55 / 0.12);
+}
+
+.cashier-bottom-nav__status:disabled {
+  cursor: default;
+  opacity: 0.92;
+}
+
+.cashier-bottom-nav__status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgb(34 197 94 / 0.28);
+}
+
+.cashier-bottom-nav__status--offline .cashier-bottom-nav__status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgb(245 158 11 / 0.28);
+}
+
+.cashier-bottom-nav__status--offline {
+  color: #92400e;
+}
+
+.cashier-bottom-nav__status-switch {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: #d1d5db;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.cashier-bottom-nav__status--online.is-toggle:not(.is-forced) .cashier-bottom-nav__status-switch {
+  background: #22c55e;
+}
+
+.cashier-bottom-nav__status.is-forced .cashier-bottom-nav__status-switch {
+  background: #f59e0b;
+}
+
+.cashier-bottom-nav__status-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s;
+}
+
+.cashier-bottom-nav__status--online.is-toggle:not(.is-forced) .cashier-bottom-nav__status-knob {
+  transform: translateX(14px);
+}
+
+.cashier-bottom-nav__status.is-forced .cashier-bottom-nav__status-knob {
+  transform: translateX(0);
+}
+
+.cashier-app.cashier-app--terminal .cashier-bottom-nav__status {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+  color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(0, 1.15fr)
+    repeat(6, minmax(0, 1fr));
+}
+
+.cashier-register__bottom-nav.cashier-bottom-nav-shell,
+.cashier-app__bottom-nav.cashier-bottom-nav-shell {
+  padding: 8px 10px;
+}
+
+.cashier-app.cashier-app--touch .cashier-bottom-nav-shell .cashier-bottom-nav__btn {
+  min-height: 44px;
+}
+
+@media (min-width: 1024px) {
+  .cashier-bottom-nav-shell:not(.is-collapsed) {
+    --cashier-bottom-nav-h: clamp(60px, 7vh, 72px);
+  }
+}

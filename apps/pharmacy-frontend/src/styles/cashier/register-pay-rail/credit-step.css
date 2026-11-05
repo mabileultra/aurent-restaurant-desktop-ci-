@@ -1,0 +1,33 @@
+/* Pay rail — credit / advance customer steps */
+.pos-pay-panel--register-rail.is-step-creditCustomer .pos-pay-panel__body,
+.pos-pay-panel--register-rail.is-step-advanceAmount .pos-pay-panel__body,
+.pos-pay-panel--register-rail.is-step-method .pos-pay-panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pos-pay-panel--register-rail.is-step-creditCustomer .pos-pay-panel__scroll,
+.pos-pay-panel--register-rail.is-step-advanceAmount .pos-pay-panel__scroll,
+.pos-pay-panel--register-rail.is-step-method .pos-pay-panel__scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pos-pay-panel--register-rail.is-step-creditCustomer .pos-pay-panel__step--credit-customer,
+.pos-pay-panel--register-rail.is-step-advanceAmount .pos-pay-panel__step {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pos-pay-panel--register-rail.is-step-creditCustomer .pos-pay-register-rail__title,
+.pos-pay-panel--register-rail.is-step-advanceAmount .pos-pay-register-rail__title {
+  color: var(--pos-money, #f5c842);
+}

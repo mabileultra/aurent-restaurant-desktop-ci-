@@ -1,0 +1,166 @@
+/* Cashier shell — bootstrap overrides, topbar */
+.cashier-app.cashier-app--terminal {
+  color-scheme: dark;
+}
+
+.cashier-app.cashier-app--light {
+  color-scheme: light;
+}
+
+/* Сброс Bootstrap внутри кассы */
+.cashier-app *,
+.cashier-app *::before,
+.cashier-app *::after {
+  box-sizing: border-box;
+}
+
+.cashier-app .btn-primary {
+  --bs-btn-bg: var(--pos-green);
+  --bs-btn-border-color: var(--pos-green);
+  --bs-btn-hover-bg: var(--pos-green-hover);
+  --bs-btn-hover-border-color: var(--pos-green-hover);
+}
+
+
+.cashier-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.cashier-lock-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.cashier-lock-overlay__card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 22rem);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  text-align: center;
+}
+
+.cashier-lock-overlay__icon {
+  color: #198754;
+  margin-bottom: 0.75rem;
+}
+
+.cashier-lock-overlay__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+}
+
+.cashier-lock-overlay__hint {
+  font-size: 0.875rem;
+  color: var(--pos-muted);
+  margin: 0 0 1rem;
+}
+
+.cashier-lock-overlay__input {
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.cashier-lock-overlay__card--pin-touch {
+  width: min(100%, 26rem);
+}
+
+.cashier-lock-overlay__pin-display {
+  margin-bottom: 0.75rem;
+}
+
+.cashier-lock-overlay__keypad {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.cashier-topbar {
+  min-height: 48px;
+  background: var(--pos-surface) !important;
+  border-bottom: 1px solid var(--pos-border) !important;
+}
+
+.cashier-topbar--pos {
+  --cashier-topbar-control-h: 40px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 56px;
+  padding: 8px 12px !important;
+}
+
+.cashier-topbar--pos > .cashier-topbar__row--main {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.cashier-topbar--pos .cashier-topbar__row--main {
+  display: flex;
+  align-items: center;
+  gap: 10px 12px;
+  min-width: 0;
+  min-height: var(--cashier-topbar-control-h);
+}
+
+.cashier-topbar__brand-block {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+.cashier-topbar--pos .pos-topbar-strip,
+.cashier-topbar--pos .cashier-topbar__actions {
+  align-self: center;
+}
+
+.cashier-topbar__terminal-name {
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--pos-green);
+  white-space: nowrap;
+}
+
+.cashier-topbar__terminal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-self: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cashier-topbar__terminal-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 12px;
+  border-radius: var(--pos-control-radius, 10px);
+  border: 1px solid var(--pos-border);
+  background: var(--pos-surface-elevated, #fff);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.cashier-topbar__terminal-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+

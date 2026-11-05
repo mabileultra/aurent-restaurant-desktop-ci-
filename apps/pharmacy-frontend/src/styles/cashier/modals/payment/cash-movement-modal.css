@@ -1,0 +1,318 @@
+/*
+ * Модалка внесения / выемки наличных — чёткий POS UI.
+ */
+
+.cashier-cash-move-modal {
+  width: min(96vw, 520px);
+  max-width: 520px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--pos-border, #d1d9e6);
+  background: var(--pos-surface-elevated, #fff);
+  color: var(--pos-text, #0f172a);
+  box-shadow: 0 24px 64px rgb(15 23 42 / 0.22);
+  box-sizing: border-box;
+}
+
+.cashier-cash-move-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--pos-border, #e5e7eb);
+  background: linear-gradient(180deg, rgb(0 104 71 / 0.08) 0%, transparent 100%);
+}
+
+.cashier-cash-move-modal__head-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cashier-cash-move-modal__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--pos-green-soft, #e8f5f0);
+  color: var(--pos-green, #006847);
+}
+
+.cashier-cash-move-modal--out .cashier-cash-move-modal__icon {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.cashier-cash-move-modal__head-text {
+  min-width: 0;
+}
+
+.cashier-cash-move-modal__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: var(--pos-text, #0f172a);
+}
+
+.cashier-cash-move-modal__hint {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--pos-muted, #64748b);
+}
+
+.cashier-cash-move-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--pos-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--pos-surface, #fff);
+  color: var(--pos-muted, #64748b);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.cashier-cash-move-modal__close:hover {
+  background: #f1f5f9;
+  color: var(--pos-text, #0f172a);
+  border-color: #cbd5e1;
+}
+
+.cashier-cash-move-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+}
+
+.cashier-cash-move-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cashier-cash-move-modal__label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pos-muted, #64748b);
+}
+
+.cashier-cash-move-modal__amount-wrap {
+  position: relative;
+}
+
+.cashier-cash-move-modal__input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--pos-text, #0f172a);
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.cashier-cash-move-modal__input::placeholder {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.cashier-cash-move-modal__input:focus {
+  border-color: var(--pos-green, #006847);
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.16);
+}
+
+.cashier-cash-move-modal__input--note {
+  min-height: 44px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.cashier-cash-move-modal__amount-hint {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--pos-muted, #64748b);
+  pointer-events: none;
+}
+
+.cashier-cash-move-modal__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.cashier-cash-move-modal__preset {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: var(--pos-text, #0f172a);
+  font-size: 0.875rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.cashier-cash-move-modal__preset:hover {
+  background: var(--pos-green-soft, #e8f5f0);
+  border-color: var(--pos-green, #006847);
+  color: var(--pos-green, #006847);
+}
+
+.cashier-cash-move-modal__preset--clear {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.cashier-cash-move-modal__preset--clear:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #991b1b;
+}
+
+.cashier-cash-move-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cashier-cash-move-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+
+.cashier-cash-move-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cashier-cash-move-modal__btn--ghost {
+  border: 1.5px solid #94a3b8;
+  background: #fff;
+  color: var(--pos-text, #0f172a);
+}
+
+.cashier-cash-move-modal__btn--ghost:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.cashier-cash-move-modal__btn--primary {
+  border: none;
+  background: var(--pos-green-gradient, var(--pos-green, #006847));
+  color: var(--pos-on-green, #fff);
+  box-shadow: 0 4px 12px rgb(0 104 71 / 0.24);
+}
+
+.cashier-cash-move-modal__btn--primary:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+
+.cashier-cash-move-modal--out .cashier-cash-move-modal__btn--primary {
+  background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%);
+  box-shadow: 0 4px 12px rgb(194 65 12 / 0.28);
+}
+
+.cashier-cash-move-modal__spin {
+  animation: cashier-cash-move-spin 0.8s linear infinite;
+}
+
+@keyframes cashier-cash-move-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Terminal / dark */
+html.cashier-theme--dark .cashier-cash-move-modal,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal {
+  border-color: #2a3548;
+  background: #151b26;
+  color: #f1f5f9;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.55);
+}
+
+html.cashier-theme--dark .cashier-cash-move-modal__head,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__head {
+  border-bottom-color: #2a3548;
+  background: linear-gradient(180deg, rgb(46 196 182 / 0.12) 0%, #151b26 100%);
+}
+
+html.cashier-theme--dark .cashier-cash-move-modal__title,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__title {
+  color: #f1f5f9;
+}
+
+html.cashier-theme--dark .cashier-cash-move-modal__hint,
+html.cashier-theme--dark .cashier-cash-move-modal__label,
+html.cashier-theme--dark .cashier-cash-move-modal__amount-hint,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__hint,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__label,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__amount-hint {
+  color: #94a3b8;
+}
+
+html.cashier-theme--dark .cashier-cash-move-modal__close,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__close {
+  background: #1c2433;
+  border-color: #2a3548;
+  color: #94a3b8;
+}
+
+html.cashier-theme--dark .cashier-cash-move-modal__input,
+html.cashier-theme--dark .cashier-cash-move-modal__btn--ghost,
+html.cashier-theme--dark .cashier-cash-move-modal__preset,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__input,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__btn--ghost,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__preset {
+  background: #1c2433;
+  border-color: #3d4f66;
+  color: #f1f5f9;
+}
+
+html.cashier-theme--dark .cashier-cash-move-modal__preset:hover,
+.cashier-app.cashier-app--terminal .cashier-cash-move-modal__preset:hover {
+  background: rgb(46 196 182 / 0.12);
+  border-color: #2ec4b6;
+  color: #2ec4b6;
+}

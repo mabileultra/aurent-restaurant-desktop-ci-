@@ -1,0 +1,179 @@
+/**
+ * Скин возврата для аптеки — классы pos-return-modal + pharmacy-modal токены.
+ */
+
+.pos-return-modal.pharmacy-modal {
+  width: min(560px, calc(100vw - 1.5rem));
+  background:
+    linear-gradient(165deg, rgb(36 91 69 / 0.06) 0%, transparent 40%),
+    var(--pm-elevated);
+  color: var(--pm-ink);
+  border: 1px solid var(--pm-border);
+  border-radius: calc(var(--pm-radius) + 2px);
+  box-shadow: var(--pm-shadow);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__header {
+  background: linear-gradient(90deg, var(--pm-brand) 0%, #1f6b4f 55%, var(--pm-teal) 100%);
+  color: #fff;
+  border-bottom: none;
+  padding: 0.75rem 1rem;
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__header-icon {
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 0.28);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__title {
+  color: #fff;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__hint {
+  color: rgb(255 255 255 / 0.82);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__close {
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  border-radius: var(--pm-radius-sm);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__body {
+  background: transparent;
+  color: var(--pm-ink);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__label {
+  color: var(--pm-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__input,
+.pos-return-modal.pharmacy-modal .pos-return-modal__textarea {
+  background: #fff;
+  border: 1px solid var(--pm-border);
+  color: var(--pm-ink);
+  border-radius: var(--pm-radius-sm);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__input:focus,
+.pos-return-modal.pharmacy-modal .pos-return-modal__textarea:focus {
+  border-color: var(--pm-brand);
+  box-shadow: 0 0 0 3px rgb(36 91 69 / 0.18);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__receipt-prefix,
+.pos-return-modal.pharmacy-modal .pos-return-modal__input-icon {
+  color: var(--pm-muted);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__preview {
+  background: var(--pm-ok);
+  border: 1px solid color-mix(in srgb, var(--pm-ok-text) 22%, var(--pm-border));
+  color: var(--pm-ok-text);
+  border-radius: var(--pm-radius-sm);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__preview-badge {
+  background: #fff;
+  color: var(--pm-brand);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__placeholder {
+  color: var(--pm-muted);
+  border: 1px dashed var(--pm-border);
+  background: var(--pm-card);
+  border-radius: var(--pm-radius-sm);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__select-all {
+  border-color: var(--pm-brand);
+  color: var(--pm-brand);
+  background: #fff;
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__footer {
+  background: var(--pm-card);
+  border-top: 1px solid var(--pm-border);
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__cancel {
+  border: 1px solid var(--pm-border);
+  background: var(--pm-elevated);
+  color: var(--pm-ink);
+  border-radius: var(--pm-radius-sm);
+  min-height: 2.5rem;
+  font-weight: 700;
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__submit {
+  background: var(--pm-brand);
+  border-color: var(--pm-brand);
+  color: #fff;
+  border-radius: var(--pm-radius-sm);
+  min-height: 2.5rem;
+  font-weight: 700;
+}
+
+.pos-return-modal.pharmacy-modal .pos-return-modal__submit:disabled {
+  opacity: 0.5;
+}
+
+.pharmacy-return-mark {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--pm-brand, #245b45);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pharmacy-return-mark__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pm-muted, #7a817c);
+}
+
+.pharmacy-return-mark__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--pm-border, #dddcd5);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 15px;
+}
+
+.pharmacy-return-mark__hint,
+.pharmacy-return-mark__notice {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.pharmacy-return-mark__hint {
+  color: var(--pm-muted, #7a817c);
+}
+
+.pharmacy-return-mark__notice.is-ok {
+  color: #174936;
+  font-weight: 700;
+}
+
+.pharmacy-return-mark__notice.is-bad,
+.pharmacy-return-mark__notice.is-warn {
+  color: #a33b35;
+  font-weight: 700;
+}

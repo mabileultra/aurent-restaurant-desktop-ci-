@@ -1,0 +1,61 @@
+/*
+ * POS desktop — список товаров в picker: цена и имя читаемые.
+ * Canonical/density держат ~0.69–0.81rem — перебиваем явно.
+ */
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen {
+  --pos-density-row-name: 1.0625rem;
+  --pos-density-row-code: 0.8125rem;
+  --pos-density-row-price: 1.125rem;
+  --pos-catalog-row-name: 1.0625rem;
+  --pos-catalog-row-code: 0.8125rem;
+  --pos-catalog-row-price: 1.125rem;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder
+  .pos-product-row,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-catalog-virtual
+  .pos-product-row {
+  padding: 8px 10px;
+  gap: 10px;
+  min-height: 52px;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder
+  .pos-product-row__name,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-catalog-virtual
+  .pos-product-row__name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder
+  .pos-product-row__code,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-catalog-virtual
+  .pos-product-row__code {
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-register-finder
+  .pos-product-row__price,
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen
+  .pos-catalog-virtual
+  .pos-product-row__price {
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}

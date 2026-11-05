@@ -1,0 +1,14 @@
+@import './tokens.css';
+@import './shell.css';
+@import './forms.css';
+@import './modals.css';
+@import './tables-canonical.css';
+@import './page-full.css';
+@import '../platform/tokens.css';
+@import './receipt-page.css';
+@import './electron-silent-print.css';
+@import './receipt-print-root.css';
+@import './print-media.css';
+@import './responsive.css';
+@import './responsive-tablet.css';
+@import './document/index.css';

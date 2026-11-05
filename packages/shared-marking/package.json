@@ -1,0 +1,13 @@
+{
+  "name": "@aurent/shared-marking",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Technical KM / DataMatrix helpers; pharmacy marking rules stay in apps.",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
+  "sideEffects": false
+}

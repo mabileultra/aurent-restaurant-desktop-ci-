@@ -1,0 +1,12 @@
+import { api } from './client';
+
+export const cashierShiftApi = {
+  current: (storeId) => api.get('/cashier/shifts/current', { params: { storeId } }),
+  open: (storeId, body) => api.post('/cashier/shifts/open', body ?? null, { params: { storeId } }),
+  xReport: (id) => api.get(`/cashier/shifts/${id}/x-report`),
+  zReportPreview: (id) => api.get(`/cashier/shifts/${id}/z-report`),
+  finalizeZReport: (id) => api.post(`/cashier/shifts/${id}/z-report`),
+  close: (id) => api.post(`/cashier/shifts/${id}/close`),
+  cashIn: (id, body, config) => api.post(`/cashier/shifts/${id}/cash-in`, body, config),
+  cashOut: (id, body, config) => api.post(`/cashier/shifts/${id}/cash-out`, body, config),
+};

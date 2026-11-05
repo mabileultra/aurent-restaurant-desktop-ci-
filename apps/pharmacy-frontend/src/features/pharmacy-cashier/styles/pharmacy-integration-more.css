@@ -1,0 +1,44 @@
+.pharmacy-integration-more {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 196px;
+  padding: 6px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 12px;
+  background: var(--pharm-surface);
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.16);
+}
+
+.pharmacy-integration-more__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pharmacy-integration-more__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--pharm-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pharmacy-integration-more__item:hover {
+  background: var(--pharm-hover);
+}
+
+.pharmacy-integration-more__icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

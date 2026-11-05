@@ -1,0 +1,18 @@
+/* UI scale: size comes from inline --cashier-vh / width / height (JS). */
+
+.cashier-app {
+  display: flex;
+  flex-direction: column;
+  zoom: var(--pos-ui-scale, 1);
+  transform-origin: 0 0;
+  box-sizing: border-box;
+  max-width: none;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@supports not (zoom: 1) {
+  .cashier-app {
+    transform: scale(var(--pos-ui-scale, 1));
+  }
+}

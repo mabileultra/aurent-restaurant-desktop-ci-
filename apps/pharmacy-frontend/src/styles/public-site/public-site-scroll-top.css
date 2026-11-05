@@ -1,0 +1,23 @@
+.public-scroll-top {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 30;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ps-line);
+  border-radius: 0.65rem;
+  background: rgb(10 14 20 / 0.92);
+  color: var(--ps-ink);
+  cursor: pointer;
+  box-shadow: var(--ps-shadow);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.public-scroll-top:hover {
+  background: var(--ps-bg-card);
+  transform: translateY(-2px);
+}

@@ -1,0 +1,93 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { format as fmtDate } from 'date-fns';
+import { Plus } from 'lucide-react';
+import ReportTableCard from '../components/ReportTableCard';
+import StockReceiptsActionsCell from '../components/StockReceiptsActionsCell';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import { fmtMoney } from '../../../utils/formatMoney';
+import ReportDateBar from '../../../components/shared/ReportDateBar';
+import ReportStoreSelect from '../components/ReportStoreSelect';
+import { useStockReceiptsReportPage } from '../hooks/useStockReceiptsReportPage';
+import { useStockReceiptsActions } from '../hooks/useStockReceiptsActions';
+import { useStockFlowPaths } from '../../stock/stockFlowPaths';
+
+export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
+  const { t } = useTranslation();
+  const r = useStockReceiptsReportPage();
+  const actions = useStockReceiptsActions();
+  const paths = useStockFlowPaths();
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const colSpan = 8;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        {hideTitle ? <div /> : (
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.receiptsTitle')}</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.receiptsSubtitle')}</p>
+          </div>
+        )}
+        <Link
+          to={paths.receiptsNew}
+          className="admin-btn-primary px-4 py-2 text-sm"
+        >
+          <Plus size={16} />
+          {t('stockReports.newReceiptDoc')}
+        </Link>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <ReportDateBar from={r.from} to={r.to} onFrom={r.setFrom} onTo={r.setTo} />
+        <ReportStoreSelect stores={r.stores} value={r.storeId} onChange={r.handleStoreChange} />
+      </div>
+      <ReportTableCard
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
+      >
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-left text-xs uppercase dark:bg-slate-800/80">
+            <tr>
+              <AdminTableNoIdHeaders />
+              <th className="px-4 py-3">{t('stockReports.colReceiptNo')}</th>
+              <th className="px-4 py-3">{t('stockReports.colDate')}</th>
+              <th className="px-4 py-3">{t('stockReports.colSupplier')}</th>
+              <th className="px-4 py-3 text-right">{t('stockReports.colQty')}</th>
+              <th className="px-4 py-3 text-right">{t('stockReports.colAmount')}</th>
+              <th className="px-4 py-3 text-right">{t('common.actions')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.isPending && <tr><td colSpan={colSpan} className="p-6 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={colSpan} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
+              <tr key={row.id} className="border-t border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
+                <td className="px-4 py-2 font-mono text-emerald-800 dark:text-emerald-400">{row.receiptNumber}</td>
+                <td className="px-4 py-2">{row.createdAt ? fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm') : '—'}</td>
+                <td className="px-4 py-2">{row.supplierName || '—'}</td>
+                <td className="px-4 py-2 text-right">{row.totalQuantity}</td>
+                <td className="px-4 py-2 text-right">{fmtMoney(row.totalCost)}</td>
+                <StockReceiptsActionsCell
+                  t={t}
+                  editTo={paths.receiptEdit(row.id)}
+                  open={menuOpenId === row.id}
+                  onOpenChange={(open) => setMenuOpenId(open ? row.id : null)}
+                  deleting={actions.deletingId === row.id}
+                  onDelete={() => actions.confirmDelete(row)}
+                />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ReportTableCard>
+    </div>
+  );
+}

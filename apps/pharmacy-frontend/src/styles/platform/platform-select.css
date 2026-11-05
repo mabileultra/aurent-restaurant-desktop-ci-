@@ -1,0 +1,83 @@
+/* Platform (Super Admin) Unified Select Component */
+.platform-select {
+  width: 100%;
+}
+
+.platform-select .base-select__label {
+  display: none;
+}
+
+.platform-select .base-select__trigger {
+  min-height: 2.15rem;
+  height: 2.15rem;
+  padding: 0 0.65rem;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 0.5rem;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #0f172a);
+  font-size: 0.8rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.platform-select--md .base-select__trigger {
+  min-height: 2.375rem;
+  height: 2.375rem;
+  border-radius: 0.6rem;
+  font-size: 0.8125rem;
+}
+
+.platform-select:not(.base-select--disabled) .base-select__trigger:hover {
+  border-color: var(--color-brand, #006847);
+}
+
+.platform-select .base-select__trigger:focus,
+.platform-select .base-select__trigger:focus-within,
+.platform-select.base-select--open .base-select__trigger {
+  outline: none;
+  border-color: var(--color-brand, #006847);
+  box-shadow: 0 0 0 2px var(--color-focus-ring, rgba(0, 104, 71, 0.15));
+}
+
+/* Active filter highlight */
+.platform-select--active .base-select__trigger,
+.platform-select.base-select--active-filter .base-select__trigger {
+  border-color: var(--color-brand, #006847);
+  background: var(--color-brand-soft, rgba(0, 104, 71, 0.05));
+  color: var(--color-brand, #006847);
+  font-weight: 600;
+}
+
+/* Disabled */
+.platform-select.base-select--disabled .base-select__trigger {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--color-surface-muted, #f8fafc);
+  border-color: var(--color-border, #e2e8f0);
+}
+
+/* Dark mode */
+.dark .platform-select .base-select__trigger {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark .platform-select:not(.base-select--disabled) .base-select__trigger:hover {
+  border-color: var(--color-brand, #10b981);
+}
+
+.dark .platform-select--active .base-select__trigger,
+.dark .platform-select.base-select--active-filter .base-select__trigger {
+  border-color: var(--color-brand, #10b981);
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+
+.dark .platform-select.base-select--disabled .base-select__trigger {
+  background: #1e293b;
+  border-color: #334155;
+  color: #64748b;
+  opacity: 0.65;
+}

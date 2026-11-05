@@ -1,0 +1,38 @@
+.weight-entry-modal.pharmacy-modal {
+  --wem-ink: var(--pm-ink);
+  --wem-muted: var(--pm-muted);
+  --wem-border: var(--pm-border);
+  --wem-surface: var(--pm-elevated);
+  --wem-brand: var(--pm-brand);
+}
+
+.weight-entry-modal.pharmacy-modal .weight-entry-modal__panel {
+  background:
+    linear-gradient(165deg, rgb(36 91 69 / 0.06) 0%, transparent 40%),
+    var(--pm-elevated);
+  color: var(--pm-ink);
+  border: 1px solid var(--pm-border);
+  border-radius: calc(var(--pm-radius) + 2px);
+  box-shadow: var(--pm-shadow);
+}
+
+.weight-entry-modal.pharmacy-modal .weight-entry-modal__title {
+  color: var(--pm-ink);
+}
+
+.weight-entry-modal.pharmacy-modal .weight-entry-modal__tab.is-active {
+  background: var(--pm-brand);
+  border-color: var(--pm-brand);
+  color: #fff;
+}
+
+.weight-entry-modal.pharmacy-modal .weight-entry-modal__input:focus {
+  border-color: var(--pm-brand);
+  box-shadow: 0 0 0 3px rgb(36 91 69 / 0.18);
+}
+
+.weight-entry-modal.pharmacy-modal .weight-entry-modal__btn--primary {
+  background: var(--pm-brand);
+  border-color: var(--pm-brand);
+  color: #fff;
+}

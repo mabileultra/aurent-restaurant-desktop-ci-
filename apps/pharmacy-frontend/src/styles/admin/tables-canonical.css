@@ -1,0 +1,126 @@
+/* Admin data tables — 1024×768 без жёсткого min-width в JSX */
+
+.admin-data-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-data-table {
+  width: 100%;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+
+.admin-data-table thead th {
+  background: var(--color-brand-soft, #e6f2ec);
+  color: var(--color-brand-deep, #043d2c);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.dark .admin-data-table thead th {
+  background: rgb(0 104 71 / 0.22);
+  color: #a7f3d0;
+}
+
+.admin-data-table tbody tr:hover td {
+  background: rgb(230 242 236 / 0.45);
+}
+
+.dark .admin-data-table tbody tr:hover td {
+  background: rgb(0 104 71 / 0.12);
+}
+
+html.app-viewport--canonical .admin-data-table {
+  font-size: 0.8125rem;
+}
+
+html.app-viewport--canonical .admin-data-table th,
+html.app-viewport--canonical .admin-data-table td {
+  padding: 0.375rem 0.5rem;
+}
+
+@media (min-width: 1280px) {
+  .admin-data-table--wide {
+    min-width: 960px;
+  }
+
+  .admin-data-table--xl {
+    min-width: 1120px;
+  }
+
+  .admin-data-table--xxl {
+    min-width: 1280px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .admin-data-table--wide {
+    min-width: 900px;
+  }
+
+  .admin-data-table--xl {
+    min-width: 1120px;
+  }
+
+  .admin-data-table--xxl {
+    min-width: 1400px;
+  }
+}
+
+html.app-viewport--canonical .admin-main table {
+  font-size: var(--text-base);
+}
+
+html.app-viewport--canonical .admin-main table th,
+html.app-viewport--canonical .admin-main table td {
+  padding: 0.375rem 0.5rem;
+}
+
+html.app-viewport--canonical .scales-plu-page {
+  max-width: 100%;
+}
+
+html.app-viewport--canonical .scales-plu-page__title {
+  font-size: var(--text-xl);
+}
+
+html.app-viewport--canonical .admin-main .overflow-x-auto {
+  max-width: 100%;
+}
+
+/* Table Action Menus & Popovers in Dark Mode (overrides any leaked Bootstrap .bg-white !important) */
+html.dark [role='menu'],
+.dark [role='menu'] {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark [role='menu'] [role='menuitem']:not(.text-red-600):not(.text-red-400):not(.text-red-700):not(.text-red-300),
+.dark [role='menu'] [role='menuitem']:not(.text-red-600):not(.text-red-400):not(.text-red-700):not(.text-red-300) {
+  color: #f1f5f9;
+}
+
+html.dark [role='menu'] [role='menuitem']:hover,
+.dark [role='menu'] [role='menuitem']:hover {
+  background-color: #1e293b !important;
+}
+
+/* Dark mode shield against leaked Bootstrap .bg-white !important for cards, error states and widgets */
+html.dark .bg-white[class*='dark:bg-slate-900'],
+html.dark .bg-white[class*='dark:!bg-slate-900'],
+.dark .bg-white[class*='dark:bg-slate-900'],
+.dark .bg-white[class*='dark:!bg-slate-900'] {
+  background-color: #0f172a !important;
+}
+
+html.dark [role='alert'] h4,
+.dark [role='alert'] h4 {
+  color: #f1f5f9 !important;
+}
+
+html.dark [role='alert'] p,
+.dark [role='alert'] p {
+  color: #94a3b8 !important;
+}

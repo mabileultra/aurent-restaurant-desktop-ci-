@@ -1,0 +1,8 @@
+/* Global design tokens — 1024×768 canonical, все оболочки */
+@import './breakpoints.css';
+@import './colors.css';
+@import './spacing.css';
+@import './typography.css';
+@import './touch.css';
+@import './shell-layout.css';
+@import './viewport-canonical.css';

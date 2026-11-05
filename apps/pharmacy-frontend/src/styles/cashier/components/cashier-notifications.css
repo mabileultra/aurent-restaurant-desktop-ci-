@@ -1,0 +1,198 @@
+.cashier-notifications {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cashier-notifications__trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--pos-border);
+  border-radius: 12px;
+  background: var(--pos-surface-elevated, #fff);
+  color: var(--pos-text);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.cashier-notifications__trigger:hover {
+  border-color: var(--pos-green);
+  color: var(--pos-green);
+}
+
+.cashier-notifications__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--pos-surface, #fff);
+}
+
+.cashier-notifications__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1200;
+  width: min(92vw, 360px);
+  max-height: min(70vh, 420px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--pos-border);
+  border-radius: 16px;
+  background: var(--pos-surface-elevated, #fff);
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.18);
+  overflow: hidden;
+}
+
+.cashier-notifications__head {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--pos-border);
+}
+
+.cashier-notifications__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--pos-text);
+}
+
+.cashier-notifications__body {
+  overflow: auto;
+  padding: 8px;
+}
+
+.cashier-notifications__empty {
+  margin: 0;
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--pos-muted);
+}
+
+.cashier-notifications__item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--pos-surface, #f8fafc);
+}
+
+.cashier-notifications__item + .cashier-notifications__item {
+  margin-top: 8px;
+}
+
+.cashier-notifications__item--update {
+  background: rgb(0 104 71 / 0.08);
+}
+
+.cashier-notifications__item--alert {
+  background: rgb(239 68 68 / 0.08);
+}
+
+.cashier-notifications__item-icon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
+  color: var(--pos-green);
+}
+
+.cashier-notifications__item--alert .cashier-notifications__item-icon {
+  color: #dc2626;
+}
+
+.cashier-notifications__item-title {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--pos-text);
+}
+
+.cashier-notifications__item-body {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--pos-muted);
+  white-space: pre-wrap;
+}
+
+.cashier-notifications__progress {
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.08);
+  overflow: hidden;
+}
+
+.cashier-notifications__progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pos-green);
+  transition: width 0.2s ease;
+}
+
+.cashier-notifications__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cashier-notifications__action {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--pos-green);
+  color: var(--pos-on-green, #fff);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cashier-notifications__dismiss {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--pos-muted);
+  cursor: pointer;
+}
+
+.cashier-notifications__dismiss:hover {
+  background: rgb(15 23 42 / 0.06);
+  color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-notifications__trigger {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+  color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-notifications__panel {
+  background: var(--pos-surface-elevated);
+}
+
+.cashier-app.cashier-app--terminal .cashier-notifications__item {
+  background: var(--pos-surface);
+}

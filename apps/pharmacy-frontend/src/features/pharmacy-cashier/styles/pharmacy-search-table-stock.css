@@ -1,0 +1,53 @@
+/* Имя забирает свободную ширину. Цены и служебные колонки узкие. */
+
+.pharmacy-search__table--stock {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.pharmacy-search__table--stock col.is-name { width: 34%; }
+.pharmacy-search__table--stock col.is-num { width: 6.5rem; }
+.pharmacy-search__table--stock col.is-text { width: 6.25rem; }
+.pharmacy-search__table--stock col.is-fiscal { width: 8.5rem; }
+.pharmacy-search__table--stock col.is-actions { width: 3.25rem; }
+
+.pharmacy-search__table--stock .pharmacy-search__name {
+  width: auto;
+}
+
+.pharmacy-search__table--stock .pharmacy-search__clip .pharmacy-search__cell-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.pharmacy-search__table--stock .pharmacy-search__clip {
+  max-width: none;
+}
+
+.pharmacy-search__actions {
+  white-space: nowrap;
+  width: 56px;
+  text-align: right;
+}
+
+.pharmacy-search__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 2px;
+  padding: 0;
+  border: 1px solid var(--pharm-border, #dddcd5);
+  border-radius: 6px;
+  background: var(--pharm-card, #f7f6f1);
+  color: var(--pharm-ink, #26332d);
+  cursor: pointer;
+}
+
+.pharmacy-search__icon-btn--danger {
+  color: var(--pharm-danger-accent, #d9534f);
+}

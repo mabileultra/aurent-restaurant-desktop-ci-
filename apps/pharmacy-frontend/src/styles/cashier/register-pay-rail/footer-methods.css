@@ -1,0 +1,13 @@
+.pos-pay-panel--register-rail .pos-pay-panel__actions-wrap .pos-register-pay-footer {
+  width: 100%;
+}
+
+.pos-pay-panel--register-rail .pos-register-pay-footer--toggle-only {
+  justify-content: flex-end;
+}
+
+.pos-pay-panel--register-rail .pos-register-pay-footer--toggle-only .pos-pay-print-toggle--footer {
+  max-width: 100%;
+  flex: 0 0 auto;
+  min-width: 7.5rem;
+}

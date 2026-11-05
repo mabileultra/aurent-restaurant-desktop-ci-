@@ -1,0 +1,79 @@
+/* Supplier filter cards on Products — same density as inventory KPIs */
+
+.pharm-supplier-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.55rem;
+  margin: 0.35rem 0 0.15rem;
+}
+
+.pharm-supplier-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 4.35rem;
+  padding: 0.6rem 0.75rem 0.55rem;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+  border-radius: 0.55rem;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.pharm-supplier-card:hover {
+  border-color: #94a3b8;
+}
+
+.pharm-supplier-card.is-active {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.pharm-supplier-card__label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--pharm-muted, #64748b);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pharm-supplier-card__value {
+  margin: 0.2rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.pharm-supplier-card__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  color: var(--pharm-muted, #64748b);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .pharm-supplier-card {
+  background: #0f172a;
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.dark .pharm-supplier-card.is-active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #34d399;
+}
+
+.dark .pharm-supplier-card__value {
+  color: #f8fafc;
+}

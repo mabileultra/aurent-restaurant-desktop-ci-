@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 28" fill="none" aria-hidden="true">
+  <text
+    x="0"
+    y="21"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="20"
+    font-weight="700"
+    fill="#222222"
+  >Pay</text>
+  <rect x="44" y="2" width="40" height="24" rx="4" fill="#00CCCC" />
+  <polygon points="84,14 94,8 94,20" fill="#00CCCC" />
+  <text
+    x="50"
+    y="20"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="17"
+    font-weight="700"
+    fill="#ffffff"
+  >me</text>
+</svg>

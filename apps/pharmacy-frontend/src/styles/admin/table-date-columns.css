@@ -1,0 +1,25 @@
+/* Shared date column for admin data tables (replaces UUID ID where needed). */
+
+.admin-table-col-date {
+  width: 7.5rem;
+  min-width: 6.5rem;
+  max-width: 9rem;
+  padding-left: 0.5rem;
+  padding-right: 1rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table-col-date--cell {
+  max-width: 9rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: #475569;
+  white-space: nowrap;
+}
+
+html.dark .admin-table-col-date--cell {
+  color: #94a3b8;
+}

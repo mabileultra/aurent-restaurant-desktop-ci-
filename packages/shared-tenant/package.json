@@ -1,0 +1,18 @@
+{
+  "name": "@aurent/shared-tenant",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Company/store vertical scope helpers.",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@aurent/shared-types": "workspace:*"
+  }
+}

@@ -1,0 +1,30 @@
+.stores-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stores-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.stores-filters__search {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.stores-filters__company {
+  flex: 0 1 16rem;
+  width: 16rem;
+  min-width: 12rem;
+}
+
+@media (max-width: 640px) {
+  .stores-filters__company {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}

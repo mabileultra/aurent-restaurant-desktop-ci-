@@ -1,0 +1,14 @@
+@import './shell-base.css';
+@import './shell-paint.css';
+@import './offline-topbar.css';
+@import './offline-sync-progress.css';
+@import './shell-desktop-topbar.css';
+@import './shell-desktop-layout.css';
+@import './shell-pos-topbar.css';
+@import './shell-topbar-readable.css';
+@import './cashier-zoom.css';
+@import './cashier-zoom-layout.css';
+@import './bottom-nav-secondary.css';
+@import './cashier-bottom-nav.css';
+@import './cashier-bottom-nav-collapse.css';
+@import './shell-lang-switch.css';

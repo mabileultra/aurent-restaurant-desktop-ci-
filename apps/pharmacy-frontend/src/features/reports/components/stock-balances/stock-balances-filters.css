@@ -1,0 +1,89 @@
+.stock-balances-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--admin-line, #e2e8f0) 100%, transparent);
+  background: color-mix(in srgb, var(--admin-panel, #fff) 92%, #f8fafc);
+}
+
+html.dark .stock-balances-filters {
+  background: color-mix(in srgb, var(--admin-panel, #0f172a) 88%, #1e293b);
+}
+
+.stock-balances-filters__grid {
+  display: grid;
+  gap: 0.75rem 1rem;
+  grid-template-columns: minmax(12rem, 1.4fr) repeat(2, minmax(10rem, 1fr));
+  align-items: end;
+}
+
+.stock-balances-filters__grid--pharmacy {
+  grid-template-columns: minmax(12rem, 1.4fr) minmax(10rem, 1fr);
+}
+
+@media (max-width: 900px) {
+  .stock-balances-filters__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stock-balances-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.stock-balances-filters__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+html.dark .stock-balances-filters__label {
+  color: #94a3b8;
+}
+
+.stock-balances-filters__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.stock-balances-filters__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.15rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+html.dark .stock-balances-filters__check {
+  color: #cbd5e1;
+}
+
+.stock-balances-filters__check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #059669;
+}
+
+.stock-balances-filters__hint {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+html.dark .stock-balances-filters__hint {
+  color: #94a3b8;
+}

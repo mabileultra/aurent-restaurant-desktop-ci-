@@ -1,0 +1,248 @@
+/* Register cart table layout */
+.cashier-app .pos-order-panel {
+  border: none;
+  background: transparent;
+}
+
+.cashier-app .pos-order-panel__head {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-bottom: 1px solid var(--pos-border, #2a3548);
+  padding: 12px 16px;
+}
+
+.cashier-app .pos-order-panel__title {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pos-muted, #94a3b8);
+}
+
+.cashier-app .pos-order-panel__badge {
+  display: none;
+}
+
+.cashier-app .pos-cart-table__head {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-bottom: 1px solid var(--pos-border, #2a3548);
+}
+
+.cashier-app .pos-cart-table__head .pos-cart-table__col {
+  color: var(--pos-muted, #94a3b8);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  border-right-color: var(--pos-border, #2a3548);
+  padding: 10px 12px;
+}
+
+.cashier-app .pos-cart-table__body {
+  background: var(--pos-surface, #151b26);
+}
+
+.cashier-app .pos-cart-table__row {
+  background: var(--pos-surface, #151b26);
+  border-bottom-color: var(--pos-border, #2a3548);
+}
+
+.cashier-app .pos-cart-table__col {
+  border-right-color: var(--pos-border, #2a3548);
+}
+
+.cashier-app .pos-cart-table__empty-hint {
+  padding: 24px 16px;
+  font-style: italic;
+  color: var(--pos-muted, #94a3b8);
+}
+
+/* Текущий чек — таблица и итоги (макет) */
+.cashier-app .pos-order-panel--register {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.cashier-app .pos-order-panel--register .pos-order-panel__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head,
+.cashier-app .pos-order-panel--register .pos-cart-table__row {
+  column-gap: 0;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__body {
+  overflow: visible;
+  flex: none;
+  min-height: auto;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head,
+.cashier-app .pos-order-panel--register .pos-cart-table__row {
+  width: 100%;
+  min-width: 0;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__row {
+  align-items: stretch;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col,
+.cashier-app .pos-order-panel--register .pos-cart-table__col {
+  padding: clamp(9px, 2.2cqi, 11px) clamp(6px, 1.8cqi, 10px);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col {
+  padding: clamp(8px, 2cqi, 10px) clamp(6px, 1.8cqi, 10px);
+  font-size: clamp(0.625rem, 1.8cqi, 0.6875rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--name,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--name {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-left: 14px;
+  padding-right: 8px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col {
+  overflow: hidden;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--price,
+.cashier-app .pos-order-panel--register .pos-cart-table__col--sum,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--price,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--sum {
+  padding-left: 6px;
+  padding-right: 8px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--price,
+.cashier-app .pos-order-panel--register .pos-cart-table__col--sum {
+  overflow: visible;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--qty,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--qty {
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  overflow: visible;
+  text-align: center;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--remove,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--remove,
+.cashier-app .pos-order-panel--register .pos-cart-table__row:hover .pos-cart-table__col--remove,
+.cashier-app .pos-order-panel--register .pos-cart-table__row.is-active .pos-cart-table__col--remove {
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  overflow: visible;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__remove-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__remove-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-cart-table__row.is-active {
+  background: rgb(46 196 182 / 0.06);
+  box-shadow: inset 3px 0 0 var(--pos-green, #2ec4b6);
+}
+
+.cashier-app.cashier-app--light .pos-order-panel--register .pos-cart-table__row.is-active {
+  background: var(--pos-surface-active);
+  box-shadow: inset 3px 0 0 var(--pos-ink);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__name {
+  display: block;
+  overflow: hidden;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__sku {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  word-break: normal;
+  -webkit-line-clamp: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  color: var(--pos-green, #2ec4b6);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app .pos-order-panel--register .pos-cart-table__price-btn span {
+  color: var(--pos-text, #f1f5f9);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__sum {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--pos-money, #f5c842);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-align: right;
+  width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__disc {
+  font-size: 0.6875rem;
+  padding: 2px 10px 6px;
+}
+

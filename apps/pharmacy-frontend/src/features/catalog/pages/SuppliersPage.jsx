@@ -1,0 +1,93 @@
+import { Filter, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import {
+  BaseButton,
+  ErrorBanner,
+  PageLayout,
+  PageSearchField,
+} from '../../../components/ui';
+import SupplierFiltersDrawer from '../components/suppliers/SupplierFiltersDrawer';
+import SupplierModal from '../components/suppliers/SupplierModal';
+import SuppliersTable from '../components/suppliers/SuppliersTable';
+import { useSuppliersPage } from '../hooks/useSuppliersPage';
+import { useSupplierRowActions } from '../hooks/useSupplierRowActions';
+
+export default function SuppliersPage({ hideTitle = false } = {}) {
+  const { t } = useTranslation();
+  const s = useSuppliersPage();
+  const actions = useSupplierRowActions();
+
+  return (
+    <PageLayout
+      title={hideTitle ? undefined : t('suppliersModule.title')}
+      actions={
+        s.manage ? (
+          <BaseButton onClick={() => s.setAddOpen(true)} className="admin-btn-primary">
+            <Plus size={16} />
+            {t('suppliersModule.add')}
+          </BaseButton>
+        ) : null
+      }
+      filters={(
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <PageSearchField
+            className="flex-1"
+            value={s.search}
+            onChange={s.handleSearchChange}
+            placeholder={t('suppliersModule.searchPh')}
+          />
+          <BaseButton
+            variant="secondary"
+            onClick={() => s.setFiltersOpen(true)}
+            className="admin-btn-secondary shrink-0"
+          >
+            <Filter size={16} />
+            {t('products.toolbar.filters')}
+          </BaseButton>
+        </div>
+      )}
+    >
+      {s.isError && (
+        <ErrorBanner
+          message={s.error?.response?.data?.message ?? s.error?.message ?? t('suppliersModule.loadError')}
+        />
+      )}
+
+      <SuppliersTable
+        t={t}
+        loading={s.loading}
+        rows={s.rows}
+        fmtDate={s.fmtDate}
+        showEmptyHint={s.showEmptyHint}
+        page={s.page}
+        pageSize={s.pageSize}
+        total={s.total}
+        totalPages={s.totalPages}
+        onPageChange={s.setPage}
+        onPageSizeChange={s.setPageSize}
+        manage={s.manage}
+        menuOpenId={actions.menuOpenId}
+        onMenuOpenChange={actions.setMenuOpenId}
+        onEdit={actions.openEdit}
+        onDelete={actions.confirmDelete}
+        deletingId={actions.deletingId}
+      />
+
+      <SupplierFiltersDrawer
+        open={s.filtersOpen}
+        onClose={() => s.setFiltersOpen(false)}
+        filters={s.filters}
+        onChange={s.setFilters}
+        onReset={s.resetFilters}
+        onApply={s.applyFilters}
+      />
+
+      <SupplierModal open={s.addOpen} onClose={() => s.setAddOpen(false)} />
+      <SupplierModal
+        open={Boolean(actions.editSupplier)}
+        supplier={actions.editSupplier}
+        onClose={actions.closeEdit}
+      />
+    </PageLayout>
+  );
+}

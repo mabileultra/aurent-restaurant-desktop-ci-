@@ -1,0 +1,80 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+export default function PlatformFilterMenu({ options = [], value = '', onChange, label }) {
+  const { t } = useTranslation();
+  if (!options || options.length === 0) return null;
+  const caption = t('platform.toolbarFilter', { defaultValue: 'Фильтр' });
+  const rootRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
+  const active = Boolean(value);
+
+  useEffect(() => {
+    if (open && rootRef.current && typeof window !== 'undefined') {
+      const rect = rootRef.current.getBoundingClientRect();
+      setAlignRight(rect.left + 220 > window.innerWidth - 16);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    const onKey = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const selectedOption = options.find((o) => o.value === value);
+  const displayTitle = selectedOption && value
+    ? `${label || caption}: ${selectedOption.label}`
+    : (label || caption);
+
+  return (
+    <div className="platform-filter-bar__menu" ref={rootRef}>
+      <button
+        type="button"
+        className={`platform-filter-bar__filter${active ? ' is-active' : ''}`}
+        aria-expanded={open}
+        aria-label={label || caption}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className="truncate max-w-[220px]">{displayTitle}</span>
+        <span className="platform-filter-bar__filter-icon">
+          <Filter size={15} strokeWidth={2.2} aria-hidden />
+          {active ? <span className="platform-filter-bar__dot" /> : null}
+        </span>
+      </button>
+      {open ? (
+        <div
+          className={`platform-filter-bar__dropdown${alignRight ? ' platform-filter-bar__dropdown--right' : ''}`}
+          role="menu"
+        >
+          {options.map((option) => (
+            <button
+              key={option.value || 'all'}
+              type="button"
+              role="menuitem"
+              className={`platform-filter-bar__option${value === option.value ? ' is-active' : ''}`}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}

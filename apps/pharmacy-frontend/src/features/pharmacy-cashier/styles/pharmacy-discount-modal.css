@@ -1,0 +1,139 @@
+.pharmacy-discount-modal {
+  width: min(420px, calc(100vw - 1.5rem));
+}
+
+.pharmacy-discount-modal__base {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.85rem;
+  font-size: 0.8125rem;
+  color: var(--pm-muted);
+}
+
+.pharmacy-discount-modal__base strong {
+  font-size: 1rem;
+  color: var(--pm-ink);
+}
+
+.pharmacy-discount-modal__mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.pharmacy-discount-modal__mode button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius-sm);
+  background: #fff;
+  color: var(--pm-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-discount-modal__mode button.is-active {
+  background: var(--pm-brand-soft);
+  border-color: color-mix(in srgb, var(--pm-brand) 40%, var(--pm-border));
+  color: var(--pm-brand);
+}
+
+.pharmacy-discount-modal__editor {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.pharmacy-discount-modal__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius-sm);
+  background: #fff;
+  color: var(--pm-ink);
+  cursor: pointer;
+}
+
+.pharmacy-discount-modal__input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.pharmacy-discount-modal__input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 2rem 0.45rem 0.75rem;
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius-sm);
+  background: #fff;
+  color: var(--pm-ink);
+  font-size: 1.125rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.pharmacy-discount-modal__input:focus {
+  outline: none;
+  border-color: var(--pm-brand);
+  box-shadow: 0 0 0 3px rgb(36 91 69 / 0.18);
+}
+
+.pharmacy-discount-modal__suffix {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--pm-muted);
+  font-weight: 700;
+}
+
+.pharmacy-discount-modal__presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.pharmacy-discount-modal__preset {
+  min-height: 2.25rem;
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius-sm);
+  background: #fff;
+  color: var(--pm-ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-discount-modal__preset.is-active {
+  background: var(--pm-brand);
+  border-color: var(--pm-brand);
+  color: #fff;
+}
+
+.pharmacy-discount-modal__preview {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--pm-radius-sm);
+  background: var(--pm-ok);
+  color: var(--pm-ok-text);
+  font-size: 0.8125rem;
+}
+
+.pharmacy-discount-modal__preview p {
+  margin: 0;
+}
+
+.pharmacy-discount-modal__preview-total {
+  margin-top: 0.35rem !important;
+  font-size: 0.9375rem;
+}
