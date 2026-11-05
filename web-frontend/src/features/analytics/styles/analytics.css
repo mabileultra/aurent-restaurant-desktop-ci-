@@ -281,7 +281,7 @@
 }
 
 .an-kpi-delta-up {
-  color: #16a34a;
+  color: #2563EB;
   font-weight: 600;
 }
 
@@ -385,8 +385,8 @@
 }
 
 .an-badge--green {
-  background: #dcfce7;
-  color: #15803d;
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .an-badge--amber {
@@ -411,10 +411,10 @@
 .f b { color: #1F2937; font-weight: 600; }
 .k { font-size: 12px; color: #6B7280; font-weight: 500; }
 .v { font-size: 23px; font-weight: 700; letter-spacing: -.02em; color: #1F2937; line-height: 1.2; }
-.up { color: #0E7C4F; font-weight: 600; }
+.up { color: #2563EB; font-weight: 600; }
 .dn { color: #C53030; font-weight: 600; }
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
-.badge.ok, .ok { background: #E7F6EE; color: #0E7C4F; }
+.badge.ok, .ok { background: #EAF1FE; color: #1D4ED8; }
 .badge.no, .no { background: #FDECEC; color: #B42318; }
 .badge.info, .info { background: #EAF1FE; color: #1D4ED8; }
 .badge.mute, .mute { background: #F1F3F5; color: #4B5563; }
@@ -428,7 +428,7 @@ table.tb { width: 100%; border-collapse: collapse; font-size: 13px; font-variant
 /* Canonical Shell & Layout */
 .an-shell {
   min-height: 100vh;
-  background: #F3F6F4;
+  background: #F8FAFC;
   color: #1F2937;
   display: flex;
   flex-direction: column;
@@ -841,5 +841,433 @@ table.tb { width: 100%; border-collapse: collapse; font-size: 13px; font-variant
   color: #6B7280;
 }
 
+/* ==========================================================================
+   Dark Mode Theme Overrides
+   ========================================================================== */
+.dark .an-container {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.dark .an-brand-title {
+  color: #f8fafc;
+}
+
+.dark .an-brand-sub {
+  color: #94a3b8;
+}
+
+.dark .an-period-group {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .an-period-btn {
+  color: #94a3b8;
+}
+
+.dark .an-period-btn:hover {
+  color: #f8fafc;
+}
+
+.dark .an-period-btn.is-active {
+  background: #334155;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.dark .an-card,
+.dark .an-sub-kpi-card,
+.dark .an-hero-kpi-card,
+.dark .an-detail-panel,
+.dark .an-panel {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.dark .an-card-title,
+.dark .an-hero-kpi-value,
+.dark .an-sub-kpi-val {
+  color: #f8fafc;
+}
+
+.dark .an-card-sub,
+.dark .an-hero-kpi-title,
+.dark .an-sub-kpi-label,
+.dark .an-sub-kpi-meta {
+  color: #94a3b8;
+}
+
+.dark .an-table {
+  color: #f8fafc;
+}
+
+.dark .an-table th {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.dark .an-table td {
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.dark .an-table tr:hover {
+  background: rgba(51, 65, 85, 0.4);
+}
+
+.dark .an-filter-select,
+.dark .an-search-input {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.dark .an-search-input::placeholder {
+  color: #64748b;
+}
+
+.dark .an-empty-state {
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   Analytics Scoped Blue Theme (Zero Global Green)
+   ========================================================================== */
+.an-shell,
+.an-container {
+  --color-brand: #2563EB;
+  --color-brand-hover: #1D4ED8;
+  --color-brand-soft: rgba(37, 99, 235, 0.08);
+  --color-focus-ring: rgba(37, 99, 235, 0.2);
+}
+
+.an-shell .platform-select:not(.base-select--disabled) .base-select__trigger:hover,
+.an-container .platform-select:not(.base-select--disabled) .base-select__trigger:hover {
+  border-color: #2563EB;
+}
+
+.an-shell .platform-select .base-select__trigger:focus,
+.an-shell .platform-select .base-select__trigger:focus-within,
+.an-shell .platform-select.base-select--open .base-select__trigger,
+.an-container .platform-select .base-select__trigger:focus,
+.an-container .platform-select .base-select__trigger:focus-within,
+.an-container .platform-select.base-select--open .base-select__trigger {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+}
+
+.an-shell .platform-select--active .base-select__trigger,
+.an-shell .platform-select.base-select--active-filter .base-select__trigger,
+.an-container .platform-select--active .base-select__trigger,
+.an-container .platform-select.base-select--active-filter .base-select__trigger {
+  border-color: #2563EB;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1D4ED8;
+  font-weight: 600;
+}
+
+.an-shell .platform-select--active .base-select__trigger .base-select__chevron,
+.an-container .platform-select--active .base-select__trigger .base-select__chevron {
+  color: #2563EB;
+}
+
+.dark.an-shell,
+.dark .an-shell,
+.dark .an-container {
+  --color-brand: #3b82f6;
+  --color-brand-hover: #60a5fa;
+  --color-brand-soft: rgba(59, 130, 246, 0.15);
+  --color-focus-ring: rgba(59, 130, 246, 0.25);
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Dark mode card and surface elevation overrides */
+.dark .card,
+.dark .an-card,
+.dark .an-sub-kpi-card,
+.dark .an-hero-kpi-card,
+.dark .an-detail-panel,
+.dark .an-panel {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.dark .card h1,
+.dark .card h2,
+.dark .card h3,
+.dark .card .t,
+.dark .card .v,
+.dark .card strong,
+.dark .card b,
+.dark .an-card h1,
+.dark .an-card h2,
+.dark .an-card h3,
+.dark .an-card-title,
+.dark .an-hero-kpi-value,
+.dark .an-sub-kpi-val {
+  color: #f8fafc !important;
+}
+
+.dark .card p,
+.dark .card .s,
+.dark .card .k,
+.dark .an-card-sub,
+.dark .an-hero-kpi-title,
+.dark .an-sub-kpi-label,
+.dark .an-sub-kpi-meta {
+  color: #94a3b8 !important;
+}
+
+.dark .btn,
+.dark .f,
+.dark .an-export-btn {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .btn:hover,
+.dark .f:hover,
+.dark .an-export-btn:hover {
+  background: #334155 !important;
+  border-color: #475569 !important;
+}
+
+.dark .seg {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark .seg button {
+  color: #94a3b8 !important;
+}
+
+.dark .seg button.on {
+  background: #2563EB !important;
+  color: #ffffff !important;
+}
+
+.dark .chip {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+.dark .chip.on {
+  background: rgba(37, 99, 235, 0.2) !important;
+  border-color: #3b82f6 !important;
+  color: #93c5fd !important;
+}
+
+.dark .an-table {
+  color: #f8fafc !important;
+}
+
+.dark .an-table th {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+.dark .an-table td {
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.dark .an-table tr:hover {
+  background: rgba(51, 65, 85, 0.4) !important;
+}
+
+.dark .an-table-wrap {
+  border-color: #334155 !important;
+}
+
+.dark input[type="text"],
+.dark input[type="search"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.dark input::placeholder {
+  color: #64748b !important;
+}
+
+/* Turnover Line Chart & Interactive Crosshair */
+.an-turnover-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.an-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.an-crosshair-line {
+  stroke: #cbd5e1;
+  stroke-width: 1px;
+  pointer-events: none;
+  transition: x1 80ms ease-out, x2 80ms ease-out;
+}
+
+.dark .an-crosshair-line {
+  stroke: #475569;
+}
+
+.an-pulse-ring {
+  transform-origin: center;
+  animation: an-pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes an-pulse-glow {
+  0% {
+    r: 7px;
+    opacity: 0.35;
+  }
+  50% {
+    r: 12px;
+    opacity: 0.12;
+  }
+  100% {
+    r: 7px;
+    opacity: 0.35;
+  }
+}
+
+/* Tooltip Card */
+.an-turnover-tooltip {
+  position: absolute;
+  top: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  width: 250px;
+  pointer-events: none;
+  z-index: 20;
+  transition: left 120ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 150ms ease;
+}
+
+.dark .an-turnover-tooltip {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.an-turnover-tooltip__date {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.dark .an-turnover-tooltip__date {
+  color: #f8fafc;
+}
+
+.an-turnover-tooltip__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.an-turnover-tooltip__label {
+  color: #64748b;
+}
+
+.dark .an-turnover-tooltip__label {
+  color: #94a3b8;
+}
+
+.an-turnover-tooltip__val {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.dark .an-turnover-tooltip__val {
+  color: #f8fafc;
+}
+
+.an-turnover-tooltip__divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 8px 0;
+}
+
+.dark .an-turnover-tooltip__divider {
+  background: #334155;
+}
+
+.an-turnover-tooltip__row--total {
+  margin-bottom: 8px;
+}
+
+.an-turnover-tooltip__label-total {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .an-turnover-tooltip__label-total {
+  color: #f8fafc;
+}
+
+.an-turnover-tooltip__val-total {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .an-turnover-tooltip__val-total {
+  color: #f8fafc;
+}
+
+.an-turnover-tooltip__meta {
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.dark .an-turnover-tooltip__meta {
+  color: #94a3b8;
+}
+
+/* Bottom summary stats bar */
+.an-turnover-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.dark .an-turnover-summary-bar {
+  border-top-color: #334155;
+  color: #94a3b8;
+}
+
+.an-turnover-summary-bar b {
+  color: #0f172a;
+}
+
+.dark .an-turnover-summary-bar b {
+  color: #f8fafc;
+}
 
 

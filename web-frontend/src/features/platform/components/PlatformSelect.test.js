@@ -68,4 +68,18 @@ describe('PlatformSelect', () => {
     expect(html).toContain('platform-select--md');
     expect(html).toContain('base-select--disabled');
   });
+
+  it('supports theme="blue" with blue modifier classes', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformSelect, {
+        value: 'active_val',
+        options: [{ value: 'active_val', label: 'Faol' }],
+        theme: 'blue',
+        onChange: vi.fn(),
+      })
+    );
+
+    expect(html).toContain('platform-select--blue');
+    expect(html).toContain('platform-select--active');
+  });
 });

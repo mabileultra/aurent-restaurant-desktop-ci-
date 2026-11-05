@@ -109,8 +109,8 @@ export default function AnalyticsTurnoverChart({ days = [], weeks = [], onSelect
         }}>
           <strong>{activeDay.fullDate}</strong>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <span>Fiskal: <strong style={{ color: '#059669' }}>{fmtMoney(activeDay.fiscal)}</strong></span>
-            <span>Fiskalsiz: <strong style={{ color: '#d97706' }}>{fmtMoney(activeDay.nonFiscal)}</strong></span>
+            <span>Fiskal: <strong style={{ color: '#2563EB' }}>{fmtMoney(activeDay.fiscal)}</strong></span>
+            <span>Nofiskal: <strong style={{ color: '#d97706' }}>{fmtMoney(activeDay.nonFiscal)}</strong></span>
             <span>Jami: <strong>{fmtMoney(activeDay.total)}</strong></span>
           </div>
         </div>

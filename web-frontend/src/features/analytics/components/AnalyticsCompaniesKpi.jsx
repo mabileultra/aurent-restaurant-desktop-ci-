@@ -43,7 +43,7 @@ export default function AnalyticsCompaniesKpi({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <span style={{ width: 8, height: 8, borderRadius: 2, background: '#EA7A2B' }} />
-            <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Fiskalsiz aylanma</span>
+            <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Nofiskal aylanma</span>
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: '0.15rem 0' }}>
             {fmtMoney(nonFiscalAmount)}

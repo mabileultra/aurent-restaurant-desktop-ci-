@@ -84,7 +84,7 @@ export default function AnalyticsAttentionList({ onFilterAttention }) {
         fontSize: '0.75rem',
         color: '#475569',
       }}>
-        <Info size={14} color="#047857" aria-hidden style={{ flexShrink: 0 }} />
+        <Info size={14} color="#2563EB" aria-hidden style={{ flexShrink: 0 }} />
         <span>Top-5 firma umumiy aylanmaning <strong>93,5%</strong> ini beradi</span>
       </div>
     </div>

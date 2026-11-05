@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeftRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import AnalyticsTabs from './AnalyticsTabs';
 import PlatformDateRangePicker from '../../platform/components/PlatformDateRangePicker';
 import { useAnalyticsPeriodStore } from '../hooks/useAnalyticsPeriodStore';
@@ -39,7 +40,7 @@ export default function AnalyticsHeader({
   return (
     <header className="an-header-wrap">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
-        {/* Brand */}
+        {/* Brand with h1 accessibility */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{
             width: 32,
@@ -57,9 +58,9 @@ export default function AnalyticsHeader({
           </span>
           <div>
             <div style={{ fontSize: '11.5px', color: '#6B7280' }}>Super Admin › Analitika</div>
-            <div style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-.01em', color: '#1F2937' }}>
+            <h1 style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-.01em', color: '#1F2937', margin: 0 }}>
               Aurent Analytics
-            </div>
+            </h1>
           </div>
         </div>
 
@@ -85,13 +86,15 @@ export default function AnalyticsHeader({
             onChange={activeCustomChange}
             placeholder={labels.currentLabel}
             align="right"
+            theme="blue"
+            maxDate={new Date().toISOString().split('T')[0]}
             t={t}
           />
 
-          <button type="button" className="btn" style={{ color: '#4B5563' }}>
+          <Link to="/platform/analytics/comparison" className="btn" style={{ color: '#4B5563', textDecoration: 'none' }}>
             <ArrowLeftRight className="ic" style={{ width: 14, height: 14 }} aria-hidden />
             <span>{activeCompareLabel}</span>
-          </button>
+          </Link>
         </div>
       </div>
 

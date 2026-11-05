@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { analyticsApi } from '../api/analyticsApi';
-import { calculateResultsTotals } from '../utils/analyticsCalculations';
+import {
+  fetchAllCompanies,
+  aggregateRepublicDays,
+  aggregateRepublicWeeks,
+} from '../utils/analyticsCompanyLoader';
 import { useAnalyticsPeriodStore } from './useAnalyticsPeriodStore';
 
 export function useAnalyticsOverview() {
@@ -14,6 +19,7 @@ export function useAnalyticsOverview() {
 
   const [selectedRegionCode, setSelectedRegionCode] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [connectionStatus, setConnectionStatus] = useState('');
   const [showExtraFilters, setShowExtraFilters] = useState(false);
 
@@ -26,9 +32,9 @@ export function useAnalyticsOverview() {
       ...p,
       regionCode: selectedRegionCode || undefined,
       connectionStatus: connectionStatus || undefined,
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
     };
-  }, [period, customFrom, customTo, selectedRegionCode, connectionStatus, search]);
+  }, [period, customFrom, customTo, selectedRegionCode, connectionStatus, debouncedSearch]);
 
   const overviewQuery = useQuery({
     queryKey: ['analytics-overview', queryParams],
@@ -42,7 +48,7 @@ export function useAnalyticsOverview() {
 
   const companiesQuery = useQuery({
     queryKey: ['analytics-top-companies', queryParams],
-    queryFn: () => analyticsApi.getCompanies({ ...queryParams, size: 100 }).then((res) => res.data),
+    queryFn: () => fetchAllCompanies(queryParams),
   });
 
   const regionsQuery = useQuery({
@@ -58,11 +64,31 @@ export function useAnalyticsOverview() {
     }
   }, [overviewQuery.data?.periodFrom, overviewQuery.data?.periodTo, setBackendDates]);
 
-  // Real fiscal / non-fiscal sums from regional results
   const regionalRows = resultsQuery.data?.rows ?? [];
-  const totals = useMemo(() => calculateResultsTotals(regionalRows), [regionalRows]);
+  const allCompanies = useMemo(() => {
+    const list = companiesQuery.data?.rows ?? [];
+    return [...list].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
+  }, [companiesQuery.data?.rows]);
 
-  // Sort top regions by total turnover
+  // True republic totals matching KPI and company sums without contradictions
+  const totals = useMemo(() => {
+    const kpiTotal = Number(overviewQuery.data?.kpi?.totalTurnover || 0);
+    const sumCompaniesTotal = allCompanies.reduce((s, c) => s + Number(c.totalTurnover || 0), 0);
+    const nonFiscalTurnover = allCompanies.reduce((s, c) => s + Number(c.nonFiscalTurnover || 0), 0);
+    const effectiveTotal = kpiTotal > 0 ? kpiTotal : sumCompaniesTotal;
+    const fiscalTurnover = Math.max(0, effectiveTotal - nonFiscalTurnover);
+    const fiscalPct = effectiveTotal > 0 ? (fiscalTurnover / effectiveTotal) * 100 : 0;
+    const nonFiscalPct = effectiveTotal > 0 ? (nonFiscalTurnover / effectiveTotal) * 100 : 0;
+
+    return {
+      totalTurnover: effectiveTotal,
+      fiscalTurnover,
+      nonFiscalTurnover,
+      fiscalPct,
+      nonFiscalPct,
+    };
+  }, [overviewQuery.data?.kpi?.totalTurnover, allCompanies]);
+
   const topRegions = useMemo(() => {
     return [...regionalRows].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
   }, [regionalRows]);
@@ -75,13 +101,37 @@ export function useAnalyticsOverview() {
     return regionalRows.filter((r) => Number(r.turnoverDeltaPct || 0) < 0);
   }, [regionalRows]);
 
-  // Real TOP 10 companies sorted descending by totalTurnover
-  const top10Companies = useMemo(() => {
-    const list = companiesQuery.data?.rows ?? [];
-    return [...list]
-      .sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0))
-      .slice(0, 10);
-  }, [companiesQuery.data?.rows]);
+  const top10Companies = useMemo(() => allCompanies.slice(0, 10), [allCompanies]);
+
+  // Parallel fetch active top companies to aggregate true republic dynamics
+  const activeCompanyIds = useMemo(() => {
+    return allCompanies.filter((c) => Number(c.totalTurnover || 0) > 0).slice(0, 8).map((c) => c.companyId);
+  }, [allCompanies]);
+
+  const activeDetailsQuery = useQuery({
+    queryKey: ['analytics-overview-republic-details', activeCompanyIds, queryParams],
+    queryFn: async () => {
+      if (activeCompanyIds.length === 0) return [];
+      const promises = activeCompanyIds.map((id) =>
+        analyticsApi.getCompanyDetail(id, queryParams).then((r) => r.data).catch(() => null)
+      );
+      const results = await Promise.all(promises);
+      return results.filter(Boolean);
+    },
+    enabled: activeCompanyIds.length > 0,
+    staleTime: 300_000,
+  });
+
+  const republicDays = useMemo(() => {
+    return aggregateRepublicDays(activeDetailsQuery.data ?? []);
+  }, [activeDetailsQuery.data]);
+
+  const republicWeeks = useMemo(() => {
+    return aggregateRepublicWeeks(activeDetailsQuery.data ?? []);
+  }, [activeDetailsQuery.data]);
+
+  const topCompanyId = top10Companies[0]?.companyId;
+  const topCompanyName = top10Companies[0]?.name ?? '';
 
   const handleResetFilters = () => {
     setSearch('');
@@ -114,6 +164,11 @@ export function useAnalyticsOverview() {
     growingRegions,
     decliningRegions,
     top10Companies,
+    allCompanies,
+    republicDays,
+    republicWeeks,
+    topCompanyName,
+    topCompanyId,
     loading: isLoading,
     error: isError,
     refetch: () => {

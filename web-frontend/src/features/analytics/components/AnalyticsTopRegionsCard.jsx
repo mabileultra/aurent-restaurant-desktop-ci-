@@ -5,11 +5,12 @@ import { fmtDeltaBadge, fmtMoney, fmtPercent } from '../utils/analyticsFormat';
 
 export default function AnalyticsTopRegionsCard({
   regions = [],
+  totalTurnover = 0,
   periodLabel = '30 kun',
 }) {
   const list = Array.isArray(regions) ? regions.slice(0, 5) : [];
   const maxTurnover = list.length > 0 ? Math.max(...list.map((r) => Number(r.totalTurnover || 0)), 1) : 1;
-  const totalAllTurnover = list.reduce((sum, r) => sum + Number(r.totalTurnover || 0), 0);
+  const totalAllTurnover = totalTurnover > 0 ? totalTurnover : list.reduce((sum, r) => sum + Number(r.totalTurnover || 0), 0);
 
   return (
     <section

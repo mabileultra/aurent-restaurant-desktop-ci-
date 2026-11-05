@@ -1,59 +1,75 @@
 import React, { useMemo, useState } from 'react';
 import '../styles/analytics.css';
-import { Search, Download, QrCode, Printer, X } from 'lucide-react';
+import { AlertCircle, Download, RotateCcw, Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import AnalyticsHeader from '../components/AnalyticsHeader';
+import AnalyticsReceiptDetailCard from '../components/AnalyticsReceiptDetailCard';
+import AnalyticsReceiptsTable from '../components/AnalyticsReceiptsTable';
+import { analyticsApi } from '../api/analyticsApi';
 import { useAnalyticsOverview } from '../hooks/useAnalyticsOverview';
 import { exportToCsv } from '../utils/analyticsExport';
-
-const RECEIPTS = [
-  { id: 'RCP-20261024-0200', date: '24.10.2026', time: '15:26', company: 'Farina Invest', store: 'Farina Invest', amount: '24,7 mln', hasQr: true, op: 'Sotuv', items: [
-    { name: 'Un birinchi nav 50kg', qty: 50, price: '380 000', total: '19 000 000' },
-    { name: 'O‘simlik yog‘i 5L', qty: 30, price: '95 000', total: '2 850 000' },
-    { name: 'Shakar 50kg', qty: 5, price: '570 000', total: '2 850 000' },
-  ]},
-  { id: 'RCP-20261024-0199', date: '24.10.2026', time: '14:52', company: 'Farina Invest', store: 'Farina Invest', amount: '18,5 mln', hasQr: true, op: 'Sotuv', items: [
-    { name: 'Un oliy nav 50kg', qty: 35, price: '420 000', total: '14 700 000' },
-    { name: 'Makaron mahsulotlari 20kg', qty: 20, price: '190 000', total: '3 800 000' },
-  ]},
-  { id: 'RCP-20261024-0198', date: '24.10.2026', time: '14:10', company: 'Farina Invest', store: 'Farina Invest', amount: '32,1 mln', hasQr: true, op: 'Sotuv', items: [
-    { name: 'Un birinchi nav 50kg', qty: 80, price: '380 000', total: '30 400 000' },
-    { name: 'Guruch lazer 25kg', qty: 3, price: '566 000', total: '1 700 000' },
-  ]},
-  { id: 'RCP-20261024-0197', date: '24.10.2026', time: '13:44', company: 'Farina Invest', store: 'Farina Invest', amount: '12,4 mln', hasQr: true, op: 'Sotuv', items: [
-    { name: 'O‘simlik yog‘i 5L', qty: 130, price: '95 000', total: '12 350 000' },
-  ]},
-  { id: 'RCP-20261024-0196', date: '24.10.2026', time: '12:30', company: 'Farina Invest', store: 'Farina Invest', amount: '8,9 mln', hasQr: true, op: 'Sotuv', items: [
-    { name: 'Tuxum C1 360 dona', qty: 10, price: '420 000', total: '4 200 000' },
-    { name: 'Sariyog‘ 82.5% 10kg', qty: 5, price: '940 000', total: '4 700 000' },
-  ]},
-];
+import { fmtDayFull, fmtMoney, sanitizeText } from '../utils/analyticsFormat';
+import PlatformSelect from '../../platform/components/PlatformSelect';
 
 export default function AnalyticsReceiptsPage() {
   const page = useAnalyticsOverview();
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [selectedDayOverride, setSelectedDayOverride] = useState('');
   const [search, setSearch] = useState('');
   const [qrFilter, setQrFilter] = useState('all');
-  const [selectedReceipt, setSelectedReceipt] = useState(RECEIPTS[0]);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+  const activeCompanyId = selectedCompanyId || page.top10Companies[0]?.companyId;
+
+  const companyDetailQuery = useQuery({
+    queryKey: ['analytics-receipts-company-detail', activeCompanyId],
+    queryFn: () => analyticsApi.getCompanyDetail(activeCompanyId).then((res) => res.data),
+    enabled: Boolean(activeCompanyId),
+  });
+
+  const availableDays = useMemo(() => {
+    const list = companyDetailQuery.data?.days ?? [];
+    return [...list].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  }, [companyDetailQuery.data?.days]);
+
+  const effectiveDay = useMemo(() => {
+    if (selectedDayOverride) return selectedDayOverride;
+    const withSales = availableDays.filter((d) => Number(d.totalTurnover || 0) > 0);
+    return withSales[0]?.date || availableDays[0]?.date || '';
+  }, [selectedDayOverride, availableDays]);
+
+  const receiptsQuery = useQuery({
+    queryKey: ['analytics-all-receipts', activeCompanyId, effectiveDay],
+    queryFn: () => analyticsApi.getCompanyReceipts(activeCompanyId, { date: effectiveDay, size: 100 }).then((res) => res.data?.rows ?? []),
+    enabled: Boolean(activeCompanyId && effectiveDay),
+  });
+
+  const rawReceipts = receiptsQuery.data ?? [];
 
   const filteredReceipts = useMemo(() => {
-    return RECEIPTS.filter((r) => {
-      const matchSearch = !search || r.id.toLowerCase().includes(search.toLowerCase()) || r.company.toLowerCase().includes(search.toLowerCase());
-      const matchQr = qrFilter === 'all' ? true : qrFilter === 'qr' ? r.hasQr : !r.hasQr;
+    return rawReceipts.filter((r) => {
+      const receiptNo = String(r.receiptNumber || r.receiptNo || r.saleId || '');
+      const store = String(r.storeName || r.store || '');
+      const matchSearch = !search || receiptNo.toLowerCase().includes(search.toLowerCase()) || store.toLowerCase().includes(search.toLowerCase());
+      const hasQr = r.hasQr || r.fiscalStatus === 'FISCAL' || r.fiscalStatus === 'CONFIRMED';
+      const matchQr = qrFilter === 'all' ? true : qrFilter === 'qr' ? hasQr : !hasQr;
       return matchSearch && matchQr;
     });
-  }, [search, qrFilter]);
+  }, [rawReceipts, search, qrFilter]);
+
+  const activeCompany = page.top10Companies.find((c) => c.companyId === activeCompanyId);
 
   const handleExport = () => {
-    const headers = ['Chek raqami', 'Sana', 'Vaqt', 'Korxona', 'Do‘kon', 'Summa', 'QR holati'];
+    const headers = ['Chek raqami', 'Sana / Vaqt', 'Korxona', 'Do‘kon', 'Summa', 'Fiskal / QR holati'];
     const rows = filteredReceipts.map((r) => [
-      r.id,
-      r.date,
-      r.time,
-      r.company,
-      r.store,
-      r.amount,
-      r.hasQr ? 'QR bilan' : 'QR’siz',
+      r.receiptNumber || r.saleId || 'Chek',
+      r.createdAt || r.date || effectiveDay || '—',
+      sanitizeText(activeCompany?.name || 'Korxona'),
+      r.storeName || 'Asosiy do‘kon',
+      fmtMoney(r.totalAmount || r.amount || 0),
+      (r.hasQr || r.fiscalStatus === 'FISCAL') ? 'QR bilan' : 'QR’siz',
     ]);
-    exportToCsv('cheklar-hisoboti', headers, rows);
+    exportToCsv(`cheklar-${activeCompanyId || 'barchasi'}`, headers, rows);
   };
 
   return (
@@ -67,113 +83,103 @@ export default function AnalyticsReceiptsPage() {
       />
 
       <main className="an-main">
-        {/* Filter Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-          <div style={{ position: 'relative', flex: '0 1 240px', minWidth: '200px' }}>
-            <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#9CA3AF' }} />
+        {receiptsQuery.isError && (
+          <div role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px 16px', marginBottom: '16px', borderRadius: '10px', background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#991B1B', fontSize: '13px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={18} />
+              <span>Cheklarni yuklashda xatolik yuz berdi. Iltimos qayta urinib ko‘ring.</span>
+            </div>
+            <button type="button" onClick={() => receiptsQuery.refetch()} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '8px', background: '#fff', border: '1px solid #FCA5A5', color: '#991B1B', fontWeight: 600, cursor: 'pointer', fontSize: '12.5px' }}>
+              <RotateCcw size={14} /> Qayta yuklash
+            </button>
+          </div>
+        )}
+
+        {/* Controls */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+          {page.top10Companies.length > 0 && (
+            <PlatformSelect
+              value={activeCompanyId || ''}
+              onChange={(e) => {
+                setSelectedCompanyId(Number(e.target.value));
+                setSelectedDayOverride('');
+                setSelectedReceipt(null);
+              }}
+              options={page.top10Companies.map((c) => ({
+                value: c.companyId,
+                label: `${sanitizeText(c.name)} (${fmtMoney(c.totalTurnover, { showCurrency: false })})`,
+              }))}
+              size="sm"
+              theme="blue"
+              searchable
+              style={{ width: 'auto', minWidth: 220 }}
+              ariaLabel="Firma tanlash"
+            />
+          )}
+
+          {availableDays.length > 0 && (
+            <PlatformSelect
+              value={effectiveDay}
+              onChange={(e) => setSelectedDayOverride(e.target.value)}
+              options={availableDays.map((d) => ({
+                value: d.date,
+                label: `${fmtDayFull(d.date)} (${fmtMoney(d.totalTurnover, { showCurrency: false })})`,
+              }))}
+              size="sm"
+              theme="blue"
+              searchable={false}
+              style={{ width: 'auto', minWidth: 200 }}
+              ariaLabel="Sana tanlash"
+            />
+          )}
+
+          <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #E5E9EE', borderRadius: 9, padding: '0 12px', height: 34 }}>
+            <Search size={14} color="#94A3B8" />
             <input
-              type="search"
-              placeholder="Chek raqami"
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '100%', boxSizing: 'border-box', height: '34px', padding: '0 10px 0 32px', border: '1px solid #E5E9EE', borderRadius: '9px', fontSize: '12.5px', background: '#fff', color: '#1F2937' }}
+              placeholder="Chek raqami yoki do‘kon nomi..."
+              style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '12.5px', width: '100%', color: '#1F2937' }}
             />
           </div>
-          <div className="seg" role="group" aria-label="QR">
+
+          <div className="seg" role="group" aria-label="QR filtri">
             <button type="button" className={qrFilter === 'all' ? 'on' : ''} onClick={() => setQrFilter('all')}>Barchasi</button>
             <button type="button" className={qrFilter === 'qr' ? 'on' : ''} onClick={() => setQrFilter('qr')}>QR bilan</button>
             <button type="button" className={qrFilter === 'no_qr' ? 'on' : ''} onClick={() => setQrFilter('no_qr')}>QR’siz</button>
           </div>
-          <span style={{ flex: '1 1 auto' }} />
+
           <button type="button" className="btn" onClick={handleExport}>
             <Download size={14} style={{ color: '#2563EB' }} />
-            Excel / CSV · {filteredReceipts.length} ta
+            <span>Excel / CSV</span>
           </button>
         </div>
 
-        {/* 2 Columns: Table on Left, Detail on Right */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-start' }}>
-          <section className="card" aria-label="Cheklar ro‘yxati" style={{ flex: '3 1 620px', minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="tb">
-                <thead>
-                  <tr>
-                    <th>Chek raqami</th>
-                    <th>Sana</th>
-                    <th>Vaqt</th>
-                    <th>Korxona</th>
-                    <th>Do‘kon</th>
-                    <th className="r">Summa</th>
-                    <th>QR</th>
-                    <th>Operatsiya</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredReceipts.map((r) => {
-                    const isSelected = selectedReceipt?.id === r.id;
-                    return (
-                      <tr
-                        key={r.id}
-                        style={{ background: isSelected ? '#F5F8FF' : '#ffffff', cursor: 'pointer' }}
-                        onClick={() => setSelectedReceipt(r)}
-                      >
-                        <td style={{ fontWeight: 600 }}>
-                          <span style={{ color: '#2563EB' }}>{r.id}</span>
-                        </td>
-                        <td>{r.date}</td>
-                        <td>{r.time}</td>
-                        <td>{r.company}</td>
-                        <td style={{ color: '#4B5563' }}>{r.store}</td>
-                        <td className="r" style={{ fontWeight: 600 }}>{r.amount}</td>
-                        <td><span className="badge ok"><QrCode size={11} />QR bilan</span></td>
-                        <td><span className="badge info">{r.op}</span></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+        {/* Content: Table & Detail Drawer */}
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div className="card" style={{ flex: '3 1 600px', minWidth: 0, padding: '16px 18px', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div>
+                <h2 className="t">Real cheklar ro‘yxati</h2>
+                <p className="s">{sanitizeText(activeCompany?.name || 'Korxona')} · {effectiveDay ? fmtDayFull(effectiveDay) : 'Sana tanlanmagan'} · {filteredReceipts.length} ta chek</p>
+              </div>
             </div>
-          </section>
 
-          {/* Selected Receipt Detail */}
-          {selectedReceipt && (
-            <aside className="card" style={{ flex: '2 1 360px', minWidth: 0, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', borderColor: '#C9DAFB' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div className="k">Chek detalizatsiyasi</div>
-                  <h3 className="t" style={{ fontSize: '17px', marginTop: '2px' }}>{selectedReceipt.id}</h3>
-                </div>
-                <button type="button" className="btn" aria-label="Yopish" style={{ width: '32px', height: '32px', padding: 0, justifyContent: 'center' }} onClick={() => setSelectedReceipt(null)}>
-                  <X size={14} />
-                </button>
-              </div>
+            <AnalyticsReceiptsTable
+              receipts={filteredReceipts}
+              loading={receiptsQuery.isLoading}
+              selectedReceipt={selectedReceipt}
+              onSelectReceipt={setSelectedReceipt}
+              effectiveDay={effectiveDay}
+            />
+          </div>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', background: '#F5F8FF' }}>
-                <span className="k">Chek summasi</span>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: '#1F2937' }}>{selectedReceipt.amount} so‘m</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12.5px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#6B7280' }}>Korxona</span><b>{selectedReceipt.company}</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#6B7280' }}>Sana va vaqt</span><span>{selectedReceipt.date} · {selectedReceipt.time}</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#6B7280' }}>Fiskal holat</span><span className="badge ok">QR tasdiqlangan</span></div>
-              </div>
-
-              <div style={{ borderTop: '1px solid #E5E9EE', paddingTop: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#6B7280', marginBottom: '8px' }}>Tarkibi:</div>
-                {selectedReceipt.items?.map((item) => (
-                  <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', marginBottom: '6px' }}>
-                    <span>{item.name} ({item.qty} dona)</span>
-                    <b>{item.total}</b>
-                  </div>
-                ))}
-              </div>
-
-              <button type="button" className="btn" onClick={() => window.print()} style={{ marginTop: '8px', justifyContent: 'center' }}>
-                <Printer size={14} /> Chekni chop etish
-              </button>
-            </aside>
-          )}
+          <AnalyticsReceiptDetailCard
+            receipt={selectedReceipt}
+            effectiveDay={effectiveDay}
+            onClose={() => setSelectedReceipt(null)}
+          />
         </div>
       </main>
     </div>

@@ -1,15 +1,17 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
+import { fmtMoney, fmtPercent, sanitizeText } from '../utils/analyticsFormat';
 
 export default function AnalyticsTopCompaniesCard({
   companies = [],
+  totalTurnover,
   periodLabel = '30 kun',
 }) {
   const list = Array.isArray(companies) ? companies.slice(0, 10) : [];
   const maxAmount = list.length > 0 ? Math.max(...list.map((c) => Number(c.totalTurnover || 0)), 1) : 1;
   const totalSum = list.reduce((sum, c) => sum + Number(c.totalTurnover || 0), 0);
+  const baseTurnover = Number(totalTurnover || 0) > 0 ? Number(totalTurnover) : totalSum;
 
   return (
     <section
@@ -45,7 +47,7 @@ export default function AnalyticsTopCompaniesCard({
             const totalWidth = Math.max(2, (amount / maxAmount) * 100);
             const fw = amount > 0 ? Math.min(100, (fiscal / amount) * 100) : 0;
             const nw = amount > 0 ? Math.min(100, (nonFiscal / amount) * 100) : 0;
-            const share = totalSum > 0 ? fmtPercent((amount / totalSum) * 100) : '0,0%';
+            const share = baseTurnover > 0 ? fmtPercent((amount / baseTurnover) * 100) : '0,0%';
 
             return (
               <Link
@@ -65,7 +67,7 @@ export default function AnalyticsTopCompaniesCard({
 
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
-                    {c.name}
+                    {sanitizeText(c.name)}
                   </span>
                   {!c.connected && (
                     <span className="badge no" style={{ fontSize: '10.5px', padding: '1px 6px' }}>

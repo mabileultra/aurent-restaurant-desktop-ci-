@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { analyticsApi } from '../api/analyticsApi';
+import { fetchAllCompanies } from '../utils/analyticsCompanyLoader';
 import { calculateFiscalDistribution, calculateTop5Share } from '../utils/analyticsCalculations';
 import { useAnalyticsPeriodStore } from './useAnalyticsPeriodStore';
 
@@ -15,8 +17,10 @@ export function useAnalyticsCompanies() {
   const [districtCode, setDistrictCode] = useState('');
   const [connectionStatus, setConnectionStatus] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
+  const [showExtraFilters, setShowExtraFilters] = useState(false);
 
   const filterParams = useMemo(() => {
     const range = period === 'custom' && customFrom && customTo
@@ -28,26 +32,14 @@ export function useAnalyticsCompanies() {
       regionCode: regionCode || undefined,
       districtCode: districtCode || undefined,
       connectionStatus: connectionStatus || undefined,
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
     };
-  }, [period, customFrom, customTo, regionCode, districtCode, connectionStatus, search]);
+  }, [period, customFrom, customTo, regionCode, districtCode, connectionStatus, debouncedSearch]);
 
-  const queryParams = useMemo(() => ({
-    ...filterParams,
-    page,
-    size,
-  }), [filterParams, page, size]);
-
-  // Main table query
-  const listQuery = useQuery({
-    queryKey: ['analytics-companies', queryParams],
-    queryFn: () => analyticsApi.getCompanies(queryParams).then((res) => res.data),
-  });
-
-  // Summary query for accurate KPI counts and distribution across all companies
-  const summaryQuery = useQuery({
-    queryKey: ['analytics-companies-summary', filterParams],
-    queryFn: () => analyticsApi.getCompanies({ ...filterParams, page: 0, size: 100 }).then((res) => res.data),
+  // Fetch all companies across pages so global sorting by totalTurnover is 100% accurate
+  const allCompaniesQuery = useQuery({
+    queryKey: ['analytics-companies-all', filterParams],
+    queryFn: () => fetchAllCompanies(filterParams),
   });
 
   const regionsQuery = useQuery({
@@ -63,19 +55,21 @@ export function useAnalyticsCompanies() {
     staleTime: 600_000,
   });
 
-  // Frontend sort by totalTurnover descending so rankings are strictly correct
+  // Global sort across all records
+  const sortedAllRows = useMemo(() => {
+    const list = allCompaniesQuery.data?.rows ?? [];
+    return [...list].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
+  }, [allCompaniesQuery.data?.rows]);
+
+  const totalElements = allCompaniesQuery.data?.totalElements ?? sortedAllRows.length;
+
+  // Paginate from universally sorted dataset
   const rows = useMemo(() => {
-    const list = listQuery.data?.rows ?? [];
-    return [...list].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
-  }, [listQuery.data?.rows]);
+    const start = page * size;
+    return sortedAllRows.slice(start, start + size);
+  }, [sortedAllRows, page, size]);
 
-  const totalElements = listQuery.data?.totalElements ?? 0;
-
-  // Compute metrics across summary list
-  const summaryRows = useMemo(() => {
-    const list = summaryQuery.data?.rows ?? [];
-    return [...list].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
-  }, [summaryQuery.data?.rows]);
+  const summaryRows = sortedAllRows;
 
   const totalTurnoverSum = useMemo(() => {
     return summaryRows.reduce((sum, c) => sum + Number(c.totalTurnover || 0), 0);
@@ -118,6 +112,8 @@ export function useAnalyticsCompanies() {
     setDistrictCode: (d) => { setDistrictCode(d); setPage(0); },
     connectionStatus,
     setConnectionStatus: (c) => { setConnectionStatus(c); setPage(0); },
+    showExtraFilters,
+    setShowExtraFilters,
     page,
     setPage,
     size,
@@ -132,8 +128,8 @@ export function useAnalyticsCompanies() {
     nonFiscalAmount,
     notConnectedSellingCount: notConnectedSelling.length,
     notConnectedAmount,
-    loading: listQuery.isLoading,
-    error: listQuery.isError,
+    loading: allCompaniesQuery.isLoading,
+    error: allCompaniesQuery.isError,
     regions: regionsQuery.data ?? [],
     districts: districtsQuery.data ?? [],
   };

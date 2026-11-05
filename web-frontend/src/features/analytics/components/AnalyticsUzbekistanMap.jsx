@@ -88,13 +88,13 @@ export default function AnalyticsUzbekistanMap({ selectedRegionCode, onSelectReg
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.72rem', color: '#64748b', marginTop: '0.75rem' }}>
             <span>Korxona yo‘q</span>
             <span style={{ width: 12, height: 12, background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 2 }} />
-            <span style={{ width: 12, height: 12, background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 2 }} />
+            <span style={{ width: 12, height: 12, background: '#F0F5FF', border: '1px solid #D4E2FD', borderRadius: 2 }} />
             <span>1–5</span>
-            <span style={{ width: 12, height: 12, background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 2 }} />
+            <span style={{ width: 12, height: 12, background: '#DBEAFE', border: '1px solid #BFDBFE', borderRadius: 2 }} />
             <span>6–20</span>
-            <span style={{ width: 12, height: 12, background: '#6ee7b7', border: '1px solid #34d399', borderRadius: 2 }} />
+            <span style={{ width: 12, height: 12, background: '#93C5FD', border: '1px solid #60A5FA', borderRadius: 2 }} />
             <span>21–50</span>
-            <span style={{ width: 12, height: 12, background: '#047857', borderRadius: 2 }} />
+            <span style={{ width: 12, height: 12, background: '#2563EB', borderRadius: 2 }} />
             <span>51+</span>
           </div>
         </div>

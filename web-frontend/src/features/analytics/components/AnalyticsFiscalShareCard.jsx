@@ -1,5 +1,5 @@
 import React from 'react';
-import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
+import { fmtDayShort, fmtMoney, fmtPercent } from '../utils/analyticsFormat';
 
 export default function AnalyticsFiscalShareCard({
   fiscalTurnover = 0,
@@ -83,11 +83,16 @@ export default function AnalyticsFiscalShareCard({
             <span>Fiskal ulush</span>
           </div>
 
-          {displayWeeks.map((w) => {
-            const wFiscal = Number(w.fiscalSharePct ?? w.pct ?? 0);
+          {displayWeeks.map((w, idx) => {
+            const sumTurnover = Number(w.totalTurnover || (Number(w.fiscalTurnover || 0) + Number(w.nonFiscalTurnover || 0)));
+            const wFiscal = w.fiscalSharePct != null
+              ? Number(w.fiscalSharePct)
+              : (sumTurnover > 0 ? (Number(w.fiscalTurnover || 0) / sumTurnover) * 100 : Number(w.pct || 0));
+            const label = w.label || (w.weekFrom && w.weekTo ? `${fmtDayShort(w.weekFrom)}–${fmtDayShort(w.weekTo)}` : (w.week || `Hafta ${idx + 1}`));
+
             return (
               <div
-                key={w.label || w.week}
+                key={label || idx}
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '96px minmax(0, 1fr) 52px',
@@ -96,9 +101,9 @@ export default function AnalyticsFiscalShareCard({
                   fontSize: '12.5px',
                 }}
               >
-                <span style={{ color: '#4B5563' }}>{w.label || w.week}</span>
+                <span style={{ color: '#4B5563' }}>{label}</span>
                 <span role="img" aria-label={`${fmtPercent(wFiscal)} fiskal`} style={{ display: 'flex', gap: 2, height: 10 }}>
-                  <span style={{ width: `${wFiscal}%`, background: '#2563EB', borderRadius: '3px 0 0 3px' }} />
+                  <span style={{ width: `${Math.min(100, Math.max(0, wFiscal))}%`, background: '#2563EB', borderRadius: '3px 0 0 3px' }} />
                   <span style={{ flex: '1 1 auto', background: '#EA7A2B', borderRadius: '0 3px 3px 0' }} />
                 </span>
                 <span className="r" style={{ fontWeight: 600 }}>

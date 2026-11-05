@@ -7,9 +7,33 @@ import AnalyticsCompanyTop10Chart from '../components/AnalyticsCompanyTop10Chart
 import AnalyticsFiltersBar from '../components/AnalyticsFiltersBar';
 import AnalyticsHeader from '../components/AnalyticsHeader';
 import { useAnalyticsCompanies } from '../hooks/useAnalyticsCompanies';
+import { exportToCsv } from '../utils/analyticsExport';
+import { fmtMoney, fmtPercent, sanitizeText } from '../utils/analyticsFormat';
 
 export default function AnalyticsCompaniesPage() {
   const page = useAnalyticsCompanies();
+
+  const handleExportAll = () => {
+    const headers = ['#', 'Firma', 'STIR', 'Hudud', 'Fiskal holat', 'Umumiy aylanma', 'Fiskal aylanma', 'Nofiskal aylanma', 'Fiskal ulush'];
+    const data = page.summaryRows.map((r, index) => {
+      const tot = Number(r.totalTurnover || 0);
+      const fisc = Number(r.fiscalTurnover || 0);
+      const nonFisc = Number(r.nonFiscalTurnover || 0);
+      const share = tot > 0 ? (fisc / tot) * 100 : (r.connected ? 100 : 0);
+      return [
+        index + 1,
+        sanitizeText(r.name),
+        r.tin || '',
+        sanitizeText(r.regionNameUz || r.regionNameRu || 'Ko‘rsatilmagan'),
+        r.connected ? 'Ulangan' : 'Ulanmagan',
+        fmtMoney(tot),
+        fmtMoney(fisc),
+        fmtMoney(nonFisc),
+        fmtPercent(share),
+      ];
+    });
+    exportToCsv(`korxonalar-analitika-${page.period}`, headers, data);
+  };
 
   return (
     <div className="an-shell">
@@ -31,6 +55,9 @@ export default function AnalyticsCompaniesPage() {
           onConnectionStatusChange={page.setConnectionStatus}
           regions={page.regions}
           onReset={page.handleReset}
+          onExport={handleExportAll}
+          showExtraFilters={page.showExtraFilters}
+          setShowExtraFilters={page.setShowExtraFilters}
         />
 
         <AnalyticsCompaniesKpi
@@ -45,16 +72,20 @@ export default function AnalyticsCompaniesPage() {
           periodLabel={page.period === '7d' ? '7 kun' : '30 kun'}
         />
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-          <AnalyticsCompanyTop10Chart
-            companies={page.summaryRows}
-          />
-          <AnalyticsCompanyDistributionChart
-            buckets={page.distribution.buckets}
-            zeroCount={page.distribution.zeroFiscalCount}
-            highCount={page.distribution.highFiscalCount}
-            totalSelling={page.distribution.sellingCount}
-          />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
+          <div style={{ flex: '1 1 480px', minWidth: 0 }}>
+            <AnalyticsCompanyTop10Chart
+              companies={page.summaryRows}
+            />
+          </div>
+          <div style={{ flex: '1 1 420px', minWidth: 0 }}>
+            <AnalyticsCompanyDistributionChart
+              buckets={page.distribution.buckets}
+              zeroCount={page.distribution.zeroFiscalCount}
+              highCount={page.distribution.highFiscalCount}
+              totalSelling={page.distribution.sellingCount}
+            />
+          </div>
         </div>
 
         <AnalyticsCompaniesTable
@@ -65,6 +96,7 @@ export default function AnalyticsCompaniesPage() {
           setPage={page.setPage}
           setSize={page.setSize}
           loading={page.loading}
+          onExport={handleExportAll}
         />
       </main>
     </div>
