@@ -82,7 +82,7 @@ export function useBillingCollectionActions({ t, i18n, money, formatDate, collec
 
   const bulkChangePlan = (plan) => runBulk((b) => ({
     planId: plan.id,
-    addonMonthlyAmount: 0,
+    addonMonthlyAmount: Number(b.addonMonthlyAmount || 0),
     periodStartOn: b.periodStartOn || undefined,
   }));
 

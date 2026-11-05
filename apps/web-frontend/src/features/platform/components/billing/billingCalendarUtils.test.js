@@ -96,4 +96,34 @@ describe('billingCalendarUtils', () => {
     expect(kpis.planned.count).toBe(1);
     expect(kpis.planned.amount).toBe(150000);
   });
+
+  it('correctly categorizes future charges as PLANNED or LOW_BALANCE, never SUCCESS', () => {
+    const todayIso = '2026-11-04';
+    const futureDayIso = '2026-11-26';
+
+    const futureItems = [
+      { companyId: 10, amount: 200000, paymentState: 'ACTIVE' }, // MIRONKUL: sufficient balance
+      { companyId: 20, amount: 150000, paymentState: 'ACTIVE' }, // Comfort2: 0 balance
+    ];
+    const companyMap = {
+      10: { billing: { balance: 500000 } }, // 500k >= 200k -> PLANNED
+      20: { billing: { balance: 0 } },      // 0 < 150k -> LOW_BALANCE (Balans yetmaydi)
+    };
+
+    const status = getDayStatusInfo(futureItems, companyMap, futureDayIso, todayIso);
+    expect(status.successCount).toBe(0); // MUST NEVER BE SUCCESS FOR FUTURE DATES!
+    expect(status.plannedCount).toBe(1); // MIRONKUL is planned
+    expect(status.lowBalanceCount).toBe(1); // Comfort2 is low balance
+    expect(status.tone).toBe('danger'); // Danger tone due to low balance
+
+    // Test KPIs with future days
+    const futureDay = { iso: futureDayIso, items: futureItems };
+    const kpis = computeCalendarKpis([futureDay], 0, 0, companyMap, todayIso);
+    expect(kpis.successful.count).toBe(0);
+    expect(kpis.successful.amount).toBe(0);
+    expect(kpis.planned.count).toBe(1);
+    expect(kpis.planned.amount).toBe(200000);
+    expect(kpis.lowBalance.count).toBe(1);
+    expect(kpis.lowBalance.amount).toBe(150000);
+  });
 });

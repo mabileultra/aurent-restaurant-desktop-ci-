@@ -44,7 +44,7 @@ export default function BaseModal({
       if (dialogRef.current) {
         const autoFocusEl = dialogRef.current.querySelector('[data-autofocus], [autofocus]');
         const firstFormInput = dialogRef.current.querySelector(
-          'input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled])'
+          'input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]):not([aria-hidden="true"]), textarea:not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"]), select:not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"])'
         );
         const firstFocusable = autoFocusEl || firstFormInput || dialogRef.current.querySelector('button:not([disabled])');
         if (firstFocusable) {

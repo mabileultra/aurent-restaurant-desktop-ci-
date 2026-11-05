@@ -37,10 +37,11 @@ export default function BillingCalendarGrid({
         {/* Days grid */}
         <div className="bc-cal-grid">
           {cells.map((cell) => {
-            const { iso, dayNum, isOtherMonth, isPrevMonth, isNextMonth } = cell;
+            const { iso, dayNum = '', isOtherMonth = false } = cell || {};
+            if (!iso) return null;
             const dayData = byDate[iso];
             const items = dayData?.items || [];
-            const info = items.length > 0 ? getDayStatusInfo(items, companyMap) : null;
+            const info = items.length > 0 ? getDayStatusInfo(items, companyMap, iso, todayIso) : null;
 
             const isToday = iso === todayIso;
             const isPicked = iso === picked;
@@ -77,8 +78,9 @@ export default function BillingCalendarGrid({
                     {dayNum}
                   </span>
                   {isToday && (
-                    <span className="bc-cal-cell__today-tag">
-                      {k('today', { defaultValue: 'Bugun' })}
+                    <span className="bc-cal-cell__today-tag" title={k('today', { defaultValue: 'Bugun' })}>
+                      <span className="hidden sm:inline">{k('today', { defaultValue: 'Bugun' })}</span>
+                      <span className="sm:hidden w-1.5 h-1.5 rounded-full bg-blue-600 inline-block" aria-hidden="true" />
                     </span>
                   )}
                 </div>

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
 import UserCredentialsCreatedModal from './UserCredentialsCreatedModal';
 import UserFormModalFields from './UserFormModalFields';
+import UserFormDiscardModal from './UserFormDiscardModal';
+import { useUserModalFocusTrap } from '../../hooks/user-form/useUserModalFocusTrap';
 
 export default function UserFormModal(props) {
   const p = useUserFormModal(props);
@@ -11,7 +13,6 @@ export default function UserFormModal(props) {
   const discardConfirmRef = useRef(null);
   const keepEditingBtnRef = useRef(null);
   const lastActiveElementRef = useRef(null);
-  const wasOpenRef = useRef(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const handleSafeClose = () => {
@@ -52,102 +53,16 @@ export default function UserFormModal(props) {
     return undefined;
   }, [showDiscardConfirm]);
 
-  useEffect(() => {
-    if (p.open && !wasOpenRef.current) {
-      wasOpenRef.current = true;
-      const timer = setTimeout(() => {
-        if (modalContainerRef.current) {
-          const formEl = modalContainerRef.current.querySelector('form');
-          const firstField = formEl?.querySelector(
-            'button.base-select__trigger:not([disabled]), input:not([type="hidden"]):not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"]), select:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), textarea:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"])'
-          );
-          firstField?.focus?.();
-        }
-      }, 60);
-      return () => clearTimeout(timer);
-    }
-    if (!p.open) {
-      wasOpenRef.current = false;
-      setShowDiscardConfirm(false);
-    }
-    return undefined;
-  }, [p.open]);
-
-  useEffect(() => {
-    if (!p.open) return undefined;
-
-    const handleKeyDown = (e) => {
-      if (showDiscardConfirm) {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          handleCancelDiscard();
-          return;
-        }
-        if (e.key === 'Tab') {
-          if (!discardConfirmRef.current) return;
-          const focusables = Array.from(
-            discardConfirmRef.current.querySelectorAll(
-              'button:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"])'
-            )
-          );
-          if (focusables.length === 0) return;
-          const first = focusables[0];
-          const last = focusables[focusables.length - 1];
-
-          if (e.shiftKey) {
-            if (document.activeElement === first || !discardConfirmRef.current.contains(document.activeElement)) {
-              e.preventDefault();
-              e.stopPropagation();
-              last.focus();
-            }
-          } else {
-            if (document.activeElement === last || !discardConfirmRef.current.contains(document.activeElement)) {
-              e.preventDefault();
-              e.stopPropagation();
-              first.focus();
-            }
-          }
-        }
-        return;
-      }
-
-      if (e.key === 'Escape') {
-        const openDropdown = document.querySelector('[role="listbox"], [data-popover-open="true"]');
-        if (openDropdown) return;
-        handleSafeClose();
-      } else if (e.key === 'Tab') {
-        if (!modalContainerRef.current) return;
-        const focusableElements = Array.from(
-          modalContainerRef.current.querySelectorAll(
-            'button:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), [href]:not([aria-hidden="true"]):not([tabindex="-1"]), input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"]):not([tabindex="-1"]), select:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), textarea:not([disabled]):not([aria-hidden="true"]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])'
-          )
-        );
-        if (focusableElements.length === 0) return;
-        const first = focusableElements[0];
-        const last = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey) {
-          if (document.activeElement === first || !modalContainerRef.current.contains(document.activeElement)) {
-            e.preventDefault();
-            e.stopPropagation();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last || !modalContainerRef.current.contains(document.activeElement)) {
-            e.preventDefault();
-            e.stopPropagation();
-            first.focus();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown, true);
-    };
-  }, [p.open, showDiscardConfirm, p.isDirty, p.onClose]);
+  useUserModalFocusTrap({
+    open: p.open,
+    showDiscardConfirm,
+    handleSafeClose,
+    handleCancelDiscard,
+    modalContainerRef,
+    discardConfirmRef,
+    resetPasswordMode: props.resetPasswordMode,
+    editingUser: props.editingUser,
+  });
 
   if (!p.open && !p.createdCredentials) return null;
 
@@ -224,49 +139,13 @@ export default function UserFormModal(props) {
 
           {/* Unsaved Changes Confirmation Dialog */}
           {showDiscardConfirm ? (
-            <div
-              className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="discard-confirm-title"
-              aria-describedby="discard-confirm-desc"
-            >
-              <div
-                ref={discardConfirmRef}
-                className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 animate-in zoom-in-95 duration-150"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 shrink-0">
-                    <AlertTriangle size={20} />
-                  </div>
-                  <div>
-                    <h3 id="discard-confirm-title" className="text-base font-bold text-slate-900 dark:text-white">
-                      {p.t('users.discardChangesTitle', { defaultValue: 'O‘zgarishlar saqlanmadi' })}
-                    </h3>
-                    <p id="discard-confirm-desc" className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      {p.t('users.discardChangesDesc', { defaultValue: 'Kiritilgan barcha ma’lumotlar yo‘qoladi. Rostdan ham chiqishni xohlaysizmi?' })}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-end gap-2.5 pt-2">
-                  <button
-                    ref={keepEditingBtnRef}
-                    type="button"
-                    onClick={handleCancelDiscard}
-                    className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                  >
-                    {p.t('users.discardChangesKeepEditing', { defaultValue: 'Tahrirlashda qolish' })}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleConfirmDiscard}
-                    className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 shadow-xs transition-colors cursor-pointer"
-                  >
-                    {p.t('users.discardChangesDiscard', { defaultValue: 'O‘zgarishlarni bekor qilish' })}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <UserFormDiscardModal
+              t={p.t}
+              dialogRef={discardConfirmRef}
+              keepEditingBtnRef={keepEditingBtnRef}
+              onCancel={handleCancelDiscard}
+              onConfirm={handleConfirmDiscard}
+            />
           ) : null}
         </div>
       ) : null}

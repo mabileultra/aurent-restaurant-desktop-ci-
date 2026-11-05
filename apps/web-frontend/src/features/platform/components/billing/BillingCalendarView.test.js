@@ -138,7 +138,7 @@ describe('BillingCalendarView', () => {
     openPaymentModal: vi.fn(),
   };
 
-  it('renders all 5 top KPI cards with accurate values and titles', () => {
+  it('renders all 6 top KPI cards with accurate values and titles', () => {
     const html = renderToStaticMarkup(
       React.createElement(BillingCalendarView, {
         t: mockT,
@@ -148,10 +148,11 @@ describe('BillingCalendarView', () => {
       })
     );
 
-    // 5 KPI cards
+    // 6 KPI cards
     expect(html).toContain('bc-calendar-kpi-grid');
     expect(html).toContain('bc-cal-kpi-card--primary');
     expect(html).toContain('bc-cal-kpi-card--success');
+    expect(html).toContain('bc-cal-kpi-card--info');
     expect(html).toContain('bc-cal-kpi-card--danger');
     expect(html).toContain('bc-cal-kpi-card--warning');
     expect(html).toContain('bc-cal-kpi-card--neutral');
@@ -159,6 +160,7 @@ describe('BillingCalendarView', () => {
     // Labels
     expect(html).toContain('Shu oyda to‘lanishi kerak');
     expect(html).toContain('Muvaffaqiyatli yechilgan');
+    expect(html).toContain('Rejalashtirilgan');
     expect(html).toContain('Balans yetarli emas');
     expect(html).toContain('Kechiktirish berilgan');
     expect(html).toContain('To‘xtatilgan');

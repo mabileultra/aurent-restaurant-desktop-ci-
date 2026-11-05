@@ -19,11 +19,23 @@ function serviceWorkerVersionPlugin() {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const identityProxy = env.VITE_DEV_IDENTITY_PROXY || process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081';
   const platformProxy = env.VITE_DEV_PLATFORM_PROXY || process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084';
   const apiProxy = env.VITE_DEV_API_PROXY || process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088';
+
+  let visualizerPlugin = null;
+  if (env.ANALYZE === 'true' || process.env.ANALYZE === 'true') {
+    const { visualizer } = await import('rollup-plugin-visualizer');
+    visualizerPlugin = visualizer({
+      filename: 'dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap',
+    });
+  }
 
   const configureProxy = (proxy) => {
     proxy.on('error', (err, req, res) => {
@@ -43,7 +55,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-    plugins: [react(), serviceWorkerVersionPlugin()],
+    plugins: [react(), serviceWorkerVersionPlugin(), visualizerPlugin].filter(Boolean),
     resolve: {
       alias: aurentPackageAliases(),
     },
@@ -113,31 +125,40 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          // Only split node_modules. App-level cashier/cash-registers manualChunks
-          // caused production white screens via circular chunk init
-          // (createContext undefined / Cannot access before initialization).
-          if (!id.includes('node_modules')) return;
-          if (id.includes('recharts')) return 'charts';
-          if (
-            id.includes('react')
-            || id.includes('react-dom')
-            || id.includes('react-router')
-            || id.includes('@tanstack/react-query')
-            || id.includes('react-hook-form')
-            || id.includes('zod')
-            || id.includes('@hookform')
-          ) {
-            return 'vendor';
-          }
+    resolve: {
+      dedupe: ['react', 'react-dom', 'react-router-dom', 'react-i18next'],
+    },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react-router-dom',
+        'react-i18next',
+        '@tanstack/react-query',
+        'react-hot-toast',
+      ],
+    },
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Only split node_modules. App-level cashier/cash-registers manualChunks
+            // caused production white screens via circular chunk init
+            // (createContext undefined / Cannot access before initialization).
+            if (!id.includes('node_modules')) return;
+            if (/[\\/]clsx[\\/]/.test(id)) return 'vendor';
+            if (/recharts|react-smooth|[\\/]d3-|victory-vendor|decimal\.js-light|[\\/]lodash[\\/]|fast-equals|eventemitter3|internmap/.test(id)) return 'charts';
+            if (
+              /[\\/](react|react-dom|scheduler|react-router|react-router-dom|react-i18next|use-sync-external-store|@remix-run|@tanstack|react-hook-form|@hookform|zod|react-hot-toast)[\\/]/.test(id)
+            ) {
+              return 'vendor';
+            }
+          },
         },
       },
     },
-  },
 };
 });

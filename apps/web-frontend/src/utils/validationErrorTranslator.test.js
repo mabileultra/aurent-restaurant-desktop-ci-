@@ -36,5 +36,11 @@ describe('validationErrorTranslator', () => {
     expect(translateRawErrorMessage('Business type is not allowed for this company')).toBe(
       'Tanlangan faoliyat turi ushbu kompaniyaga biriktirilmagan'
     );
+    expect(translateRawErrorMessage('Username already taken')).toBe(
+      'Ushbu login band, boshqa login tanlang'
+    );
+    expect(translateRawErrorMessage('PIN already used in this company')).toBe(
+      'Ushbu PIN ushbu kompaniyada allaqachon ishlatilgan'
+    );
   });
 });

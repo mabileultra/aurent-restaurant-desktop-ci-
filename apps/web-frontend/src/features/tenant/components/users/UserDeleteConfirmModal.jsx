@@ -1,49 +1,51 @@
-import { createPortal } from 'react-dom';
-import toast from 'react-hot-toast';
+import React from 'react';
+import BaseModal from '../../../../components/ui/BaseModal';
+import BaseButton from '../../../../components/ui/BaseButton';
+import { sanitizeUserDisplayName } from '../../utils/userFormValidationUtils';
 
+/**
+ * UserDeleteConfirmModal
+ * Accessible confirmation modal for deleting a tenant user.
+ */
 export default function UserDeleteConfirmModal({ user, t, isPending, onClose, onConfirm }) {
   if (!user) return null;
 
-  const modalNode = (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('users.deleteTitle')}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-          >
-            <span className="text-xl leading-none">×</span>
-          </button>
-        </div>
-        <div className="px-4 py-4 text-sm text-slate-700 dark:text-slate-200">
-          {t('users.deleteHint', { name: user.fullName })}
-        </div>
-        <div className="flex justify-end gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isPending}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={onConfirm}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
-          >
-            {t('common.delete')}
-          </button>
-        </div>
-      </div>
+  const displayName = sanitizeUserDisplayName(user.fullName, user.username);
+
+  const footer = (
+    <div className="flex justify-end gap-2 w-full">
+      <BaseButton
+        variant="outline"
+        size="md"
+        onClick={onClose}
+        disabled={isPending}
+        data-autofocus
+      >
+        {t('common.cancel')}
+      </BaseButton>
+      <BaseButton
+        variant="danger"
+        size="md"
+        disabled={isPending}
+        onClick={onConfirm}
+        className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+      >
+        {isPending ? t('common.saving', { defaultValue: 'O‘chirilmoqda...' }) : t('common.delete')}
+      </BaseButton>
     </div>
   );
 
-  if (typeof document !== 'undefined' && document.body) {
-    return createPortal(modalNode, document.body);
-  }
-  return modalNode;
+  return (
+    <BaseModal
+      open={Boolean(user)}
+      title={t('users.deleteTitle')}
+      onClose={onClose}
+      size="sm"
+      footer={footer}
+    >
+      <div className="text-sm text-slate-700 dark:text-slate-200">
+        {t('users.deleteHint', { name: displayName })}
+      </div>
+    </BaseModal>
+  );
 }

@@ -123,4 +123,24 @@ describe('BillingCompanyManage', () => {
     expect(html).toMatch(/<button[^>]*disabled[^>]*>platform\.billing\.credit<\/button>/);
     expect(html).toMatch(/<button[^>]*disabled[^>]*>platform\.billing\.debit<\/button>/);
   });
+
+  it('disables topup buttons and shows limit warning when amount exceeds MAX_BILLING_AMOUNT', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(BillingCompanyManage, {
+        p: createMockP({ adjustAmount: '2 000 000 000', adjustAmountValid: true }),
+      })
+    );
+    expect(html).toContain('Maksimal summa');
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>platform\.billing\.credit<\/button>/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>platform\.billing\.debit<\/button>/);
+  });
+
+  it('disables topup buttons when amount is zero', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(BillingCompanyManage, {
+        p: createMockP({ adjustAmount: '0', adjustAmountValid: false }),
+      })
+    );
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>platform\.billing\.credit<\/button>/);
+  });
 });

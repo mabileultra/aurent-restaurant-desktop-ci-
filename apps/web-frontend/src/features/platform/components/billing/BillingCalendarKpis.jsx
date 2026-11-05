@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Calendar, CheckCircle2, Clock, PauseCircle } from 'lucide-react';
+import { AlertCircle, Calendar, CalendarClock, CheckCircle2, Clock, PauseCircle } from 'lucide-react';
 
 export default function BillingCalendarKpis({ t, kpis, sum }) {
   const k = (key, opts) => t(`platform.billing.collections.calendar.${key}`, opts);
@@ -42,7 +42,25 @@ export default function BillingCalendarKpis({ t, kpis, sum }) {
         </div>
       </div>
 
-      {/* 3. Balans yetarli emas */}
+      {/* 3. Rejalashtirilgan */}
+      <div className="bc-cal-kpi-card bc-cal-kpi-card--info">
+        <div className="bc-cal-kpi-card__top">
+          <span className="bc-cal-kpi-card__icon bc-cal-kpi-card__icon--cyan">
+            <CalendarClock size={18} aria-hidden />
+          </span>
+          <span className="bc-cal-kpi-card__label">
+            {k('kpiPlanned', { defaultValue: 'Rejalashtirilgan' })}
+          </span>
+        </div>
+        <div className="bc-cal-kpi-card__val">
+          {sum(kpis?.planned?.amount || 0)}
+        </div>
+        <div className="bc-cal-kpi-card__sub">
+          {kpis?.planned?.count || 0} {t('platform.billing.collections.calendar.companiesUnit', { defaultValue: 'ta kompaniya' })}
+        </div>
+      </div>
+
+      {/* 4. Balans yetarli emas */}
       <div className="bc-cal-kpi-card bc-cal-kpi-card--danger">
         <div className="bc-cal-kpi-card__top">
           <span className="bc-cal-kpi-card__icon bc-cal-kpi-card__icon--rose">
@@ -60,7 +78,7 @@ export default function BillingCalendarKpis({ t, kpis, sum }) {
         </div>
       </div>
 
-      {/* 4. Kechiktirish berilgan */}
+      {/* 5. Kechiktirish berilgan */}
       <div className="bc-cal-kpi-card bc-cal-kpi-card--warning">
         <div className="bc-cal-kpi-card__top">
           <span className="bc-cal-kpi-card__icon bc-cal-kpi-card__icon--amber">
@@ -78,7 +96,7 @@ export default function BillingCalendarKpis({ t, kpis, sum }) {
         </div>
       </div>
 
-      {/* 5. To'xtatilgan */}
+      {/* 6. To'xtatilgan */}
       <div className="bc-cal-kpi-card bc-cal-kpi-card--neutral">
         <div className="bc-cal-kpi-card__top">
           <span className="bc-cal-kpi-card__icon bc-cal-kpi-card__icon--slate">

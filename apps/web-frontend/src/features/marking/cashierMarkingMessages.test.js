@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import ru from '../../locales/ru.json';
-import uz from '../../locales/uz.json';
+import ru from '../../locales/ru';
+import uz from '../../locales/uz';
 import { mapFiscalDriveError } from '../../services/fiscal/providers/fiscalDrive/mapFiscalDriveError';
 import {
   resolveCashierMarkingMissMessage,

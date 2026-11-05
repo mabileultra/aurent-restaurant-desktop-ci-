@@ -63,4 +63,43 @@ describe('BillingCompanyDrawer', () => {
 
     expect(html).toBe('');
   });
+
+  it('renders STIR from row or companyDetail fallback when companyTin is provided', () => {
+    const pWithTin = {
+      ...mockP,
+      selectedRow: { ...mockP.selectedRow, companyTin: '123456789' },
+    };
+    const html = renderToStaticMarkup(React.createElement(BillingCompanyDrawer, { p: pWithTin }));
+    expect(html).toContain('123456789');
+  });
+
+  it('renders STIR from companyDetail if row.companyTin is missing', () => {
+    const pWithDetail = {
+      ...mockP,
+      selectedRow: { ...mockP.selectedRow, companyTin: undefined, companyPhone: undefined },
+      companyDetail: { tin: '987654321', phone: '+998991112233' },
+    };
+    const html = renderToStaticMarkup(React.createElement(BillingCompanyDrawer, { p: pWithDetail }));
+    expect(html).toContain('987654321');
+    expect(html).toContain('+998991112233');
+  });
+
+  it('displays "Maxsus tarif" when planName is absent but monthlyTotal > 0', () => {
+    const pCustom = {
+      ...mockP,
+      selected: { ...mockP.selected, planName: null, monthlyTotal: 75000 },
+    };
+    const html = renderToStaticMarkup(React.createElement(BillingCompanyDrawer, { p: pCustom }));
+    expect(html).toContain('Maxsus tarif');
+    expect(html).not.toContain('Tarifsiz rejim');
+  });
+
+  it('displays "Tarifsiz rejim" only when both planName is absent and monthlyTotal === 0', () => {
+    const pNoPlan = {
+      ...mockP,
+      selected: { ...mockP.selected, planName: null, monthlyTotal: 0 },
+    };
+    const html = renderToStaticMarkup(React.createElement(BillingCompanyDrawer, { p: pNoPlan }));
+    expect(html).toContain('Tarifsiz rejim');
+  });
 });

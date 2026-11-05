@@ -5,6 +5,13 @@ import PlatformSelect from '../PlatformSelect';
 const METHOD_TONE = { CLICK: 'info', PAYME: 'success', BANK_TRANSFER: 'warning', CASH: 'neutral', OTHER: 'neutral' };
 const PERIODS = ['DAY', 'WEEK', 'MONTH', 'YEAR'];
 
+function formatPercent(pct, amount) {
+  const nAmt = Number(amount || 0);
+  const nPct = Number(pct || 0);
+  if (nAmt > 0 && nPct < 1) return '<1%';
+  return `${Math.round(nPct)}%`;
+}
+
 export default function BillingMethodsBreakdown({ t, methods = [], period, onPeriodChange, sum }) {
   const k = (key, opts) => t(`platform.billing.collections.reports.${key}`, opts);
   const totalAmount = methods.reduce((acc, m) => acc + (Number(m.amount) || 0), 0);
@@ -48,7 +55,7 @@ export default function BillingMethodsBreakdown({ t, methods = [], period, onPer
                   style={{ width: `${Math.max(m.percent || 0, 0)}%` }}
                 />
               </span>
-              <span className="bc-methods__pct">{m.percent || 0}%</span>
+              <span className="bc-methods__pct">{formatPercent(m.percent, m.amount)}</span>
               <span className="bc-methods__sum">{sum(m.amount || 0)}</span>
             </li>
           ))}

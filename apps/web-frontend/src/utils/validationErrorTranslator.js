@@ -57,6 +57,12 @@ export function translateRawErrorMessage(raw) {
   if (text.toLowerCase().includes('business type is not allowed for this company')) {
     return 'Tanlangan faoliyat turi ushbu kompaniyaga biriktirilmagan';
   }
+  if (/username already taken/i.test(text)) {
+    return 'Ushbu login band, boshqa login tanlang';
+  }
+  if (/pin already used in this company/i.test(text)) {
+    return 'Ushbu PIN ushbu kompaniyada allaqachon ishlatilgan';
+  }
   if (text.startsWith('Validation failed for object') || /^validation failed\b/i.test(text.trim())) {
     return 'Kiritilgan ma’lumotlar tekshiruvdan o‘tmadi';
   }
