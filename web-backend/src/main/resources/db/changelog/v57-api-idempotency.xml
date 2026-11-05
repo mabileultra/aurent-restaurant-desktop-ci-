@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v57-api-idempotency-records" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="api_idempotency_records"/>
+            </not>
+        </preConditions>
+        <createTable tableName="api_idempotency_records">
+            <column name="idempotency_key" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="scope" type="varchar(160)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="request_hash" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="response_status" type="int"/>
+            <column name="response_body" type="TEXT"/>
+            <column name="created_at" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="api_idempotency_records" indexName="idx_api_idempotency_expires">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v57-companies-tin-unique" author="pos">
+        <sql>
+            UPDATE companies c
+            SET tin = NULL
+            WHERE c.tin IS NOT NULL
+              AND TRIM(c.tin) &lt;&gt; ''
+              AND c.id NOT IN (
+                  SELECT keep_id FROM (
+                      SELECT MIN(id) AS keep_id
+                      FROM companies
+                      WHERE tin IS NOT NULL AND TRIM(tin) &lt;&gt; ''
+                      GROUP BY TRIM(tin)
+                  ) kept
+              );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_companies_tin
+            ON companies (tin)
+            WHERE tin IS NOT NULL AND TRIM(tin) &lt;&gt; '';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
