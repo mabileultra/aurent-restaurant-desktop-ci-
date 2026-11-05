@@ -1,0 +1,12 @@
+---
+description: Didox invoice purchase-with-VAT column is source of truth
+globs: pharmacy-service/**/PharmacyImport*.java,pharmacy-service/**/PharmacyReceiptImport*
+---
+
+# Didox purchase with VAT
+
+Column **«Етказиб беришнинг ҚҚСни ҳисобга олган ҳолда қиймати»** → role `PURCHASE_WITH_VAT` (line sum with VAT).
+
+- Divide by qty → unit `purchasePriceWithVat`; derive ex-VAT via `withoutVat`.
+- Do **not** SKIP all «етказиб» headers; only the without-VAT «Етказиб бериш қиймати» stays SKIP.
+- Do **not** recompute unit×ҚҚС% when this column is present — factura total must match Soliq/Didox.

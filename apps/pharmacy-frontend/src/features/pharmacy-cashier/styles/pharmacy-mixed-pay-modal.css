@@ -1,0 +1,53 @@
+.pharmacy-mixed-pay {
+  width: min(420px, 100%);
+}
+
+.pharmacy-mixed-pay__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.pharmacy-mixed-pay__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.pharmacy-mixed-pay__row strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.pharmacy-mixed-pay__cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pharmacy-mixed-pay__card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--pm-border, #dddcd5);
+  border-radius: 10px;
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-mixed-pay__card img {
+  width: auto;
+  height: 20px;
+  max-width: 56px;
+  object-fit: contain;
+}
+
+.pharmacy-mixed-pay__card:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

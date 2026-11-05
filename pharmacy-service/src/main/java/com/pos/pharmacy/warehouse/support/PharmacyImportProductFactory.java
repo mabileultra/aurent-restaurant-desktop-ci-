@@ -110,7 +110,7 @@ public class PharmacyImportProductFactory {
         if (value == null || companyId == null) {
             return null;
         }
-        return productRepository.findFirstByCompanyIdAndBarcode(companyId, value).isPresent() ? null : value;
+        return productRepository.findByCompanyIdAndBarcode(companyId, value).isPresent() ? null : value;
     }
 
     private static String autoSku(String name, int rowIndex) {

@@ -1,15 +1,28 @@
+import { loadMultikassaCapabilities } from '../multikassa/loadMultikassaCapabilities';
+import { FISCAL_PROVIDER, isFiscalDriveProvider } from './fiscalProviderIds';
 import { loadFiscalCapabilities } from './loadFiscalCapabilities';
 import { resolveFiscalProvider } from './resolveFiscalProvider';
 
 /**
  * Настройки фискализации кассы + выбранный провайдер.
- * Не ходит в Multikassa API: GET /cashier/fiscal.
+ * FiscalDrive на кассе пока выключен: если сервер вернул FISCAL_DRIVE, смена и чек идут в Multikassa.
  */
 export async function loadFiscalContext(storeId, cashRegisterId = null, options = {}) {
-  const capabilities = await loadFiscalCapabilities(storeId, cashRegisterId, options);
+  const reported = await loadFiscalCapabilities(storeId, cashRegisterId, options);
+  if (!isFiscalDriveProvider(reported)) {
+    return {
+      capabilities: reported,
+      provider: resolveFiscalProvider(reported?.fiscalProvider),
+    };
+  }
+  const mk = await loadMultikassaCapabilities(storeId, cashRegisterId, options);
+  const capabilities = {
+    ...(mk || { enabled: false }),
+    fiscalProvider: FISCAL_PROVIDER.MULTIKASSA,
+  };
   return {
     capabilities,
-    provider: resolveFiscalProvider(capabilities?.fiscalProvider),
+    provider: resolveFiscalProvider(FISCAL_PROVIDER.MULTIKASSA),
   };
 }
 

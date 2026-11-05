@@ -32,6 +32,7 @@ export function usePharmacyPayKeyboard({
   onUzcard,
   onHold,
   onParkedList,
+  onMixed,
 }) {
   useEffect(() => {
     if (!enabled) return undefined;
@@ -61,7 +62,8 @@ export function usePharmacyPayKeyboard({
       }
       if (e.key === 'F8') {
         e.preventDefault();
-        setMethod('mixed');
+        if (onMixed) onMixed();
+        else setMethod('mixed');
         return;
       }
       if (e.key === 'F4') {
@@ -129,6 +131,7 @@ export function usePharmacyPayKeyboard({
     onCash,
     onHold,
     onHumo,
+    onMixed,
     onParkedList,
     onUzcard,
     saleDisabled,

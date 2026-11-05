@@ -50,10 +50,31 @@ export async function posFetchSaleById(saleId, { catalogKind, receiptNumber } = 
   return salesClient(kind).getById(saleId).then((r) => r.data);
 }
 
+function saleWithReturnMarks(sale, payload, marksByItemId) {
+  if (!marksByItemId || !sale?.items) return sale;
+  const qtyById = new Map((payload?.lines || []).map((line) => [line.saleItemId, line.quantity]));
+  return {
+    ...sale,
+    items: sale.items.map((line) => {
+      const marks = marksByItemId[line.id];
+      if (!qtyById.has(line.id) || !marks?.length) return line;
+      const qty = Number(qtyById.get(line.id)) || marks.length;
+      return { ...line, quantity: qty, productMarks: marks.slice(0, qty) };
+    }),
+  };
+}
+
 /**
  * Partial return: Multikassa op 4 (если чек был фискализирован) → POST …/return-items.
  */
-export async function posReturnSaleItems({ sale, payload, storeId, catalogKind }) {
+export async function posReturnSaleItems({
+  sale,
+  payload,
+  storeId,
+  catalogKind,
+  marksByItemId,
+  cashRegisterId = null,
+}) {
   const store = storeId ?? sale?.storeId;
   const route = resolvePosRoute(store, useConnectivityStore.getState()).route;
   const offline = route === 'local';
@@ -61,10 +82,10 @@ export async function posReturnSaleItems({ sale, payload, storeId, catalogKind }
 
   let fiscal = null;
   try {
-    fiscal = await loadFiscalContext(store, sale?.cashRegisterId ?? null);
+    fiscal = await loadFiscalContext(store, sale?.cashRegisterId ?? cashRegisterId ?? null);
     await fiscal.provider.fiscalizeRefund({
       capabilities: fiscal.capabilities,
-      sale,
+      sale: saleWithReturnMarks(sale, payload, marksByItemId),
       offline,
     });
   } catch (err) {

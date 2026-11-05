@@ -1,15 +1,13 @@
-// src/components/cashier/PosReturnModal.jsx
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { X, Loader, RotateCcw, Receipt, CheckCircle2, Hash } from 'lucide-react';
+import { X, Loader, RotateCcw, Receipt, Hash } from 'lucide-react';
 import { printReturnReceiptWithToast } from '../../utils/printReturnReceipt';
 import { isReadyReceiptLookup, parseReceiptLookupInput } from '../../utils/receiptLookup';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import PosModalPortal from '../shared/PosModalPortal';
-import { fmtMoney as fmt } from '../../utils/formatMoney';
-import SaleReturnLinesEditor, {
+import {
   buildReturnPayload,
   getReturnableLines,
   useReturnQtyState,
@@ -20,43 +18,10 @@ import {
 } from '../../services/pos/posReturnWithFiscal';
 import { resolveMultikassaFiscalErrorMessage } from '../../services/multikassa';
 import { resolvePharmacyApiError } from '../../pharmacy/errors/resolvePharmacyApiError';
-import { isPharmacyErrorCode } from '../../pharmacy/errors/isPharmacyErrorCode';
-import { getApiErrorCode } from '../../utils/apiError';
+import { parseReturnLookupError, clampReturnQtyToMarks } from './posReturnLookup';
+import PosReturnSalePreview from './PosReturnSalePreview';
 
 const RECEIPT_LOOKUP_DEBOUNCE_MS = 450;
-
-function parseLookupError(err, t) {
-  if (isPharmacyErrorCode(getApiErrorCode(err))) {
-    const pharmacyMsg = resolvePharmacyApiError(err, t, '');
-    if (pharmacyMsg) return pharmacyMsg;
-  }
-  const status = err?.response?.status;
-  const msg = err?.response?.data?.message ?? '';
-  if (status === 403 || /access denied|доступ/i.test(msg)) {
-    return t('pos.returnAccessDenied');
-  }
-  if (status === 404 || /not found|не найден/i.test(msg)) {
-    return t('pos.returnNotFound');
-  }
-  return msg || t('pos.returnNotFound');
-}
-
-function paymentLabel(method, t) {
-  switch (method) {
-    case 'CASH':
-      return t('pos.payCash');
-    case 'CARD':
-      return t('pos.payCard');
-    case 'CASHLESS':
-      return t('pos.payCashless');
-    case 'MIXED':
-      return t('pos.payMixed');
-    case 'MPESA':
-      return 'M-Pesa';
-    default:
-      return method || '—';
-  }
-}
 
 export default function PosReturnModal({
   open,
@@ -65,12 +30,14 @@ export default function PosReturnModal({
   terminal = false,
   catalogKind,
   variant = 'default',
+  cashRegisterId = null,
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [receiptQuery, setReceiptQuery] = useState('');
   const [reason, setReason] = useState('');
   const [sale, setSale] = useState(null);
+  const [marksByItemId, setMarksByItemId] = useState({});
   const [lookupPending, setLookupPending] = useState(false);
   const lastLookupRef = useRef('');
   const saleRef = useRef(null);
@@ -82,6 +49,7 @@ export default function PosReturnModal({
     setReceiptQuery('');
     setReason('');
     setSale(null);
+    setMarksByItemId({});
     setLookupPending(false);
     lastLookupRef.current = '';
   };
@@ -126,7 +94,7 @@ export default function PosReturnModal({
         if (lastLookupRef.current === code) {
           setSale(null);
         }
-        toast.error(parseLookupError(e, t));
+        toast.error(parseReturnLookupError(e, t));
       } finally {
         setLookupPending(false);
       }
@@ -147,10 +115,10 @@ export default function PosReturnModal({
   }, [debouncedQuery, open, lookupReceipt]);
 
   const returnMutation = useMutation({
-    mutationFn: ({ sale: s, qtyByItemId: qtys, reasonText }) => {
+    mutationFn: ({ sale: s, qtyByItemId: qtys, reasonText, marks }) => {
       const payload = buildReturnPayload(
         s,
-        qtys,
+        clampReturnQtyToMarks(qtys, catalogKind === 'pharmacy' ? marks : null),
         reasonText.trim() || t('pos.returnDefaultReason')
       );
       if (!payload.lines.length) {
@@ -161,6 +129,8 @@ export default function PosReturnModal({
         payload,
         storeId: s.storeId,
         catalogKind,
+        marksByItemId: marks,
+        cashRegisterId,
       });
     },
     onSuccess: async (_data, vars) => {
@@ -189,6 +159,8 @@ export default function PosReturnModal({
     },
     onError: (e) => toast.error(
       e?.code === 'MULTIKASSA_FISCAL_FAILED'
+        || e?.code === 'MULTIKASSA_MARKING_REJECTED'
+        || e?.code === 'MULTIKASSA_MARKING_UNAVAILABLE'
         || e?.code === 'MULTIKASSA_OFFLINE_BLOCKED'
         || e?.message === 'MULTIKASSA_OFFLINE_BLOCKED'
         ? resolveMultikassaFiscalErrorMessage(e, t, 'pos.returnFailed')
@@ -262,35 +234,19 @@ export default function PosReturnModal({
           </section>
 
           {sale ? (
-            <section className="pos-return-modal__preview" aria-live="polite">
-              <div className="pos-return-modal__preview-head">
-                <span className="pos-return-modal__preview-badge">
-                  <CheckCircle2 size={14} aria-hidden />
-                  {t('pos.returnFoundLabel')}
-                </span>
-                <span className="pos-return-modal__preview-receipt">{sale.receiptNumber}</span>
-              </div>
-              <p className="pos-return-modal__preview-total">
-                {fmt(sale.totalAmount)}
-                <span className="pos-return-modal__preview-currency">сум</span>
-              </p>
-              <div className="pos-return-modal__preview-meta">
-                <span>{sale.cashierName ?? '—'}</span>
-                <span className="pos-return-modal__preview-dot" aria-hidden>
-                  ·
-                </span>
-                <span>{paymentLabel(sale.paymentMethod, t)}</span>
-              </div>
-              <p className="pos-return-modal__preview-total">
-                {t('pos.returnSelectedTotal')}: <strong>{fmt(totalSelected)}</strong>
-              </p>
-              <div className="pos-return-modal__select-all-wrap">
-                <button type="button" className="pos-return-modal__select-all" onClick={selectAllMax}>
-                  {t('pos.returnSelectAll')}
-                </button>
-              </div>
-              <SaleReturnLinesEditor sale={sale} qtyByItemId={qtyByItemId} onQtyChange={setQty} />
-            </section>
+            <PosReturnSalePreview
+              sale={sale}
+              totalSelected={totalSelected}
+              onSelectAll={selectAllMax}
+              qtyByItemId={qtyByItemId}
+              onQtyChange={setQty}
+              catalogKind={catalogKind}
+              cashRegisterId={cashRegisterId}
+              onMarkAccept={(lineId, qty, marks) => {
+                setQty(lineId, qty);
+                setMarksByItemId((prev) => ({ ...prev, [lineId]: marks }));
+              }}
+            />
           ) : (
             <div className="pos-return-modal__placeholder">
               <Receipt size={28} strokeWidth={1.5} aria-hidden />
@@ -326,6 +282,7 @@ export default function PosReturnModal({
                 sale,
                 qtyByItemId,
                 reasonText: reason,
+                marks: marksByItemId,
               })
             }
           >

@@ -1,4 +1,3 @@
-import { FlaskConical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import PharmacyPreviewReceipt from './PharmacyPreviewReceipt';
 import '../styles/pharmacy-context-pane.css';
@@ -79,8 +78,15 @@ export default function PharmacyCashierContextPane({
       aria-label={t('pharmacyCashier.contextTitle')}
     >
       <div className="pharmacy-cashier__context-empty">
-        <FlaskConical size={36} strokeWidth={1.4} aria-hidden />
+        <svg className="pharmacy-cashier__mortar" viewBox="0 0 64 64" width="72" height="72" aria-hidden>
+          <path fill="none" stroke="#c5d0cb" strokeWidth="2.2" strokeLinecap="round" d="M18 28c0-8 6-14 14-14s14 6 14 14c0 10-6 16-14 18-8-2-14-8-14-18z" />
+          <path fill="none" stroke="#c5d0cb" strokeWidth="2.2" strokeLinecap="round" d="M22 40h20M26 46h12" />
+          <path fill="none" stroke="#b7c4be" strokeWidth="2.2" strokeLinecap="round" d="M40 18l10-8M44 22l8-4" />
+          <circle cx="34" cy="26" r="5" fill="none" stroke="#9fb0a8" strokeWidth="2" />
+          <path fill="none" stroke="#9fb0a8" strokeWidth="2" d="M34 23v6M31 26h6" />
+        </svg>
         <p>{t('pharmacyCashier.contextEmpty')}</p>
+        <span>{t('pharmacyCashier.contextEmptyHint')}</span>
       </div>
     </section>
   );

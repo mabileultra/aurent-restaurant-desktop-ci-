@@ -79,10 +79,12 @@ public class ProductCatalogService {
         int size = PageLimits.normalizeSize(pageable.getPageSize());
         Pageable bounded = PageRequest.of(pageNo, size, pageable.getSort());
         boolean receiptScoped = fromReceipts || supplierId != null || receiptId != null;
+        UUID supplierKey = supplierId != null ? supplierId : new UUID(0, 0);
+        UUID receiptKey = receiptId != null ? receiptId : new UUID(0, 0);
         Page<Product> page = receiptScoped
             ? productRepository.searchFromReceipts(
                 companyId, q, CatalogSearchFold.FROM, CatalogSearchFold.TO, active,
-                supplierId, receiptId, bounded
+                supplierId != null, supplierKey, receiptId != null, receiptKey, bounded
             )
             : productRepository.search(
                 companyId, q, CatalogSearchFold.FROM, CatalogSearchFold.TO, active, bounded

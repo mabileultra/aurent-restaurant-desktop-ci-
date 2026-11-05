@@ -85,6 +85,22 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
           </p>
         ) : (
           <table className="pharmacy-search__table pharmacy-search__table--stock">
+            <colgroup>
+              <col className="is-name" />
+              {col('stock') ? <col className="is-num" /> : null}
+              {col('cost') ? <col className="is-num" /> : null}
+              {col('price') ? <col className="is-num" /> : null}
+              {col('unitPrice') ? <col className="is-num" /> : null}
+              {col('expiry') ? <col className="is-text" /> : null}
+              {col('shelf') ? <col className="is-text" /> : null}
+              {col('manufacturer') ? <col className="is-text" /> : null}
+              {col('country') ? <col className="is-text" /> : null}
+              {col('batch') ? <col className="is-text" /> : null}
+              {col('score') ? <col className="is-num" /> : null}
+              {col('refPrice') ? <col className="is-num" /> : null}
+              {col('fiscal') ? <col className="is-fiscal" /> : null}
+              {onEditProduct || onDeactivateProduct ? <col className="is-actions" /> : null}
+            </colgroup>
             <thead>
               <tr>
                 <th>{t('pharmacyCashier.colName')}</th>

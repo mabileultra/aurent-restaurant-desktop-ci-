@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { pharmacyWarehouseApi } from '../../../api';
-import { useModuleAccess } from '../../../hooks/useModuleAccess';
-import { PHARM_STOCK_PATHS } from '../../../pharmacy/app/pharmacyPaths';
 import { loadCatalogColumnVisibility } from '../constants/pharmacyCatalogColumns';
 import PharmacyCartTable from './PharmacyCartTable';
 import PharmacyCartPaneHead from './PharmacyCartPaneHead';
-import PharmacyCashierContextPane from './PharmacyCashierContextPane';
+import PharmacyPreviewModal from './PharmacyPreviewModal';
 import PharmacyCatalogToolbar from './PharmacyCatalogToolbar';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
 import PharmacySearchStrip from './PharmacySearchStrip';
@@ -45,11 +41,7 @@ export default function PharmacyRegisterWorkspace({
   onRefreshCatalog,
 }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { hasModule } = useModuleAccess();
-  const canManageProducts = hasModule('stockProducts') || hasModule('products');
   const { checkoutMutation, handleConfirmPayment } = checkout;
-  const [contextNotice, setContextNotice] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [parkedOpenSignal, setParkedOpenSignal] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -68,24 +60,17 @@ export default function PharmacyRegisterWorkspace({
     focusPharmacyScanField({ kmInputRef, searchInputRef });
   };
 
-  const selectedLine = useMemo(
-    () => cart.items.find((item) => item.lineId === cart.selectedLineId) || null,
-    [cart.items, cart.selectedLineId],
-  );
-
-  const notice = markingNotice || contextNotice;
-  const preview = previewOpen && cart.items.length
-    ? { receiptNo: cart.checkNo, items: cart.items, total: cart.total }
-    : null;
+  useEffect(() => {
+    if (!markingNotice) return;
+    toast.error(markingNotice);
+    clearMarkingNotice?.();
+  }, [markingNotice, clearMarkingNotice]);
 
   const handlePreviewCheck = () => {
     if (!cart.items.length) {
-      setPreviewOpen(false);
-      setContextNotice(t('pos.cartEmpty'));
+      toast.error(t('pos.cartEmpty'));
       return;
     }
-    clearMarkingNotice?.();
-    setContextNotice(null);
     setPreviewOpen(true);
   };
 
@@ -101,11 +86,10 @@ export default function PharmacyRegisterWorkspace({
     const n = cart.parkedCarts?.length || 0;
     if (n > 0) {
       setParkedOpenSignal((v) => v + 1);
-      setContextNotice(null);
       setPreviewOpen(false);
       return;
     }
-    setContextNotice(t('pharmacyCashier.pay.parkedListEmpty'));
+    toast(t('pharmacyCashier.pay.parkedListEmpty'));
   };
 
   const handleRefresh = async () => {
@@ -115,23 +99,6 @@ export default function PharmacyRegisterWorkspace({
       await onRefreshCatalog();
     } finally {
       setRefreshing(false);
-    }
-  };
-
-  const handleEditProduct = (product) => {
-    navigate(PHARM_STOCK_PATHS.products, { state: { editProductId: product.id } });
-  };
-
-  const handleDeactivateProduct = async (product) => {
-    if (!window.confirm(t('pharmacyCashier.deactivateConfirm', { name: product.name }))) {
-      return;
-    }
-    try {
-      await pharmacyWarehouseApi.deactivate(product.id);
-      toast.success(t('pharmacyCashier.deactivateDone'));
-      await onRefreshCatalog?.();
-    } catch {
-      toast.error(t('common.saveError', { defaultValue: t('common.loadError') }));
     }
   };
 
@@ -161,7 +128,6 @@ export default function PharmacyRegisterWorkspace({
         onPayFlowClosed,
       }}
     >
-      <div className="cashier-register__order-col pharmacy-cashier__main">
         <section
           className="pharmacy-cashier__cart-pane"
           aria-label={t('pharmacyCashier.receiptTitle')}
@@ -184,9 +150,7 @@ export default function PharmacyRegisterWorkspace({
             total={cart.total}
             selectedLineId={cart.selectedLineId}
             onSelectLine={(lineId) => {
-              setContextNotice(null);
               setPreviewOpen(false);
-              clearMarkingNotice?.();
               cart.setSelectedLineId(lineId);
             }}
             onQtyDelta={cart.handleQtyDelta}
@@ -195,18 +159,10 @@ export default function PharmacyRegisterWorkspace({
           />
         </section>
 
-        <PharmacyCashierContextPane
-          selectedLine={selectedLine}
-          notice={notice}
-          preview={preview}
-          onPrintPreview={handlePrintPreview}
-        />
-
         <section className="pharmacy-cashier__search-pane" aria-label={t('pharmacyCashier.searchTitle')}>
           <div className="pharmacy-cashier__pane-head pharmacy-cashier__pane-head--search">
             <div className="pharmacy-cashier__pane-title-wrap">
               <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.searchTitle')}</h2>
-              <PharmacyStockProductCount t={t} count={catalog.productsTotal} />
               <PharmacyCatalogToolbar
                 onRefresh={handleRefresh}
                 refreshing={refreshing}
@@ -245,11 +201,17 @@ export default function PharmacyRegisterWorkspace({
             onSelectProduct={catalog.addProductToCart}
             scanDisabled={!catalog.storeId}
             visibleColumns={columnVisibility}
-            onEditProduct={canManageProducts ? handleEditProduct : null}
-            onDeactivateProduct={canManageProducts ? handleDeactivateProduct : null}
           />
+          <PharmacyStockProductCount t={t} count={catalog.productsTotal} />
         </section>
-      </div>
+      <PharmacyPreviewModal
+        open={previewOpen && cart.items.length > 0}
+        onClose={() => setPreviewOpen(false)}
+        receiptNo={cart.checkNo}
+        items={cart.items}
+        total={cart.total}
+        onPrint={handlePrintPreview}
+      />
     </CashierRegisterShell>
   );
 }

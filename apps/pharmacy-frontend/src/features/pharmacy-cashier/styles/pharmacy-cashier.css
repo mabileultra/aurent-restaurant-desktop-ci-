@@ -15,6 +15,7 @@
 @import './pharmacy-cart-pane-head.css';
 @import './pharmacy-parked-cards.css';
 @import './pharmacy-stock-count.css';
+@import './pharmacy-pos-board.css';
 @import '../../../styles/cashier/cart/parked-bar.css';
 
 .pharmacy-cashier__split {
@@ -25,8 +26,8 @@
 .pharmacy-cashier__main,
 .cashier-register__split--register .cashier-register__order-col.pharmacy-cashier__main {
   display: grid;
-  /* Зона 1 чек ~38% | зона 2 контекст | зона 3 каталог ~38% */
-  grid-template-rows: minmax(0, 0.38fr) minmax(96px, 1fr) minmax(0, 0.38fr);
+  /* Чек — полоса, контекст — короткая подсказка, остатки забирают остаток высоты */
+  grid-template-rows: minmax(120px, 22%) minmax(88px, 120px) minmax(0, 1fr);
   grid-template-columns: minmax(0, 1fr);
   align-content: stretch;
   gap: var(--cashier-gap, 8px);

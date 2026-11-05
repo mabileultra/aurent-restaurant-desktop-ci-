@@ -27,14 +27,16 @@ export default function PharmacyCartPaneHead({
         <span className="pharmacy-cart-pane-head__title">
           {t('pharmacyCashier.receiptNo', { n: receiptNo })}
         </span>
-        <span
-          className={`pharmacy-cart-pane-head__status${open ? ' is-open' : ' is-idle'}`}
-        >
-          {open ? t('pharmacyCashier.receiptOpen') : t('pharmacyCashier.receiptIdle')}
-        </span>
-        <span className="pharmacy-cart-pane-head__count">
-          {t('pharmacyCashier.receiptItems', { count: itemsCount })}
-        </span>
+        {open ? (
+          <>
+            <span className="pharmacy-cart-pane-head__status is-open">
+              {t('pharmacyCashier.receiptOpen')}
+            </span>
+            <span className="pharmacy-cart-pane-head__count">
+              {t('pharmacyCashier.receiptItems', { count: itemsCount })}
+            </span>
+          </>
+        ) : null}
       </div>
 
       <div className="pharmacy-cart-pane-head__actions">

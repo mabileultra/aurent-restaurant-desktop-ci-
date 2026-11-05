@@ -185,3 +185,32 @@
   border-color: rgba(248, 113, 113, 0.35);
   color: #fca5a5;
 }
+
+.pharmacy-parked-modal {
+  width: min(480px, 100%);
+}
+
+.pharmacy-parked-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.pharmacy-parked-modal__hold {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: #245b45;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-parked-modal__empty {
+  margin: 0;
+  padding: 12px 0;
+  text-align: center;
+  color: #7a817c;
+}

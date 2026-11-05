@@ -44,7 +44,7 @@ export default function PharmacyCartTable({
               <th className="pharmacy-cart-table__num" title={t('pharmacyCashier.colSelect')}>✓</th>
               <th>{t('pharmacyCashier.colMarking')}</th>
               <th>{t('pharmacyCashier.colMarkStatus')}</th>
-              <th>{t('pharmacyCashier.colName')}</th>
+              <th className="pharmacy-cart-table__name">{t('pharmacyCashier.colName')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colPrice')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colQty')}</th>
               <th>{t('pharmacyCashier.colExpiryShort')}</th>

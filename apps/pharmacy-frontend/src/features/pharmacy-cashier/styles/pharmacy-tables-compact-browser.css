@@ -12,7 +12,7 @@
   }
 
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
-    grid-template-rows: minmax(0, 0.38fr) minmax(72px, 1fr) minmax(0, 0.38fr);
+    grid-template-rows: minmax(108px, 22%) minmax(72px, 108px) minmax(0, 1fr);
     gap: 4px;
   }
 

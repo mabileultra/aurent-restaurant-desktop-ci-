@@ -17,6 +17,7 @@ import CashierFiscalTheme from '../../../fiscal/CashierFiscalTheme';
 
 export default function CashierDesktopMenuPanel({
   menu,
+  embedded = false,
 }) {
   const {
     t,
@@ -42,8 +43,9 @@ export default function CashierDesktopMenuPanel({
   return (
     <div
       ref={rootRef}
-      className={`cashier-desktop-menu${open ? ' is-open' : ''}`}
+      className={`cashier-desktop-menu${open || embedded ? ' is-open' : ''}${embedded ? ' is-embedded' : ''}`}
     >
+      {embedded ? null : (
       <button
         type="button"
         className="cashier-desktop-menu__trigger"
@@ -58,6 +60,7 @@ export default function CashierDesktopMenuPanel({
           <Menu size={20} strokeWidth={2.5} className="cashier-desktop-menu__burger" aria-hidden />
         )}
       </button>
+      )}
       <div className="cashier-desktop-menu__panel" role="menu">
         <button
           type="button"

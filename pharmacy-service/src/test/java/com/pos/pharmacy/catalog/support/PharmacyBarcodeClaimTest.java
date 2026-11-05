@@ -35,7 +35,7 @@ class PharmacyBarcodeClaimTest {
     void ignoresOwnPrimaryBarcode() {
         UUID id = UUID.randomUUID();
         Product self = Product.builder().id(id).companyId(1).active(true).barcode("111").build();
-        when(productRepository.findFirstByCompanyIdAndBarcode(1, "111")).thenReturn(Optional.of(self));
+        when(productRepository.findByCompanyIdAndBarcode(1, "111")).thenReturn(Optional.of(self));
         when(productBarcodeRepository.findByBarcode("111")).thenReturn(Optional.empty());
 
         assertDoesNotThrow(() -> claim.claim(1, "111", id));
@@ -46,7 +46,7 @@ class PharmacyBarcodeClaimTest {
     void rejectsActiveForeignBarcode() {
         UUID otherId = UUID.randomUUID();
         Product other = Product.builder().id(otherId).companyId(1).active(true).barcode("111").build();
-        when(productRepository.findFirstByCompanyIdAndBarcode(1, "111")).thenReturn(Optional.of(other));
+        when(productRepository.findByCompanyIdAndBarcode(1, "111")).thenReturn(Optional.of(other));
 
         assertThrows(BusinessException.class, () -> claim.claim(1, "111", UUID.randomUUID()));
     }
@@ -55,7 +55,7 @@ class PharmacyBarcodeClaimTest {
     void ignoresOwnExtraBarcodeLine() {
         UUID id = UUID.randomUUID();
         ProductBarcode extra = ProductBarcode.builder().id(UUID.randomUUID()).productId(id).barcode("222").build();
-        when(productRepository.findFirstByCompanyIdAndBarcode(1, "222")).thenReturn(Optional.empty());
+        when(productRepository.findByCompanyIdAndBarcode(1, "222")).thenReturn(Optional.empty());
         when(productBarcodeRepository.findByBarcode("222")).thenReturn(Optional.of(extra));
 
         assertDoesNotThrow(() -> claim.claim(1, "222", id));

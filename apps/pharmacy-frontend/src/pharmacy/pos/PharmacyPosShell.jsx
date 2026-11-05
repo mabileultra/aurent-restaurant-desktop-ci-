@@ -10,6 +10,7 @@ import { PosShellProvider } from '../../contexts/PosShellContext';
 import OfflineSyncProgressBanner from '../../features/cashier/components/OfflineSyncProgressBanner';
 import { usePharmacyPosShell } from './usePharmacyPosShell';
 import PharmacyPosTopbar from './PharmacyPosTopbar';
+import { PharmacyPosActionsProvider } from './pharmacyPosActions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/cashier/index.css';
 import './pharmacy-pos-shell.css';
@@ -19,6 +20,7 @@ function PharmacyPosShellInner() {
 
   return (
     <div className={p.shellClassName} style={p.zoom.rootStyle}>
+      <PharmacyPosActionsProvider>
       <div className="cashier-app__body d-flex flex-column flex-grow-1 min-vw-0 min-h-0 w-100">
         <PharmacyPosTopbar
           t={p.t}
@@ -38,6 +40,7 @@ function PharmacyPosShellInner() {
           <PharmacyShellOutlet />
         </main>
       </div>
+      </PharmacyPosActionsProvider>
 
       <OfflineSyncProgressBanner />
 

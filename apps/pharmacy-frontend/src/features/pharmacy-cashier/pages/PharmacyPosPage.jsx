@@ -1,10 +1,17 @@
 import { PosReturnModal } from '../../../components/pos';
 import ShiftCashMovementModal from '../../cashier/components/ShiftCashMovementModal';
 import PharmacyOrderDiscountModal from '../components/PharmacyOrderDiscountModal';
+import PharmacyPosSettingsModal from '../components/PharmacyPosSettingsModal';
+import PharmacyChecksModal from '../components/PharmacyChecksModal';
+import PharmacyCashOpsModal from '../components/PharmacyCashOpsModal';
+import PharmacyBranchSearchModal from '../components/PharmacyBranchSearchModal';
+import PharmacyParkedModal from '../components/PharmacyParkedModal';
 import PharmacyQtyModal from '../components/PharmacyQtyModal';
 import PharmacyWeightEntryModal from '../components/PharmacyWeightEntryModal';
 import PharmacyRegisterWorkspace from '../components/PharmacyRegisterWorkspace';
 import { usePharmacyPosPage } from '../hooks/usePharmacyPosPage';
+import { usePharmacyPosChrome } from '../hooks/usePharmacyPosChrome';
+import { usePharmacyPosActions } from '../../../pharmacy/pos/pharmacyPosActions';
 import { useCashierCashMovement } from '../../cashier/hooks/useCashierCashMovement';
 import { updatePharmacyCartLinePrice } from '../utils/pharmacyCartActions';
 import '../styles/pharmacy-cashier.css';
@@ -14,6 +21,10 @@ import '../styles/pharmacy-cash-move-modal.css';
 
 export default function PharmacyPosPage() {
   const p = usePharmacyPosPage();
+  const actions = usePharmacyPosActions();
+  const chrome = usePharmacyPosChrome({
+    setReturnOpen: p.setReturnOpen,
+  });
   const cashMovement = useCashierCashMovement({
     shiftIsOpen: p.shiftIsOpen,
     storeId: p.storeId,
@@ -76,6 +87,40 @@ export default function PharmacyPosPage() {
         onRefreshCatalog={p.refreshCatalog}
       />
 
+      <PharmacyChecksModal
+        open={chrome.checksOpen}
+        onClose={() => chrome.setChecksOpen(false)}
+      />
+
+      <PharmacyCashOpsModal
+        open={chrome.cashOpen}
+        onClose={() => chrome.setCashOpen(false)}
+        onPick={(id) => {
+          chrome.setCashOpen(false);
+          actions?.runPay(id);
+        }}
+      />
+
+      <PharmacyBranchSearchModal
+        open={chrome.branchOpen}
+        onClose={() => chrome.setBranchOpen(false)}
+      />
+
+      <PharmacyParkedModal
+        open={chrome.parkedOpen}
+        onClose={() => chrome.setParkedOpen(false)}
+        parkedCarts={p.parkedCarts}
+        onPark={p.handleNewReceipt}
+        onRestore={p.handleRestoreParked}
+        onRemove={p.handleRemoveParked}
+        onClear={p.handleClearParked}
+      />
+
+      <PharmacyPosSettingsModal
+        open={chrome.settingsOpen}
+        onClose={() => chrome.setSettingsOpen(false)}
+      />
+
       <ShiftCashMovementModal
         variant="pharmacy"
         open={Boolean(cashMovement.cashMovement)}
@@ -89,6 +134,7 @@ export default function PharmacyPosPage() {
         variant="pharmacy"
         terminal
         catalogKind="pharmacy"
+        cashRegisterId={p.shift?.cashRegisterId ?? null}
         open={p.returnOpen}
         onClose={() => p.setReturnOpen(false)}
         onSuccess={p.handleReturnSuccess}

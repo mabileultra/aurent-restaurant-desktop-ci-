@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -18,6 +19,8 @@ import { parseTenderedInput } from '../../cashier/components/payment/posPaymentC
 import { PAYMENT_PROVIDER_LOGOS } from '../../cashier/constants/paymentProviderLogos';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
 import PharmacyPayQuickCash from './PharmacyPayQuickCash';
+import PharmacyMixedPayModal from './PharmacyMixedPayModal';
+import { usePharmacyPosActions } from '../../../pharmacy/pos/pharmacyPosActions';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
 import '../styles/pharmacy-pay-stack.css';
@@ -40,12 +43,25 @@ export default function PharmacyPayStack({
   isPending,
 }) {
   const { t } = useTranslation();
+  const actions = usePharmacyPosActions();
+  const [mixedOpen, setMixedOpen] = useState(false);
   const rail = usePharmacyPayRail({
     total,
     checkoutDisabled,
     isPending,
     onConfirm,
   });
+
+  const openMixed = useCallback(() => {
+    rail.setMethod('mixed');
+    setMixedOpen(true);
+  }, [rail.setMethod]);
+
+  const closeMixed = useCallback(() => {
+    setMixedOpen(false);
+    rail.setMethod('cash');
+    rail.clearCash();
+  }, [rail.clearCash, rail.setMethod]);
 
   usePharmacyPayKeyboard({
     enabled: !checkoutDisabled,
@@ -62,17 +78,28 @@ export default function PharmacyPayStack({
     onUzcard: () => rail.submitCard('UZCARD'),
     onHold,
     onParkedList,
+    onMixed: openMixed,
   });
 
-  const showCashPad = rail.method === 'cash' || rail.method === 'mixed';
+  useEffect(() => {
+    actions?.bindPay({
+      mixed: openMixed,
+      CLICK: () => rail.submitCard('CLICK'),
+      PAYME: () => rail.submitCard('PAYME'),
+      cashless: () => rail.setMethod('cashless'),
+    });
+    return () => actions?.bindPay({});
+  }, [actions, openMixed, rail.setMethod, rail.submitCard]);
+
+  const showCashPad = rail.method === 'cash';
   const receivedDisplay = rail.cashInput
     ? fmt(parseTenderedInput(rail.cashInput))
     : '—';
   const busy = checkoutDisabled || isPending;
 
   return (
-    <aside className="pharmacy-pay-stack" aria-label={t('pos.paymentTitle')}>
-      <div className="pharmacy-pay-stack__total">
+    <aside className={`pharmacy-pay-stack${rail.method === 'cashless' ? ' is-cashless' : ''}`} aria-label={t('pos.paymentTitle')}>
+      <div className="pharmacy-pay-stack__total pharmacy-pay-stack__aside">
         <span className="pharmacy-pay-stack__total-label">{t('pos.amountToPay')}</span>
         <strong className="pharmacy-pay-stack__total-value">{fmt(rail.toPay)}</strong>
       </div>
@@ -116,7 +143,7 @@ export default function PharmacyPayStack({
 
         <button
           type="button"
-          className="pharmacy-pay-stack__btn pharmacy-pay-stack__btn--card"
+          className="pharmacy-pay-stack__btn pharmacy-pay-stack__btn--card pharmacy-pay-stack__btn--extra"
           disabled={busy || rail.cardPayBlocked}
           title={t('pos.cardClick')}
           onClick={() => rail.submitCard('CLICK')}
@@ -127,10 +154,10 @@ export default function PharmacyPayStack({
 
         <button
           type="button"
-          className={`pharmacy-pay-stack__btn${rail.method === 'mixed' ? ' is-active' : ''}`}
+          className={`pharmacy-pay-stack__btn pharmacy-pay-stack__btn--extra${rail.method === 'mixed' ? ' is-active' : ''}`}
           disabled={busy}
           title={`${t('pharmacyCashier.pay.methodMixed')} [F8]`}
-          onClick={() => rail.setMethod('mixed')}
+          onClick={openMixed}
         >
           <Split size={18} strokeWidth={2.1} aria-hidden />
           <span>{t('pharmacyCashier.pay.methodMixed')}</span>
@@ -139,7 +166,7 @@ export default function PharmacyPayStack({
 
         <button
           type="button"
-          className={`pharmacy-pay-stack__btn${rail.method === 'cashless' ? ' is-active' : ''}`}
+          className={`pharmacy-pay-stack__btn pharmacy-pay-stack__btn--extra${rail.method === 'cashless' ? ' is-active' : ''}`}
           disabled={busy}
           title={`${t('pharmacyCashier.pay.methodCashless')} [F4]`}
           onClick={() => rail.setMethod('cashless')}
@@ -150,10 +177,10 @@ export default function PharmacyPayStack({
         </button>
       </div>
 
-      {rail.saleHint ? <p className="pharmacy-pay-stack__hint">{rail.saleHint}</p> : null}
+      {rail.saleHint ? <p className="pharmacy-pay-stack__hint pharmacy-pay-stack__aside">{rail.saleHint}</p> : null}
 
       {showCashPad ? (
-        <div className="pharmacy-pay-stack__cash">
+        <div className="pharmacy-pay-stack__cash pharmacy-pay-stack__aside">
           <div className="pharmacy-pay-stack__cash-row">
             <span>{t('pos.receivedLabel')}</span>
             <strong>{receivedDisplay}</strong>
@@ -177,8 +204,16 @@ export default function PharmacyPayStack({
         </div>
       ) : null}
 
+      <PrintReceiptToggle
+        checked={rail.printReceiptEnabled}
+        onChange={rail.handlePrintReceiptChange}
+        t={t}
+        className="pharmacy-pay-stack__print"
+        disabled={busy}
+      />
+
       <div className="pharmacy-pay-stack__ops" role="group">
-        <button type="button" className="pharmacy-pay-stack__btn" disabled={busy} onClick={onPreviewCheck}>
+        <button type="button" className="pharmacy-pay-stack__btn pharmacy-pay-stack__btn--preview" disabled={busy} onClick={onPreviewCheck}>
           <FileText size={18} strokeWidth={2.1} aria-hidden />
           <span>{t('pharmacyCashier.pay.previewCheck')}</span>
         </button>
@@ -242,12 +277,12 @@ export default function PharmacyPayStack({
         ) : null}
       </div>
 
-      <PrintReceiptToggle
-        checked={rail.printReceiptEnabled}
-        onChange={rail.handlePrintReceiptChange}
+      <PharmacyMixedPayModal
+        open={mixedOpen}
+        onClose={closeMixed}
+        rail={rail}
+        busy={busy}
         t={t}
-        className="pharmacy-pay-stack__print"
-        disabled={busy}
       />
     </aside>
   );

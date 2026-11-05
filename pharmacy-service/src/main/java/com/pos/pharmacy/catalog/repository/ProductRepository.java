@@ -64,8 +64,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
               AND EXISTS (
                 SELECT 1 FROM StockReceiptLine l JOIN l.receipt r
                 WHERE l.product = p
-                  AND (:receiptId IS NULL OR r.id = :receiptId)
-                  AND (:supplierId IS NULL OR r.supplierId = :supplierId)
+                  AND (:applyReceipt = FALSE OR r.id = :receiptId)
+                  AND (:applySupplier = FALSE OR r.supplierId = :supplierId)
               )
               AND (:active IS NULL OR p.active = :active)
               AND (
@@ -87,8 +87,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
               AND EXISTS (
                 SELECT 1 FROM StockReceiptLine l JOIN l.receipt r
                 WHERE l.product = p
-                  AND (:receiptId IS NULL OR r.id = :receiptId)
-                  AND (:supplierId IS NULL OR r.supplierId = :supplierId)
+                  AND (:applyReceipt = FALSE OR r.id = :receiptId)
+                  AND (:applySupplier = FALSE OR r.supplierId = :supplierId)
               )
               AND (:active IS NULL OR p.active = :active)
               AND (
@@ -110,7 +110,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         @Param("foldFrom") String foldFrom,
         @Param("foldTo") String foldTo,
         @Param("active") Boolean active,
+        @Param("applySupplier") boolean applySupplier,
         @Param("supplierId") UUID supplierId,
+        @Param("applyReceipt") boolean applyReceipt,
         @Param("receiptId") UUID receiptId,
         Pageable pageable
     );
@@ -119,15 +121,14 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findFirstByCompanyIdAndSkuStartingWith(Integer companyId, String skuPrefix);
 
-    Optional<Product> findFirstByCompanyIdAndBarcode(Integer companyId, String barcode);
-
     Optional<Product> findFirstByCompanyIdAndExternalProductId(Integer companyId, String externalProductId);
 
     @Query("SELECT DISTINCT p.companyId FROM Product p")
     List<Integer> findDistinctCompanyIds();
 
     /**
-     * Остаток — сумма по магазинам, если она есть, иначе поле товара.
+     * Корпоративный low-stock: сумма живых остатков по {@code store_stock}.
+     * Нет строк магазина → qty 0 (не {@code products.stock_quantity}).
      * Порог NULL считается как 10 (дефолт карточки).
      */
     @Query(value = """
@@ -140,8 +141,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         ) s ON s.product_id = p.id
         WHERE p.company_id = :companyId
           AND p.is_active = true
-          AND COALESCE(s.qty, p.stock_quantity, 0) <= COALESCE(p.low_stock_alert, 10)
-        ORDER BY COALESCE(s.qty, p.stock_quantity, 0) ASC, p.name ASC
+          AND COALESCE(s.qty, 0) <= COALESCE(p.low_stock_alert, 10)
+        ORDER BY COALESCE(s.qty, 0) ASC, p.name ASC
         """, nativeQuery = true)
     List<String> findLowStockIds(
         @Param("companyId") Integer companyId,

@@ -190,9 +190,17 @@
   }
 }
 
-/* Панель оплаты слева (ТЗ §3) */
-.pharmacy-cashier__split.cashier-register__split--register .cashier-register__stage {
-  grid-template-columns: minmax(220px, var(--cashier-pay-w, 280px)) minmax(0, 1fr);
+/* Панель оплаты слева. Уже продуктовых 360px — чек и остатки получают ширину. */
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pharmacy-cashier__split.cashier-register__split--register .cashier-register__stage {
+  --cashier-pay-w: 240px;
+  grid-template-columns: var(--cashier-pay-w) minmax(0, 1fr);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-desktop.cashier-app--pos-screen .pharmacy-cashier__split .cashier-register__actions-col {
+  width: var(--cashier-pay-w);
+  min-width: var(--cashier-pay-w);
+  max-width: var(--cashier-pay-w);
+  flex: 0 0 var(--cashier-pay-w);
 }
 
 .pharmacy-cashier__split.cashier-register__split--register .cashier-register__actions-col {

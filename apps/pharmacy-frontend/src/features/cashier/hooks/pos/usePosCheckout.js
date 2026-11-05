@@ -99,6 +99,9 @@ export function usePosCheckout({
         }
       }
 
+      // В аптеке нет страницы /receipt — catch-all уводит в админку. Остаёмся на кассе.
+      if (catalogKind === 'pharmacy') return;
+
       if (shouldPrint) {
         navigate(`/receipt/${receiptNum}`, {
           state: { autoPrint: true, fromCashier: true, sale: res.data },
