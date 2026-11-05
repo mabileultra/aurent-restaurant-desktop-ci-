@@ -2,6 +2,7 @@ package com.pos.taxanalytics.repository;
 
 import com.pos.taxanalytics.support.TaxAnalyticsConnectedSql;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -235,10 +236,7 @@ public class TaxAnalyticsCompanyQueryRepository {
         String connectionStatus,
         String search
     ) {
-        if (regionCode != null && !regionCode.isBlank()) {
-            sql.append(" AND c.region_code = ? ");
-            args.add(regionCode);
-        }
+        TaxAnalyticsRegionFilter.append(sql, args, regionCode);
         if (districtCode != null && !districtCode.isBlank()) {
             sql.append(" AND c.district_code = ? ");
             args.add(districtCode);

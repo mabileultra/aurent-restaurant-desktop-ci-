@@ -5,24 +5,22 @@ import com.pos.taxanalytics.dto.TaxAnalyticsOverviewResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsRegionCardResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultRowResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultsResponse;
+import com.pos.taxanalytics.repository.TaxAnalyticsMissingRegionRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsService;
+import com.pos.taxanalytics.support.TaxAnalyticsKpiBuilder;
+import com.pos.taxanalytics.support.TaxAnalyticsMath;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
-import com.pos.taxanalytics.support.TaxAnalyticsVerticalMerge;
-import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
-import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
+import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +28,8 @@ import java.util.Set;
 public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
 
     private final TaxAnalyticsQueryRepository repository;
-    private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
+    private final TaxAnalyticsKpiBuilder kpiBuilder;
+    private final TaxAnalyticsMissingRegionRepository missingRegionRepository;
 
     @Override
     public TaxAnalyticsOverviewResponse overview(String period, LocalDate from, LocalDate to) {
@@ -38,46 +37,7 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         TaxAnalyticsPeriod prev = new TaxAnalyticsPeriod(
             range.prevFrom(), range.prevTo(), range.prevFrom(), range.prevTo(), range.key()
         );
-        TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
-        TaxAnalyticsVerticalSnapshotLoader.Pair vertical = verticalLoader.load(
-            range.from(), range.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
-        );
-        TaxAnalyticsVerticalSnapshotLoader.Pair verticalPrev = verticalLoader.load(
-            prev.from(), prev.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
-        );
-
-        long total = repository.countCompanies();
-        Set<Integer> connectedIds = new HashSet<>(repository.listConnectedCompanyIds());
-        connectedIds.addAll(TaxAnalyticsVerticalMerge.connectedIds(vertical.restaurant(), vertical.pharmacy()));
-        long connected = connectedIds.size();
-        long notConnected = Math.max(0, total - connected);
-        BigDecimal totalTurnover = repository.sumTurnover(range, false, false)
-            .add(TaxAnalyticsVerticalMerge.periodTotal(vertical.restaurant()))
-            .add(TaxAnalyticsVerticalMerge.periodTotal(vertical.pharmacy()));
-        BigDecimal prevTurnover = repository.sumTurnover(prev, false, false)
-            .add(TaxAnalyticsVerticalMerge.periodTotal(verticalPrev.restaurant()))
-            .add(TaxAnalyticsVerticalMerge.periodTotal(verticalPrev.pharmacy()));
-        long newConn = repository.countNewFiscalConnections(range);
-        long prevNewConn = repository.countNewFiscalConnections(prev);
-        long errors = repository.countFiscalErrors(range);
-        long prevErrors = repository.countFiscalErrors(prev);
-
-        TaxAnalyticsKpiResponse kpi = new TaxAnalyticsKpiResponse(
-            total,
-            null,
-            connected,
-            share(connected, total),
-            null,
-            notConnected,
-            share(notConnected, total),
-            null,
-            totalTurnover,
-            deltaPct(totalTurnover, prevTurnover),
-            newConn,
-            deltaPct(BigDecimal.valueOf(newConn), BigDecimal.valueOf(prevNewConn)),
-            errors,
-            deltaPct(BigDecimal.valueOf(errors), BigDecimal.valueOf(prevErrors))
-        );
+        TaxAnalyticsKpiResponse kpi = kpiBuilder.build(range);
 
         Map<String, Long> counts = repository.toLongMap(repository.regionEnterpriseCounts(), "region_code", "cnt");
         Map<String, BigDecimal> curTurnover = repository.toDecimalMap(repository.regionTurnover(range), "region_code", "turnover");
@@ -91,9 +51,10 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
                 String.valueOf(row.get("name_ru")),
                 String.valueOf(row.get("name_uz")),
                 counts.getOrDefault(code, 0L),
-                deltaPct(curTurnover.getOrDefault(code, BigDecimal.ZERO), prevTurnoverMap.getOrDefault(code, BigDecimal.ZERO))
+                TaxAnalyticsMath.deltaPct(curTurnover.getOrDefault(code, BigDecimal.ZERO), prevTurnoverMap.getOrDefault(code, BigDecimal.ZERO))
             ));
         }
+        appendMissingRegionCard(regions, range);
 
         return new TaxAnalyticsOverviewResponse(
             range.key(),
@@ -143,7 +104,10 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             ? repository.aggregateByDistrict(range, regionCode)
             : repository.aggregateByRegion(range);
 
-        List<TaxAnalyticsResultRowResponse> all = raw.stream().map(r -> toGeoRow(r, resolvedLevel)).toList();
+        List<TaxAnalyticsResultRowResponse> all = new ArrayList<>(raw.stream().map(r -> toGeoRow(r, resolvedLevel)).toList());
+        if ("REGION".equals(resolvedLevel)) {
+            appendMissingRegionRow(all, range);
+        }
         long total = all.size();
         int fromIdx = Math.min(safePage * safeSize, all.size());
         int toIdx = Math.min(fromIdx + safeSize, all.size());
@@ -161,6 +125,9 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             return "ENTERPRISE";
         }
         if (districtCode != null && !districtCode.isBlank()) {
+            return "ENTERPRISE";
+        }
+        if (TaxAnalyticsRegionFilter.isMissing(regionCode)) {
             return "ENTERPRISE";
         }
         if (regionCode != null && !regionCode.isBlank()) {
@@ -183,14 +150,14 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             row.get("name_uz") == null ? String.valueOf(row.get("code")) : String.valueOf(row.get("name_uz")),
             enterprises,
             connected,
-            share(connected, enterprises),
+            TaxAnalyticsMath.share(connected, enterprises),
             notConnected,
-            share(notConnected, enterprises),
+            TaxAnalyticsMath.share(notConnected, enterprises),
             fiscal,
             nonFiscal,
             total,
-            shareAmount(fiscal, total),
-            deltaPct(total, prev),
+            TaxAnalyticsMath.shareAmount(fiscal, total),
+            TaxAnalyticsMath.deltaPct(total, prev),
             level
         );
     }
@@ -218,8 +185,8 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             fiscal,
             nonFiscal,
             total,
-            shareAmount(fiscal, total),
-            deltaPct(total, prev),
+            TaxAnalyticsMath.shareAmount(fiscal, total),
+            TaxAnalyticsMath.deltaPct(total, prev),
             "ENTERPRISE"
         );
     }
@@ -229,22 +196,29 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         return new BigDecimal(v.toString());
     }
 
-    static BigDecimal share(long part, long total) {
-        if (total <= 0) return null;
-        return BigDecimal.valueOf(part * 100.0 / total).setScale(1, RoundingMode.HALF_UP);
-    }
-
-    static BigDecimal shareAmount(BigDecimal part, BigDecimal total) {
-        if (total == null || total.compareTo(BigDecimal.ZERO) == 0) return null;
-        return part.multiply(BigDecimal.valueOf(100)).divide(total, 1, RoundingMode.HALF_UP);
-    }
-
-    static BigDecimal deltaPct(BigDecimal current, BigDecimal previous) {
-        if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
-            return null;
+    private void appendMissingRegionCard(List<TaxAnalyticsRegionCardResponse> regions, TaxAnalyticsPeriod range) {
+        Map<String, Object> row = missingRegionRepository.totals(range);
+        if (!TaxAnalyticsMissingRegionRepository.hasSignal(row)) {
+            return;
         }
-        return current.subtract(previous)
-            .multiply(BigDecimal.valueOf(100))
-            .divide(previous, 1, RoundingMode.HALF_UP);
+        BigDecimal current = decimal(row.get("fiscal_turnover")).add(decimal(row.get("non_fiscal_turnover")));
+        regions.add(new TaxAnalyticsRegionCardResponse(
+            TaxAnalyticsRegionFilter.MISSING_CODE,
+            TaxAnalyticsRegionFilter.MISSING_NAME_RU,
+            TaxAnalyticsRegionFilter.MISSING_NAME_UZ,
+            ((Number) row.get("enterprises")).longValue(),
+            TaxAnalyticsMath.deltaPct(current, decimal(row.get("prev_turnover")))
+        ));
+    }
+
+    private void appendMissingRegionRow(List<TaxAnalyticsResultRowResponse> rows, TaxAnalyticsPeriod range) {
+        Map<String, Object> row = missingRegionRepository.totals(range);
+        if (!TaxAnalyticsMissingRegionRepository.hasSignal(row)) {
+            return;
+        }
+        row.put("code", TaxAnalyticsRegionFilter.MISSING_CODE);
+        row.put("name_ru", TaxAnalyticsRegionFilter.MISSING_NAME_RU);
+        row.put("name_uz", TaxAnalyticsRegionFilter.MISSING_NAME_UZ);
+        rows.add(toGeoRow(row, "REGION"));
     }
 }

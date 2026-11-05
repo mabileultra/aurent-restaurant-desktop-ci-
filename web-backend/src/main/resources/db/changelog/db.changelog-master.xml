@@ -63,6 +63,7 @@
     <include file="v55-stock-movement-storestock-productid.xml" relativeToChangelogFile="true"/>
     <include file="v56-drop-sales-inventory-product-fks.xml" relativeToChangelogFile="true"/>
     <include file="v57-api-idempotency.xml" relativeToChangelogFile="true"/>
+    <include file="v58-collapse-doubled-apostrophe.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
 

@@ -2,6 +2,7 @@ package com.pos.taxanalytics.repository;
 
 import com.pos.taxanalytics.support.TaxAnalyticsConnectedSql;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -177,10 +178,7 @@ public class TaxAnalyticsQueryRepository {
         args.add(ts(period.to().plusDays(1)));
         args.add(ts(period.prevFrom()));
         args.add(ts(period.prevTo().plusDays(1)));
-        if (regionCode != null && !regionCode.isBlank()) {
-            sql.append(" AND c.region_code = ? ");
-            args.add(regionCode);
-        }
+        TaxAnalyticsRegionFilter.append(sql, args, regionCode);
         if (districtCode != null && !districtCode.isBlank()) {
             sql.append(" AND c.district_code = ? ");
             args.add(districtCode);
@@ -221,10 +219,7 @@ public class TaxAnalyticsQueryRepository {
             WHERE 1=1
             """);
         List<Object> args = new ArrayList<>();
-        if (regionCode != null && !regionCode.isBlank()) {
-            sql.append(" AND c.region_code = ? ");
-            args.add(regionCode);
-        }
+        TaxAnalyticsRegionFilter.append(sql, args, regionCode);
         if (districtCode != null && !districtCode.isBlank()) {
             sql.append(" AND c.district_code = ? ");
             args.add(districtCode);
