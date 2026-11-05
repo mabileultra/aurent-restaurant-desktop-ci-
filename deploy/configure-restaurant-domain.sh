@@ -128,7 +128,7 @@ if command -v certbot >/dev/null 2>&1; then
       --non-interactive --agree-tos --redirect \
       --email "${CERTBOT_EMAIL:-admin@aurent.uz}" \
       --keep-until-expiring 2>&1 || true
-    echo "==> WARN: p-aurent TLS — отдельно, когда DNS живой"
+    echo "==> WARN: p-aurent TLS — отдельно"
     certbot --nginx -d p-aurent.uz -d www.p-aurent.uz \
       --non-interactive --agree-tos --redirect \
       --email "${CERTBOT_EMAIL:-admin@aurent.uz}" \

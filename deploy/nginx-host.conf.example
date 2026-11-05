@@ -130,8 +130,8 @@ server {
     listen [::]:443 ssl;
     server_name p-aurent.uz www.p-aurent.uz;
 
-    ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/p-aurent.uz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/p-aurent.uz/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -159,6 +159,8 @@ server {
 # Первый выпуск сертификата (если ещё нет):
 #   apt install -y nginx certbot python3-certbot-nginx
 #   nginx -t && systemctl reload nginx
-#   certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz -d p-aurent.uz -d www.p-aurent.uz
+#   certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz
+#   # pharmacy cert отдельно, если SAN не в общем:
+#   # certbot --nginx -d p-aurent.uz -d www.p-aurent.uz
 # SSL-пути выше уже включены; после первого certbot проверьте, что
 # /etc/letsencrypt/live/aurent.uz/* существует, затем: nginx -t && systemctl reload nginx.

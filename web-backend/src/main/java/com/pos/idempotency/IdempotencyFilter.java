@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.exception.ConflictException;
 import com.pos.exception.UnprocessableEntityException;
 import com.pos.idempotency.entity.ApiIdempotencyRecord;
+import com.pos.idempotency.support.CachedBodyHttpServletRequest;
 import com.pos.idempotency.support.IdempotencyPathMatcher;
 import com.pos.idempotency.support.IdempotencyRequestHash;
 import com.pos.shared.api.ErrorCode;
@@ -19,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
@@ -56,8 +56,8 @@ public class IdempotencyFilter extends OncePerRequestFilter {
             return;
         }
 
-        ContentCachingRequestWrapper cachingRequest = new ContentCachingRequestWrapper(request);
-        byte[] body = cachingRequest.getInputStream().readAllBytes();
+        CachedBodyHttpServletRequest cachingRequest = new CachedBodyHttpServletRequest(request);
+        byte[] body = cachingRequest.getCachedBody();
         String scope = request.getMethod().toUpperCase() + ":" + request.getServletPath();
         String requestHash = IdempotencyRequestHash.sha256(body);
 
