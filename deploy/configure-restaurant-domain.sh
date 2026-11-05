@@ -36,6 +36,7 @@ upsert_env HTTP_PORT '127.0.0.1:8088'
 upsert_env RESTAURANT_HTTP_PORT '127.0.0.1:5174'
 upsert_env API_PORT '8080'
 upsert_env VITE_RESTAURANT_APP_URL 'https://r-aurent.uz'
+upsert_env VITE_PHARMACY_APP_URL 'https://p-aurent.uz'
 upsert_env VITE_MAIN_APP_URL 'https://aurent.uz'
 upsert_env APP_CORS_ALLOWED_ORIGIN_PATTERNS 'https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*'
 upsert_env MAIL_LOGIN_URL 'https://aurent.uz/login?admin=1'
@@ -115,10 +116,22 @@ if command -v certbot >/dev/null 2>&1; then
   echo "==> Certbot (aurent.uz + r-aurent.uz)"
   if certbot --nginx \
     -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz \
+    -d p-aurent.uz -d www.p-aurent.uz \
     --non-interactive --agree-tos --redirect \
     --email "${CERTBOT_EMAIL:-admin@aurent.uz}" \
     --keep-until-expiring 2>&1; then
-    echo "==> TLS OK (оба домена)"
+    echo "==> TLS OK (aurent + r-aurent + p-aurent)"
+  else
+    echo "==> WARN: полный certbot не прошёл — пробуем aurent + r-aurent"
+    certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz \
+      --non-interactive --agree-tos --redirect \
+      --email "${CERTBOT_EMAIL:-admin@aurent.uz}" \
+      --keep-until-expiring 2>&1 || true
+    echo "==> WARN: p-aurent TLS — отдельно"
+    certbot --nginx -d p-aurent.uz -d www.p-aurent.uz \
+      --non-interactive --agree-tos --redirect \
+      --email "${CERTBOT_EMAIL:-admin@aurent.uz}" \
+      --keep-until-expiring 2>&1 || true
   else
     echo "==> WARN: полный certbot не прошёл — пробуем только aurent.uz"
     certbot --nginx -d aurent.uz -d www.aurent.uz \
@@ -132,8 +145,8 @@ fi
 
 # SPA proxies /api → gateway on :8088/:5174. Always bring them back after nginx work.
 if command -v docker >/dev/null 2>&1 && [[ -f "$ROOT/docker-compose.prod.yml" ]]; then
-  echo "==> Ensure frontends up (127.0.0.1:8088 / 5174)"
-  (cd "$ROOT" && docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d --no-deps frontend restaurant-frontend) || true
+  echo "==> Ensure frontends up (127.0.0.1:8088 / 5174 / 5175)"
+  (cd "$ROOT" && docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d --no-deps frontend restaurant-frontend pharmacy-frontend) || true
 fi
 
 echo "==> configure-restaurant-domain: done"
