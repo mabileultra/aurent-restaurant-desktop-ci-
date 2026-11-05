@@ -82,6 +82,7 @@ const MODULE_SPECS = [
   { id: 'reportsStockDead', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockInventories', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockTransfers', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
+  { id: 'reportsPriceRegistry', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'stores', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersList', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersPrinterSettings', group: 'settings', roles: ['ADMIN'] },
@@ -132,9 +133,10 @@ export function getScopeForRole(roleCode, businessType) {
       if (PLATFORM_MODULE_KEYS.has(m.id)) return false;
       if (!isModuleVisibleForBusinessType(m.id, businessType)) return false;
 
+      // Cashier/Waiter: only POS-facing modules. Admin/Manager: full type-filtered catalog (incl. cashierPos).
       if (isCashierScope) return m.group === 'cashier' || m.group === 'restaurant';
       if (isFinanceScope) return m.group === 'finance';
-      return m.group !== 'cashier'; // Admin, Manager, etc.
+      return true;
     }).map((m) => m.id)
   );
 }

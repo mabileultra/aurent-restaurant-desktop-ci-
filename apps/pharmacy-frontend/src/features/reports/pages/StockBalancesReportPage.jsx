@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { stockReportApi } from '../../../api';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
@@ -20,8 +19,8 @@ export default function StockBalancesReportPage() {
           <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.balancesSubtitle')}</p>
         </div>
         <ReportExportButton
-          fetchBlob={() => stockReportApi.exportBalances(r.exportParams)}
-          filenamePrefix="stock_balances"
+          fetchBlob={r.fetchExportBlob}
+          filenamePrefix="pharmacy_stock_balances"
         />
       </div>
 
@@ -32,9 +31,6 @@ export default function StockBalancesReportPage() {
         storeId={r.storeId}
         stores={r.stores}
         onStoreChange={r.handleStoreChange}
-        categoryId={r.categoryId}
-        categories={r.categories}
-        onCategoryChange={r.handleCategoryChange}
         onlyWithStock={r.onlyWithStock}
         onOnlyWithStockChange={r.handleOnlyWithStockChange}
       />
@@ -54,7 +50,7 @@ export default function StockBalancesReportPage() {
             <tr>
               <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
-              <th className="px-4 py-3">{t('stockReports.colCategory')}</th>
+              <th className="px-4 py-3">{t('pharmacyStock.colManufacturer')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colStock')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colMin')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colStockValue')}</th>
@@ -67,7 +63,7 @@ export default function StockBalancesReportPage() {
               <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
                 <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
-                <td className="px-4 py-3">{row.categoryName || '—'}</td>
+                <td className="px-4 py-3">{row.manufacturer || '—'}</td>
                 <td className="px-4 py-3 text-right">{row.stockQuantity}</td>
                 <td className="px-4 py-3 text-right">{row.lowStockAlert}</td>
                 <td className="px-4 py-3 text-right">{fmtMoney(row.stockValue)}</td>

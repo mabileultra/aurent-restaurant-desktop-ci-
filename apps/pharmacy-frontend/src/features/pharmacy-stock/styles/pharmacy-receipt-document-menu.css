@@ -59,6 +59,13 @@
   z-index: 50;
 }
 
+/* Portal на body — не клипится sticky/overflow таблицы */
+.pharmacy-receipt-document-menu__list--portal {
+  top: auto;
+  right: auto;
+  z-index: 400;
+}
+
 .pharmacy-receipt-document-menu__list button {
   display: inline-flex;
   align-items: center;

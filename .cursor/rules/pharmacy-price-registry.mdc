@@ -1,0 +1,20 @@
+---
+description: Pharmacy state max retail price registry (pharm.gov.uz) — journal before apply
+globs:
+  - pharmacy-service/**/pricing/registry/**
+  - apps/pharmacy-frontend/src/features/reports/**/PriceRegistry*
+alwaysApply: false
+---
+
+# Pharmacy price registry (предельные цены)
+
+## Flow
+
+1. Sync (cron 03:00 or `POST /pharmacy/price-registry/sync`) downloads Excel → snapshot + rows.
+2. Journal rows show **old → limit → new** with status `PENDING|APPLIED|SKIPPED_OK|UNMATCHED`.
+3. Price drop only after `POST /pharmacy/price-registry/apply` (or `auto-apply=true`).
+4. POS checkout calls `PriceLimitSaleValidator.checkPriceBeforeSale` → `PriceLimitExceededException` if above limit.
+
+## Match
+
+Barcode first (`products.barcode` / `product_barcodes`), then Pharm ID = `products.external_product_id`.

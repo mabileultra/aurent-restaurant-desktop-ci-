@@ -1,7 +1,8 @@
-import { BaseSelect, PageSearchField } from '../../../../components/ui';
+import { PageSearchField } from '../../../../components/ui';
 import ReportStoreSelect from '../ReportStoreSelect';
 import './stock-balances-filters.css';
 
+/** Pharmacy balances filters — no grocery categories. */
 export default function StockBalancesFilters({
   t,
   search,
@@ -9,9 +10,6 @@ export default function StockBalancesFilters({
   storeId,
   stores,
   onStoreChange,
-  categoryId,
-  categories,
-  onCategoryChange,
   onlyWithStock,
   onOnlyWithStockChange,
 }) {
@@ -22,7 +20,7 @@ export default function StockBalancesFilters({
 
   return (
     <section className="stock-balances-filters" aria-label={t('stockReports.balancesFilters')}>
-      <div className="stock-balances-filters__grid">
+      <div className="stock-balances-filters__grid stock-balances-filters__grid--pharmacy">
         <div className="stock-balances-filters__field">
           <span className="stock-balances-filters__label">{t('stockReports.filterSearch')}</span>
           <PageSearchField
@@ -39,19 +37,6 @@ export default function StockBalancesFilters({
             value={storeId}
             onChange={onStoreChange}
             className="w-full min-w-0"
-          />
-        </div>
-        <div className="stock-balances-filters__field">
-          <span className="stock-balances-filters__label">{t('stockReports.colCategory')}</span>
-          <BaseSelect
-            value={categoryId}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full min-w-0"
-            placeholder={t('stockReports.allCategories')}
-            options={[
-              { value: '', label: t('stockReports.allCategories') },
-              ...categories.map((c) => ({ value: String(c.id), label: c.name })),
-            ]}
           />
         </div>
       </div>

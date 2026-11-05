@@ -24,6 +24,7 @@
     <include file="db/changelog/v17-stock-receipt-payments.xml"/>
     <include file="db/changelog/v18-pharmacy-stock-transfers.xml"/>
     <include file="db/changelog/v19-pharmacy-stock-inventories.xml"/>
+    <include file="db/changelog/v20-pharmacy-price-registry.xml"/>
 
 </databaseChangeLog>
 

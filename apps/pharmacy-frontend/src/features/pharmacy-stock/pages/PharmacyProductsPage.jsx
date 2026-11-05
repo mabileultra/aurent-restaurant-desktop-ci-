@@ -150,9 +150,15 @@ export default function PharmacyProductsPage() {
         t={t}
         stats={supplierStatsQuery.data}
         selectedSupplierId={supplierId}
+        selectedReceiptId={receiptId}
         onSelectSupplier={(id) => {
           setSupplierId(id);
           setReceiptId('');
+          setPage(0);
+        }}
+        onSelectReceipt={(id) => {
+          setReceiptId(id);
+          setSupplierId('');
           setPage(0);
         }}
       />

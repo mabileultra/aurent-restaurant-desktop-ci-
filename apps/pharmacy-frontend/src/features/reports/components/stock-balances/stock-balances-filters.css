@@ -19,6 +19,10 @@ html.dark .stock-balances-filters {
   align-items: end;
 }
 
+.stock-balances-filters__grid--pharmacy {
+  grid-template-columns: minmax(12rem, 1.4fr) minmax(10rem, 1fr);
+}
+
 @media (max-width: 900px) {
   .stock-balances-filters__grid {
     grid-template-columns: 1fr;

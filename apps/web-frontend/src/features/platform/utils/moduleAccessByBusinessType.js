@@ -2,6 +2,7 @@
  * Какие модули суперадмин видит при выборе типа бизнеса.
  * UNIVERSAL / OTHER — полный список.
  * RESTAURANT / CANTEEN — только ресторанная админка (handbook), без retail POS.
+ * PHARMACY — allowlist аптечного SPA (касса + склад + отчёты + финансы).
  */
 const RESTAURANT_MODULE_IDS = new Set([
   'restaurantFloor',
@@ -33,11 +34,48 @@ const RESTAURANT_ADMIN_VISIBLE = new Set([
   ...RESTAURANT_MODULE_IDS,
 ]);
 
-const GROCERY_CATALOG_MODULE_IDS = new Set([
-  'products',
-  'categories',
-  'scalesStation',
-  'scalesPlu',
+/** Mirrors shared-kernel ModuleVisibility.PHARMACY_VISIBLE */
+const PHARMACY_VISIBLE = new Set([
+  'dashboard',
+  'aiAssistant',
+  'stockProducts',
+  'stockSuppliers',
+  'stockReceipts',
+  'stockInventories',
+  'stockTransfers',
+  'cashierPos',
+  'cashierSales',
+  'cashierOffline',
+  'registersList',
+  'registersZReports',
+  'registersTransfer',
+  'registersConfig',
+  'reportsSalesDaily',
+  'reportsSalesByProducts',
+  'reportsSalesByStores',
+  'reportsCashierPerformance',
+  'reportsReturns',
+  'reportsStockBalances',
+  'reportsStockLow',
+  'reportsStockReceipts',
+  'reportsStockInventories',
+  'reportsStockTransfers',
+  'reportsPriceRegistry',
+  'financeDashboard',
+  'financeDebts',
+  'financeIncomes',
+  'financeExpenses',
+  'financeAccounts',
+  'financeTransfers',
+  'financeReports',
+  'financeAudit',
+  'financeCategories',
+  'financeSync',
+  'stores',
+  'usersList',
+  'usersPrinterSettings',
+  'usersBrandingSettings',
+  'usersBarcodePrint',
 ]);
 
 const RESTAURANT_BUSINESS_TYPES = new Set(['RESTAURANT', 'CANTEEN']);
@@ -70,7 +108,7 @@ export function isModuleVisibleForBusinessType(moduleId, businessTypeCode) {
   if (!type || type === 'UNIVERSAL' || type === 'OTHER') return true;
 
   if (type === 'PHARMACY') {
-    return !RESTAURANT_MODULE_IDS.has(id) && !GROCERY_CATALOG_MODULE_IDS.has(id);
+    return PHARMACY_VISIBLE.has(id);
   }
   if (RESTAURANT_BUSINESS_TYPES.has(type)) {
     return RESTAURANT_ADMIN_VISIBLE.has(id);

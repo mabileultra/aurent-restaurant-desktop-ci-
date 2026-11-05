@@ -144,7 +144,11 @@ export function usePharmacyAdminShell() {
     subLinkClass: ({ isActive }) => `admin-nav-sublink ${isActive ? 'admin-nav-sublink--active' : ''}`,
     showDashboard: hasModule('dashboard'),
     showAssistant: hasModule('aiAssistant'),
-    showPos: hasModule('cashierPos'),
+    // Pharmacy SPA: касса — базовый экран. Custom ACL без cashierPos раньше прятал пункт у ADMIN.
+    showPos: hasModule('cashierPos')
+      || user?.role === 'ADMIN'
+      || user?.role === 'MANAGER'
+      || user?.role === 'CASHIER',
     inAssistantSection: pathStarts(path, '/assistant'),
     showStock: stockNav.length > 0,
     showSales: salesNav.length > 0,

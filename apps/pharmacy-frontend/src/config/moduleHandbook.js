@@ -1,6 +1,6 @@
 /** Маршрут → ключ справочника */
 const ROUTE_MAP = [
-  { test: (p) => p.startsWith('/cashier/pos'), id: 'cashierPos' },
+  { test: (p) => p.startsWith('/cashier/pos') || p === '/pos' || p.startsWith('/pos/'), id: 'cashierPos' },
   { test: (p) => p.startsWith('/cashier/sales'), id: 'cashierSales' },
   { test: (p) => p === '/dashboard', id: 'dashboard' },
   { test: (p) => p.startsWith('/assistant'), id: 'aiAssistant' },
@@ -25,6 +25,7 @@ const ROUTE_MAP = [
   { test: (p) => p.startsWith('/reports/stock/receipts'), id: 'reportsStockReceipts' },
   { test: (p) => p.startsWith('/reports/stock/write-offs'), id: 'reportsStockWriteOffs' },
   { test: (p) => p.startsWith('/reports/stock/low'), id: 'reportsStockLow' },
+  { test: (p) => p.startsWith('/reports/stock/price-registry'), id: 'reportsPriceRegistry' },
   { test: (p) => p.startsWith('/reports/stock'), id: 'reportsStockDashboard' },
   { test: (p) => p.startsWith('/reports/sales/period-compare'), id: 'reportsSalesPeriodCompare' },
   { test: (p) => p.startsWith('/reports/sales/daily'), id: 'reportsSalesDaily' },
@@ -104,6 +105,7 @@ export const ADMIN_MODULE_IDS = [
   { id: 'reportsStockWriteOffs', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockInventories', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockTransfers', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
+  { id: 'reportsPriceRegistry', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'ordersList', group: 'orders', roles: ['ADMIN', 'MANAGER'] },
   { id: 'registersList', group: 'registers', roles: ['ADMIN', 'MANAGER'] },
   { id: 'registersZReports', group: 'registers', roles: ['ADMIN', 'MANAGER'] },

@@ -2,6 +2,7 @@ package com.pos.pharmacy.sales.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
+import com.pos.pharmacy.pricing.registry.support.PriceLimitSaleValidator;
 import com.pos.pharmacy.sales.dto.SaleItemRequest;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,9 +30,15 @@ class CheckoutLineAssemblerVatTest {
     @InjectMocks
     private CheckoutQuantityResolver checkoutQuantityResolver;
 
+    private static CheckoutLineAssembler assemblerWith(CheckoutQuantityResolver qty) {
+        PriceLimitSaleValidator priceLimit = mock(PriceLimitSaleValidator.class);
+        when(priceLimit.checkPriceBeforeSale(any(), any())).thenReturn(true);
+        return new CheckoutLineAssembler(qty, priceLimit);
+    }
+
     @Test
     void assemblesInclusiveVatPerLineWithDefault12Percent() {
-        CheckoutLineAssembler assembler = new CheckoutLineAssembler(checkoutQuantityResolver);
+        CheckoutLineAssembler assembler = assemblerWith(checkoutQuantityResolver);
         when(productAttributeService.getAttributesByProductIds(any())).thenReturn(Map.of());
 
         UUID productId = UUID.randomUUID();
@@ -60,7 +68,7 @@ class CheckoutLineAssemblerVatTest {
 
     @Test
     void zeroTaxRateProducesZeroVat() {
-        CheckoutLineAssembler assembler = new CheckoutLineAssembler(checkoutQuantityResolver);
+        CheckoutLineAssembler assembler = assemblerWith(checkoutQuantityResolver);
         UUID productId = UUID.randomUUID();
         Product product = Product.builder()
             .id(productId)

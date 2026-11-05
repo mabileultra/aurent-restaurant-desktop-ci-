@@ -2,14 +2,20 @@ import { describe, it, expect } from 'vitest';
 import { isModuleVisibleForBusinessType } from './moduleAccessByBusinessType';
 
 describe('isModuleVisibleForBusinessType', () => {
-  it('hides restaurant and grocery catalog for pharmacy, keeps stock transfers', () => {
+  it('pharmacy allowlist: cashier+stock+finance, hides grocery/restaurant/legacy reports', () => {
     expect(isModuleVisibleForBusinessType('restaurantPos', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('scalesStation', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('products', 'PHARMACY')).toBe(false);
+    expect(isModuleVisibleForBusinessType('categories', 'PHARMACY')).toBe(false);
+    expect(isModuleVisibleForBusinessType('ordersList', 'PHARMACY')).toBe(false);
+    expect(isModuleVisibleForBusinessType('checkout', 'PHARMACY')).toBe(false);
+    expect(isModuleVisibleForBusinessType('reportsStockDead', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('stockTransfers', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('stockReceipts', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('cashierSales', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('cashierPos', 'PHARMACY')).toBe(true);
+    expect(isModuleVisibleForBusinessType('reportsPriceRegistry', 'PHARMACY')).toBe(true);
+    expect(isModuleVisibleForBusinessType('financeDashboard', 'PHARMACY')).toBe(true);
   });
 
   it('shows only restaurant admin allowlist for restaurant', () => {

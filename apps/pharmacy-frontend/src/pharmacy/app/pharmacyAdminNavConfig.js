@@ -100,6 +100,7 @@ export const PHARM_REPORT_STOCK_CHILDREN = [
   { to: '/reports/stock/receipts', key: 'reportsStockReceipts', icon: TrendingUp, moduleId: 'reportsStockReceipts' },
   { to: '/reports/stock/inventories', key: 'reportsStockInventories', icon: ClipboardList, moduleId: 'reportsStockInventories' },
   { to: '/reports/stock/transfers', key: 'reportsStockTransfers', icon: TrendingDown, moduleId: 'reportsStockTransfers' },
+  { to: '/reports/stock/price-registry', key: 'reportsPriceRegistry', icon: Tags, moduleId: 'reportsPriceRegistry' },
 ];
 
 export const PHARM_FINANCE_CHILDREN = [

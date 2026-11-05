@@ -58,6 +58,11 @@ app:
       barcode-ttl-seconds: ${PHARMACY_REDIS_BARCODE_TTL_SECONDS:180}
     mark-withdraw:
       retry-ms: ${PHARMACY_MARK_WITHDRAW_RETRY_MS:30000}
+    price-registry:
+      enabled: ${PHARMACY_PRICE_REGISTRY_ENABLED:true}
+      page-url: ${PHARMACY_PRICE_REGISTRY_PAGE_URL:https://pharm.gov.uz}
+      cron: ${PHARMACY_PRICE_REGISTRY_CRON:0 0 3 * * *}
+      auto-apply: ${PHARMACY_PRICE_REGISTRY_AUTO_APPLY:false}
     tasnif:
       enabled: ${PHARMACY_TASNIF_ENABLED:true}
       base-url: ${PHARMACY_TASNIF_BASE_URL:https://tasnif.soliq.uz/api/cl-api}

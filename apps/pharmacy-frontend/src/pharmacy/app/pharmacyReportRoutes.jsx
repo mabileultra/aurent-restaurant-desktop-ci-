@@ -11,6 +11,7 @@ const StockReceiptsReportPage = lazy(() => import('../../features/reports/pages/
 const StockBalancesReportPage = lazy(() => import('../../features/reports/pages/StockBalancesReportPage'));
 const StockInventoriesReportPage = lazy(() => import('../../features/reports/pages/StockInventoriesReportPage'));
 const StockTransfersReportPage = lazy(() => import('../../features/reports/pages/StockTransfersReportPage'));
+const PriceRegistryJournalPage = lazy(() => import('../../features/reports/pages/PriceRegistryJournalPage'));
 const ReturnsPage = lazy(() => import('../../features/sales/pages/ReturnsPage'));
 
 /** Pharmacy reports only: sales + stock read-only core. */
@@ -28,6 +29,7 @@ export function pharmacyReportRoutes() {
       <Route path="/reports/stock/balances" element={<StockBalancesReportPage />} />
       <Route path="/reports/stock/inventories" element={<StockInventoriesReportPage />} />
       <Route path="/reports/stock/transfers" element={<StockTransfersReportPage />} />
+      <Route path="/reports/stock/price-registry" element={<PriceRegistryJournalPage />} />
     </>
   );
 }

@@ -43,4 +43,15 @@ public interface StockReceiptLineRepository extends JpaRepository<StockReceiptLi
         ORDER BY COUNT(DISTINCT l.product.id) DESC
         """)
     List<Object[]> countDistinctProductsBySupplier(@Param("companyId") Integer companyId);
+
+    /** Distinct products per receipt — for cutover cards when suppliers are empty. */
+    @Query("""
+        SELECT r.id, r.receiptNumber, r.receiptType, r.status, COUNT(DISTINCT l.product.id)
+        FROM StockReceiptLine l
+        JOIN l.receipt r
+        WHERE r.companyId = :companyId
+        GROUP BY r.id, r.receiptNumber, r.receiptType, r.status, r.createdAt
+        ORDER BY r.createdAt DESC
+        """)
+    List<Object[]> countDistinctProductsByReceipt(@Param("companyId") Integer companyId);
 }

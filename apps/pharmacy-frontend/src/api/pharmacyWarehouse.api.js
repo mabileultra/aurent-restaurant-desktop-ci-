@@ -37,6 +37,10 @@ export const pharmacyWarehouseApi = {
   listInventories: (params) => api.get('/pharmacy/inventories', { params }),
   listProductMovements: (productId, params) =>
     api.get(`/pharmacy/products/${productId}/movements`, { params }),
+  priceRegistrySync: () => api.post('/pharmacy/price-registry/sync', null, { timeout: 180000 }),
+  priceRegistryApply: (params) => api.post('/pharmacy/price-registry/apply', null, { params, timeout: 120000 }),
+  priceRegistryJournal: (params) => api.get('/pharmacy/price-registry/journal', { params }),
+  priceRegistryLatest: () => api.get('/pharmacy/price-registry/latest'),
   importParse: (id, file) => {
     const fd = new FormData();
     fd.append('file', file);

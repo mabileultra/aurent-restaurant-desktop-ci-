@@ -7,6 +7,7 @@ import com.pos.pharmacy.sales.dto.SaleItemRequest;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import com.pos.pharmacy.util.MoneyCalculator;
 import com.pos.pharmacy.util.QuantityUtil;
+import com.pos.pharmacy.pricing.registry.support.PriceLimitSaleValidator;
 import com.pos.pharmacy.warehouse.support.PharmacyLotFefoSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class CheckoutLineAssembler {
 
     private final CheckoutQuantityResolver checkoutQuantityResolver;
+    private final PriceLimitSaleValidator priceLimitSaleValidator;
 
     public record AssembledLines(
         List<SaleItem> items,
@@ -56,6 +58,7 @@ public class CheckoutLineAssembler {
 
             BigDecimal lineDiscount = itemReq.discount() != null ? itemReq.discount() : BigDecimal.ZERO;
             BigDecimal unitPrice = resolveCheckoutUnitPrice(itemReq, product);
+            priceLimitSaleValidator.checkPriceBeforeSale(product.getId(), unitPrice);
             BigDecimal lineGross = MoneyCalculator.lineGross(unitPrice, lineQty, lineDiscount);
             BigDecimal rate = product.getTaxRate() != null ? product.getTaxRate() : new BigDecimal("12");
             BigDecimal taxAmt = MoneyCalculator.vatFromInclusiveLine(lineGross, rate);

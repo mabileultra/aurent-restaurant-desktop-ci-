@@ -121,6 +121,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findFirstByCompanyIdAndBarcode(Integer companyId, String barcode);
 
+    Optional<Product> findFirstByCompanyIdAndExternalProductId(Integer companyId, String externalProductId);
+
+    @Query("SELECT DISTINCT p.companyId FROM Product p")
+    List<Integer> findDistinctCompanyIds();
+
     /**
      * Остаток — сумма по магазинам, если она есть, иначе поле товара.
      * Порог NULL считается как 10 (дефолт карточки).

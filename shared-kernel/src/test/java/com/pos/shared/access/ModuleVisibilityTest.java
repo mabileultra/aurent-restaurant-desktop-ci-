@@ -25,15 +25,20 @@ class ModuleVisibilityTest {
     }
 
     @Test
-    void pharmacyHidesGroceryCatalogAndRestaurantButKeepsTransfersAndCashier() {
+    void pharmacyAllowlistKeepsCashierStockFinanceHidesGroceryRestaurantLegacy() {
         assertTrue(ModuleVisibility.visible("stockTransfers", "PHARMACY"));
         assertTrue(ModuleVisibility.visible("stockReceipts", "PHARMACY"));
         assertTrue(ModuleVisibility.visible("cashierPos", "pharmacy"));
         assertTrue(ModuleVisibility.visible("cashierSales", "PHARMACY"));
+        assertTrue(ModuleVisibility.visible("reportsPriceRegistry", "PHARMACY"));
+        assertTrue(ModuleVisibility.visible("financeDashboard", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("categories", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("products", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("scalesStation", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("scalesPlu", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("ordersList", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("checkout", "PHARMACY"));
+        assertFalse(ModuleVisibility.visible("reportsStockDead", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantFloor", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantRequestBill", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("restaurantPickupLabel", "PHARMACY"));
