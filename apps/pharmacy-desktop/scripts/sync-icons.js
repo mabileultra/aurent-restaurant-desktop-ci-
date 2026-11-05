@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /**
- * Иконки Electron: desktop/icon.png (прозрачный Aurent) → icon.png, icon.ico
+ * Иконки Electron → build/icon.png + build/icon.ico
+ * Источник: icon-src/ (в репо), иначе apps/web-frontend public.
  */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
+const LOCAL_PNG = path.join(ROOT, 'icon-src', 'icon.png');
+const LOCAL_SVG = path.join(ROOT, 'icon-src', 'icon.svg');
 const APP_ICON = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.png');
 const BRAND_APP = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'app-icon.png');
 const SVG = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.svg');
@@ -18,17 +21,19 @@ async function loadSharp() {
   try {
     return require('sharp');
   } catch {
-    console.error('sharp not installed — run pnpm install in desktop-electron');
+    console.error('sharp not installed — run pnpm install in apps/pharmacy-desktop');
     process.exit(1);
   }
 }
 
 function resolveSource() {
+  if (fs.existsSync(LOCAL_PNG)) return LOCAL_PNG;
+  if (fs.existsSync(LOCAL_SVG)) return LOCAL_SVG;
   if (fs.existsSync(APP_ICON)) return APP_ICON;
   if (fs.existsSync(BRAND_APP)) return BRAND_APP;
   if (fs.existsSync(SVG)) return SVG;
   if (fs.existsSync(LOGO2)) return LOGO2;
-  console.error('Missing icon source:', APP_ICON);
+  console.error('Missing icon source:', LOCAL_PNG);
   process.exit(1);
 }
 

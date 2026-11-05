@@ -4,6 +4,7 @@ packages:
   - 'apps/web-frontend'
   - 'apps/restaurant-frontend'
   - 'apps/pharmacy-frontend'
+  - 'apps/pharmacy-desktop'
 
 allowBuilds:
   esbuild: true

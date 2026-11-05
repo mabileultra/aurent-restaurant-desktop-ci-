@@ -67,8 +67,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pnpm install --filter aurent-pharmacy-desktop...
+          # Root workspace: pharmacy-desktop + pharmacy-frontend + packages/*
+          pnpm install --filter aurent-pharmacy-desktop... --filter pharmacy-frontend...
           cd apps/pharmacy-desktop
+          test -d node_modules/sharp || test -d ../../node_modules/sharp
           pnpm run dist:win
           ls -la dist || true
           test -f dist/latest.yml
