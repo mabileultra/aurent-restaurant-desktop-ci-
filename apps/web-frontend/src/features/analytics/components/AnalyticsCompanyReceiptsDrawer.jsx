@@ -71,14 +71,14 @@ export default function AnalyticsCompanyReceiptsDrawer({
         </button>
       </div>
 
-      <div className="an-table-wrap" style={{ flex: 1, minHeight: 220 }}>
+      <div className="an-table-wrap" style={{ flex: 1, minHeight: 220, maxHeight: 480, overflowY: 'auto' }}>
         <table className="an-table">
           <thead>
             <tr>
               <th>Chek</th>
               <th>Vaqt</th>
               <th>Summa</th>
-              <th>QR</th>
+              <th style={{ minWidth: 95 }}>QR</th>
             </tr>
           </thead>
           <tbody>
@@ -104,9 +104,9 @@ export default function AnalyticsCompanyReceiptsDrawer({
                     <td style={{ fontWeight: 600, color: '#0f172a' }}>{receiptNo}</td>
                     <td style={{ color: '#64748b' }}>{time}</td>
                     <td><strong>{fmtMoney(amount)}</strong></td>
-                    <td>
+                    <td style={{ minWidth: 95, whiteSpace: 'nowrap' }}>
                       {hasQr ? (
-                        <span className="an-badge an-badge--green">
+                        <span className="an-badge an-badge--blue">
                           <QrCode size={11} aria-hidden /> QR bilan
                         </span>
                       ) : (

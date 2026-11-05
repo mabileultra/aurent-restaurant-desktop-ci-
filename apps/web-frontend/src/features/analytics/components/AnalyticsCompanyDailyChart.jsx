@@ -8,7 +8,8 @@ export default function AnalyticsCompanyDailyChart({
 }) {
   const chartData = useMemo(() => {
     if (days.length > 0) {
-      return days.map((d) => ({
+      const sorted = [...days].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      return sorted.map((d) => ({
         date: d.date,
         label: fmtDayShort(d.date),
         fullDate: fmtDayFull(d.date),
@@ -60,7 +61,7 @@ export default function AnalyticsCompanyDailyChart({
           </div>
           <div className="an-legend-item">
             <span className="an-legend-dot an-legend-dot--nonfiscal" />
-            <span>Fiskalsiz</span>
+            <span>Nofiskal</span>
           </div>
         </div>
       </div>
@@ -93,8 +94,8 @@ export default function AnalyticsCompanyDailyChart({
                     <div
                       className="an-chart-bar-stack"
                       style={{
-                        border: isSelected ? '2px solid #2563EB' : 'none',
-                        transform: isSelected ? 'scale(1.05)' : 'none',
+                        outline: isSelected ? '2px solid #2563EB' : 'none',
+                        outlineOffset: '1px',
                       }}
                     >
                       <div className="an-chart-bar-fiscal" style={{ height: `${fiscalHeight}%` }} />
@@ -106,17 +107,26 @@ export default function AnalyticsCompanyDailyChart({
             </div>
 
             <div className="an-chart-date-labels">
-              {chartData.map((item) => (
-                <span
-                  key={item.date}
-                  style={{
-                    fontWeight: selectedDay === item.date ? 700 : 400,
-                    color: selectedDay === item.date ? '#2563EB' : '#94a3b8',
-                  }}
-                >
-                  {item.label}
-                </span>
-              ))}
+              {chartData.map((item, idx) => {
+                const shouldShow = chartData.length <= 8
+                  || idx === 0
+                  || idx === Math.floor(chartData.length / 2)
+                  || idx === chartData.length - 1
+                  || idx % Math.max(1, Math.floor(chartData.length / 5)) === 0;
+
+                return (
+                  <span
+                    key={item.date}
+                    style={{
+                      fontWeight: selectedDay === item.date ? 700 : 400,
+                      color: selectedDay === item.date ? '#2563EB' : '#94a3b8',
+                      visibility: shouldShow ? 'visible' : 'hidden',
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                );
+              })}
             </div>
           </>
         )}

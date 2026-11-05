@@ -1,10 +1,28 @@
 import React from 'react';
 import { ArrowUpDown, Download, ChevronRight } from 'lucide-react';
+import PlatformSelect from '../../platform/components/PlatformSelect';
+
+const SORT_OPTIONS = [
+  { value: 'turnover_desc', label: 'Saralash: Aylanma ↓' },
+  { value: 'turnover', label: 'Saralash: Aylanma ↓' },
+  { value: 'turnover_asc', label: 'Saralash: Aylanma ↑' },
+  { value: 'name_asc', label: 'Saralash: Nomi A-Z' },
+];
+
+const FISCAL_OPTIONS = [
+  { value: 'all', label: 'Fiskal holat: Barchasi' },
+  { value: 'fiscal', label: 'Fiskallashtirilgan' },
+  { value: 'non_fiscal', label: 'Nofiskal' },
+];
 
 export default function AnalyticsRegionDrilldownHeader({
   activeView = 'cards',
   setActiveView,
   selectedRegion = 'Samarqand viloyati',
+  sort = 'turnover_desc',
+  setSort,
+  fiscalStatus = 'all',
+  setFiscalStatus,
   onSelectCountry,
   onCompare,
   onExport,
@@ -51,13 +69,27 @@ export default function AnalyticsRegionDrilldownHeader({
           </button>
         </div>
 
-        <button type="button" className="f">
-          Saralash: <b>Aylanma ↓</b>
-        </button>
+        <PlatformSelect
+          value={sort}
+          onChange={(e) => setSort && setSort(e.target.value)}
+          options={SORT_OPTIONS}
+          size="sm"
+          theme="blue"
+          searchable={false}
+          style={{ width: 'auto', minWidth: 155, maxWidth: 200, flex: '0 0 auto' }}
+          ariaLabel="Saralash"
+        />
 
-        <button type="button" className="f">
-          Fiskal holat: <b>Barchasi</b>
-        </button>
+        <PlatformSelect
+          value={fiscalStatus}
+          onChange={(e) => setFiscalStatus && setFiscalStatus(e.target.value)}
+          options={FISCAL_OPTIONS}
+          size="sm"
+          theme="blue"
+          searchable={false}
+          style={{ width: 'auto', minWidth: 155, maxWidth: 200, flex: '0 0 auto' }}
+          ariaLabel="Fiskal holat"
+        />
 
         <button type="button" className="btn" onClick={onCompare}>
           <ArrowUpDown size={14} style={{ color: '#2563EB' }} />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCsvContent } from './analyticsExport';
+import { buildCsvContent, buildExcelContent } from './analyticsExport';
 
 describe('analyticsExport', () => {
   it('builds CSV with UTF-8 BOM and properly quoted cells', () => {
@@ -20,5 +20,14 @@ describe('analyticsExport', () => {
     const rows = [[null, undefined]];
     const result = buildCsvContent(headers, rows);
     expect(result).toContain('"",');
+  });
+
+  it('builds native Excel SpreadsheetML XML with typed cells', () => {
+    const headers = ['Hudud', 'Aylanma'];
+    const rows = [['Samarqand', 4150000000]];
+    const result = buildExcelContent(headers, rows);
+    expect(result).toContain('xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"');
+    expect(result).toContain('<Data ss:Type="String">Hudud</Data>');
+    expect(result).toContain('<Data ss:Type="Number">4150000000</Data>');
   });
 });

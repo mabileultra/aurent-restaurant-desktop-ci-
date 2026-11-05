@@ -19,7 +19,7 @@ export default function AnalyticsCompanyTop10Chart({ companies = [], onSelectCom
       <div className="an-card-head">
         <div>
           <h3 className="an-card-title">Top 10 firma — umumiy aylanma</h3>
-          <p className="an-card-sub">Aylanma bo‘yicha tartiblangan · fiskal va fiskalsiz qismlar</p>
+          <p className="an-card-sub">Aylanma bo‘yicha tartiblangan · fiskal va nofiskal qismlar</p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
@@ -29,7 +29,7 @@ export default function AnalyticsCompanyTop10Chart({ companies = [], onSelectCom
           </div>
           <div className="an-legend-item">
             <span className="an-legend-dot an-legend-dot--nonfiscal" />
-            <span>Fiskalsiz</span>
+            <span>Nofiskal</span>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default function AnalyticsCompanyTop10Chart({ companies = [], onSelectCom
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '0.2rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span style={{ fontWeight: 600, color: '#0f172a' }}>{c.name}</span>
+                    <span style={{ fontWeight: 600, color: '#0f172a' }}>{c.name ? c.name.replace(/''/g, "'") : ''}</span>
                     {!c.connected && (
                       <span className="an-badge an-badge--red" style={{ fontSize: '0.65rem', padding: '0 0.35rem' }}>
                         Ulanmagan

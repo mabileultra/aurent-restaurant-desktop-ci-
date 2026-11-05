@@ -1,54 +1,72 @@
 import React, { useState } from 'react';
 import '../styles/analytics.css';
 import { Download } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import AnalyticsHeader from '../components/AnalyticsHeader';
+import AnalyticsReportsHistoryTable from '../components/AnalyticsReportsHistoryTable';
+import { analyticsApi } from '../api/analyticsApi';
 import { useAnalyticsOverview } from '../hooks/useAnalyticsOverview';
-import { exportToCsv } from '../utils/analyticsExport';
-import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
-import { EXPORT_HISTORY, REPORT_TYPES } from '../utils/analyticsReportConstants';
+import { fetchAllCompanies } from '../utils/analyticsCompanyLoader';
+import { exportToCsv, exportToExcel } from '../utils/analyticsExport';
+import { buildReportPayload } from '../utils/analyticsReportBuilder';
+import { REPORT_TYPES } from '../utils/analyticsReportConstants';
 
 export default function AnalyticsReportsPage() {
   const page = useAnalyticsOverview();
   const [selectedType, setSelectedType] = useState('companies');
   const [format, setFormat] = useState('excel');
+  const [history, setHistory] = useState([]);
+
+  const allCompaniesQuery = useQuery({
+    queryKey: ['analytics-reports-all-companies', page.period],
+    queryFn: () => fetchAllCompanies({ period: page.period }),
+  });
+
+  const topCompanyId = page.top10Companies[0]?.companyId;
+  const recentReceiptsQuery = useQuery({
+    queryKey: ['analytics-reports-receipts', topCompanyId],
+    queryFn: async () => {
+      if (!topCompanyId) return [];
+      const detail = await analyticsApi.getCompanyDetail(topCompanyId).then((r) => r.data).catch(() => null);
+      const activeDate = detail?.days?.find((d) => Number(d.totalTurnover || 0) > 0)?.date || detail?.days?.[0]?.date;
+      if (!activeDate) return [];
+      return analyticsApi.getCompanyReceipts(topCompanyId, { date: activeDate, size: 50 }).then((r) => r.data?.rows ?? []).catch(() => []);
+    },
+    enabled: selectedType === 'receipts' && Boolean(topCompanyId),
+  });
 
   const handleGenerateReport = () => {
-    if (selectedType === 'regions') {
-      const headers = ['Hudud', 'Korxonalar', 'Ulangan', 'Fiskal aylanma', 'Nofiskal aylanma', 'Umumiy aylanma', 'Fiskal ulush'];
-      const data = page.topRegions.map((r) => [
-        r.nameUz || r.nameRu || 'Hudud',
-        r.enterprises || 0,
-        r.connected || 0,
-        fmtMoney(r.fiscalTurnover),
-        fmtMoney(r.nonFiscalTurnover),
-        fmtMoney(r.totalTurnover),
-        fmtPercent(r.fiscalSharePct),
-      ]);
-      exportToCsv(`hisobot-hududlar-${page.period}`, headers, data);
-    } else if (selectedType === 'companies') {
-      const headers = ['Firma', 'STIR', 'Fiskal holat', 'Fiskal aylanma', 'Nofiskal aylanma', 'Umumiy aylanma'];
-      const data = page.top10Companies.map((c) => [
-        c.name,
-        c.tin || '',
-        c.connected ? 'Ulangan' : 'Ulanmagan',
-        fmtMoney(c.fiscalTurnover),
-        fmtMoney(c.nonFiscalTurnover),
-        fmtMoney(c.totalTurnover),
-      ]);
-      exportToCsv(`hisobot-korxonalar-${page.period}`, headers, data);
+    const sortedCompanies = [...(allCompaniesQuery.data?.rows ?? [])].sort(
+      (a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0)
+    );
+
+    const payload = buildReportPayload(selectedType, {
+      kpi: page.kpi,
+      totals: page.totals,
+      topRegions: page.topRegions,
+      companies: sortedCompanies.length > 0 ? sortedCompanies : page.top10Companies,
+      receipts: recentReceiptsQuery.data ?? [],
+    });
+
+    const filename = `hisobot-${selectedType}-${page.period}`;
+    if (format === 'excel') {
+      exportToExcel(filename, payload.headers, payload.rows);
     } else {
-      const headers = ['Ko‘rsatkich', 'Qiymat'];
-      const data = [
-        ['Jami korxonalar', page.kpi?.totalEnterprises || 0],
-        ['Ulangan korxonalar', page.kpi?.connected || 0],
-        ['Ulanmagan korxonalar', page.kpi?.notConnected || 0],
-        ['Umumiy aylanma', fmtMoney(page.totals.totalTurnover)],
-        ['Fiskal aylanma', fmtMoney(page.totals.fiscalTurnover)],
-        ['Nofiskal aylanma', fmtMoney(page.totals.nonFiscalTurnover)],
-        ['Fiskal ulush', fmtPercent(page.totals.fiscalPct)],
-      ];
-      exportToCsv(`hisobot-respublika-${page.period}`, headers, data);
+      exportToCsv(filename, payload.headers, payload.rows);
     }
+
+    setHistory((prev) => [
+      {
+        id: `h-${Date.now()}`,
+        report: payload.title,
+        period: page.period === '7d' ? '7 kun' : page.period === 'today' ? 'Bugun' : '30 kun',
+        filters: page.selectedRegionCode ? 'Tanlangan viloyat' : 'Barchasi',
+        rows: payload.rows.length,
+        format: format === 'excel' ? 'Excel' : 'CSV',
+        status: 'ready',
+      },
+      ...prev.slice(0, 7),
+    ]);
   };
 
   return (
@@ -63,7 +81,6 @@ export default function AnalyticsReportsPage() {
 
       <main className="an-main">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-start', marginBottom: '16px' }}>
-          {/* Left: Report Types */}
           <section aria-labelledby="types" style={{ flex: '3 1 600px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <h2 id="types" className="t">Hisobot turi</h2>
@@ -106,7 +123,6 @@ export default function AnalyticsReportsPage() {
             </div>
           </section>
 
-          {/* Right: Format and Generate */}
           <section className="card" style={{ flex: '1 1 300px', minWidth: '260px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <h3 className="t" style={{ fontSize: '15px' }}>Eksport parametrlari</h3>
             <div>
@@ -118,7 +134,7 @@ export default function AnalyticsReportsPage() {
                   style={{ justifyContent: 'center', borderColor: format === 'excel' ? '#2563EB' : '#E5E9EE', background: format === 'excel' ? '#F5F8FF' : '#ffffff', fontWeight: format === 'excel' ? 600 : 500 }}
                   onClick={() => setFormat('excel')}
                 >
-                  Excel (.xlsx)
+                  Excel (.xml)
                 </button>
                 <button
                   type="button"
@@ -141,50 +157,7 @@ export default function AnalyticsReportsPage() {
           </section>
         </div>
 
-        {/* Export History Table */}
-        <section className="card" style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid #E5E9EE' }}>
-            <h2 className="t">Eksport tarixi</h2>
-            <p className="s">Fayllar 7 kun saqlanadi · Oxirgi 3 ta</p>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="tb">
-              <thead>
-                <tr>
-                  <th>Hisobot</th>
-                  <th>Davr</th>
-                  <th>Filtrlar</th>
-                  <th className="r">Qatorlar</th>
-                  <th>Format</th>
-                  <th>Holat</th>
-                  <th style={{ width: '120px' }} />
-                </tr>
-              </thead>
-              <tbody>
-                {EXPORT_HISTORY.map((eh) => (
-                  <tr key={eh.id}>
-                    <td style={{ fontWeight: 600 }}>{eh.report}</td>
-                    <td>{eh.period}</td>
-                    <td style={{ color: '#4B5563' }}>{eh.filters}</td>
-                    <td className="r">{eh.rows}</td>
-                    <td>{eh.format}</td>
-                    <td><span className="badge ok">Tayyor</span></td>
-                    <td className="r">
-                      <button
-                        type="button"
-                        className="btn"
-                        style={{ height: '30px' }}
-                        onClick={handleGenerateReport}
-                      >
-                        <Download size={12} />Yuklab olish
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <AnalyticsReportsHistoryTable history={history} onDownload={handleGenerateReport} />
       </main>
     </div>
   );

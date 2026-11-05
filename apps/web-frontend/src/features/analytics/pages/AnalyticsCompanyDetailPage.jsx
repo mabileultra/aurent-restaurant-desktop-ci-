@@ -16,6 +16,7 @@ export default function AnalyticsCompanyDetailPage() {
       <main className="an-main">
       <AnalyticsCompanyDetailHeader
         company={page.detail}
+        loading={page.loading}
         period={page.period}
         setPeriod={page.setPeriod}
         onExport={() => window.print()}
@@ -26,7 +27,7 @@ export default function AnalyticsCompanyDetailPage() {
         periodLabel={page.period === '7d' ? '7 kun' : '30 kun'}
       />
 
-      <div className="an-two-cols" style={{ gridTemplateColumns: 'minmax(0, 1.4fr) minmax(320px, 1fr)' }}>
+      <div className="an-two-cols" style={{ alignItems: 'start' }}>
         <AnalyticsCompanyDailyChart
           days={page.detail?.days}
           selectedDay={page.selectedDay}
@@ -34,7 +35,7 @@ export default function AnalyticsCompanyDetailPage() {
         />
         <AnalyticsCompanyReceiptsDrawer
           date={page.selectedDay}
-          storeName={page.detail?.name ? `${page.detail.name} do‘koni` : 'Farina Invest do‘koni'}
+          storeName={page.detail?.name ? `${page.detail.name} do‘koni` : 'Do‘kon'}
           receipts={page.receipts}
           total={page.totalReceipts}
           onSelectReceipt={page.setSelectedReceipt}

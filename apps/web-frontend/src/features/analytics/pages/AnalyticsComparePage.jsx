@@ -4,7 +4,7 @@ import { Download } from 'lucide-react';
 import AnalyticsHeader from '../components/AnalyticsHeader';
 import { useAnalyticsOverview } from '../hooks/useAnalyticsOverview';
 import { useAnalyticsPeriodStore } from '../hooks/useAnalyticsPeriodStore';
-import { fmtDeltaBadge, fmtMoney, fmtNum, fmtPercent } from '../utils/analyticsFormat';
+import { fmtDeltaBadge, fmtMoney, fmtNum, fmtPercent, sanitizeText } from '../utils/analyticsFormat';
 import { exportToCsv } from '../utils/analyticsExport';
 
 export default function AnalyticsComparePage() {
@@ -112,7 +112,7 @@ export default function AnalyticsComparePage() {
         </div>
 
         {/* 6 Comparison KPIs */}
-        <section aria-label="Davrlar taqqoslanishi" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+        <section aria-label="Davrlar taqqoslanishi" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginBottom: '16px' }}>
           {kpiList.map((item) => (
             <div key={item.label} className="card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <span className="k">{item.label}</span>
@@ -148,7 +148,7 @@ export default function AnalyticsComparePage() {
                     return (
                       <tr key={r.code || i}>
                         <td>{i + 1}</td>
-                        <td style={{ fontWeight: 600 }}>{r.nameUz || r.nameRu || 'Hudud'}</td>
+                        <td style={{ fontWeight: 600 }}>{sanitizeText(r.nameUz || r.nameRu || 'Hudud')}</td>
                         <td><strong>{fmtMoney(r.totalTurnover)}</strong></td>
                         <td>{r.enterprises || 0}</td>
                         <td>{r.connected || 0} / {r.enterprises || 0}</td>
@@ -158,11 +158,11 @@ export default function AnalyticsComparePage() {
                   })
                 ) : (
                   page.top10Companies.map((c, i) => {
-                    const delta = fmtDeltaBadge(c.weekDeltaPct);
+                    const delta = fmtDeltaBadge(c.turnoverDeltaPct ?? c.weekDeltaPct);
                     return (
                       <tr key={c.companyId || i}>
                         <td>{i + 1}</td>
-                        <td style={{ fontWeight: 600 }}>{c.name}</td>
+                        <td style={{ fontWeight: 600 }}>{sanitizeText(c.name)}</td>
                         <td><strong>{fmtMoney(c.totalTurnover)}</strong></td>
                         <td>{c.tin || '—'}</td>
                         <td><span className={`badge ${c.connected ? 'ok' : 'no'}`}>{c.connected ? 'Ulangan' : 'Ulanmagan'}</span></td>

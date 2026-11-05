@@ -11,11 +11,44 @@ const PERIODS = [
 
 export default function AnalyticsCompanyDetailHeader({
   company,
+  loading = false,
   period,
   setPeriod,
   onExport,
 }) {
-  const initials = (company?.name || 'FI').slice(0, 2).toUpperCase();
+  if (loading || !company) {
+    return (
+      <div style={{ marginBottom: '1.25rem' }}>
+        <Link
+          to="/platform/analytics/companies"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: '#2563EB',
+            textDecoration: 'none',
+            marginBottom: '0.75rem',
+          }}
+        >
+          <ArrowLeft size={16} aria-hidden />
+          <span>Firmalar ro‘yxatiga</span>
+        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div className="an-skeleton" style={{ width: '2.75rem', height: '2.75rem', borderRadius: '0.65rem', background: '#e2e8f0' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className="an-skeleton" style={{ width: '200px', height: '24px', borderRadius: '4px', background: '#e2e8f0' }} />
+            <div className="an-skeleton" style={{ width: '260px', height: '14px', borderRadius: '4px', background: '#e2e8f0' }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const initials = (company.name || 'FI').slice(0, 2).toUpperCase();
+  const region = company.regionNameUz || company.regionNameRu || 'Hududi ko‘rsatilmagan';
+  const rank = company.rank ? ` · Aylanma bo‘yicha ${company.rank}-o‘rin` : '';
 
   return (
     <div style={{ marginBottom: '1.25rem' }}>
@@ -27,7 +60,7 @@ export default function AnalyticsCompanyDetailHeader({
           gap: '0.4rem',
           fontSize: '0.8rem',
           fontWeight: 600,
-          color: '#047857',
+          color: '#2563EB',
           textDecoration: 'none',
           marginBottom: '0.75rem',
         }}
@@ -43,8 +76,8 @@ export default function AnalyticsCompanyDetailHeader({
               width: '2.75rem',
               height: '2.75rem',
               borderRadius: '0.65rem',
-              background: '#ecfdf5',
-              color: '#047857',
+              background: '#eff6ff',
+              color: '#2563EB',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -58,10 +91,10 @@ export default function AnalyticsCompanyDetailHeader({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                {company?.name || 'Farina Invest'}
+                {company.name}
               </h1>
-              {company?.connected !== false ? (
-                <span className="an-badge an-badge--green" style={{ fontSize: '0.75rem' }}>
+              {company.connected !== false ? (
+                <span className="an-badge an-badge--blue" style={{ fontSize: '0.75rem' }}>
                   <CheckCircle2 size={13} aria-hidden />
                   <span>Fiskal tizimga ulangan</span>
                 </span>
@@ -72,7 +105,7 @@ export default function AnalyticsCompanyDetailHeader({
               )}
             </div>
             <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.25rem 0 0' }}>
-              STIR {company?.tin || '303190578'} · {company?.regionNameUz || company?.regionNameRu || 'Samarqand viloyati, Samarqand sh.'} · {company?.storeCount || 1} do‘kon · Aylanma bo‘yicha 1-o‘rin / 114
+              STIR {company.tin || '—'} · {region} · {company.storeCount || 1} do‘kon{rank}
             </p>
           </div>
         </div>

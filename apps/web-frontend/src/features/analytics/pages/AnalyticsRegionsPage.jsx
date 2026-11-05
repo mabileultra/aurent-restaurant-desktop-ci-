@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/analytics.css';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../api/analyticsApi';
 import AnalyticsHeader from '../components/AnalyticsHeader';
@@ -9,16 +10,35 @@ import AnalyticsRegionDetailPanel from '../components/AnalyticsRegionDetailPanel
 import AnalyticsRegionBottomStats from '../components/AnalyticsRegionBottomStats';
 import AnalyticsRegionsTable from '../components/AnalyticsRegionsTable';
 import { useAnalyticsOverview } from '../hooks/useAnalyticsOverview';
+import { fetchAllCompanies } from '../utils/analyticsCompanyLoader';
+import { exportToCsv } from '../utils/analyticsExport';
+import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
 
 export default function AnalyticsRegionsPage() {
+  const navigate = useNavigate();
   const page = useAnalyticsOverview();
   const [activeView, setActiveView] = useState('cards'); // 'cards' | 'table'
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState('all');
-  const [sort, setSort] = useState('turnover');
+  const [sort, setSort] = useState('turnover_desc');
   const [fiscalStatus, setFiscalStatus] = useState('all');
 
-  const activeRegion = selectedRegion || page.topRegions[0] || { nameUz: 'Samarqand viloyati', code: '1726' };
+  const handleExport = () => {
+    const headers = ['#', 'Hudud', 'Korxonalar', 'Ulangan', 'Fiskal aylanma', 'Nofiskal aylanma', 'Umumiy aylanma', 'Fiskal ulush'];
+    const rows = page.topRegions.map((r, i) => [
+      i + 1,
+      r.nameUz || r.nameRu || 'Hudud',
+      r.enterprises || 0,
+      r.connected || 0,
+      fmtMoney(r.fiscalTurnover),
+      fmtMoney(r.nonFiscalTurnover),
+      fmtMoney(r.totalTurnover),
+      fmtPercent(r.fiscalSharePct),
+    ]);
+    exportToCsv(`hududlar-${page.period}`, headers, rows);
+  };
+
+  const activeRegion = selectedRegion || page.topRegions[0] || (page.regions?.[0] ? { nameUz: page.regions[0].nameUz, code: page.regions[0].code } : null);
 
   const districtsQuery = useQuery({
     queryKey: ['analytics-districts', page.period, activeRegion?.code],
@@ -33,11 +53,14 @@ export default function AnalyticsRegionsPage() {
 
   const regionCompaniesQuery = useQuery({
     queryKey: ['analytics-region-companies', page.period, activeRegion?.code],
-    queryFn: () => analyticsApi.getCompanies({
-      period: page.period,
-      regionCode: activeRegion?.code,
-      size: 50,
-    }).then((res) => res.data?.rows ?? []),
+    queryFn: () =>
+      fetchAllCompanies({
+        period: page.period,
+        regionCode: activeRegion?.code,
+      }).then((res) => {
+        const rows = res.rows ?? [];
+        return [...rows].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
+      }),
     enabled: Boolean(activeRegion?.code),
   });
 
@@ -59,8 +82,8 @@ export default function AnalyticsRegionsPage() {
           setSort={setSort}
           fiscalStatus={fiscalStatus}
           setFiscalStatus={setFiscalStatus}
-          onCompare={() => {}}
-          onExport={() => {}}
+          onCompare={() => navigate('/platform/analytics/comparison')}
+          onExport={handleExport}
         />
 
         {activeView === 'cards' ? (
@@ -82,7 +105,7 @@ export default function AnalyticsRegionsPage() {
               onSelectDistrict={setSelectedDistrict}
             />
 
-            <AnalyticsRegionBottomStats />
+            <AnalyticsRegionBottomStats regions={page.topRegions} />
           </>
         ) : (
           <AnalyticsRegionsTable rows={page.topRegions} />

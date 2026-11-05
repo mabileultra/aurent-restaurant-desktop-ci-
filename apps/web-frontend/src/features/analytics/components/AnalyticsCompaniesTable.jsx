@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronRight, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
+import { fmtMoney, fmtPercent, sanitizeText } from '../utils/analyticsFormat';
 import { exportToCsv } from '../utils/analyticsExport';
 
 export default function AnalyticsCompaniesTable({
@@ -95,18 +95,18 @@ export default function AnalyticsCompaniesTable({
                 >
                   <td style={{ color: '#94a3b8' }}>{rowNum}</td>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{r.name}</div>
+                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{sanitizeText(r.name)}</div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b' }}>STIR {r.tin || 'kiritilmagan'}</div>
                   </td>
                   <td>
                     {r.regionNameRu || r.regionNameUz ? (
-                      <span>{r.regionNameUz || r.regionNameRu}</span>
+                      <span>{sanitizeText(r.regionNameUz || r.regionNameRu)}</span>
                     ) : (
                       <span style={{ color: '#d97706' }}>Ko‘rsatilmagan</span>
                     )}
                   </td>
                   <td>
-                    <span className={`an-badge ${r.connected ? 'an-badge--green' : 'an-badge--red'}`}>
+                    <span className={`an-badge ${r.connected ? 'an-badge--blue' : 'an-badge--red'}`}>
                       ● {r.connected ? 'Ulangan' : 'Ulanmagan'}
                     </span>
                   </td>

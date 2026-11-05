@@ -81,3 +81,132 @@
   color: #64748b;
   opacity: 0.65;
 }
+
+/* ==========================================================================
+   Blue Theme (Analytics & Independent Modules - Zero Green)
+   ========================================================================== */
+.platform-select--blue:not(.base-select--disabled) .base-select__trigger:hover {
+  border-color: #2563EB;
+}
+
+.platform-select--blue .base-select__trigger:focus,
+.platform-select--blue .base-select__trigger:focus-within,
+.platform-select--blue.base-select--open .base-select__trigger {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+}
+
+.platform-select--blue.platform-select--active .base-select__trigger,
+.platform-select--blue.base-select--active-filter .base-select__trigger {
+  border-color: #2563EB !important;
+  background: rgba(37, 99, 235, 0.08) !important;
+  color: #1D4ED8 !important;
+  font-weight: 600;
+}
+
+.platform-select--blue.platform-select--active .base-select__trigger .base-select__chevron {
+  color: #2563EB !important;
+}
+
+/* Blue Dropdown Menu (Portal) - Zero Green Guaranteed */
+.platform-select__menu--blue,
+.base-select__menu.platform-select__menu--blue {
+  --color-brand: #2563eb !important;
+  --color-brand-soft: #eff6ff !important;
+  --color-brand-deep: #1d4ed8 !important;
+  --color-focus-ring: rgba(37, 99, 235, 0.2) !important;
+}
+
+.platform-select__menu--blue .base-select__search-wrap,
+.platform-select__menu--blue .base-select__search-wrap:focus-within {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18) !important;
+}
+
+.platform-select__menu--blue .base-select__search:focus {
+  border-color: #2563eb !important;
+  outline: none !important;
+}
+
+/* Hover and keyboard highlight */
+html.app-theme--admin .platform-select__menu--blue .base-select__option:hover,
+html.app-theme--admin .platform-select__menu--blue .base-select__option.is-highlighted,
+html.app-theme--admin .platform-select__menu--blue .base-select__option--highlight,
+.platform-select__menu--blue .base-select__option:hover,
+.platform-select__menu--blue .base-select__option.is-highlighted,
+.platform-select__menu--blue .base-select__option--highlight {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+/* Selected option */
+html.app-theme--admin .platform-select__menu--blue .base-select__option--selected,
+.platform-select__menu--blue .base-select__option--selected {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  font-weight: 600 !important;
+}
+
+/* Selected + hover/highlight */
+html.app-theme--admin .platform-select__menu--blue .base-select__option--selected:hover,
+html.app-theme--admin .platform-select__menu--blue .base-select__option--selected.is-highlighted,
+html.app-theme--admin .platform-select__menu--blue .base-select__option--selected.base-select__option--highlight,
+.platform-select__menu--blue .base-select__option--selected:hover,
+.platform-select__menu--blue .base-select__option--selected.is-highlighted,
+.platform-select__menu--blue .base-select__option--selected.base-select__option--highlight {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.platform-select__menu--blue .base-select__check,
+.platform-select__menu--blue .base-select__option--selected .base-select__check {
+  color: #2563eb !important;
+}
+
+/* Dark mode blue theme */
+.dark .platform-select--blue:not(.base-select--disabled) .base-select__trigger:hover {
+  border-color: #3b82f6 !important;
+}
+
+.dark .platform-select--blue.platform-select--active .base-select__trigger,
+.dark .platform-select--blue.base-select--active-filter .base-select__trigger {
+  border-color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+.dark .platform-select__menu--blue,
+.dark.app-theme--admin .platform-select__menu--blue {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark html.app-theme--admin .platform-select__menu--blue .base-select__search-wrap,
+.dark .platform-select__menu--blue .base-select__search-wrap {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.dark html.app-theme--admin .platform-select__menu--blue .base-select__search-wrap:focus-within,
+.dark .platform-select__menu--blue .base-select__search-wrap:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+}
+
+.dark html.app-theme--admin .platform-select__menu--blue .base-select__option:hover,
+.dark html.app-theme--admin .platform-select__menu--blue .base-select__option.is-highlighted,
+.dark html.app-theme--admin .platform-select__menu--blue .base-select__option--highlight,
+.dark .platform-select__menu--blue .base-select__option:hover,
+.dark .platform-select__menu--blue .base-select__option--highlight {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+.dark html.app-theme--admin .platform-select__menu--blue .base-select__option--selected,
+.dark .platform-select__menu--blue .base-select__option--selected {
+  background-color: rgba(59, 130, 246, 0.28) !important;
+  color: #bfdbfe !important;
+}
+
+

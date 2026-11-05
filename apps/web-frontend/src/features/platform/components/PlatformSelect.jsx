@@ -20,6 +20,8 @@ const PlatformSelect = forwardRef(function PlatformSelect(
     cleanGeo = false,
     size = 'sm',
     className,
+    menuClassName,
+    theme = 'default',
     disabled = false,
     ariaLabel,
     ...rest
@@ -54,7 +56,7 @@ const PlatformSelect = forwardRef(function PlatformSelect(
     return list;
   }, [options, placeholder, cleanGeo]);
 
-  const hasActiveValue = Boolean(value && value !== '');
+  const hasActiveValue = Boolean(value && value !== '' && value !== 'all');
 
   const handleChange = (e) => {
     onChange?.(e);
@@ -62,6 +64,8 @@ const PlatformSelect = forwardRef(function PlatformSelect(
   };
 
   const autoSearchable = searchable ?? (normalizedOptions.length > 5);
+  const isAnalyticsRoute = typeof window !== 'undefined' && window.location.pathname.includes('/analytics');
+  const isBlueTheme = theme === 'blue' || isAnalyticsRoute || (typeof className === 'string' && className.includes('platform-select--blue'));
 
   return (
     <BaseSelect
@@ -71,9 +75,14 @@ const PlatformSelect = forwardRef(function PlatformSelect(
       disabled={disabled}
       className={clsx(
         'platform-select',
+        isBlueTheme && 'platform-select--blue',
         size === 'md' && 'platform-select--md',
         hasActiveValue && 'platform-select--active base-select--active-filter',
         className
+      )}
+      menuClassName={clsx(
+        isBlueTheme && 'platform-select__menu--blue',
+        menuClassName
       )}
       value={value}
       onChange={handleChange}

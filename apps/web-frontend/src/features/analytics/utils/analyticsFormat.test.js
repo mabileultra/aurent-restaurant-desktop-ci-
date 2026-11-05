@@ -8,6 +8,7 @@ import {
   fmtPercent,
   fmtPercentText,
   fmtQty,
+  sanitizeText,
 } from './analyticsFormat';
 
 describe('analyticsFormat', () => {
@@ -46,5 +47,12 @@ describe('analyticsFormat', () => {
     expect(fmtDayShort('2026-10-24')).toBe('24-okt');
     expect(fmtDayFull('2026-10-24')).toContain('24-oktabr, shanba');
     expect(fmtDayShort('')).toBe('—');
+  });
+
+  it('sanitizes double apostrophes from database strings', () => {
+    expect(sanitizeText("''ANNODENT SS''")).toBe("'ANNODENT SS'");
+    expect(sanitizeText("Bulung''ur")).toBe("Bulung'ur");
+    expect(sanitizeText("Kattaqo''rg''on")).toBe("Kattaqo'rg'on");
+    expect(sanitizeText(null)).toBe('');
   });
 });

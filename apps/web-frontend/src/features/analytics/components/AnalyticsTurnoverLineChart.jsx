@@ -1,163 +1,180 @@
-import React, { useMemo, useState } from 'react';
-import { fmtMoney } from '../utils/analyticsFormat';
+import React, { useMemo, useRef, useState } from 'react';
+import { fmtDayShort, fmtMoney } from '../utils/analyticsFormat';
+import { calculateDailyMetrics } from '../utils/analyticsCalculations';
+import {
+  buildChartPoints,
+  calculateChartNiceScale,
+  calculateCrosshairIndex,
+  resolveInactiveDaysNote,
+} from '../utils/analyticsChartMath';
+import AnalyticsTurnoverTooltip from './AnalyticsTurnoverTooltip';
 
-const POINTS = [
-  { date: '6-okt', fullDate: '6-oktabr, dushanba', fiscal: 30000000, nonFiscal: 2000000, total: 32000000, avg7: 25000000, topFirm: 'Farina Invest · 40%' },
-  { date: '10-okt', fullDate: '10-oktabr, juma', fiscal: 45000000, nonFiscal: 1000000, total: 46000000, avg7: 35000000, topFirm: 'Farina Invest · 50%' },
-  { date: '13-okt', fullDate: '13-oktabr, dushanba', fiscal: 20000000, nonFiscal: 1500000, total: 21500000, avg7: 30000000, topFirm: 'Farina Invest · 45%' },
-  { date: '17-okt', fullDate: '17-oktabr, juma', fiscal: 60000000, nonFiscal: 2500000, total: 62500000, avg7: 42000000, topFirm: 'Farina Invest · 60%' },
-  { date: '20-okt', fullDate: '20-oktabr, dushanba', fiscal: 85000000, nonFiscal: 2000000, total: 87000000, avg7: 70000000, topFirm: 'Farina Invest · 75%' },
-  { date: '23-okt', fullDate: '23-oktabr, juma', fiscal: 350000000, nonFiscal: 49400000, total: 399400000, avg7: 150000000, topFirm: 'Farina Invest · 85%' },
-  { date: '24-okt', fullDate: '24-oktabr, shanba', fiscal: 1220000000, nonFiscal: 3400000, total: 1223400000, avg7: 229500000, topFirm: 'Farina Invest · 97%' },
-  { date: '27-okt', fullDate: '27-oktabr, seshanba', fiscal: 750000000, nonFiscal: 2000000, total: 752000000, avg7: 250000000, topFirm: 'MAKON RBB · 65%' },
-  { date: '29-okt', fullDate: '29-oktabr, payshanba', fiscal: 150000000, nonFiscal: 1500000, total: 151500000, avg7: 220000000, topFirm: 'Aminjon XK · 40%' },
-  { date: '31-okt', fullDate: '31-oktabr, shanba', fiscal: 450000000, nonFiscal: 3000000, total: 453000000, avg7: 200000000, topFirm: 'Makon Mobile · 50%' },
-  { date: '2-noy', fullDate: '2-noyabr, dushanba', fiscal: 90000000, nonFiscal: 1000000, total: 91000000, avg7: 160000000, topFirm: 'Farina Invest · 45%' },
-  { date: '4-noy', fullDate: '4-noyabr, chorshanba', fiscal: 180000000, nonFiscal: 2000000, total: 182000000, avg7: 146500000, topFirm: 'Farina Invest · 60%' },
-];
+export default function AnalyticsTurnoverLineChart({
+  days = [],
+  topCompanyName = '',
+  onSelectDay,
+}) {
+  const svgRef = useRef(null);
+  const [hoveredIdx, setHoveredIdx] = useState(null);
 
-export default function AnalyticsTurnoverLineChart({ onSelectDay }) {
-  const [hovered, setHovered] = useState(POINTS[6]); // 24-oktabr selected by default as in screenshot
+  const points = useMemo(() => buildChartPoints(days, topCompanyName), [days, topCompanyName]);
+
+  const metrics = useMemo(() => calculateDailyMetrics(days), [days]);
+  const inactiveNote = useMemo(() => resolveInactiveDaysNote(points), [points]);
 
   const width = 800;
-  const height = 240;
-  const padding = { top: 20, right: 30, bottom: 30, left: 60 };
-  const maxVal = 1300000000;
+  const height = 245;
+  const pad = { top: 20, right: 24, bottom: 32, left: 68 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
 
-  const getX = (idx) => padding.left + (idx / (POINTS.length - 1)) * (width - padding.left - padding.right);
-  const getY = (val) => height - padding.bottom - (val / maxVal) * (height - padding.top - padding.bottom);
+  const rawMax = useMemo(() => {
+    if (points.length === 0) return 1000000;
+    return Math.max(...points.map((p) => Math.max(p.total, p.avg7)), 1);
+  }, [points]);
+
+  const { maxVal, ticks: yTicks } = useMemo(() => calculateChartNiceScale(rawMax, 5), [rawMax]);
+
+  const getX = (idx) => pad.left + (idx / Math.max(points.length - 1, 1)) * chartW;
+  const getY = (val) => height - pad.bottom - (val / maxVal) * chartH;
 
   const dailyPath = useMemo(() => {
-    return POINTS.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.total)}`).join(' ');
-  }, []);
+    if (points.length === 0) return '';
+    return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.total)}`).join(' ');
+  }, [points, maxVal]);
+
+  const areaPath = useMemo(() => {
+    if (points.length === 0) return '';
+    const lastX = getX(points.length - 1);
+    const firstX = getX(0);
+    const bottomY = height - pad.bottom;
+    return `${dailyPath} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+  }, [dailyPath, points]);
 
   const avgPath = useMemo(() => {
-    return POINTS.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.avg7)}`).join(' ');
-  }, []);
+    if (points.length === 0) return '';
+    return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.avg7)}`).join(' ');
+  }, [points, maxVal]);
+
+  const xTickIndices = useMemo(() => {
+    const len = points.length;
+    if (len <= 5) return points.map((_, i) => i);
+    return [0, Math.round(len * 0.24), Math.round(len * 0.48), Math.round(len * 0.72), len - 1];
+  }, [points]);
+
+  const activeIdx = hoveredIdx !== null ? hoveredIdx : (points.length > 0 ? points.length - 5 : null);
+  const activePoint = activeIdx !== null && points[activeIdx] ? points[activeIdx] : null;
+  const activeX = activeIdx !== null ? getX(activeIdx) : 0;
+  const activeY = activePoint ? getY(activePoint.total) : 0;
+  const activeYAvg = activePoint ? getY(activePoint.avg7) : 0;
+  const isRightHalf = activeIdx !== null && activeIdx >= points.length / 2;
+
+  const handlePointerMove = (e) => {
+    if (!svgRef.current || points.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX);
+    if (clientX == null) return;
+    const svgScale = rect.width / width;
+    const svgMouseX = (clientX - rect.left) / svgScale;
+    const idx = calculateCrosshairIndex(svgMouseX, pad.left, chartW, points.length);
+    setHoveredIdx(idx);
+  };
 
   return (
-    <section
-      className="card"
-      aria-labelledby="dyn"
-      style={{
-        flex: '2 1 620px',
-        minWidth: 0,
-        padding: '18px 20px',
-        position: 'relative',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+    <section className="card an-card" aria-labelledby="dyn" style={{ flex: '2 1 620px', minWidth: 0, padding: '20px 24px', position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '10px' }}>
         <div>
-          <h2 id="dyn" className="t">Kunlar bo‘yicha aylanma dinamikasi</h2>
-          <p className="s">Umumiy aylanma, so‘m · nuqta ustiga olib boring, bosilsa kun detali ochiladi</p>
+          <h2 id="dyn" className="t" style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Kunlar bo‘yicha aylanma dinamikasi</h2>
+          <p className="s" style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748B' }}>
+            Umumiy aylanma, so‘m · nuqta ustiga olib boring, bosilsa kun detali ochiladi
+          </p>
         </div>
-
-        <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: '#4B5563', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px', fontSize: '12.5px', color: '#475569', alignItems: 'center' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#2563EB' }} />
+            <span style={{ width: 16, height: 3, borderRadius: 2, background: '#2563EB' }} />
             Kunlik aylanma
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: 14, height: 3, borderRadius: 2, background: '#EA7A2B' }} />
+            <span style={{ width: 16, height: 3, borderRadius: 2, background: '#EA580C' }} />
             7 kunlik o‘rtacha
           </span>
         </div>
       </div>
 
-      <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
-        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
-          {/* Y-axis grid lines */}
-          {[0, 250000000, 500000000, 750000000, 1000000000, 1250000000].map((v) => {
-            const y = getY(v);
-            const label = v === 0 ? '0' : v >= 1000000000 ? `${v / 1000000000} mlrd` : `${v / 1000000} mln`;
-            return (
-              <g key={v}>
-                <line x1={padding.left} y1={y} x2={width - padding.right} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-                <text x={padding.left - 8} y={y + 3} textAnchor="end" fontSize="10" fill="#94a3b8">{label}</text>
-              </g>
-            );
-          })}
-
-          {/* Paths */}
-          <path d={avgPath} fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" />
-          <path d={dailyPath} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" />
-
-          {/* Data points */}
-          {POINTS.map((p, i) => {
-            const cx = getX(i);
-            const cy = getY(p.total);
-            const isSelected = hovered?.date === p.date;
-            return (
-              <g key={p.date} style={{ cursor: 'pointer' }} onMouseEnter={() => setHovered(p)} onClick={() => onSelectDay && onSelectDay(p)}>
-                <circle cx={cx} cy={cy} r={isSelected ? 6 : 4} fill="#ffffff" stroke="#2563eb" strokeWidth={isSelected ? 3 : 2} />
-              </g>
-            );
-          })}
-
-          {/* X axis labels */}
-          {['6-okt', '13-okt', '20-okt', '27-okt', '4-noy'].map((dt) => {
-            const idx = POINTS.findIndex((pt) => pt.date === dt);
-            if (idx === -1) return null;
-            return (
-              <text key={dt} x={getX(idx)} y={height - 8} textAnchor="middle" fontSize="10" fill="#94a3b8">
-                {dt}
-              </text>
-            );
-          })}
-        </svg>
-
-        {/* Hover Tooltip Overlay (matching Screenshot 1) */}
-        {hovered && (
-          <div style={{
-            position: 'absolute',
-            top: 30,
-            left: '32%',
-            background: '#ffffff',
-            border: '1px solid #cbd5e1',
-            borderRadius: '0.65rem',
-            padding: '0.75rem 1rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-            fontSize: '0.78rem',
-            minWidth: 200,
-            zIndex: 10,
-          }}>
-            <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '0.4rem' }}>{hovered.fullDate}</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', marginBottom: '0.2rem' }}>
-              <span>Fiskal</span>
-              <strong style={{ color: '#0f172a' }}>{fmtMoney(hovered.fiscal)}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', marginBottom: '0.35rem' }}>
-              <span>Nofiskal</span>
-              <strong style={{ color: '#0f172a' }}>{fmtMoney(hovered.nonFiscal)}</strong>
-            </div>
-            <div style={{ height: 1, background: '#e2e8f0', margin: '0.35rem 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '0.35rem' }}>
-              <span>Jami</span>
-              <span>{fmtMoney(hovered.total)}</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.3 }}>
-              Eng katta ulush: {hovered.topFirm}
-              <br />· 7 kunlik o‘rtacha {fmtMoney(hovered.avg7)}
-            </div>
+      <div className="an-turnover-chart-wrap" onMouseLeave={() => setHoveredIdx(null)}>
+        {points.length === 0 ? (
+          <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '13px' }}>
+            Tanlangan davr uchun dinamika ma‘lumoti mavjud emas
           </div>
+        ) : (
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${width} ${height}`}
+            className="an-chart-svg"
+            onMouseMove={handlePointerMove}
+            onTouchMove={handlePointerMove}
+            onTouchEnd={() => setHoveredIdx(null)}
+            onClick={() => activePoint && onSelectDay && onSelectDay(activePoint)}
+            style={{ cursor: 'pointer' }}
+          >
+            <defs>
+              <linearGradient id="an-turnover-area-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2563EB" stopOpacity="0.16" />
+                <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+
+            {yTicks.map((v, i) => {
+              const y = getY(v);
+              const label = fmtMoney(v, { showCurrency: false });
+              return (
+                <g key={i}>
+                  <line x1={pad.left} y1={y} x2={width - pad.right} y2={y} stroke="#F1F5F9" strokeWidth="1" />
+                  <text x={pad.left - 10} y={y + 4} textAnchor="end" fontSize="11" fill="#94A3B8">{label}</text>
+                </g>
+              );
+            })}
+
+            <path d={areaPath} fill="url(#an-turnover-area-grad)" />
+            <path d={avgPath} fill="none" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={dailyPath} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+            {activePoint && (
+              <g pointerEvents="none">
+                <line x1={activeX} y1={pad.top} x2={activeX} y2={height - pad.bottom} className="an-crosshair-line" />
+                <circle cx={activeX} cy={activeY} r={8} fill="#2563EB" fillOpacity="0.2" className="an-pulse-ring" />
+                <circle cx={activeX} cy={activeY} r={5} fill="#2563EB" stroke="#ffffff" strokeWidth="2.5" />
+                <circle cx={activeX} cy={activeYAvg} r={4} fill="#EA580C" stroke="#ffffff" strokeWidth="2" />
+              </g>
+            )}
+
+            {xTickIndices.map((idx) => {
+              const pt = points[idx];
+              if (!pt) return null;
+              return (
+                <text key={pt.rawDate} x={getX(idx)} y={height - 8} textAnchor="middle" fontSize="11" fill="#94A3B8">
+                  {pt.date}
+                </text>
+              );
+            })}
+          </svg>
         )}
+
+        <AnalyticsTurnoverTooltip
+          point={activePoint}
+          leftPct={(activeX / width) * 100}
+          isRightHalf={isRightHalf}
+          isVisible={hoveredIdx !== null}
+        />
       </div>
 
-      {/* Bottom Summary Bar */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '10px 28px',
-        marginTop: 14,
-        paddingTop: 12,
-        borderTop: '1px solid #F0F2F5',
-        fontSize: '12.5px',
-        color: '#6B7280',
-      }}>
-        <span>Kunlik o‘rtacha <b style={{ color: '#1F2937' }}>146,5 mln</b></span>
-        <span>Eng yuqori kun <b style={{ color: '#1F2937' }}>24-okt · 1,22 mlrd</b></span>
-        <span>Savdo bo‘lgan kunlar <b style={{ color: '#1F2937' }}>28 / 30</b></span>
-        <span style={{ color: '#B45309' }}>3–4-noyabr: cheklar kelmagan</span>
+      <div className="an-turnover-summary-bar">
+        <span>Kunlik o‘rtacha <b>{fmtMoney(metrics.avgDaily, { showCurrency: false })}</b></span>
+        <span>Eng yuqori kun <b>{metrics.peakDay ? `${fmtDayShort(metrics.peakDay.date)} · ${fmtMoney(metrics.peakDay.amount, { showCurrency: false })}` : '—'}</b></span>
+        <span>Savdo bo‘lgan kunlar <b>{metrics.activeDays} / {metrics.totalDays || points.length}</b></span>
+        <span style={{ color: inactiveNote.isWarning ? '#C2410C' : '#16A34A', fontWeight: 600 }}>
+          {inactiveNote.text}
+        </span>
       </div>
     </section>
   );

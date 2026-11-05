@@ -34,10 +34,12 @@ const BaseSelect = forwardRef(function BaseSelect(
     id,
     disabled = false,
     className,
+    menuClassName,
     size = 'md',
     emptyValue = '',
     searchable = true,
     onSearchQueryChange,
+    style,
   },
   forwardedRef
 ) {
@@ -175,7 +177,7 @@ const BaseSelect = forwardRef(function BaseSelect(
           ref={menuRef}
           id={listId}
           role="listbox"
-          className="base-select__menu"
+          className={clsx('base-select__menu', menuClassName)}
           style={{
             position: 'fixed',
             top: menuStyle.top,
@@ -271,6 +273,7 @@ const BaseSelect = forwardRef(function BaseSelect(
   return (
     <div
       ref={rootRef}
+      style={style}
       className={clsx(
         'base-select',
         size === 'sm' && 'base-select--sm',

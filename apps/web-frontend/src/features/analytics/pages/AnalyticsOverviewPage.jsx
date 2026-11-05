@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/analytics.css';
 import { AlertCircle, RotateCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import AnalyticsBottomStatsCards from '../components/AnalyticsBottomStatsCards';
 import AnalyticsFiltersBar from '../components/AnalyticsFiltersBar';
 import AnalyticsFiscalShareCard from '../components/AnalyticsFiscalShareCard';
@@ -10,10 +11,27 @@ import AnalyticsTopCompaniesCard from '../components/AnalyticsTopCompaniesCard';
 import AnalyticsTopRegionsCard from '../components/AnalyticsTopRegionsCard';
 import AnalyticsTurnoverLineChart from '../components/AnalyticsTurnoverLineChart';
 import { useAnalyticsOverview } from '../hooks/useAnalyticsOverview';
+import { exportToCsv } from '../utils/analyticsExport';
+import { fmtDeltaBadge, fmtPercent } from '../utils/analyticsFormat';
 
 export default function AnalyticsOverviewPage() {
+  const navigate = useNavigate();
   const page = useAnalyticsOverview();
   const periodLabel = page.period === '7d' ? '7 kun' : page.period === 'today' ? 'Bugun' : '30 kun';
+
+  const handleExport = () => {
+    const headers = ['Ko‘rsatkich', 'Qiymat', 'Izoh'];
+    const rows = [
+      ['Jami korxonalar', page.kpi?.totalEnterprises || 0, '100%'],
+      ['Ulangan korxonalar', page.kpi?.connected || 0, fmtPercent(page.kpi?.connectedSharePct)],
+      ['Ulanmagan korxonalar', page.kpi?.notConnected || 0, fmtPercent(page.kpi?.notConnectedSharePct)],
+      ['Umumiy aylanma', page.totals?.totalTurnover || 0, fmtDeltaBadge(page.kpi?.totalTurnoverDeltaPct).text],
+      ['Fiskal aylanma', page.totals?.fiscalTurnover || 0, fmtPercent(page.totals?.fiscalPct)],
+      ['Nofiskal aylanma', page.totals?.nonFiscalTurnover || 0, fmtPercent(page.totals?.nonFiscalPct)],
+      ['Yangi ulanishlar', page.kpi?.newConnections || 0, fmtDeltaBadge(page.kpi?.newConnectionsDeltaPct).text],
+    ];
+    exportToCsv(`umumiy-analitika-${page.period}`, headers, rows);
+  };
 
   return (
     <div className="an-shell">
@@ -79,6 +97,7 @@ export default function AnalyticsOverviewPage() {
           onConnectionStatusChange={page.setConnectionStatus}
           regions={page.regions}
           onReset={page.handleResetFilters}
+          onExport={handleExport}
           showExtraFilters={page.showExtraFilters}
           setShowExtraFilters={page.setShowExtraFilters}
         />
@@ -90,21 +109,28 @@ export default function AnalyticsOverviewPage() {
         />
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-          <AnalyticsTurnoverLineChart />
+          <AnalyticsTurnoverLineChart
+            days={page.republicDays}
+            topCompanyName={page.topCompanyName}
+            onSelectDay={() => page.topCompanyId && navigate(`/platform/analytics/companies/${page.topCompanyId}`)}
+          />
           <AnalyticsFiscalShareCard
             fiscalTurnover={page.totals.fiscalTurnover}
             nonFiscalTurnover={page.totals.nonFiscalTurnover}
             totalTurnover={page.totals.totalTurnover}
+            weeks={page.republicWeeks}
           />
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
           <AnalyticsTopCompaniesCard
             companies={page.top10Companies}
+            totalTurnover={page.totals.totalTurnover}
             periodLabel={periodLabel}
           />
           <AnalyticsTopRegionsCard
             regions={page.topRegions}
+            totalTurnover={page.totals.totalTurnover}
             periodLabel={periodLabel}
           />
         </div>

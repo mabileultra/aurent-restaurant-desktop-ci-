@@ -1,6 +1,27 @@
-import React, { useState } from 'react';
-import { ChevronDown, Download, RotateCcw, Search, SlidersHorizontal } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Download, RotateCcw, Search, SlidersHorizontal } from 'lucide-react';
 import PlatformSelect from '../../platform/components/PlatformSelect';
+import { sanitizeText } from '../utils/analyticsFormat';
+
+const COMPANY_TYPE_OPTIONS = [
+  { value: 'all', label: 'Korxona: Barchasi' },
+  { value: 'llc', label: 'MCHJ' },
+  { value: 'pe', label: 'XK / Xususiy' },
+  { value: 'ie', label: 'YaTT' },
+];
+
+const ACTIVITY_OPTIONS = [
+  { value: 'all', label: 'Faoliyat: Barchasi' },
+  { value: 'retail', label: 'Chakana savdo' },
+  { value: 'restaurant', label: 'Umumiy ovqatlanish' },
+  { value: 'pharmacy', label: 'Dorixona' },
+];
+
+const FISCAL_STATUS_OPTIONS = [
+  { value: '', label: 'Fiskal: Barchasi' },
+  { value: 'CONNECTED', label: 'Ulangan' },
+  { value: 'NOT_CONNECTED', label: 'Ulanmagan' },
+];
 
 export default function AnalyticsFiltersBar({
   regionCode = '',
@@ -14,78 +35,76 @@ export default function AnalyticsFiltersBar({
   search = '',
   onSearchChange,
   regions = [],
-  asOfDate = '4-noyabr holatiga',
+  asOfDate = 'Bugungi holatda',
   onExport,
   onReset,
   showExtraFilters = false,
   setShowExtraFilters,
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const isOpen = showExtraFilters !== undefined ? showExtraFilters : internalOpen;
-  const toggleOpen = () => (setShowExtraFilters ? setShowExtraFilters(!isOpen) : setInternalOpen(!isOpen));
+  const isControlled = typeof setShowExtraFilters === 'function';
+  const isOpen = isControlled ? Boolean(showExtraFilters) : internalOpen;
+  const toggleOpen = () => (isControlled ? setShowExtraFilters(!isOpen) : setInternalOpen((prev) => !prev));
 
-  const selectedRegion = regions.find((r) => (r.code || r.regionCode) === regionCode);
-  const regionLabel = selectedRegion ? (selectedRegion.nameUz || selectedRegion.name) : 'Respublika';
-
-  const fiscalLabel = connectionStatus === 'CONNECTED'
-    ? 'Ulangan'
-    : connectionStatus === 'NOT_CONNECTED'
-      ? 'Ulanmagan'
-      : 'Barchasi';
+  const regionOptions = useMemo(() => [
+    { value: '', label: 'Hudud: Respublika' },
+    ...regions.map((r) => ({
+      value: r.code || r.regionCode,
+      label: sanitizeText(r.nameUz || r.name),
+    })),
+  ], [regions]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {/* Primary Canonical Filter Row (Matching Page 1 Design) */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
+      {/* Primary Filter Row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-        <button
-          type="button"
-          className="f"
-          aria-haspopup="listbox"
-          onClick={() => {
-            if (regions.length > 0 && onRegionChange) {
-              const next = regionCode ? '' : (regions[0]?.code || 'samarkand');
-              onRegionChange(next);
-            }
-          }}
-        >
-          Hudud: <b>{regionLabel}</b>
-          <ChevronDown className="ic" />
-        </button>
+        {/* Real Region Selector */}
+        <PlatformSelect
+          value={regionCode}
+          onChange={(e) => onRegionChange && onRegionChange(e.target.value)}
+          options={regionOptions}
+          size="sm"
+          theme="blue"
+          searchable
+          style={{ width: 'auto', minWidth: 160, maxWidth: 210 }}
+          ariaLabel="Hudud tanlash"
+        />
 
-        <button
-          type="button"
-          className="f"
-          aria-haspopup="listbox"
-          onClick={() => onCompanyTypeChange && onCompanyTypeChange(companyType === 'all' ? 'llc' : 'all')}
-        >
-          Korxona turi: <b>{companyType === 'llc' ? 'MCHJ' : 'Barchasi'}</b>
-          <ChevronDown className="ic" />
-        </button>
+        {/* Real Company Type Selector */}
+        <PlatformSelect
+          value={companyType}
+          onChange={(e) => onCompanyTypeChange && onCompanyTypeChange(e.target.value)}
+          options={COMPANY_TYPE_OPTIONS}
+          size="sm"
+          theme="blue"
+          searchable={false}
+          style={{ width: 'auto', minWidth: 140 }}
+          ariaLabel="Korxona turi"
+        />
 
-        <button
-          type="button"
-          className="f"
-          aria-haspopup="listbox"
-          onClick={() => onActivityChange && onActivityChange(activity === 'all' ? 'retail' : 'all')}
-        >
-          Faoliyat: <b>{activity === 'retail' ? 'Chakana savdo' : 'Barchasi'}</b>
-          <ChevronDown className="ic" />
-        </button>
+        {/* Real Activity Selector */}
+        <PlatformSelect
+          value={activity}
+          onChange={(e) => onActivityChange && onActivityChange(e.target.value)}
+          options={ACTIVITY_OPTIONS}
+          size="sm"
+          theme="blue"
+          searchable={false}
+          style={{ width: 'auto', minWidth: 140 }}
+          ariaLabel="Faoliyat turi"
+        />
 
-        <button
-          type="button"
-          className="f"
-          aria-haspopup="listbox"
-          onClick={() => {
-            if (onConnectionStatusChange) {
-              const next = connectionStatus === '' ? 'CONNECTED' : connectionStatus === 'CONNECTED' ? 'NOT_CONNECTED' : '';
-              onConnectionStatusChange(next);
-            }
-          }}
-        >
-          Fiskal holat: <b>{fiscalLabel}</b>
-          <ChevronDown className="ic" />
-        </button>
+        {/* Real Connection Status Selector */}
+        <PlatformSelect
+          value={connectionStatus}
+          onChange={(e) => onConnectionStatusChange && onConnectionStatusChange(e.target.value)}
+          options={FISCAL_STATUS_OPTIONS}
+          size="sm"
+          theme="blue"
+          searchable={false}
+          style={{ width: 'auto', minWidth: 135 }}
+          ariaLabel="Fiskal holati"
+        />
 
         <button
           type="button"
@@ -95,63 +114,50 @@ export default function AnalyticsFiltersBar({
           style={{ color: '#1D4ED8', borderColor: '#C9DAFB', background: '#F5F8FF' }}
         >
           <SlidersHorizontal className="ic" />
-          <span>Qo‘shimcha filtrlar</span>
+          <span>Qidiruv</span>
         </button>
 
         <span style={{ flex: '1 1 auto' }} />
 
         <span style={{ fontSize: '12px', color: '#6B7280', whiteSpace: 'nowrap' }}>
-          Ma’lumot: {asOfDate}
+          {asOfDate}
         </span>
 
-        <button
-          type="button"
-          className="btn"
-          onClick={onExport}
-        >
-          <Download className="ic" style={{ color: '#2563EB' }} />
-          <span>Eksport</span>
-        </button>
+        {onExport && (
+          <button
+            type="button"
+            className="btn"
+            onClick={onExport}
+          >
+            <Download className="ic" style={{ color: '#2563EB' }} />
+            <span>Eksport</span>
+          </button>
+        )}
       </div>
 
-      {/* Expandable Extra Filters Drawer */}
+      {/* Expandable Search Drawer */}
       {isOpen && (
-        <div className="card" style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-          <div style={{ flex: '1 1 240px', display: 'flex', alignItems: 'center', gap: '6px', background: '#F9FAFB', border: '1px solid #E5E9EE', borderRadius: 8, padding: '0 10px', height: 34 }}>
+        <div className="card" style={{ padding: '10px 14px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+          <div style={{ flex: '1 1 280px', display: 'flex', alignItems: 'center', gap: '8px', background: '#F9FAFB', border: '1px solid #E5E9EE', borderRadius: 8, padding: '0 10px', height: 34 }}>
             <Search size={14} color="#94A3B8" />
             <input
               type="text"
               value={search}
               onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-              placeholder="Firma nomi, STIR yoki ID qidirish..."
-              style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '12.5px', width: '100%', color: '#1F2937' }}
+              placeholder="Firma nomi yoki STIR bo‘yicha qidirish..."
+              style={{ border: 0, outline: 0, background: 'transparent', fontSize: '12.5px', width: '100%', color: '#1F2937', boxShadow: 'none' }}
             />
           </div>
-
-          {regions.length > 0 && (
-            <div style={{ minWidth: 180 }}>
-              <PlatformSelect
-                value={regionCode}
-                onChange={(e) => onRegionChange && onRegionChange(e.target.value)}
-                placeholder="Hudud: Barchasi"
-                options={[
-                  { value: '', label: 'Respublika (barchasi)' },
-                  ...regions.map((r) => ({ value: r.code || r.regionCode, label: r.nameUz || r.name })),
-                ]}
-                cleanGeo
-              />
-            </div>
-          )}
 
           {onReset && (
             <button
               type="button"
-              onClick={onReset}
               className="btn"
-              style={{ color: '#6B7280' }}
+              onClick={onReset}
+              style={{ color: '#6B7280', height: 34 }}
             >
               <RotateCcw size={13} />
-              <span>Tozalash</span>
+              Filtrlarni tozalash
             </button>
           )}
         </div>

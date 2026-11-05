@@ -31,8 +31,10 @@ export default function PlatformDateRangePicker({
   align = 'left',
   minDate = '',
   maxDate = '',
+  theme = 'emerald',
   t: propT,
 }) {
+  const isBlue = theme === 'blue';
   let hookT = null;
   let i18n = null;
   try {
@@ -287,14 +289,16 @@ export default function PlatformDateRangePicker({
             toggleOpen();
           }
         }}
-        className={`group h-[2.375rem] px-3 inline-flex items-center justify-between gap-2.5 rounded-[0.6rem] border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm select-none ${
+        className={`group h-[2.375rem] px-3 inline-flex items-center justify-between gap-2.5 rounded-[0.6rem] border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 ${
+          isBlue ? 'focus-within:ring-blue-500/20 focus-within:border-blue-500' : 'focus-within:ring-emerald-500/20 focus-within:border-emerald-500'
+        } transition-all shadow-sm select-none ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         } ${isFullWidth ? 'w-full' : ''} ${className}`}
       >
         <span className="inline-flex items-center gap-2 truncate">
           <Calendar
             size={15}
-            className="text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform"
+            className={`${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'} shrink-0 group-hover:scale-105 transition-transform`}
           />
           <span className={`truncate ${hasValue ? 'text-slate-900 dark:text-slate-100 font-semibold' : 'text-slate-400 dark:text-slate-500'}`}>
             {displayText}
@@ -344,7 +348,9 @@ export default function PlatformDateRangePicker({
                     onClick={() => handlePresetClick(preset)}
                     className={`px-3 py-2 text-xs rounded-lg text-left transition-colors whitespace-nowrap min-h-[36px] flex items-center font-medium ${
                       isActive
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold ring-1 ring-emerald-500/20'
+                        ? isBlue
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 font-semibold ring-1 ring-blue-500/20'
+                          : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold ring-1 ring-emerald-500/20'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
@@ -432,15 +438,25 @@ export default function PlatformDateRangePicker({
                   let cellClass = 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg';
 
                   if (isSingleSelected) {
-                    cellClass = 'bg-emerald-600 text-white font-semibold rounded-lg shadow-sm shadow-emerald-700/20';
+                    cellClass = isBlue
+                      ? 'bg-blue-600 text-white font-semibold rounded-lg shadow-sm shadow-blue-700/20'
+                      : 'bg-emerald-600 text-white font-semibold rounded-lg shadow-sm shadow-emerald-700/20';
                   } else if (isStart) {
-                    cellClass = 'bg-emerald-600 text-white font-semibold rounded-l-lg rounded-r-none shadow-sm shadow-emerald-700/20';
+                    cellClass = isBlue
+                      ? 'bg-blue-600 text-white font-semibold rounded-l-lg rounded-r-none shadow-sm shadow-blue-700/20'
+                      : 'bg-emerald-600 text-white font-semibold rounded-l-lg rounded-r-none shadow-sm shadow-emerald-700/20';
                   } else if (isEnd) {
-                    cellClass = 'bg-emerald-600 text-white font-semibold rounded-r-lg rounded-l-none shadow-sm shadow-emerald-700/20';
+                    cellClass = isBlue
+                      ? 'bg-blue-600 text-white font-semibold rounded-r-lg rounded-l-none shadow-sm shadow-blue-700/20'
+                      : 'bg-emerald-600 text-white font-semibold rounded-r-lg rounded-l-none shadow-sm shadow-emerald-700/20';
                   } else if (isInRange) {
-                    cellClass = 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 rounded-none font-medium';
+                    cellClass = isBlue
+                      ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200 rounded-none font-medium'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 rounded-none font-medium';
                   } else if (isToday) {
-                    cellClass = 'ring-1 ring-emerald-500/80 font-bold text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30';
+                    cellClass = isBlue
+                      ? 'ring-1 ring-blue-500/80 font-bold text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-50/60 dark:hover:bg-blue-950/30'
+                      : 'ring-1 ring-emerald-500/80 font-bold text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30';
                   } else if (!day.isCurrentMonth) {
                     cellClass = 'text-slate-300 dark:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg';
                   }
@@ -495,7 +511,9 @@ export default function PlatformDateRangePicker({
               <button
                 type="button"
                 onClick={handleApply}
-                className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm shadow-emerald-700/20 transition-colors"
+                className={`px-4 py-1.5 rounded-lg ${
+                  isBlue ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-700/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-700/20'
+                } text-white font-semibold shadow-sm transition-colors`}
               >
                 {getPickerText('apply', lang, t)}
               </button>

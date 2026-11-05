@@ -93,3 +93,8 @@ export function fmtDayShort(iso) {
   const month = (MONTH_NAMES_UZ[parts[1] - 1] || '').slice(0, 3);
   return `${day}-${month}`;
 }
+
+export function sanitizeText(str) {
+  if (typeof str !== 'string') return str || '';
+  return str.replace(/''/g, "'").trim();
+}
