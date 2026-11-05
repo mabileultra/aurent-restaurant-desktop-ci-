@@ -13,6 +13,7 @@ import com.pos.catalog.service.product.ProductExtensionService;
 import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.SaleTypeSupport;
+import com.pos.catalog.service.product.support.CatalogPrimaryProductWriteSupport;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductPluValidator;
@@ -45,11 +46,13 @@ public class ProductUpdateHandler {
     private final StoreBusinessTypeResolver storeBusinessTypeResolver;
     private final ProductResponseAssembler assembler;
     private final ProductSnapshotNotifier productSnapshotNotifier;
+    private final CatalogPrimaryProductWriteSupport catalogPrimaryWrite;
 
     @Transactional
     public ProductResponse update(UUID id, UpdateProductRequest req) {
         Product product = catalogLoader.requireDetailed(id);
         applyChanges(product, req);
+        catalogPrimaryWrite.upsertBeforeLocalSave(product);
         Product saved = productRepository.save(product);
         if (req.attributes() != null) {
             productAttributeService.saveAttributes(saved.getId(), req.businessTypeCode(), req.attributes());

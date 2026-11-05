@@ -1,20 +1,29 @@
 package com.pos.config.catalog;
 
 /**
- * Wave 5.3 / 5.7 dial for dual-write into catalog-service.
- * Local web-backend Catalog remains DB SoT; REMOTE_ONLY makes remote mirror mandatory.
+ * Dial for outbound product/category card writes toward catalog-service.
+ *
+ * <p><b>Local grocery {@code products} remains the DB row until Wave 7 drop.</b>
+ * Modes differ in <em>when</em> remote must succeed and who is treated as card SoT.
  */
 public enum CatalogWriteMode {
 
     /** No outbound writes (same as {@code enabled=false}). */
     LOCAL_ONLY,
 
-    /** After-commit best-effort upsert/deactivate to catalog-service. */
+    /** After-commit best-effort upsert/deactivate to catalog-service. Local SoT. */
     DUAL,
 
     /**
-     * Sync mirror in-request: remote failure aborts the local write path.
-     * Still not “catalog-service SoT” (local rows remain); rehearsal before proxy CRUD.
+     * Strict <em>mirror</em>: remote must succeed in-request; local row still written first.
+     * Not catalog SoT — rehearsal before {@link #CATALOG_PRIMARY}.
      */
-    REMOTE_ONLY
+    REMOTE_ONLY,
+
+    /**
+     * Wave 7: catalog-service is card SoT for grocery create/update/deactivate.
+     * Upsert remote <em>before</em> local save (fail-fast); local row is mirror until drop.
+     * Do not confuse with {@link #REMOTE_ONLY}.
+     */
+    CATALOG_PRIMARY
 }
