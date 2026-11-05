@@ -31,7 +31,7 @@ public class TaxAnalyticsMissingRegionRepository {
         } else if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
             connection = " AND conn.company_id IS NULL ";
         }
-        String sql = """
+        String sql = ("""
             WITH connected AS ( %s ),
             missing AS (
               SELECT c.id,
@@ -71,7 +71,7 @@ public class TaxAnalyticsMissingRegionRepository {
               COALESCE((SELECT fiscal_turnover FROM turnover), 0) AS fiscal_turnover,
               COALESCE((SELECT non_fiscal_turnover FROM turnover), 0) AS non_fiscal_turnover,
               COALESCE((SELECT total_turnover FROM prev_turnover), 0) AS prev_turnover
-            """.formatted(TaxAnalyticsConnectedSql.SQL);
+            """).formatted(TaxAnalyticsConnectedSql.SQL);
         return jdbc.queryForMap(
             sql,
             ts(period.from()),
