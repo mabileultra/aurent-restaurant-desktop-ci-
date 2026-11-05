@@ -6,6 +6,8 @@ public record TaxAnalyticsDayPointResponse(
     String date,
     BigDecimal fiscalTurnover,
     BigDecimal nonFiscalTurnover,
-    BigDecimal totalTurnover
+    BigDecimal totalTurnover,
+    Integer leaderCompanyId,
+    String leaderCompanyName
 ) {
 }

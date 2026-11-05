@@ -1,10 +1,13 @@
 package com.pos.taxanalytics.service.impl;
 
 import com.pos.exception.ResourceNotFoundException;
+import com.pos.taxanalytics.client.TaxAnalyticsPharmacyClient;
+import com.pos.taxanalytics.client.TaxAnalyticsRestaurantClient;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompaniesResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyQueryRepository;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,16 +34,28 @@ class TaxAnalyticsCompanyServiceImplTest {
     @Mock
     private TaxAnalyticsCompanyQueryRepository repository;
 
+    @Mock
+    private TaxAnalyticsVerticalSnapshotLoader verticalLoader;
+
+    @Mock
+    private TaxAnalyticsRestaurantClient restaurantClient;
+
+    @Mock
+    private TaxAnalyticsPharmacyClient pharmacyClient;
+
     @InjectMocks
     private TaxAnalyticsCompanyServiceImpl service;
 
     @Test
     void listMapsWeekDeltaFromRepositoryRows() {
-        when(repository.countCompanies(isNull(), isNull(), isNull(), isNull())).thenReturn(1L);
-        when(repository.listCompanies(any(), any(), isNull(), isNull(), isNull(), isNull(), eq(20), eq(0)))
+        when(verticalLoader.load(any(), any(), any(), any(), any(), any()))
+            .thenReturn(new TaxAnalyticsVerticalSnapshotLoader.Pair(null, null));
+        when(repository.listCompanies(any(), any(), isNull(), isNull(), isNull(), isNull(), eq(10_000), eq(0)))
             .thenReturn(List.of(companyRow()));
 
-        TaxAnalyticsCompaniesResponse response = service.list("30d", null, null, null, null, null, null, 0, 20);
+        TaxAnalyticsCompaniesResponse response = service.list(
+            "30d", null, null, null, null, null, null, 0, 20, "totalTurnover,desc"
+        );
 
         assertEquals(1, response.rows().size());
         assertEquals(7, response.rows().get(0).companyId());
@@ -75,6 +90,10 @@ class TaxAnalyticsCompanyServiceImplTest {
             "total_retail", BigDecimal.ZERO
         ));
         when(repository.supplyRows(eq(3), any(TaxAnalyticsPeriod.class), eq(200))).thenReturn(List.of());
+        when(restaurantClient.daily(eq(3), any(), any())).thenReturn(List.of());
+        when(pharmacyClient.daily(eq(3), any(), any())).thenReturn(List.of());
+        when(verticalLoader.load(any(), any(), any(), any(), any(), any()))
+            .thenReturn(new TaxAnalyticsVerticalSnapshotLoader.Pair(null, null));
 
         TaxAnalyticsCompanyDetailResponse detail = service.detail(3, "7d", null, null);
 

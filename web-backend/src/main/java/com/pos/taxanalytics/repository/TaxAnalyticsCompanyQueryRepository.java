@@ -66,6 +66,15 @@ public class TaxAnalyticsCompanyQueryRepository {
                 AND s.created_at >= ? AND s.created_at < ?
               GROUP BY COALESCE(s.company_id, st.company_id)
             ),
+            prev_period_turnover AS (
+              SELECT COALESCE(s.company_id, st.company_id) AS company_id,
+                     COALESCE(SUM(s.total_amount), 0) AS total_turnover
+              FROM sales s
+              LEFT JOIN stores st ON st.id = s.store_id
+              WHERE s.status = 'COMPLETED'
+                AND s.created_at >= ? AND s.created_at < ?
+              GROUP BY COALESCE(s.company_id, st.company_id)
+            ),
             week_turnover AS (
               SELECT COALESCE(s.company_id, st.company_id) AS company_id,
                      COALESCE(SUM(s.total_amount), 0) AS total_turnover
@@ -99,7 +108,8 @@ public class TaxAnalyticsCompanyQueryRepository {
                    COALESCE(pt.fiscal_turnover, 0) AS fiscal_turnover,
                    COALESCE(pt.non_fiscal_turnover, 0) AS non_fiscal_turnover,
                    COALESCE(wt.total_turnover, 0) AS week_turnover,
-                   COALESCE(pwt.total_turnover, 0) AS prev_week_turnover
+                   COALESCE(pwt.total_turnover, 0) AS prev_week_turnover,
+                   COALESCE(ppt.total_turnover, 0) AS prev_period_turnover
             FROM companies c
             LEFT JOIN geo_regions gr ON gr.code = c.region_code
             LEFT JOIN geo_districts gd ON gd.code = c.district_code
@@ -107,11 +117,14 @@ public class TaxAnalyticsCompanyQueryRepository {
             LEFT JOIN period_turnover pt ON pt.company_id = c.id
             LEFT JOIN week_turnover wt ON wt.company_id = c.id
             LEFT JOIN prev_week_turnover pwt ON pwt.company_id = c.id
+            LEFT JOIN prev_period_turnover ppt ON ppt.company_id = c.id
             WHERE 1=1
             """);
         List<Object> args = new ArrayList<>();
         args.add(ts(period.from()));
         args.add(ts(period.to().plusDays(1)));
+        args.add(ts(period.prevFrom()));
+        args.add(ts(period.prevTo().plusDays(1)));
         args.add(ts(week.weekFrom()));
         args.add(ts(week.weekTo().plusDays(1)));
         args.add(ts(week.prevWeekFrom()));

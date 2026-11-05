@@ -8,7 +8,15 @@ import java.util.UUID;
 
 public interface TaxAnalyticsCompanyReceiptService {
 
-    TaxAnalyticsReceiptsResponse list(int companyId, LocalDate date, String kind, int page, int size);
+    TaxAnalyticsReceiptsResponse list(
+        int companyId,
+        LocalDate date,
+        LocalDate from,
+        LocalDate to,
+        String kind,
+        int page,
+        int size
+    );
 
     TaxAnalyticsReceiptDetailResponse detail(int companyId, UUID saleId);
 }

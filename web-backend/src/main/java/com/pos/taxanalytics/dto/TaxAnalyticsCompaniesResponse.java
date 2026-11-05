@@ -13,6 +13,7 @@ public record TaxAnalyticsCompaniesResponse(
     long totalElements,
     int page,
     int size,
-    List<TaxAnalyticsCompanyRowResponse> rows
+    List<TaxAnalyticsCompanyRowResponse> rows,
+    TaxAnalyticsCompanySummaryResponse summary
 ) {
 }

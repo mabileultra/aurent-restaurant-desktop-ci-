@@ -21,6 +21,16 @@ public class TaxAnalyticsMissingRegionRepository {
     private final JdbcTemplate jdbc;
 
     public Map<String, Object> totals(TaxAnalyticsPeriod period) {
+        return totals(period, null);
+    }
+
+    public Map<String, Object> totals(TaxAnalyticsPeriod period, String connectionStatus) {
+        String connection = "";
+        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            connection = " AND conn.company_id IS NOT NULL ";
+        } else if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            connection = " AND conn.company_id IS NULL ";
+        }
         String sql = """
             WITH connected AS ( %s ),
             missing AS (
@@ -29,6 +39,7 @@ public class TaxAnalyticsMissingRegionRepository {
               FROM companies c
               LEFT JOIN connected conn ON conn.company_id = c.id
               WHERE c.region_code IS NULL
+            """ + connection + """
             ),
             turnover AS (
               SELECT
@@ -37,8 +48,10 @@ public class TaxAnalyticsMissingRegionRepository {
               FROM sales s
               LEFT JOIN stores st ON st.id = s.store_id
               JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id)
+              LEFT JOIN connected conn ON conn.company_id = c.id
               WHERE s.status = 'COMPLETED'
                 AND c.region_code IS NULL
+            """ + connection + """
                 AND s.created_at >= ? AND s.created_at < ?
             ),
             prev_turnover AS (
@@ -46,8 +59,10 @@ public class TaxAnalyticsMissingRegionRepository {
               FROM sales s
               LEFT JOIN stores st ON st.id = s.store_id
               JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id)
+              LEFT JOIN connected conn ON conn.company_id = c.id
               WHERE s.status = 'COMPLETED'
                 AND c.region_code IS NULL
+            """ + connection + """
                 AND s.created_at >= ? AND s.created_at < ?
             )
             SELECT

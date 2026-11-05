@@ -12,6 +12,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsCompanySupplyResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanySupplyRowResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyQueryRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsCompanyService;
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyListPage;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyDays;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks.DayTurnover;
@@ -55,7 +56,8 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         String connectionStatus,
         String search,
         int page,
-        int size
+        int size,
+        String sort
     ) {
         TaxAnalyticsPeriod range = TaxAnalyticsPeriod.resolve(period, from, to);
         TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
@@ -78,10 +80,9 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             TaxAnalyticsCompanyMoneyDto mergedExtra = sumExtras(restaurant.get(companyId), pharmacy.get(companyId));
             return TaxAnalyticsVerticalMerge.mergeRow(base, mergedExtra, connected.contains(companyId));
         }).filter(row -> matchesConnection(row.connected(), connectionStatus)).toList();
-        long total = all.size();
-        int fromIdx = Math.min(safePage * safeSize, all.size());
-        int toIdx = Math.min(fromIdx + safeSize, all.size());
-        List<TaxAnalyticsCompanyRowResponse> rows = all.subList(fromIdx, toIdx);
+        List<TaxAnalyticsCompanyRowResponse> sorted = TaxAnalyticsCompanyListPage.sort(all, sort);
+        int fromIdx = Math.min(safePage * safeSize, sorted.size());
+        int toIdx = Math.min(fromIdx + safeSize, sorted.size());
         return new TaxAnalyticsCompaniesResponse(
             range.key(),
             range.from().toString(),
@@ -90,10 +91,11 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             week.weekTo().toString(),
             week.prevWeekFrom().toString(),
             week.prevWeekTo().toString(),
-            total,
+            sorted.size(),
             safePage,
             safeSize,
-            rows
+            sorted.subList(fromIdx, toIdx),
+            TaxAnalyticsCompanyListPage.summary(sorted)
         );
     }
 
@@ -232,6 +234,13 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
         BigDecimal nonFiscal = TaxAnalyticsWeekMath.decimal(row.get("non_fiscal_turnover"));
         BigDecimal week = TaxAnalyticsWeekMath.decimal(row.get("week_turnover"));
         BigDecimal prevWeek = TaxAnalyticsWeekMath.decimal(row.get("prev_week_turnover"));
+        BigDecimal currentDelta = fiscal.add(nonFiscal);
+        BigDecimal previousDelta = row.get("prev_period_turnover") == null
+            ? prevWeek
+            : TaxAnalyticsWeekMath.decimal(row.get("prev_period_turnover"));
+        if (row.get("prev_period_turnover") == null) {
+            currentDelta = week;
+        }
         return new TaxAnalyticsCompanyRowResponse(
             ((Number) row.get("company_id")).intValue(),
             text(row.get("name")),
@@ -250,8 +259,8 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             fiscal.add(nonFiscal),
             week,
             prevWeek,
-            TaxAnalyticsWeekMath.deltaAmount(week, prevWeek),
-            TaxAnalyticsWeekMath.deltaPct(week, prevWeek)
+            TaxAnalyticsWeekMath.deltaAmount(currentDelta, previousDelta),
+            TaxAnalyticsWeekMath.deltaPct(currentDelta, previousDelta)
         );
     }
 

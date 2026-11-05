@@ -27,16 +27,34 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
 
     @Override
     @Transactional(readOnly = true)
-    public TaxAnalyticsReceiptsResponse list(int companyId, LocalDate date, String kind, int page, int size) {
+    public TaxAnalyticsReceiptsResponse list(
+        int companyId,
+        LocalDate date,
+        LocalDate from,
+        LocalDate to,
+        String kind,
+        int page,
+        int size
+    ) {
+        LocalDate start = date != null ? date : from;
+        LocalDate end = date != null ? date : (to != null ? to : from);
+        if (start == null || end == null) {
+            throw PosExceptions.badRequest("from and to are required");
+        }
+        if (end.isBefore(start)) {
+            throw PosExceptions.badRequest("to must be >= from");
+        }
         String safeKind = normalize(kind);
         int safeSize = Math.min(100, Math.max(1, size));
         int safePage = Math.max(0, page);
-        long total = receipts.count(companyId, date, safeKind);
-        List<TaxAnalyticsReceiptRowResponse> rows = receipts.list(companyId, date, safeKind, safeSize, safePage * safeSize)
+        long total = receipts.count(companyId, start, end, safeKind);
+        List<TaxAnalyticsReceiptRowResponse> rows = receipts.list(companyId, start, end, safeKind, safeSize, safePage * safeSize)
             .stream()
             .map(this::row)
             .toList();
-        return new TaxAnalyticsReceiptsResponse(date.toString(), safeKind, total, safePage, safeSize, rows);
+        return new TaxAnalyticsReceiptsResponse(
+            start.toString(), safeKind, total, safePage, safeSize, rows, start.toString(), end.toString()
+        );
     }
 
     @Override

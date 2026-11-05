@@ -117,12 +117,16 @@ public class TaxAnalyticsQueryRepository {
         return jdbc.queryForList(sql, ts(period.from()), ts(period.to().plusDays(1)));
     }
 
-    public List<Map<String, Object>> aggregateByRegion(TaxAnalyticsPeriod period) {
-        return aggregateGeo(period, null, "region");
+    public List<Map<String, Object>> aggregateByRegion(TaxAnalyticsPeriod period, String connectionStatus) {
+        return aggregateGeo(period, null, "region", connectionStatus);
     }
 
-    public List<Map<String, Object>> aggregateByDistrict(TaxAnalyticsPeriod period, String regionCode) {
-        return aggregateGeo(period, regionCode, "district");
+    public List<Map<String, Object>> aggregateByDistrict(
+        TaxAnalyticsPeriod period,
+        String regionCode,
+        String connectionStatus
+    ) {
+        return aggregateGeo(period, regionCode, "district", connectionStatus);
     }
 
     public List<Map<String, Object>> aggregateEnterprises(
@@ -242,7 +246,12 @@ public class TaxAnalyticsQueryRepository {
         return n == null ? 0L : n;
     }
 
-    private List<Map<String, Object>> aggregateGeo(TaxAnalyticsPeriod period, String regionCode, String mode) {
+    private List<Map<String, Object>> aggregateGeo(
+        TaxAnalyticsPeriod period,
+        String regionCode,
+        String mode,
+        String connectionStatus
+    ) {
         boolean district = "district".equals(mode);
         // Must not splice into Java text blocks: stripIndent eats spaces/newlines around """…""".
         String groupCol = district ? "c.district_code" : "c.region_code";
@@ -260,6 +269,7 @@ public class TaxAnalyticsQueryRepository {
         sql.append("LEFT JOIN connected conn ON conn.company_id = c.id ");
         sql.append("WHERE ").append(groupCol).append(" IS NOT NULL ");
         List<Object> args = new ArrayList<>();
+        appendConnection(sql, connectionStatus);
         if (filterRegion) {
             sql.append("AND c.region_code = ? ");
             args.add(regionCode);
@@ -272,11 +282,13 @@ public class TaxAnalyticsQueryRepository {
         sql.append("FROM sales s ");
         sql.append("LEFT JOIN stores st ON st.id = s.store_id ");
         sql.append("JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id) ");
+        sql.append("LEFT JOIN connected conn ON conn.company_id = c.id ");
         sql.append("WHERE s.status = 'COMPLETED' ");
         sql.append("AND s.created_at >= ? AND s.created_at < ? ");
         sql.append("AND ").append(groupCol).append(" IS NOT NULL ");
         args.add(ts(period.from()));
         args.add(ts(period.to().plusDays(1)));
+        appendConnection(sql, connectionStatus);
         if (filterRegion) {
             sql.append("AND c.region_code = ? ");
             args.add(regionCode);
@@ -288,11 +300,13 @@ public class TaxAnalyticsQueryRepository {
         sql.append("FROM sales s ");
         sql.append("LEFT JOIN stores st ON st.id = s.store_id ");
         sql.append("JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id) ");
+        sql.append("LEFT JOIN connected conn ON conn.company_id = c.id ");
         sql.append("WHERE s.status = 'COMPLETED' ");
         sql.append("AND s.created_at >= ? AND s.created_at < ? ");
         sql.append("AND ").append(groupCol).append(" IS NOT NULL ");
         args.add(ts(period.prevFrom()));
         args.add(ts(period.prevTo().plusDays(1)));
+        appendConnection(sql, connectionStatus);
         if (filterRegion) {
             sql.append("AND c.region_code = ? ");
             args.add(regionCode);
@@ -333,6 +347,14 @@ public class TaxAnalyticsQueryRepository {
             map.put(String.valueOf(k), v == null ? BigDecimal.ZERO : new BigDecimal(v.toString()));
         }
         return map;
+    }
+
+    private static void appendConnection(StringBuilder sql, String connectionStatus) {
+        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            sql.append(" AND conn.company_id IS NOT NULL ");
+        } else if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            sql.append(" AND conn.company_id IS NULL ");
+        }
     }
 
     private static Timestamp ts(LocalDate date) {

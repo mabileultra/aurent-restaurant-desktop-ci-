@@ -7,6 +7,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsReceiptListResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsReceiptRowResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultRowResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsReportQueryRepository;
+import com.pos.taxanalytics.service.TaxAnalyticsCompanyService;
 import com.pos.taxanalytics.service.TaxAnalyticsReportService;
 import com.pos.taxanalytics.service.TaxAnalyticsService;
 import com.pos.taxanalytics.support.TaxAnalyticsKpiBuilder;
@@ -31,6 +32,7 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
     private final TaxAnalyticsReportQueryRepository repository;
     private final TaxAnalyticsKpiBuilder kpiBuilder;
     private final TaxAnalyticsService taxAnalyticsService;
+    private final TaxAnalyticsCompanyService companyService;
 
     @Override
     public TaxAnalyticsDailyResponse daily(String period, LocalDate from, LocalDate to) {
@@ -39,11 +41,14 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
         for (Map<String, Object> row : repository.daily(range)) {
             BigDecimal fiscal = decimal(row.get("fiscal_turnover"));
             BigDecimal nonFiscal = decimal(row.get("non_fiscal_turnover"));
+            Integer leaderId = row.get("leader_company_id") instanceof Number number ? number.intValue() : null;
             days.add(new TaxAnalyticsDayPointResponse(
                 String.valueOf(row.get("day")),
                 fiscal,
                 nonFiscal,
-                fiscal.add(nonFiscal)
+                fiscal.add(nonFiscal),
+                leaderId,
+                row.get("leader_company_name") == null ? null : String.valueOf(row.get("leader_company_name"))
             ));
         }
         return new TaxAnalyticsDailyResponse(range.from().toString(), range.to().toString(), days);
@@ -54,15 +59,18 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
         String period,
         LocalDate from,
         LocalDate to,
+        String regionCode,
+        String connectionStatus,
+        String search,
         int page,
         int size
     ) {
         TaxAnalyticsPeriod range = TaxAnalyticsPeriod.resolve(period, from, to);
         int safePage = Math.max(0, page);
         int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-        long total = repository.countReceipts(range);
+        long total = repository.countReceipts(range, regionCode, connectionStatus, search);
         List<TaxAnalyticsReceiptRowResponse> rows = new ArrayList<>();
-        for (Map<String, Object> row : repository.receipts(range, safeSize, safePage * safeSize)) {
+        for (Map<String, Object> row : repository.receipts(range, regionCode, connectionStatus, search, safeSize, safePage * safeSize)) {
             rows.add(new TaxAnalyticsReceiptRowResponse(
                 String.valueOf(row.get("sale_id")),
                 row.get("receipt_number") == null ? null : String.valueOf(row.get("receipt_number")),
@@ -88,19 +96,50 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
         LocalDate compareTo
     ) {
         TaxAnalyticsPeriod current = TaxAnalyticsPeriod.resolve(period, from, to);
-        TaxAnalyticsPeriod baseline = TaxAnalyticsPeriod.resolve(
-            comparePeriod == null || comparePeriod.isBlank() ? "30d" : comparePeriod,
-            compareFrom,
-            compareTo
-        );
+        TaxAnalyticsPeriod baseline = baseline(current, comparePeriod, compareFrom, compareTo);
         return new TaxAnalyticsCompareResponse(
             current.from().toString(),
             current.to().toString(),
             baseline.from().toString(),
             baseline.to().toString(),
             kpiBuilder.build(current),
-            kpiBuilder.build(baseline)
+            kpiBuilder.build(baseline),
+            regions(period, from, to),
+            regions("custom", baseline.from(), baseline.to()),
+            companies(period, from, to),
+            companies("custom", baseline.from(), baseline.to())
         );
+    }
+
+    private TaxAnalyticsPeriod baseline(
+        TaxAnalyticsPeriod current,
+        String comparePeriod,
+        LocalDate compareFrom,
+        LocalDate compareTo
+    ) {
+        if (compareFrom != null && compareTo != null) {
+            return TaxAnalyticsPeriod.resolve("custom", compareFrom, compareTo);
+        }
+        if (comparePeriod == null || comparePeriod.isBlank() || "previous".equalsIgnoreCase(comparePeriod)) {
+            return new TaxAnalyticsPeriod(
+                current.prevFrom(), current.prevTo(), current.prevFrom(), current.prevTo(), "previous"
+            );
+        }
+        return TaxAnalyticsPeriod.resolve(comparePeriod, null, null);
+    }
+
+    private List<TaxAnalyticsResultRowResponse> regions(String period, LocalDate from, LocalDate to) {
+        return taxAnalyticsService.results(period, from, to, null, null, null, null, "REGION", 0, 100).rows();
+    }
+
+    private List<com.pos.taxanalytics.dto.TaxAnalyticsCompanyRowResponse> companies(
+        String period,
+        LocalDate from,
+        LocalDate to
+    ) {
+        return companyService.list(
+            period, from, to, null, null, null, null, 0, 10, "totalTurnover,desc"
+        ).rows();
     }
 
     @Override
