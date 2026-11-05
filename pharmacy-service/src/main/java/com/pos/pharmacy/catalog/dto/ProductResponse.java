@@ -19,6 +19,8 @@ public record ProductResponse(
     String categoryName,
     BigDecimal costPrice,
     BigDecimal sellingPrice,
+    BigDecimal referencePrice,
+    BigDecimal score,
     BigDecimal defaultDiscountPercent,
     BigDecimal taxRate,
     ProductType productType,

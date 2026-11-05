@@ -43,6 +43,7 @@ public class PriceRegistryApplySupport {
             BigDecimal limit = entry.getLimitPrice().setScale(2, RoundingMode.HALF_UP);
             BigDecimal old = product.getSellingPrice();
             product.setSellingPrice(limit);
+            product.setReferencePrice(limit);
             productRepository.save(product);
             entry.setOldSellingPrice(old);
             entry.setNewSellingPrice(limit);

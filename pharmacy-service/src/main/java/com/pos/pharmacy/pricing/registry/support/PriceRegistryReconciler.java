@@ -1,6 +1,7 @@
 package com.pos.pharmacy.pricing.registry.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
+import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.pricing.registry.domain.PriceChangeJournalStatus;
 import com.pos.pharmacy.pricing.registry.domain.PriceRegistryMatchBy;
 import com.pos.pharmacy.pricing.registry.dto.RegistryParsedRow;
@@ -28,6 +29,7 @@ public class PriceRegistryReconciler {
     private final PriceRegistryRowRepository rowRepository;
     private final PriceChangeJournalRepository journalRepository;
     private final PriceRegistryProductMatcher matcher;
+    private final ProductRepository productRepository;
 
     public record Counts(int pending, int skippedOk, int unmatched) {}
 
@@ -85,7 +87,11 @@ public class PriceRegistryReconciler {
                 ? product.getSellingPrice()
                 : BigDecimal.ZERO;
             BigDecimal limit = p.limitPriceVat();
-            boolean over = our.compareTo(limit) > 0;
+            if (limit != null) {
+                product.setReferencePrice(limit);
+                productRepository.save(product);
+            }
+            boolean over = limit != null && our.compareTo(limit) > 0;
             if (over) {
                 pending++;
                 journal.add(baseEntry(snapshotId, companyId, regRow, p, now)

@@ -47,6 +47,14 @@ public class Product {
     @Column(name = "selling_price", nullable = false, precision = 18, scale = 2)
     private BigDecimal sellingPrice;
 
+    /** Референтная / предельная цена из реестра pharm.uz. */
+    @Column(name = "reference_price", precision = 18, scale = 2)
+    private BigDecimal referencePrice;
+
+    /** Балл (аптечная метрика карточки). */
+    @Column(name = "score", precision = 18, scale = 3)
+    private BigDecimal score;
+
     @Column(name = "default_discount_percent", precision = 5, scale = 2, nullable = false)
     @Builder.Default
     private BigDecimal defaultDiscountPercent = BigDecimal.ZERO;

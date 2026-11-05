@@ -1477,7 +1477,8 @@
     "catalogRefresh": "Обновить",
     "catalogAutoRefresh": "Авто",
     "catalogColumns": "Колонки",
-    "catalogColumnsSoon": "Настройка колонок — скоро",
+    "deactivateConfirm": "Деактивировать «{{name}}»?",
+    "deactivateDone": "Товар деактивирован",
     "pay": {
       "methodCash": "Наличные",
       "methodCard": "Карта",
@@ -1486,6 +1487,8 @@
       "methodInsurance": "DMED",
       "previewCheck": "Пред. чек",
       "previewCheckHint": "Предварительный чек: {{count}} поз., сумма {{total}}",
+      "previewNonFiscal": "Нефискальный",
+      "previewPrint": "Печать",
       "parkedList": "Пред. список",
       "parkedListHint": "Отложенных чеков: {{count}}. Откройте из шапки чека.",
       "parkedListEmpty": "Нет отложенных чеков",

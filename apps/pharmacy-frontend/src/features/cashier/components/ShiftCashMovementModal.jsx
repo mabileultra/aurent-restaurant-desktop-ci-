@@ -13,6 +13,7 @@ export default function ShiftCashMovementModal({
   direction = 'IN',
   shiftId,
   onSuccess,
+  variant = 'default',
 }) {
   const { t } = useTranslation();
   const { isActionBlocked, blockReason } = useOnlineActionGuard();
@@ -42,7 +43,8 @@ export default function ShiftCashMovementModal({
   const modalClass = [
     'cashier-cash-move-modal',
     isCashIn ? 'cashier-cash-move-modal--in' : 'cashier-cash-move-modal--out',
-  ].join(' ');
+    variant === 'pharmacy' ? 'pharmacy-modal' : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <PosModalPortal open={open} onClose={handleClose}>

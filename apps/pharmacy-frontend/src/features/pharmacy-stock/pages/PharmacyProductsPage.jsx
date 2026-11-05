@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
@@ -30,6 +30,7 @@ import { productReceiptOrigin } from '../utils/productReceiptOrigin';
 export default function PharmacyProductsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
   const { stores, onlyStore, resolveStoreId } = useCompanyStores();
   const storeId = resolveStoreId(onlyStore?.id) ?? stores?.[0]?.id ?? null;
@@ -43,6 +44,19 @@ export default function PharmacyProductsPage() {
   const [creating, setCreating] = useState(false);
   const [bulkVatOpen, setBulkVatOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+
+  useEffect(() => {
+    const editId = location.state?.editProductId;
+    if (!editId) return undefined;
+    let cancelled = false;
+    pharmacyWarehouseApi.getProduct(editId)
+      .then((r) => {
+        if (!cancelled && r?.data) setEditing(r.data);
+      })
+      .catch(() => {});
+    navigate(location.pathname, { replace: true, state: {} });
+    return () => { cancelled = true; };
+  }, [location.state, location.pathname, navigate]);
 
   const filters = useMemo(() => ([
     { value: '', label: t('pharmacyStock.filterAll') },

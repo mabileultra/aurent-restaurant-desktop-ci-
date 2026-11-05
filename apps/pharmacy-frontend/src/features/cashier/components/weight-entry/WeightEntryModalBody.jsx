@@ -2,7 +2,7 @@ import { fmtMoney } from '../../../../utils/formatMoney';
 import UnitConversionHelper from '../../../../components/shared/UnitConversionHelper';
 import { getProductLengthM } from '../../../../utils/productAttributes';
 
-export default function WeightEntryModalBody({ w }) {
+export default function WeightEntryModalBody({ w, className = '' }) {
   const {
     t,
     product,
@@ -31,7 +31,12 @@ export default function WeightEntryModalBody({ w }) {
   } = w;
 
   return (
-    <div className="weight-entry-modal" role="dialog" aria-modal="true" aria-labelledby="weight-modal-title">
+    <div
+      className={['weight-entry-modal', className].filter(Boolean).join(' ')}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="weight-modal-title"
+    >
       <button type="button" className="weight-entry-modal__backdrop" aria-label={t('common.close')} onClick={onClose} />
       <div className="weight-entry-modal__panel">
         <header className="weight-entry-modal__head">

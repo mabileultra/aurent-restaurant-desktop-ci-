@@ -1,16 +1,35 @@
 import { FlaskConical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import PharmacyPreviewReceipt from './PharmacyPreviewReceipt';
 import '../styles/pharmacy-context-pane.css';
+import '../styles/pharmacy-preview-receipt.css';
 
 /**
  * Центральная рабочая область кассы (зона 2 ТЗ).
- * Пустое состояние или контекст строки / маркировки / подсказки.
  */
 export default function PharmacyCashierContextPane({
   selectedLine = null,
   notice = null,
+  preview = null,
+  onPrintPreview = null,
 }) {
   const { t } = useTranslation();
+
+  if (preview?.items?.length) {
+    return (
+      <section
+        className="pharmacy-cashier__context-pane"
+        aria-label={t('pharmacyCashier.contextTitle')}
+      >
+        <PharmacyPreviewReceipt
+          receiptNo={preview.receiptNo}
+          items={preview.items}
+          total={preview.total}
+          onPrint={onPrintPreview}
+        />
+      </section>
+    );
+  }
 
   if (notice) {
     return (
@@ -40,10 +59,12 @@ export default function PharmacyCashierContextPane({
                 <dd>{selectedLine.sku}</dd>
               </>
             ) : null}
-            {selectedLine.markingCode ? (
+            {(selectedLine.markCode || selectedLine.productMark) ? (
               <>
                 <dt>{t('pharmacyCashier.colMarking', { defaultValue: 'Маркировка' })}</dt>
-                <dd className="pharmacy-cashier__context-mono">{selectedLine.markingCode}</dd>
+                <dd className="pharmacy-cashier__context-mono">
+                  {selectedLine.markCode || selectedLine.productMark}
+                </dd>
               </>
             ) : null}
           </dl>

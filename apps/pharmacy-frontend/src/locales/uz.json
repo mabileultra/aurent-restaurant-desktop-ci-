@@ -1351,7 +1351,8 @@
     "catalogRefresh": "Yangilash",
     "catalogAutoRefresh": "Avto",
     "catalogColumns": "Ustunlar",
-    "catalogColumnsSoon": "Ustun sozlamasi — tez orada",
+    "deactivateConfirm": "«{{name}}» ni o‘chirish?",
+    "deactivateDone": "Mahsulot deaktiv qilindi",
     "pay": {
       "methodCash": "Naqd",
       "methodCard": "Karta",
@@ -1360,6 +1361,8 @@
       "methodInsurance": "DMED",
       "previewCheck": "Old. chek",
       "previewCheckHint": "Oldindan chek: {{count}} qator, summa {{total}}",
+      "previewNonFiscal": "Nofiskal",
+      "previewPrint": "Chop etish",
       "parkedList": "Old. ro‘yxat",
       "parkedListHint": "Kechiktirilgan cheklar: {{count}}. Chek sarlavhasidan oching.",
       "parkedListEmpty": "Kechiktirilgan cheklar yo‘q",

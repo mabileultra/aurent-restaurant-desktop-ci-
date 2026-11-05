@@ -109,6 +109,8 @@ class RedisPharmacyProductBarcodeCacheTest {
             null,
             BigDecimal.ONE,
             BigDecimal.TEN,
+            null,
+            null,
             BigDecimal.ZERO,
             new BigDecimal("12"),
             ProductType.RETAIL,

@@ -21,6 +21,7 @@ import {
   productSellByPiece,
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
+import '../styles/pharmacy-modal-shell.css';
 import '../styles/pharmacy-qty-modal.css';
 
 function digits(value) {
@@ -244,10 +245,10 @@ export default function PharmacyQtyModal({
   };
 
   return (
-    <div className="pharmacy-qty-modal" role="dialog" aria-modal="true">
+    <div className="pharmacy-modal pharmacy-qty-modal" role="dialog" aria-modal="true">
       <button
         type="button"
-        className="pharmacy-qty-modal__backdrop"
+        className="pharmacy-modal__backdrop pharmacy-qty-modal__backdrop"
         aria-label={t('common.close')}
         onClick={onClose}
       />

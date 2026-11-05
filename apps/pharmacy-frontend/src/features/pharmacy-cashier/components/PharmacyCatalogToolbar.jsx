@@ -1,15 +1,18 @@
-import { RefreshCw, Settings2 } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import PharmacyCatalogColumnMenu from './PharmacyCatalogColumnMenu';
 import '../styles/pharmacy-catalog-toolbar.css';
 
 /**
- * Тулбар над каталогом: обновление + автообновление (ТЗ §2 зона 3).
+ * Тулбар над каталогом: обновление + авто + колонки (ТЗ §2 зона 3).
  */
 export default function PharmacyCatalogToolbar({
   onRefresh,
   refreshing = false,
   autoRefresh = true,
   onAutoRefreshChange,
+  columnVisibility,
+  onColumnVisibilityChange,
 }) {
   const { t } = useTranslation();
 
@@ -33,15 +36,12 @@ export default function PharmacyCatalogToolbar({
         />
         <span>{t('pharmacyCashier.catalogAutoRefresh')}</span>
       </label>
-      <button
-        type="button"
-        className="pharmacy-catalog-toolbar__btn pharmacy-catalog-toolbar__btn--ghost"
-        title={t('pharmacyCashier.catalogColumnsSoon')}
-        disabled
-      >
-        <Settings2 size={14} strokeWidth={2.25} aria-hidden />
-        <span>{t('pharmacyCashier.catalogColumns')}</span>
-      </button>
+      {columnVisibility && onColumnVisibilityChange ? (
+        <PharmacyCatalogColumnMenu
+          visibility={columnVisibility}
+          onChange={onColumnVisibilityChange}
+        />
+      ) : null}
     </div>
   );
 }

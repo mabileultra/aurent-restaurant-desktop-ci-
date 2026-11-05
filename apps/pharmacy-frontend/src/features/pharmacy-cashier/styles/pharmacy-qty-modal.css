@@ -4,25 +4,26 @@
  */
 
 .pharmacy-qty-modal {
-  --pqm-ink: var(--pharm-ink, var(--pos-text, #e8eef7));
-  --pqm-muted: var(--pharm-muted, var(--pos-muted, #94a3b8));
-  --pqm-line: var(--pharm-border, var(--pos-border, #2a3548));
-  --pqm-surface: var(--pharm-surface, var(--pos-surface, #151b26));
-  --pqm-elevated: var(--pharm-elevated, var(--pos-surface-elevated, #1c2433));
-  --pqm-cell: var(--pharm-cell-bg, var(--pqm-elevated));
-  --pqm-hover: var(--pharm-hover, var(--pos-surface-hover, #243044));
-  --pqm-brand: var(--pharm-brand, #006847);
-  --pqm-brand-hover: var(--pharm-brand-hover, #005538);
-  --pqm-brand-soft: var(--pharm-brand-soft, rgb(0 104 71 / 0.14));
-  --pqm-teal: var(--pharm-teal, #0d9488);
-  --pqm-teal-soft: var(--pharm-teal-soft, rgb(13 148 136 / 0.16));
-  --pqm-focus-ring: var(--pharm-focus-ring, rgb(0 104 71 / 0.28));
-  --pqm-ok-text: var(--pharm-ok-text, #7dffc4);
-  --pqm-warn-text: var(--pharm-warn-text, #ffd666);
-  --pqm-danger-text: var(--pharm-danger-text, #ff9b94);
-  --pqm-radius: var(--pharm-radius, 12px);
-  --pqm-radius-sm: var(--pharm-radius-sm, 8px);
-  --pqm-shadow: 0 24px 64px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(0 104 71 / 0.22);
+  /* Портал: молочные токены ТЗ с оболочки .pharmacy-modal */
+  --pqm-ink: var(--pm-ink, #26332d);
+  --pqm-muted: var(--pm-muted, #7a817c);
+  --pqm-line: var(--pm-border, #dddcd5);
+  --pqm-surface: var(--pm-surface, #f2f1ec);
+  --pqm-elevated: var(--pm-elevated, #f8f7f3);
+  --pqm-cell: var(--pm-card, #f7f6f1);
+  --pqm-hover: var(--pm-hover, #e6f2de);
+  --pqm-brand: var(--pm-brand, #245b45);
+  --pqm-brand-hover: var(--pm-brand-hover, #174936);
+  --pqm-brand-soft: var(--pm-brand-soft, rgb(36 91 69 / 0.12));
+  --pqm-teal: var(--pm-teal, #245b45);
+  --pqm-teal-soft: rgb(36 91 69 / 0.1);
+  --pqm-focus-ring: rgb(36 91 69 / 0.22);
+  --pqm-ok-text: var(--pm-ok-text, #174936);
+  --pqm-warn-text: var(--pm-warn-text, #8a5a12);
+  --pqm-danger-text: var(--pm-danger-text, #a33b35);
+  --pqm-radius: var(--pm-radius, 12px);
+  --pqm-radius-sm: var(--pm-radius-sm, 8px);
+  --pqm-shadow: var(--pm-shadow, 0 20px 48px rgb(38 51 45 / 0.18), 0 0 0 1px rgb(36 91 69 / 0.12));
 
   position: fixed;
   inset: 0;
@@ -34,17 +35,6 @@
   color: var(--pqm-ink);
 }
 
-.pharmacy-qty-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  border: none;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 40%, rgb(0 104 71 / 0.18), transparent 70%),
-    rgb(8 12 18 / 0.62);
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-}
-
 .pharmacy-qty-modal__panel--sale {
   position: relative;
   width: min(440px, 100%);
@@ -53,7 +43,7 @@
   flex-direction: column;
   overflow: hidden;
   background:
-    linear-gradient(165deg, rgb(0 104 71 / 0.08) 0%, transparent 42%),
+    linear-gradient(165deg, rgb(36 91 69 / 0.06) 0%, transparent 42%),
     var(--pqm-elevated);
   color: var(--pqm-ink);
   border: 1px solid var(--pqm-line);
@@ -67,7 +57,7 @@
   justify-content: space-between;
   flex-shrink: 0;
   padding: 0.7rem 0.9rem;
-  background: linear-gradient(90deg, var(--pqm-brand) 0%, #0a7a55 55%, var(--pqm-teal) 100%);
+  background: linear-gradient(90deg, var(--pqm-brand) 0%, #1f6b4f 55%, var(--pqm-teal) 100%);
   color: #fff;
 }
 

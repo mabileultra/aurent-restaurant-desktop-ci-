@@ -1,6 +1,6 @@
-import PosOrderDiscountModal from '../../cashier/components/PosOrderDiscountModal';
 import { PosReturnModal } from '../../../components/pos';
 import ShiftCashMovementModal from '../../cashier/components/ShiftCashMovementModal';
+import PharmacyOrderDiscountModal from '../components/PharmacyOrderDiscountModal';
 import PharmacyQtyModal from '../components/PharmacyQtyModal';
 import PharmacyWeightEntryModal from '../components/PharmacyWeightEntryModal';
 import PharmacyRegisterWorkspace from '../components/PharmacyRegisterWorkspace';
@@ -8,6 +8,9 @@ import { usePharmacyPosPage } from '../hooks/usePharmacyPosPage';
 import { useCashierCashMovement } from '../../cashier/hooks/useCashierCashMovement';
 import { updatePharmacyCartLinePrice } from '../utils/pharmacyCartActions';
 import '../styles/pharmacy-cashier.css';
+import '../styles/pharmacy-modal-shell.css';
+import '../styles/pharmacy-return-modal.css';
+import '../styles/pharmacy-cash-move-modal.css';
 
 export default function PharmacyPosPage() {
   const p = usePharmacyPosPage();
@@ -74,6 +77,7 @@ export default function PharmacyPosPage() {
       />
 
       <ShiftCashMovementModal
+        variant="pharmacy"
         open={Boolean(cashMovement.cashMovement)}
         direction={cashMovement.cashMovement || 'IN'}
         shiftId={p.shift?.id}
@@ -82,6 +86,7 @@ export default function PharmacyPosPage() {
       />
 
       <PosReturnModal
+        variant="pharmacy"
         terminal
         catalogKind="pharmacy"
         open={p.returnOpen}
@@ -89,8 +94,7 @@ export default function PharmacyPosPage() {
         onSuccess={p.handleReturnSuccess}
       />
 
-      <PosOrderDiscountModal
-        terminal
+      <PharmacyOrderDiscountModal
         open={p.discountOpen}
         onClose={() => p.setDiscountOpen(false)}
         linesTotal={p.linesTotal}

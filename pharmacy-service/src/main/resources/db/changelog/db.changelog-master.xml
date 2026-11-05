@@ -25,6 +25,7 @@
     <include file="db/changelog/v18-pharmacy-stock-transfers.xml"/>
     <include file="db/changelog/v19-pharmacy-stock-inventories.xml"/>
     <include file="db/changelog/v20-pharmacy-price-registry.xml"/>
+    <include file="db/changelog/v21-pharmacy-product-score-ref.xml"/>
 
 </databaseChangeLog>
 

@@ -64,6 +64,7 @@ export default function PosReturnModal({
   onSuccess,
   terminal = false,
   catalogKind,
+  variant = 'default',
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -204,7 +205,7 @@ export default function PosReturnModal({
       <div
         className={`pos-return-modal${terminal ? ' pos-return-modal--terminal' : ''}${
           sale ? ' pos-return-modal--partial' : ''
-        }`}
+        }${variant === 'pharmacy' ? ' pharmacy-modal' : ''}`}
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

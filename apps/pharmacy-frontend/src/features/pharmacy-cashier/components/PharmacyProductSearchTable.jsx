@@ -1,42 +1,12 @@
 import { forwardRef, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fmtMoney as fmt } from '../../../utils/formatMoney';
-import { formatQty } from '../../../utils/quantityFormat';
-import { resolveProductUnitPrice } from '../../../utils/productPrice';
-import {
-  daysUntilExpiry,
-  formatExpiryDisplay,
-  productBatch,
-  productCountry,
-  productDosageForm,
-  productExpiry,
-  productManufacturer,
-  productRequiresPrescription,
-  productSellByUnitHint,
-  productShelfLifeDays,
-  productStorageLocation,
-} from '../utils/pharmacyProductMeta';
-import {
-  productIkpu,
-  productPackageCode,
-} from '../utils/pharmacyProductFiscalMeta';
-import {
-  pharmacyCellToneClass,
-  pharmacyExpiryTone,
-  pharmacyStockTone,
-} from '../utils/pharmacyCellTone';
+import PharmacyProductSearchTableRow from './PharmacyProductSearchTableRow';
 import '../styles/pharmacy-search-table.css';
 import '../styles/pharmacy-search-table-fiscal.css';
 import '../styles/pharmacy-search-table-stock.css';
 
-function formatStockExpiryDays(daysLeft, shelfLife, daysLabel) {
-  if (daysLeft == null) return '—';
-  if (shelfLife != null) return `${daysLeft}/${shelfLife} ${daysLabel}`;
-  return `${daysLeft} ${daysLabel}`;
-}
-
 /**
- * Остатки склада аптеки — колонки как в макете (только pharmacy-cashier).
+ * Остатки склада аптеки — колонки по ТЗ (строка в PharmacyProductSearchTableRow).
  */
 const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTable(
   {
@@ -54,12 +24,16 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
     onSelectProduct,
     scanDisabled,
     hideSearchField = false,
+    visibleColumns = null,
+    onEditProduct = null,
+    onDeactivateProduct = null,
   },
   ref,
 ) {
   const { t } = useTranslation();
   const sentinelRef = useRef(null);
   const daysLabel = t('pharmacyCashier.daysShort');
+  const col = (id) => !visibleColumns || visibleColumns[id] !== false;
 
   useEffect(() => {
     if (!productsHasMore || productsLoadingMore || productsStale || !onLoadMore) return undefined;
@@ -100,9 +74,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
 
       <div className="pharmacy-search__scroll">
         {productsError ? (
-          <p className="pharmacy-search__status" role="alert">
-            {t('common.loadError')}
-          </p>
+          <p className="pharmacy-search__status" role="alert">{t('common.loadError')}</p>
         ) : productsLoading && products.length === 0 ? (
           <p className="pharmacy-search__status">{t('common.loading')}</p>
         ) : products.length === 0 ? (
@@ -116,120 +88,36 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
             <thead>
               <tr>
                 <th>{t('pharmacyCashier.colName')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colCost')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colUnitPrice')}</th>
-                <th>{t('pharmacyCashier.colExpiryDays')}</th>
-                <th>{t('pharmacyCashier.colShelf')}</th>
-                <th>{t('pharmacyCashier.colManufacturer')}</th>
-                <th>{t('pharmacyCashier.colCountry')}</th>
-                <th>{t('pharmacyCashier.colBatch')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colScore')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colRefPrice')}</th>
-                <th>{t('pharmacyCashier.colIkpu')} / {t('pharmacyCashier.colMxik')}</th>
+                {col('stock') ? <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th> : null}
+                {col('cost') ? <th className="pharmacy-search__num">{t('pharmacyCashier.colCost')}</th> : null}
+                {col('price') ? <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th> : null}
+                {col('unitPrice') ? <th className="pharmacy-search__num">{t('pharmacyCashier.colUnitPrice')}</th> : null}
+                {col('expiry') ? <th>{t('pharmacyCashier.colExpiryDays')}</th> : null}
+                {col('shelf') ? <th>{t('pharmacyCashier.colShelf')}</th> : null}
+                {col('manufacturer') ? <th>{t('pharmacyCashier.colManufacturer')}</th> : null}
+                {col('country') ? <th>{t('pharmacyCashier.colCountry')}</th> : null}
+                {col('batch') ? <th>{t('pharmacyCashier.colBatch')}</th> : null}
+                {col('score') ? <th className="pharmacy-search__num">{t('pharmacyCashier.colScore')}</th> : null}
+                {col('refPrice') ? <th className="pharmacy-search__num">{t('pharmacyCashier.colRefPrice')}</th> : null}
+                {col('fiscal') ? <th>{t('pharmacyCashier.colIkpu')} / {t('pharmacyCashier.colMxik')}</th> : null}
+                {onEditProduct || onDeactivateProduct ? <th aria-label={t('common.actions')} /> : null}
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => {
-                const outOfStock =
-                  (product.saleType || 'PIECE') !== 'SERVICE'
-                  && Number(product.stockQuantity) <= 0;
-                const inactive = product.active === false;
-                const disabled = outOfStock || inactive || productsStale;
-                const country = productCountry(product) || '—';
-                const batch = productBatch(product) || '—';
-                const manufacturer = productManufacturer(product) || '—';
-                const shelf = productStorageLocation(product) || '—';
-                const expiryDate = formatExpiryDisplay(productExpiry(product));
-                const sellByUnit = productSellByUnitHint(product);
-                const stockTone = disabled ? null : pharmacyStockTone(product);
-                const expiryTone = disabled ? null : pharmacyExpiryTone(product);
-                const needsRx = productRequiresPrescription(product);
-                const daysLeft = daysUntilExpiry(productExpiry(product));
-                const shelfLife = productShelfLifeDays(product);
-                const daysLabelText = formatStockExpiryDays(daysLeft, shelfLife, daysLabel);
-                const mxik = productIkpu(product) || '—';
-                const ikpu = productPackageCode(product) || productIkpu(product) || '—';
-                const fiscal = ikpu !== mxik ? `${ikpu} / ${mxik}` : mxik;
-                const unitPrice = resolveProductUnitPrice(product, storeId);
-                const cost = Number(product.costPrice ?? 0);
-                const form = productDosageForm(product);
-                const meta = [
-                  form || '',
-                  expiryDate ? `${t('pharmacyCashier.colExpiryShort')}: ${expiryDate}` : '',
-                  sellByUnit ? t('pharmacyCashier.sellByUnitHintShort') : '',
-                ].filter(Boolean).join(' · ');
-
-                return (
-                  <tr
-                    key={product.id}
-                    className={[
-                      'pharmacy-search__row',
-                      disabled ? 'is-disabled' : '',
-                      needsRx ? 'is-recipe' : '',
-                    ].filter(Boolean).join(' ')}
-                    onClick={() => {
-                      if (!disabled) onSelectProduct(product);
-                    }}
-                  >
-                    <td className="pharmacy-search__name" title={product.name}>
-                      <div className="pharmacy-search__name-block">
-                        <span className="pharmacy-search__cell-text pharmacy-search__cell-text--name">
-                          {product.name}
-                        </span>
-                        {needsRx ? (
-                          <span className="pharmacy-search__recipe-tag">
-                            {t('pharmacyCashier.recipeTag')}
-                          </span>
-                        ) : null}
-                        {meta ? (
-                          <span className="pharmacy-search__name-meta">{meta}</span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td
-                      className={[
-                        'pharmacy-search__num',
-                        pharmacyCellToneClass(stockTone, 'pharmacy-search__cell'),
-                      ].filter(Boolean).join(' ')}
-                    >
-                      <span className="pharmacy-search__badge">
-                        {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
-                      </span>
-                    </td>
-                    <td className="pharmacy-search__num">{cost > 0 ? fmt(cost) : '—'}</td>
-                    <td className="pharmacy-search__num">{fmt(unitPrice)}</td>
-                    <td className="pharmacy-search__num">{fmt(unitPrice)}</td>
-                    <td
-                      className={[
-                        'pharmacy-search__mono',
-                        pharmacyCellToneClass(expiryTone, 'pharmacy-search__cell'),
-                      ].filter(Boolean).join(' ')}
-                      title={expiryDate || undefined}
-                    >
-                      <span className="pharmacy-search__badge">{daysLabelText}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={shelf}>
-                      <span className="pharmacy-search__cell-text">{shelf}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={manufacturer}>
-                      <span className="pharmacy-search__cell-text">{manufacturer}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
-                      <span className="pharmacy-search__cell-text">{country}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={batch}>
-                      <span className="pharmacy-search__cell-text">{batch}</span>
-                    </td>
-                    <td className="pharmacy-search__num">—</td>
-                    <td className="pharmacy-search__num">—</td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip pharmacy-search__fiscal" title={fiscal}>
-                      <span className="pharmacy-search__cell-text">{fiscal}</span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {products.map((product) => (
+                <PharmacyProductSearchTableRow
+                  key={product.id}
+                  product={product}
+                  storeId={storeId}
+                  productsStale={productsStale}
+                  t={t}
+                  daysLabel={daysLabel}
+                  col={col}
+                  onSelectProduct={onSelectProduct}
+                  onEditProduct={onEditProduct}
+                  onDeactivateProduct={onDeactivateProduct}
+                />
+              ))}
             </tbody>
           </table>
         )}

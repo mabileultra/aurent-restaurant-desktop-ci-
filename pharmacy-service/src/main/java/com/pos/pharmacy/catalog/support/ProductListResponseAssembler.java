@@ -120,6 +120,8 @@ public class ProductListResponseAssembler {
             null,
             product.getCostPrice(),
             product.getSellingPrice(),
+            product.getReferencePrice(),
+            product.getScore(),
             product.getDefaultDiscountPercent(),
             product.getTaxRate(),
             product.getProductType(),
