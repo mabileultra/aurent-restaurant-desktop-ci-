@@ -16,6 +16,7 @@ export default function PharmacyCartPaneHead({
   onNewReceipt,
   onClear,
   disabled = false,
+  parkedOpenSignal = 0,
 }) {
   const { t } = useTranslation();
   const open = itemsCount > 0;
@@ -44,6 +45,7 @@ export default function PharmacyCartPaneHead({
           onRemove={onRemoveParked}
           onClearAll={onClearParked}
           disabled={disabled}
+          openSignal={parkedOpenSignal}
         />
         <button
           type="button"

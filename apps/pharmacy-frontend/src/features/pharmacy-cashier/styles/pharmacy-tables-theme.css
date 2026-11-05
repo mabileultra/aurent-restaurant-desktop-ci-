@@ -56,48 +56,60 @@
 
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--light,
 .cashier-app.cashier-app--light .pharmacy-cashier {
-  --pharm-brand: #006847;
-  --pharm-brand-hover: #005538;
-  --pharm-brand-soft: rgb(0 104 71 / 0.12);
-  --pharm-teal: #0f766e;
-  --pharm-teal-soft: rgb(15 118 110 / 0.12);
+  /* TZ Aurent pharmacy POS — молочный фон, зелёный бренд */
+  --pharm-brand: #245b45;
+  --pharm-brand-hover: #174936;
+  --pharm-brand-soft: rgb(36 91 69 / 0.12);
+  --pharm-teal: #245b45;
+  --pharm-teal-soft: rgb(36 91 69 / 0.1);
 
-  --pharm-ink: #1a2e28;
-  --pharm-muted: #5b6f68;
-  --pharm-border: #d5ddd8;
-  --pharm-surface: #f3f6f4;
-  --pharm-elevated: #ffffff;
-  --pharm-hover: #eaf2ee;
-  --pharm-active: #dcebe3;
+  --pharm-ink: #26332d;
+  --pharm-muted: #7a817c;
+  --pharm-border: #dddcd5;
+  --pharm-surface: #f2f1ec;
+  --pharm-elevated: #f8f7f3;
+  --pharm-hover: #e6f2de;
+  --pharm-active: #e6f2de;
   --pharm-accent: var(--pharm-brand);
   --pharm-accent-soft: var(--pharm-brand-soft);
-  --pharm-cell-bg: #ffffff;
+  --pharm-cell-bg: #f7f6f1;
+  --pharm-card: #f7f6f1;
 
-  --pharm-ok: #d8f5e3;
-  --pharm-ok-strong: #b6e9c9;
-  --pharm-ok-text: #0b5c3a;
+  --pharm-ok: #e3f1dc;
+  --pharm-ok-strong: #cfe8c4;
+  --pharm-ok-text: #174936;
 
-  --pharm-warn: #fff3cd;
-  --pharm-warn-strong: #ffe08a;
-  --pharm-warn-text: #7a5b00;
-  --pharm-recipe: #fff8e1;
-  --pharm-recipe-border: #f0d78c;
+  --pharm-warn: #f8e6c8;
+  --pharm-warn-strong: #f0d19a;
+  --pharm-warn-text: #8a5a12;
+  --pharm-recipe: #f8e6c8;
+  --pharm-recipe-border: #e9a23b;
 
-  --pharm-danger: #fde2e1;
-  --pharm-danger-strong: #f5c2c0;
-  --pharm-danger-text: #8a1f1a;
+  --pharm-danger: #f6d4d2;
+  --pharm-danger-strong: #eeb8b5;
+  --pharm-danger-text: #a33a36;
 
-  --pharm-info: #d9f3f1;
-  --pharm-info-strong: #b6e6e2;
-  --pharm-info-text: #0f5c56;
+  --pharm-info: #e3f1dc;
+  --pharm-info-strong: #cfe8c4;
+  --pharm-info-text: #174936;
 
-  --pharm-focus-ring: rgb(0 104 71 / 0.2);
+  --pharm-focus-ring: rgb(36 91 69 / 0.22);
+  --pharm-radius: 10px;
+  --pharm-radius-sm: 8px;
+  --pharm-warn-accent: #e9a23b;
+  --pharm-danger-accent: #d9534f;
 }
 
 /* Аптечный shell: бренд и pay наследуют зелёный Aurent, не синий admin */
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--light {
-  --pos-accent: #006847;
-  --pos-green: #006847;
-  --pos-green-hover: #005538;
-  --pos-green-soft: rgb(0 104 71 / 0.12);
+  --pos-accent: #245b45;
+  --pos-green: #245b45;
+  --pos-green-hover: #174936;
+  --pos-green-soft: rgb(36 91 69 / 0.12);
+  --pos-bg: #f2f1ec;
+  --pos-surface: #f8f7f3;
+  --pos-surface-elevated: #f7f6f1;
+  --pos-border: #dddcd5;
+  --pos-text: #26332d;
+  --pos-muted: #7a817c;
 }

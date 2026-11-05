@@ -19,6 +19,7 @@ export function usePharmacyMarkingScan({
   cashRegisterId = null,
   products,
   onProductFound,
+  onNotice = null,
 }) {
   const { t } = useTranslation();
   const [lastScan, setLastScan] = useState(null);
@@ -26,6 +27,12 @@ export function usePharmacyMarkingScan({
   const pendingRef = useRef(new Set());
   const queueRef = useRef([]);
   const runningRef = useRef(false);
+
+  const notifyError = useCallback((message) => {
+    if (!message) return;
+    onNotice?.(message);
+    toast.error(message);
+  }, [onNotice]);
 
   const processOne = useCallback(async (rawCode, { silent = false } = {}) => {
     const code = normalizeMarkingCode(rawCode);
@@ -43,7 +50,7 @@ export function usePharmacyMarkingScan({
     });
 
     if (before.status === 'duplicate') {
-      if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
+      if (!silent) notifyError(t('pharmacyCashier.integrations.markingAlreadyCounted'));
       return;
     }
 
@@ -67,24 +74,22 @@ export function usePharmacyMarkingScan({
       });
 
       if (afterDup.status === 'duplicate') {
-        if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
+        if (!silent) notifyError(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         return;
       }
 
       if (resolved.status === 'sold' || afterDup.status === 'sold') {
-        if (!silent) {
-          toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
-        }
+        if (!silent) notifyError(t('pharmacyCashier.integrations.markingAlreadySold'));
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
         return;
       }
       if (resolved.status === 'withdrawn') {
-        if (!silent) toast.error(resolved.message || t('pos.markingNotInCirculation'));
+        if (!silent) notifyError(resolved.message || t('pos.markingNotInCirculation'));
         setLastScan({ code: mark, result: resolved.aslResult, product: null });
         return;
       }
       if (resolved.status === 'check-failed') {
-        if (!silent) toast.error(resolved.message || t('pos.markingCheckFailed'));
+        if (!silent) notifyError(resolved.message || t('pos.markingCheckFailed'));
         setLastScan({ code: mark, result: resolved.aslResult, product: null });
         return;
       }
@@ -96,20 +101,20 @@ export function usePharmacyMarkingScan({
         const result = onProductFound?.(resolved.product);
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
         if (result?.status === 'duplicate' && !silent) {
-          toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
+          notifyError(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         }
         return;
       }
 
       setLastScan({ code: mark, result: resolved.aslResult, product: null });
       if (!silent) {
-        toast.error(t('pharmacyCashier.integrations.markingCatalogNeed'));
+        notifyError(t('pharmacyCashier.integrations.markingCatalogNeed'));
       }
     } finally {
       keys.forEach((k) => pendingRef.current.delete(k));
       setVerifying(false);
     }
-  }, [cashRegisterId, onProductFound, products, storeId, t]);
+  }, [cashRegisterId, notifyError, onProductFound, products, storeId, t]);
 
   const drain = useCallback(async () => {
     if (runningRef.current) return;

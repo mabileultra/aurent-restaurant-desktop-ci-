@@ -105,6 +105,19 @@ export function productUnitLabel(productOrLine) {
   return '';
 }
 
+/** Производитель (карточка / атрибуты / строка чека). */
+export function productManufacturer(productOrLine) {
+  const direct = productOrLine?.manufacturer;
+  if (direct != null && String(direct).trim()) return String(direct).trim();
+  return productAttr(
+    productOrLine,
+    'manufacturer',
+    'производитель',
+    'producer',
+    'vendor',
+  );
+}
+
 /** Полка / место хранения (из карточки товара). */
 export function productStorageLocation(productOrLine) {
   const direct = productOrLine?.storageLocation;

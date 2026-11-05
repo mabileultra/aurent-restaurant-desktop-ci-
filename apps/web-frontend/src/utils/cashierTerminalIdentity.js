@@ -1,5 +1,13 @@
 const STORAGE_KEY = 'pos.terminal.deviceId';
 
+/** randomUUID needs secure context; lab HTTP / older WebViews need a fallback. */
+function newDeviceId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `term-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export async function resolveCashierTerminalIdentity() {
   if (typeof window !== 'undefined' && window.desktopCashier?.getTerminalIdentity) {
     try {
@@ -13,7 +21,7 @@ export async function resolveCashierTerminalIdentity() {
   if (typeof localStorage !== 'undefined') {
     deviceId = localStorage.getItem(STORAGE_KEY);
     if (!deviceId) {
-      deviceId = crypto.randomUUID();
+      deviceId = newDeviceId();
       localStorage.setItem(STORAGE_KEY, deviceId);
     }
   }

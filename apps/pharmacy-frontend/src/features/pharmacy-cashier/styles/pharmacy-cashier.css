@@ -9,6 +9,8 @@
 @import './pharmacy-shell-chrome.css';
 @import './pharmacy-search-strip.css';
 @import './pharmacy-pay-rail.css';
+@import './pharmacy-pay-stack.css';
+@import './pharmacy-context-pane.css';
 @import './pharmacy-topbar-shortcuts.css';
 @import './pharmacy-cart-pane-head.css';
 @import './pharmacy-parked-cards.css';
@@ -23,7 +25,8 @@
 .pharmacy-cashier__main,
 .cashier-register__split--register .cashier-register__order-col.pharmacy-cashier__main {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  /* Зона 1 чек ~38% | зона 2 контекст | зона 3 каталог ~38% */
+  grid-template-rows: minmax(0, 0.38fr) minmax(96px, 1fr) minmax(0, 0.38fr);
   grid-template-columns: minmax(0, 1fr);
   align-content: stretch;
   gap: var(--cashier-gap, 8px);
@@ -82,9 +85,10 @@
 }
 
 .cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__cart-pane,
-.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__search-pane {
-  background: var(--pharm-elevated, #fff);
-  box-shadow: 0 1px 3px rgb(15 40 30 / 0.04);
+.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__search-pane,
+.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__context-pane {
+  background: var(--pharm-elevated, #f8f7f3);
+  box-shadow: none;
 }
 
 /* Статус-ячейки: чуть плотнее типографика под бейджи макета */

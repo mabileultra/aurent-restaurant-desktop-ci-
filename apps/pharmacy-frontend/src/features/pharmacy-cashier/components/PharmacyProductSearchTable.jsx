@@ -10,15 +10,14 @@ import {
   productCountry,
   productDosageForm,
   productExpiry,
+  productManufacturer,
   productRequiresPrescription,
   productSellByUnitHint,
   productShelfLifeDays,
+  productStorageLocation,
 } from '../utils/pharmacyProductMeta';
 import {
-  formatMarkedLabel,
-  formatUnitsInPackCell,
   productIkpu,
-  productIsMarked,
   productPackageCode,
 } from '../utils/pharmacyProductFiscalMeta';
 import {
@@ -117,16 +116,18 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
             <thead>
               <tr>
                 <th>{t('pharmacyCashier.colName')}</th>
-                <th>{t('pharmacyCashier.colForm')}</th>
-                <th>{t('pharmacyCashier.colCountry')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colPack')}</th>
+                <th className="pharmacy-search__num">{t('pharmacyCashier.colCost')}</th>
+                <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
+                <th className="pharmacy-search__num">{t('pharmacyCashier.colUnitPrice')}</th>
                 <th>{t('pharmacyCashier.colExpiryDays')}</th>
+                <th>{t('pharmacyCashier.colShelf')}</th>
+                <th>{t('pharmacyCashier.colManufacturer')}</th>
+                <th>{t('pharmacyCashier.colCountry')}</th>
                 <th>{t('pharmacyCashier.colBatch')}</th>
-                <th>{t('pharmacyCashier.colMxik')}</th>
-                <th>{t('pharmacyCashier.colIkpu')}</th>
-                <th>{t('pharmacyCashier.colMarking')}</th>
+                <th className="pharmacy-search__num">{t('pharmacyCashier.colScore')}</th>
+                <th className="pharmacy-search__num">{t('pharmacyCashier.colRefPrice')}</th>
+                <th>{t('pharmacyCashier.colIkpu')} / {t('pharmacyCashier.colMxik')}</th>
               </tr>
             </thead>
             <tbody>
@@ -136,9 +137,10 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                   && Number(product.stockQuantity) <= 0;
                 const inactive = product.active === false;
                 const disabled = outOfStock || inactive || productsStale;
-                const form = productDosageForm(product) || '—';
                 const country = productCountry(product) || '—';
                 const batch = productBatch(product) || '—';
+                const manufacturer = productManufacturer(product) || '—';
+                const shelf = productStorageLocation(product) || '—';
                 const expiryDate = formatExpiryDisplay(productExpiry(product));
                 const sellByUnit = productSellByUnitHint(product);
                 const stockTone = disabled ? null : pharmacyStockTone(product);
@@ -149,15 +151,12 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const daysLabelText = formatStockExpiryDays(daysLeft, shelfLife, daysLabel);
                 const mxik = productIkpu(product) || '—';
                 const ikpu = productPackageCode(product) || productIkpu(product) || '—';
-                const packCode = productPackageCode(product);
-                const unitsInPack = formatUnitsInPackCell(product) || '—';
-                const marked = productIsMarked(product);
-                const marking = formatMarkedLabel(
-                  product,
-                  t('pharmacyCashier.markingYes'),
-                  t('pharmacyCashier.markingNo'),
-                );
+                const fiscal = ikpu !== mxik ? `${ikpu} / ${mxik}` : mxik;
+                const unitPrice = resolveProductUnitPrice(product, storeId);
+                const cost = Number(product.costPrice ?? 0);
+                const form = productDosageForm(product);
                 const meta = [
+                  form || '',
                   expiryDate ? `${t('pharmacyCashier.colExpiryShort')}: ${expiryDate}` : '',
                   sellByUnit ? t('pharmacyCashier.sellByUnitHintShort') : '',
                 ].filter(Boolean).join(' · ');
@@ -189,15 +188,6 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         ) : null}
                       </div>
                     </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={form}>
-                      <span className="pharmacy-search__cell-text">{form}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
-                      <span className="pharmacy-search__cell-text">{country}</span>
-                    </td>
-                    <td className="pharmacy-search__num">
-                      {fmt(resolveProductUnitPrice(product, storeId))}
-                    </td>
                     <td
                       className={[
                         'pharmacy-search__num',
@@ -208,9 +198,9 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
                       </span>
                     </td>
-                    <td className="pharmacy-search__num pharmacy-search__mono" title={unitsInPack}>
-                      <span className="pharmacy-search__cell-text">{unitsInPack}</span>
-                    </td>
+                    <td className="pharmacy-search__num">{cost > 0 ? fmt(cost) : '—'}</td>
+                    <td className="pharmacy-search__num">{fmt(unitPrice)}</td>
+                    <td className="pharmacy-search__num">{fmt(unitPrice)}</td>
                     <td
                       className={[
                         'pharmacy-search__mono',
@@ -220,27 +210,22 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                     >
                       <span className="pharmacy-search__badge">{daysLabelText}</span>
                     </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={shelf}>
+                      <span className="pharmacy-search__cell-text">{shelf}</span>
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={manufacturer}>
+                      <span className="pharmacy-search__cell-text">{manufacturer}</span>
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
+                      <span className="pharmacy-search__cell-text">{country}</span>
+                    </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={batch}>
                       <span className="pharmacy-search__cell-text">{batch}</span>
                     </td>
-                    <td
-                      className="pharmacy-search__mono pharmacy-search__clip pharmacy-search__fiscal"
-                      title={packCode ? `${mxik} · ${t('pharmacyCashier.colPackageCode')}: ${packCode}` : mxik}
-                    >
-                      <span className="pharmacy-search__cell-text">{mxik}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip pharmacy-search__fiscal" title={ikpu}>
-                      <span className="pharmacy-search__cell-text">{ikpu}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__marking">
-                      <span
-                        className={[
-                          'pharmacy-search__mark-badge',
-                          marked ? 'is-yes' : 'is-no',
-                        ].join(' ')}
-                      >
-                        {marking}
-                      </span>
+                    <td className="pharmacy-search__num">—</td>
+                    <td className="pharmacy-search__num">—</td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip pharmacy-search__fiscal" title={fiscal}>
+                      <span className="pharmacy-search__cell-text">{fiscal}</span>
                     </td>
                   </tr>
                 );

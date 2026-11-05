@@ -10,7 +10,7 @@ import { amountStr, parseTenderedInput } from '../../cashier/components/payment/
 import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../cashier/constants/paymentCardProviders';
 import { appendKeypadDigit } from '../../cashier/components/NumericKeypad';
 
-export const PHARMACY_PAY_METHODS = ['cash', 'card', 'mixed', 'insurance'];
+export const PHARMACY_PAY_METHODS = ['cash', 'card', 'mixed', 'cashless', 'insurance'];
 
 export const PHARMACY_QUICK_CASH = [
   { amount: 10000, mode: 'add', label: '+10 000' },
@@ -217,6 +217,18 @@ export function usePharmacyPayRail({
       return;
     }
 
+    if (method === 'cashless') {
+      onConfirm({
+        paymentMethod: 'CASHLESS',
+        receiptType: 'SALE',
+        cardType: null,
+        amountTendered: toPay,
+        printReceipt: printReceiptEnabled,
+        ...extras,
+      });
+      return;
+    }
+
     if (method === 'insurance') {
       if (pinfl.trim().length < 14) {
         toast.error(t('pharmacyCashier.pay.pinflRequired'));
@@ -252,6 +264,7 @@ export function usePharmacyPayRail({
       return t('pharmacyCashier.pay.hintMixedPickCard');
     }
     if (method === 'mixed' && !hasPartialCash) return t('pharmacyCashier.pay.hintMixedProduct');
+    if (method === 'cashless') return t('pharmacyCashier.pay.hintCashless');
     if (method === 'insurance') return t('pharmacyCashier.pay.hintDmed');
     return null;
   }, [hasPartialCash, method, t]);

@@ -1,0 +1,55 @@
+.pharmacy-catalog-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pharmacy-catalog-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--pharm-border, #dddcd5);
+  border-radius: 8px;
+  background: var(--pharm-card, #f7f6f1);
+  color: var(--pharm-ink, #26332d);
+  font-size: 0.625rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-catalog-toolbar__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pharmacy-catalog-toolbar__btn--ghost {
+  color: var(--pharm-muted, #7a817c);
+}
+
+.pharmacy-catalog-toolbar__btn .is-spin {
+  animation: pharmacy-catalog-spin 0.8s linear infinite;
+}
+
+.pharmacy-catalog-toolbar__auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--pharm-muted, #7a817c);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pharmacy-catalog-toolbar__auto input {
+  accent-color: var(--pharm-brand, #245b45);
+}
+
+@keyframes pharmacy-catalog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

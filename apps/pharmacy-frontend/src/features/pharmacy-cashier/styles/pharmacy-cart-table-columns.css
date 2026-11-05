@@ -1,32 +1,12 @@
-/* Ширины колонок чека (макет: имя / форма / цена / qty / скидка / сумма) */
+/* Ширины колонок чека (ТЗ: маркировка / цена / срок / НДС / производитель) */
 
 .pharmacy-cart-table__table--receipt {
-  min-width: 720px;
+  min-width: 1100px;
 }
 
-.pharmacy-cart-table__table--receipt .pharmacy-col--idx {
-  width: 36px;
-}
-
-.pharmacy-cart-table__table--receipt .pharmacy-col--name {
-  width: auto;
-  min-width: 180px;
-}
-
-.pharmacy-cart-table__table--receipt .pharmacy-col--form {
-  width: 88px;
-}
-
-.pharmacy-cart-table__table--receipt .pharmacy-col--money {
-  width: 92px;
-}
-
-.pharmacy-cart-table__table--receipt .pharmacy-col--qty-ctrl {
-  width: 118px;
-}
-
-.pharmacy-cart-table__table--receipt .pharmacy-col--actions {
-  width: 44px;
+.pharmacy-cart-table__table--receipt thead th {
+  white-space: nowrap;
+  font-size: 0.625rem;
 }
 
 .pharmacy-cart-table__table thead th.pharmacy-cart-table__num {
@@ -57,20 +37,23 @@
   line-height: 1.25;
 }
 
-.pharmacy-cart-table__name-block {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 6px;
+.pharmacy-cart-table__select {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--pharm-brand, #245b45);
+  cursor: pointer;
 }
 
-.pharmacy-cart-table__name-meta {
-  display: block;
-  width: 100%;
+.pharmacy-cart-table__mark-status {
+  display: inline-block;
   font-size: 0.5625rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--pharm-muted);
-  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.pharmacy-cart-table__mark-status.is-ok {
+  color: var(--pharm-ok-text, #174936);
 }
 
 .pharmacy-cart-table__qty-ctrl {
@@ -81,18 +64,22 @@
   width: 100%;
 }
 
-.pharmacy-cart-table__qty-val {
-  min-width: 3.2rem;
-  text-align: center;
-  font-weight: 800;
-  font-size: 0.7rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-  white-space: normal;
+.pharmacy-cart-table__foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--pharm-border, #dddcd5);
+  background: var(--pharm-surface, #f2f1ec);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #26332d);
 }
 
-.pharmacy-cart-table__num .pharmacy-cart-table__piece-price-hint {
-  display: block;
-  width: 100%;
-  text-align: right;
+.pharmacy-cart-table__foot strong {
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--pharm-brand, #245b45);
 }

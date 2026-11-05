@@ -28,6 +28,7 @@ export default function PharmacyParkedCartsStrip({
   onRemove,
   onClearAll,
   disabled = false,
+  openSignal = 0,
 }) {
   const [open, setOpen] = useState(false);
   const [box, setBox] = useState(null);
@@ -42,6 +43,11 @@ export default function PharmacyParkedCartsStrip({
   useEffect(() => {
     if (!count) setOpen(false);
   }, [count]);
+
+  useEffect(() => {
+    if (!openSignal || count === 0 || disabled) return;
+    setOpen(true);
+  }, [openSignal, count, disabled]);
 
   useEffect(() => {
     if (!open) return undefined;

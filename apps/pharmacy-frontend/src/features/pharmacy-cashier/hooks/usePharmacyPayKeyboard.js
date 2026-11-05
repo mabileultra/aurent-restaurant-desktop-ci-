@@ -10,13 +10,12 @@ function isEditableTarget(target) {
 
 function isPatientField(target) {
   if (!(target instanceof Element)) return false;
-  return Boolean(target.closest('.pharmacy-pay-rail__patient'));
+  return Boolean(target.closest('.pharmacy-pay-rail__patient, .pharmacy-pay-stack'));
 }
 
 /**
- * Клавиатура для панели оплаты аптеки (ПК / numpad).
- * F6–F8 методы, F5 ровно, цифры → сумма, Enter → продажа.
- * F9 — чек (см. usePharmacyHotkeys).
+ * Хоткеи оплаты по ТЗ: F9 нал, F10 HUMO, F11 UzCard, F12 продажа,
+ * F8 смешанный, F4 бесконтакт, F7 отложить, F6 пред.список, F5 ровно.
  */
 export function usePharmacyPayKeyboard({
   enabled,
@@ -28,6 +27,11 @@ export function usePharmacyPayKeyboard({
   clearCash,
   submitSale,
   saleDisabled,
+  onCash,
+  onHumo,
+  onUzcard,
+  onHold,
+  onParkedList,
 }) {
   useEffect(() => {
     if (!enabled) return undefined;
@@ -35,19 +39,44 @@ export function usePharmacyPayKeyboard({
     const onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-      if (e.key === 'F6') {
+      if (e.key === 'F9') {
         e.preventDefault();
-        setMethod('cash');
+        (onCash || (() => setMethod('cash')))();
         return;
       }
-      if (e.key === 'F7') {
+      if (e.key === 'F10') {
         e.preventDefault();
-        setMethod('card');
+        onHumo?.();
+        return;
+      }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        onUzcard?.();
+        return;
+      }
+      if (e.key === 'F12') {
+        e.preventDefault();
+        if (!saleDisabled) submitSale();
         return;
       }
       if (e.key === 'F8') {
         e.preventDefault();
         setMethod('mixed');
+        return;
+      }
+      if (e.key === 'F4') {
+        e.preventDefault();
+        setMethod('cashless');
+        return;
+      }
+      if (e.key === 'F7') {
+        e.preventDefault();
+        onHold?.();
+        return;
+      }
+      if (e.key === 'F6') {
+        e.preventDefault();
+        onParkedList?.();
         return;
       }
 
@@ -60,8 +89,8 @@ export function usePharmacyPayKeyboard({
       }
 
       if (e.key === 'Enter' && !e.shiftKey) {
-        if (isPatientField(e.target)) return;
-        if (isEditableTarget(e.target) && !e.target.closest?.('.pharmacy-pay-rail')) return;
+        if (isPatientField(e.target) && e.target?.tagName === 'INPUT') return;
+        if (isEditableTarget(e.target) && !e.target.closest?.('.pharmacy-pay-stack')) return;
         if (saleDisabled) return;
         e.preventDefault();
         e.stopPropagation();
@@ -83,12 +112,9 @@ export function usePharmacyPayKeyboard({
         backspaceCash();
         return;
       }
-      if (e.key === 'Delete' || e.key === 'Escape') {
-        // Escape handled globally; Delete clears tendered
-        if (e.key === 'Delete') {
-          e.preventDefault();
-          clearCash();
-        }
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        clearCash();
       }
     };
 
@@ -100,6 +126,11 @@ export function usePharmacyPayKeyboard({
     clearCash,
     enabled,
     method,
+    onCash,
+    onHold,
+    onHumo,
+    onParkedList,
+    onUzcard,
     saleDisabled,
     setExactAmount,
     setMethod,

@@ -3,9 +3,9 @@ import toast from 'react-hot-toast';
 
 /**
  * Хоткеи аптечной кассы (только пока смонтирован PharmacyPosPage).
- * F2 — поиск/скан, F3 — МНН/аналоги, F9 — фокус чека.
+ * F2 — поиск/скан, F3 — МНН/аналоги.
+ * F6–F12 оплата — usePharmacyPayKeyboard (tall-stack).
  * Esc — очистить чек (если есть позиции), иначе сброс поиска.
- * Enter / F5–F8 / цифры — в usePharmacyPayKeyboard (панель оплаты).
  */
 export function usePharmacyHotkeys({
   t,
@@ -56,11 +56,6 @@ export function usePharmacyHotkeys({
         focusSearch?.();
         toast(t('pharmacyCashier.integrations.analogsHint'), { icon: '🔍' });
         return;
-      }
-
-      if (e.key === 'F9') {
-        e.preventDefault();
-        focusCart?.();
       }
     };
 

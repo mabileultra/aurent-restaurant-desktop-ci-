@@ -36,7 +36,11 @@ function resolvePayAmounts(payment, total) {
     const card = round2(Math.max(0, payTotal - cash));
     return { cashAmount: cash, cardAmount: card, amountTendered: payment.amountTendered ?? cash };
   }
-  if (payment.paymentMethod === 'CARD') {
+  if (
+    payment.paymentMethod === 'CARD'
+    || payment.paymentMethod === 'CASHLESS'
+    || payment.paymentMethod === 'MPESA'
+  ) {
     return { cashAmount: 0, cardAmount: payTotal, amountTendered: payTotal };
   }
   const tendered = payment.amountTendered ?? payTotal;

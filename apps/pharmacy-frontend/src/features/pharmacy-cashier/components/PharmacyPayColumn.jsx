@@ -1,14 +1,17 @@
 import PosPaymentFlow from '../../cashier/components/PosPaymentFlow';
-import PharmacyPayRail from './PharmacyPayRail';
+import PharmacyPayStack from './PharmacyPayStack';
 
 /**
- * Правая колонка оплаты аптеки — отдельный rail, retail CashierPayColumn не меняем.
+ * Колонка оплаты аптеки — tall-stack слева (ТЗ §3).
  */
 export default function PharmacyPayColumn({
   payOpen = false,
   total,
   onReturn,
   onDiscount,
+  onHold,
+  onPreviewCheck,
+  onParkedList,
   onCashIn,
   onCashOut,
   onConfirm,
@@ -36,10 +39,13 @@ export default function PharmacyPayColumn({
           className="cashier-register__pay-pane cashier-register__pay-pane--rail"
           inert={payOpen || undefined}
         >
-          <PharmacyPayRail
+          <PharmacyPayStack
             total={total}
             onReturn={onReturn}
             onDiscount={onDiscount}
+            onHold={onHold}
+            onPreviewCheck={onPreviewCheck}
+            onParkedList={onParkedList}
             onCashIn={onCashIn}
             onCashOut={onCashOut}
             onConfirm={onConfirm}

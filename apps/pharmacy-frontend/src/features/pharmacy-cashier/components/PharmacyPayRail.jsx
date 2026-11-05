@@ -6,6 +6,7 @@ import {
   CreditCard,
   Loader,
   Percent,
+  QrCode,
   RotateCcw,
   ShieldCheck,
   Split,
@@ -20,12 +21,14 @@ import PharmacyPayPatientCards from './PharmacyPayPatientCards';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
 import '../styles/pharmacy-pay-rail.css';
+import '../styles/pharmacy-pay-rail-methods.css';
 import '../styles/pharmacy-pay-patient.css';
 
 const METHOD_META = [
   { id: 'cash', icon: Banknote, labelKey: 'pharmacyCashier.pay.methodCash', kbd: 'F6' },
   { id: 'card', icon: CreditCard, labelKey: 'pharmacyCashier.pay.methodCard', kbd: 'F7' },
   { id: 'mixed', icon: Split, labelKey: 'pharmacyCashier.pay.methodMixed', kbd: 'F8' },
+  { id: 'cashless', icon: QrCode, labelKey: 'pharmacyCashier.pay.methodCashless', kbd: 'F4' },
   { id: 'insurance', icon: ShieldCheck, labelKey: 'pharmacyCashier.pay.methodInsurance', kbd: null },
 ];
 
@@ -85,7 +88,7 @@ export default function PharmacyPayRail({
         </div>
       </div>
 
-      <div className="pharmacy-pay-rail__methods" role="tablist">
+      <div className="pharmacy-pay-rail__methods pharmacy-pay-rail__methods--five" role="tablist">
         {METHOD_META.map(({ id, icon: Icon, labelKey, kbd }) => (
           <button
             key={id}
@@ -93,7 +96,9 @@ export default function PharmacyPayRail({
             role="tab"
             aria-selected={rail.method === id}
             title={kbd ? `${t(labelKey)} [${kbd}]` : t(labelKey)}
-            className={`pharmacy-pay-rail__method${rail.method === id ? ' is-active' : ''}`}
+            className={`pharmacy-pay-rail__method pharmacy-pay-rail__method--${id}${
+              rail.method === id ? ' is-active' : ''
+            }`}
             disabled={checkoutDisabled || isPending}
             onClick={() => rail.setMethod(id)}
           >

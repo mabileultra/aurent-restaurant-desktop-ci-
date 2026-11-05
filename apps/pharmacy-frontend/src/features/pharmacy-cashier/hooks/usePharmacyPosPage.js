@@ -38,6 +38,7 @@ export function usePharmacyPosPage() {
   const [selectedLineId, setSelectedLineId] = useState(null);
   const [returnOpen, setReturnOpen] = useState(false);
   const [discountOpen, setDiscountOpen] = useState(false);
+  const [markingNotice, setMarkingNotice] = useState(null);
   const { open: shiftModalOpen, openShift: openShiftModal } = useCashierShiftModal();
   const shiftAutoPromptedRef = useRef(false);
 
@@ -257,7 +258,14 @@ export function usePharmacyPosPage() {
     cashRegisterId: shift?.cashRegisterId ?? null,
     products: fefoProducts,
     onProductFound: cartHandlers.addMarkedScan,
+    onNotice: setMarkingNotice,
   });
+
+  const refreshCatalog = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ['pos-products'] });
+    qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
+    qc.invalidateQueries({ queryKey: ['pharmacy-lots'] });
+  }, [qc]);
 
   onMarkingScanRef.current = markingScan.tryHandleMarkingScan;
 
@@ -411,5 +419,8 @@ export function usePharmacyPosPage() {
       externalUrls: integration.externalUrls,
       markingVerifying: markingScan.verifying,
     },
+    markingNotice,
+    clearMarkingNotice: () => setMarkingNotice(null),
+    refreshCatalog,
   };
 }

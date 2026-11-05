@@ -61,12 +61,16 @@ export default function PharmacyPosPage() {
         shiftIsOpen={p.shiftIsOpen}
         onReturn={() => p.setReturnOpen(true)}
         onDiscount={p.handleDiscount}
+        onHold={p.handleNewReceipt}
         onCashIn={cashMovement.handleCashIn}
         onCashOut={cashMovement.handleCashOut}
         onOpenPaymentFlow={p.handleOpenPaymentFlow}
         onPayFlowClosed={p.handlePayFlowClosed}
         payFlowOptions={p.payFlowOptions}
         payFlowSession={p.payFlowSession}
+        markingNotice={p.markingNotice}
+        clearMarkingNotice={p.clearMarkingNotice}
+        onRefreshCatalog={p.refreshCatalog}
       />
 
       <ShiftCashMovementModal
