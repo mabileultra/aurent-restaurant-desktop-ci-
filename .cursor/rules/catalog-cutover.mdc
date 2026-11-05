@@ -23,11 +23,18 @@ alwaysApply: false
 
 ## Wave 7 phases (do in order)
 
-1. **Dial** — new write mode (e.g. `CATALOG_PRIMARY`); keep today’s `REMOTE_ONLY` = strict mirror (do not redefine).
-2. **Create/Update/Deactivate product (+ category)** — upsert **catalog first**; local `products` becomes mirror (or skip card fields later). Stock/price-at-store stay in web-backend.
-3. **Lab soak** — `CATALOG_PRIMARY` + read `REMOTE_ONLY`; verify + sales + admin CRUD.
-4. **Prod flip** — only with «подтверждаю прод»; still no drop.
-5. **Drop/truncate local `products`** — last; backup + rollback plan first.
+1. **Dial + create/update/deactivate path** — `write-mode=CATALOG_PRIMARY` (done in code; default still `DUAL`). `REMOTE_ONLY` stays strict mirror.
+2. **Lab soak** — enable `CATALOG_PRIMARY` + read `REMOTE_ONLY`; verify + sales + admin CRUD.
+3. **Prod flip** — only with «подтверждаю прод»; still no drop.
+4. **Drop/truncate local `products`** — last; backup + rollback plan first.
+
+### Write-mode cheat sheet
+
+| Mode | Who writes first | Fail remote? | Card SoT |
+|---|---|---|---|
+| `DUAL` | local → catalog after commit | no | local |
+| `REMOTE_ONLY` | local → catalog sync in-request | yes | local (mirror must succeed) |
+| `CATALOG_PRIMARY` | **catalog → local mirror** | yes | **catalog** |
 
 ## Critical: `write-mode=REMOTE_ONLY` ≠ Catalog SoT
 

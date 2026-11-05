@@ -18,7 +18,7 @@ public class CatalogCategoryDualWritePublisher {
     private final CatalogRemoteWriteSupport remoteWriteSupport;
 
     public void publishAfterCommit(Category category) {
-        if (!properties.dualWriteEnabled() || category == null || category.getId() == null) {
+        if (!properties.outboundCatalogWriteEnabled() || category == null || category.getId() == null) {
             return;
         }
         CatalogCategoryUpsertRequest payload = upsertMapper.toUpsert(category);
@@ -38,7 +38,7 @@ public class CatalogCategoryDualWritePublisher {
 
     /** Capture legacy ids before local delete; soft-deactivate remote. */
     public void publishDeactivateAfterCommit(Category category) {
-        if (!properties.dualWriteEnabled() || category == null || category.getId() == null
+        if (!properties.outboundCatalogWriteEnabled() || category == null || category.getId() == null
             || category.getCompany() == null) {
             return;
         }

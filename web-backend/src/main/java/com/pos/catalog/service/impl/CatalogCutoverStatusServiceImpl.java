@@ -34,17 +34,21 @@ public class CatalogCutoverStatusServiceImpl implements CatalogCutoverStatusServ
         boolean remoteReachable = productStats.isPresent() || outboxStats.isPresent();
         boolean soakRecommended = properties.isEnabled()
             && readMode == CatalogReadMode.REMOTE_ONLY
-            && writeMode == CatalogWriteMode.REMOTE_ONLY
+            && writeMode == CatalogWriteMode.CATALOG_PRIMARY
             && remoteReachable
             && outboxStats.map(s -> s.failed() == 0 && s.pending() == 0).orElse(false);
 
         String note;
         if (!properties.isEnabled()) {
             note = "Local SoT (app.catalog.enabled=false)";
-        } else if (soakRecommended) {
-            note = "Modes + outbox look ready for soak; run /verify before REMOTE_ONLY prod";
+        } else if (writeMode == CatalogWriteMode.CATALOG_PRIMARY) {
+            note = soakRecommended
+                ? "Wave 7 CATALOG_PRIMARY + REMOTE_ONLY read; verify before prod flip / drop"
+                : "Wave 7 CATALOG_PRIMARY on — catalog card SoT; local mirror until drop";
+        } else if (writeMode == CatalogWriteMode.REMOTE_ONLY) {
+            note = "REMOTE_ONLY = strict mirror (local still writes first); not Wave 7 SoT";
         } else {
-            note = "Enable backfill/verify; prefer read-mode=REMOTE_ONLY + write-mode=REMOTE_ONLY with empty outbox";
+            note = "Soak DUAL; next Wave 7 dial write-mode=CATALOG_PRIMARY (not REMOTE_ONLY)";
         }
 
         return new CatalogCutoverStatusResponse(

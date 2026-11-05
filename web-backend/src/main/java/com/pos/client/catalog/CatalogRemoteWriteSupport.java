@@ -8,7 +8,8 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * Shared DUAL (after-commit best-effort) vs REMOTE_ONLY (sync, fail-fast) scheduling.
+ * Shared DUAL (after-commit best-effort) vs strict (sync, fail-fast) scheduling.
+ * Strict = {@code REMOTE_ONLY} mirror or {@code CATALOG_PRIMARY} (category outbound path).
  */
 @Component
 @RequiredArgsConstructor
@@ -35,7 +36,11 @@ public class CatalogRemoteWriteSupport {
 
     public void requireOk(boolean ok, String message) {
         if (!ok && properties.strictRemoteWrite()) {
-            throw PosExceptions.badRequest(message, "catalog.write-mode", "REMOTE_ONLY");
+            throw PosExceptions.badRequest(
+                message,
+                "catalog.write-mode",
+                properties.effectiveWriteMode().name()
+            );
         }
     }
 }

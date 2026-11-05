@@ -8,6 +8,7 @@ import com.pos.catalog.entity.Product;
 import com.pos.exception.PosExceptions;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.service.product.ProductCommandService;
+import com.pos.catalog.service.product.support.CatalogPrimaryProductWriteSupport;
 import com.pos.catalog.service.product.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
@@ -30,6 +31,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
     private final ProductCatalogLoader catalogLoader;
     private final ProductRepository productRepository;
     private final ProductSnapshotNotifier productSnapshotNotifier;
+    private final CatalogPrimaryProductWriteSupport catalogPrimaryWrite;
     private final InactiveBarcodeReleaser barcodeReleaser;
     private final CatalogIsolationSupport catalogIsolation;
 
@@ -51,6 +53,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
     public void deactivateProduct(UUID id) {
         Product product = catalogLoader.requireById(id);
         catalogIsolation.rejectPharmacyFromGroceryWrite(product);
+        catalogPrimaryWrite.deactivateBeforeLocalSave(id);
         product.setActive(false);
         barcodeReleaser.release(product);
         productRepository.save(product);
@@ -77,6 +80,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         int updated = 0;
         for (Product product : products) {
             if (product.isActive()) {
+                catalogPrimaryWrite.deactivateBeforeLocalSave(product.getId());
                 product.setActive(false);
                 barcodeReleaser.release(product);
                 updated++;
@@ -90,6 +94,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
     private int applyTaxRate(List<Product> products, java.math.BigDecimal taxRate) {
         for (Product product : products) {
             product.setTaxRate(ProductValueNormalizer.taxRatePercent(taxRate));
+            catalogPrimaryWrite.upsertBeforeLocalSave(product);
         }
         productRepository.saveAll(products);
         products.forEach(product -> productSnapshotNotifier.notify(product.getId()));

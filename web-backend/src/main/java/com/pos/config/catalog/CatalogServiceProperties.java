@@ -25,7 +25,7 @@ public class CatalogServiceProperties {
     private CatalogReadMode readMode = CatalogReadMode.REMOTE_FIRST;
 
     /**
-     * Dual-write strategy when {@link #enabled} is true.
+     * Write strategy when {@link #enabled} is true.
      * When disabled, behavior is always {@link CatalogWriteMode#LOCAL_ONLY}.
      */
     private CatalogWriteMode writeMode = CatalogWriteMode.DUAL;
@@ -49,12 +49,31 @@ public class CatalogServiceProperties {
         return writeMode != null ? writeMode : CatalogWriteMode.DUAL;
     }
 
+    /**
+     * Mirror-after-local path ({@link CatalogWriteMode#DUAL} / {@link CatalogWriteMode#REMOTE_ONLY}).
+     * Not used for {@link CatalogWriteMode#CATALOG_PRIMARY} (that writes remote first).
+     */
     public boolean dualWriteEnabled() {
         CatalogWriteMode mode = effectiveWriteMode();
         return mode == CatalogWriteMode.DUAL || mode == CatalogWriteMode.REMOTE_ONLY;
     }
 
+    /** Wave 7: grocery card SoT is catalog-service; local is mirror. */
+    public boolean catalogPrimaryWrite() {
+        return effectiveWriteMode() == CatalogWriteMode.CATALOG_PRIMARY;
+    }
+
+    /** Category (and other) outbound writers that are not the product primary path. */
+    public boolean outboundCatalogWriteEnabled() {
+        return dualWriteEnabled() || catalogPrimaryWrite();
+    }
+
+    /**
+     * Fail the request if remote write fails.
+     * True for strict mirror ({@code REMOTE_ONLY}) and Wave 7 primary ({@code CATALOG_PRIMARY}).
+     */
     public boolean strictRemoteWrite() {
-        return effectiveWriteMode() == CatalogWriteMode.REMOTE_ONLY;
+        CatalogWriteMode mode = effectiveWriteMode();
+        return mode == CatalogWriteMode.REMOTE_ONLY || mode == CatalogWriteMode.CATALOG_PRIMARY;
     }
 }

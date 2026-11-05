@@ -27,8 +27,11 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class Product {
 
+    /**
+     * Assigned id (not {@code @GeneratedValue}): Wave 7 {@code CATALOG_PRIMARY} sets the UUID
+     * before catalog upsert; Hibernate must not replace it on persist.
+     */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -172,6 +175,9 @@ public class Product {
     private Instant updatedAt;
 
     @PrePersist void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
