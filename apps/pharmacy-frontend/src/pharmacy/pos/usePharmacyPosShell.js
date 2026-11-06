@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   cashierThemeClassName,
   clearCashierThemeDocument,
-  readCashierTheme,
   syncCashierThemeDocument,
   writeCashierTheme,
 } from '../../utils/cashierTheme';
@@ -32,7 +31,7 @@ const CATALOG_KIND = PHARMACY_CATALOG_KIND;
  * Not a fork of grocery secondary routes / bottom-nav world.
  */
 export function usePharmacyPosShell() {
-  const [cashierTheme, setCashierTheme] = useState(readCashierTheme);
+  const [cashierTheme, setCashierTheme] = useState('light');
   const zoom = useCashierUiScale();
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);

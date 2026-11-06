@@ -42,6 +42,7 @@ export function PharmacyRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/cashier/login" element={<LoginPage />} />
       <Route path="/auth/accept" element={<AuthAcceptPage />} />
 
       <Route
