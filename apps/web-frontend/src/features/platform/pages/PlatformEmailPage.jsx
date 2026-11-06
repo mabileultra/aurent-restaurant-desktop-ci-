@@ -1,52 +1,47 @@
+import React from 'react';
 import { PageLayout } from '../../../components/ui';
-import PlatformEmailBroadcastForm from '../components/email/PlatformEmailBroadcastForm';
-import PlatformEmailPreviewPanel from '../components/email/PlatformEmailPreviewPanel';
+import PlatformEmailHeader from '../components/email/PlatformEmailHeader';
+import PlatformEmailHistoryTab from '../components/email/PlatformEmailHistoryTab';
+import PlatformEmailSendTab from '../components/email/PlatformEmailSendTab';
+import PlatformEmailSettingsTab from '../components/email/PlatformEmailSettingsTab';
+import PlatformEmailTabsNav from '../components/email/PlatformEmailTabsNav';
+import PlatformEmailTemplatesTab from '../components/email/PlatformEmailTemplatesTab';
 import { usePlatformEmailPage } from '../hooks/usePlatformEmailPage';
+import { EMAIL_TAB_KEYS } from '../utils/emailConstants';
 import '../../../styles/platform/email.css';
 
 export default function PlatformEmailPage() {
-  const p = usePlatformEmailPage();
+  const page = usePlatformEmailPage();
 
   return (
-    <PageLayout
-      className="platform-email-page"
-      spacing="space-y-4"
-      title={p.t('platform.email.title')}
-      subtitle={p.t('platform.email.subtitle')}
-    >
-      <div className="platform-email-page__grid">
-        <PlatformEmailBroadcastForm
-          t={p.t}
-          subject={p.subject}
-          onSubjectChange={p.setSubject}
-          message={p.message}
-          onMessageChange={p.setMessage}
-          selectAllActive={p.selectAllActive}
-          onSelectAllActive={p.handleSelectAllActive}
-          userSearch={p.userSearch}
-          onUserSearchChange={p.setUserSearch}
-          filteredUsers={p.filteredUsers}
-          usersLoading={p.usersLoading}
-          allVisibleSelected={p.allVisibleSelected}
-          onSelectAllVisible={p.handleSelectAllVisible}
-          selectedIds={p.selectedIds}
-          onToggleUser={p.toggleUser}
-          onPreview={p.handlePreview}
-          onSend={p.handleSend}
-          previewPending={p.previewMutation.isPending}
-          sendPending={p.sendMutation.isPending}
-        />
-        <PlatformEmailPreviewPanel
-          t={p.t}
-          previewSubject={p.previewSubject}
-          templateType={p.templateType}
-          templates={p.templates}
-          templatesError={p.templatesError}
-          activeTemplate={p.activeTemplate}
-          onTemplateChange={p.handleTemplateChange}
-          previewHtml={p.previewHtml}
-          previewPending={p.previewMutation.isPending}
-        />
+    <PageLayout className="platform-email-page space-y-5" spacing="space-y-5">
+      <PlatformEmailHeader
+        activeTab={page.activeTab}
+        onGoToSend={page.handleGoToSend}
+        onGoToSettings={page.handleGoToSettings}
+      />
+
+      <PlatformEmailTabsNav
+        activeTab={page.activeTab}
+        onSelectTab={page.setActiveTab}
+      />
+
+      <div className="pt-1">
+        {page.activeTab === EMAIL_TAB_KEYS.SEND && (
+          <PlatformEmailSendTab flow={page.sendFlow} />
+        )}
+        {page.activeTab === EMAIL_TAB_KEYS.HISTORY && (
+          <PlatformEmailHistoryTab
+            flow={page.historyFlow}
+            onGoToSend={page.handleGoToSend}
+          />
+        )}
+        {page.activeTab === EMAIL_TAB_KEYS.TEMPLATES && (
+          <PlatformEmailTemplatesTab flow={page.templatesFlow} />
+        )}
+        {page.activeTab === EMAIL_TAB_KEYS.SETTINGS && (
+          <PlatformEmailSettingsTab flow={page.settingsFlow} />
+        )}
       </div>
     </PageLayout>
   );

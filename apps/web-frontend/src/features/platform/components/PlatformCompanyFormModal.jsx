@@ -49,7 +49,11 @@ export default function PlatformCompanyFormModal({
   const handleSaveClick = (e) => {
     e?.preventDefault();
     setHasSubmitted(true);
-    if (!isValid || isSaving) return;
+    if (!isValid || isSaving) {
+      const firstId = errors.name ? 'company-field-name' : errors.tin ? 'company-field-tin' : errors.phone ? 'company-field-phone' : null;
+      if (firstId) document.getElementById(firstId)?.focus();
+      return;
+    }
     onSave?.();
   };
 
@@ -66,7 +70,7 @@ export default function PlatformCompanyFormModal({
           </BaseButton>
           <BaseButton
             requiresOnline
-            disabled={!isValid || isSaving}
+            disabled={isSaving}
             onClick={handleSaveClick}
             className="admin-btn-primary"
           >

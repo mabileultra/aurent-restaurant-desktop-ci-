@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { emptyForm, toggleFormBusinessType, resolveAssignedBusinessTypes } from '../utils/companyFormUtils';
 import {
   readStoredCompanyDraft,
@@ -98,6 +98,26 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
     setMenuId?.(null);
   };
 
+  const closeModal = useCallback(() => {
+    setModalOpen(false);
+    setEditing(null);
+  }, []);
+
+  const updateField = useCallback((field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const toggleBusinessType = useCallback((typeId) => {
+    setForm((prev) => toggleFormBusinessType(prev, typeId, constructorTypes));
+  }, [constructorTypes]);
+
+  const setDefaultBusinessType = useCallback((typeId) => {
+    setForm((prev) => {
+      const def = constructorTypes.find((bt) => bt.id === typeId);
+      return { ...prev, defaultBusinessTypeId: typeId, businessType: def?.code ?? prev.businessType };
+    });
+  }, [constructorTypes]);
+
   return {
     modalOpen,
     editing,
@@ -105,13 +125,10 @@ export function usePlatformCompanyForm({ t, constructorTypes = [], setMenuId }) 
     saveMutation,
     openCreate,
     openEdit,
-    closeModal: () => { setModalOpen(false); setEditing(null); },
-    updateField: (field, value) => setForm((prev) => ({ ...prev, [field]: value })),
-    toggleBusinessType: (typeId) => setForm((prev) => toggleFormBusinessType(prev, typeId, constructorTypes)),
-    setDefaultBusinessType: (typeId) => setForm((prev) => {
-      const def = constructorTypes.find((bt) => bt.id === typeId);
-      return { ...prev, defaultBusinessTypeId: typeId, businessType: def?.code ?? prev.businessType };
-    }),
+    closeModal,
+    updateField,
+    toggleBusinessType,
+    setDefaultBusinessType,
     companyToDelete,
     setCompanyToDelete,
     handleConfirmDelete: (comp) => deleteMutation.mutate(comp.id),

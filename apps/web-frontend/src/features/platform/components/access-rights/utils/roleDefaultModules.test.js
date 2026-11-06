@@ -26,16 +26,16 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
   it('matches restaurant admin allowlist scope/default sizes for RESTAURANT', () => {
     const adminScope = getScopeForRole('ADMIN', 'RESTAURANT');
     const adminDefaults = getDefaultModulesForRole('ADMIN', 'RESTAURANT');
-    expect(adminScope.size).toBe(21);
-    expect(adminDefaults.size).toBe(17);
+    expect(adminScope.size).toBe(22);
+    expect(adminDefaults.size).toBe(18);
     expect(adminScope.has('financeDashboard')).toBe(false);
     expect(adminScope.has('cashierSales')).toBe(false);
     expect(adminScope.has('restaurantFloor')).toBe(true);
 
     const managerScope = getScopeForRole('MANAGER', 'RESTAURANT');
     const managerDefaults = getDefaultModulesForRole('MANAGER', 'RESTAURANT');
-    expect(managerScope.size).toBe(21);
-    expect(managerDefaults.size).toBe(14);
+    expect(managerScope.size).toBe(22);
+    expect(managerDefaults.size).toBe(15);
 
     const cashierScope = getScopeForRole('CASHIER', 'RESTAURANT');
     const cashierDefaults = getDefaultModulesForRole('CASHIER', 'RESTAURANT');

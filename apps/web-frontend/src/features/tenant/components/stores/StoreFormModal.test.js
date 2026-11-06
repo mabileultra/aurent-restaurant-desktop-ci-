@@ -134,12 +134,20 @@ describe('StoreFormModal', () => {
     delete globalThis.sessionStorage;
   });
 
-  it('disables save button when required fields are missing on creation', () => {
+  it('keeps save button clickable so user can click to trigger validation and see field errors', () => {
     const html = renderToStaticMarkup(
       React.createElement(StoreFormModal, defaultProps)
     );
 
-    // In create mode with empty fields, Save button must be disabled
+    // Save button should be clickable (not disabled by empty fields) so handleSubmit runs
+    expect(html).toContain('Filial qo‘shish');
+  });
+
+  it('disables save button when pending', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(StoreFormModal, { ...defaultProps, isPending: true })
+    );
+
     expect(html).toContain('disabled=""');
   });
 });

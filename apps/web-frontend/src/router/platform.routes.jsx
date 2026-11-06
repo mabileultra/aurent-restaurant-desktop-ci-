@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import SuperAdminRoute from './guards/SuperAdminRoute';
 import PlatformPageGuard from './guards/PlatformPageGuard';
 import PlatformHomeRedirect from './guards/PlatformHomeRedirect';
@@ -17,7 +17,6 @@ import {
   PlatformSecurityPage,
   PlatformAccountPage,
   PlatformBusinessTypesPage,
-  PlatformReferenceBooksPage,
   PlatformLeadsPage,
   PlatformBillingPage,
   PlatformAnalyticsPage,
@@ -60,7 +59,7 @@ export const platformRoutes = (
     <Route path="security" element={guarded(<PlatformSecurityPage />, 'platform-security')} />
     <Route path="account" element={guarded(<PlatformAccountPage />, 'platform-account')} />
     <Route path="business-types" element={guarded(<PlatformBusinessTypesPage />, 'platform-business-types')} />
-    <Route path="reference-books" element={guarded(<PlatformReferenceBooksPage />, 'platform-reference-books')} />
+    <Route path="reference-books" element={<Navigate to="/platform" replace />} />
     <Route path="leads" element={guarded(<PlatformLeadsPage />, 'platform-leads')} />
     <Route path="billing" element={guarded(<PlatformBillingPage />, 'platform-billing')} />
     <Route path="analytics" element={guarded(<PlatformAnalyticsPage />, 'platform-analytics')} />

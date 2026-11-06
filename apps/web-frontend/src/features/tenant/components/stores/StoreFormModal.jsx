@@ -152,7 +152,7 @@ export default function StoreFormModal({
             variant="primary"
             onClick={handleSubmit(handleFormSubmit)}
             loading={isPending}
-            disabled={isPending || isActionBlocked || !isValid}
+            disabled={isPending || isActionBlocked}
             title={isActionBlocked ? blockReason : undefined}
           >
             {t('common.save')}

@@ -20,7 +20,6 @@ export const PLATFORM_NAV = [
   // Boshqaruv
   { to: '/platform/access', key: 'platform.moduleAccess.nav', module: 'platformAccess', group: 'management' },
   { to: '/platform/business-types', key: 'platform.businessTypes.nav', module: 'platformBusinessTypes', group: 'management' },
-  { to: '/platform/reference-books', key: 'platform.referenceBooks.nav', module: 'platformReferenceBooks', group: 'management' },
   { to: '/platform/leads', key: 'platform.leads.nav', module: 'platformLeads', group: 'management' },
   { to: '/platform/monitoring', key: 'platform.monitoring.nav', module: 'platformMonitoring', group: 'management' },
   { to: '/platform/email', key: 'platform.email.nav', module: 'platformEmail', group: 'management' },

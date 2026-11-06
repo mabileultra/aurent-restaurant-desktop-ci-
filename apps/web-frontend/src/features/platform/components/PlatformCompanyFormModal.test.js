@@ -99,7 +99,18 @@ describe('PlatformCompanyFormModal', () => {
     expect(html).not.toContain('platform.field_loginCodeAutoHint');
   });
 
-  it('disables save button when required fields are missing', () => {
+  it('disables save button when isSaving is true', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        isSaving: true,
+      })
+    );
+
+    expect(html).toContain('disabled=""');
+  });
+
+  it('keeps save button clickable when required fields are missing so click triggers error feedback', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompanyFormModal, {
         ...defaultProps,
@@ -110,8 +121,7 @@ describe('PlatformCompanyFormModal', () => {
       })
     );
 
-    // When name is empty, save button has disabled attribute
-    expect(html).toContain('disabled=""');
+    expect(html).not.toContain('disabled=""');
   });
 
   it('restricts tin input to max 9 numeric digits', () => {
@@ -137,82 +147,17 @@ describe('PlatformCompanyFormModal', () => {
     expect(html).toContain('Tozalash');
   });
 
-  it('disables save button when geo fields are missing in create mode', () => {
+  it('keeps save button clickable when tin is invalid or phone is incomplete to trigger feedback', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompanyFormModal, {
         ...defaultProps,
         form: {
           ...defaultProps.form,
-          regionCode: '',
-          districtCode: '',
-        },
-      })
-    );
-    expect(html).toContain('disabled=""');
-  });
-
-  it('disables save button when businessTypeIds is empty', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
-          businessTypeIds: [],
-        },
-      })
-    );
-    expect(html).toContain('disabled=""');
-  });
-
-  it('disables save button when tin is invalid', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
-          tin: '12345',
-        },
-      })
-    );
-    expect(html).toContain('disabled=""');
-  });
-
-  it('disables save button when phone is incomplete', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
-          phone: '+998 (90) 12',
-        },
-      })
-    );
-    expect(html).toContain('disabled=""');
-  });
-
-  it('disables save button when tin is empty in creation mode', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
-          tin: '',
-        },
-      })
-    );
-    expect(html).toContain('disabled=""');
-  });
-
-  it('disables save button when phone is empty in creation mode', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
+          tin: '212',
           phone: '',
         },
       })
     );
-    expect(html).toContain('disabled=""');
+    expect(html).not.toContain('disabled=""');
   });
 });

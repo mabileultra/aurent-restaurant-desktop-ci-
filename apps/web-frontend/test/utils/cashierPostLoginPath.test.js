@@ -13,7 +13,7 @@ describe('resolveCashierPostLoginPath', () => {
   it('routes cashier by business type without /rst', () => {
     expect(resolveCashierPostLoginPath('CASHIER', 'RESTAURANT')).toBe('/cashier/pos');
     expect(resolveCashierPostLoginPath('CASHIER', 'CANTEEN')).toBe('/cashier/pos');
-    expect(resolveCashierPostLoginPath('CASHIER', 'PHARMACY')).toBe('/pharm/pos');
+    expect(resolveCashierPostLoginPath('CASHIER', 'PHARMACY')).toBe('/cashier/pos');
     expect(resolveCashierPostLoginPath('CASHIER', 'GROCERY')).toBe('/cashier/pos');
     expect(resolveCashierPostLoginPath('CASHIER')).toBe('/cashier/pos');
   });

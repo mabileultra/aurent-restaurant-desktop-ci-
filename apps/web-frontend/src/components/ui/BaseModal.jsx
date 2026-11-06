@@ -28,38 +28,44 @@ export default function BaseModal({
   closeLabel = 'Close',
 }) {
   const dialogRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return undefined;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose?.();
+        onCloseRef.current?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
 
     // Auto-focus dialog container on mount for a11y focus management
     const focusTimer = setTimeout(() => {
-      if (dialogRef.current) {
-        const autoFocusEl = dialogRef.current.querySelector('[data-autofocus], [autofocus]');
-        const firstFormInput = dialogRef.current.querySelector(
-          'input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]):not([aria-hidden="true"]), textarea:not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"]), select:not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"])'
-        );
-        const firstFocusable = autoFocusEl || firstFormInput || dialogRef.current.querySelector('button:not([disabled])');
-        if (firstFocusable) {
-          firstFocusable.focus();
-        } else {
-          dialogRef.current.focus();
-        }
+      if (!dialogRef.current) return;
+      if (document.activeElement && dialogRef.current.contains(document.activeElement)) {
+        return;
+      }
+      const autoFocusEl = dialogRef.current.querySelector('[data-autofocus], [autofocus]');
+      const firstFormInput = dialogRef.current.querySelector(
+        'input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]):not([aria-hidden="true"]), textarea:not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"]), select:not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"])'
+      );
+      const firstFocusable = autoFocusEl || firstFormInput || dialogRef.current.querySelector('button:not([disabled])');
+      if (firstFocusable) {
+        firstFocusable.focus();
+      } else {
+        dialogRef.current.focus();
       }
     }, 50);
 
-    return () => {
-      clearTimeout(focusTimer);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, onClose]);
+    return () => clearTimeout(focusTimer);
+  }, [open]);
 
   if (!open) return null;
 

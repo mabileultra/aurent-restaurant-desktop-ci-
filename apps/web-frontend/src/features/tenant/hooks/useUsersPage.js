@@ -94,17 +94,17 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-options', 'users-page'],
-    queryFn: async () => {
-      const { data } = await companyApi.getAll({ page: 0, size: 300 });
-      return Array.isArray(data) ? data : (data?.content ?? []);
-    },
+    queryFn: () => companyApi.getAll({ page: 0, size: 300 }).then((r) => {
+      const d = r.data;
+      return Array.isArray(d) ? d : (d?.content ?? []);
+    }).catch(() => []),
     enabled: isPlatform,
     staleTime: 60_000,
   });
 
   const { data: businessTypes = [] } = useQuery({
     queryKey: ['platform-business-types-options'],
-    queryFn: () => platformBusinessTypeApi.list().then((r) => r.data),
+    queryFn: () => platformBusinessTypeApi.list().then((r) => r.data).catch(() => []),
     staleTime: 300_000,
     enabled: isPlatform,
   });

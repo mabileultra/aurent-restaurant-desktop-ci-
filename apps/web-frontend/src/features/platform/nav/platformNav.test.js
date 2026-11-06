@@ -98,7 +98,6 @@ describe('platformNav', () => {
     expect(managementGroup.items.map((i) => i.to)).toEqual([
       '/platform/access',
       '/platform/business-types',
-      '/platform/reference-books',
       '/platform/leads',
       '/platform/monitoring',
       '/platform/email',

@@ -70,6 +70,10 @@ vi.mock('../components/access-rights/cards/RoleTemplateDrawer', () => ({
   default: () => null,
 }));
 
+vi.mock('../components/access-rights/cards/ModuleAccessHistoryDrawer', () => ({
+  default: () => null,
+}));
+
 describe('PlatformModuleAccessV2Page', () => {
   it('renders V2 card design with real counts, business type pills, and compact empty roles', () => {
     const html = renderToStaticMarkup(

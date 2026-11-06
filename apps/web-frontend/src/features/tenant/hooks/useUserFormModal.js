@@ -9,7 +9,6 @@ import { useUserFormStoreData } from './user-form/useUserFormStoreData';
 import { useUserFormRoleConfig } from './user-form/useUserFormRoleConfig';
 import { useUserFormSubmit } from './user-form/useUserFormSubmit';
 import { useUserFormInit } from './user-form/useUserFormInit';
-import { useUserUsernameSuggest } from './user-form/useUserUsernameSuggest';
 import { useUserFormDirty } from './user-form/useUserFormDirty';
 
 const DEFAULT_FORM_VALUES = {
@@ -47,11 +46,8 @@ export function useUserFormModal({
   const form = useForm({ shouldFocusError: false, defaultValues: DEFAULT_FORM_VALUES });
   const { register, handleSubmit, reset, watch, setValue, setError, clearErrors, formState: { errors } } = form;
   const selectedRole = watch('role');
-  const firstName = watch('firstName');
-  const lastName = watch('lastName');
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
 
-  useUserUsernameSuggest({ open, isEdit, firstName, lastName, setValue, clearErrors, usernameManuallyEditedRef });
   const storeData = useUserFormStoreData({ open, isPlatform, isEdit, user, companyId, authCompanyId, tenantKey, businessTypeFilter });
   const roleConfig = useUserFormRoleConfig({ t, isPlatform, isEdit, user, companyId, companies: storeData.companies, companiesRaw: storeData.companiesRaw, allowedRoles, businessTypeFilter, selectedRole });
 
