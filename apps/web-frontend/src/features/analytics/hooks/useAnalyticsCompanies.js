@@ -40,6 +40,7 @@ export function useAnalyticsCompanies() {
   const allCompaniesQuery = useQuery({
     queryKey: ['analytics-companies-all', filterParams],
     queryFn: () => fetchAllCompanies(filterParams),
+    placeholderData: (prev) => prev,
   });
 
   const regionsQuery = useQuery({

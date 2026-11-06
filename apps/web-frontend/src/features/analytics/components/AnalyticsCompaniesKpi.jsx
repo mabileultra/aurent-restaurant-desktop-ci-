@@ -62,7 +62,7 @@ export default function AnalyticsCompaniesKpi({
             {fmtNum(notConnectedSellingCount)} ta
           </div>
           <div style={{ fontSize: '0.73rem', color: '#64748b' }}>
-            {fmtMoney(notConnectedAmount)} fiskalsiz aylanma
+            {fmtMoney(notConnectedAmount)} nofiskal aylanma
           </div>
         </div>
       </div>

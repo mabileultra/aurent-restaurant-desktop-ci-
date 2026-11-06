@@ -1,4 +1,4 @@
-import { fmtDeltaBadge, fmtPercent, sanitizeText } from './analyticsFormat';
+import { fmtDateTimeUz, fmtDeltaBadge, fmtPercent, sanitizeText } from './analyticsFormat';
 
 export function buildReportPayload(type, { kpi, totals, topRegions, companies = [], receipts = [] }) {
   if (type === 'regions') {
@@ -72,10 +72,11 @@ export function buildReportPayload(type, { kpi, totals, topRegions, companies = 
   }
 
   if (type === 'receipts') {
-    const headers = ['Chek raqami', 'Sana', 'Summa (so‘m)', 'QR holati'];
+    const headers = ['Chek raqami', 'Sana / Vaqt', 'Korxona', 'Summa (so‘m)', 'QR holati'];
     const rows = receipts.map((r) => [
       r.receiptNumber || r.saleId || 'Chek',
-      r.createdAt || r.date || '—',
+      r.createdAt ? fmtDateTimeUz(r.createdAt) : (r.date || '—'),
+      sanitizeText(r.companyName || r.storeName || '—'),
       Number(r.totalAmount || r.amount || 0),
       (r.hasQr || r.fiscalStatus === 'FISCAL') ? 'QR bilan' : 'QR’siz',
     ]);

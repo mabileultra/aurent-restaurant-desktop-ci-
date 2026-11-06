@@ -8,8 +8,9 @@ export default function AnalyticsFiscalShareCard({
   weeks = [],
 }) {
   const sum = totalTurnover > 0 ? totalTurnover : (fiscalTurnover + nonFiscalTurnover);
-  const fiscalPct = sum > 0 ? Math.min(100, Math.max(0, (fiscalTurnover / sum) * 100)) : 0;
-  const nonFiscalPct = sum > 0 ? Math.max(0, 100 - fiscalPct) : 0;
+  const hasData = sum > 0;
+  const fiscalPct = hasData ? Math.min(100, Math.max(0, (fiscalTurnover / sum) * 100)) : null;
+  const nonFiscalPct = hasData ? Math.max(0, 100 - (fiscalPct || 0)) : null;
 
   const displayWeeks = Array.isArray(weeks) && weeks.length > 0 ? weeks : [];
 
@@ -20,6 +21,7 @@ export default function AnalyticsFiscalShareCard({
       style={{
         flex: '1 1 340px',
         minWidth: 0,
+        minHeight: '340px',
         padding: '18px 20px',
         display: 'flex',
         flexDirection: 'column',
@@ -28,32 +30,32 @@ export default function AnalyticsFiscalShareCard({
     >
       <div>
         <h2 id="fn" className="t">Fiskal va nofiskal aylanma</h2>
-        <p className="s">Ulush va davr bo‘yicha taqsimot</p>
+        <p className="s">Ulush va davr bo‘yicha taqsimot · 8 ta yirik korxona haftalik ko‘rsatkichi</p>
       </div>
 
       {/* Top split bar */}
       <div
         role="img"
-        aria-label={`Fiskal ${fmtPercent(fiscalPct)}, nofiskal ${fmtPercent(nonFiscalPct)}`}
+        aria-label={hasData ? `Fiskal ${fmtPercent(fiscalPct)}, nofiskal ${fmtPercent(nonFiscalPct)}` : 'Ma‘lumot yo‘q'}
         style={{ display: 'flex', gap: 2, height: 28 }}
       >
         <span
           style={{
-            flex: `${fiscalPct || 0.001} 1 0`,
-            background: '#2563EB',
-            borderRadius: nonFiscalPct > 0 ? '6px 0 0 6px' : '6px',
-            color: '#fff',
+            flex: `${hasData ? (fiscalPct || 0.001) : 1} 1 0`,
+            background: hasData ? '#2563EB' : '#E2E8F0',
+            borderRadius: hasData && nonFiscalPct > 0 ? '6px 0 0 6px' : '6px',
+            color: hasData ? '#fff' : '#94A3B8',
             fontSize: '12px',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
             paddingLeft: '10px',
-            minWidth: fiscalPct > 0 ? 30 : 0,
+            minWidth: hasData && fiscalPct > 0 ? 30 : 0,
           }}
         >
-          {fmtPercent(fiscalPct)}
+          {hasData ? fmtPercent(fiscalPct) : '—'}
         </span>
-        {nonFiscalPct > 0 && (
+        {hasData && nonFiscalPct > 0 && (
           <span
             style={{
               flex: `${nonFiscalPct} 1 0`,
@@ -67,11 +69,11 @@ export default function AnalyticsFiscalShareCard({
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px' }}>
         <span>
-          <b>{fmtMoney(fiscalTurnover, { showCurrency: false })}</b> <span style={{ color: '#6B7280' }}>fiskal</span>
+          <b>{hasData ? fmtMoney(fiscalTurnover, { showCurrency: false }) : '—'}</b> <span style={{ color: '#6B7280' }}>fiskal</span>
         </span>
         <span>
-          <b>{fmtMoney(nonFiscalTurnover, { showCurrency: false })}</b>{' '}
-          <span style={{ color: '#6B7280' }}>nofiskal · {fmtPercent(nonFiscalPct)}</span>
+          <b>{hasData ? fmtMoney(nonFiscalTurnover, { showCurrency: false }) : '—'}</b>{' '}
+          <span style={{ color: '#6B7280' }}>nofiskal · {hasData ? fmtPercent(nonFiscalPct) : '—'}</span>
         </span>
       </div>
 

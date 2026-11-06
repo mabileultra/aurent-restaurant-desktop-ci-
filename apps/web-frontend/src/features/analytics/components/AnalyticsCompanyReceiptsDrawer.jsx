@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowRight, QrCode, X } from 'lucide-react';
-import { fmtDayFull, fmtMoney } from '../utils/analyticsFormat';
+import { fmtDayFull, fmtMoney, fmtTimeUz } from '../utils/analyticsFormat';
 
 export default function AnalyticsCompanyReceiptsDrawer({
   date = '',
@@ -75,10 +75,10 @@ export default function AnalyticsCompanyReceiptsDrawer({
         <table className="an-table">
           <thead>
             <tr>
-              <th>Chek</th>
-              <th>Vaqt</th>
-              <th>Summa</th>
-              <th style={{ minWidth: 95 }}>QR</th>
+              <th style={{ width: '28%' }}>Chek</th>
+              <th style={{ width: '22%' }}>Vaqt</th>
+              <th style={{ width: '26%' }}>Summa</th>
+              <th style={{ width: '24%', minWidth: 100 }}>QR</th>
             </tr>
           </thead>
           <tbody>
@@ -91,7 +91,7 @@ export default function AnalyticsCompanyReceiptsDrawer({
             ) : (
               filtered.map((r) => {
                 const receiptNo = r.receiptNumber || r.receiptNo || (r.saleId ? String(r.saleId).slice(0, 8) : 'Chek');
-                const time = r.createdAt ? r.createdAt.substring(11, 16) : (r.time || '—');
+                const time = fmtTimeUz(r.createdAt || r.time);
                 const amount = Number(r.totalAmount || r.amount || 0);
                 const hasQr = r.hasQr || r.fiscalStatus === 'FISCAL';
 
@@ -104,13 +104,13 @@ export default function AnalyticsCompanyReceiptsDrawer({
                     <td style={{ fontWeight: 600, color: '#0f172a' }}>{receiptNo}</td>
                     <td style={{ color: '#64748b' }}>{time}</td>
                     <td><strong>{fmtMoney(amount)}</strong></td>
-                    <td style={{ minWidth: 95, whiteSpace: 'nowrap' }}>
+                    <td style={{ minWidth: 100, whiteSpace: 'nowrap' }}>
                       {hasQr ? (
-                        <span className="an-badge an-badge--blue">
+                        <span className="an-badge an-badge--blue" style={{ whiteSpace: 'nowrap' }}>
                           <QrCode size={11} aria-hidden /> QR bilan
                         </span>
                       ) : (
-                        <span className="an-badge an-badge--amber">QR’siz</span>
+                        <span className="an-badge an-badge--amber" style={{ whiteSpace: 'nowrap' }}>QR’siz</span>
                       )}
                     </td>
                   </tr>

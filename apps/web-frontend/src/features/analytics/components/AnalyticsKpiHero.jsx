@@ -93,7 +93,7 @@ export default function AnalyticsKpiHero({
           Fiskal aylanma
         </span>
         <span className="v">{loading ? '…' : !hasKpi && fiscalTurnover === 0 ? '—' : fmtMoney(fiscalTurnover, { showCurrency: false })}</span>
-        <span style={{ fontSize: '12px', color: '#6B7280' }}>{fiscalPct} ulush</span>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{hasKpi && totalTurnover > 0 ? `${fiscalPct} ulush` : '—'}</span>
       </div>
 
       {/* 6. Nofiskal aylanma */}
@@ -103,7 +103,7 @@ export default function AnalyticsKpiHero({
           Nofiskal aylanma
         </span>
         <span className="v">{loading ? '…' : !hasKpi && nonFiscalTurnover === 0 ? '—' : fmtMoney(nonFiscalTurnover, { showCurrency: false })}</span>
-        <span style={{ fontSize: '12px', color: '#6B7280' }}>{nonFiscalPct} ulush</span>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{hasKpi && totalTurnover > 0 ? `${nonFiscalPct} ulush` : '—'}</span>
       </div>
 
       {/* 7. Yangi ulanishlar */}

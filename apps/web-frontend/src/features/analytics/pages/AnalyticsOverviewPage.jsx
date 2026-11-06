@@ -112,7 +112,13 @@ export default function AnalyticsOverviewPage() {
           <AnalyticsTurnoverLineChart
             days={page.republicDays}
             topCompanyName={page.topCompanyName}
-            onSelectDay={() => page.topCompanyId && navigate(`/platform/analytics/companies/${page.topCompanyId}`)}
+            onSelectDay={(pt) => {
+              if (pt?.rawDate) {
+                navigate(`/platform/analytics/receipts?date=${pt.rawDate}`);
+              } else if (page.topCompanyId) {
+                navigate(`/platform/analytics/companies/${page.topCompanyId}`);
+              }
+            }}
           />
           <AnalyticsFiscalShareCard
             fiscalTurnover={page.totals.fiscalTurnover}

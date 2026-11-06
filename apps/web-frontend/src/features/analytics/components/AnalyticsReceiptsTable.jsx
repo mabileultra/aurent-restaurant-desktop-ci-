@@ -1,6 +1,6 @@
 import React from 'react';
 import { QrCode } from 'lucide-react';
-import { fmtMoney } from '../utils/analyticsFormat';
+import { fmtDateTimeUz, fmtMoney } from '../utils/analyticsFormat';
 
 export default function AnalyticsReceiptsTable({
   receipts = [],
@@ -39,7 +39,7 @@ export default function AnalyticsReceiptsTable({
                 >
                   <td style={{ fontWeight: 600, color: '#0F172A' }}>{id}</td>
                   <td style={{ color: '#6B7280' }}>
-                    {r.createdAt ? r.createdAt.substring(0, 16).replace('T', ' ') : (r.date || effectiveDay || '—')}
+                    {r.createdAt ? fmtDateTimeUz(r.createdAt) : (r.date || effectiveDay || '—')}
                   </td>
                   <td>{r.storeName || 'Asosiy do‘kon'}</td>
                   <td><strong>{fmtMoney(r.totalAmount || r.amount || 0)}</strong></td>

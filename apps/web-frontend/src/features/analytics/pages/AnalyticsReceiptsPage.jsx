@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import '../styles/analytics.css';
 import { AlertCircle, Download, RotateCcw, Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -12,9 +13,11 @@ import { fmtDayFull, fmtMoney, sanitizeText } from '../utils/analyticsFormat';
 import PlatformSelect from '../../platform/components/PlatformSelect';
 
 export default function AnalyticsReceiptsPage() {
+  const [searchParams] = useSearchParams();
   const page = useAnalyticsOverview();
+  const initialDate = searchParams.get('date') || '';
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [selectedDayOverride, setSelectedDayOverride] = useState('');
+  const [selectedDayOverride, setSelectedDayOverride] = useState(initialDate);
   const [search, setSearch] = useState('');
   const [qrFilter, setQrFilter] = useState('all');
   const [selectedReceipt, setSelectedReceipt] = useState(null);
@@ -177,6 +180,7 @@ export default function AnalyticsReceiptsPage() {
 
           <AnalyticsReceiptDetailCard
             receipt={selectedReceipt}
+            companyId={activeCompanyId}
             effectiveDay={effectiveDay}
             onClose={() => setSelectedReceipt(null)}
           />

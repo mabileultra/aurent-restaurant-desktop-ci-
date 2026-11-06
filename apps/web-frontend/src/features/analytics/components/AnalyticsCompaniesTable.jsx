@@ -58,8 +58,8 @@ export default function AnalyticsCompaniesTable({
         </button>
       </div>
 
-      <div className="an-table-wrap">
-        <table className="an-table">
+      <div className="an-table-wrap an-companies-table-wrap">
+        <table className="an-table an-companies-table">
           <thead>
             <tr>
               <th>#</th>
@@ -121,8 +121,8 @@ export default function AnalyticsCompaniesTable({
                       <span style={{ fontSize: '0.75rem' }}>{fmtPercent(fiscalShare)}</span>
                     </div>
                   </td>
-                  <td>{r.prevWeekTurnover ? fmtMoney(r.prevWeekTurnover) : '0'}</td>
-                  <td>{r.weekTurnover ? fmtMoney(r.weekTurnover) : '0'}</td>
+                  <td>{fmtMoney(r.prevWeekTurnover || 0)}</td>
+                  <td>{fmtMoney(r.weekTurnover || 0)}</td>
                   <td>
                     {isNew ? (
                       <span className="an-badge an-badge--amber">Yangi</span>

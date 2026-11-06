@@ -46,6 +46,12 @@ export default function AnalyticsCompanyDailyChart({
     return sum / chartData.length;
   }, [chartData]);
 
+  const tickIndices = useMemo(() => {
+    if (chartData.length <= 7) return chartData.map((_, i) => i);
+    const last = chartData.length - 1;
+    return [0, Math.round(last * 0.25), Math.round(last * 0.5), Math.round(last * 0.75), last];
+  }, [chartData]);
+
   return (
     <div className="an-card" aria-label="Kunlar bo‘yicha aylanma">
       <div className="an-card-head">
@@ -72,7 +78,7 @@ export default function AnalyticsCompanyDailyChart({
             Kunlik aylanma ma‘lumoti mavjud emas
           </div>
         ) : (
-          <>
+          <div style={{ minWidth: chartData.length > 14 ? '480px' : '100%' }}>
             <div className="an-chart-bars" style={{ height: 170 }}>
               {chartData.map((item) => {
                 const isSelected = selectedDay === item.date;
@@ -87,7 +93,7 @@ export default function AnalyticsCompanyDailyChart({
                     title={`${item.fullDate}: ${fmtMoney(item.total)}`}
                   >
                     {isSelected && item.total > 0 && (
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2563EB', marginBottom: '0.2rem' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#2563EB', marginBottom: '0.2rem', whiteSpace: 'nowrap' }}>
                         {fmtMoney(item.total, { showCurrency: false })}
                       </span>
                     )}
@@ -106,21 +112,18 @@ export default function AnalyticsCompanyDailyChart({
               })}
             </div>
 
-            <div className="an-chart-date-labels">
-              {chartData.map((item, idx) => {
-                const shouldShow = chartData.length <= 8
-                  || idx === 0
-                  || idx === Math.floor(chartData.length / 2)
-                  || idx === chartData.length - 1
-                  || idx % Math.max(1, Math.floor(chartData.length / 5)) === 0;
-
+            <div className="an-chart-date-labels" style={{ display: 'flex', justifyContent: 'space-between', padding: '0 8px' }}>
+              {tickIndices.map((idx) => {
+                const item = chartData[idx];
+                if (!item) return null;
                 return (
                   <span
                     key={item.date}
                     style={{
-                      fontWeight: selectedDay === item.date ? 700 : 400,
+                      fontWeight: selectedDay === item.date ? 700 : 500,
                       color: selectedDay === item.date ? '#2563EB' : '#94a3b8',
-                      visibility: shouldShow ? 'visible' : 'hidden',
+                      fontSize: '11px',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {item.label}
@@ -128,7 +131,7 @@ export default function AnalyticsCompanyDailyChart({
                 );
               })}
             </div>
-          </>
+          </div>
         )}
       </div>
 

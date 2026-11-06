@@ -1,14 +1,26 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { fmtMoney } from '../utils/analyticsFormat';
+import { useQuery } from '@tanstack/react-query';
+import { analyticsApi } from '../api/analyticsApi';
+import { fmtDateTimeUz, fmtMoney } from '../utils/analyticsFormat';
 
-export default function AnalyticsReceiptDetailCard({ receipt, effectiveDay, onClose }) {
+export default function AnalyticsReceiptDetailCard({ receipt, companyId, effectiveDay, onClose }) {
   if (!receipt) return null;
 
+  const saleId = receipt.saleId || receipt.id;
   const isFiscal = receipt.hasQr || receipt.fiscalStatus === 'FISCAL';
   const receiptNo = receipt.receiptNumber || receipt.saleId;
-  const dateStr = receipt.createdAt || receipt.date || effectiveDay || '—';
+  const dateStr = receipt.createdAt ? fmtDateTimeUz(receipt.createdAt) : (receipt.date || effectiveDay || '—');
   const amount = receipt.totalAmount || receipt.amount || 0;
+
+  const detailQuery = useQuery({
+    queryKey: ['analytics-receipt-detail', companyId, saleId],
+    queryFn: () => analyticsApi.getCompanyReceiptDetail(companyId, saleId).then((r) => r.data),
+    enabled: Boolean(companyId && saleId && !receipt.items?.length),
+  });
+
+  const fullReceipt = detailQuery.data || receipt;
+  const items = fullReceipt.items || fullReceipt.products || [];
 
   return (
     <div className="card" style={{ flex: '1 1 320px', minWidth: '300px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -18,6 +30,7 @@ export default function AnalyticsReceiptDetailCard({ receipt, effectiveDay, onCl
           <X size={16} />
         </button>
       </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', background: '#F8FAFC', padding: '12px', borderRadius: '8px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ color: '#6B7280' }}>Raqam:</span>
@@ -36,6 +49,28 @@ export default function AnalyticsReceiptDetailCard({ receipt, effectiveDay, onCl
           <span>{isFiscal ? 'Fiskallashtirilgan' : 'Nofiskal'}</span>
         </div>
       </div>
+
+      {items.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid #E5E9EE', paddingTop: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#64748B' }}>
+            <span>Tovar nomi</span>
+            <span>Summa</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
+            {items.map((item, idx) => (
+              <div key={item.id || idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', padding: '4px 0', borderBottom: '1px dashed #F1F5F9' }}>
+                <div>
+                  <div style={{ fontWeight: 500, color: '#1E293B' }}>{item.name || item.productName || `Mahsulot #${idx + 1}`}</div>
+                  <div style={{ fontSize: '11px', color: '#94A3B8' }}>{item.quantity || 1} × {fmtMoney(item.price || item.total || 0, { showCurrency: false })}</div>
+                </div>
+                <div style={{ fontWeight: 600, color: '#334155' }}>
+                  {fmtMoney(item.total || (Number(item.price || 0) * Number(item.quantity || 1)))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
