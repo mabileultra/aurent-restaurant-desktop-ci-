@@ -164,3 +164,7 @@ export function getDefaultModulesForRole(roleCode, businessType) {
 
   return result;
 }
+
+export function getRoleDefaultModules(businessType, roleCode) {
+  return Array.from(getDefaultModulesForRole(roleCode, businessType));
+}

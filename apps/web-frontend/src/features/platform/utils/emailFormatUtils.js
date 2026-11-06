@@ -4,19 +4,30 @@ export function formatNumberWithSpaces(num) {
 }
 
 export function getHistoryStatusBadge(row) {
+  if (!row) {
+    return { label: '', className: '' };
+  }
   if (row.queued > 0) {
     return {
       label: 'Yuborilmoqda',
       className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400',
     };
   }
-  if (row.fail === 0) {
+  const total = row.total ?? (row.ok + row.fail + (row.queued || 0));
+  // 115 tadan 64 tasi yuborilgan, xato=0 bo'lsa ham to'liq yetkazilmagan
+  if (row.fail === 0 && total > 0 && row.ok < total) {
+    return {
+      label: 'Jarayonda',
+      className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400',
+    };
+  }
+  if (row.fail === 0 && row.ok >= total) {
     return {
       label: 'Yetkazildi',
       className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400',
     };
   }
-  if (row.ok === 0) {
+  if (row.ok === 0 && row.fail > 0) {
     return {
       label: 'Yetkazilmadi',
       className: 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400',

@@ -6,49 +6,40 @@ import { useEmailHistoryFlow } from './useEmailHistoryFlow';
 globalThis.React = React;
 
 describe('useEmailHistoryFlow', () => {
-  it('initializes with default history rows and stats', () => {
-    let state;
+  function renderHookHelper(options, onState) {
     function TestComponent() {
-      state = useEmailHistoryFlow();
-      return React.createElement('div', null, state.selectedRow?.id);
+      const state = useEmailHistoryFlow(options);
+      onState(state);
+      return React.createElement('div', null, state.selectedRow?.id || 'none');
     }
-
     renderToStaticMarkup(React.createElement(TestComponent));
+  }
 
-    expect(state.rows.length).toBeGreaterThan(0);
-    expect(state.selectedRow.id).toBe('b1');
-    expect(state.typeFilter).toBe('all');
-    expect(state.stats.totalSent).toBeTruthy();
+  it('initializes with default history rows, pagination and stats', () => {
+    let state;
+    renderHookHelper({}, (s) => { state = s; });
+
+    expect(state.rows.length).toBe(5); // PAGE_SIZE is 5
+    expect(state.totalCount).toBe(8);
+    expect(state.selectedRow).toBeTruthy();
+    expect(state.paginationLabel).toBe('1–5 / 8 ta xabar');
+    expect(state.canNext).toBe(true);
+    expect(state.canPrev).toBe(false);
   });
 
-  it('filters history rows by type', () => {
+  it('handles search and returns null selectedRow when no match is found', () => {
     let state;
-    function TestComponent() {
-      state = useEmailHistoryFlow();
-      return null;
-    }
+    renderHookHelper({ initialSearch: 'bu_mavzu_mavjud_emas_xyz' }, (s) => { state = s; });
 
-    renderToStaticMarkup(React.createElement(TestComponent));
-
-    state.setTypeFilter('login');
-
-    // Re-render to observe state change
-    function FilteredTestComponent() {
-      state = useEmailHistoryFlow();
-      return null;
-    }
-    renderToStaticMarkup(React.createElement(FilteredTestComponent));
+    expect(state.rows).toHaveLength(0);
+    expect(state.selectedRow).toBeNull();
+    expect(state.paginationLabel).toBe('0 ta xabar');
   });
 
-  it('handles retrying failed deliveries for a row', () => {
+  it('handles retry fails correctly', () => {
     let state;
-    function TestComponent() {
-      state = useEmailHistoryFlow();
-      return null;
-    }
-
-    renderToStaticMarkup(React.createElement(TestComponent));
-    const targetRow = state.rows.find((r) => r.fail > 0);
+    renderHookHelper({}, (s) => { state = s; });
+    const targetRow = state.allFilteredRows.find((r) => r.fail > 0);
     expect(targetRow).toBeDefined();
 
     state.handleRetryFails(targetRow.id);

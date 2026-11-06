@@ -1,10 +1,10 @@
 /**
  * Resolves KPI numbers for Super Admin stores page.
- * Reconciles backend stats with client totals when districtCode or inactive status is filtered.
+ * Keeps overall totalStores, activeStores, inactiveStores, and companiesCount stable across status filters (All / Active / Inactive).
  */
 export function resolveStoresKpi({
   stats,
-  total,
+  total = 0,
   rawRows = [],
   statusFilter = 'ALL',
   resolvedCompanyId,
@@ -12,17 +12,32 @@ export function resolveStoresKpi({
   companiesCountFallback = 0,
 }) {
   const isDistrictFiltered = Boolean(districtCode);
-  const isInactiveTab = statusFilter === 'INACTIVE';
-  const isActiveTab = statusFilter === 'ACTIVE';
 
-  if (stats && !isDistrictFiltered && !isInactiveTab) {
+  // When server stats are available and no district filter is applied,
+  // stats is the single authoritative source for platform-wide counts.
+  if (stats && !isDistrictFiltered) {
+    const totalStores = stats.totalStores ?? 0;
+    const activeStores = stats.activeStores ?? 0;
+    const inactiveStores = stats.inactiveStores ?? 0;
+    let companiesCount = (stats.companiesCount != null && stats.companiesCount > 0)
+      ? stats.companiesCount
+      : companiesCountFallback;
+
+    if (resolvedCompanyId) {
+      companiesCount = totalStores > 0 ? 1 : 0;
+    }
+
     return {
-      totalStores: stats.totalStores ?? 0,
-      activeStores: stats.activeStores ?? 0,
-      inactiveStores: stats.inactiveStores ?? 0,
-      companiesCount: stats.companiesCount ?? 0,
+      totalStores,
+      activeStores,
+      inactiveStores,
+      companiesCount,
     };
   }
+
+  // Fallback when stats is null or districtCode is client-filtered:
+  const isInactiveTab = statusFilter === 'INACTIVE';
+  const isActiveTab = statusFilter === 'ACTIVE';
 
   const rawActive = rawRows.filter((s) => s.active).length;
   const rawInactive = rawRows.filter((s) => !s.active).length;
@@ -35,6 +50,9 @@ export function resolveStoresKpi({
   } else if (isInactiveTab) {
     inactiveStores = total;
     activeStores = isDistrictFiltered ? 0 : (stats?.activeStores ?? 0);
+  } else if (stats) {
+    activeStores = stats.activeStores ?? 0;
+    inactiveStores = stats.inactiveStores ?? 0;
   } else if (total <= rawRows.length) {
     activeStores = rawActive;
     inactiveStores = rawInactive;
@@ -43,23 +61,27 @@ export function resolveStoresKpi({
     activeStores = Math.max(0, total - inactiveStores);
   }
 
+  const totalStores = isDistrictFiltered
+    ? total
+    : (stats?.totalStores ?? ((activeStores ?? 0) + (inactiveStores ?? 0)));
+
   const uniqueCompaniesInRows = new Set(
     rawRows.map((r) => r.companyId).filter((id) => id != null && id !== '')
   ).size;
 
   let companiesCount = companiesCountFallback;
   if (resolvedCompanyId) {
-    companiesCount = total > 0 ? 1 : 0;
+    companiesCount = totalStores > 0 ? 1 : 0;
   } else if (isDistrictFiltered && uniqueCompaniesInRows > 0) {
     companiesCount = uniqueCompaniesInRows;
-  } else if (stats?.companiesCount != null && !isDistrictFiltered) {
+  } else if (stats?.companiesCount != null && stats.companiesCount > 0) {
     companiesCount = stats.companiesCount;
   } else if (uniqueCompaniesInRows > 0) {
     companiesCount = uniqueCompaniesInRows;
   }
 
   return {
-    totalStores: total,
+    totalStores,
     activeStores,
     inactiveStores,
     companiesCount,

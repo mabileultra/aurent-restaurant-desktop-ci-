@@ -40,9 +40,38 @@ describe('resolveStoresKpi', () => {
       rawRows: [{ id: 99, companyId: 20, active: false }],
       statusFilter: 'INACTIVE',
     });
-    expect(res.totalStores).toBe(1);
+    expect(res.totalStores).toBe(114);
     expect(res.inactiveStores).toBe(1);
     expect(res.activeStores).toBe(113);
+    expect(res.companiesCount).toBe(65);
+  });
+
+  it('preserves activeStores from stats even when statusFilter is ACTIVE and total is 0 (grouped view)', () => {
+    const res = resolveStoresKpi({
+      stats: { totalStores: 113, activeStores: 113, inactiveStores: 0, companiesCount: 114 },
+      total: 0,
+      rawRows: [],
+      statusFilter: 'ACTIVE',
+    });
+    expect(res).toEqual({
+      totalStores: 113,
+      activeStores: 113,
+      inactiveStores: 0,
+      companiesCount: 114,
+    });
+  });
+
+  it('maintains overall totalStores and companiesCount when inactive stores is 0', () => {
+    const res = resolveStoresKpi({
+      stats: { totalStores: 113, activeStores: 113, inactiveStores: 0, companiesCount: 65 },
+      total: 0,
+      rawRows: [],
+      statusFilter: 'INACTIVE',
+    });
+    expect(res.totalStores).toBe(113);
+    expect(res.activeStores).toBe(113);
+    expect(res.inactiveStores).toBe(0);
+    expect(res.companiesCount).toBe(65);
   });
 
   it('returns companiesCount = 1 when resolvedCompanyId is provided and total > 0', () => {

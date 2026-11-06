@@ -90,9 +90,19 @@ export default function PlatformEmailLivePreview({ flow }) {
       </div>
 
       <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-xs dark:border-slate-800">
-        <span className="text-slate-500 truncate">
-          Namuna: {recipientName} · {sample?.role || 'Foydalanuvchi'} · {companyName}
-        </span>
+        <div className="flex items-center gap-2 truncate">
+          {flow.isDemoSample && (
+            <span
+              title="Tanlangan auditoriyada xodim bo‘lmagani uchun ko‘rsatilayotgan sinov namunasi"
+              className="rounded-full bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 px-2 py-0.5 text-[10px] font-bold shrink-0"
+            >
+              Demo namuna
+            </span>
+          )}
+          <span className="text-slate-600 dark:text-slate-300 truncate font-medium">
+            Namuna: {recipientName} · {sample?.role || 'Foydalanuvchi'} · {companyName}
+          </span>
+        </div>
         <div className="flex items-center gap-1">
           <button
             type="button"

@@ -86,7 +86,7 @@ export default function PlatformEmailAudienceSelector({ flow }) {
       {flow.mode === 'manual' && (
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
                 type="text"
@@ -96,40 +96,72 @@ export default function PlatformEmailAudienceSelector({ flow }) {
                 className="h-9 w-full rounded-xl border border-slate-300 pl-9 pr-3 text-xs outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
               />
             </div>
-            <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={flow.allUsersChecked}
-                onChange={(e) => flow.toggleAllUsers(e.target.checked)}
-                className="rounded text-emerald-700"
-              />
-              Hammasini tanlash
-            </label>
-          </div>
-          <div className="max-h-44 overflow-y-auto rounded-xl border border-slate-200 divide-y divide-slate-100 dark:border-slate-800 dark:divide-slate-800">
-            {flow.manualUsers.map((u) => (
-              <label
-                key={u.id}
-                className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
-              >
+            <div className="flex items-center gap-3">
+              {flow.selectedManualCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300">
+                    Tanlanganlar: {flow.selectedManualCount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={flow.clearManualSelection}
+                    className="text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400 font-semibold transition"
+                  >
+                    Tozalash
+                  </button>
+                </div>
+              )}
+              <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={u.checked}
-                  onChange={() => flow.toggleUserCheck(u.id)}
+                  checked={flow.allUsersChecked}
+                  onChange={(e) => flow.toggleAllUsers(e.target.checked)}
                   className="rounded text-emerald-700"
                 />
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
-                  {u.ini}
-                </span>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-semibold text-slate-900 dark:text-white">{u.name}</span>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    {u.email} · {u.role} · {u.company}
-                  </span>
-                </div>
+                Hammasini tanlash
               </label>
-            ))}
+            </div>
           </div>
+
+          {flow.manualUsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                "{flow.userSearch}" bo‘yicha hech qanday xodim topilmadi
+              </p>
+              <button
+                type="button"
+                onClick={flow.clearUserSearch}
+                className="mt-2 text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400"
+              >
+                Qidiruvni tozalash
+              </button>
+            </div>
+          ) : (
+            <div className="max-h-44 overflow-y-auto rounded-xl border border-slate-200 divide-y divide-slate-100 dark:border-slate-800 dark:divide-slate-800">
+              {flow.manualUsers.map((u) => (
+                <label
+                  key={u.id}
+                  className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={u.checked}
+                    onChange={() => flow.toggleUserCheck(u.id)}
+                    className="rounded text-emerald-700"
+                  />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
+                    {u.ini}
+                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-semibold text-slate-900 dark:text-white">{u.name}</span>
+                    <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                      {u.email} · {u.role} · {u.company}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

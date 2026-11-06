@@ -3,10 +3,21 @@ import toast from 'react-hot-toast';
 import { HISTORY_TYPES, INITIAL_HISTORY_ROWS } from '../utils/emailConstants';
 import { formatNumberWithSpaces } from '../utils/emailFormatUtils';
 
-export function useEmailHistoryFlow() {
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [search, setSearch] = useState('');
-  const [selectedId, setSelectedId] = useState('b1');
+const PAGE_SIZE = 5;
+
+export const EMAIL_HISTORY_DATE_PRESETS = [
+  { id: 'all', label: 'Barcha sanalar' },
+  { id: 'today', label: 'Bugun' },
+  { id: '7days', label: 'Oxirgi 7 kun' },
+  { id: '30days', label: 'Oxirgi 30 kun' },
+];
+
+export function useEmailHistoryFlow(options = {}) {
+  const [typeFilter, setTypeFilter] = useState(options.initialType || 'all');
+  const [search, setSearch] = useState(options.initialSearch || '');
+  const [dateFilter, setDateFilter] = useState(options.initialDate || 'all');
+  const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState('b0');
   const [rows, setRows] = useState(INITIAL_HISTORY_ROWS);
 
   const filteredRows = useMemo(() => {
@@ -23,12 +34,40 @@ export function useEmailHistoryFlow() {
           r.sender.toLowerCase().includes(q)
       );
     }
+    if (dateFilter === 'today') {
+      result = result.filter((r) => r.time.toLowerCase().includes('bugun'));
+    } else if (dateFilter === '7days') {
+      result = result.filter((r) => r.time.toLowerCase().includes('bugun') || r.time.toLowerCase().includes('noy'));
+    }
     return result;
-  }, [rows, typeFilter, search]);
+  }, [rows, typeFilter, search, dateFilter]);
 
+  // Selected row is synchronized with filtered list; returns null when filtered list is empty
   const selectedRow = useMemo(() => {
-    return rows.find((r) => r.id === selectedId) || rows[0];
-  }, [rows, selectedId]);
+    if (filteredRows.length === 0) return null;
+    return filteredRows.find((r) => r.id === selectedId) || filteredRows[0];
+  }, [filteredRows, selectedId]);
+
+  const totalCount = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, totalCount);
+  const paginatedRows = filteredRows.slice(startIndex, endIndex);
+
+  const paginationLabel = totalCount === 0
+    ? '0 ta xabar'
+    : `${startIndex + 1}–${endIndex} / ${totalCount} ta xabar`;
+
+  const handlePrevPage = () => setPage((p) => Math.max(1, p - 1));
+  const handleNextPage = () => setPage((p) => Math.min(totalPages, p + 1));
+
+  const clearFilters = () => {
+    setSearch('');
+    setTypeFilter('all');
+    setDateFilter('all');
+    setPage(1);
+  };
 
   const handleRetryFails = (rowId) => {
     setRows((prev) =>
@@ -64,14 +103,27 @@ export function useEmailHistoryFlow() {
 
   return {
     typeFilter,
-    setTypeFilter,
+    setTypeFilter: (val) => { setTypeFilter(val); setPage(1); },
     types: HISTORY_TYPES,
     search,
-    setSearch,
-    rows: filteredRows,
+    setSearch: (val) => { setSearch(val); setPage(1); },
+    dateFilter,
+    setDateFilter: (val) => { setDateFilter(val); setPage(1); },
+    datePresets: EMAIL_HISTORY_DATE_PRESETS,
+    page: currentPage,
+    totalPages,
+    canPrev: currentPage > 1,
+    canNext: currentPage < totalPages,
+    handlePrevPage,
+    handleNextPage,
+    paginationLabel,
+    totalCount,
+    rows: paginatedRows,
+    allFilteredRows: filteredRows,
     selectedRow,
     setSelectedId,
     stats,
     handleRetryFails,
+    clearFilters,
   };
 }

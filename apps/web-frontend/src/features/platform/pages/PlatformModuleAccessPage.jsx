@@ -1,147 +1,163 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { RotateCcw } from 'lucide-react';
-import BusinessTypePills from '../components/access-rights/cards/BusinessTypePills';
-import RoleCardsGrid from '../components/access-rights/cards/RoleCardsGrid';
-import SearchResultsSection from '../components/access-rights/cards/SearchResultsSection';
-import RoleTemplateDrawer from '../components/access-rights/cards/RoleTemplateDrawer';
-import RoleEmployeesDrawer from '../components/access-rights/cards/RoleEmployeesDrawer';
-import RoleEmployeeEditDrawer from '../components/access-rights/cards/RoleEmployeeEditDrawer';
-import RoleEmployeeResetConfirmDialog from '../components/access-rights/cards/RoleEmployeeResetConfirmDialog';
-import ModuleAccessHistoryDrawer from '../components/access-rights/cards/ModuleAccessHistoryDrawer';
-import PlatformModuleAccessV2Header from '../components/access-rights/cards/PlatformModuleAccessV2Header';
-import PlatformModuleAccessToolbar from '../components/access-rights/cards/PlatformModuleAccessToolbar';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import AccessRightsHeader from '../components/access-rights/AccessRightsHeader';
+import AccessRightsTemplatesTab from '../components/access-rights/templates/AccessRightsTemplatesTab';
+import AccessRightsStaffTab from '../components/access-rights/staff/AccessRightsStaffTab';
+import AccessRightsHistoryTab from '../components/access-rights/history/AccessRightsHistoryTab';
+import AccessRightsCopyModal from '../components/access-rights/modals/AccessRightsCopyModal';
+import AccessRightsCopyTemplateModal from '../components/access-rights/modals/AccessRightsCopyTemplateModal';
 import { useAccessRightsV2Data } from '../components/access-rights/hooks/useAccessRightsV2Data';
+import { platformModuleAccessApi } from '../../../api';
 
 export default function PlatformModuleAccessPage() {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.language === 'ru' ? 'ru' : 'uz';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'templates';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Sync tab with URL
+  useEffect(() => {
+    const currentParam = searchParams.get('tab');
+    if (currentParam && currentParam !== activeTab) {
+      setActiveTab(currentParam);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', tabId);
+      return next;
+    });
+  };
 
   const {
-    selectedBT, setSelectedBT, selectedCompanyId = '', setSelectedCompanyId,
-    searchTerm = '', setSearchTerm, accessFilter = 'all', setAccessFilter,
-    unconfiguredCount = 0, isPlatformStaff = false,
-    companies = [], companiesLoading = false, businessTypes = [],
-    roles = [], rawUsers = [], rawCatalog = [], moduleGroups = [], catalogMap = {},
-    isLoading = false, isError = false, error = null,
-    isTruncated = false, totalCount = 0, refetchAll, handleResetUser,
+    selectedBT, setSelectedBT,
+    companies = [], businessTypes = [], roles = [],
+    users = [], rawCatalog = [],
+    isLoading = false, totalCount = 0, refetchAll,
   } = useAccessRightsV2Data() || {};
 
-  const [configuringRole, setConfiguringRole] = useState(null);
-  const [viewingRoleEmployees, setViewingRoleEmployees] = useState(null);
-  const [editingSearchUser, setEditingSearchUser] = useState(null);
-  const [confirmResetUser, setConfirmResetUser] = useState(null);
-  const [isResettingSearchUser, setIsResettingSearchUser] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  // Copy permissions modal state
+  const [copySourceUser, setCopySourceUser] = useState(null);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
 
-  const currentBT = businessTypes.find((b) => b.code === selectedBT) || businessTypes[0] || { name: selectedBT };
-  const hasActiveEmployees = roles.some((r) => r.totalEmployees > 0);
-  const activeRoles = hasActiveEmployees ? roles.filter((r) => r.totalEmployees > 0) : roles;
-  const emptyRoles = hasActiveEmployees ? roles.filter((r) => r.totalEmployees === 0) : [];
+  // Copy template modal state
+  const [isCopyTemplateOpen, setIsCopyTemplateOpen] = useState(false);
+
+  // KPI counts
+  const exceptionEmployees = users.filter((u) => Boolean(u.moduleAccessCustom || u.exceptionCount > 0)).length;
+  const standardEmployees = Math.max(0, totalCount - exceptionEmployees);
+
+  const handleOpenCopyStaff = (user) => {
+    setCopySourceUser(user);
+    setIsCopyModalOpen(true);
+  };
+
+  const handleConfirmCopyStaff = async ({ sourceUserId, targetUserIds, mode }) => {
+    setIsCopying(true);
+    try {
+      await platformModuleAccessApi.copy({
+        fromUserId: sourceUserId,
+        targetUserIds,
+        mode: mode === 'replace' ? 'OVERWRITE' : 'MERGE',
+      });
+      toast.success(`${targetUserIds.length} ta xodimga ruxsatlar muvaffaqiyatli nusxalandi`);
+      setIsCopyModalOpen(false);
+      refetchAll();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Nusxalashda xatolik yuz berdi');
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
+  const [staffFilterBT, setStaffFilterBT] = useState('ALL');
+  const [staffFilterRole, setStaffFilterRole] = useState('ALL');
+
+  const handleSwitchToStaff = (btCode, roleCode) => {
+    if (btCode) {
+      setSelectedBT(btCode);
+      setStaffFilterBT(btCode);
+    }
+    if (roleCode) {
+      setStaffFilterRole(roleCode);
+    }
+    handleTabChange('staff');
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
-      <PlatformModuleAccessV2Header
-        currentLang={currentLang} isLoading={isLoading} isError={isError} error={error} onRetry={refetchAll}
+      <AccessRightsHeader
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        exceptionsCount={exceptionEmployees}
+        isLoading={isLoading}
+        onRefresh={refetchAll}
       />
 
-      <BusinessTypePills businessTypes={businessTypes} selectedCode={selectedBT} onSelect={setSelectedBT} />
-
-      <PlatformModuleAccessToolbar
-        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-        accessFilter={accessFilter} setAccessFilter={setAccessFilter}
-        unconfiguredCount={unconfiguredCount} isPlatformStaff={isPlatformStaff}
-        companies={companies} companiesLoading={companiesLoading}
-        selectedCompanyId={selectedCompanyId} setSelectedCompanyId={setSelectedCompanyId}
-        currentLang={currentLang} isTruncated={isTruncated}
-        totalCount={totalCount} loadedCount={rawUsers.length}
-      />
-
-      {searchTerm ? (
-        <SearchResultsSection
-          searchTerm={searchTerm}
-          users={rawUsers}
-          currentLang={currentLang}
-          onEditUser={(u) => setEditingSearchUser(u)}
-          onResetUser={(u) => setConfirmResetUser(u)}
-        />
-      ) : (
-        <RoleCardsGrid
-          activeRoles={activeRoles}
-          emptyRoles={emptyRoles}
-          onConfigureRole={setConfiguringRole}
-          onViewEmployees={setViewingRoleEmployees}
-          currentLang={currentLang}
+      {activeTab === 'templates' && (
+        <AccessRightsTemplatesTab
+          businessTypes={businessTypes}
+          roles={roles}
+          rawCatalog={rawCatalog}
+          totalEmployees={totalCount}
+          standardEmployees={standardEmployees}
+          exceptionEmployees={exceptionEmployees}
+          selectedBT={selectedBT}
+          onSelectBT={setSelectedBT}
+          onSwitchToStaff={handleSwitchToStaff}
+          onOpenCopyTemplate={() => setIsCopyTemplateOpen(true)}
         />
       )}
 
-      <div className="pt-2 flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={() => setHistoryOpen(true)}
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
-        >
-          <RotateCcw size={14} />
-          <span>{currentLang === 'ru' ? 'История изменений' : 'O‘zgarishlar tarixi'}</span>
-        </button>
-      </div>
+      {activeTab === 'staff' && (
+        <AccessRightsStaffTab
+          users={users}
+          rawCatalog={rawCatalog}
+          businessTypes={businessTypes}
+          companies={companies}
+          totalEmployees={totalCount}
+          exceptionEmployees={exceptionEmployees}
+          initialBT={staffFilterBT}
+          initialRole={staffFilterRole}
+          onOpenCopyModal={handleOpenCopyStaff}
+          onStaffUpdated={refetchAll}
+        />
+      )}
 
-      <ModuleAccessHistoryDrawer
-        isOpen={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        currentLang={currentLang}
-        onReverted={refetchAll}
-      />
+      {activeTab === 'history' && (
+        <AccessRightsHistoryTab onReverted={refetchAll} />
+      )}
 
-      <RoleTemplateDrawer
-        isOpen={Boolean(configuringRole)}
-        onClose={() => setConfiguringRole(null)}
-        role={configuringRole}
-        businessType={selectedBT}
-        businessTypeName={currentBT.name}
-        moduleGroups={moduleGroups}
-        onSaved={refetchAll}
-      />
+      {isCopyModalOpen && (
+        <AccessRightsCopyModal
+          open={isCopyModalOpen}
+          isOpen={isCopyModalOpen}
+          onClose={() => setIsCopyModalOpen(false)}
+          sourceUser={copySourceUser}
+          allUsers={users}
+          onConfirmCopy={handleConfirmCopyStaff}
+          isCopying={isCopying}
+        />
+      )}
 
-      <RoleEmployeesDrawer
-        isOpen={Boolean(viewingRoleEmployees)}
-        onClose={() => setViewingRoleEmployees(null)}
-        role={viewingRoleEmployees}
-        businessType={selectedBT}
-        businessTypeName={currentBT.name}
-        users={rawUsers}
-        catalogMap={catalogMap}
-        rawCatalog={rawCatalog}
-        onResetUserToTemplate={handleResetUser}
-        onUserUpdated={refetchAll}
-      />
-
-      <RoleEmployeeEditDrawer
-        isOpen={Boolean(editingSearchUser)}
-        onClose={() => setEditingSearchUser(null)}
-        user={editingSearchUser}
-        businessType={editingSearchUser?.businessType || selectedBT}
-        businessTypeName={editingSearchUser?.businessTypeName || currentBT.name}
-        rawCatalog={rawCatalog}
-        onSaved={refetchAll}
-      />
-
-      <RoleEmployeeResetConfirmDialog
-        user={confirmResetUser}
-        isResetting={isResettingSearchUser}
-        onCancel={() => !isResettingSearchUser && setConfirmResetUser(null)}
-        onConfirm={async () => {
-          if (confirmResetUser) {
-            setIsResettingSearchUser(true);
-            try {
-              await handleResetUser(confirmResetUser.userId || confirmResetUser.id);
-              setConfirmResetUser(null);
-            } finally {
-              setIsResettingSearchUser(false);
-            }
-          }
-        }}
-      />
+      {isCopyTemplateOpen && (
+        <AccessRightsCopyTemplateModal
+          open={isCopyTemplateOpen}
+          isOpen={isCopyTemplateOpen}
+          onClose={() => setIsCopyTemplateOpen(false)}
+          targetBT={selectedBT}
+          businessTypes={businessTypes}
+          onConfirm={() => {
+            setIsCopyTemplateOpen(false);
+            toast.success('Andoza nusxasi muvaffaqiyatli qo‘llandi');
+            refetchAll();
+          }}
+        />
+      )}
     </div>
   );
 }

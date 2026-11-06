@@ -4,11 +4,12 @@ import { storeApi } from '../../../api';
 
 /**
  * Backend KPI for Super Admin stores page — avoids client-side full-table counts.
+ * Note: Status is intentionally not filtered here so summary KPI cards & tabs
+ * (total, active, inactive, companies) reflect platform-wide totals for the active search/filters.
  */
 export function useStoresPlatformStats({
   enabled = false,
   search = '',
-  statusFilter = 'ALL',
   businessType = '',
   regionCode = '',
   districtCode = '',
@@ -17,13 +18,12 @@ export function useStoresPlatformStats({
   const params = useMemo(
     () => ({
       search: search.trim() || undefined,
-      status: statusFilter !== 'ALL' ? statusFilter : undefined,
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
       districtCode: districtCode || undefined,
       companyId: companyId || undefined,
     }),
-    [search, statusFilter, businessType, regionCode, districtCode, companyId]
+    [search, businessType, regionCode, districtCode, companyId]
   );
 
   const query = useQuery({

@@ -68,7 +68,6 @@ export function useStoresPage({
   const { stats } = useStoresPlatformStats({
     enabled: showCompanySelect,
     search: filters.debouncedSearch,
-    statusFilter: filters.statusFilter,
     businessType: filters.businessType,
     regionCode: filters.regionCode,
     districtCode: filters.districtCode,

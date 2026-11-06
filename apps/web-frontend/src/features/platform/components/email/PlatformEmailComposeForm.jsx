@@ -7,7 +7,21 @@ export default function PlatformEmailComposeForm({ flow }) {
     <section className="flex flex-1 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
         <h2 className="text-base font-bold text-slate-900 dark:text-white">Yangi xabar</h2>
-        <span className="text-xs text-slate-500 dark:text-slate-400">Qoralama avtomatik saqlandi</span>
+        <span
+          className={`text-xs font-medium transition-colors ${
+            flow.draftStatus === 'saving'
+              ? 'text-amber-600 dark:text-amber-400'
+              : flow.draftStatus === 'error'
+              ? 'text-rose-600 dark:text-rose-400'
+              : 'text-emerald-700 dark:text-emerald-400'
+          }`}
+        >
+          {flow.draftStatus === 'saving'
+            ? 'Qoralama saqlanmoqda...'
+            : flow.draftStatus === 'error'
+            ? 'Qoralama saqlanmadi'
+            : 'Qoralama saqlandi'}
+        </span>
       </div>
 
       <PlatformEmailAudienceSelector flow={flow} />
@@ -31,37 +45,84 @@ export default function PlatformEmailComposeForm({ flow }) {
             value={flow.subject}
             onChange={(e) => flow.setSubject(e.target.value)}
             maxLength={120}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            aria-invalid={Boolean(flow.errors?.subject)}
+            aria-describedby={flow.errors?.subject ? 'email-subject-error' : undefined}
+            className={`h-10 w-full rounded-xl border px-3 text-sm outline-none transition dark:bg-slate-800 dark:text-white ${
+              flow.errors?.subject
+                ? 'border-rose-500 focus:border-rose-600 ring-1 ring-rose-500/20'
+                : 'border-slate-300 focus:border-emerald-600 dark:border-slate-700'
+            }`}
           />
+          {flow.errors?.subject && (
+            <span id="email-subject-error" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+              {flow.errors.subject}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email-message" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             Matn
           </label>
-          <div className="rounded-xl border border-slate-300 overflow-hidden dark:border-slate-700">
+          <div
+            className={`rounded-xl border overflow-hidden transition dark:border-slate-700 ${
+              flow.errors?.message
+                ? 'border-rose-500 ring-1 ring-rose-500/20'
+                : 'border-slate-300 dark:border-slate-700'
+            }`}
+          >
             <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50/80 p-1.5 dark:border-slate-800 dark:bg-slate-800">
-              <button type="button" className="h-7 w-7 rounded font-extrabold text-slate-700 hover:bg-slate-200 dark:text-slate-300">B</button>
-              <button type="button" className="h-7 w-7 rounded italic font-serif text-slate-700 hover:bg-slate-200 dark:text-slate-300">I</button>
-              <button type="button" className="flex h-7 w-7 items-center justify-center rounded text-slate-700 hover:bg-slate-200 dark:text-slate-300">
+              <button
+                type="button"
+                onClick={() => flow.applyFormat?.('bold')}
+                title="Qalin matn (Bold)"
+                aria-label="Qalin matn (Bold)"
+                className="h-7 w-7 rounded font-extrabold text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onClick={() => flow.applyFormat?.('italic')}
+                title="Kursiv matn (Italic)"
+                aria-label="Kursiv matn (Italic)"
+                className="h-7 w-7 rounded italic font-serif text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={() => flow.applyFormat?.('link')}
+                title="Havola qo‘shish (Link)"
+                aria-label="Havola qo‘shish (Link)"
+                className="flex h-7 w-7 items-center justify-center rounded text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
+              >
                 <Link2 className="h-3.5 w-3.5" />
               </button>
-              <button type="button" className="flex h-7 w-7 items-center justify-center rounded text-slate-700 hover:bg-slate-200 dark:text-slate-300">
+              <button
+                type="button"
+                onClick={() => flow.applyFormat?.('list')}
+                title="Ro‘yxat qo‘shish (List)"
+                aria-label="Ro‘yxat qo‘shish (List)"
+                className="flex h-7 w-7 items-center justify-center rounded text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
+              >
                 <List className="h-3.5 w-3.5" />
               </button>
               <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-700" />
-              <span className="text-xs text-slate-500">Qo‘shish:</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Qo‘shish:</span>
               <button
                 type="button"
                 onClick={() => flow.insertVariable('{{ism}}')}
-                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2 font-mono text-[11px] text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
+                title="Qabul qiluvchi ismini qo‘shish"
+                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2 font-mono text-xs text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
               >
                 &#123;&#123;ism&#125;&#125;
               </button>
               <button
                 type="button"
                 onClick={() => flow.insertVariable('{{korxona}}')}
-                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2 font-mono text-[11px] text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
+                title="Qabul qiluvchi korxona nomini qo‘shish"
+                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2 font-mono text-xs text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
               >
                 &#123;&#123;korxona&#125;&#125;
               </button>
@@ -71,10 +132,17 @@ export default function PlatformEmailComposeForm({ flow }) {
               rows={6}
               value={flow.message}
               onChange={(e) => flow.setMessage(e.target.value)}
+              aria-invalid={Boolean(flow.errors?.message)}
+              aria-describedby={flow.errors?.message ? 'email-message-error' : undefined}
               className="w-full resize-y p-3 text-sm leading-relaxed outline-none dark:bg-slate-900 dark:text-white"
             />
           </div>
-          <span className="text-[11px] text-slate-500">
+          {flow.errors?.message && (
+            <span id="email-message-error" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+              {flow.errors.message}
+            </span>
+          )}
+          <span className="text-xs text-slate-600 dark:text-slate-400">
             Belgilangan o‘zgaruvchilar har bir qabul qiluvchi uchun alohida to‘ldiriladi.
           </span>
         </div>

@@ -14,8 +14,10 @@ const SIZE_CLS = {
 };
 
 export default function BaseModal({
-  open = true,
+  open,
+  isOpen,
   title,
+  subtitle,
   onClose,
   children,
   footer,
@@ -27,12 +29,13 @@ export default function BaseModal({
   hideHeader = false,
   closeLabel = 'Close',
 }) {
+  const isEffectiveOpen = open !== undefined ? Boolean(open) : (isOpen !== undefined ? Boolean(isOpen) : true);
   const dialogRef = useRef(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!isEffectiveOpen) return undefined;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
@@ -41,10 +44,10 @@ export default function BaseModal({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open]);
+  }, [isEffectiveOpen]);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!isEffectiveOpen) return undefined;
 
     // Auto-focus dialog container on mount for a11y focus management
     const focusTimer = setTimeout(() => {
@@ -65,9 +68,9 @@ export default function BaseModal({
     }, 50);
 
     return () => clearTimeout(focusTimer);
-  }, [open]);
+  }, [isEffectiveOpen]);
 
-  if (!open) return null;
+  if (!isEffectiveOpen) return null;
 
   const modalNode = (
     <div
@@ -90,14 +93,19 @@ export default function BaseModal({
       >
         {!hideHeader && (title || onClose) && (
           <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-3.5 dark:border-slate-800">
-            {title && (
-              <h2
-                id="base-modal-title"
-                className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate"
-              >
-                {title}
-              </h2>
-            )}
+            <div className="min-w-0 pr-2">
+              {title && (
+                <h2
+                  id="base-modal-title"
+                  className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate"
+                >
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+              )}
+            </div>
             {onClose && (
               <BaseButton
                 variant="ghost"

@@ -6,13 +6,28 @@ import PlatformModuleAccessV2Page from './PlatformModuleAccessV2Page';
 
 globalThis.React = React;
 
-let mockHookData = {
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key, opts) => opts?.defaultValue || key,
+    i18n: { language: 'uz' },
+  }),
+}));
+
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useQuery: () => ({ data: [], isLoading: false, isPending: false }),
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
+
+const mockHookData = {
   selectedBT: 'RESTAURANT',
   setSelectedBT: vi.fn(),
   businessTypes: [
     { code: 'RESTAURANT', name: 'Restoran', totalEmployees: 195 },
-    { code: 'PHARMACY', name: 'Dorixona', totalEmployees: 19 },
-    { code: 'GROCERY', name: 'Oziq-ovqat', totalEmployees: 81 },
   ],
   roles: [
     {
@@ -22,108 +37,53 @@ let mockHookData = {
       exceptionCount: 1,
       enabledModulesCount: 56,
       totalModulesCount: 59,
-      breakdown: [{ name: 'Asosiy modullar', enabled: 2, total: 3 }],
-    },
-    {
-      code: 'MANAGER',
-      name: 'Menejer',
-      totalEmployees: 13,
-      exceptionCount: 4,
-      enabledModulesCount: 47,
-      totalModulesCount: 59,
-      breakdown: [{ name: 'Asosiy modullar', enabled: 2, total: 3 }],
-    },
-    {
-      code: 'CASHIER',
-      name: 'Kassir',
-      totalEmployees: 38,
-      exceptionCount: 3,
-      enabledModulesCount: 7,
-      totalModulesCount: 11,
-      breakdown: [{ name: 'Kassa oynasi', enabled: 3, total: 3 }],
-    },
-    {
-      code: 'COOK',
-      name: 'Oshpaz',
-      totalEmployees: 0,
-      exceptionCount: 0,
-      enabledModulesCount: 1,
-      totalModulesCount: 8,
-      breakdown: [],
     },
   ],
-  rawUsers: [],
-  moduleGroups: [],
-  catalogMap: {},
+  users: [
+    {
+      userId: 'u-1',
+      fullName: 'Umid Grocery',
+      username: 'umid_g',
+      role: 'ADMIN',
+      businessType: 'RESTAURANT',
+      companyName: 'Umid MCHJ',
+    },
+  ],
+  rawCatalog: [],
   isLoading: false,
-  isError: false,
-  error: null,
+  totalCount: 195,
   refetchAll: vi.fn(),
-  handleResetUser: vi.fn(),
 };
 
 vi.mock('../components/access-rights/hooks/useAccessRightsV2Data', () => ({
   useAccessRightsV2Data: () => mockHookData,
 }));
 
-vi.mock('../components/access-rights/cards/RoleTemplateDrawer', () => ({
-  default: () => null,
+vi.mock('../components/access-rights/hooks/useAccessRightsTemplatesFlow', () => ({
+  useAccessRightsTemplatesFlow: () => ({
+    currentRole: 'ADMIN',
+    setCurrentRole: vi.fn(),
+    toggles: {},
+    isDirty: false,
+    dirtyCount: 0,
+    isSaving: false,
+    moduleGroups: [],
+    handleToggleModule: vi.fn(),
+    handleEnableGroup: vi.fn(),
+    handleDisableGroup: vi.fn(),
+    handleReset: vi.fn(),
+    handleSave: vi.fn(),
+  }),
 }));
 
-vi.mock('../components/access-rights/cards/ModuleAccessHistoryDrawer', () => ({
-  default: () => null,
-}));
-
-describe('PlatformModuleAccessV2Page', () => {
-  it('renders V2 card design with real counts, business type pills, and compact empty roles', () => {
+describe('PlatformModuleAccessV2Page (Alias compatibility)', () => {
+  it('renders modern access rights page via V2 alias', () => {
     const html = renderToStaticMarkup(
       React.createElement(MemoryRouter, null, React.createElement(PlatformModuleAccessV2Page))
     );
 
     expect(html).toContain('Kirish huquqlari');
-    expect(html).toContain('Boshqaruv');
-    expect(html).toContain('Restoran');
-    expect(html).toContain('195 xodim');
-    expect(html).toContain('Admin');
-    expect(html).toContain('41 xodim');
-    expect(html).toContain('Menejer');
-    expect(html).toContain('13 xodim');
-    expect(html).toContain('4 istisno');
-    expect(html).toContain('Kassir');
-    expect(html).toContain('38 xodim');
-    expect(html).toContain('Xodimi bo‘lmagan rollar');
-    expect(html).toContain('Oshpaz');
-    expect(html).toContain('Sozlash');
-    expect(html).toContain('O‘zgarishlar tarixi');
-    expect(html).not.toContain('Tez kunda');
-  });
-
-  it('renders search results section when searchTerm is active', () => {
-    mockHookData = {
-      ...mockHookData,
-      searchTerm: 'Umid',
-      rawUsers: [
-        {
-          userId: 'u-1',
-          fullName: 'Umid Grocery',
-          username: 'umid_g',
-          role: 'ADMIN',
-          companyName: 'Raimbobo Market',
-          businessType: 'GROCERY',
-          businessTypeName: 'Oziq-ovqat',
-        },
-      ],
-    };
-
-    const html = renderToStaticMarkup(
-      React.createElement(MemoryRouter, null, React.createElement(PlatformModuleAccessV2Page))
-    );
-
-    expect(html).toContain('«Umid» bo‘yicha 1 ta xodim topildi');
-    expect(html).toContain('Umid Grocery');
-    expect(html).toContain('Raimbobo Market');
-    expect(html).toContain('Oziq-ovqat');
-    // Role cards grid should NOT be rendered when search is active
-    expect(html).not.toContain('Xodimi bo‘lmagan rollar');
+    expect(html).toContain('Rol shablonlari');
+    expect(html).toContain('Xodimlar va istisnolar');
   });
 });

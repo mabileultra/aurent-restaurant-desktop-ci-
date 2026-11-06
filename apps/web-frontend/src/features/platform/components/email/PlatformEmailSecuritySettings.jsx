@@ -56,7 +56,9 @@ export default function PlatformEmailSecuritySettings({ flow }) {
 
         <div className="flex flex-wrap gap-2.5 p-4 px-5 border-t border-slate-100 dark:border-slate-800">
           <input
+            id="new-watch-email"
             type="email"
+            aria-label="Yangi nazorat email manzili"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             placeholder="ism@kompaniya.uz"
@@ -65,6 +67,7 @@ export default function PlatformEmailSecuritySettings({ flow }) {
           <button
             type="button"
             onClick={addWatchEmail}
+            aria-label="Nazorat manzilini qo‘shish"
             className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-emerald-100 px-4 text-xs font-semibold text-emerald-900 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 transition"
           >
             <Plus className="h-4 w-4" />
@@ -76,18 +79,20 @@ export default function PlatformEmailSecuritySettings({ flow }) {
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="border-b border-slate-100 p-4 px-5 dark:border-slate-800">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">Xavfsizlik ogohlantirishlari</h2>
-          <p className="text-xs text-slate-500">Nazorat manzillariga qachon xat yuborilsin</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">Nazorat manzillariga qachon xat yuborilsin</p>
         </div>
 
         <div className="divide-y divide-slate-100 px-5 text-xs dark:divide-slate-800">
           <div className="flex items-center justify-between gap-4 py-3.5">
-            <div className="flex flex-col">
+            <label htmlFor="trigger-every-login" className="flex flex-col cursor-pointer">
               <span className="font-semibold text-slate-900 dark:text-white">Har bir super-admin kirishida</span>
-              <span className="text-slate-500 text-[11px]">Hozirgi xatti-harakat</span>
-            </div>
+              <span className="text-slate-600 dark:text-slate-400 text-xs">Hozirgi xatti-harakat</span>
+            </label>
             <button
+              id="trigger-every-login"
               type="button"
               role="switch"
+              aria-label="Har bir super-admin kirishida ogohlantirish yuborish"
               aria-checked={settings.triggers.everyLogin}
               onClick={() => toggleTrigger('everyLogin')}
               className={`flex h-6 w-10 flex-shrink-0 items-center rounded-full p-0.5 transition ${
@@ -99,15 +104,17 @@ export default function PlatformEmailSecuritySettings({ flow }) {
           </div>
 
           <div className="flex items-center justify-between gap-4 py-3.5">
-            <div className="flex flex-col">
+            <label htmlFor="trigger-new-device" className="flex flex-col cursor-pointer">
               <span className="font-semibold text-slate-900 dark:text-white">
                 Yangi qurilma yoki IP manzildan kirilganda
               </span>
-              <span className="text-slate-500 text-[11px]">Xatda “Yangi qurilma” belgisi chiqadi</span>
-            </div>
+              <span className="text-slate-600 dark:text-slate-400 text-xs">Xatda “Yangi qurilma” belgisi chiqadi</span>
+            </label>
             <button
+              id="trigger-new-device"
               type="button"
               role="switch"
+              aria-label="Yangi qurilma yoki IP manzildan kirilganda ogohlantirish yuborish"
               aria-checked={settings.triggers.newDevice}
               onClick={() => toggleTrigger('newDevice')}
               className={`flex h-6 w-10 flex-shrink-0 items-center rounded-full p-0.5 transition ${
@@ -119,15 +126,17 @@ export default function PlatformEmailSecuritySettings({ flow }) {
           </div>
 
           <div className="flex items-center justify-between gap-4 py-3.5">
-            <div className="flex flex-col">
+            <label htmlFor="trigger-failed-attempts" className="flex flex-col cursor-pointer">
               <span className="font-semibold text-slate-900 dark:text-white">
                 Ketma-ket noto‘g‘ri parol kiritilganda
               </span>
-              <span className="text-slate-500 text-[11px]">Super-admin hisobiga 5 marta muvaffaqiyatsiz urinish</span>
-            </div>
+              <span className="text-slate-600 dark:text-slate-400 text-xs">Super-admin hisobiga 5 marta muvaffaqiyatsiz urinish</span>
+            </label>
             <button
+              id="trigger-failed-attempts"
               type="button"
               role="switch"
+              aria-label="Ketma-ket noto‘g‘ri parol kiritilganda ogohlantirish yuborish"
               aria-checked={settings.triggers.failedAttempts}
               onClick={() => toggleTrigger('failedAttempts')}
               className={`flex h-6 w-10 flex-shrink-0 items-center rounded-full p-0.5 transition ${

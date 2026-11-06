@@ -24,10 +24,16 @@ describe('emailFormatUtils', () => {
       expect(b.className).toContain('bg-blue-100');
     });
 
-    it('returns delivered badge when fail is 0 and queued is 0', () => {
-      const b = getHistoryStatusBadge({ queued: 0, ok: 10, fail: 0 });
+    it('returns delivered badge when fail is 0 and ok equals total', () => {
+      const b = getHistoryStatusBadge({ total: 10, queued: 0, ok: 10, fail: 0 });
       expect(b.label).toBe('Yetkazildi');
       expect(b.className).toContain('bg-emerald-100');
+    });
+
+    it('returns in-progress badge when fail is 0 but ok is less than total (e.g. 64 out of 115)', () => {
+      const b = getHistoryStatusBadge({ total: 115, queued: 0, ok: 64, fail: 0 });
+      expect(b.label).toBe('Jarayonda');
+      expect(b.className).toContain('bg-blue-100');
     });
 
     it('returns undelivered badge when ok is 0 and fail > 0', () => {

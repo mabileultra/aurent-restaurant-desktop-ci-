@@ -13,6 +13,20 @@ describe('BaseModal', () => {
     expect(html).toBe('');
   });
 
+  it('returns null when isOpen is false', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(BaseModal, { isOpen: false, title: 'Test Modal' }, 'Body content')
+    );
+    expect(html).toBe('');
+  });
+
+  it('renders subtitle when provided', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(BaseModal, { open: true, title: 'Test Title', subtitle: 'Test Subtitle' }, 'Body')
+    );
+    expect(html).toContain('Test Subtitle');
+  });
+
   it('renders modal dialog with dark mode classes and accessibility attributes', () => {
     const html = renderToStaticMarkup(
       React.createElement(
