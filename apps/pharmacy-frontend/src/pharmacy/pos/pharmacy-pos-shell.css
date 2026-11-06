@@ -225,6 +225,9 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 35%, rgb(19 72 66 / 0.16), transparent 72%),
+    rgb(38 51 45 / 0.28);
 }
 
 .pharmacy-pos-settings {
@@ -246,14 +249,16 @@
   justify-content: space-between;
   flex-shrink: 0;
   padding: 14px 16px;
-  border-bottom: 1px solid #e6ebe7;
+  background: #134842;
+  border-bottom: 0;
 }
 
 .pharmacy-pos-settings__head h2 {
   margin: 0;
   font-size: 18px;
-  font-weight: 750;
-  color: #1b3d2f;
+  font-weight: 700;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  color: #fff;
 }
 
 .pharmacy-pos-settings__close {
@@ -261,7 +266,8 @@
   height: 36px;
   border: 0;
   border-radius: 8px;
-  background: #f3f6f4;
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
   font-size: 22px;
   line-height: 1;
   cursor: pointer;

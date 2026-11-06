@@ -11,18 +11,18 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
 
   return createPortal(
     <div className="fixed inset-0 z-[11500] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
+      <button type="button" className="absolute inset-0 bg-[#26332d]/30" aria-label="Close" onClick={onClose} />
       <div
-        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-[#e4e7ec] bg-white font-[Inter,Segoe_UI,system-ui,sans-serif] text-[#1f2024] shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="multikassa-settings-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h2 id="multikassa-settings-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+        <div className="flex items-center justify-between bg-[#134842] px-5 py-4 text-white">
+          <h2 id="multikassa-settings-title" className="text-lg font-semibold text-white">
             {p.t('cashRegisters.multikassa.title')}
           </h2>
-          <button type="button" onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800 dark:hover:text-white">
+          <button type="button" onClick={onClose} className="p-1 text-white">
             <X size={20} />
           </button>
         </div>

@@ -16,6 +16,8 @@
 @import './pharmacy-parked-cards.css';
 @import './pharmacy-stock-count.css';
 @import './pharmacy-pos-board.css';
+@import './pharmacy-search-strip-theme.css';
+@import './pharmacy-pay-stack-theme.css';
 @import '../../../styles/cashier/cart/parked-bar.css';
 
 .pharmacy-cashier__split {

@@ -8,7 +8,8 @@
 }
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__head {
-  background: #1b6b45;
+  background: #134842;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
   color: #fff;
   border-bottom: none;
 }

@@ -4,13 +4,13 @@
  */
 
 .pharmacy-modal {
-  --pm-brand: #245b45;
-  --pm-brand-hover: #174936;
-  --pm-brand-soft: rgb(36 91 69 / 0.12);
-  --pm-teal: #245b45;
-  --pm-ink: #26332d;
-  --pm-muted: #7a817c;
-  --pm-border: #e3e8e4;
+  --pm-brand: #134842;
+  --pm-brand-hover: #0e3834;
+  --pm-brand-soft: rgb(19 72 66 / 0.12);
+  --pm-teal: #134842;
+  --pm-ink: #1f2024;
+  --pm-muted: #8b9198;
+  --pm-border: #e4e7ec;
   --pm-surface: #fff;
   --pm-elevated: #fff;
   --pm-card: #fff;
@@ -173,6 +173,7 @@
   max-height: min(92vh, 820px);
   background: #fff;
   color: var(--pm-ink);
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
   border: 1px solid var(--pm-border);
   border-radius: calc(var(--pm-radius) + 2px);
   box-shadow: var(--pm-shadow);
@@ -185,14 +186,15 @@
   gap: 0.75rem;
   flex-shrink: 0;
   padding: 0.75rem 1rem;
-  background: #1b6b45;
+  background: #134842;
   color: #fff;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
 }
 
 .pharmacy-modal__title {
   margin: 0;
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fff;

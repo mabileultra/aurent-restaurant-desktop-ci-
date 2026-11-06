@@ -27,7 +27,7 @@
 
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 11600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +55,8 @@
   justify-content: space-between;
   flex-shrink: 0;
   padding: 0.7rem 0.9rem;
-  background: #1b6b45;
+  background: #134842;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
   color: #fff;
 }
 

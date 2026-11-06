@@ -165,7 +165,10 @@
   height: 40px;
   padding: 0 14px;
   border-radius: 10px;
-  background: #f4f7f5;
+  background: #fff;
+  border-color: #c3c7d2;
+  color: #1f2024;
+  font-weight: 500;
   font-size: 15px;
 }
 
@@ -223,7 +226,8 @@
   white-space: nowrap;
 }
 
-.cashier-app.cashier-app--pharmacy-pos .pharmacy-search__table thead th {
+.cashier-app.cashier-app--pharmacy-pos .pharmacy-search__table thead th,
+.cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-table__table thead th {
   font-size: 13px;
   line-height: 1.15;
   letter-spacing: 0.01em;

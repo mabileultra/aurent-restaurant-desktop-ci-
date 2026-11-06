@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import './i18n/config';
 import App from './App.jsx';
 import './index.css';
+import './styles/shared/toaster.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-      <Toaster position="top-center" />
+      <Toaster position="top-center" containerClassName="app-toaster" />
     </QueryClientProvider>
   </React.StrictMode>,
 );
