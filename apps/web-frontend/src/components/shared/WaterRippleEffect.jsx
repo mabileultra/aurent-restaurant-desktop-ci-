@@ -11,7 +11,8 @@ import {
  */
 export default function WaterRippleEffect({
   color = '56, 189, 248',
-  maxRadius = 75,
+  maxRadius = 80,
+  speed = 1.4,
   disabled = false,
 }) {
   const canvasRef = useRef(null);
@@ -62,6 +63,7 @@ export default function WaterRippleEffect({
       const newGroup = createWaterRippleGroup(e.clientX, e.clientY, {
         color,
         maxRadius,
+        speed,
       });
 
       groupsRef.current.push(newGroup);
@@ -82,7 +84,7 @@ export default function WaterRippleEffect({
       }
       groupsRef.current = [];
     };
-  }, [color, maxRadius, disabled]);
+  }, [color, maxRadius, speed, disabled]);
 
   if (disabled) return null;
 

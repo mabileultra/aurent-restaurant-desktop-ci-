@@ -6,8 +6,8 @@
 export function createWaterRippleGroup(x, y, {
   color = '56, 189, 248',
   ringCount = 3,
-  maxRadius = 75,
-  speed = 2.4,
+  maxRadius = 80,
+  speed = 1.4,
 } = {}) {
   const rings = [];
   for (let i = 0; i < ringCount; i++) {
@@ -15,12 +15,12 @@ export function createWaterRippleGroup(x, y, {
       x,
       y,
       radius: 2,
-      maxRadius: Math.max(20, maxRadius - i * 14),
+      maxRadius: Math.max(25, maxRadius - i * 16),
       alpha: Math.max(0.1, 0.65 - i * 0.12),
       initialAlpha: Math.max(0.1, 0.65 - i * 0.12),
-      speed: Math.max(1, speed - i * 0.35),
-      delay: i * 5,
-      currentDelay: i * 5,
+      speed: Math.max(0.6, speed - i * 0.25),
+      delay: i * 6,
+      currentDelay: i * 6,
       color,
     });
   }
@@ -29,9 +29,9 @@ export function createWaterRippleGroup(x, y, {
     x,
     y,
     radius: 1,
-    maxRadius: 7,
+    maxRadius: 6,
     alpha: 0.85,
-    speed: 1.2,
+    speed: 0.8,
     color: '255, 255, 255',
   };
 
@@ -58,7 +58,7 @@ export function updateWaterRippleGroups(groups = []) {
 
     if (group.drop && group.drop.alpha > 0.01) {
       group.drop.radius += group.drop.speed;
-      group.drop.alpha -= 0.08;
+      group.drop.alpha -= 0.045;
       if (group.drop.alpha > 0.01) {
         anyRingAlive = true;
       }
