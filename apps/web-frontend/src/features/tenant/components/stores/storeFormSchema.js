@@ -4,14 +4,37 @@ import { normalizeBusinessTypeCode } from '../../../../config/productCatalogConf
 
 export function buildStoreFormSchema(t, { isCreate, showCompanySelect }) {
   return z.object({
-    name: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colName') })),
+    name: z
+      .string()
+      .refine(
+        (val) => Boolean(val && val.trim().length > 0),
+        { message: t('validation.fieldRequired', { field: t('stores.colName', { defaultValue: 'Nomi' }) }) }
+      )
+      .refine(
+        (val) => Boolean(val && val.trim().length >= 2),
+        { message: t('stores.nameTooShort', { defaultValue: 'Filial nomi kamida 2 ta belgidan iborat bo‘lishi kerak' }) }
+      ),
     address: z.string().optional(),
     regionCode: isCreate ? z.string().min(1, t('validation.fieldRequired', { field: t('geo.region') })) : z.string().optional(),
     districtCode: isCreate ? z.string().min(1, t('validation.fieldRequired', { field: t('geo.district') })) : z.string().optional(),
-    phone: z.string().optional().refine(
-      (val) => !val || digitsAfter998(val).length === 0 || isCompleteUzPhone(val),
-      { message: t('validation.phoneComplete', { defaultValue: 'Telefon raqamini to‘liq kiriting (+998 XX XXX-XX-XX)' }) }
-    ),
+    phone: isCreate
+      ? z
+          .string()
+          .refine(
+            (val) => Boolean(val && digitsAfter998(val).length > 0),
+            { message: t('validation.fieldRequired', { field: t('stores.colPhone', { defaultValue: 'Telefon raqam' }) }) }
+          )
+          .refine(
+            (val) => isCompleteUzPhone(val),
+            { message: t('validation.phoneComplete', { defaultValue: 'Telefon raqamini to‘liq kiriting (+998 XX XXX-XX-XX)' }) }
+          )
+      : z
+          .string()
+          .optional()
+          .refine(
+            (val) => !val || digitsAfter998(val).length === 0 || isCompleteUzPhone(val),
+            { message: t('validation.phoneComplete', { defaultValue: 'Telefon raqamini to‘liq kiriting (+998 XX XXX-XX-XX)' }) }
+          ),
     code: z.string().optional(),
     companyId: showCompanySelect ? z.string().min(1, t('validation.fieldRequired', { field: t('stores.colCompany') })) : z.string().optional(),
     businessType: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colBusinessType') })),

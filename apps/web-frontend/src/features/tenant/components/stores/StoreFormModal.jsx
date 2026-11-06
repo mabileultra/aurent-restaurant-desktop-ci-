@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -7,11 +7,7 @@ import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusines
 import { useOnlineActionGuard } from '../../../../hooks/useOnlineActionGuard';
 import FormDraftNotice from '../../../../components/shared/FormDraftNotice';
 import StoreFormModalFields from './StoreFormModalFields';
-import {
-  readStoredStoreDraft,
-  saveStoredStoreDraft,
-  removeStoredStoreDraft,
-} from '../../utils/storeFormDraftUtils';
+import { useStoreFormDraft } from './useStoreFormDraft';
 import {
   buildStoreFormSchema,
   buildStoreSubmitPayload,
@@ -19,6 +15,7 @@ import {
   buildDefaultStoreValues,
   findDuplicateStoreName,
 } from './storeFormSchema';
+import { readStoredStoreDraft } from '../../utils/storeFormDraftUtils';
 
 export default function StoreFormModal({
   open,
@@ -34,8 +31,6 @@ export default function StoreFormModal({
   const { t } = useTranslation();
   const { isActionBlocked, blockReason } = useOnlineActionGuard();
   const isCreate = !initial?.id;
-  const initialDraft = useMemo(() => (open && isCreate ? readStoredStoreDraft() : null), [open, isCreate]);
-  const [isDraftRestored, setIsDraftRestored] = useState(Boolean(initialDraft));
 
   const schema = useMemo(
     () => buildStoreFormSchema(t, { isCreate, showCompanySelect }),
@@ -44,10 +39,21 @@ export default function StoreFormModal({
 
   const initialFormValues = useMemo(() => {
     const base = buildDefaultStoreValues(initial);
-    return initialDraft ? { ...base, ...initialDraft } : base;
-  }, [initial, initialDraft]);
+    const draft = open && isCreate ? readStoredStoreDraft() : null;
+    return draft ? { ...base, ...draft } : base;
+  }, [open, isCreate, initial]);
 
-  const { register, handleSubmit, reset, setValue, watch, clearErrors, setError, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    clearErrors,
+    setError,
+    formState: { errors, isValid },
+  } = useForm({
+    mode: 'onChange',
     resolver: zodResolver(schema),
     defaultValues: initialFormValues,
   });
@@ -59,17 +65,13 @@ export default function StoreFormModal({
   const watchedDistrictCode = watch('districtCode');
   const watchedPhone = watch('phone');
 
-  useEffect(() => {
-    if (!open || !isCreate) return undefined;
-    const timer = setTimeout(() => saveStoredStoreDraft(watchedValues), 400);
-    return () => clearTimeout(timer);
-  }, [open, isCreate, watchedValues]);
-
-  const handleClearDraft = () => {
-    removeStoredStoreDraft();
-    setIsDraftRestored(false);
-    reset(buildDefaultStoreValues(null));
-  };
+  const { isDraftRestored, handleClearDraft, clearDraftOnSuccess } = useStoreFormDraft({
+    open,
+    isCreate,
+    initial,
+    reset,
+    watchedValues,
+  });
 
   const { types: companyTypes = [], defaultTypeCode, isLoading: typesLoading, needsCompany } = useStoreFormBusinessTypes(
     watchedCompanyId,
@@ -107,17 +109,6 @@ export default function StoreFormModal({
     clearErrors('businessType');
   }, [open, showCompanySelect, watchedCompanyId, watchedBusinessType, companyTypes, typesLoading, setValue, clearErrors]);
 
-  useEffect(() => {
-    if (!open) {
-      prevCompanyRef.current = '';
-      setIsDraftRestored(false);
-      return;
-    }
-    const draft = isCreate ? readStoredStoreDraft() : null;
-    reset(draft ? { ...buildDefaultStoreValues(initial), ...draft } : buildDefaultStoreValues(initial));
-    setIsDraftRestored(Boolean(draft));
-  }, [open, initial, isCreate, reset]);
-
   if (!open) return null;
 
   const handleFormSubmit = (data) => {
@@ -136,8 +127,7 @@ export default function StoreFormModal({
       return;
     }
     onSubmit(buildStoreSubmitPayload(data, isCreate));
-    removeStoredStoreDraft();
-    setIsDraftRestored(false);
+    clearDraftOnSuccess();
   };
 
   const modalTitle = title ?? (
@@ -162,7 +152,7 @@ export default function StoreFormModal({
             variant="primary"
             onClick={handleSubmit(handleFormSubmit)}
             loading={isPending}
-            disabled={isPending || isActionBlocked}
+            disabled={isPending || isActionBlocked || !isValid}
             title={isActionBlocked ? blockReason : undefined}
           >
             {t('common.save')}

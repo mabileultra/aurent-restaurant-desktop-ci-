@@ -1,12 +1,8 @@
 import React from 'react';
-import { BaseSelect } from '../../../../components/ui';
+import { BaseInput, BaseSelect } from '../../../../components/ui';
 import RegionDistrictFields from '../../../shared/geo/RegionDistrictFields';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 import { formatUzPhone, digitsAfter998 } from '../../../../utils/phoneUz';
-
-const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-  focus:outline-none focus:ring-2 focus:ring-emerald-500
-  dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
 
 export default function StoreFormModalFields({
   t,
@@ -52,13 +48,15 @@ export default function StoreFormModalFields({
           />
         </>
       ) : null}
-      <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
-          {t('stores.colName')} *
-        </label>
-        <input {...register('name')} className={inputCls} />
-        {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>}
-      </div>
+
+      <BaseInput
+        label={t('stores.colName')}
+        required
+        {...register('name')}
+        error={errors.name?.message}
+        placeholder={t('stores.enterBranchName', { defaultValue: 'Masalan, Chilonzor filiali' })}
+      />
+
       <div>
         <input type="hidden" {...register('businessTypeId')} />
         <BaseSelect
@@ -84,6 +82,7 @@ export default function StoreFormModalFields({
         />
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('stores.businessTypeHint')}</p>
       </div>
+
       <input type="hidden" {...register('regionCode')} />
       <input type="hidden" {...register('districtCode')} />
       <RegionDistrictFields
@@ -97,33 +96,33 @@ export default function StoreFormModalFields({
           setValue('districtCode', districtCode, { shouldValidate: true });
         }}
       />
-      <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
-          {t('stores.colAddress')}
-        </label>
-        <textarea {...register('address')} rows={2} className={inputCls} />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
-          {t('stores.colPhone')}
-        </label>
-        <input
-          {...register('phone')}
-          type="tel"
-          inputMode="tel"
-          maxLength={19}
-          value={watchedPhone ?? ''}
-          onChange={(e) => {
-            const val = e.target.value;
-            const digits = digitsAfter998(val);
-            const next = digits ? formatUzPhone(val) : '';
-            setValue('phone', next, { shouldValidate: true });
-          }}
-          placeholder="+998 (90) 123-45-67"
-          className={inputCls}
-        />
-        {errors.phone && <p className="mt-1 text-xs text-red-400">{errors.phone.message}</p>}
-      </div>
+
+      <BaseInput
+        as="textarea"
+        label={t('stores.colAddress')}
+        rows={2}
+        {...register('address')}
+        error={errors.address?.message}
+        placeholder={t('stores.enterAddress', { defaultValue: 'Masalan, Amir Temur ko‘chasi, 15-uy' })}
+      />
+
+      <BaseInput
+        label={t('stores.colPhone')}
+        required={isCreate}
+        type="tel"
+        inputMode="tel"
+        maxLength={19}
+        value={watchedPhone ?? ''}
+        onChange={(e) => {
+          const val = e.target.value;
+          const digits = digitsAfter998(val);
+          const next = digits ? formatUzPhone(val) : '';
+          setValue('phone', next, { shouldValidate: true });
+        }}
+        error={errors.phone?.message}
+        placeholder="+998 (90) 123-45-67"
+      />
+
       <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
         <input type="checkbox" {...register('active')} className="rounded border-slate-300" />
         {showCompanySelect

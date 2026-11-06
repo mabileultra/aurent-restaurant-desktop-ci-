@@ -133,4 +133,13 @@ describe('StoreFormModal', () => {
 
     delete globalThis.sessionStorage;
   });
+
+  it('disables save button when required fields are missing on creation', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(StoreFormModal, defaultProps)
+    );
+
+    // In create mode with empty fields, Save button must be disabled
+    expect(html).toContain('disabled=""');
+  });
 });
