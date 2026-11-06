@@ -4,6 +4,7 @@ import { queryClient } from './lib/queryClient';
 import ThemedToaster from './components/shared/ThemedToaster';
 import GlobalOfflineBanner from './components/shared/GlobalOfflineBanner';
 import VirtualKeyboardOverlay from './components/shared/VirtualKeyboardOverlay';
+import WaterRippleEffect from './components/shared/WaterRippleEffect';
 import HtmlLangSync from './components/shared/HtmlLangSync';
 import AppViewportSync from './components/shared/AppViewportSync';
 import AdminThemeSync from './components/shared/AdminThemeSync';
@@ -41,6 +42,7 @@ export default function App() {
       <GlobalOfflineBanner />
       <ThemedToaster />
       <VirtualKeyboardOverlay />
+      <WaterRippleEffect />
     </QueryClientProvider>
     </ObservabilityErrorBoundary>
   );
