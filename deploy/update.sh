@@ -38,7 +38,7 @@ cmd_update() {
   if ! git pull --ff-only "$remote" "$branch"; then
     echo "==> Локальные правки мешают pull — сброс до $remote/$branch (.env не в git, сохранится)"
     git reset --hard "$remote/$branch"
-    git clean -fd -e .deploy-sha -e .restaurant-domain-configured -e .env
+    git clean -fd -e .deploy-sha -e .restaurant-domain-configured -e .env -e /downloads/
   fi
 
   commit="$(git rev-parse --short HEAD)"
