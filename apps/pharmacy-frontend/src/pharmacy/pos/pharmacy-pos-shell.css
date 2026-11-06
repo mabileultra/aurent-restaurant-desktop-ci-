@@ -213,20 +213,22 @@
 }
 
 .pos-pay-overlay.pharmacy-pos-settings-overlay {
-  z-index: 1500;
+  z-index: 11000;
   align-items: center;
   justify-content: center;
   padding: 24px;
 }
 
 .pharmacy-pos-settings {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   width: min(440px, 100%);
   max-height: min(88vh, 760px);
   background: #fff;
   border-radius: 16px;
-  overflow: hidden;
+  overflow: auto;
   box-shadow: 0 24px 60px rgb(15 23 42 / 0.28);
 }
 
@@ -265,7 +267,10 @@
 }
 
 .pharmacy-pos-settings .cashier-desktop-menu.is-embedded .cashier-desktop-menu__panel {
-  position: static;
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 1;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -280,4 +285,5 @@
   border-radius: 0;
   box-shadow: none;
   padding: 8px;
+  background: #fff;
 }

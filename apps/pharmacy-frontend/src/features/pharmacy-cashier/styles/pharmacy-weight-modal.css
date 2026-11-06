@@ -7,9 +7,7 @@
 }
 
 .weight-entry-modal.pharmacy-modal .weight-entry-modal__panel {
-  background:
-    linear-gradient(165deg, rgb(36 91 69 / 0.06) 0%, transparent 40%),
-    var(--pm-elevated);
+  background: #fff;
   color: var(--pm-ink);
   border: 1px solid var(--pm-border);
   border-radius: calc(var(--pm-radius) + 2px);

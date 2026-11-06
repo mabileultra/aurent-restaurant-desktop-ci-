@@ -8,10 +8,10 @@
   --pqm-ink: var(--pm-ink, #26332d);
   --pqm-muted: var(--pm-muted, #7a817c);
   --pqm-line: var(--pm-border, #dddcd5);
-  --pqm-surface: var(--pm-surface, #f2f1ec);
-  --pqm-elevated: var(--pm-elevated, #f8f7f3);
-  --pqm-cell: var(--pm-card, #f7f6f1);
-  --pqm-hover: var(--pm-hover, #e6f2de);
+  --pqm-surface: var(--pm-surface, #fff);
+  --pqm-elevated: var(--pm-elevated, #fff);
+  --pqm-cell: var(--pm-card, #fff);
+  --pqm-hover: var(--pm-hover, #e7f6ec);
   --pqm-brand: var(--pm-brand, #245b45);
   --pqm-brand-hover: var(--pm-brand-hover, #174936);
   --pqm-brand-soft: var(--pm-brand-soft, rgb(36 91 69 / 0.12));
@@ -42,9 +42,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background:
-    linear-gradient(165deg, rgb(36 91 69 / 0.06) 0%, transparent 42%),
-    var(--pqm-elevated);
+  background: #fff;
   color: var(--pqm-ink);
   border: 1px solid var(--pqm-line);
   border-radius: calc(var(--pqm-radius) + 2px);
@@ -57,7 +55,7 @@
   justify-content: space-between;
   flex-shrink: 0;
   padding: 0.7rem 0.9rem;
-  background: linear-gradient(90deg, var(--pqm-brand) 0%, #1f6b4f 55%, var(--pqm-teal) 100%);
+  background: #1b6b45;
   color: #fff;
 }
 

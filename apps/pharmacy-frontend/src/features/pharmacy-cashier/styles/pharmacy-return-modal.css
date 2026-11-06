@@ -4,9 +4,7 @@
 
 .pos-return-modal.pharmacy-modal {
   width: min(560px, calc(100vw - 1.5rem));
-  background:
-    linear-gradient(165deg, rgb(36 91 69 / 0.06) 0%, transparent 40%),
-    var(--pm-elevated);
+  background: #fff;
   color: var(--pm-ink);
   border: 1px solid var(--pm-border);
   border-radius: calc(var(--pm-radius) + 2px);
@@ -14,7 +12,7 @@
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__header {
-  background: linear-gradient(90deg, var(--pm-brand) 0%, #1f6b4f 55%, var(--pm-teal) 100%);
+  background: #1b6b45;
   color: #fff;
   border-bottom: none;
   padding: 0.75rem 1rem;

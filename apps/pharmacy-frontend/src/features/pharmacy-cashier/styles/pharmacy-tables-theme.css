@@ -17,14 +17,14 @@
 
   --pharm-ink: #26332d;
   --pharm-muted: #7a817c;
-  --pharm-border: #dddcd5;
-  --pharm-surface: #f2f1ec;
-  --pharm-elevated: #f8f7f3;
-  --pharm-hover: #e6f2de;
-  --pharm-active: #e6f2de;
+  --pharm-border: #e3e8e4;
+  --pharm-surface: #fff;
+  --pharm-elevated: #fff;
+  --pharm-hover: #e7f6ec;
+  --pharm-active: #e7f6ec;
   --pharm-accent: var(--pharm-brand);
   --pharm-accent-soft: var(--pharm-brand-soft);
-  --pharm-cell-bg: #f7f6f1;
+  --pharm-cell-bg: #fff;
 
   /* OK — остаток в норме */
   --pharm-ok: #e3f1dc;
@@ -64,15 +64,15 @@
 
   --pharm-ink: #26332d;
   --pharm-muted: #7a817c;
-  --pharm-border: #dddcd5;
-  --pharm-surface: #f2f1ec;
-  --pharm-elevated: #f8f7f3;
-  --pharm-hover: #e6f2de;
-  --pharm-active: #e6f2de;
+  --pharm-border: #e3e8e4;
+  --pharm-surface: #fff;
+  --pharm-elevated: #fff;
+  --pharm-hover: #e7f6ec;
+  --pharm-active: #e7f6ec;
   --pharm-accent: var(--pharm-brand);
   --pharm-accent-soft: var(--pharm-brand-soft);
-  --pharm-cell-bg: #f7f6f1;
-  --pharm-card: #f7f6f1;
+  --pharm-cell-bg: #fff;
+  --pharm-card: #fff;
 
   --pharm-ok: #e3f1dc;
   --pharm-ok-strong: #cfe8c4;
@@ -105,10 +105,10 @@
   --pos-green: #245b45;
   --pos-green-hover: #174936;
   --pos-green-soft: rgb(36 91 69 / 0.12);
-  --pos-bg: #f2f1ec;
-  --pos-surface: #f8f7f3;
-  --pos-surface-elevated: #f7f6f1;
-  --pos-border: #dddcd5;
+  --pos-bg: #e7ece9;
+  --pos-surface: #fff;
+  --pos-surface-elevated: #fff;
+  --pos-border: #e3e8e4;
   --pos-text: #26332d;
   --pos-muted: #7a817c;
 }
