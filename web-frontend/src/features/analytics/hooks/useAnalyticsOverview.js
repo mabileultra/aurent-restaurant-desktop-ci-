@@ -39,16 +39,19 @@ export function useAnalyticsOverview() {
   const overviewQuery = useQuery({
     queryKey: ['analytics-overview', queryParams],
     queryFn: () => analyticsApi.getOverview(queryParams).then((res) => res.data),
+    placeholderData: (prev) => prev,
   });
 
   const resultsQuery = useQuery({
     queryKey: ['analytics-results-regions', queryParams],
     queryFn: () => analyticsApi.getResults({ ...queryParams, level: 'REGION', size: 100 }).then((res) => res.data),
+    placeholderData: (prev) => prev,
   });
 
   const companiesQuery = useQuery({
     queryKey: ['analytics-top-companies', queryParams],
     queryFn: () => fetchAllCompanies(queryParams),
+    placeholderData: (prev) => prev,
   });
 
   const regionsQuery = useQuery({

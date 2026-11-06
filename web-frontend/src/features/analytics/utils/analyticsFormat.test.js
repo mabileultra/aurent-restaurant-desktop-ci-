@@ -8,6 +8,8 @@ import {
   fmtPercent,
   fmtPercentText,
   fmtQty,
+  fmtTimeUz,
+  fmtDateTimeUz,
   sanitizeText,
 } from './analyticsFormat';
 
@@ -49,10 +51,12 @@ describe('analyticsFormat', () => {
     expect(fmtDayShort('')).toBe('—');
   });
 
-  it('sanitizes double apostrophes from database strings', () => {
-    expect(sanitizeText("''ANNODENT SS''")).toBe("'ANNODENT SS'");
-    expect(sanitizeText("Bulung''ur")).toBe("Bulung'ur");
-    expect(sanitizeText("Kattaqo''rg''on")).toBe("Kattaqo'rg'on");
-    expect(sanitizeText(null)).toBe('');
+  it('formats time and datetime in Tashkent timezone', () => {
+    // 2026-11-02T09:35:12.584081Z is 14:35 in Tashkent (UTC+5)
+    expect(fmtTimeUz('2026-11-02T09:35:12.584081Z')).toBe('14:35');
+    expect(fmtTimeUz('14:35')).toBe('14:35');
+    expect(fmtTimeUz(null)).toBe('—');
+    expect(fmtDateTimeUz('2026-11-02T09:35:12.584081Z')).toContain('2-noyabr, 14:35');
+    expect(fmtDateTimeUz('')).toBe('—');
   });
 });

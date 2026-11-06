@@ -217,6 +217,9 @@
   border-radius: 0.85rem;
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .an-card-head {
@@ -490,8 +493,15 @@ table.tb { width: 100%; border-collapse: collapse; font-size: 13px; font-variant
 /* Two Columns & Layout Grids */
 .an-two-cols {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.an-two-cols > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 @media (min-width: 1024px) {
@@ -507,6 +517,10 @@ table.tb { width: 100%; border-collapse: collapse; font-size: 13px; font-variant
 .an-chart-container {
   position: relative;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-top: 14px;
 }
 
@@ -986,6 +1000,26 @@ table.tb { width: 100%; border-collapse: collapse; font-size: 13px; font-variant
   color: #f8fafc !important;
 }
 
+.dark .an-header-wrap {
+  background: #1e293b !important;
+  border-bottom-color: #334155 !important;
+}
+
+.dark .tabs a {
+  color: #94a3b8 !important;
+}
+
+.dark .tabs a:hover {
+  color: #f1f5f9 !important;
+}
+
+.dark .tabs a.on,
+.dark .tabs a.is-active,
+.dark .tabs a.active {
+  color: #60a5fa !important;
+  border-bottom-color: #3b82f6 !important;
+}
+
 /* Dark mode card and surface elevation overrides */
 .dark .card,
 .dark .an-card,
@@ -1268,6 +1302,66 @@ table.tb { width: 100%; border-collapse: collapse; font-size: 13px; font-variant
 
 .dark .an-turnover-summary-bar b {
   color: #f8fafc;
+}
+
+/* ==========================================================================
+   Smooth Interactions & Transitions (Clean Motion)
+   ========================================================================== */
+.an-period-btn,
+.seg button,
+.btn,
+.an-export-btn,
+.tabs a,
+.an-action-btn {
+  transition: all 150ms ease-out;
+}
+
+.tabs a:hover {
+  color: #1D4ED8;
+}
+
+.tabs a:focus-visible,
+.an-period-btn:focus-visible,
+.seg button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+.btn:active,
+.an-period-btn:active,
+.seg button:active {
+  transform: scale(0.98);
+}
+
+.an-companies-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1200px) {
+  .an-companies-table th,
+  .an-companies-table td {
+    padding: 8px 8px;
+    font-size: 12px;
+  }
+}
+
+/* ==========================================================================
+   Accessibility: Reduced Motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .an-pulse-ring {
+    animation: none !important;
+  }
 }
 
 

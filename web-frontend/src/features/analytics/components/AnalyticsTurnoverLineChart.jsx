@@ -5,7 +5,6 @@ import {
   buildChartPoints,
   calculateChartNiceScale,
   calculateCrosshairIndex,
-  resolveInactiveDaysNote,
 } from '../utils/analyticsChartMath';
 import AnalyticsTurnoverTooltip from './AnalyticsTurnoverTooltip';
 
@@ -18,9 +17,7 @@ export default function AnalyticsTurnoverLineChart({
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   const points = useMemo(() => buildChartPoints(days, topCompanyName), [days, topCompanyName]);
-
   const metrics = useMemo(() => calculateDailyMetrics(days), [days]);
-  const inactiveNote = useMemo(() => resolveInactiveDaysNote(points), [points]);
 
   const width = 800;
   const height = 245;
@@ -62,12 +59,12 @@ export default function AnalyticsTurnoverLineChart({
     return [0, Math.round(len * 0.24), Math.round(len * 0.48), Math.round(len * 0.72), len - 1];
   }, [points]);
 
-  const activeIdx = hoveredIdx !== null ? hoveredIdx : (points.length > 0 ? points.length - 5 : null);
-  const activePoint = activeIdx !== null && points[activeIdx] ? points[activeIdx] : null;
-  const activeX = activeIdx !== null ? getX(activeIdx) : 0;
+  const isHovered = hoveredIdx !== null;
+  const activePoint = isHovered && points[hoveredIdx] ? points[hoveredIdx] : null;
+  const activeX = isHovered ? getX(hoveredIdx) : 0;
   const activeY = activePoint ? getY(activePoint.total) : 0;
   const activeYAvg = activePoint ? getY(activePoint.avg7) : 0;
-  const isRightHalf = activeIdx !== null && activeIdx >= points.length / 2;
+  const isRightHalf = hoveredIdx !== null && hoveredIdx >= points.length / 2;
 
   const handlePointerMove = (e) => {
     if (!svgRef.current || points.length === 0) return;
@@ -81,12 +78,15 @@ export default function AnalyticsTurnoverLineChart({
   };
 
   return (
-    <section className="card an-card" aria-labelledby="dyn" style={{ flex: '2 1 620px', minWidth: 0, padding: '20px 24px', position: 'relative' }}>
+    <section className="card an-card" aria-labelledby="dyn" style={{ flex: '2 1 620px', minWidth: 0, minHeight: '340px', padding: '20px 24px', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '10px' }}>
         <div>
-          <h2 id="dyn" className="t" style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Kunlar bo‘yicha aylanma dinamikasi</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 id="dyn" className="t" style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Kunlar bo‘yicha aylanma dinamikasi</h2>
+            <span style={{ fontSize: '11px', color: '#2563EB', background: '#EFF6FF', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>8 ta yirik korxona bo‘yicha</span>
+          </div>
           <p className="s" style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748B' }}>
-            Umumiy aylanma, so‘m · nuqta ustiga olib boring, bosilsa kun detali ochiladi
+            Umumiy aylanma, so‘m · 8 ta yirik korxona bo‘yicha · nuqta ustiga olib boring, bosilsa kun detali ochiladi
           </p>
         </div>
         <div style={{ display: 'flex', gap: '16px', fontSize: '12.5px', color: '#475569', alignItems: 'center' }}>
@@ -139,7 +139,7 @@ export default function AnalyticsTurnoverLineChart({
             <path d={avgPath} fill="none" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             <path d={dailyPath} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-            {activePoint && (
+            {isHovered && activePoint && (
               <g pointerEvents="none">
                 <line x1={activeX} y1={pad.top} x2={activeX} y2={height - pad.bottom} className="an-crosshair-line" />
                 <circle cx={activeX} cy={activeY} r={8} fill="#2563EB" fillOpacity="0.2" className="an-pulse-ring" />
@@ -160,20 +160,22 @@ export default function AnalyticsTurnoverLineChart({
           </svg>
         )}
 
-        <AnalyticsTurnoverTooltip
-          point={activePoint}
-          leftPct={(activeX / width) * 100}
-          isRightHalf={isRightHalf}
-          isVisible={hoveredIdx !== null}
-        />
+        {isHovered && activePoint && (
+          <AnalyticsTurnoverTooltip
+            point={activePoint}
+            leftPct={(activeX / width) * 100}
+            isRightHalf={isRightHalf}
+            isVisible={true}
+          />
+        )}
       </div>
 
       <div className="an-turnover-summary-bar">
         <span>Kunlik o‘rtacha <b>{fmtMoney(metrics.avgDaily, { showCurrency: false })}</b></span>
         <span>Eng yuqori kun <b>{metrics.peakDay ? `${fmtDayShort(metrics.peakDay.date)} · ${fmtMoney(metrics.peakDay.amount, { showCurrency: false })}` : '—'}</b></span>
         <span>Savdo bo‘lgan kunlar <b>{metrics.activeDays} / {metrics.totalDays || points.length}</b></span>
-        <span style={{ color: inactiveNote.isWarning ? '#C2410C' : '#16A34A', fontWeight: 600 }}>
-          {inactiveNote.text}
+        <span style={{ color: '#2563EB', fontWeight: 600 }}>
+          8 ta yirik korxona dinamikasi
         </span>
       </div>
     </section>

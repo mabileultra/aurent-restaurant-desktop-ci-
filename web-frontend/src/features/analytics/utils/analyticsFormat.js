@@ -98,3 +98,39 @@ export function sanitizeText(str) {
   if (typeof str !== 'string') return str || '';
   return str.replace(/''/g, "'").trim();
 }
+
+export function fmtTimeUz(iso) {
+  if (!iso || typeof iso !== 'string') return '—';
+  if (/^\d{2}:\d{2}$/.test(iso)) return iso;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleTimeString('ru-RU', {
+    timeZone: 'Asia/Tashkent',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
+export function fmtDateTimeUz(iso) {
+  if (!iso || typeof iso !== 'string') return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const time = d.toLocaleTimeString('ru-RU', {
+    timeZone: 'Asia/Tashkent',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tashkent',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const parts = formatter.format(d).split('-');
+  const day = parseInt(parts[2], 10);
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const monthName = MONTH_NAMES_UZ[monthIdx] || '';
+  return `${day}-${monthName}, ${time}`;
+}

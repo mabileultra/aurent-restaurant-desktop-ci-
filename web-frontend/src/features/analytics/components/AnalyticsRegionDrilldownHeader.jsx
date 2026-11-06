@@ -76,7 +76,7 @@ export default function AnalyticsRegionDrilldownHeader({
           size="sm"
           theme="blue"
           searchable={false}
-          style={{ width: 'auto', minWidth: 155, maxWidth: 200, flex: '0 0 auto' }}
+          style={{ width: 'auto', minWidth: 180, maxWidth: 210, flex: '0 0 auto' }}
           ariaLabel="Saralash"
         />
 
@@ -87,7 +87,7 @@ export default function AnalyticsRegionDrilldownHeader({
           size="sm"
           theme="blue"
           searchable={false}
-          style={{ width: 'auto', minWidth: 155, maxWidth: 200, flex: '0 0 auto' }}
+          style={{ width: 'auto', minWidth: 180, maxWidth: 210, flex: '0 0 auto' }}
           ariaLabel="Fiskal holat"
         />
 

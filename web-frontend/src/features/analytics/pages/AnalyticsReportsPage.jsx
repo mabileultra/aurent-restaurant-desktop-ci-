@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import '../styles/analytics.css';
 import { Download } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -22,17 +22,29 @@ export default function AnalyticsReportsPage() {
     queryFn: () => fetchAllCompanies({ period: page.period }),
   });
 
-  const topCompanyId = page.top10Companies[0]?.companyId;
+  const topCompanies = useMemo(
+    () => page.top10Companies.slice(0, 4),
+    [page.top10Companies]
+  );
+
   const recentReceiptsQuery = useQuery({
-    queryKey: ['analytics-reports-receipts', topCompanyId],
+    queryKey: ['analytics-reports-receipts', topCompanies.map((c) => c.companyId)],
     queryFn: async () => {
-      if (!topCompanyId) return [];
-      const detail = await analyticsApi.getCompanyDetail(topCompanyId).then((r) => r.data).catch(() => null);
-      const activeDate = detail?.days?.find((d) => Number(d.totalTurnover || 0) > 0)?.date || detail?.days?.[0]?.date;
-      if (!activeDate) return [];
-      return analyticsApi.getCompanyReceipts(topCompanyId, { date: activeDate, size: 50 }).then((r) => r.data?.rows ?? []).catch(() => []);
+      if (topCompanies.length === 0) return [];
+      const settled = await Promise.allSettled(
+        topCompanies.map(async (c) => {
+          const detail = await analyticsApi.getCompanyDetail(c.companyId).then((r) => r.data).catch(() => null);
+          const daysWithSales = detail?.days?.filter((d) => Number(d.totalTurnover || 0) > 0) || [];
+          const activeDate = daysWithSales[0]?.date || detail?.days?.[0]?.date;
+          if (!activeDate) return [];
+          const res = await analyticsApi.getCompanyReceipts(c.companyId, { date: activeDate, size: 50 }).catch(() => null);
+          const rows = res?.data?.rows ?? [];
+          return rows.map((r) => ({ ...r, companyName: c.name }));
+        })
+      );
+      return settled.filter((s) => s.status === 'fulfilled').flatMap((s) => s.value);
     },
-    enabled: selectedType === 'receipts' && Boolean(topCompanyId),
+    enabled: selectedType === 'receipts' && topCompanies.length > 0,
   });
 
   const handleGenerateReport = () => {
@@ -63,7 +75,7 @@ export default function AnalyticsReportsPage() {
         filters: page.selectedRegionCode ? 'Tanlangan viloyat' : 'Barchasi',
         rows: payload.rows.length,
         format: format === 'excel' ? 'Excel' : 'CSV',
-        status: 'ready',
+        status: payload.rows.length > 0 ? 'ready' : 'empty',
       },
       ...prev.slice(0, 7),
     ]);
