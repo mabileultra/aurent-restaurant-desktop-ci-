@@ -1,47 +1,84 @@
+import React, { useState } from 'react';
 import { PageLayout } from '../../../components/ui';
-import PlatformSecurityPasswordSection from '../components/security/PlatformSecurityPasswordSection';
-import PlatformSuperAdminFormModal from '../components/security/PlatformSuperAdminFormModal';
-import PlatformSuperAdminsSection from '../components/security/PlatformSuperAdminsSection';
+import PlatformSecurityHeader from '../components/security/PlatformSecurityHeader';
+import PlatformSecurityTabsNav from '../components/security/PlatformSecurityTabsNav';
+import PlatformSecurityOverviewTab from '../components/security/PlatformSecurityOverviewTab';
+import PlatformSecuritySessionsTab from '../components/security/PlatformSecuritySessionsTab';
+import PlatformSecurityAuditTab from '../components/security/PlatformSecurityAuditTab';
+import PlatformSecurityStaffTab from '../components/security/PlatformSecurityStaffTab';
+import PlatformSecurityRulesTab from '../components/security/PlatformSecurityRulesTab';
+import PlatformSecurityCloseSessionModal from '../components/security/PlatformSecurityCloseSessionModal';
+import PlatformSecuritySudoModal from '../components/security/PlatformSecuritySudoModal';
+import PlatformSecurity2faModal from '../components/security/PlatformSecurity2faModal';
 import { usePlatformSecurityPage } from '../hooks/usePlatformSecurityPage';
+import { SECURITY_TAB_KEYS } from '../utils/securityConstants';
 import '../../../styles/platform/security.css';
 
 export default function PlatformSecurityPage() {
-  const p = usePlatformSecurityPage();
+  const page = usePlatformSecurityPage();
+  const [is2faModalOpen, setIs2faModalOpen] = useState(false);
 
   return (
-    <PageLayout
-      className="platform-security"
-      spacing="space-y-4"
-      title={p.t('platform.security.title')}
-      subtitle={p.t('platform.security.subtitle')}
-    >
-      <PlatformSecurityPasswordSection
-        t={p.t}
-        password={p.password}
-        onPasswordChange={p.setPassword}
-        passwordConfirm={p.passwordConfirm}
-        onPasswordConfirmChange={p.setPasswordConfirm}
-        passwordStatus={p.passwordStatus}
-        passwordLoading={p.passwordLoading}
-        onSubmit={p.handlePasswordSave}
-        saving={p.passwordMutation.isPending}
+    <PageLayout className="platform-security-page space-y-5" spacing="space-y-5">
+      <PlatformSecurityHeader
+        onOpenCreateStaff={page.staffFlow.openCreate}
+        onGoToRules={() => page.setActiveTab(SECURITY_TAB_KEYS.RULES)}
       />
 
-      <PlatformSuperAdminsSection
-        t={p.t}
-        adminsLoading={p.adminsLoading}
-        superAdmins={p.superAdmins}
-        onAdd={p.openCreateAdmin}
-        onEdit={p.openEditAdmin}
+      <PlatformSecurityTabsNav
+        activeTab={page.activeTab}
+        onSelectTab={page.setActiveTab}
+        staffCount={page.staffFlow.staffList.length}
       />
 
-      <PlatformSuperAdminFormModal
-        t={p.t}
-        form={p.adminForm}
-        onClose={p.closeAdminForm}
-        onSubmit={p.handleAdminSubmit}
-        onFieldChange={p.updateAdminField}
-        saving={p.adminSaving}
+      <div className="pt-1">
+        {page.activeTab === SECURITY_TAB_KEYS.OVERVIEW && (
+          <PlatformSecurityOverviewTab
+            flow={page.overviewFlow}
+            onGoToAudit={() => page.setActiveTab(SECURITY_TAB_KEYS.AUDIT)}
+          />
+        )}
+        {page.activeTab === SECURITY_TAB_KEYS.SESSIONS && (
+          <PlatformSecuritySessionsTab flow={page.sessionsFlow} />
+        )}
+        {page.activeTab === SECURITY_TAB_KEYS.AUDIT && (
+          <PlatformSecurityAuditTab flow={page.auditFlow} />
+        )}
+        {page.activeTab === SECURITY_TAB_KEYS.STAFF && (
+          <PlatformSecurityStaffTab flow={page.staffFlow} />
+        )}
+        {page.activeTab === SECURITY_TAB_KEYS.RULES && (
+          <PlatformSecurityRulesTab flow={page.rulesFlow} />
+        )}
+      </div>
+
+      {/* Modallar */}
+      <PlatformSecurityCloseSessionModal
+        isOpen={Boolean(page.sessionsFlow.pendingCloseSession || page.sessionsFlow.isCloseAllPending)}
+        session={page.sessionsFlow.pendingCloseSession}
+        isCloseAll={page.sessionsFlow.isCloseAllPending}
+        onClose={() => {
+          page.sessionsFlow.cancelCloseSession();
+          page.sessionsFlow.cancelCloseAllOthers();
+        }}
+        onConfirm={() => {
+          if (page.sessionsFlow.isCloseAllPending) {
+            page.sessionsFlow.confirmCloseAllOthers();
+          } else {
+            page.sessionsFlow.confirmCloseSession();
+          }
+        }}
+      />
+
+      <PlatformSecuritySudoModal
+        isOpen={page.rulesFlow.isSudoModalOpen}
+        onClose={() => page.rulesFlow.setIsSudoModalOpen(false)}
+        onConfirm={page.rulesFlow.confirmSudoAndSave}
+      />
+
+      <PlatformSecurity2faModal
+        isOpen={is2faModalOpen}
+        onClose={() => setIs2faModalOpen(false)}
       />
     </PageLayout>
   );

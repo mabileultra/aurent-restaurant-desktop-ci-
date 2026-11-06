@@ -1,149 +1,77 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { platformSecurityApi } from '../../../api';
+import { SECURITY_TAB_KEYS } from '../utils/securityConstants';
+import { useSecurityOverviewFlow } from './useSecurityOverviewFlow';
+import { useSecuritySessionsFlow } from './useSecuritySessionsFlow';
+import { useSecurityAuditFlow } from './useSecurityAuditFlow';
+import { useSecurityStaffFlow } from './useSecurityStaffFlow';
+import { useSecurityRulesFlow } from './useSecurityRulesFlow';
 
-const emptyAdminForm = () => ({
-  mode: 'create',
-  firstName: '',
-  lastName: '',
-  username: '',
-  email: '',
-  password: '',
-  role: 'PLATFORM_ADMIN',
-});
-
+/**
+ * Xavfsizlik sahifasining asosiy orkestratsiya hooki.
+ */
 export function usePlatformSecurityPage() {
   const { t } = useTranslation();
-  const qc = useQueryClient();
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [adminForm, setAdminForm] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { data: passwordStatus, isLoading: passwordLoading } = useQuery({
-    queryKey: ['platform-security-password'],
-    queryFn: () => platformSecurityApi.getCashierServerPassword().then((r) => r.data),
-  });
+  const tabParam = searchParams.get('tab');
+  const validTabs = Object.values(SECURITY_TAB_KEYS);
+  const initialTab = validTabs.includes(tabParam) ? tabParam : SECURITY_TAB_KEYS.OVERVIEW;
 
-  const { data: superAdmins = [], isLoading: adminsLoading } = useQuery({
-    queryKey: ['platform-security-super-admins'],
-    queryFn: () => platformSecurityApi.listSuperAdmins().then((r) => r.data),
-  });
+  const [activeTab, setActiveTabState] = useState(initialTab);
 
-  const passwordMutation = useMutation({
-    mutationFn: (value) => platformSecurityApi.updateCashierServerPassword(value).then((r) => r.data),
-    onSuccess: () => {
-      toast.success(t('platform.security.passwordSaved'));
-      setPassword('');
-      setPasswordConfirm('');
-      qc.invalidateQueries({ queryKey: ['platform-security-password'] });
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.security.passwordSaveFailed')),
-  });
-
-  const createAdminMutation = useMutation({
-    mutationFn: (payload) => platformSecurityApi.createSuperAdmin(payload).then((r) => r.data),
-    onSuccess: (_data, payload) => {
-      const role = payload?.role;
-      toast.success(
-        role === 'SUPER_ADMIN'
-          ? t('platform.security.adminCreated')
-          : role === 'PLATFORM_ANALYTICS'
-            ? t('platform.security.analyticsCreated')
-            : t('platform.security.operatorCreated')
-      );
-      setAdminForm(null);
-      qc.invalidateQueries({ queryKey: ['platform-security-super-admins'] });
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.security.adminSaveFailed')),
-  });
-
-  const updateAdminMutation = useMutation({
-    mutationFn: ({ id, payload }) => platformSecurityApi.updateSuperAdmin(id, payload).then((r) => r.data),
-    onSuccess: () => {
-      toast.success(t('platform.security.adminUpdated'));
-      setAdminForm(null);
-      qc.invalidateQueries({ queryKey: ['platform-security-super-admins'] });
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.security.adminSaveFailed')),
-  });
-
-  const handlePasswordSave = (e) => {
-    e.preventDefault();
-    if (password.length < 4) {
-      toast.error(t('platform.security.passwordTooShort'));
-      return;
+  useEffect(() => {
+    if (tabParam && validTabs.includes(tabParam) && tabParam !== activeTab) {
+      setActiveTabState(tabParam);
     }
-    if (password !== passwordConfirm) {
-      toast.error(t('platform.security.passwordMismatch'));
-      return;
-    }
-    passwordMutation.mutate(password);
-  };
+  }, [tabParam, activeTab]);
 
-  const openCreateAdmin = () => setAdminForm(emptyAdminForm());
-
-  const openEditAdmin = (row) => {
-    setAdminForm({
-      mode: 'edit',
-      id: row.id,
-      firstName: row.firstName ?? '',
-      lastName: row.lastName ?? '',
-      password: '',
+  const setActiveTab = (tabKey) => {
+    setActiveTabState(tabKey);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tabKey === SECURITY_TAB_KEYS.OVERVIEW) {
+        next.delete('tab');
+      } else {
+        next.set('tab', tabKey);
+      }
+      return next;
     });
   };
 
-  const closeAdminForm = () => setAdminForm(null);
-
-  const updateAdminField = (field, value) => {
-    setAdminForm((prev) => (prev ? { ...prev, [field]: value } : prev));
-  };
-
-  const handleAdminSubmit = (e) => {
-    e.preventDefault();
-    if (!adminForm) return;
-    if (adminForm.mode === 'create') {
-      createAdminMutation.mutate({
-        firstName: adminForm.firstName.trim(),
-        lastName: adminForm.lastName.trim(),
-        username: adminForm.username.trim(),
-        email: adminForm.email.trim(),
-        password: adminForm.password,
-        role: adminForm.role,
-      });
-      return;
-    }
-    updateAdminMutation.mutate({
-      id: adminForm.id,
-      payload: {
-        firstName: adminForm.firstName.trim(),
-        lastName: adminForm.lastName.trim(),
-        password: adminForm.password || undefined,
-      },
-    });
-  };
-
-  const adminSaving = createAdminMutation.isPending || updateAdminMutation.isPending;
+  const overviewFlow = useSecurityOverviewFlow({ onSelectTab: setActiveTab });
+  const sessionsFlow = useSecuritySessionsFlow();
+  const auditFlow = useSecurityAuditFlow();
+  const staffFlow = useSecurityStaffFlow();
+  const rulesFlow = useSecurityRulesFlow();
 
   return {
     t,
-    password,
-    setPassword,
-    passwordConfirm,
-    setPasswordConfirm,
-    passwordStatus,
-    passwordLoading,
-    passwordMutation,
-    handlePasswordSave,
-    superAdmins,
-    adminsLoading,
-    adminForm,
-    openCreateAdmin,
-    openEditAdmin,
-    closeAdminForm,
-    updateAdminField,
-    handleAdminSubmit,
-    adminSaving,
+    activeTab,
+    setActiveTab,
+    overviewFlow,
+    sessionsFlow,
+    auditFlow,
+    staffFlow,
+    rulesFlow,
+    // Backwards-compatibility properties
+    password: rulesFlow.cashierPw1,
+    setPassword: rulesFlow.setCashierPw1,
+    passwordConfirm: rulesFlow.cashierPw2,
+    setPasswordConfirm: rulesFlow.setCashierPw2,
+    passwordStatus: rulesFlow.cashierStatus,
+    passwordLoading: rulesFlow.isCashierLoading,
+    handlePasswordSave: rulesFlow.handleCashierPwSave,
+    superAdmins: staffFlow.staffList,
+    adminsLoading: staffFlow.isLoading,
+    adminForm: staffFlow.form,
+    openCreateAdmin: staffFlow.openCreate,
+    openEditAdmin: staffFlow.openEdit,
+    closeAdminForm: staffFlow.closeForm,
+    updateAdminField: staffFlow.updateField,
+    handleAdminSubmit: staffFlow.handleSubmit,
+    adminSaving: staffFlow.isSaving,
+    passwordMutation: { isPending: rulesFlow.isCashierSaving },
   };
 }
