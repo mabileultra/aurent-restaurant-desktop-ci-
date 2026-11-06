@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RouteFallback from './RouteFallback';
 import AppFallbackRedirect from './guards/AppFallbackRedirect';

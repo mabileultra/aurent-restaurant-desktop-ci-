@@ -56,9 +56,6 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     plugins: [react(), serviceWorkerVersionPlugin(), visualizerPlugin].filter(Boolean),
-    resolve: {
-      alias: aurentPackageAliases(),
-    },
     server: {
       port: 5173,
       // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).
@@ -126,7 +123,11 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     resolve: {
+      alias: aurentPackageAliases(),
       dedupe: ['react', 'react-dom', 'react-router-dom', 'react-i18next'],
+    },
+    esbuild: {
+      jsx: 'automatic',
     },
     optimizeDeps: {
       include: [

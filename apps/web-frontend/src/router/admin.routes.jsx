@@ -1,3 +1,4 @@
+import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import ProtectedRoute from './guards/ProtectedRoute';
 import CheckoutRedirect from './guards/CheckoutRedirect';

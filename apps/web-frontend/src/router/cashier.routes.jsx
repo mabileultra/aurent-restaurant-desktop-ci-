@@ -1,3 +1,4 @@
+import React from 'react';
 import { Route, Navigate } from 'react-router-dom';
 import CashierRoute from './guards/CashierRoute';
 import CashierHomeRedirect from './guards/CashierHomeRedirect';

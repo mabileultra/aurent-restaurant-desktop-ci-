@@ -1,3 +1,4 @@
+import React from 'react';
 import { Route, Navigate } from 'react-router-dom';
 import AuthRoute from './guards/AuthRoute';
 import DesktopPublicGuard from './guards/DesktopPublicGuard';

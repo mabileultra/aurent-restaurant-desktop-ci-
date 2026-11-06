@@ -1,3 +1,4 @@
+import React from 'react';
 import { Route } from 'react-router-dom';
 import RestaurantAuthGuard from './guards/RestaurantAuthGuard';
 import RestaurantSpaHandoff from './guards/RestaurantSpaHandoff';

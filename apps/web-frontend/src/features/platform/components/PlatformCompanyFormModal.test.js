@@ -136,4 +136,83 @@ describe('PlatformCompanyFormModal', () => {
     expect(html).toContain('Avvalgi kiritilgan ma’lumot tiklandi');
     expect(html).toContain('Tozalash');
   });
+
+  it('disables save button when geo fields are missing in create mode', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        form: {
+          ...defaultProps.form,
+          regionCode: '',
+          districtCode: '',
+        },
+      })
+    );
+    expect(html).toContain('disabled=""');
+  });
+
+  it('disables save button when businessTypeIds is empty', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        form: {
+          ...defaultProps.form,
+          businessTypeIds: [],
+        },
+      })
+    );
+    expect(html).toContain('disabled=""');
+  });
+
+  it('disables save button when tin is invalid', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        form: {
+          ...defaultProps.form,
+          tin: '12345',
+        },
+      })
+    );
+    expect(html).toContain('disabled=""');
+  });
+
+  it('disables save button when phone is incomplete', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        form: {
+          ...defaultProps.form,
+          phone: '+998 (90) 12',
+        },
+      })
+    );
+    expect(html).toContain('disabled=""');
+  });
+
+  it('disables save button when tin is empty in creation mode', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        form: {
+          ...defaultProps.form,
+          tin: '',
+        },
+      })
+    );
+    expect(html).toContain('disabled=""');
+  });
+
+  it('disables save button when phone is empty in creation mode', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompanyFormModal, {
+        ...defaultProps,
+        form: {
+          ...defaultProps.form,
+          phone: '',
+        },
+      })
+    );
+    expect(html).toContain('disabled=""');
+  });
 });

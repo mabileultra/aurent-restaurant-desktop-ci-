@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { companyApi } from '../../../api/company.api';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
 import { buildCompanyPayload } from '../utils/companyFormUtils';
+import { validateCompanyForm } from '../utils/companyFormValidationUtils';
 import { removeStoredCompanyDraft } from '../utils/companyFormDraftUtils';
 import { formatApiErrorMessage } from '../../../utils/apiErrorParser';
 
@@ -11,9 +12,10 @@ export function useCompanyFormMutations({ t, form, editing, constructorTypes, on
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!form.name.trim()) throw new Error(t('platform.nameRequired'));
-      if (form.tin?.trim() && !/^\d{9}$/.test(form.tin.trim())) {
-        throw new Error(t('platform.tinMustBe9Digits', { defaultValue: 'STIR 9 ta raqamdan iborat bo‘lishi kerak' }));
+      const { errors, isValid } = validateCompanyForm(form, { isEditing: Boolean(editing), t });
+      if (!isValid) {
+        const firstError = Object.values(errors)[0];
+        throw new Error(firstError || t('platform.saveFailed'));
       }
       const payload = buildCompanyPayload(form, constructorTypes);
       const { businessTypeIds = [], defaultBusinessTypeId } = form;
