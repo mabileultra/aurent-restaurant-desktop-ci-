@@ -10,7 +10,7 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
   if (!open || !cashRegisterId || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[11500] flex items-center justify-center p-4">
       <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
       <div
         className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"

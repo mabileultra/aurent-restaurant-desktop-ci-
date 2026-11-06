@@ -1,4 +1,5 @@
 /* Global entry — design tokens, admin modules, Tailwind */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import './styles/tokens/index.css';
 @import './styles/admin/index.css';
 @import './styles/admin/buttons.css';
