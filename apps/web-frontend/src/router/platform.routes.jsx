@@ -52,7 +52,7 @@ export const platformRoutes = (
     <Route path="stores" element={guarded(<PlatformStoresPage />, 'platform-stores')} />
     <Route path="users" element={guarded(<PlatformUsersPage />, 'platform-users')} />
     <Route path="access" element={guarded(<PlatformModuleAccessPage />, 'platform-access')} />
-    <Route path="access-v2" element={guarded(<PlatformModuleAccessV2Page />, 'platform-access')} />
+    <Route path="access-v2" element={<Navigate to="/platform/access" replace />} />
     <Route path="monitoring" element={guarded(<PlatformMonitoringPage />, 'platform-monitoring')} />
     <Route path="email" element={guarded(<PlatformEmailPage />, 'platform-email')} />
     <Route path="desktop-notifications" element={guarded(<PlatformDesktopNotificationsPage />, 'platform-desktop-notifications')} />

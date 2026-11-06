@@ -81,7 +81,7 @@ describe('PlatformModuleAccessV2Page', () => {
     );
 
     expect(html).toContain('Kirish huquqlari');
-    expect(html).toContain('Klassik jadval');
+    expect(html).toContain('Boshqaruv');
     expect(html).toContain('Restoran');
     expect(html).toContain('195 xodim');
     expect(html).toContain('Admin');

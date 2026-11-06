@@ -189,7 +189,7 @@ When two features need the same UI, move it to `components/<domain>/` (receipt, 
 | `receipt` | `useReceiptPage` |
 | `catalog` | `useProductsPage`, `useTasnifSearchPanel`, `useProductLifecycleSection` |
 | `reports` | `useReportsPage`, `useStockDashboardPage`, `useWriteOffsReportPage`, … |
-| `platform` | `usePlatformModuleAccessPage`, `usePlatformMonitoringPage`, … |
+| `platform` | `useAccessRightsV2Data`, `usePlatformMonitoringPage`, … |
 | `tenant` | `useUsersPage`, `useStoresPage` |
 | `dashboard` | `useDashboardPage` |
 

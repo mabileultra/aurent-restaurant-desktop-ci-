@@ -10,7 +10,6 @@ export { default as PlatformBusinessTypesPage } from './pages/PlatformBusinessTy
 
 export { usePlatformMonitoringPage } from './hooks/usePlatformMonitoringPage';
 export { usePlatformCompaniesPage } from './hooks/usePlatformCompaniesPage';
-export { usePlatformModuleAccessPage } from './hooks/usePlatformModuleAccessPage';
 export { usePlatformBusinessTypesPage } from './hooks/usePlatformBusinessTypesPage';
 export { usePlatformEmailPage } from './hooks/usePlatformEmailPage';
 export { usePlatformSecurityPage } from './hooks/usePlatformSecurityPage';

@@ -6,59 +6,66 @@ import PlatformModuleAccessPage from './PlatformModuleAccessPage';
 
 globalThis.React = React;
 
-vi.mock('../hooks/usePlatformModuleAccessPage', () => ({
-  usePlatformModuleAccessPage: () => ({
-    t: (key, opts) => {
-      if (key === 'platform.moduleAccess.title') return 'Modullarga kirish huquqlari';
-      if (key === 'platform.moduleAccess.subtitle') return 'Xodimlarga modullarni berish';
-      return opts?.defaultValue || key;
+const mockHookData = {
+  selectedBT: 'RESTAURANT',
+  setSelectedBT: vi.fn(),
+  businessTypes: [
+    { code: 'RESTAURANT', name: 'Restoran', totalEmployees: 195 },
+  ],
+  roles: [
+    {
+      code: 'ADMIN',
+      name: 'Admin',
+      totalEmployees: 41,
+      exceptionCount: 1,
+      enabledModulesCount: 56,
+      totalModulesCount: 59,
+      breakdown: [{ name: 'Asosiy modullar', enabled: 2, total: 3 }],
     },
-    userSearch: '',
-    setUserSearch: vi.fn(),
-    companies: [],
-    companyId: '',
-    handleCompanyChange: vi.fn(),
-    businessTypes: [{ code: 'RESTAURANT', name: 'Restoran' }],
-    businessType: '',
-    handleBusinessTypeChange: vi.fn(),
-    userFilter: 'all',
-    userFilters: [['all', 'Barchasi'], ['custom', 'Istisnolar']],
-    filterOptions: [['all', 'Barchasi'], ['custom', 'Istisnolar']],
-    setUserFilter: vi.fn(),
-    selectedUserId: null,
-    filteredUsers: [],
-    setSelectedUserId: vi.fn(),
-    selectedUserIds: new Set(),
-    usersLoading: false,
-    usersFetching: false,
-    totalUsers: 0,
-    hasMoreUsers: false,
-    loadMoreUsers: vi.fn(),
-    unconfiguredCount: 0,
-    catalog: [],
-    groupedCatalog: {},
-    selectedUser: null,
-    moduleToggles: {},
-    customAccess: false,
-    detailLoading: false,
-    saveMutation: { isPending: false },
-    resetMutation: { isPending: false },
-    bulkSaveMutation: { isPending: false },
-    bulkResetMutation: { isPending: false },
-    handleSave: vi.fn(),
-    handleReset: vi.fn(),
-    isDirty: false,
-  }),
+    {
+      code: 'COOK',
+      name: 'Oshpaz',
+      totalEmployees: 0,
+      exceptionCount: 0,
+      enabledModulesCount: 1,
+      totalModulesCount: 8,
+      breakdown: [],
+    },
+  ],
+  rawUsers: [],
+  moduleGroups: [],
+  catalogMap: {},
+  isLoading: false,
+  isError: false,
+  error: null,
+  refetchAll: vi.fn(),
+  handleResetUser: vi.fn(),
+};
+
+vi.mock('../components/access-rights/hooks/useAccessRightsV2Data', () => ({
+  useAccessRightsV2Data: () => mockHookData,
 }));
 
-describe('PlatformModuleAccessPage (Working Production Page)', () => {
-  it('renders the real working module access page correctly', () => {
+vi.mock('../components/access-rights/cards/RoleTemplateDrawer', () => ({
+  default: () => null,
+}));
+
+vi.mock('../components/access-rights/cards/ModuleAccessHistoryDrawer', () => ({
+  default: () => null,
+}));
+
+describe('PlatformModuleAccessPage (Production Access Rights Page)', () => {
+  it('renders modern card-based access rights page correctly', () => {
     const html = renderToStaticMarkup(
       React.createElement(MemoryRouter, null, React.createElement(PlatformModuleAccessPage))
     );
 
-    expect(html).toContain('Modullarga kirish huquqlari');
-    expect(html).toContain('Xodimlarga modullarni berish');
-    expect(html).toContain('Yangi kartali ko&#x27;rinish (V2)');
+    expect(html).toContain('Kirish huquqlari');
+    expect(html).toContain('Boshqaruv');
+    expect(html).toContain('Restoran');
+    expect(html).toContain('Admin');
+    expect(html).toContain('41 xodim');
+    expect(html).toContain('Xodimi bo‘lmagan rollar');
+    expect(html).toContain('O‘zgarishlar tarixi');
   });
 });

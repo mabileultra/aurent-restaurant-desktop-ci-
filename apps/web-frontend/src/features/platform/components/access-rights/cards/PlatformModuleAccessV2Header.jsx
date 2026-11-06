@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Loader2, ArrowLeft, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
 /**
  * Super Admin Kirish huquqlari sahifasi sarlavhasi, yuklanish va xatolik bloki (SRP)
@@ -16,17 +15,11 @@ export default function PlatformModuleAccessV2Header({
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Link
-              to="/platform/access"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
-            >
-              <ArrowLeft size={13} />
-              <span>{currentLang === 'ru' ? 'Классическая таблица' : 'Klassik jadval'}</span>
-            </Link>
-            <span className="text-slate-300 dark:text-slate-700">·</span>
-            <span className="rounded-md bg-emerald-100 text-emerald-800 text-[11px] px-2 py-0.5 font-semibold dark:bg-emerald-950 dark:text-emerald-300">
-              {currentLang === 'ru' ? 'V2 Карточный вид' : 'V2 Kartali ko‘rinish'}
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+            <span>Boshqaruv</span>
+            <span>›</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+              {currentLang === 'ru' ? 'Права доступа' : 'Kirish huquqlari'}
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
