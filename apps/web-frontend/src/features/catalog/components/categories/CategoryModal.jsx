@@ -46,7 +46,9 @@ export default function CategoryModal({ category, businessTypes = [], onClose, o
       return isEdit ? categoryApi.update(category.id, payload) : categoryApi.create(payload);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({
+        predicate: (query) => query.queryKey.includes('categories'),
+      });
       toast.success(isEdit ? t('categories.updated') : t('categories.created'));
       onSaved?.();
     },
