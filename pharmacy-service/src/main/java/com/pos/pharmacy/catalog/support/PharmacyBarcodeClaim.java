@@ -27,7 +27,7 @@ public class PharmacyBarcodeClaim {
             return;
         }
         String normalized = barcode.trim();
-        productRepository.findFirstByCompanyIdAndBarcode(companyId, normalized).ifPresent(existing -> {
+        productRepository.findByCompanyIdAndBarcode(companyId, normalized).ifPresent(existing -> {
             if (ignoreProductId != null && ignoreProductId.equals(existing.getId())) {
                 return;
             }

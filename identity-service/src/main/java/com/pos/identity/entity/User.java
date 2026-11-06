@@ -69,9 +69,18 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean isActive = true;
 
+    @Column(name = "must_change_password", nullable = false)
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     @Column(name = "module_access_custom")
     @Builder.Default
     private boolean moduleAccessCustom = false;
+
+    /** Bumped when module access changes; JWT claim must match or token is rejected. */
+    @Column(name = "access_version", nullable = false)
+    @Builder.Default
+    private int accessVersion = 0;
 
     @Column(name = "created_at")
     private Instant createdAt;

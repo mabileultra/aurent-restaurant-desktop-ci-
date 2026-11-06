@@ -1,0 +1,94 @@
+.pharmacy-preview-receipt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+.pharmacy-preview-receipt__head h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--pharm-ink, #26332d);
+}
+
+.pharmacy-preview-receipt__head p {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--pharm-muted, #7a817c);
+}
+
+.pharmacy-preview-receipt__badge {
+  display: inline-block;
+  margin-top: 6px !important;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--pharm-warn, #f8e6c8);
+  color: var(--pharm-warn-text, #8a5a12);
+  font-size: 0.625rem !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pharmacy-preview-receipt__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.pharmacy-preview-receipt__table th,
+.pharmacy-preview-receipt__table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--pharm-border, #dddcd5);
+  text-align: left;
+}
+
+.pharmacy-preview-receipt__table th {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  color: var(--pharm-muted, #7a817c);
+}
+
+.pharmacy-preview-receipt__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.pharmacy-preview-receipt__print {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--pharm-brand, #245b45);
+  border-radius: 8px;
+  background: var(--pharm-brand, #245b45);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #pharmacy-preview-receipt,
+  #pharmacy-preview-receipt * {
+    visibility: visible !important;
+  }
+  #pharmacy-preview-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+  }
+  .pharmacy-preview-receipt__print {
+    display: none !important;
+  }
+}

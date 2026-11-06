@@ -47,8 +47,17 @@ public class JwtService {
             }
             claims.put(JwtClaimNames.CAN_REQUEST_BILL, canRequestBill(user));
             claims.put(JwtClaimNames.CAN_PRINT_PICKUP_LABEL, canPrintPickupLabel(user));
+            claims.put(JwtClaimNames.ACCESS_VERSION, user.getAccessVersion());
         }
         return generateToken(claims, userDetails);
+    }
+
+    public Integer extractAccessVersion(String token) {
+        Object value = extractAllClaims(token).get(JwtClaimNames.ACCESS_VERSION);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return null;
     }
 
     private boolean canRequestBill(User user) {

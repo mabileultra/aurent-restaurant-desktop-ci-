@@ -21,6 +21,20 @@ public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
         """)
     List<StockLot> findAvailableFefo(@Param("productId") UUID productId, @Param("storeId") Integer storeId);
 
+    /** Партии товара с источником (для карточки товара). */
+    @Query("""
+        SELECT l FROM StockLot l
+        JOIN FETCH l.product
+        LEFT JOIN FETCH l.receiptLine rl
+        LEFT JOIN FETCH rl.receipt
+        WHERE l.product.id = :productId AND l.storeId = :storeId AND l.quantity > 0
+        ORDER BY l.expiryDate NULLS LAST, l.createdAt
+        """)
+    List<StockLot> findAvailableWithSource(
+        @Param("productId") UUID productId,
+        @Param("storeId") Integer storeId
+    );
+
     @Query("""
         SELECT l FROM StockLot l
         JOIN FETCH l.product

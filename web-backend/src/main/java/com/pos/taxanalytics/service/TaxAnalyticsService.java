@@ -7,7 +7,14 @@ import java.time.LocalDate;
 
 public interface TaxAnalyticsService {
 
-    TaxAnalyticsOverviewResponse overview(String period, LocalDate from, LocalDate to);
+    TaxAnalyticsOverviewResponse overview(
+        String period,
+        LocalDate from,
+        LocalDate to,
+        String regionCode,
+        String connectionStatus,
+        String search
+    );
 
     TaxAnalyticsResultsResponse results(
         String period,

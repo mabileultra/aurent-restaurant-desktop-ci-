@@ -86,6 +86,9 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
     long count();
 
+    @Query("SELECT u.accessVersion FROM User u WHERE u.id = :id")
+    Optional<Integer> findAccessVersionById(@Param("id") UUID id);
+
     @Query("""
         select distinct u.id from User u join u.storeIds sid
         where sid in :storeIds

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v14-company-tin-unique" author="platform">
+        <sql>
+            UPDATE companies c
+            SET tin = NULL
+            WHERE c.tin IS NOT NULL
+              AND TRIM(c.tin) &lt;&gt; ''
+              AND c.id NOT IN (
+                  SELECT keep_id FROM (
+                      SELECT MIN(id) AS keep_id
+                      FROM companies
+                      WHERE tin IS NOT NULL AND TRIM(tin) &lt;&gt; ''
+                      GROUP BY TRIM(tin)
+                  ) kept
+              );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_companies_tin
+            ON companies (tin)
+            WHERE tin IS NOT NULL AND TRIM(tin) &lt;&gt; '';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,274 @@
+import { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import { pharmacyWarehouseApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
+import { BaseModal } from '../../../components/ui';
+import TasnifPackagePickerModal from '../../../components/tasnif/TasnifPackagePickerModal';
+import {
+  buildPharmacyProductCreatePayload,
+  buildPharmacyProductUpdatePayload,
+  emptyPharmacyProductForm,
+  formFromPharmacyProduct,
+  validatePharmacyProductForm,
+} from '../utils/buildPharmacyProductPayload';
+import { generatePharmacyBarcode } from '../utils/generatePharmacyBarcode';
+import { resolvePharmacyMxikFlagsOnSave } from '../utils/resolvePharmacyMxikFlagsOnSave';
+import { usePharmacyMxikPick } from '../hooks/usePharmacyMxikPick';
+import { usePharmacyReceiptLineForm } from '../hooks/usePharmacyReceiptLineForm';
+import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
+import PharmacyReceiptLineFields from './PharmacyReceiptLineFields';
+import PharmacyProductAboutFields from './PharmacyProductAboutFields';
+import PharmacyProductLotsPanel from './PharmacyProductLotsPanel';
+import PharmacyProductMovementsPanel from './PharmacyProductMovementsPanel';
+import PharmacyProductModalFooter from './PharmacyProductModalFooter';
+import PharmacyProductSaveConfirmModal from './PharmacyProductSaveConfirmModal';
+import '../styles/pharmacy-stock.css';
+
+/** Модалка «Товар | Новый»: карточка + поля прихода (кол-во / цены / серия / срок). */
+export default function PharmacyProductModal({
+  open,
+  onClose,
+  onSaved,
+  onDelete,
+  storeId = null,
+  product = null,
+  overlayClassName,
+  withReceiptLine = false,
+  defaultMarkup = 20,
+}) {
+  const { t } = useTranslation();
+  const [form, setForm] = useState(emptyPharmacyProductForm);
+  const [loadedProduct, setLoadedProduct] = useState(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
+  const [pendingPackage, setPendingPackage] = useState(null);
+  const mxik = usePharmacyMxikPick(setForm);
+
+  const isEdit = Boolean(product?.id);
+  const includeLine = withReceiptLine && !isEdit;
+  const line = usePharmacyReceiptLineForm({
+    open: open && includeLine,
+    product: null,
+    defaultMarkup,
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    setAboutOpen(false);
+    if (!product?.id) {
+      setForm(emptyPharmacyProductForm());
+      mxik.resetMxik('');
+      setLoadedProduct(null);
+      return;
+    }
+    setForm(formFromPharmacyProduct(product));
+    mxik.resetMxik(product.ikpu || '');
+    setLoadedProduct(product);
+    pharmacyWarehouseApi.getProduct(product.id)
+      .then((res) => {
+        const full = res.data;
+        setLoadedProduct(full);
+        setForm(formFromPharmacyProduct(full));
+        mxik.resetMxik(full?.ikpu || '');
+      })
+      .catch(() => {});
+  }, [open, product]);
+
+  useEffect(() => {
+    if (!open || !includeLine) return;
+    line.syncUnitsInPack(form.unitsInPack);
+  }, [open, includeLine, form.unitsInPack]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (packageOverride) => {
+      const current = packageOverride
+        ? { ...form, packageCode: packageOverride.code, packageName: packageOverride.name }
+        : form;
+      const productErr = validatePharmacyProductForm(current, t);
+      if (productErr) throw new Error(productErr);
+      let linePayload = null;
+      if (includeLine) {
+        const lineResult = line.buildPayload(t);
+        if (lineResult.error) throw new Error(lineResult.error);
+        linePayload = lineResult.payload;
+      }
+      const prices = linePayload ? {
+        costPrice: linePayload.purchasePrice,
+        sellingPrice: linePayload.retailPrice,
+        taxRate: linePayload.vatPercent,
+      } : undefined;
+      const flaggedForm = isEdit ? current : await resolvePharmacyMxikFlagsOnSave(current);
+      const body = isEdit
+        ? buildPharmacyProductUpdatePayload(flaggedForm, loadedProduct || product)
+        : buildPharmacyProductCreatePayload(flaggedForm, { storeId, prices });
+      const res = isEdit
+        ? await pharmacyWarehouseApi.updateProduct(product.id, body)
+        : await pharmacyWarehouseApi.createProduct(body);
+      return { product: res.data, linePayload };
+    },
+    onSuccess: ({ product: saved, linePayload }) => {
+      toast.success(isEdit
+        ? t('pharmacyStock.productUpdatedWithReceipt')
+        : t('pharmacyStock.productCreated'));
+      setSaveConfirmOpen(false);
+      setPendingPackage(null);
+      onSaved?.(saved, linePayload);
+      onClose?.();
+    },
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
+  });
+
+  if (!open) return null;
+
+  const patch = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  /** Как в Oson: «Создать» генерирует штрихкод в основное поле (или доп., если основное занято). */
+  const createBarcode = () => {
+    const code = generatePharmacyBarcode();
+    setForm((prev) => {
+      if (!String(prev.barcode || '').trim()) {
+        return { ...prev, barcode: code };
+      }
+      return {
+        ...prev,
+        additionalBarcodes: [...(prev.additionalBarcodes || []), code],
+      };
+    });
+    toast.success(t('pharmacyStock.barcodeGenerated'));
+  };
+
+  const handleSave = async () => {
+    if (includeLine) {
+      const productErr = validatePharmacyProductForm(form, t);
+      if (productErr) {
+        toast.error(productErr);
+        setAboutOpen(true);
+        return;
+      }
+    }
+    let packageOverride = null;
+    if (String(form.ikpu || '').trim() && !isRealFiscalPackageCode(form.packageCode)) {
+      packageOverride = await mxik.choosePackage(form.ikpu);
+      if (!packageOverride?.code) {
+        toast.error(t('pharmacyStock.packageRequired'));
+        setAboutOpen(true);
+        return;
+      }
+    }
+    if (isEdit) {
+      setPendingPackage(packageOverride);
+      setSaveConfirmOpen(true);
+      return;
+    }
+    saveMutation.mutate(packageOverride);
+  };
+
+  const aboutFields = (
+    <>
+      <PharmacyProductAboutFields
+        t={t}
+        form={form}
+        patch={patch}
+        mxikQuery={mxik.mxikQuery}
+        setMxikQuery={mxik.setMxikQuery}
+        mxikResults={mxik.mxikResults}
+        mxikLoading={mxik.mxikLoading}
+        onSearchMxik={() => mxik.searchMxik(form.ikpu)}
+        onPickMxik={mxik.pickMxik}
+        onChoosePackage={mxik.choosePackage}
+        onCreateBarcode={createBarcode}
+        showActive={isEdit}
+      />
+      {isEdit && product?.id ? (
+        <>
+          <PharmacyProductLotsPanel t={t} productId={product.id} storeId={storeId} />
+          <PharmacyProductMovementsPanel t={t} productId={product.id} storeId={storeId} />
+        </>
+      ) : null}
+    </>
+  );
+
+  return (
+    <>
+      <BaseModal
+        open={open && !(includeLine && aboutOpen)}
+        onClose={onClose}
+        title={
+          isEdit
+            ? t('pharmacyStock.productModalEditTitle')
+            : includeLine
+              ? t('pharmacyStock.lineModalTitle')
+              : t('pharmacyStock.productModalTitle')
+        }
+        size="md"
+        className={`pharmacy-stock ${includeLine ? 'pharm-line-modal' : 'pharm-product-modal'}`}
+        bodyClassName={includeLine ? 'pharm-line-modal__body' : 'pharm-product-modal__body'}
+        overlayClassName={overlayClassName}
+        footerClassName={includeLine ? 'pharm-line-modal__footer-bar' : undefined}
+        footer={(
+          <PharmacyProductModalFooter
+            t={t}
+            includeLine={includeLine}
+            isEdit={isEdit}
+            saving={saveMutation.isPending}
+            onSave={handleSave}
+            onClose={onClose}
+            onAbout={() => setAboutOpen(true)}
+            onDelete={onDelete}
+          />
+        )}
+      >
+        {includeLine
+          ? <PharmacyReceiptLineFields t={t} line={line} productName={form.name} />
+          : aboutFields}
+      </BaseModal>
+      {/* When creating with receipt line: swap to product card instead of stacking under the line modal (z-100). */}
+      {includeLine && aboutOpen ? (
+        <BaseModal
+          open={aboutOpen}
+          onClose={() => setAboutOpen(false)}
+          title={t('pharmacyStock.productModalEditTitle')}
+          size="md"
+          overlayClassName="!z-[110]"
+          className="pharmacy-stock pharm-product-modal"
+          bodyClassName="pharm-product-modal__body"
+          footer={(
+            <div className="flex w-full justify-center">
+              <button
+                type="button"
+                className="pharm-line-btn pharm-line-btn--primary"
+                style={{ minWidth: '11rem' }}
+                onClick={() => setAboutOpen(false)}
+              >
+                {t('common.save')}
+              </button>
+            </div>
+          )}
+        >
+          {aboutFields}
+        </BaseModal>
+      ) : null}
+      <TasnifPackagePickerModal
+        open={Boolean(mxik.packageItem)}
+        item={mxik.packageItem}
+        lang={mxik.lang}
+        onSelect={mxik.handlePackageSelect}
+        onClose={mxik.closePackagePicker}
+      />
+      <PharmacyProductSaveConfirmModal
+        open={saveConfirmOpen}
+        onClose={() => {
+          if (saveMutation.isPending) return;
+          setSaveConfirmOpen(false);
+          setPendingPackage(null);
+        }}
+        t={t}
+        saving={saveMutation.isPending}
+        productName={form.name}
+        onConfirm={() => saveMutation.mutate(pendingPackage)}
+      />
+    </>
+  );
+}

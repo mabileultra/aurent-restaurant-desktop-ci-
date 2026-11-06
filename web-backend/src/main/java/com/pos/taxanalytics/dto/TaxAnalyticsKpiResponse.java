@@ -12,6 +12,8 @@ public record TaxAnalyticsKpiResponse(
     BigDecimal notConnectedSharePct,
     BigDecimal notConnectedDeltaPct,
     BigDecimal totalTurnover,
+    BigDecimal fiscalTurnover,
+    BigDecimal nonFiscalTurnover,
     BigDecimal totalTurnoverDeltaPct,
     long newConnections,
     BigDecimal newConnectionsDeltaPct,

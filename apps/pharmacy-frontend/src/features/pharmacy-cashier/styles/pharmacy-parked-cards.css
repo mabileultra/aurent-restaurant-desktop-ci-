@@ -1,0 +1,216 @@
+/* Отложенные чеки — кнопка в шапке и выпадающие карточки 1, 2, 3 */
+
+.pharmacy-parked-lookup__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--pharm-brand, #006847);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pharmacy-parked-lookup.is-open {
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 10%, #fff);
+}
+
+.pharmacy-parked-pop {
+  position: fixed;
+  z-index: 80;
+  width: min(280px, calc(100vw - 16px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  border-radius: 12px;
+  background: var(--pharm-elevated, #fff);
+  box-shadow: 0 16px 36px rgb(15 23 42 / 0.16);
+}
+
+.pharmacy-parked-pop__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: min(320px, 50vh);
+  overflow: auto;
+}
+
+.pharmacy-parked-pop__item {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pharmacy-parked-pop__card {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 5%, #fff);
+  color: var(--pharm-ink, #1a2e28);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pharmacy-parked-pop__card:hover {
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 12%, #fff);
+}
+
+.pharmacy-parked-pop__slot {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--pharm-brand, #006847);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pharmacy-parked-pop__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pharmacy-parked-pop__label {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--pharm-brand, #006847);
+  line-height: 1.2;
+}
+
+.pharmacy-parked-pop__check,
+.pharmacy-parked-pop__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pharmacy-parked-pop__check {
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.pharmacy-parked-pop__meta {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--pharm-muted, #64748b);
+  line-height: 1.25;
+}
+
+.pharmacy-parked-pop__remove {
+  flex-shrink: 0;
+  width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, #b42318 28%, #d5ddd8);
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #b42318;
+  cursor: pointer;
+}
+
+.pharmacy-parked-pop__remove:hover {
+  background: #fee2e2;
+}
+
+.pharmacy-parked-pop__clear {
+  align-self: flex-end;
+  border: 0;
+  background: transparent;
+  color: var(--pharm-muted, #64748b);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pharmacy-parked-pop__clear:hover {
+  color: #b42318;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop {
+  background: #121826;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.45);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop__card {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop__card:hover {
+  background: rgba(46, 196, 182, 0.14);
+  border-color: rgba(46, 196, 182, 0.35);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop__label {
+  color: var(--pos-green, #2ec4b6);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop__meta,
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop__clear {
+  color: #94a3b8;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-parked-pop__remove {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+
+.pharmacy-parked-modal {
+  width: min(480px, 100%);
+}
+
+.pharmacy-parked-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.pharmacy-parked-modal__hold {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: #245b45;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-parked-modal__empty {
+  margin: 0;
+  padding: 12px 0;
+  text-align: center;
+  color: #7a817c;
+}

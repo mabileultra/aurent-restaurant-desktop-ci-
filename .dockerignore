@@ -2,7 +2,10 @@
 **/.git
 **/target
 **/node_modules
+apps/web-frontend/dist
 web-frontend/dist
+apps/restaurant-frontend/dist
+apps/pharmacy-frontend/dist
 **/.idea
 **/*.iml
 **/.DS_Store

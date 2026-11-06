@@ -91,9 +91,9 @@ app:
     internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
     connect-timeout-ms: 3000
     read-timeout-ms: 12000
-  # Wave 4–5: outbound + dual-read/write. Keep enabled=false until backfill+verify green.
+  # Wave 4–7: outbound + dual-read/write. Keep enabled=false until backfill+verify green.
   # read-mode: LOCAL_ONLY | REMOTE_FIRST | REMOTE_ONLY
-  # write-mode: LOCAL_ONLY | DUAL | REMOTE_ONLY (strict sync mirror; local DB still written)
+  # write-mode: LOCAL_ONLY | DUAL | REMOTE_ONLY (strict mirror) | CATALOG_PRIMARY (Wave 7 card SoT)
   catalog:
     enabled: ${CATALOG_SERVICE_ENABLED:false}
     read-mode: ${CATALOG_SERVICE_READ_MODE:REMOTE_FIRST}
@@ -137,7 +137,7 @@ app:
     runtime-token: ${TELEGRAM_BOT_RUNTIME_TOKEN:}
     max-results: ${TELEGRAM_BOT_MAX_RESULTS:10}
     min-query-length: 2
-  # Поддержка веба/десктопа (telegram-web-support-bot). НЕ аптечный бот.
+  # Поддержка веба/десктопа (bots/telegram-web-support-bot). НЕ аптечный бот.
   support:
     phone: ${SUPPORT_PHONE:${VITE_SUPPORT_PHONE:}}
     telegram-bot: ${SUPPORT_TELEGRAM_BOT:${VITE_SUPPORT_TELEGRAM_BOT:}}

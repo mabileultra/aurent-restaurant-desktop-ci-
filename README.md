@@ -8,7 +8,7 @@
 |-------|------------|
 | Backend | Java 17, Spring Boot 3, PostgreSQL |
 | Frontend | React, Vite (main + restaurant SPA) |
-| Касса | Electron (`desktop-electron/`) — оболочка вокруг web-frontend |
+| Касса | Electron (`apps/desktop-electron/`) — оболочка вокруг web SPA |
 | Деплой | Docker Compose |
 
 **Карта prod / что не ломать:** [`deploy/STACK-MAP.md`](deploy/STACK-MAP.md)
@@ -17,11 +17,19 @@
 
 ```
 postsystem/
+├── apps/
+│   ├── web-frontend/            # aurent.uz — платформа + grocery
+│   ├── restaurant-frontend/     # r-aurent.uz
+│   ├── pharmacy-frontend/       # p-aurent.uz
+│   ├── desktop-electron/        # Electron grocery-касса
+│   ├── restaurant-desktop/      # Electron ресторан
+│   └── pharmacy-desktop/        # Electron аптека
+├── packages/                    # @aurent/shared-*
+├── bots/
+│   ├── telegram-support-bot/    # аптечный Telegram-бот
+│   └── telegram-web-support-bot/# поддержка web/CRM
 ├── web-backend/                 # POS core API
-├── web-frontend/                # aurent.uz — платформа, grocery, pharmacy, finance
-├── restaurant-frontend/         # r-aurent.uz — зал / кухня / админка ресторана
 ├── restaurant-service/          # API ресторана (/rst)
-├── desktop-electron/            # Оболочка кассы
 ├── deploy/                      # Деплой + STACK-MAP.md
 ├── docker-compose.yml
 └── docker-compose.prod.yml
@@ -37,12 +45,13 @@ docker compose up -d --build
 
 # Или по отдельности:
 cd web-backend && mvn spring-boot:run
-cd web-frontend && pnpm install && pnpm run dev
+cd apps/web-frontend && pnpm install && pnpm run dev
 ```
 
 API: `http://localhost:8080/api/v1`  
 Веб: `http://localhost:5173` (Docker: порт 5173 → nginx 80)  
-Ресторан (отдельный фронт): `cd restaurant-frontend && pnpm run dev` → `http://localhost:5174`
+Ресторан: `cd apps/restaurant-frontend && pnpm run dev` → `http://localhost:5174`  
+Аптека: `cd apps/pharmacy-frontend && pnpm run dev` → `http://localhost:5175`
 
 Демо-логин после init БД: `admin` / `password`
 
@@ -75,7 +84,7 @@ bash deploy/deploy.sh
 
 ## Касса
 
-Desktop-приложение: **`desktop-electron/`** в этом репозитории. По умолчанию окно открывает сайт кассы (как у клиентов). Локальный UI — только тест, см. `desktop-electron/README.md`.
+Desktop: **`apps/desktop-electron/`** (grocery), **`apps/restaurant-desktop/`**, **`apps/pharmacy-desktop/`** (аптека).
 
 ```bash
 bash scripts/start-cashier-desktop.sh

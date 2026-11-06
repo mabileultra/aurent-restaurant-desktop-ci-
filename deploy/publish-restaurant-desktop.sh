@@ -3,11 +3,11 @@
 # Does NOT restart Docker / nginx / any service — static files only.
 #
 #   bash deploy/publish-restaurant-desktop.sh
-#   DESKTOP_DIST=restaurant-desktop/dist bash deploy/publish-restaurant-desktop.sh
+#   DESKTOP_DIST=apps/restaurant-desktop/dist bash deploy/publish-restaurant-desktop.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DIST="${DESKTOP_DIST:-$ROOT/restaurant-desktop/dist}"
+DIST="${DESKTOP_DIST:-$ROOT/apps/restaurant-desktop/dist}"
 DEST="${DESKTOP_DEST:-$ROOT/downloads/restaurant-desktop}"
 
 if [[ ! -d "$DIST" ]]; then
@@ -26,7 +26,7 @@ for pattern in '*.exe' '*.dmg' '*.zip' '*.blockmap' 'latest*.yml'; do
 done
 shopt -u nullglob
 
-node "$ROOT/restaurant-desktop/scripts/generate-manifest.js" \
+node "$ROOT/apps/restaurant-desktop/scripts/generate-manifest.js" \
   --dist "$DIST" \
   --out "$DEST/manifest.json"
 

@@ -1,0 +1,58 @@
+/*
+ * Pay rail keypad — светлая тема: заметные клавиши на белом фоне.
+ */
+
+.cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key {
+  background: #ffffff;
+  border: 1.5px solid #94a3b8;
+  color: #0f172a;
+  border-radius: 14px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 2px 4px rgb(15 23 42 / 0.1),
+    0 6px 14px rgb(15 23 42 / 0.08);
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key:hover:not(:disabled),
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #64748b;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 3px 6px rgb(15 23 42 / 0.12),
+    0 8px 18px rgb(15 23 42 / 0.1);
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key:active:not(:disabled),
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key:active:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #475569;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12) inset;
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action,
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key--action {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #991b1b;
+  box-shadow:
+    0 2px 4px rgb(185 28 28 / 0.12),
+    0 6px 12px rgb(185 28 28 / 0.08);
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key--icon,
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key--icon {
+  color: #334155;
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__quick-btn,
+.cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__quick-btn {
+  background: #ffffff;
+  border: 1.5px solid #94a3b8;
+  color: #0f172a;
+  box-shadow: 0 2px 4px rgb(15 23 42 / 0.08);
+}

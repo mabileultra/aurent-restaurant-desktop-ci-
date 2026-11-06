@@ -196,7 +196,7 @@ mustContain(
   'web-backend geo catalog allows PLATFORM_ANALYTICS'
 );
 mustContain(
-  read('web-frontend/src/features/platform/components/security/PlatformSuperAdminFormModal.jsx'),
+  read('apps/web-frontend/src/features/platform/components/security/PlatformSuperAdminFormModal.jsx'),
   'PLATFORM_ANALYTICS',
   'security form can create PLATFORM_ANALYTICS'
 );

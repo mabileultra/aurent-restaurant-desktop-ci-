@@ -1,0 +1,41 @@
+/* Z-отчёты — таблица на 1024×768 без min-width 1100px */
+
+.z-reports-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.z-reports-table {
+  width: 100%;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+
+html.app-viewport--canonical .z-reports-table {
+  font-size: 0.8125rem;
+}
+
+html.app-viewport--canonical .z-reports-table th,
+html.app-viewport--canonical .z-reports-table td {
+  padding: 0.375rem 0.5rem;
+}
+
+html.app-viewport--canonical .z-reports-table .z-reports-table__payments {
+  font-size: 0.6875rem;
+}
+
+html.app-viewport--desktop .z-reports-table {
+  min-width: 100%;
+}
+
+@media (min-width: 1280px) {
+  .z-reports-table {
+    min-width: 960px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .z-reports-table {
+    min-width: 1100px;
+  }
+}

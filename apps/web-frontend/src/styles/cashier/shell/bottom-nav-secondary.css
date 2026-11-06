@@ -1,0 +1,56 @@
+/*
+ * Вторичные страницы (Мои продажи и т.п.): футер как на кассе.
+ * Zoom не растягивать на высоту aside.
+ */
+
+.cashier-bottom-nav-shell .cashier-zoom {
+  align-items: center;
+  align-self: center;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  box-sizing: border-box;
+}
+
+.cashier-bottom-nav-shell .cashier-zoom__btn,
+.cashier-bottom-nav-shell .cashier-zoom__value {
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  box-sizing: border-box;
+}
+
+.cashier-bottom-nav-shell .cashier-zoom__value {
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+
+.cashier-bottom-nav-shell .cashier-zoom__btn {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+/* App-level футер вне POS — те же размеры текста, что на кассе */
+.cashier-app:not(.cashier-app--pos-screen) .cashier-app__bottom-nav .cashier-bottom-nav__btn,
+.cashier-app:not(.cashier-app--pos-screen) .cashier-app__bottom-nav .cashier-bottom-nav__btn span,
+.cashier-app:not(.cashier-app--pos-screen) .cashier-app__bottom-nav .cashier-bottom-nav__keyboard-label {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.cashier-app:not(.cashier-app--pos-screen) .cashier-app__bottom-nav .cashier-bottom-nav__btn svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.cashier-app:not(.cashier-app--pos-screen) .cashier-app__bottom-nav.cashier-bottom-nav-shell {
+  padding: 8px 10px;
+}
+
+.cashier-app:not(.cashier-app--pos-screen) .cashier-app__bottom-nav .cashier-bottom-nav__btn {
+  min-height: 48px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  gap: 4px;
+}

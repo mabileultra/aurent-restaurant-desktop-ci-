@@ -18,6 +18,7 @@ import com.pos.catalog.service.product.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductInitialStockSupport;
 import com.pos.catalog.service.product.support.ProductPluValidator;
+import com.pos.catalog.service.product.support.CatalogPrimaryProductWriteSupport;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
 import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
@@ -54,6 +55,7 @@ public class ProductCreateHandler {
     private final CatalogIsolationSupport catalogIsolation;
     private final ProductResponseAssembler assembler;
     private final ProductSnapshotNotifier productSnapshotNotifier;
+    private final CatalogPrimaryProductWriteSupport catalogPrimaryWrite;
     private final InactiveBarcodeReleaser barcodeReleaser;
 
     @Transactional
@@ -94,6 +96,7 @@ public class ProductCreateHandler {
 
         Product product = buildNewProduct(req, companyId, category);
         applyBusinessType(product, req.businessTypeCode(), category);
+        catalogPrimaryWrite.upsertBeforeLocalSave(product);
         Product saved = productRepository.save(product);
         storePriceApplier.applyStorePricesOrAllActive(saved, req.storePrices(), req.sellingPrice());
         storePriceApplier.applyExtraBarcodes(saved, req.additionalBarcodes(), saved.getBarcode());
@@ -148,6 +151,7 @@ public class ProductCreateHandler {
         product.setStockQuantity(BigDecimal.ZERO);
         extensionService.applyOnCreate(product, req);
 
+        catalogPrimaryWrite.upsertBeforeLocalSave(product);
         Product saved = productRepository.save(product);
         storePriceApplier.applyStorePricesOrAllActive(saved, req.storePrices(), req.sellingPrice());
         storePriceApplier.applyExtraBarcodes(saved, req.additionalBarcodes(), saved.getBarcode());

@@ -26,13 +26,18 @@ public class TaxAnalyticsController {
 
     @GetMapping("/overview")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "KPI + region cards for tax analytics")
+    @Operation(summary = "KPI + region cards. Day boundaries are Asia/Tashkent. Filters apply to KPI and cards.")
     public ResponseEntity<TaxAnalyticsOverviewResponse> overview(
         @RequestParam(required = false, defaultValue = "30d") String period,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String connectionStatus,
+        @RequestParam(required = false) String search
     ) {
-        return ResponseEntity.ok(taxAnalyticsService.overview(period, from, to));
+        return ResponseEntity.ok(taxAnalyticsService.overview(
+            period, from, to, regionCode, connectionStatus, search
+        ));
     }
 
     @GetMapping("/results")

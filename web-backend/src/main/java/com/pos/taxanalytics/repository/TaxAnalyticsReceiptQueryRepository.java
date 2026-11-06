@@ -21,16 +21,24 @@ public class TaxAnalyticsReceiptQueryRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public long count(int companyId, LocalDate day, String kind) {
-        return jdbcTemplate.queryForObject(
+    public long count(int companyId, LocalDate from, LocalDate to, String kind) {
+        Long count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM sales s LEFT JOIN stores st ON st.id = s.store_id WHERE " + COMPANY + kindSql(kind)
                 + " AND s.created_at >= ? AND s.created_at < ?",
             Long.class,
-            companyId, start(day), end(day)
+            companyId, start(from), end(to)
         );
+        return count == null ? 0L : count;
     }
 
-    public List<Map<String, Object>> list(int companyId, LocalDate day, String kind, int limit, int offset) {
+    public List<Map<String, Object>> list(
+        int companyId,
+        LocalDate from,
+        LocalDate to,
+        String kind,
+        int limit,
+        int offset
+    ) {
         return jdbcTemplate.queryForList(
             """
                 SELECT s.id::text AS sale_id, s.receipt_number, s.created_at, st.name AS store_name,
@@ -44,7 +52,7 @@ public class TaxAnalyticsReceiptQueryRepository {
                 ORDER BY s.created_at DESC
                 LIMIT ? OFFSET ?
                 """,
-            companyId, start(day), end(day), limit, offset
+            companyId, start(from), end(to), limit, offset
         );
     }
 

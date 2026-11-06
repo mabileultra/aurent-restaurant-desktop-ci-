@@ -1,0 +1,34 @@
+/* Краски колонки оплаты и пустого чека. Размеры не меняем. */
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn {
+  border-color: #c3c7d2;
+  color: #1f2024;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn kbd {
+  color: #8b9198;
+  font-weight: 600;
+}
+
+.cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier__cart-pane {
+  border-color: #c3c7d2;
+  box-shadow: 0 1px 3px rgb(19 72 66 / 0.08);
+}
+
+.cashier-app--pharmacy-pos .pharmacy-cart-pane-head {
+  border-bottom-color: #e4e7ec;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-cart-pane-head__title,
+.cashier-app--pharmacy-pos .pharmacy-cart-pane-head__count {
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  color: #1f2024;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-cart-pane-head__status.is-idle {
+  background: #f4f6f8;
+  border-color: #c3c7d2;
+  color: #3b3e45;
+}

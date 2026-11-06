@@ -5,6 +5,8 @@ import java.util.Set;
 /**
  * Какие ключи модулей видны компании данного типа бизнеса.
  * UNIVERSAL / OTHER и пустой тип показывают весь каталог.
+ * RESTAURANT / CANTEEN — только ресторанная админка (+ меню/склад rst), без retail POS.
+ * PHARMACY — allowlist аптечного SPA (без grocery-каталога и ресторана).
  */
 public final class ModuleVisibility {
 
@@ -27,11 +29,79 @@ public final class ModuleVisibility {
         RESTAURANT_QUICK_SALE
     );
 
-    private static final Set<String> GROCERY_CATALOG_KEYS = Set.of(
+    /**
+     * Allowlist for restaurant SPA admin / POS — mirrors restaurant-frontend moduleHandbook.
+     * Retail grocery POS, registers, finance, sales-reports stay out.
+     */
+    private static final Set<String> RESTAURANT_ADMIN_VISIBLE = Set.of(
+        "dashboard",
         "products",
         "categories",
-        "scalesStation",
-        "scalesPlu"
+        "stockProducts",
+        "stockSuppliers",
+        "stockReceipts",
+        "stockInventories",
+        "stockTransfers",
+        "reportsStockLow",
+        "stores",
+        "usersList",
+        "usersPrinterSettings",
+        "restaurantFloor",
+        "restaurantBooking",
+        "restaurantDelivery",
+        "restaurantKitchen",
+        "restaurantPos",
+        RESTAURANT_REQUEST_BILL,
+        RESTAURANT_PICKUP_LABEL,
+        RESTAURANT_CUSTOMER_DISPLAY,
+        RESTAURANT_READY_DISPLAY,
+        RESTAURANT_QUICK_SALE
+    );
+
+    /**
+     * Pharmacy SPA modules Super Admin can grant — not grocery catalog / restaurant / dead retail reports.
+     */
+    private static final Set<String> PHARMACY_VISIBLE = Set.of(
+        "dashboard",
+        "aiAssistant",
+        "stockProducts",
+        "stockSuppliers",
+        "stockReceipts",
+        "stockInventories",
+        "stockTransfers",
+        "cashierPos",
+        "cashierSales",
+        "cashierOffline",
+        "registersList",
+        "registersZReports",
+        "registersTransfer",
+        "registersConfig",
+        "reportsSalesDaily",
+        "reportsSalesByProducts",
+        "reportsSalesByStores",
+        "reportsCashierPerformance",
+        "reportsReturns",
+        "reportsStockBalances",
+        "reportsStockLow",
+        "reportsStockReceipts",
+        "reportsStockInventories",
+        "reportsStockTransfers",
+        "reportsPriceRegistry",
+        "financeDashboard",
+        "financeDebts",
+        "financeIncomes",
+        "financeExpenses",
+        "financeAccounts",
+        "financeTransfers",
+        "financeReports",
+        "financeAudit",
+        "financeCategories",
+        "financeSync",
+        "stores",
+        "usersList",
+        "usersPrinterSettings",
+        "usersBrandingSettings",
+        "usersBarcodePrint"
     );
 
     private ModuleVisibility() {
@@ -46,13 +116,10 @@ public final class ModuleVisibility {
             return true;
         }
         if ("PHARMACY".equals(code)) {
-            return !RESTAURANT_KEYS.contains(moduleKey) && !GROCERY_CATALOG_KEYS.contains(moduleKey);
+            return PHARMACY_VISIBLE.contains(moduleKey);
         }
         if ("RESTAURANT".equals(code) || "CANTEEN".equals(code)) {
-            if ("categories".equals(moduleKey)) {
-                return true;
-            }
-            return !GROCERY_CATALOG_KEYS.contains(moduleKey) && !"cashierPos".equals(moduleKey);
+            return RESTAURANT_ADMIN_VISIBLE.contains(moduleKey);
         }
         return !RESTAURANT_KEYS.contains(moduleKey);
     }

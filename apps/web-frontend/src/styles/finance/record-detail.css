@@ -1,0 +1,61 @@
+.finance-record-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.875rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.finance-record-detail__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.finance-record-detail__label {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.finance-record-detail__value {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  word-break: break-word;
+}
+
+.finance-record-detail__value--amount-income {
+  color: rgb(22 163 74);
+}
+
+.finance-record-detail__value--amount-expense {
+  color: rgb(220 38 38);
+}
+
+.finance-record-detail__section-title {
+  margin: 1rem 0 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: rgb(51 65 85);
+}
+
+.finance-record-detail__comment {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: rgb(248 250 252);
+  border: 1px solid rgb(226 232 240);
+  font-size: 0.875rem;
+  color: rgb(51 65 85);
+  white-space: pre-wrap;
+}
+
+.finance-record-detail__sub {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: rgb(100 116 139);
+}

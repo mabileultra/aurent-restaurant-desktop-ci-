@@ -3,10 +3,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DESKTOP="$ROOT/desktop-electron"
+DESKTOP="$ROOT/apps/desktop-electron"
 
 if [[ ! -f "$DESKTOP/scripts/start-cashier-desktop.sh" ]]; then
-  echo "Не найден desktop-electron: $DESKTOP" >&2
+  echo "Не найден apps/desktop-electron: $DESKTOP" >&2
   exit 1
 fi
 

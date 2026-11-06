@@ -1,0 +1,118 @@
+.pharmacy-transfer__modes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+}
+
+.pharmacy-transfer__mode {
+  height: 2rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.pharmacy-transfer__mode.is-active {
+  background: var(--pharm-blue, #006847);
+  border-color: var(--pharm-blue, #006847);
+  color: #fff;
+}
+
+.pharmacy-transfer__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+  border-radius: 0.55rem;
+  background: #fff;
+}
+
+.pharmacy-transfer__card--stores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.pharmacy-transfer__card--stores .pharmacy-transfer__field:last-child {
+  grid-column: 1 / -1;
+}
+
+.pharmacy-transfer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pharmacy-transfer__label {
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-transfer__value {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-transfer__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.45rem;
+  background: #f8fafc;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+}
+
+.pharmacy-transfer__notes {
+  height: 2.15rem;
+  padding: 0 0.7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+  font-size: 0.82rem;
+  background: #fff;
+}
+
+.pharmacy-transfer__notes:focus {
+  outline: none;
+  border-color: var(--pharm-blue, #006847);
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.14);
+}
+
+.pharmacy-transfer__note {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--pharm-muted, #64748b);
+}
+
+.dark .pharmacy-transfer__card {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.dark .pharmacy-transfer__summary {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+.dark .pharmacy-transfer__value {
+  color: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .pharmacy-transfer__summary,
+  .pharmacy-transfer__card--stores {
+    grid-template-columns: 1fr;
+  }
+}

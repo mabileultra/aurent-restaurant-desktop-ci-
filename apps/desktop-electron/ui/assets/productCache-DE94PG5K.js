@@ -1,0 +1,1 @@
+const o=["products","product","warehouse-products","pos-products","dashboard-low-stock","low-stock","reports-low-stock"];function s(t){return Array.isArray(t)?t[0]==="tenant"&&t.length>2?o.includes(t[2]):o.includes(t[0]):!1}function c(t){t.invalidateQueries({predicate:({queryKey:r})=>s(r)})}export{c as i};

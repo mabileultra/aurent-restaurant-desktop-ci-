@@ -1,0 +1,22 @@
+/* Catalog product grid and cards */
+.pos-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.pos-product-card {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0.75rem;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  width: 100%;
+}
+
+.pos-product-card:hover {
+  border-color: rgb(16 185 129);
+  box-shadow: 0 4px 12px rgb(16 185 129 / 0.12);
+}

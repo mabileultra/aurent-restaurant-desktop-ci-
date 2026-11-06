@@ -17,4 +17,8 @@ public interface CompanyRepository extends JpaRepository<Company, Integer>, JpaS
     boolean existsByLoginCodeIgnoreCase(String loginCode);
 
     boolean existsByLoginCodeIgnoreCaseAndIdNot(String loginCode, Integer id);
+
+    boolean existsByTin(String tin);
+
+    boolean existsByTinAndIdNot(String tin, Integer id);
 }

@@ -16,7 +16,8 @@ public interface TaxAnalyticsCompanyService {
         String connectionStatus,
         String search,
         int page,
-        int size
+        int size,
+        String sort
     );
 
     TaxAnalyticsCompanyDetailResponse detail(int companyId, String period, LocalDate from, LocalDate to);

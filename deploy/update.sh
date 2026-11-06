@@ -58,31 +58,59 @@ cmd_update() {
     fi
   fi
 
-  # Dual-domain: .env + host nginx + certbot (идемпотентно). Отключить: CONFIGURE_RESTAURANT_DOMAIN=0
+  # Host edge: lab = IP+self-signed; prod = aurent.uz domains+certbot. Never mix.
   domain_build=0
-  if [[ "${CONFIGURE_RESTAURANT_DOMAIN:-1}" != "0" ]]; then
-    if [[ ! -f .restaurant-domain-configured ]]; then
-      domain_build=1
-    fi
-    if [[ "${EUID}" -eq 0 ]]; then
-      bash deploy/configure-restaurant-domain.sh
-    elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-      sudo bash deploy/configure-restaurant-domain.sh
-    else
-      bash deploy/configure-restaurant-domain.sh || true
-    fi
-    if [[ "$domain_build" -eq 1 ]]; then
-      touch .restaurant-domain-configured
-      # Bake VITE_* + CORS + new publish ports
-      extra="frontend,restaurant-frontend,backend,finance-service"
-      if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
-        DEPLOY_SERVICES="${DEPLOY_SERVICES},${extra}"
-      else
-        DEPLOY_SERVICES="$extra"
+  case "${DEPLOY_TARGET}" in
+    lab|test)
+      # Prod dual-domain script overwrites VITE_* to aurent.uz — must not run on Contabo lab.
+      if [[ "${CONFIGURE_LAB_HOST:-1}" != "0" ]]; then
+        if [[ ! -f .lab-host-configured ]]; then
+          domain_build=1
+        fi
+        if [[ "${EUID}" -eq 0 ]]; then
+          bash deploy/configure-lab-host.sh
+        elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+          sudo bash deploy/configure-lab-host.sh
+        else
+          bash deploy/configure-lab-host.sh || true
+        fi
+        if [[ "$domain_build" -eq 1 ]]; then
+          extra="frontend,pharmacy-frontend"
+          if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
+            DEPLOY_SERVICES="${DEPLOY_SERVICES},${extra}"
+          else
+            DEPLOY_SERVICES="$extra"
+          fi
+          echo "==> Первый lab-host deploy → bake VITE_* (${DEPLOY_SERVICES})"
+        fi
       fi
-      echo "==> Первый dual-domain deploy → ${DEPLOY_SERVICES}"
-    fi
-  fi
+      ;;
+    *)
+      # Dual-domain prod: .env + host nginx + certbot. Отключить: CONFIGURE_RESTAURANT_DOMAIN=0
+      if [[ "${CONFIGURE_RESTAURANT_DOMAIN:-1}" != "0" ]]; then
+        if [[ ! -f .restaurant-domain-configured ]]; then
+          domain_build=1
+        fi
+        if [[ "${EUID}" -eq 0 ]]; then
+          bash deploy/configure-restaurant-domain.sh
+        elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+          sudo bash deploy/configure-restaurant-domain.sh
+        else
+          bash deploy/configure-restaurant-domain.sh || true
+        fi
+        if [[ "$domain_build" -eq 1 ]]; then
+          touch .restaurant-domain-configured
+          extra="frontend,restaurant-frontend,pharmacy-frontend,backend,finance-service"
+          if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
+            DEPLOY_SERVICES="${DEPLOY_SERVICES},${extra}"
+          else
+            DEPLOY_SERVICES="$extra"
+          fi
+          echo "==> Первый dual-domain deploy → ${DEPLOY_SERVICES}"
+        fi
+      fi
+      ;;
+  esac
 
   if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
     echo "==> Деплой только: ${DEPLOY_SERVICES}"
@@ -90,6 +118,8 @@ cmd_update() {
     echo "==> Деплой по изменённым файлам (.deploy-sha). Полный стек: DEPLOY_FULL=1"
   fi
   # Явно прокидываем флаги — load_dotenv в deploy.sh не должен их затирать.
+  DEPLOY_TARGET="${DEPLOY_TARGET}" \
+  CONFIRM_PROD="${CONFIRM_PROD:-}" \
   DEPLOY_SERVICES="${DEPLOY_SERVICES:-}" \
   DEPLOY_FULL="${DEPLOY_FULL:-0}" \
   DEPLOY_FROM_SHA="${DEPLOY_FROM_SHA:-}" \

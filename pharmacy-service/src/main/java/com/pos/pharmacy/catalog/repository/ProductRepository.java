@@ -14,6 +14,10 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
+    long countByCompanyId(Integer companyId);
+
+    long countByCompanyIdAndActive(Integer companyId, boolean active);
+
     Optional<Product> findByCompanyIdAndSku(Integer companyId, String sku);
 
     List<Product> findByCompanyIdAndSkuIn(Integer companyId, Collection<String> skus);
@@ -50,14 +54,81 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         Pageable pageable
     );
 
+    /**
+     * Только товары, которые уже попали хотя бы в одну строку прихода.
+     */
+    @Query(
+        value = """
+            SELECT DISTINCT p FROM Product p
+            WHERE p.companyId = :companyId
+              AND EXISTS (
+                SELECT 1 FROM StockReceiptLine l JOIN l.receipt r
+                WHERE l.product = p
+                  AND (:applyReceipt = FALSE OR r.id = :receiptId)
+                  AND (:applySupplier = FALSE OR r.supplierId = :supplierId)
+              )
+              AND (:active IS NULL OR p.active = :active)
+              AND (
+                :search IS NULL OR :search = ''
+                OR FUNCTION('translate', p.name, :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+                OR FUNCTION('translate', p.sku, :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+                OR FUNCTION('translate', COALESCE(p.barcode, ''), :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+                OR FUNCTION('translate', COALESCE(p.ikpu, ''), :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+              )
+            ORDER BY p.name
+            """,
+        countQuery = """
+            SELECT COUNT(DISTINCT p) FROM Product p
+            WHERE p.companyId = :companyId
+              AND EXISTS (
+                SELECT 1 FROM StockReceiptLine l JOIN l.receipt r
+                WHERE l.product = p
+                  AND (:applyReceipt = FALSE OR r.id = :receiptId)
+                  AND (:applySupplier = FALSE OR r.supplierId = :supplierId)
+              )
+              AND (:active IS NULL OR p.active = :active)
+              AND (
+                :search IS NULL OR :search = ''
+                OR FUNCTION('translate', p.name, :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+                OR FUNCTION('translate', p.sku, :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+                OR FUNCTION('translate', COALESCE(p.barcode, ''), :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+                OR FUNCTION('translate', COALESCE(p.ikpu, ''), :foldFrom, :foldTo)
+                  LIKE CONCAT('%', FUNCTION('translate', :search, :foldFrom, :foldTo), '%')
+              )
+            """
+    )
+    Page<Product> searchFromReceipts(
+        @Param("companyId") Integer companyId,
+        @Param("search") String search,
+        @Param("foldFrom") String foldFrom,
+        @Param("foldTo") String foldTo,
+        @Param("active") Boolean active,
+        @Param("applySupplier") boolean applySupplier,
+        @Param("supplierId") UUID supplierId,
+        @Param("applyReceipt") boolean applyReceipt,
+        @Param("receiptId") UUID receiptId,
+        Pageable pageable
+    );
+
     Optional<Product> findFirstByCompanyIdAndUzInvoiceDocumentId(Integer companyId, String invoiceId);
 
     Optional<Product> findFirstByCompanyIdAndSkuStartingWith(Integer companyId, String skuPrefix);
 
-    Optional<Product> findFirstByCompanyIdAndBarcode(Integer companyId, String barcode);
+    Optional<Product> findFirstByCompanyIdAndExternalProductId(Integer companyId, String externalProductId);
+
+    @Query("SELECT DISTINCT p.companyId FROM Product p")
+    List<Integer> findDistinctCompanyIds();
 
     /**
-     * Остаток — сумма по магазинам, если она есть, иначе поле товара.
+     * Корпоративный low-stock: сумма живых остатков по {@code store_stock}.
+     * Нет строк магазина → qty 0 (не {@code products.stock_quantity}).
      * Порог NULL считается как 10 (дефолт карточки).
      */
     @Query(value = """
@@ -70,8 +141,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
         ) s ON s.product_id = p.id
         WHERE p.company_id = :companyId
           AND p.is_active = true
-          AND COALESCE(s.qty, p.stock_quantity, 0) <= COALESCE(p.low_stock_alert, 10)
-        ORDER BY COALESCE(s.qty, p.stock_quantity, 0) ASC, p.name ASC
+          AND COALESCE(s.qty, 0) <= COALESCE(p.low_stock_alert, 10)
+        ORDER BY COALESCE(s.qty, 0) ASC, p.name ASC
         """, nativeQuery = true)
     List<String> findLowStockIds(
         @Param("companyId") Integer companyId,

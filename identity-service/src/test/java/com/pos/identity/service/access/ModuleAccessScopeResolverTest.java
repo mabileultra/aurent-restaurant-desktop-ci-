@@ -80,4 +80,17 @@ class ModuleAccessScopeResolverTest {
         assertFalse(resolver.keysFor(cashier).contains("dashboard"));
         assertTrue(resolver.keysFor(cashier).contains("cashierPos"));
     }
+
+    @Test
+    void pharmacyAdminCanBeGrantedCashierPosNotGroceryCatalog() {
+        User admin = IdentityUsers.user("ADMIN", 18);
+        when(posCoreClient.getCompanyById(18)).thenReturn(new CompanyDto(18, "Apteka", "22222", true, "PHARMACY"));
+        assertTrue(resolver.keysFor(admin).contains("cashierPos"));
+        assertTrue(resolver.keysFor(admin).contains("stockProducts"));
+        assertTrue(resolver.keysFor(admin).contains("reportsPriceRegistry"));
+        assertFalse(resolver.keysFor(admin).contains("products"));
+        assertFalse(resolver.keysFor(admin).contains("categories"));
+        assertFalse(resolver.keysFor(admin).contains("restaurantPos"));
+        assertFalse(resolver.keysFor(admin).contains("ordersList"));
+    }
 }

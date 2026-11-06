@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-170-stock-receipt-payments" author="pos">
+        <createTable tableName="stock_receipt_payments">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="receipt_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="stock_receipt_payments"
+            baseColumnNames="receipt_id"
+            referencedTableName="stock_receipts"
+            referencedColumnNames="id"
+            constraintName="fk_receipt_payments_receipt"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_pharm_receipt_payments_receipt" tableName="stock_receipt_payments">
+            <column name="receipt_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

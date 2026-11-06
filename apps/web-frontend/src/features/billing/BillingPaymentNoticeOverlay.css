@@ -1,0 +1,90 @@
+.billing-payment-notice {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.25rem;
+  padding-top: min(12vh, 6rem);
+  pointer-events: none;
+  background: transparent;
+}
+
+.billing-payment-notice__card {
+  pointer-events: auto;
+  width: min(100%, 26rem);
+  border-radius: 1rem;
+  border: 1px solid #fcd34d;
+  background: #fffbeb;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  padding: 1.25rem 1.35rem;
+  animation: billing-payment-notice-in 0.25s ease-out;
+}
+
+.billing-payment-notice__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: #78350f;
+}
+
+.billing-payment-notice__body,
+.billing-payment-notice__hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #92400e;
+}
+
+.billing-payment-notice__hint {
+  color: #a16207;
+}
+
+.billing-payment-notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.billing-payment-notice__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.65rem;
+  border: 1px solid #f59e0b;
+  background: #fff;
+  color: #92400e;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.billing-payment-notice__btn:hover {
+  background: #fef3c7;
+}
+
+.billing-payment-notice__btn--primary {
+  background: #f59e0b;
+  border-color: #d97706;
+  color: #fff;
+}
+
+.billing-payment-notice__btn--primary:hover {
+  background: #d97706;
+}
+
+@keyframes billing-payment-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

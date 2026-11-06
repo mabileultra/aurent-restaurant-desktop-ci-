@@ -1,0 +1,54 @@
+/* Сетка способов оплаты: нал / карта / смешанный / бесконтакт / DMED */
+
+.pharmacy-pay-rail__methods--five {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pharmacy-pay-rail__methods--five .pharmacy-pay-rail__method:nth-child(-n + 3) {
+  grid-column: span 2;
+}
+
+.pharmacy-pay-rail__methods--five .pharmacy-pay-rail__method:nth-child(n + 4) {
+  grid-column: span 3;
+}
+
+.pharmacy-pay-rail__method--mixed.is-active,
+.pharmacy-pay-rail__method--cashless.is-active {
+  border-color: color-mix(in srgb, var(--ppr-gold, #c4a35a) 70%, #9dceb5);
+  box-shadow: inset 0 0 0 1px rgb(0 104 71 / 0.08);
+}
+
+.pharmacy-pay-rail__methods--five .pharmacy-pay-rail__method-label {
+  font-size: 0.5rem;
+  letter-spacing: 0.01em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+}
+
+.pharmacy-pay-rail .pos-register-card-providers {
+  gap: 6px;
+}
+
+.pharmacy-pay-rail .pos-register-card-providers__btn {
+  height: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+}
+
+.pharmacy-pay-rail .pos-register-card-providers__logo {
+  max-height: 22px;
+  max-width: 92%;
+}
+
+.pharmacy-pay-rail .pos-register-card-providers__btn--humo .pos-register-card-providers__logo {
+  max-height: 18px;
+}
+
+.pharmacy-pay-rail .pos-register-card-providers__btn--click .pos-register-card-providers__logo {
+  max-height: 20px;
+}

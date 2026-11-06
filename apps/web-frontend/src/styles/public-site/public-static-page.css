@@ -1,0 +1,5 @@
+/* Legacy aliases — pages use public-section / public-page-* from public-site-sections.css */
+
+.public-static-page {
+  flex: 1;
+}

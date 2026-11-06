@@ -1,0 +1,176 @@
+import { extractVatFromInclusive, round2 } from '../../utils/taxAmounts';
+import {
+  lineDiscountAmount,
+  lineSubtotal,
+} from '../../store/cartStore';
+import { resolveCheckoutLineItems } from '../../features/pharmacy-cashier/utils/pharmacyCheckoutItems';
+import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
+
+function mapLineItems(cartItems) {
+  return cartItems.map((item) => {
+    const gross = lineSubtotal(item);
+    const tax = extractVatFromInclusive(gross, item.taxRate);
+    return {
+      id: item.lineId,
+      productName: item.name,
+      saleType: item.saleType || 'PIECE',
+      unitOfMeasure: item.unitLabel || item.unitCode || 'pcs',
+      quantity: item.quantity,
+      returnedQuantity: 0,
+      returnableQuantity: item.quantity,
+      unitPrice: round2(item.unitPrice),
+      lineTotal: gross,
+      taxAmount: tax,
+      lineDiscount: lineDiscountAmount(item),
+      taxRatePercent: item.taxRate,
+      ikpu: item.ikpu || null,
+      productSku: item.sku || null,
+    };
+  });
+}
+
+function resolvePayAmounts(payment, total) {
+  const payTotal = round2(total);
+  if (payment.paymentMethod === 'MIXED') {
+    const cash = round2(Math.min(payment.cashAmount ?? payTotal, payTotal));
+    const card = round2(Math.max(0, payTotal - cash));
+    return { cashAmount: cash, cardAmount: card, amountTendered: payment.amountTendered ?? cash };
+  }
+  if (
+    payment.paymentMethod === 'CARD'
+    || payment.paymentMethod === 'CASHLESS'
+    || payment.paymentMethod === 'MPESA'
+  ) {
+    return { cashAmount: 0, cardAmount: payTotal, amountTendered: payTotal };
+  }
+  const tendered = payment.amountTendered ?? payTotal;
+  return {
+    cashAmount: payTotal,
+    cardAmount: 0,
+    amountTendered: tendered,
+    changeGiven: round2(Math.max(0, tendered - payTotal)),
+  };
+}
+
+/**
+ * SaleResponse-подобный объект для UI и ESC/POS из локальной корзины.
+ */
+export function buildOfflineSaleResponse({
+  clientSaleId,
+  receiptNumber,
+  payment,
+  customerName = null,
+  storeId,
+  storeName,
+  cashierName,
+  shift,
+  cartItems,
+  orderDiscountAmount,
+  orderDiscountPercent,
+  fiscal = null,
+  printFiscalQr = true,
+}) {
+  const items = mapLineItems(cartItems);
+  const linesTotal = round2(cartItems.reduce((acc, item) => acc + lineSubtotal(item), 0));
+  const lineDiscountTotal = round2(cartItems.reduce((acc, item) => acc + lineDiscountAmount(item), 0));
+  const orderDiscount = round2(Math.min(orderDiscountAmount ?? 0, linesTotal));
+  const subtotal = round2(
+    cartItems.reduce((acc, item) => acc + (lineSubtotal(item) - extractVatFromInclusive(lineSubtotal(item), item.taxRate)), 0)
+  );
+  const taxTotal = round2(
+    cartItems.reduce((acc, item) => acc + extractVatFromInclusive(lineSubtotal(item), item.taxRate), 0)
+  );
+  const totalAmount = round2(linesTotal - orderDiscount);
+  const pay = resolvePayAmounts(payment, totalAmount);
+  const createdAt = new Date().toISOString();
+
+  return {
+    id: clientSaleId,
+    clientSaleId,
+    receiptNumber,
+    cashierName: cashierName || '',
+    storeId: Number(storeId),
+    storeName: storeName || '',
+    customerName: customerName || payment.customerName || null,
+    createdAt,
+    items,
+    subtotal,
+    taxTotal,
+    discountTotal: round2(lineDiscountTotal + orderDiscount),
+    lineDiscountTotal,
+    orderDiscountAmount: orderDiscount,
+    orderDiscountPercent: orderDiscountPercent ?? 0,
+    totalAmount,
+    returnAmount: 0,
+    paymentMethod: payment.paymentMethod,
+    cardType: payment.cardType || null,
+    cashAmount: pay.cashAmount,
+    cardAmount: pay.cardAmount,
+    receiptType: payment.receiptType || 'SALE',
+    amountTendered: pay.amountTendered,
+    changeGiven: pay.changeGiven ?? 0,
+    status: 'COMPLETED',
+    shiftId: shift?.id || shift?.clientShiftId,
+    shiftOpenedAt: shift?.openedAt,
+    shiftClosedAt: null,
+    shiftStatus: shift?.status || 'OPEN',
+    shiftZReportId: null,
+    offlinePendingSync: true,
+    fiscalStatus: fiscal?.fiscalStatus || null,
+    fiscalSign: fiscal?.fiscalSign || null,
+    fiscalReceiptSeq: fiscal?.fiscalReceiptSeq || null,
+    multikassaSaleId: fiscal?.multikassaSaleId || null,
+    fiscalQrUrl: fiscal?.fiscalQrUrl || null,
+    fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
+    fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? createdAt : null,
+    printFiscalQr: printFiscalQr !== false,
+  };
+}
+
+export function buildOfflineCheckoutPayload({
+  storeId,
+  payment,
+  cartItems,
+  orderDiscountAmount,
+  orderDiscountPercent,
+  fiscal = null,
+}) {
+  const fiscalBlock = fiscal
+    ? {
+        fiscalStatus: fiscal.fiscalStatus,
+        fiscalSign: fiscal.fiscalSign,
+        fiscalReceiptSeq: fiscal.fiscalReceiptSeq,
+        multikassaSaleId: fiscal.multikassaSaleId,
+        fiscalQrUrl: fiscal.fiscalQrUrl,
+        fiscalError: fiscal.fiscalError,
+        fiscalTerminalId: fiscal.fiscalTerminalId || fiscal.terminalId || null,
+        ...(fiscal.multikassaRetryBody
+          ? {
+              multikassaRetryBody: fiscal.multikassaRetryBody,
+              clientOperationId: fiscal.clientOperationId || null,
+            }
+          : {}),
+      }
+    : undefined;
+
+  const pharmacyExtras = buildPharmacySaleExtras(payment);
+
+  return {
+    storeId: Number(storeId),
+    paymentMethod: payment.paymentMethod,
+    receiptType: payment.receiptType || 'SALE',
+    cardType: payment.cardType,
+    cashAmount: payment.cashAmount,
+    cardAmount: payment.cardAmount,
+    amountTendered: payment.amountTendered,
+    customerId: payment.customerId || undefined,
+    items: resolveCheckoutLineItems(cartItems),
+    orderDiscountAmount: orderDiscountAmount ?? 0,
+    orderDiscountPercent: orderDiscountPercent ?? 0,
+    ...(pharmacyExtras?.notes ? { notes: pharmacyExtras.notes } : {}),
+    ...(pharmacyExtras?.patientPinfl ? { patientPinfl: pharmacyExtras.patientPinfl } : {}),
+    ...(pharmacyExtras?.loyaltyPhone ? { loyaltyPhone: pharmacyExtras.loyaltyPhone } : {}),
+    ...(pharmacyExtras?.pharmacyDmed ? { pharmacyDmed: true } : {}),
+    ...(fiscalBlock ? { fiscal: fiscalBlock } : {}),
+  };
+}

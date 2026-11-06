@@ -64,6 +64,12 @@ public class SiteLead {
     @Column(name = "manager_note", columnDefinition = "TEXT")
     private String managerNote;
 
+    @Column(name = "company_id")
+    private Integer companyId;
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
     @Column(length = 8)
     @Builder.Default
     private String locale = "ru";

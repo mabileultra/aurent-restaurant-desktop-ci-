@@ -5,11 +5,14 @@ import com.pos.platform.client.dto.CompanyStoreCountMap;
 import com.pos.platform.client.dto.CompanyStoreCountResponse;
 import com.pos.platform.client.dto.CompanyStoreCountsResponse;
 import com.pos.platform.client.dto.CompanySyncRequest;
+import com.pos.platform.client.dto.CompanyUserCountResponse;
+import com.pos.platform.client.dto.CreatePosStoreRequest;
+import com.pos.platform.client.dto.PosStoreResponse;
 import com.pos.shared.log.LogUtil;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -19,13 +22,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class PosCoreClient {
 
     private static final String POS_CORE = "pos-core";
 
     private final RestClient posCoreRestClient;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
+
+    public PosCoreClient(
+        @Qualifier("posCoreRestClient") RestClient posCoreRestClient,
+        CircuitBreakerRegistry circuitBreakerRegistry
+    ) {
+        this.posCoreRestClient = posCoreRestClient;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+    }
 
     /**
      * Not retried — the sync call is fire-and-forget already, and retrying blindly risks a
@@ -54,6 +64,38 @@ public class PosCoreClient {
             .retrieve()
             .body(CompanyStoreCountResponse.class);
         return response != null ? response.storeCount() : 0;
+    }
+
+    public PosStoreResponse createStore(CreatePosStoreRequest request) {
+        return posCoreRestClient.post()
+            .uri("/internal/platform/stores")
+            .body(request)
+            .retrieve()
+            .body(PosStoreResponse.class);
+    }
+
+    public void deleteStore(Integer storeId) {
+        if (storeId == null) {
+            return;
+        }
+        try {
+            posCoreRestClient.delete()
+                .uri("/internal/platform/stores/{id}", storeId)
+                .retrieve()
+                .toBodilessEntity();
+        } catch (Exception ex) {
+            LogUtil.warn(PosCoreClient.class, "Store compensate delete failed: id={}", storeId);
+        }
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public int getUserCount(Integer companyId) {
+        CompanyUserCountResponse response = posCoreRestClient.get()
+            .uri("/internal/platform/companies/{id}/user-count", companyId)
+            .retrieve()
+            .body(CompanyUserCountResponse.class);
+        return response != null ? response.userCount() : 0;
     }
 
     public int getStoreCountOrZero(Integer companyId) {

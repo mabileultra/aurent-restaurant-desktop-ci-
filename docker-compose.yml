@@ -176,6 +176,8 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
+      identity-service:
+        condition: service_healthy
     environment:
       PLATFORM_DB_URL: jdbc:postgresql://platform-db:5432/platform_db
       PLATFORM_DB_USERNAME: platform_user
@@ -185,6 +187,8 @@ services:
       PLATFORM_INTERNAL_API_KEY: platform-internal-dev-key-change-in-prod
       PLATFORM_SERVER_PORT: "8084"
       POS_CORE_URL: http://backend:8080/api/v1
+      IDENTITY_SERVICE_URL: http://identity-service:8081/api/v1
+      IDENTITY_INTERNAL_API_KEY: identity-internal-dev-key-change-in-prod
       POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pos_db
       POS_CORE_DATASOURCE_USERNAME: pos_user
       POS_CORE_DATASOURCE_PASSWORD: pos_password
@@ -584,11 +588,12 @@ services:
 
   frontend:
     build:
-      context: ./web-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web-frontend/Dockerfile
       args:
         VITE_API_URL: /api/v1
         VITE_RESTAURANT_APP_URL: ${VITE_RESTAURANT_APP_URL:-http://localhost:5174}
+        VITE_PHARMACY_APP_URL: ${VITE_PHARMACY_APP_URL:-http://localhost:5175}
     container_name: masterpiece-pos-frontend
     depends_on:
       api-gateway:
@@ -600,8 +605,8 @@ services:
 
   restaurant-frontend:
     build:
-      context: ./restaurant-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/restaurant-frontend/Dockerfile
       args:
         VITE_API_URL: /api/v1
         VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-http://localhost:5173}
@@ -611,6 +616,20 @@ services:
         condition: service_healthy
     ports:
       - "5174:80"
+
+  pharmacy-frontend:
+    build:
+      context: .
+      dockerfile: apps/pharmacy-frontend/Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+        VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-http://localhost:5173}
+    container_name: masterpiece-pharmacy-frontend
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    ports:
+      - "5175:80"
 
 volumes:
   pos_pg_data:

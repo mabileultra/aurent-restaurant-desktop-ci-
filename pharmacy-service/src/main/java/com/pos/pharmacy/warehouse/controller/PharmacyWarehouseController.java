@@ -3,10 +3,12 @@ package com.pos.pharmacy.warehouse.controller;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.warehouse.dto.*;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
+import com.pos.shared.api.PageLimits;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -38,9 +40,17 @@ public class PharmacyWarehouseController {
         @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String search,
-        @PageableDefault(size = 20) Pageable pageable
+        @RequestParam(required = false) UUID supplierId,
+        @PageableDefault(size = PageLimits.DEFAULT_SIZE) Pageable pageable
     ) {
-        return ResponseEntity.ok(pharmacyStockReceiptService.list(storeId, status, search, pageable));
+        Pageable bounded = PageRequest.of(
+            PageLimits.normalizePage(pageable.getPageNumber()),
+            PageLimits.normalizeSize(pageable.getPageSize()),
+            pageable.getSort()
+        );
+        return ResponseEntity.ok(
+            pharmacyStockReceiptService.list(storeId, status, search, supplierId, bounded)
+        );
     }
 
     @GetMapping("/{id}")
@@ -89,7 +99,7 @@ public class PharmacyWarehouseController {
 
     @PostMapping("/{id}/lines/mass")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Массово изменить поле строк. После проведения — только цены")
+    @Operation(summary = "Массово изменить поле строк (черновик и проведённый: цены, qty, серия, срок)")
     public ResponseEntity<PharmacyReceiptRevalueResult> massUpdateLines(
         @PathVariable UUID id,
         @Valid @RequestBody PharmacyReceiptMassUpdateRequest request

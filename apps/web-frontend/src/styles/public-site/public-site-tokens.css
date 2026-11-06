@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.public-site {
+  --ps-bg: #f2f7f4;
+  --ps-bg-elevated: #ffffff;
+  --ps-bg-card: #ffffff;
+  --ps-bg-card-hover: #eef5f0;
+  --ps-bg-panel: #ffffff;
+  --ps-accent: #166534;
+  --ps-accent-hover: #14532d;
+  --ps-accent-light: #22c55e;
+  --ps-accent-glow: rgb(22 101 52 / 0.22);
+  --ps-accent-shadow: 0 12px 32px rgb(22 101 52 / 0.28);
+  --ps-green: #16a34a;
+  --ps-green-dark: #14532d;
+  --ps-green-band: #15803d;
+  --ps-red: #166534;
+  --ps-red-dark: #14532d;
+  --ps-ink: #0f2419;
+  --ps-muted: #5f6f65;
+  --ps-line: rgb(15 36 25 / 0.1);
+  --ps-surface: #e8f0eb;
+  --ps-soft: rgb(22 101 52 / 0.07);
+  --ps-on-accent: #ffffff;
+  --ps-radius: 20px;
+  --ps-radius-sm: 12px;
+  --ps-radius-lg: 40px;
+  --ps-shadow: 0 20px 50px rgb(15 36 25 / 0.08);
+  --ps-glow: radial-gradient(circle at 50% 50%, rgb(34 197 94 / 0.2), transparent 65%);
+  --ps-font: 'Inter', system-ui, sans-serif;
+  --ps-display: 'Inter', system-ui, sans-serif;
+  --ps-container: min(1240px, calc(100% - 2.5rem));
+  --ps-header-h: 4.5rem;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ps-font);
+  color: var(--ps-ink);
+  background: var(--ps-bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.public-site::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 95% 5%, rgb(34 197 94 / 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 5% 90%, rgb(22 101 52 / 0.06), transparent 50%);
+}
+
+.public-site__main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.public-site-section {
+  width: var(--ps-container);
+  margin-inline: auto;
+  padding-inline: 0;
+}
+
+html:has(.public-site) {
+  scroll-behavior: smooth;
+}
+
+html.app-theme--public {
+  background: #f2f7f4;
+}
+
+html.app-theme--public body {
+  background: #f2f7f4 !important;
+  color: #0f2419 !important;
+}
+
+html.app-theme--public ::-webkit-scrollbar-track {
+  background: #e8f0eb;
+}
+
+html.app-theme--public ::-webkit-scrollbar-thumb {
+  background: #94a89c;
+}
+
+.public-site section[id],
+.public-site [data-section-anchor] {
+  scroll-margin-top: calc(var(--ps-header-h) + 0.75rem);
+}

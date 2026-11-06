@@ -1,0 +1,125 @@
+/*
+ * Аптечные таблицы — компактный режим (эталон 1024×768, ~10 строк в чеке и поиске).
+ */
+
+html.app-viewport--canonical .pharmacy-cashier,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier {
+  --pharm-row-py: 3px;
+  --pharm-row-px: 5px;
+  --pharm-head-py: 4px;
+  --pharm-name-lines: 2;
+  --pharm-row-min-h: 24px;
+  --pharm-action-btn: 26px;
+  --pharm-action-gap: 4px;
+}
+
+html.app-viewport--canonical .pharmacy-cashier__main,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier__main {
+  grid-template-rows: minmax(120px, 22%) minmax(88px, 120px) minmax(0, 1fr);
+  gap: var(--cashier-gap, 5px);
+}
+
+html.app-viewport--canonical .pharmacy-search__field-wrap,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__field-wrap {
+  padding: 4px 6px;
+}
+
+html.app-viewport--canonical .pharmacy-search__field,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__field {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__table,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__table,
+html.app-viewport--canonical .pharmacy-search__table,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
+  font-size: 0.75rem;
+  line-height: 1.15;
+}
+
+html.app-viewport--canonical .pharmacy-search__table,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
+  min-width: 100%;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__table thead th,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__table thead th,
+html.app-viewport--canonical .pharmacy-search__table thead th,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table thead th {
+  padding: var(--pharm-head-py) var(--pharm-row-px);
+  font-size: 0.5625rem;
+  line-height: 1.15;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__table tbody td,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__table tbody td,
+html.app-viewport--canonical .pharmacy-search__table tbody td,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table tbody td {
+  padding: var(--pharm-row-py) var(--pharm-row-px);
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__row,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__row {
+  min-height: var(--pharm-row-min-h);
+}
+
+html.app-viewport--canonical .pharmacy-search__row,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__row {
+  min-height: var(--pharm-row-min-h);
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__name,
+html.app-viewport--canonical .pharmacy-search__name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__name {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  max-width: none;
+  white-space: normal;
+  vertical-align: middle;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__cell-text--name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__cell-text--name,
+html.app-viewport--canonical .pharmacy-search__cell-text--name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__cell-text--name {
+  -webkit-line-clamp: var(--pharm-name-lines);
+  max-height: calc(var(--pharm-name-lines) * 1.2em);
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__mono,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__mono,
+html.app-viewport--canonical .pharmacy-search__mono,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__mono {
+  font-size: 0.6875rem;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__actions,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__actions {
+  gap: var(--pharm-action-gap);
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__qty-btn,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__qty-btn,
+html.app-viewport--canonical .pharmacy-cart-table__remove,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__remove {
+  width: var(--pharm-action-btn);
+  height: var(--pharm-action-btn);
+  min-width: var(--pharm-action-btn);
+  min-height: var(--pharm-action-btn);
+  border-radius: 6px;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__qty-btn svg,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__qty-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__remove svg,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__remove svg {
+  width: 13px;
+  height: 13px;
+}

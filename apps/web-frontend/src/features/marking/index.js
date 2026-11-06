@@ -1,0 +1,54 @@
+/**
+ * Тема маркировки: КМ, sold-gate, GTIN, отправка в ОФД.
+ * Не аптека и не фискальный провайдер.
+ */
+export {
+  isMarkingCode,
+  isCompleteMarkingScan,
+  normalizeMarkingCode,
+  extractGtinFromMarkingCode,
+  markingBarcodeCandidates,
+  markingScanKey,
+  barcodeLookupVariants,
+} from './markingCode';
+
+export {
+  markingIdentityKeys,
+  markingIdentityKey,
+  markingIdentificationCode,
+  extractSerialFromMarkingCode,
+  lineMarkIdentityKeys,
+  marksShareIdentity,
+  cartHasMark,
+} from './markingIdentity';
+
+export {
+  isMarkSoldLocally,
+  rememberSoldMarks,
+  forgetSoldMarks,
+  collectMarksFromCartItems,
+  clearSoldMarks,
+} from './soldMarksStore';
+
+export { assessMarkLifecycle } from './markLifecycle';
+
+export { inspectMarkPunched, assertCartMarksNotPunched } from './inspectMarkPunched';
+export {
+  inspectMarkCirculation,
+  assertOnkmMarking,
+  validateFiscalMarking,
+  buildMarkingValidationProducts,
+  MARKING_VALIDATION_STATUS,
+} from './onkm';
+export {
+  lookupProductByMarkingGtin,
+  lookupTasnifIdentity,
+  productStubFromTasnif,
+} from './lookupProductByMarkingGtin';
+export { planMarkedScan, applyMarkingScan, removeMarking, isMarkCountedLine } from './markedScanCart';
+export { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
+export { isAslMarkAlreadySold } from './aslMarkAlreadySold';
+export { findProductByMarkingCode, markingMatchesProduct } from './markingProductMatch';
+export { isMarkingOnlyProduct } from './isMarkingOnlyProduct';
+export { attachMarkToProduct, lineMarkingCodes } from './attachMarkToProduct';
+export { resolveCashierMarking } from './resolveCashierMarking';

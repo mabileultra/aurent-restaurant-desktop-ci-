@@ -1,0 +1,92 @@
+.brand-logo {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.brand-logo--icon {
+  width: var(--brand-logo-icon-size, 32px);
+  height: var(--brand-logo-icon-size, 32px);
+  object-fit: contain;
+}
+
+.brand-logo--full {
+  width: auto;
+  height: var(--brand-logo-full-height, 40px);
+  max-width: min(100%, 220px);
+  object-fit: contain;
+}
+
+.cashier-topbar__brand-full.brand-logo--full {
+  max-width: 160px;
+  height: 32px;
+}
+
+.cashier-app--desktop .cashier-topbar__brand-full.brand-logo--full {
+  height: 30px;
+  max-width: 150px;
+}
+
+.cashier-desktop-menu__logo.brand-logo--full {
+  max-width: 180px;
+  height: 32px;
+}
+
+.cashier-pin-login__logo .brand-logo--full {
+  max-width: min(100%, 16rem);
+  height: 3rem;
+}
+
+.cashier-pin-login__logo .brand-logo--icon {
+  --brand-logo-icon-size: 2.75rem;
+}
+
+.cashier-pin-login__logo--default {
+  background: transparent;
+  width: auto;
+  height: auto;
+  padding: 0;
+}
+
+.admin-sidebar__brand .brand-logo--full {
+  max-width: 100%;
+  height: 2rem;
+}
+
+.admin-sidebar__brand .brand-logo--icon {
+  --brand-logo-icon-size: 2rem;
+}
+
+.platform-shell__brand .brand-logo--full {
+  height: 1.75rem;
+}
+
+.login-card__mark .brand-logo--full {
+  height: 2.5rem;
+  max-width: 100%;
+}
+
+.login-card__mark .brand-logo--icon {
+  --brand-logo-icon-size: 2rem;
+}
+
+.login-card__mark--default {
+  background: transparent;
+  padding: 0;
+}
+
+.app-top-header__brand .brand-logo--icon {
+  --brand-logo-icon-size: 1.75rem;
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .cashier-desktop-menu__logo.brand-logo--full {
+    height: 28px;
+    max-width: 160px;
+  }
+
+  .admin-sidebar__brand .brand-logo--full {
+    height: 1.75rem;
+  }
+}

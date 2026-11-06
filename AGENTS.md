@@ -7,7 +7,7 @@ Ushbu loyiha uchun 2 ta ixtisoslashtirilgan sun'iy intellekt agenti sozlangan:
 ## 1. Senior Frontend Engineer (`senior-frontend-engineer`)
 * **Rol**: Aurent POS tizimining yetakchi Senior Frontend muhandisi.
 * **Mas'uliyat doirasi**:
-  - `web-frontend`, `restaurant-frontend`, `desktop-electron`, `restaurant-desktop` ilovalarida arxitektura, komponentlar va mantiqni ishlab chiqish;
+  - `apps/web-frontend`, `apps/restaurant-frontend`, `apps/pharmacy-frontend`, `apps/desktop-electron`, `apps/restaurant-desktop`, `apps/pharmacy-desktop` ilovalarida arxitektura, komponentlar va mantiqni ishlab chiqish;
   - React 18, Vite 7, Tailwind CSS 3, TanStack Query 5, Zustand 4;
   - Yagona paket boshqaruvi: **pnpm**;
   - Yagona mas'uliyat tamoyili (SRP), DRY, Clean Code (sehrli raqamlardan xoli);

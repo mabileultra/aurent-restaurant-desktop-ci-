@@ -94,6 +94,7 @@ public class StoreServiceImpl implements StoreService {
         String businessType,
         String regionCode,
         String districtCode,
+        String status,
         Pageable pageable
     ) {
         Integer scopedCompanyId = tenantAccess.resolveScopedCompanyId(companyId);
@@ -103,7 +104,7 @@ public class StoreServiceImpl implements StoreService {
             pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name").ascending()
         );
         Page<Store> page = storeRepository.findAll(
-            StoreSpecifications.filter(search, scopedCompanyId, businessType, regionCode, districtCode),
+            StoreSpecifications.filter(search, scopedCompanyId, businessType, regionCode, districtCode, status),
             sorted
         );
         return PageResponse.from(page.map(storeMapper::toResponse));
@@ -157,7 +158,13 @@ public class StoreServiceImpl implements StoreService {
         Store store = requireStore(id);
         tenantAccess.assertCanAccessStore(store);
 
-        if (request.name() != null) store.setName(request.name().trim());
+        if (request.name() != null) {
+            String name = request.name().trim();
+            if (name.isEmpty()) {
+                throw new BadRequestException("Store name is required");
+            }
+            store.setName(name);
+        }
         if (request.code() != null) store.setCode(TextUtil.trimOrNull(request.code()));
         if (request.address() != null) store.setAddress(TextUtil.trimOrNull(request.address()));
         if (request.phone() != null) store.setPhone(TextUtil.trimOrNull(request.phone()));

@@ -33,6 +33,8 @@ public interface StockMarkRepository extends JpaRepository<StockMark, UUID> {
 
     List<StockMark> findTop100ByStatusOrderByUpdatedAtAsc(StockMarkStatus status);
 
+    List<StockMark> findByReceiptIdAndStoreId(UUID receiptId, Integer storeId);
+
     @Query(value = StockMarkMonitorSql.SELECT, countQuery = StockMarkMonitorSql.COUNT, nativeQuery = true)
     Page<StockMark> searchForMonitor(
         @Param("companyId") Integer companyId,

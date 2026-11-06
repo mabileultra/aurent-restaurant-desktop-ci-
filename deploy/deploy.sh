@@ -19,10 +19,15 @@ STAGING_OVERLAY="${STAGING_OVERLAY:-docker-compose.staging.yml}"
 SUBCOMMAND="${1:-deploy}"
 
 compose() {
+  # Optional host-local overlay (e.g. lab: hide telegram bots that run on prod).
+  local override=()
+  if [[ -f docker-compose.override.yml ]]; then
+    override=(-f docker-compose.override.yml)
+  fi
   if [[ "${STAGING:-}" == "1" ]]; then
-    docker compose -f "$COMPOSE_FILE" -f "$STAGING_OVERLAY" --env-file "$ENV_FILE" "$@"
+    docker compose -f "$COMPOSE_FILE" -f "$STAGING_OVERLAY" "${override[@]}" --env-file "$ENV_FILE" "$@"
   else
-    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+    docker compose -f "$COMPOSE_FILE" "${override[@]}" --env-file "$ENV_FILE" "$@"
   fi
 }
 
@@ -115,6 +120,7 @@ declare -A CONTAINER_NAMES=(
   [api-gateway]=aurent-api-gateway
   [frontend]=aurent-pos-frontend
   [restaurant-frontend]=aurent-restaurant-frontend
+  [pharmacy-frontend]=aurent-pharmacy-frontend
 )
 
 recreate_service() {
@@ -361,9 +367,11 @@ ensure_env_default() {
 }
 
 ensure_env_default VITE_RESTAURANT_APP_URL 'https://r-aurent.uz'
+ensure_env_default VITE_PHARMACY_APP_URL 'https://p-aurent.uz'
 ensure_env_default VITE_MAIN_APP_URL 'https://aurent.uz'
 ensure_env_default RESTAURANT_HTTP_PORT '5174'
-ensure_env_default APP_CORS_ALLOWED_ORIGIN_PATTERNS 'https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*'
+ensure_env_default PHARMACY_HTTP_PORT '5175'
+ensure_env_default APP_CORS_ALLOWED_ORIGIN_PATTERNS 'https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,https://p-aurent.uz,https://www.p-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*'
 
 # If HTTP_PORT still binds bare :80 while host nginx is expected for dual-domain, hint only.
 if grep -qE '^HTTP_PORT=80$' "$ENV_FILE" 2>/dev/null; then
@@ -614,14 +622,30 @@ if ! recreate_service restaurant-frontend; then
   exit 1
 fi
 
-if [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
+echo "==> pharmacy-frontend..."
+if ! recreate_service pharmacy-frontend; then
+  compose_logs_tail pharmacy-frontend 80
+  exit 1
+fi
+
+# Lab/shared hosts: set ENABLE_TELEGRAM_BOTS=false so prod-owned tokens are not polled here (409 / crash loop).
+telegram_bots_enabled=true
+case "${ENABLE_TELEGRAM_BOTS:-true}" in
+  0|false|FALSE|no|NO|off|OFF) telegram_bots_enabled=false ;;
+esac
+
+if [[ "$telegram_bots_enabled" != "true" ]]; then
+  echo "==> ENABLE_TELEGRAM_BOTS=false — telegram-боты пропущены."
+elif [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
   echo "==> Telegram-бот поддержки веба (CRM/POS)..."
   compose up -d --build telegram-web-support-bot
 else
   echo "==> TELEGRAM_WEB_SUPPORT_BOT_TOKEN не задан — веб-бот поддержки пропущен."
 fi
 
-if [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || -n "${TELEGRAM_BOTS:-}" ]]; then
+if [[ "$telegram_bots_enabled" != "true" ]]; then
+  :
+elif [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || ( -n "${TELEGRAM_BOTS:-}" && "${TELEGRAM_BOTS}" != "[]" && "${TELEGRAM_BOTS}" != "false" ) ]]; then
   echo "==> Telegram-бот(ы) аптеки (по компаниям)..."
   compose up -d --build telegram-support-bot
 else
@@ -637,6 +661,7 @@ echo ""
 echo "Проверка:"
 echo "  Web:       http://${SERVER_IP:-localhost}:${HTTP_PORT:-80}/"
 echo "  Restaurant:http://${SERVER_IP:-localhost}:${RESTAURANT_HTTP_PORT:-5174}/"
+echo "  Pharmacy:  http://${SERVER_IP:-localhost}:${PHARMACY_HTTP_PORT:-5175}/"
 echo "  API (gw):  http://${SERVER_IP:-localhost}:${API_PORT:-8080}/api/v1/actuator/health"
 echo "  Identity:  http://127.0.0.1:8081/api/v1/actuator/health (localhost)"
 echo "  Finance:   http://127.0.0.1:8082/api/v1/swagger-ui.html (localhost)"

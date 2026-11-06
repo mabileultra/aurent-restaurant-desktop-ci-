@@ -1,0 +1,36 @@
+---
+description: Grocery stock ownership — store_stock is SoT; only Inventory/StoreStockService mutates qty
+globs: web-backend/**/*.java
+alwaysApply: false
+---
+
+# Stock ownership (grocery)
+
+## Source of truth
+
+- **`store_stock`** — live quantity per product × store.
+- **`products.stock_quantity`** — denormalized company total cache only.
+- **`stock_movements`** — history; not the live balance.
+
+## Who may change quantity
+
+- **Only** `com.pos.inventory.service.stock.StoreStockService` (`increase` / `decrease` / `setQuantity` / `initialize*`).
+- It alone refreshes `products.stock_quantity` via `syncProductTotal`.
+- Sales, catalog HTTP (`ProductStockService`), restaurant, edge ingest — call `StoreStockService` (or inventory helpers like `ProductStockAdjuster`); they must **not** write `store_stock` / `setStockQuantity` themselves.
+
+## Allowed exceptions
+
+- New product create: `products.stock_quantity = 0` before any store row exists.
+- Pharmacy stock lives in **pharmacy-service** — do not mix into grocery `StoreStockService`.
+
+## API / UI
+
+- `ProductResponse.stockQuantity` must be filled from `store_stock` (store qty or company sum).
+- Missing store rows → `0`, never fall back to denormalized `products.stock_quantity` for list/get/lifecycle/low-stock.
+
+## Must NOT
+
+- Treat `products.stock_quantity` as SoT in new APIs, reports, or cashier logic when `store_stock` exists.
+- Add a second writer path that updates qty outside `StoreStockService`.
+- Let Catalog “own” stock adjustments — catalog may orchestrate (receive/adjust UI) but mutation goes through Inventory.
+- Re-add DB FK from `store_stock` / stock docs / `sale_items` to `products` (dropped in Wave 2.5 for extract readiness).

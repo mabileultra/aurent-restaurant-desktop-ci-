@@ -1,6 +1,10 @@
 package com.pos.identity.controller;
 
 import com.pos.identity.dto.access.AdminModuleCatalogItem;
+import com.pos.identity.dto.access.BulkResetModuleAccessRequest;
+import com.pos.identity.dto.access.CopyModuleAccessRequest;
+import com.pos.identity.dto.access.ModuleAccessHistoryItem;
+import com.pos.identity.dto.access.ModuleAccessMutationResponse;
 import com.pos.identity.dto.access.ModuleAccessStatsResponse;
 import com.pos.identity.dto.access.RoleTemplateResponse;
 import com.pos.identity.dto.access.UpdateRoleTemplateRequest;
@@ -21,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -121,5 +126,40 @@ public class PlatformModuleAccessController {
     @ApiResponse(responseCode = "200", description = "Доступ сброшен")
     public ResponseEntity<UserModuleAccessDetailResponse> resetUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(moduleAccessService.resetUserAccess(userId));
+    }
+
+    @PostMapping("/copy")
+    @Operation(summary = "Копировать доступ", description = "MERGE или REPLACE прав с source на targetUserIds")
+    @ApiResponse(responseCode = "200", description = "Скопировано")
+    public ResponseEntity<ModuleAccessMutationResponse> copy(
+        @Valid @RequestBody CopyModuleAccessRequest request
+    ) {
+        return ResponseEntity.ok(moduleAccessService.copyAccess(request));
+    }
+
+    @PostMapping("/bulk-reset")
+    @Operation(summary = "Массовый сброс", description = "Сброс выбранных пользователей к шаблону роли")
+    @ApiResponse(responseCode = "200", description = "Сброшено")
+    public ResponseEntity<ModuleAccessMutationResponse> bulkReset(
+        @Valid @RequestBody BulkResetModuleAccessRequest request
+    ) {
+        return ResponseEntity.ok(moduleAccessService.bulkResetAccess(request));
+    }
+
+    @GetMapping("/history")
+    @Operation(summary = "Журнал изменений доступа", description = "Аудит изменений module access")
+    @ApiResponse(responseCode = "200", description = "Страница истории")
+    public ResponseEntity<PageResponse<ModuleAccessHistoryItem>> history(
+        @RequestParam(required = false) UUID targetUserId,
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(moduleAccessService.history(targetUserId, pageable));
+    }
+
+    @PostMapping("/history/{historyId}/revert")
+    @Operation(summary = "Откат изменения", description = "Восстановить состояние до записи журнала")
+    @ApiResponse(responseCode = "200", description = "Откат выполнен")
+    public ResponseEntity<ModuleAccessHistoryItem> revert(@PathVariable UUID historyId) {
+        return ResponseEntity.ok(moduleAccessService.revertHistory(historyId));
     }
 }

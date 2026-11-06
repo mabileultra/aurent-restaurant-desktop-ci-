@@ -1,0 +1,13 @@
+{
+  "name": "@aurent/shared-auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Identity SPA handoff helpers (one-time code, no JWT in URL).",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
+  "sideEffects": false
+}

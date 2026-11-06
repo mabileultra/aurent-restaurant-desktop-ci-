@@ -17,6 +17,7 @@ import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import com.pos.pharmacy.support.PharmacyDbFieldLimits;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
+import com.pos.pharmacy.warehouse.support.PharmacyProductDraftReceiptSync;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class ProductWriteService {
     private final ProductFiscalFieldsApplier fiscalFields;
     private final ProductResponseFactory responseFactory;
     private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
+    private final PharmacyProductDraftReceiptSync draftReceiptSync;
 
     @Transactional
     public ProductResponse create(CreateProductRequest req) {
@@ -103,6 +105,7 @@ public class ProductWriteService {
     @Transactional
     public ProductResponse update(UUID id, UpdateProductRequest req) {
         Product product = requireOwned(id);
+        boolean priceTouched = req.costPrice() != null || req.sellingPrice() != null;
         if (StringUtils.hasText(req.name())) {
             product.setName(req.name().trim());
         }
@@ -169,6 +172,9 @@ public class ProductWriteService {
             product.setActive(true);
         }
         Product saved = productRepository.save(product);
+        if (priceTouched) {
+            draftReceiptSync.syncPrices(saved.getId(), saved.getCostPrice(), saved.getSellingPrice());
+        }
         catalogCacheEvictor.onProductChanged(saved.getCompanyId());
         return responseFactory.toResponse(saved, null);
     }

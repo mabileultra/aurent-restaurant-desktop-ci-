@@ -1,0 +1,44 @@
+/* Cashier responsive — CSS variables, order-panel container queries */
+.cashier-app {
+  --cashier-vh: 100dvh;
+  --cashier-bottom-nav-h: clamp(96px, 11vh, 112px);
+  /* Стандартный UI-масштаб (14px), без раздувания на больших экранах */
+  --cashier-font: 14px;
+  --cashier-gap: clamp(8px, 1vw, 14px);
+  --cashier-pad: clamp(8px, 1.2vw, 16px);
+  /* Правая колонка оплаты — уточняется в register-layout-adaptive (cqi) */
+  --cashier-pay-w: clamp(300px, 34%, 420px);
+  --cashier-cart-cols: minmax(0, 1.65fr) minmax(0, 0.85fr) minmax(7rem, 0.72fr) minmax(0, 0.95fr) minmax(2.75rem, 3.25rem);
+  --cashier-cart-cols-register: minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem);
+
+  font-size: var(--cashier-font);
+  overflow: hidden;
+}
+
+.cashier-app > .d-flex.flex-grow-1 {
+  min-height: 0;
+  flex: 1;
+}
+
+.cashier-app .cashier-app__body {
+  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.cashier-app .cashier-app__bottom-nav {
+  flex-shrink: 0;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--pos-border);
+  background: var(--pos-surface);
+}
+
+.cashier-register__workspace {
+  gap: var(--cashier-gap);
+  overflow: hidden;
+}
+
+.cashier-pos-tabs {
+  flex-shrink: 0;
+}
+

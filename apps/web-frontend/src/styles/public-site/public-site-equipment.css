@@ -1,0 +1,112 @@
+.public-equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.public-equipment-card {
+  position: relative;
+  border-radius: 18px;
+  background: var(--ps-bg-card);
+  border: 1px solid var(--ps-line);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgb(15 36 25 / 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.public-equipment-card:hover {
+  transform: translateY(-3px);
+  border-color: rgb(22 101 52 / 0.2);
+  box-shadow: 0 16px 40px rgb(15 36 25 / 0.1);
+}
+
+.public-equipment-card__label {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 1rem 1rem 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.public-equipment-card__media {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  overflow: hidden;
+}
+
+.public-equipment-card__glow {
+  display: none;
+}
+
+.public-equipment-card__img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 220px;
+  height: 88px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .public-equipment-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .public-equipment-card__img {
+    max-width: 100%;
+    height: 96px;
+  }
+}
+
+.public-equipment-card__desc {
+  margin: 0;
+  padding: 0.65rem 1rem 1rem;
+  font-size: 0.8rem;
+  color: var(--ps-muted);
+  line-height: 1.45;
+}
+
+.public-pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.public-pricing-card {
+  padding: 1.5rem;
+  border-radius: 18px;
+  border: 1px solid var(--ps-line);
+  background: var(--ps-bg-card);
+}
+
+.public-pricing-card h2,
+.public-pricing-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.public-pricing-card__price {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--ps-accent);
+}
+
+.public-pricing-card p {
+  margin: 0;
+  color: var(--ps-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}

@@ -9,12 +9,14 @@ import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.support.ProductListResponseAssembler;
-import com.pos.shared.text.CatalogSearchFold;
+import com.pos.pharmacy.catalog.support.ProductReceiptOriginLoader;
 import com.pos.pharmacy.catalog.support.ProductResponseFactory;
-import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
+import com.pos.shared.api.PageLimits;
+import com.pos.shared.api.PageResponse;
+import com.pos.shared.text.CatalogSearchFold;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +39,7 @@ public class ProductCatalogService {
     private final ProductRepository productRepository;
     private final TenantSupport tenant;
     private final ProductListResponseAssembler listResponseAssembler;
+    private final ProductReceiptOriginLoader productReceiptOriginLoader;
     private final PharmacyProductBarcodeCache productBarcodeCache;
     private final ProductBarcodeLookupService barcodeLookupService;
     private final ProductResponseFactory responseFactory;
@@ -46,16 +49,52 @@ public class ProductCatalogService {
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> list(String search, Boolean active, Integer storeId, Pageable pageable) {
+        return list(search, active, storeId, false, null, null, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> list(
+        String search,
+        Boolean active,
+        Integer storeId,
+        boolean fromReceipts,
+        Pageable pageable
+    ) {
+        return list(search, active, storeId, fromReceipts, null, null, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> list(
+        String search,
+        Boolean active,
+        Integer storeId,
+        boolean fromReceipts,
+        UUID supplierId,
+        UUID receiptId,
+        Pageable pageable
+    ) {
         Integer companyId = tenant.requireCompanyId();
-        Page<Product> page = productRepository.search(
-            companyId,
-            trim(search),
-            CatalogSearchFold.FROM,
-            CatalogSearchFold.TO,
-            active,
-            pageable
+        String q = trim(search);
+        int pageNo = PageLimits.normalizePage(pageable.getPageNumber());
+        int size = PageLimits.normalizeSize(pageable.getPageSize());
+        Pageable bounded = PageRequest.of(pageNo, size, pageable.getSort());
+        boolean receiptScoped = fromReceipts || supplierId != null || receiptId != null;
+        UUID supplierKey = supplierId != null ? supplierId : new UUID(0, 0);
+        UUID receiptKey = receiptId != null ? receiptId : new UUID(0, 0);
+        Page<Product> page = receiptScoped
+            ? productRepository.searchFromReceipts(
+                companyId, q, CatalogSearchFold.FROM, CatalogSearchFold.TO, active,
+                supplierId != null, supplierKey, receiptId != null, receiptKey, bounded
+            )
+            : productRepository.search(
+                companyId, q, CatalogSearchFold.FROM, CatalogSearchFold.TO, active, bounded
+            );
+        List<Product> rows = page.getContent();
+        // Origin always (deep-link + OPENING badge), not only when receipt-filtered.
+        Map<UUID, Map<String, String>> origins = productReceiptOriginLoader.loadAttrMaps(
+            rows.stream().map(Product::getId).toList()
         );
-        List<ProductResponse> content = listResponseAssembler.assemble(page.getContent(), storeId);
+        List<ProductResponse> content = listResponseAssembler.assemble(rows, storeId, origins);
         return new PageResponse<>(
             content,
             page.getTotalPages(),

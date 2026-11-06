@@ -94,6 +94,10 @@ public class StockReceipt {
     @Builder.Default
     private List<StockReceiptLine> lines = new ArrayList<>();
 
+    @OneToMany(mappedBy = "receipt", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<StockReceiptPayment> payments = new ArrayList<>();
+
     @PrePersist
     void prePersist() {
         if (createdAt == null) {

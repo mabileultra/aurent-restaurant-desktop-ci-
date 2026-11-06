@@ -9,6 +9,8 @@ public record TaxAnalyticsReceiptsResponse(
     long totalElements,
     int page,
     int size,
-    List<TaxAnalyticsReceiptRowResponse> rows
+    List<TaxAnalyticsReceiptRowResponse> rows,
+    String from,
+    String to
 ) {
 }

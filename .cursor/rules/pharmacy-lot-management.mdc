@@ -1,0 +1,88 @@
+---
+description: Pharmacy lot management — stock only via warehouse ops, not product-card edits
+globs:
+  - pharmacy-service/**/warehouse/**
+  - pharmacy-service/**/catalog/**
+  - apps/pharmacy-frontend/src/features/pharmacy-stock/**
+  - apps/pharmacy-frontend/src/features/stock/**
+alwaysApply: false
+---
+
+# Pharmacy lot management (accepted)
+
+Product card ≠ lot. `store_stock` is a **projection** of movements — never a free-edit field from the product modal.
+
+## Entities
+
+| Layer | Owns | Does not own |
+|---|---|---|
+| Product card | Nomenclature, catalog prices/attrs | Per-delivery qty / batch / expiry |
+| Lot (`StockLot`) | Batch, expiry, qty linked to source line | Direct UI overwrite without op |
+| Source doc | RECEIPT / OPENING line → creates/syncs lot | Fake receipts for qty fixes |
+| Inventory | Fact vs book qty (ADJUSTMENT path) | Supplier delivery story |
+
+## Stock change rule (hard)
+
+Any change to available stock goes through a warehouse operation:
+
+- `RECEIPT` — supplier intake (POSTED line ↔ lot sync)
+- `OPENING` — cutover / initial balances (not a normal supply)
+- `SALE` / `RETURN`
+- `ADJUSTMENT` — inventory / explicit lot correction (audited)
+- `TRANSFER` — store-to-store
+
+**Must NOT:** `UPDATE store_stock` or lot qty from product card save; invent a RECEIPT only to tweak qty.
+
+## Lot edit = operation + audit
+
+Lot UI actions are separate ops, not silent DB edits:
+
+- Change batch / expiry (metadata op + audit old→new, user, time, reason)
+- Qty correction → **ADJUSTMENT movement** (not overwrite); respect sold/reserved
+- Cost change → audited; may sync product cost when policy says so
+
+Prefer derived quantities over blind overwrite:
+
+- initial/received qty (from source doc)
+- sold / reserved (from sales)
+- adjustments (from ADJUSTMENT ops)
+- **available** = f(received, sold, reserved, adjustments)
+
+If sold already happened, lowering “received” below sold must fail or force explicit ADJUSTMENT — never silent clamp of available.
+
+## Source provenance
+
+Keep lot origin visible forever:
+
+- `sourceType`: RECEIPT | OPENING | …
+- `sourceDocument` id/number
+- product, batch, expiry, initial qty, current qty
+
+Do not erase history when editing batch/expiry/qty.
+
+## Product card UX (target)
+
+- Header: name, active, **total stock**, **lot count**
+- Section **Складские партии**: list lots (batch, source badge, expiry, available) + ⋯ ops
+- Section **История**: receipts, sales, inventory, adjustments, returns, transfers
+- Deep-link to source receipt when `receiptLine` exists
+
+## OPENING vs RECEIPT
+
+- OPENING = cutover / “просто на склад”, own UX + import path
+- Do not mix OPENING rows into “поставка от поставщика” mental model
+- After OPENING posted, further qty fixes → inventory/ADJUSTMENT, not another fake supply
+
+## Delivery order (do not skip)
+
+1. POSTED → lot sync (all line fields) — critical ✅  
+2. OPENING UX + import — high ✅  
+3. Product ↔ last receipt link — high ✅  
+4. Lot management UI (ops + audit) — high; read-only list ✅, ops later  
+5. Inventory as ADJUSTMENT — critical ✅ (`POST /pharmacy/inventories` → store_stock + lots + `stock_movements`)  
+6. Audit journal surface — next (`stock_movements` by product)  
+
+## Related
+
+- `.cursor/rules/pharmacy-posted-receipt-line-edit.mdc` — POSTED line → `applyLine` + sync
+- Never revive `applyPrices` / posted field lock for qty-batch-expiry

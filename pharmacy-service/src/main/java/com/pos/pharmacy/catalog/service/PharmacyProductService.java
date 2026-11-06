@@ -3,9 +3,10 @@ package com.pos.pharmacy.catalog.service;
 import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
+import com.pos.pharmacy.catalog.dto.PharmacyProductSupplierStatsResponse;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
-import com.pos.pharmacy.common.PageResponse;
+import com.pos.shared.api.PageResponse;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -19,8 +20,13 @@ public interface PharmacyProductService {
         boolean activeOnly,
         String scope,
         Integer storeId,
+        boolean fromReceipts,
+        UUID supplierId,
+        UUID receiptId,
         Pageable pageable
     );
+
+    PharmacyProductSupplierStatsResponse supplierStats();
 
     List<ProductResponse> listLowStock(int limit);
 

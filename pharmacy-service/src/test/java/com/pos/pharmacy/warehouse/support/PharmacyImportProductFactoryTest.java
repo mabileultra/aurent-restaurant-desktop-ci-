@@ -21,7 +21,7 @@ class PharmacyImportProductFactoryTest {
     @Test
     void copiesInvoiceMarkAndPrescriptionOntoNewProduct() {
         ProductRepository repository = mock(ProductRepository.class);
-        when(repository.findFirstByCompanyIdAndBarcode(anyInt(), any())).thenReturn(Optional.empty());
+        when(repository.findByCompanyIdAndBarcode(anyInt(), any())).thenReturn(Optional.empty());
         PharmacyImportProductFactory factory = new PharmacyImportProductFactory(repository);
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             0, null, true, "Кюпен таб", null, null,

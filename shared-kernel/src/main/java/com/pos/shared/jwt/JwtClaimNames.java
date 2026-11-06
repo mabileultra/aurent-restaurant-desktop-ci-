@@ -11,6 +11,8 @@ public final class JwtClaimNames {
     public static final String CAN_REQUEST_BILL = "can_request_bill";
     /** True when this login may print cafe pickup labels. Absent on older tokens. */
     public static final String CAN_PRINT_PICKUP_LABEL = "can_print_pickup_label";
+    /** Integer bumped when module access changes; mismatch → reject token. */
+    public static final String ACCESS_VERSION = "access_version";
 
     private JwtClaimNames() {
     }

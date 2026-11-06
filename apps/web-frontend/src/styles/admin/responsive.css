@@ -1,0 +1,33 @@
+/* Admin: доп. адаптив (базовый shell — styles/tokens/shell-layout.css) */
+
+@media (max-width: 640px) {
+  .admin-main h1 {
+    font-size: 1.125rem;
+  }
+
+  .admin-main .text-2xl {
+    font-size: 1.25rem;
+  }
+
+  .admin-main [class*='max-w-3xl'],
+  .admin-main [class*='max-w-2xl'],
+  .admin-main [class*='max-w-lg'] {
+    max-width: calc(100vw - 1.5rem);
+  }
+}
+
+@media (max-width: 1023px) {
+  .handbook-page,
+  .support-page {
+    gap: 1rem;
+  }
+
+  .support-page__cards {
+    gap: 0.75rem;
+  }
+
+  .support-card {
+    flex-direction: column;
+    padding: 1rem;
+  }
+}

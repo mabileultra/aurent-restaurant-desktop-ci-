@@ -2,7 +2,7 @@ package com.pos.platform.service.impl;
 
 import com.pos.platform.service.PosCoreProxyService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,15 @@ import org.springframework.web.client.RestClient;
 import java.io.IOException;
 
 @Service
-@RequiredArgsConstructor
 public class PosCoreProxyServiceImpl implements PosCoreProxyService {
 
     private static final String OPS_BASE = "/internal/platform/ops/";
 
     private final RestClient posCoreRestClient;
+
+    public PosCoreProxyServiceImpl(@Qualifier("posCoreRestClient") RestClient posCoreRestClient) {
+        this.posCoreRestClient = posCoreRestClient;
+    }
 
     @Override
     public ResponseEntity<byte[]> forward(HttpServletRequest request, String publicPrefix, String opsBase) {

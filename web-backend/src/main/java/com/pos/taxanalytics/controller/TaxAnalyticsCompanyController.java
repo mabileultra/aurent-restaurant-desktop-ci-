@@ -34,7 +34,7 @@ public class TaxAnalyticsCompanyController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "Firm list with calendar-week turnover delta")
+    @Operation(summary = "Firm list. sort=totalTurnover,desc is applied on the server. weekDeltaPct follows the selected period.")
     public ResponseEntity<TaxAnalyticsCompaniesResponse> list(
         @RequestParam(required = false, defaultValue = "30d") String period,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -44,10 +44,11 @@ public class TaxAnalyticsCompanyController {
         @RequestParam(required = false) String connectionStatus,
         @RequestParam(required = false) String search,
         @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "20") int size
+        @RequestParam(required = false, defaultValue = "20") int size,
+        @RequestParam(required = false, defaultValue = "totalTurnover,desc") String sort
     ) {
         return ResponseEntity.ok(taxAnalyticsCompanyService.list(
-            period, from, to, regionCode, districtCode, connectionStatus, search, page, size
+            period, from, to, regionCode, districtCode, connectionStatus, search, page, size, sort
         ));
     }
 
@@ -65,15 +66,17 @@ public class TaxAnalyticsCompanyController {
 
     @GetMapping("/{companyId}/receipts")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "Чеки фирмы за день")
+    @Operation(summary = "Чеки фирмы за день или диапазон from/to. Границы суток — Asia/Tashkent, created_at в ответе — UTC (Z). Без дат — 400.")
     public ResponseEntity<TaxAnalyticsReceiptsResponse> receipts(
         @PathVariable int companyId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(defaultValue = "ALL") String kind,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(taxAnalyticsCompanyReceiptService.list(companyId, date, kind, page, size));
+        return ResponseEntity.ok(taxAnalyticsCompanyReceiptService.list(companyId, date, from, to, kind, page, size));
     }
 
     @GetMapping("/{companyId}/receipts/{saleId}")

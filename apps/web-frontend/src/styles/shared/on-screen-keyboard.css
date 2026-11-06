@@ -1,0 +1,148 @@
+/* Кнопка ABC в шапке админки / платформы */
+
+.on-screen-keyboard-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 36px;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgb(148 163 184 / 0.45);
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.9);
+  color: rgb(15 23 42);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.on-screen-keyboard-btn:hover {
+  background: rgb(241 245 249);
+  border-color: rgb(100 116 139 / 0.55);
+}
+
+.dark .on-screen-keyboard-btn,
+.admin-shell.dark .on-screen-keyboard-btn,
+.platform-shell.dark .on-screen-keyboard-btn {
+  background: rgb(30 41 59);
+  border-color: rgb(71 85 105);
+  color: rgb(226 232 240);
+}
+
+.dark .on-screen-keyboard-btn:hover,
+.admin-shell.dark .on-screen-keyboard-btn:hover {
+  background: rgb(51 65 85);
+}
+
+.on-screen-keyboard-probe {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Встроенная экранная клавиатура (fallback) */
+
+.virtual-keyboard-dock {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10050;
+  pointer-events: none;
+}
+
+.virtual-keyboard-dock__panel {
+  pointer-events: auto;
+  margin: 0 auto;
+  max-width: 960px;
+  border: 1px solid rgb(148 163 184 / 0.35);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: rgb(248 250 252);
+  box-shadow: 0 -8px 28px rgb(15 23 42 / 0.18);
+}
+
+.virtual-keyboard-dock__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  border-bottom: 1px solid rgb(148 163 184 / 0.25);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgb(51 65 85);
+}
+
+.virtual-keyboard-dock__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgb(71 85 105);
+  cursor: pointer;
+}
+
+.virtual-keyboard-dock__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.45rem 0.5rem 0.55rem;
+}
+
+.virtual-keyboard-dock__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.virtual-keyboard-dock__key {
+  min-width: 2rem;
+  min-height: 2.35rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid rgb(148 163 184 / 0.45);
+  border-radius: 8px;
+  background: #fff;
+  color: rgb(15 23 42);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.virtual-keyboard-dock__key:active {
+  background: rgb(226 232 240);
+}
+
+.virtual-keyboard-dock__key--space {
+  flex: 1 1 8rem;
+  max-width: 14rem;
+}
+
+.virtual-keyboard-dock__key--enter {
+  min-width: 3rem;
+  background: rgb(0 104 71);
+  border-color: rgb(0 104 71);
+  color: #fff;
+}
+
+@media (min-width: 1024px) {
+  .virtual-keyboard-dock__key {
+    min-width: 2.25rem;
+    min-height: 2.5rem;
+  }
+}

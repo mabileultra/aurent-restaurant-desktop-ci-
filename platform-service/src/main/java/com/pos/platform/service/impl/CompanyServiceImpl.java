@@ -3,6 +3,7 @@ package com.pos.platform.service.impl;
 import com.pos.platform.client.PosCoreClient;
 import com.pos.platform.domain.BusinessTypeCodes;
 import com.pos.platform.dto.company.CompanyResponse;
+import com.pos.platform.dto.company.CompanyStatsResponse;
 import com.pos.platform.dto.company.CreateCompanyRequest;
 import com.pos.platform.dto.company.UpdateCompanyRequest;
 import com.pos.platform.dto.shared.PageResponse;
@@ -15,10 +16,12 @@ import com.pos.platform.repository.spec.CompanySpecifications;
 import com.pos.platform.service.CompanyService;
 import com.pos.platform.service.support.CompanySyncSupport;
 import com.pos.platform.service.support.GeoLocationSupport;
+import com.pos.platform.support.CompanyTinValidator;
 import com.pos.platform.util.BusinessTypeParser;
 import com.pos.platform.util.CompanyLoginCodeUtil;
-import com.pos.shared.log.LogUtil;
 import com.pos.platform.util.TextUtil;
+import com.pos.shared.api.PageLimits;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -42,6 +46,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanySyncSupport companySyncSupport;
     private final GeoLocationSupport geoLocationSupport;
     private final PosCoreClient posCoreClient;
+    private final CompanyTinValidator companyTinValidator;
 
     @Override
     public PageResponse<CompanyResponse> list(
@@ -49,21 +54,37 @@ public class CompanyServiceImpl implements CompanyService {
         String businessType,
         String regionCode,
         String districtCode,
+        Boolean active,
         Pageable pageable
     ) {
         Pageable sorted = PageRequest.of(
-            pageable.getPageNumber(),
-            pageable.getPageSize(),
+            PageLimits.normalizePage(pageable.getPageNumber()),
+            PageLimits.normalizeSize(pageable.getPageSize()),
             pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name").ascending()
         );
         Page<Company> page = companyRepository.findAll(
-            CompanySpecifications.filter(search, businessType, regionCode, districtCode),
+            CompanySpecifications.filter(search, businessType, regionCode, districtCode, active),
             sorted
         );
         Map<Integer, Integer> storeCounts = posCoreClient.getStoreCountsOrEmpty(
             page.getContent().stream().map(Company::getId).toList()
         );
         return PageResponse.from(page.map(company -> toListResponse(company, storeCounts)));
+    }
+
+    @Override
+    public CompanyStatsResponse stats(
+        String search,
+        String businessType,
+        String regionCode,
+        String districtCode
+    ) {
+        var base = CompanySpecifications.filter(search, businessType, regionCode, districtCode, null);
+        long total = companyRepository.count(base);
+        long active = companyRepository.count(
+            base.and(CompanySpecifications.filter(null, null, null, null, true))
+        );
+        return new CompanyStatsResponse(total, active, Math.max(0, total - active));
     }
 
     @Override
@@ -83,7 +104,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     @Transactional
     public CompanyResponse create(CreateCompanyRequest request) {
-        String name = request.name().trim();
+        String name = requireNonBlankName(request.name());
         if (companyRepository.existsByNameIgnoreCase(name)) {
             throw new BadRequestException("Company name already exists");
         }
@@ -94,7 +115,7 @@ public class CompanyServiceImpl implements CompanyService {
             .name(name)
             .loginCode(loginCode)
             .legalName(TextUtil.trimOrNull(request.legalName()))
-            .tin(TextUtil.trimOrNull(request.tin()))
+            .tin(companyTinValidator.normalizeAndValidateUnique(request.tin(), null))
             .address(TextUtil.trimOrNull(request.address()))
             .regionCode(regionCode)
             .districtCode(districtCode)
@@ -113,14 +134,16 @@ public class CompanyServiceImpl implements CompanyService {
     public CompanyResponse update(Integer id, UpdateCompanyRequest request) {
         Company company = requireCompany(id);
         if (request.name() != null) {
-            String name = request.name().trim();
+            String name = requireNonBlankName(request.name());
             if (companyRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
                 throw new BadRequestException("Company name already exists");
             }
             company.setName(name);
         }
         if (request.legalName() != null) company.setLegalName(TextUtil.trimOrNull(request.legalName()));
-        if (request.tin() != null) company.setTin(TextUtil.trimOrNull(request.tin()));
+        if (request.tin() != null) {
+            company.setTin(companyTinValidator.normalizeAndValidateUnique(request.tin(), id));
+        }
         if (request.address() != null) company.setAddress(TextUtil.trimOrNull(request.address()));
         if (request.phone() != null) company.setPhone(TextUtil.trimOrNull(request.phone()));
         if (request.businessType() != null) {
@@ -153,6 +176,14 @@ public class CompanyServiceImpl implements CompanyService {
                     + ". Сначала удалите или отвяжите магазины (Платформа → Магазины), затем повторите."
             );
         }
+        int userCount = posCoreClient.getUserCount(id);
+        if (userCount > 0) {
+            throw new BadRequestException(
+                "Нельзя удалить компанию: привязано пользователей — "
+                    + userCount
+                    + ". Сначала деактивируйте или перенесите пользователей, затем повторите."
+            );
+        }
         companyRepository.delete(company);
         companySyncSupport.syncDelete(company);
         LogUtil.info(CompanyServiceImpl.class, "Company deleted: id={}", id);
@@ -161,6 +192,13 @@ public class CompanyServiceImpl implements CompanyService {
     private Company requireCompany(Integer id) {
         return companyRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+    }
+
+    private static String requireNonBlankName(String name) {
+        if (!StringUtils.hasText(name) || !StringUtils.hasText(name.trim())) {
+            throw new BadRequestException("Company name is required");
+        }
+        return name.trim();
     }
 
     private CompanyResponse toListResponse(Company company, Map<Integer, Integer> storeCounts) {

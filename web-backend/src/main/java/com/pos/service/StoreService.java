@@ -20,6 +20,7 @@ public interface StoreService {
         String businessType,
         String regionCode,
         String districtCode,
+        String status,
         Pageable pageable
     );
 

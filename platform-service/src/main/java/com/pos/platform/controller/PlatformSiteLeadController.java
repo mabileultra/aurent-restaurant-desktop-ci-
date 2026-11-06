@@ -1,6 +1,11 @@
 package com.pos.platform.controller;
 
 import com.pos.platform.domain.SiteLeadStatus;
+import com.pos.platform.dto.site.ConvertLeadRequest;
+import com.pos.platform.dto.site.ConvertLeadResponse;
+import com.pos.platform.dto.site.CreateLeadCommentRequest;
+import com.pos.platform.dto.site.LeadEventResponse;
+import com.pos.platform.dto.site.LeadStatsResponse;
 import com.pos.platform.dto.site.SiteLeadResponse;
 import com.pos.platform.dto.site.UpdateSiteLeadRequest;
 import com.pos.platform.dto.shared.PageResponse;
@@ -12,17 +17,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +41,12 @@ import java.util.UUID;
 public class PlatformSiteLeadController {
 
     private final SiteLeadService siteLeadService;
+
+    @GetMapping("/stats")
+    @Operation(summary = "Агрегаты заявок")
+    public ResponseEntity<LeadStatsResponse> stats() {
+        return ResponseEntity.ok(siteLeadService.stats());
+    }
 
     @GetMapping
     @Operation(summary = "Список заявок")
@@ -48,6 +62,30 @@ public class PlatformSiteLeadController {
     @Operation(summary = "Заявка по ID")
     public ResponseEntity<SiteLeadResponse> get(@PathVariable UUID id) {
         return ResponseEntity.ok(siteLeadService.getById(id));
+    }
+
+    @GetMapping("/{id}/events")
+    @Operation(summary = "Лента событий заявки")
+    public ResponseEntity<List<LeadEventResponse>> events(@PathVariable UUID id) {
+        return ResponseEntity.ok(siteLeadService.events(id));
+    }
+
+    @PostMapping("/{id}/comments")
+    @Operation(summary = "Комментарий к заявке")
+    public ResponseEntity<LeadEventResponse> comment(
+        @PathVariable UUID id,
+        @Valid @RequestBody CreateLeadCommentRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(siteLeadService.addComment(id, request));
+    }
+
+    @PostMapping("/{id}/convert")
+    @Operation(summary = "Атомарно создать компанию / филиал / админа")
+    public ResponseEntity<ConvertLeadResponse> convert(
+        @PathVariable UUID id,
+        @Valid @RequestBody ConvertLeadRequest request
+    ) {
+        return ResponseEntity.ok(siteLeadService.convert(id, request));
     }
 
     @PatchMapping("/{id}")

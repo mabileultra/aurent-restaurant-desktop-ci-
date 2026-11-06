@@ -1,0 +1,113 @@
+.admin-shell .admin-btn-primary,
+html.app-theme--admin .admin-btn-primary,
+.admin-doc-btn--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #0f7a45;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgb(15 90 50 / 0.2);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-shell .admin-btn-primary:hover:not(:disabled),
+html.app-theme--admin .admin-btn-primary:hover:not(:disabled),
+.admin-doc-btn--primary:hover:not(:disabled) {
+  background: #0c6840;
+  filter: none;
+}
+
+.admin-shell .admin-btn-secondary,
+html.app-theme--admin .admin-btn-secondary,
+.admin-doc-btn--ghost,
+.platform-filter-bar__filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-shell .admin-btn-secondary:hover:not(:disabled),
+html.app-theme--admin .admin-btn-secondary:hover:not(:disabled),
+.admin-doc-btn--ghost:hover:not(:disabled),
+.platform-filter-bar__filter:hover,
+.platform-filter-bar__filter.is-active {
+  background: #f8fafc;
+  border-color: #d5dbe3;
+}
+
+.admin-doc-btn--soft,
+.stock-inv-lines__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #b7e0c8;
+  border-radius: 999px;
+  background: #f3faf6;
+  color: #0b7a4b;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-doc-btn--soft:hover:not(:disabled),
+.stock-inv-lines__add:hover {
+  background: #e7f6ee;
+}
+
+.admin-doc-btn--icon,
+.stock-inv-remove,
+.stock-inv-stepper__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-doc-btn--icon:hover:not(:disabled),
+.stock-inv-remove:hover:not(:disabled) {
+  background: #f8fafc;
+  color: #e11d48;
+}
+
+.admin-shell .admin-btn-primary:disabled,
+.admin-shell .admin-btn-secondary:disabled,
+.admin-doc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

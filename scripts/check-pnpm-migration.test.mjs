@@ -9,26 +9,31 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 const REQUIRED_PNPM_PACKAGES = [
-  'web-frontend',
-  'restaurant-frontend',
-  'desktop-electron',
-  'restaurant-desktop',
-  'telegram-support-bot',
-  'telegram-web-support-bot',
+  'apps/web-frontend',
+  'apps/restaurant-frontend',
+  'apps/pharmacy-frontend',
+  'apps/desktop-electron',
+  'apps/restaurant-desktop',
+  'apps/pharmacy-desktop',
+  'bots/telegram-support-bot',
+  'bots/telegram-web-support-bot',
 ];
 
 const REQUIRED_WORKSPACES = [
-  'web-frontend',
-  'restaurant-frontend',
-  'desktop-electron',
-  'restaurant-desktop',
+  'apps/web-frontend',
+  'apps/restaurant-frontend',
+  'apps/pharmacy-frontend',
+  'apps/desktop-electron',
+  'apps/restaurant-desktop',
+  'apps/pharmacy-desktop',
 ];
 
 const DOCKERFILES = [
-  'web-frontend/Dockerfile',
-  'restaurant-frontend/Dockerfile',
-  'telegram-support-bot/Dockerfile',
-  'telegram-web-support-bot/Dockerfile',
+  'apps/web-frontend/Dockerfile',
+  'apps/restaurant-frontend/Dockerfile',
+  'apps/pharmacy-frontend/Dockerfile',
+  'bots/telegram-support-bot/Dockerfile',
+  'bots/telegram-web-support-bot/Dockerfile',
 ];
 
 const WORKFLOW_FILES = [

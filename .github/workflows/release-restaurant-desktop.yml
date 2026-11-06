@@ -61,8 +61,9 @@ jobs:
           node-version: '20'
           cache: pnpm
           cache-dependency-path: |
-            restaurant-desktop/pnpm-lock.yaml
-            restaurant-frontend/pnpm-lock.yaml
+            apps/restaurant-desktop/pnpm-lock.yaml
+            apps/restaurant-frontend/pnpm-lock.yaml
+            pnpm-lock.yaml
 
       - name: Build jar + UI (no JRE / no electron)
         env:
@@ -76,16 +77,16 @@ jobs:
             -Dproject.build.sourceEncoding=UTF-8 \
             -Dproject.reporting.outputEncoding=UTF-8
           JAR="$(ls -1 restaurant-service/target/restaurant-service-*.jar | grep -v plain | head -1)"
-          mkdir -p restaurant-desktop/resources
-          cp -f "$JAR" restaurant-desktop/resources/restaurant-service.jar
-          (cd restaurant-desktop && pnpm install && pnpm run bundle-ui)
-          test -f restaurant-desktop/resources/restaurant-service.jar
-          test -f restaurant-desktop/ui/index.html
+          mkdir -p apps/restaurant-desktop/resources
+          cp -f "$JAR" apps/restaurant-desktop/resources/restaurant-service.jar
+          (cd apps/restaurant-desktop && pnpm install && pnpm run bundle-ui)
+          test -f apps/restaurant-desktop/resources/restaurant-service.jar
+          test -f apps/restaurant-desktop/ui/index.html
           # Flat payload so Windows/mac download paths are predictable.
           rm -rf /tmp/restaurant-edge-payload
           mkdir -p /tmp/restaurant-edge-payload/resources /tmp/restaurant-edge-payload/ui
-          cp -f restaurant-desktop/resources/restaurant-service.jar /tmp/restaurant-edge-payload/resources/
-          cp -a restaurant-desktop/ui/. /tmp/restaurant-edge-payload/ui/
+          cp -f apps/restaurant-desktop/resources/restaurant-service.jar /tmp/restaurant-edge-payload/resources/
+          cp -a apps/restaurant-desktop/ui/. /tmp/restaurant-edge-payload/ui/
 
       - name: Upload jar + UI
         uses: actions/upload-artifact@v4
@@ -110,12 +111,12 @@ jobs:
         with:
           node-version: '20'
           cache: pnpm
-          cache-dependency-path: restaurant-desktop/pnpm-lock.yaml
+          cache-dependency-path: apps/restaurant-desktop/pnpm-lock.yaml
 
       - name: Cache portable JRE (win-x64)
         uses: actions/cache@v4
         with:
-          path: restaurant-desktop/resources/jre-win-x64
+          path: apps/restaurant-desktop/resources/jre-win-x64
           key: jre-win-x64-${{ env.JRE_CACHE_VER }}
 
       - name: Cache Electron
@@ -124,16 +125,16 @@ jobs:
           path: |
             ~/AppData/Local/electron/Cache
             ~/AppData/Local/electron-builder/Cache
-          key: electron-win-${{ hashFiles('restaurant-desktop/pnpm-lock.yaml') }}
+          key: electron-win-${{ hashFiles('apps/restaurant-desktop/pnpm-lock.yaml') }}
 
       - name: Download jar + UI
         uses: actions/download-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: restaurant-desktop
+          path: apps/restaurant-desktop
 
       - name: Install desktop deps + JRE + build Windows
-        working-directory: restaurant-desktop
+        working-directory: apps/restaurant-desktop
         shell: bash
         run: |
           set -euo pipefail
@@ -174,7 +175,7 @@ jobs:
           : "${DEPLOY_HOST:?DEPLOY_HOST secret missing}"
           : "${DEPLOY_USER:?DEPLOY_USER secret missing}"
           test -f ~/.ssh/deploy_key || { echo "deploy_key missing — Setup SSH failed" >&2; exit 1; }
-          ls -la restaurant-desktop/dist || true
+          ls -la apps/restaurant-desktop/dist || true
           # ssh-keyscan often returns non-zero on CI; must not abort the job
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           SSH_OPTS=(-i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15)
@@ -184,18 +185,18 @@ jobs:
           shopt -s nullglob
           # Installer + electron-updater feed (latest.yml) — auto-update needs the yml.
           files=(
-            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
-            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
-            restaurant-desktop/dist/latest.yml
+            apps/restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
+            apps/restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
+            apps/restaurant-desktop/dist/latest.yml
           )
-          if ! compgen -G "restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe" > /dev/null; then
+          if ! compgen -G "apps/restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe" > /dev/null; then
             echo "No Windows artifacts (Aurent-Restaurant-*-win-*.exe)" >&2
-            ls -la restaurant-desktop/dist || true
+            ls -la apps/restaurant-desktop/dist || true
             exit 1
           fi
-          if [[ ! -f restaurant-desktop/dist/latest.yml ]]; then
+          if [[ ! -f apps/restaurant-desktop/dist/latest.yml ]]; then
             echo "latest.yml missing — electron-updater feed will 404" >&2
-            ls -la restaurant-desktop/dist || true
+            ls -la apps/restaurant-desktop/dist || true
             exit 1
           fi
           echo "Uploading: ${files[*]}"
@@ -210,9 +211,9 @@ jobs:
         with:
           name: aurent-restaurant-desktop-win-x64
           path: |
-            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
-            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
-            restaurant-desktop/dist/latest.yml
+            apps/restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
+            apps/restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
+            apps/restaurant-desktop/dist/latest.yml
           if-no-files-found: warn
           retention-days: 14
 
@@ -241,12 +242,12 @@ jobs:
         with:
           node-version: '20'
           cache: pnpm
-          cache-dependency-path: restaurant-desktop/pnpm-lock.yaml
+          cache-dependency-path: apps/restaurant-desktop/pnpm-lock.yaml
 
       - name: Cache portable JRE (mac-x64)
         uses: actions/cache@v4
         with:
-          path: restaurant-desktop/resources/jre-mac-x64
+          path: apps/restaurant-desktop/resources/jre-mac-x64
           key: jre-mac-x64-${{ env.JRE_CACHE_VER }}
 
       - name: Cache Electron
@@ -255,16 +256,16 @@ jobs:
           path: |
             ~/Library/Caches/electron
             ~/Library/Caches/electron-builder
-          key: electron-mac-x64-${{ hashFiles('restaurant-desktop/pnpm-lock.yaml') }}
+          key: electron-mac-x64-${{ hashFiles('apps/restaurant-desktop/pnpm-lock.yaml') }}
 
       - name: Download jar + UI
         uses: actions/download-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: restaurant-desktop
+          path: apps/restaurant-desktop
 
       - name: Install desktop deps + JRE + build macOS x64
-        working-directory: restaurant-desktop
+        working-directory: apps/restaurant-desktop
         run: |
           set -euo pipefail
           pnpm install
@@ -301,10 +302,10 @@ jobs:
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
           shopt -s nullglob
-          files=(restaurant-desktop/dist/*x64*.dmg restaurant-desktop/dist/*x64*.blockmap)
+          files=(apps/restaurant-desktop/dist/*x64*.dmg apps/restaurant-desktop/dist/*x64*.blockmap)
           if ((${#files[@]} == 0)); then
             echo "No macOS x64 artifacts" >&2
-            ls -la restaurant-desktop/dist || true
+            ls -la apps/restaurant-desktop/dist || true
             exit 1
           fi
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
@@ -335,12 +336,12 @@ jobs:
         with:
           node-version: '20'
           cache: pnpm
-          cache-dependency-path: restaurant-desktop/pnpm-lock.yaml
+          cache-dependency-path: apps/restaurant-desktop/pnpm-lock.yaml
 
       - name: Cache portable JRE (mac-arm64)
         uses: actions/cache@v4
         with:
-          path: restaurant-desktop/resources/jre-mac-arm64
+          path: apps/restaurant-desktop/resources/jre-mac-arm64
           key: jre-mac-arm64-${{ env.JRE_CACHE_VER }}
 
       - name: Cache Electron
@@ -349,16 +350,16 @@ jobs:
           path: |
             ~/Library/Caches/electron
             ~/Library/Caches/electron-builder
-          key: electron-mac-arm64-${{ hashFiles('restaurant-desktop/pnpm-lock.yaml') }}
+          key: electron-mac-arm64-${{ hashFiles('apps/restaurant-desktop/pnpm-lock.yaml') }}
 
       - name: Download jar + UI
         uses: actions/download-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: restaurant-desktop
+          path: apps/restaurant-desktop
 
       - name: Install desktop deps + JRE + build macOS arm64
-        working-directory: restaurant-desktop
+        working-directory: apps/restaurant-desktop
         run: |
           set -euo pipefail
           pnpm install
@@ -395,10 +396,10 @@ jobs:
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
           shopt -s nullglob
-          files=(restaurant-desktop/dist/*arm64*.dmg restaurant-desktop/dist/*arm64*.blockmap)
+          files=(apps/restaurant-desktop/dist/*arm64*.dmg apps/restaurant-desktop/dist/*arm64*.blockmap)
           if ((${#files[@]} == 0)); then
             echo "No macOS arm64 artifacts" >&2
-            ls -la restaurant-desktop/dist || true
+            ls -la apps/restaurant-desktop/dist || true
             exit 1
           fi
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
@@ -444,17 +445,17 @@ jobs:
         run: |
           set -euo pipefail
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          mkdir -p restaurant-desktop/dist
-          VERSION="$(node -p "require('./restaurant-desktop/package.json').version")"
+          mkdir -p apps/restaurant-desktop/dist
+          VERSION="$(node -p "require('./apps/restaurant-desktop/package.json').version")"
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/Aurent-Restaurant-${VERSION}-*" \
-            restaurant-desktop/dist/ || true
+            apps/restaurant-desktop/dist/ || true
           bash deploy/publish-restaurant-desktop.sh
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-            downloads/restaurant-desktop/manifest.json \
+            downloads/apps/restaurant-desktop/manifest.json \
             "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/manifest.json"
           echo "Restaurant desktop installers published (static only)"
-          cat downloads/restaurant-desktop/manifest.json
+          cat downloads/apps/restaurant-desktop/manifest.json
 
       - name: Cleanup SSH key
         if: always()

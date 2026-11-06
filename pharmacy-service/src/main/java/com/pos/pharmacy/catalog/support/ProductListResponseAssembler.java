@@ -38,6 +38,14 @@ public class ProductListResponseAssembler {
     }
 
     public List<ProductResponse> assemble(List<Product> products, Integer storeId) {
+        return assemble(products, storeId, Map.of());
+    }
+
+    public List<ProductResponse> assemble(
+        List<Product> products,
+        Integer storeId,
+        Map<UUID, Map<String, String>> receiptOriginAttrs
+    ) {
         if (products == null || products.isEmpty()) {
             return List.of();
         }
@@ -59,14 +67,30 @@ public class ProductListResponseAssembler {
         Map<UUID, Map<String, String>> attrsById = (Map<UUID, Map<String, String>>) loaded.get(0);
         @SuppressWarnings("unchecked")
         Map<UUID, BigDecimal> stockById = (Map<UUID, BigDecimal>) loaded.get(1);
+        Map<UUID, Map<String, String>> origins = receiptOriginAttrs != null ? receiptOriginAttrs : Map.of();
 
         List<ProductResponse> out = new ArrayList<>(products.size());
         for (Product product : products) {
-            Map<String, String> attributes = attrsById.getOrDefault(product.getId(), Map.of());
+            Map<String, String> attributes = mergeAttrs(
+                attrsById.getOrDefault(product.getId(), Map.of()),
+                origins.get(product.getId())
+            );
             BigDecimal stockQty = resolveStockQty(product, storeId, stockById);
             out.add(toResponse(product, stockQty, attributes));
         }
         return out;
+    }
+
+    private static Map<String, String> mergeAttrs(Map<String, String> base, Map<String, String> extra) {
+        if (extra == null || extra.isEmpty()) {
+            return base != null ? base : Map.of();
+        }
+        Map<String, String> merged = new java.util.HashMap<>();
+        if (base != null) {
+            merged.putAll(base);
+        }
+        merged.putAll(extra);
+        return Map.copyOf(merged);
     }
 
     /**
@@ -96,6 +120,8 @@ public class ProductListResponseAssembler {
             null,
             product.getCostPrice(),
             product.getSellingPrice(),
+            product.getReferencePrice(),
+            product.getScore(),
             product.getDefaultDiscountPercent(),
             product.getTaxRate(),
             product.getProductType(),
@@ -113,6 +139,7 @@ public class ProductListResponseAssembler {
             product.getImageUrl(),
             product.isActive(),
             product.getCreatedAt(),
+            product.getUpdatedAt(),
             product.getExternalProductId(),
             product.getIkpu(),
             product.getIkpuStatus(),

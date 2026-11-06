@@ -15,6 +15,9 @@ import com.pos.identity.security.PlatformAdminModule;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessHistoryWriter;
+import com.pos.identity.service.access.support.ModuleAccessMutationSupport;
+import com.pos.identity.service.access.support.ModuleAccessSnapshotSupport;
 import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
 import com.pos.identity.service.access.support.RoleTemplateLookup;
@@ -31,7 +34,6 @@ import org.springframework.data.domain.Pageable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,6 +68,10 @@ class ModuleAccessServiceImplTest {
     private RoleTemplateSupport roleTemplateSupport;
     @Mock
     private RoleTemplateLookup roleTemplateLookup;
+    @Mock
+    private ModuleAccessHistoryWriter historyWriter;
+    @Mock
+    private ModuleAccessMutationSupport mutationSupport;
 
     private ModuleAccessServiceImpl service;
 
@@ -73,17 +79,21 @@ class ModuleAccessServiceImplTest {
     void setUp() {
         ModuleAccessCatalog catalog = new ModuleAccessCatalog();
         ModuleAccessScopeResolver scopeResolver = new ModuleAccessScopeResolver(posCoreClient, roleTemplateLookup);
+        ModuleAccessSnapshotSupport snapshotSupport = new ModuleAccessSnapshotSupport(
+            userModuleAccessRepository, userRepository, scopeResolver
+        );
         lenient().when(roleTemplateLookup.isAllowed(anyString(), anyString(), anyString(), anyBoolean()))
             .thenAnswer(invocation -> invocation.getArgument(3));
         service = new ModuleAccessServiceImpl(
-            userRepository,
-            userModuleAccessRepository,
             catalog,
             moduleAccessUserGate,
             scopeResolver,
             moduleAccessUsersPager,
             moduleAccessStatsSupport,
-            roleTemplateSupport
+            roleTemplateSupport,
+            snapshotSupport,
+            historyWriter,
+            mutationSupport
         );
     }
 
@@ -184,7 +194,6 @@ class ModuleAccessServiceImplTest {
         User operator = IdentityUsers.user(id, "PLATFORM_ADMIN", null);
         when(moduleAccessUserGate.requireConfigurable(id)).thenReturn(operator);
         when(userRepository.save(operator)).thenReturn(operator);
-        when(userRepository.findById(id)).thenReturn(Optional.of(operator));
 
         service.updateUserAccess(id, new UpdateUserModuleAccessRequest(
             true,

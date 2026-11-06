@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="identity-013-access-version" author="pos">
+        <addColumn tableName="users">
+            <column name="access_version" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="identity-014-module-access-history" author="pos">
+        <createTable tableName="module_access_history">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="actor_user_id" type="UUID"/>
+            <column name="actor_name" type="VARCHAR(255)"/>
+            <column name="action" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_username" type="VARCHAR(100)"/>
+            <column name="target_full_name" type="VARCHAR(255)"/>
+            <column name="strategy" type="VARCHAR(16)"/>
+            <column name="before_custom" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="after_custom" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="before_modules_json" type="TEXT"/>
+            <column name="after_modules_json" type="TEXT"/>
+            <column name="reverted_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="reverted_by" type="UUID"/>
+        </createTable>
+        <createIndex tableName="module_access_history" indexName="idx_module_access_history_created">
+            <column name="created_at" descending="true"/>
+        </createIndex>
+        <createIndex tableName="module_access_history" indexName="idx_module_access_history_target">
+            <column name="target_user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -42,6 +42,7 @@ public enum AdminModule {
     REPORTS_STOCK_DEAD("reportsStockDead", "reportsStock", Set.of("ADMIN", "MANAGER")),
     REPORTS_STOCK_INVENTORIES("reportsStockInventories", "reportsStock", Set.of("ADMIN", "MANAGER")),
     REPORTS_STOCK_TRANSFERS("reportsStockTransfers", "reportsStock", Set.of("ADMIN", "MANAGER")),
+    REPORTS_PRICE_REGISTRY("reportsPriceRegistry", "reportsStock", Set.of("ADMIN", "MANAGER")),
     STOCK_INVENTORIES("stockInventories", "stock", Set.of("ADMIN", "MANAGER")),
     STOCK_TRANSFERS("stockTransfers", "stock", Set.of("ADMIN", "MANAGER")),
     STORES("stores", "settings", Set.of("ADMIN")),
@@ -101,10 +102,12 @@ public enum AdminModule {
         return roleName != null && defaultRoles.contains(roleName);
     }
 
+    /**
+     * Admin/Manager grantable set — includes cashier* so Super Admin can give POS to pharmacy ADMIN.
+     * Business-type filter ({@code ModuleVisibility}) still hides restaurant/grocery-only keys.
+     */
     public static List<AdminModule> adminScope() {
-        return Arrays.stream(values())
-            .filter(m -> !"cashier".equals(m.group))
-            .toList();
+        return Arrays.stream(values()).toList();
     }
 
     public static List<AdminModule> cashierScope() {

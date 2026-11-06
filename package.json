@@ -1,0 +1,14 @@
+{
+  "name": "aurent-pos",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Aurent multi-vertical monorepo (pnpm workspace).",
+  "packageManager": "pnpm@10.18.2",
+  "scripts": {
+    "test:packages": "pnpm --filter pos-frontend exec vitest run ../../packages/*/src/**/*.test.js",
+    "packages:list": "pnpm -r list --depth -1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

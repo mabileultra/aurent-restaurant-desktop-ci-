@@ -136,8 +136,8 @@ cd ../restaurant-desktop
 pnpm install
 
 # 5. Telegram botlar (agar botlar bilan ishlasangiz)
-cd ../telegram-support-bot && pnpm install
-cd ../telegram-web-support-bot && pnpm install
+cd ../bots/telegram-support-bot && pnpm install
+cd ../bots/telegram-web-support-bot && pnpm install
 ```
 
 > **Eslatma (pnpm v11 native build permissions):**  

@@ -30,6 +30,29 @@ class TaxAnalyticsPeriodTest {
     }
 
     @Test
+    void monthComparesTheSameDayNumbers() {
+        TaxAnalyticsPeriod period = TaxAnalyticsPeriod.resolve(
+            "month", null, null, LocalDate.of(2026, 11, 5)
+        );
+        assertEquals(LocalDate.of(2026, 11, 1), period.from());
+        assertEquals(LocalDate.of(2026, 11, 5), period.to());
+        assertEquals(LocalDate.of(2026, 10, 1), period.prevFrom());
+        assertEquals(LocalDate.of(2026, 10, 5), period.prevTo());
+    }
+
+    @Test
+    void quarterIsCalendarQuarterAgainstPreviousQuarter() {
+        TaxAnalyticsPeriod period = TaxAnalyticsPeriod.resolve(
+            "quarter", null, null, LocalDate.of(2026, 11, 5)
+        );
+        assertEquals("quarter", period.key());
+        assertEquals(LocalDate.of(2026, 10, 1), period.from());
+        assertEquals(LocalDate.of(2026, 11, 5), period.to());
+        assertEquals(LocalDate.of(2026, 7, 1), period.prevFrom());
+        assertEquals(LocalDate.of(2026, 9, 30), period.prevTo());
+    }
+
+    @Test
     void rejectsInvertedRange() {
         assertThrows(
             BadRequestException.class,

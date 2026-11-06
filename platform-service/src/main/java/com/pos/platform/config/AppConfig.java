@@ -1,6 +1,7 @@
 package com.pos.platform.config;
 
 import com.pos.shared.http.InternalApiHeaders;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,23 @@ public class AppConfig {
         @Value("${app.internal.api-key}") String apiKey,
         @Value("${app.pos-core.connect-timeout-ms}") int connectTimeoutMs,
         @Value("${app.pos-core.read-timeout-ms}") int readTimeoutMs
+    ) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeoutMs);
+        factory.setReadTimeout(readTimeoutMs);
+        return RestClient.builder()
+            .baseUrl(baseUrl)
+            .requestFactory(factory)
+            .defaultHeader(InternalApiHeaders.API_KEY, apiKey)
+            .build();
+    }
+
+    @Bean
+    public RestClient identityRestClient(
+        @Value("${app.identity.url}") String baseUrl,
+        @Value("${app.identity.api-key}") String apiKey,
+        @Value("${app.identity.connect-timeout-ms}") int connectTimeoutMs,
+        @Value("${app.identity.read-timeout-ms}") int readTimeoutMs
     ) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeoutMs);

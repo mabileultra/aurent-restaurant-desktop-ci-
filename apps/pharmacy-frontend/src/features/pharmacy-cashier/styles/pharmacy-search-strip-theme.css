@@ -1,0 +1,40 @@
+/* Краски полосы поиска на кассе аптеки. Размеры не трогаем. */
+
+.cashier-app--pharmacy-pos .pharmacy-cashier__pane-head--search {
+  border-bottom-color: #e4e7ec;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-search-strip__field--product::placeholder {
+  color: #8b9198;
+  font-weight: 400;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-search-strip__toggle,
+.cashier-app--pharmacy-pos .pharmacy-search-strip__icon-btn {
+  border-color: #e4e7ec;
+  background: #fff;
+  color: #3b3e45;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-search-strip__toggle:has(.pharmacy-integration-icon--dmed) {
+  color: #4476d7;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__btn {
+  border-color: #e4e7ec;
+  color: #3b3e45;
+  font-weight: 600;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__auto {
+  color: #05966a;
+  font-weight: 600;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__auto input {
+  accent-color: #05966a;
+}

@@ -8,6 +8,7 @@ import com.pos.sales.entity.ShiftCashMovement;
 import com.pos.sales.repository.ShiftCashMovementRepository;
 import com.pos.sales.service.cashier.ShiftCashMovementService;
 import com.pos.sales.service.cashier.support.CashierShiftAccessPolicy;
+import com.pos.sales.service.cashier.support.ShiftCashDrawerBalance;
 import com.pos.security.CurrentUserProvider;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -25,6 +27,7 @@ public class ShiftCashMovementServiceImpl implements ShiftCashMovementService {
     private final ShiftCashMovementRepository movementRepository;
     private final CashierShiftAccessPolicy shiftAccessPolicy;
     private final CurrentUserProvider currentUserProvider;
+    private final ShiftCashDrawerBalance cashDrawerBalance;
 
     @Override
     public ShiftCashMovementResponse cashIn(UUID shiftId, ShiftCashMovementRequest request) {
@@ -47,6 +50,12 @@ public class ShiftCashMovementServiceImpl implements ShiftCashMovementService {
         CashierShift shift = shiftAccessPolicy.requireOwned(shiftId);
         if (shift.getStatus() != CashierShift.ShiftStatus.OPEN) {
             throw new BadRequestException("Смена закрыта");
+        }
+        if (direction == ShiftCashMovement.Direction.OUT) {
+            BigDecimal available = cashDrawerBalance.currentCashAmount(shift);
+            if (request.amount().compareTo(available) > 0) {
+                throw new BadRequestException("Kassada yetarli naqd pul mavjud emas");
+            }
         }
         UUID actorId = currentUserProvider.requireCurrentUser().getId();
         ShiftCashMovement saved = movementRepository.save(ShiftCashMovement.builder()

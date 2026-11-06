@@ -1,9 +1,57 @@
 package com.pos.pharmacy.warehouse.repository;
 
 import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
+import com.pos.pharmacy.warehouse.support.ProductReceiptOrigin;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface StockReceiptLineRepository extends JpaRepository<StockReceiptLine, UUID> {
+
+    @Query("""
+        SELECT new com.pos.pharmacy.warehouse.support.ProductReceiptOrigin(
+          l.product.id, r.id, r.receiptNumber, r.receiptType, r.supplierId, r.documentDate, r.createdAt
+        )
+        FROM StockReceiptLine l
+        JOIN l.receipt r
+        WHERE l.product.id IN :productIds
+        """)
+    List<ProductReceiptOrigin> findOriginsByProductIds(@Param("productIds") Collection<UUID> productIds);
+
+    @Query("""
+        SELECT l FROM StockReceiptLine l
+        JOIN FETCH l.receipt r
+        WHERE l.product.id = :productId AND r.status = :status
+        """)
+    List<StockReceiptLine> findByProductIdAndReceiptStatus(
+        @Param("productId") UUID productId,
+        @Param("status") String status
+    );
+
+    /** Distinct products per supplier from pharmacy receipts (company scope). */
+    @Query("""
+        SELECT r.supplierId, COUNT(DISTINCT l.product.id)
+        FROM StockReceiptLine l
+        JOIN l.receipt r
+        WHERE r.companyId = :companyId
+          AND r.supplierId IS NOT NULL
+        GROUP BY r.supplierId
+        ORDER BY COUNT(DISTINCT l.product.id) DESC
+        """)
+    List<Object[]> countDistinctProductsBySupplier(@Param("companyId") Integer companyId);
+
+    /** Distinct products per receipt — for cutover cards when suppliers are empty. */
+    @Query("""
+        SELECT r.id, r.receiptNumber, r.receiptType, r.status, COUNT(DISTINCT l.product.id)
+        FROM StockReceiptLine l
+        JOIN l.receipt r
+        WHERE r.companyId = :companyId
+        GROUP BY r.id, r.receiptNumber, r.receiptType, r.status, r.createdAt
+        ORDER BY r.createdAt DESC
+        """)
+    List<Object[]> countDistinctProductsByReceipt(@Param("companyId") Integer companyId);
 }

@@ -1,0 +1,239 @@
+/* Cashier my-sales — filters on top, compact shift strip below */
+.cashier-my-sales-toolbar--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.cashier-my-sales-toolbar--stacked .cashier-my-sales-toolbar__filters,
+.cashier-my-sales-toolbar--stacked .cashier-my-sales-toolbar__shift {
+  min-width: 0;
+  width: 100%;
+}
+
+.cashier-my-sales-toolbar--stacked .cashier-sales-filters-card,
+.cashier-my-sales-toolbar--stacked .cashier-sales-shift-strip {
+  margin-bottom: 0 !important;
+}
+
+/* Toolbar filters — one compact row */
+.cashier-sales-filters-card--toolbar .cashier-sales-filters-card__head {
+  padding: 4px 8px;
+  min-height: 0;
+}
+
+.cashier-sales-filters-card--toolbar .cashier-sales-filters-card__title {
+  font-size: 0.6875rem;
+}
+
+.cashier-sales-filters-card--toolbar .cashier-sales-filters-card__body {
+  padding: 4px 8px 6px;
+}
+
+.cashier-sales-filters--toolbar {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1.4fr) repeat(4, minmax(0, 1fr));
+  gap: 4px 6px;
+  align-items: end;
+}
+
+.cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
+  grid-column: auto;
+}
+
+.cashier-sales-filters--toolbar .cashier-sales-filters__label {
+  font-size: 0.5625rem;
+  margin-bottom: 0;
+  line-height: 1.1;
+}
+
+.cashier-sales-filters--toolbar .cashier-sales-filters__input,
+.cashier-sales-filters--toolbar .cashier-sales-filters__select {
+  min-height: 28px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  border-radius: var(--pos-control-radius, 10px);
+}
+
+.cashier-sales-filters--toolbar .base-select__label {
+  font-size: 0.5625rem;
+  margin-bottom: 0;
+  line-height: 1.1;
+}
+
+.cashier-sales-filters--toolbar .base-select__trigger {
+  min-height: 28px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  border-radius: var(--pos-control-radius, 10px);
+}
+
+/* Compact shift strip */
+.cashier-sales-shift-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: var(--pos-control-radius, 10px);
+  border: 1px solid rgb(0 104 71 / 0.18);
+  background: linear-gradient(90deg, #eef8f3 0%, #f9fffc 100%);
+}
+
+.cashier-sales-shift-strip--loading {
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.cashier-sales-shift-strip__icon {
+  flex-shrink: 0;
+  color: var(--pos-green, #006847);
+}
+
+.cashier-sales-shift-strip__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pos-text, #111827);
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.cashier-sales-shift-strip__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cashier-sales-shift-strip__label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.cashier-sales-shift-strip__value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pos-text, #111827);
+  white-space: nowrap;
+}
+
+.cashier-sales-shift-strip__value--sum {
+  color: var(--pos-green, #006847);
+  font-weight: 800;
+}
+
+@media (max-width: 1024px) {
+  .cashier-sales-filters--toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .cashier-sales-filters--toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cashier-sales-shift-strip {
+    gap: 4px 10px;
+  }
+
+  .cashier-sales-shift-strip__title {
+    width: 100%;
+  }
+}
+
+/* Legacy side-by-side toolbar */
+.cashier-my-sales-toolbar:not(.cashier-my-sales-toolbar--stacked) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+
+.cashier-my-sales-toolbar__filters,
+.cashier-my-sales-toolbar__shift {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cashier-my-sales-toolbar__filters .cashier-sales-filters-card,
+.cashier-my-sales-toolbar__shift .cashier-sales-shift-stats {
+  flex: 1 1 auto;
+  height: 100%;
+  margin-bottom: 0 !important;
+}
+
+.cashier-my-sales-toolbar__filters .cashier-sales-filters-card--compact .cashier-sales-filters-card__head {
+  padding: 8px 12px;
+}
+
+.cashier-my-sales-toolbar__filters .cashier-sales-filters-card--compact .cashier-sales-filters-card__body {
+  padding: 10px 12px 12px;
+}
+
+.cashier-my-sales-toolbar__filters .cashier-sales-filters--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.cashier-my-sales-toolbar__filters .cashier-sales-filters--compact .cashier-sales-filters__field:first-child {
+  grid-column: 1 / -1;
+}
+
+.cashier-my-sales-toolbar__shift-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgb(0 104 71 / 0.2);
+  background: linear-gradient(135deg, #e8f5ef 0%, #f8fffb 55%, #fff 100%);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
+}
+
+.cashier-my-sales-toolbar__shift-placeholder-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.cashier-sales-shift-stats--compact {
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+.cashier-sales-shift-stats--compact .cashier-sales-shift-stats__icon {
+  width: 38px;
+  border-radius: 8px;
+}
+
+.cashier-sales-shift-stats--compact .cashier-sales-shift-stats__title {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+}
+
+.cashier-sales-shift-stats--compact .cashier-sales-shift-stats__grid {
+  gap: 6px 10px;
+}
+
+.cashier-sales-shift-stats--compact .cashier-sales-shift-stats__label {
+  font-size: 0.625rem;
+}
+
+.cashier-sales-shift-stats--compact .cashier-sales-shift-stats__value {
+  font-size: 0.8125rem;
+}

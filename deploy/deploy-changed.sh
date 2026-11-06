@@ -108,12 +108,18 @@ deploy_changed_stack() {
   for svc in "${targets[@]}"; do
     case "$svc" in
       telegram-support-bot)
-        if [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || -n "${TELEGRAM_BOTS:-}" ]]; then
+        case "${ENABLE_TELEGRAM_BOTS:-true}" in 0|false|FALSE|no|NO|off|OFF)
+          echo "==> ENABLE_TELEGRAM_BOTS=false — skip telegram-support-bot"; continue ;;
+        esac
+        if [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || ( -n "${TELEGRAM_BOTS:-}" && "${TELEGRAM_BOTS}" != "[]" && "${TELEGRAM_BOTS}" != "false" ) ]]; then
           compose up -d --build --no-deps telegram-support-bot
         fi
         continue
         ;;
       telegram-web-support-bot)
+        case "${ENABLE_TELEGRAM_BOTS:-true}" in 0|false|FALSE|no|NO|off|OFF)
+          echo "==> ENABLE_TELEGRAM_BOTS=false — skip telegram-web-support-bot"; continue ;;
+        esac
         if [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
           compose up -d --build --no-deps telegram-web-support-bot
         fi

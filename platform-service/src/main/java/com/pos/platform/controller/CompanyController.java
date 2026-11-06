@@ -1,6 +1,7 @@
 package com.pos.platform.controller;
 
 import com.pos.platform.dto.company.CompanyResponse;
+import com.pos.platform.dto.company.CompanyStatsResponse;
 import com.pos.platform.dto.company.CreateCompanyRequest;
 import com.pos.platform.dto.company.UpdateCompanyRequest;
 import com.pos.platform.dto.shared.PageResponse;
@@ -36,9 +37,24 @@ public class CompanyController {
         @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String regionCode,
         @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) Boolean active,
         @PageableDefault(size = 14) Pageable pageable
     ) {
-        return ResponseEntity.ok(companyService.list(search, businessType, regionCode, districtCode, pageable));
+        return ResponseEntity.ok(
+            companyService.list(search, businessType, regionCode, districtCode, active, pageable)
+        );
+    }
+
+    @GetMapping("/stats")
+    @Operation(summary = "KPI компаний", description = "Агрегаты total/active/inactive без полной выгрузки")
+    @ApiResponse(responseCode = "200", description = "Статистика")
+    public ResponseEntity<CompanyStatsResponse> stats(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode
+    ) {
+        return ResponseEntity.ok(companyService.stats(search, businessType, regionCode, districtCode));
     }
 
     @GetMapping("/all")

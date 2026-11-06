@@ -1,0 +1,13 @@
+/* Тема фискала на кассе: либо Multikassa, либо FiscalDrive — не оба. */
+.cashier-fiscal-theme {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cashier-fiscal-theme--fiscal-drive .pharmacy-pay-rail__mk-row {
+  --fcc-border: #c5d4e8;
+  --fcc-muted: #5b6f8a;
+  --fcc-green: #1d4f91;
+  --fcc-green-soft: #e8eef6;
+}

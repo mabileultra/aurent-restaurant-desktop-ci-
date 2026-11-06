@@ -6,7 +6,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DIST="${DESKTOP_DIST:-$ROOT/desktop-electron/dist}"
+DIST="${DESKTOP_DIST:-$ROOT/apps/desktop-electron/dist}"
 DEST="${DESKTOP_DEST:-$ROOT/downloads/desktop}"
 
 if [[ ! -d "$DIST" ]]; then
@@ -25,7 +25,7 @@ for pattern in '*.exe' '*.dmg' '*.zip' '*.blockmap' 'latest*.yml'; do
 done
 shopt -u nullglob
 
-node "$ROOT/desktop-electron/scripts/generate-manifest.js" \
+node "$ROOT/apps/desktop-electron/scripts/generate-manifest.js" \
   --dist "$DIST" \
   --out "$DEST/manifest.json"
 

@@ -2,6 +2,7 @@ package com.pos.pharmacy.warehouse.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record UpdatePharmacyStockReceiptRequest(
@@ -15,5 +16,6 @@ public record UpdatePharmacyStockReceiptRequest(
     String contractNumber,
     BigDecimal financialDiscount,
     String paymentType,
+    List<PharmacyReceiptPaymentDto> payments,
     String notes
 ) {}

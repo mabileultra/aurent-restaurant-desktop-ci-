@@ -190,7 +190,7 @@ public class CatalogServiceClient {
     }
 
     public boolean tryDeactivateCategory(UUID categoryId) {
-        if (!properties.dualWriteEnabled() || categoryId == null) {
+        if (!properties.outboundCatalogWriteEnabled() || categoryId == null) {
             return false;
         }
         try {
@@ -211,7 +211,7 @@ public class CatalogServiceClient {
     }
 
     public boolean tryDeactivateProduct(UUID productId) {
-        if (!properties.dualWriteEnabled() || productId == null) {
+        if (!properties.outboundCatalogWriteEnabled() || productId == null) {
             return false;
         }
         try {
@@ -232,7 +232,7 @@ public class CatalogServiceClient {
     }
 
     public boolean tryUpsertCategory(CatalogCategoryUpsertRequest request) {
-        if (!properties.dualWriteEnabled() || request == null || request.id() == null) {
+        if (!properties.outboundCatalogWriteEnabled() || request == null || request.id() == null) {
             return false;
         }
         try {
@@ -256,7 +256,7 @@ public class CatalogServiceClient {
 
     /** @return true if HTTP upsert succeeded */
     public boolean tryUpsertProduct(CatalogProductUpsertRequest request) {
-        if (!properties.dualWriteEnabled() || request == null || request.id() == null) {
+        if (!properties.outboundCatalogWriteEnabled() || request == null || request.id() == null) {
             return false;
         }
         try {

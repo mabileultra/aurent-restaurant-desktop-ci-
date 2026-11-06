@@ -7,6 +7,7 @@ public enum ErrorCode {
     BAD_REQUEST,
     NOT_FOUND,
     CONFLICT,
+    UNPROCESSABLE_ENTITY,
     VALIDATION_FAILED,
     UNAUTHORIZED,
     FORBIDDEN,
@@ -21,6 +22,7 @@ public enum ErrorCode {
             case 403 -> FORBIDDEN;
             case 404 -> NOT_FOUND;
             case 409 -> CONFLICT;
+            case 422 -> UNPROCESSABLE_ENTITY;
             case 503 -> SERVICE_UNAVAILABLE;
             default -> INTERNAL_ERROR;
         };

@@ -1,0 +1,152 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  CASHIER_SALES_EMPTY_FILTERS,
+  CASHIER_SALES_RECEIPT_DEBOUNCE_MS,
+  CASHIER_SALES_VIEW_STORAGE_KEY,
+  readCashierSalesViewMode,
+} from '../components/my-sales/cashierSalesConstants';
+import {
+  buildCashierSalesQueryParams,
+  normalizeCashierSalesFilters,
+} from '../components/my-sales/cashierSalesFilterUtils';
+import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
+import { resolveMySalesShiftId } from '../../../hooks/cashierShiftStability';
+import { posFetchMySales } from '../../../services/pos/posDataRouter';
+import { useCashierStore } from '../../../hooks/useCashierStore';
+import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+
+export function useCashierMySalesPage() {
+  const qc = useQueryClient();
+  const { storeId } = useCashierStore();
+  const { isPharmacy } = useCashierStoreProfile();
+  const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
+  const [page, setPage] = useState(0);
+  const [filters, setFilters] = useState(CASHIER_SALES_EMPTY_FILTERS);
+  const [returnSaleId, setReturnSaleId] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [viewMode, setViewMode] = useState(readCashierSalesViewMode);
+
+  const debouncedReceipt = useDebouncedValue(filters.receiptNumber, CASHIER_SALES_RECEIPT_DEBOUNCE_MS);
+  const appliedFilters = useMemo(
+    () => normalizeCashierSalesFilters({ ...filters, receiptNumber: debouncedReceipt }),
+    [filters.paymentMethod, filters.status, filters.from, filters.to, debouncedReceipt]
+  );
+  const filtering = filters.receiptNumber !== debouncedReceipt;
+  const { shift, shiftIsOpen, shiftPending: shiftLoading } = useCashierShiftView(storeId, {
+    catalogKind,
+  });
+  const shiftId = resolveMySalesShiftId({ shiftIsOpen, shift });
+
+  useEffect(() => {
+    if (storeId) {
+      qc.invalidateQueries({ queryKey: ['cashier-shift'] });
+    }
+  }, [storeId, qc]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [appliedFilters]);
+
+  // Без фильтра по смене: после закрытия/переоткрытия должны быть видны
+  // продажи и возвраты предыдущих смен (аптека и grocery).
+  const salesQueryParams = useMemo(
+    () => ({
+      ...buildCashierSalesQueryParams(appliedFilters, page),
+      ...(storeId ? { storeId } : {}),
+    }),
+    [appliedFilters, page, storeId]
+  );
+
+  const {
+    data: sales,
+    isPending: salesLoading,
+    isError: salesError,
+  } = useQuery({
+    queryKey: ['my-sales', catalogKind, salesQueryParams],
+    queryFn: () => posFetchMySales(storeId, salesQueryParams, { catalogKind }),
+    enabled: !!storeId,
+  });
+
+  const rows = useMemo(() => sales?.content ?? [], [sales?.content]);
+
+  const selectedRow = useMemo(
+    () => rows.find((r) => r.id === selectedId) ?? null,
+    [rows, selectedId]
+  );
+
+  useEffect(() => {
+    if (selectedId && !rows.some((r) => r.id === selectedId)) {
+      setSelectedId(null);
+    }
+  }, [rows, selectedId]);
+
+  useEffect(() => {
+    if (!selectedId) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setSelectedId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedId]);
+
+  const handleRowClick = (row) => {
+    setSelectedId((prev) => (prev === row.id ? null : row.id));
+  };
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem(CASHIER_SALES_VIEW_STORAGE_KEY, mode);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const patchFilters = (patch) => {
+    setFilters((prev) => ({ ...prev, ...patch }));
+  };
+
+  const resetFilters = () => {
+    setFilters(CASHIER_SALES_EMPTY_FILTERS);
+    setPage(0);
+  };
+
+  const handleReturnSuccess = () => {
+    qc.invalidateQueries({ queryKey: ['my-sales'] });
+    qc.invalidateQueries({ queryKey: ['sales-ledger'] });
+    qc.invalidateQueries({ queryKey: ['cashier-shift'] });
+    qc.invalidateQueries({ queryKey: ['returns'] });
+    if (selectedRow?.receiptNumber) {
+      qc.invalidateQueries({ queryKey: ['receipt', selectedRow.receiptNumber] });
+    }
+  };
+
+  return {
+    storeId,
+    catalogKind,
+    page,
+    setPage,
+    filters,
+    patchFilters,
+    resetFilters,
+    filtering,
+    returnSaleId,
+    setReturnSaleId,
+    selectedId,
+    setSelectedId,
+    viewMode,
+    handleViewModeChange,
+    shift,
+    shiftId,
+    shiftLoading,
+    sales,
+    salesLoading,
+    salesError,
+    rows,
+    selectedRow,
+    handleRowClick,
+    handleReturnSuccess,
+  };
+}

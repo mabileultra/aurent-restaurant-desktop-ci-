@@ -2,7 +2,7 @@ package com.pos.pharmacy.sync.service;
 
 import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.service.ProductCatalogService;
-import com.pos.pharmacy.common.PageResponse;
+import com.pos.shared.api.PageResponse;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
 import com.pos.pharmacy.security.PharmacyTenantContext;
