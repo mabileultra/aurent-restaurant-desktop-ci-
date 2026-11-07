@@ -91,7 +91,7 @@ public class LoginRulesSupport {
 
     public static LoginRulesDto defaults() {
         return new LoginRulesDto(
-            Map.of("sa", true, "op", false, "an", false),
+            Map.of("sa", false, "op", false, "an", false),
             "app",
             10,
             90,

@@ -135,12 +135,9 @@ public class AuthLoginServiceImpl implements AuthLoginService {
             throw new BadRequestException("Invalid username or password");
         }
 
-        String roleName = user.getRole() != null ? user.getRole().getName() : null;
-        boolean needTotp = loginRulesSupport.requiresTotp(rules, roleName) || user.isTotpEnabled();
-        if (needTotp) {
-            if (!user.isTotpEnabled() || !StringUtils.hasText(user.getTotpSecret())) {
-                throw new BadRequestException("Для этой роли включён 2FA. Сначала настройте Authenticator.");
-            }
+        // Challenge only after the user enrolled. Role-mandated 2FA must not block first-time setup.
+        boolean enrolledTotp = user.isTotpEnabled() && StringUtils.hasText(user.getTotpSecret());
+        if (enrolledTotp) {
             String challenge = jwtService.generatePurposeToken(user, "2fa_challenge", CHALLENGE_TTL_MS);
             return authResponseFactory.challenge(user, challenge);
         }
