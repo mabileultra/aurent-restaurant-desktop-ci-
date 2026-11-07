@@ -29,6 +29,10 @@ downloads/desktop/latest*.yml
 downloads/desktop/manifest.json
 !downloads/desktop/.gitkeep
 !downloads/desktop/manifest.json.example
+downloads/restaurant-desktop/*
+!downloads/restaurant-desktop/.gitkeep
+downloads/pharmacy-desktop/*
+!downloads/pharmacy-desktop/.gitkeep
 web-frontend/docker-build/
 .vite/
 npm-debug.log*

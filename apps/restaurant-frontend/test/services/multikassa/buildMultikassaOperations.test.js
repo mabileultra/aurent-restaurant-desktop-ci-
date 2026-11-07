@@ -160,6 +160,23 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.items[0].product_package).toBe('');
   });
 
+  it('drops a zero-price line so the fiscal module does not reject Price', () => {
+    const body = buildSaleOperationBody({
+      cartItems: [
+        { productId: 1, name: 'Choy', quantity: 2, unitPrice: 12000, ikpu: '111', taxRate: 12 },
+        { productId: 2, name: 'Salat Non Choy', quantity: 8, unitPrice: 0, ikpu: '222', taxRate: 12 },
+      ],
+      payment: { paymentMethod: 'CASH', receiptType: 'SALE' },
+      total: 24000,
+      capabilities,
+      shiftId: 's1',
+      cashierName: 'CASHIER',
+    });
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0].product_name).toBe('Choy');
+    expect(body.items[0].product_price).toBe(12000);
+  });
+
   it('splits mixed cash/card into received fields', () => {
     expect(resolveReceivedCashCard({ paymentMethod: 'MIXED', cashAmount: 100000, cardAmount: 0 }, 209457.66))
       .toEqual({ cash: 100000, card: 109457.66 });

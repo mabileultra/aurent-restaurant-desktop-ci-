@@ -12,7 +12,9 @@ export default function CategoryDeleteModal({ category, onClose }) {
     mutationFn: () => categoryApi.delete(category.id),
     onSuccess: () => {
       toast.success(t('categories.deleted'));
-      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({
+        predicate: (query) => query.queryKey.includes('categories'),
+      });
       onClose();
     },
     onError: (e) => {

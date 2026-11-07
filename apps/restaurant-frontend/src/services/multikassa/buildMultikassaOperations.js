@@ -161,7 +161,8 @@ export function buildSaleOperationBody({
     shift_id: shiftId ? String(shiftId) : '',
     // Печать чека делает Aurent (ESC/POS). Без этого MK Fiscal падает: «Принтер не найден».
     force_to_print: false,
-    items: (cartItems || []).map(buildItem),
+    // Price: 0 фискальный модуль отвергает: Go required считает ноль пустым полем.
+    items: (cartItems || []).filter((line) => toSum(line.unitPrice) > 0).map(buildItem),
     location: {
       Latitude: Number(capabilities?.latitude) || 41.3111,
       Longitude: Number(capabilities?.longitude) || 69.2797,

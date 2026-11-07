@@ -21,16 +21,34 @@ function hasIkpu(item) {
   return String(item?.ikpu || '').trim() !== '';
 }
 
-/** Только блюда с ИКПУ → Multikassa. Без ИКПУ, % и скидка в ОФД не уходят. */
+/** ФМ Go `required` на Price считает 0 пустым и роняет весь чек. */
+function hasFiscalPrice(item) {
+  const unit = Number(item?.unitPrice);
+  if (Number.isFinite(unit) && unit > 0) return true;
+  const total = Number(item?.lineTotal);
+  return Number.isFinite(total) && total > 0;
+}
+
+function fiscalUnitPrice(item) {
+  const unit = Number(item?.unitPrice);
+  if (Number.isFinite(unit) && unit > 0) return unit;
+  const qty = Number(item?.quantity) || 0;
+  const total = Number(item?.lineTotal);
+  if (qty > 0 && Number.isFinite(total) && total > 0) return round2(total / qty);
+  return 0;
+}
+
+/** Только блюда с ИКПУ и ценой > 0 → Multikassa. Без ИКПУ, % и скидка в ОФД не уходят. */
 export function orderToMultikassaCartItems(order) {
   return (order?.items ?? [])
     .filter(isBillable)
     .filter(hasIkpu)
+    .filter(hasFiscalPrice)
     .map((item) => ({
       productId: item.menuItemId || item.id,
       name: item.name || 'Блюдо',
       quantity: Number(item.quantity) || 0,
-      unitPrice: Number(item.unitPrice) || 0,
+      unitPrice: fiscalUnitPrice(item),
       taxRate: vatPercent(item),
       unitOfMeasure: item.unitOfMeasure || 'шт',
       ikpu: String(item.ikpu).trim(),
