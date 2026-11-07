@@ -10,7 +10,6 @@ import { calculateDaysAgo } from '../utils/securityFormatUtils';
 export function useSecurityOverviewFlow({ onSelectTab }) {
   const [doneOpen, setDoneOpen] = useState(false);
 
-  // Kassa server paroli holatini olish
   const { data: cashierStatus } = useQuery({
     queryKey: ['platform-security-password'],
     queryFn: () => platformSecurityApi.getCashierServerPassword().then((r) => r.data),
@@ -23,7 +22,7 @@ export function useSecurityOverviewFlow({ onSelectTab }) {
     staleTime: 60000,
   });
 
-  // Dinamik tavsiyalar
+  // Dinamik va amaliy tavsiyalar
   const recommendations = useMemo(() => {
     const list = [];
     const daysAgo = calculateDaysAgo(cashierStatus?.updatedAt);
@@ -39,7 +38,7 @@ export function useSecurityOverviewFlow({ onSelectTab }) {
           targetTab: 'rules',
         });
       }
-    } else if (cashierStatus && !cashierStatus.isSet && !cashierStatus.updatedAt) {
+    } else if (cashierStatus && !cashierStatus.configured && !cashierStatus.updatedAt) {
       list.push({
         id: 'rec-cashier-pwd-missing',
         severity: 'high',
@@ -50,27 +49,12 @@ export function useSecurityOverviewFlow({ onSelectTab }) {
       });
     }
 
-    // Xodimlarda email yo'qligi tekshiruvi
-    const adminsWithoutEmail = Array.isArray(remoteAdmins)
-      ? remoteAdmins.filter((a) => !a.email || /@platform\.local$/i.test(a.email))
-      : [];
-    if (adminsWithoutEmail.length > 0) {
-      list.push({
-        id: 'rec-staff-email',
-        severity: 'mid',
-        title: `${adminsWithoutEmail.length} ta xodimda to‘g‘ri email ko‘rsatilmagan`,
-        desc: 'Parolni tiklash va tizim ogohlantirishlarini olish uchun haqiqiy elektron pochta manzili kiritilishi zarur.',
-        action: 'Xodimlarni ko‘rish',
-        targetTab: 'staff',
-      });
-    }
-
     return list;
-  }, [cashierStatus, remoteAdmins]);
+  }, [cashierStatus]);
 
   const completedChecks = useMemo(() => {
     const checks = ['Super-admin roli uchun ruxsatlar chegaralangan'];
-    if (cashierStatus?.isSet || cashierStatus?.updatedAt) {
+    if (cashierStatus?.configured || cashierStatus?.updatedAt) {
       checks.push('Kassa server sozlamalari paroli o‘rnatilgan');
     }
     if (Array.isArray(remoteAdmins) && remoteAdmins.length > 0) {
@@ -79,11 +63,12 @@ export function useSecurityOverviewFlow({ onSelectTab }) {
     return checks;
   }, [cashierStatus, remoteAdmins]);
 
+  // Barcha monitoring ma'lumotlari kutilmoqda holatida
   const kpis = useMemo(
     () => ({
       activeSessions: { count: '—', sub: 'Monitoring kutilmoqda' },
-      failedLogins: { count: '0', sub: 'oxirgi 7 kunda' },
-      newDevices: { count: '0', sub: 'oxirgi 7 kunda' },
+      failedLogins: { count: '—', sub: 'Monitoring kutilmoqda' },
+      newDevices: { count: '—', sub: 'Monitoring kutilmoqda' },
       twoFactorEnabled: { count: '—', sub: 'Integratsiya kutilmoqda' },
     }),
     []

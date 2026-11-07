@@ -23,7 +23,7 @@ export default function PlatformSecurityCashierPasswordCard({ flow }) {
     cashierStatus,
   } = flow;
 
-  const isConfigured = Boolean(cashierStatus?.isSet || cashierStatus?.updatedAt);
+  const isConfigured = Boolean(cashierStatus?.configured || cashierStatus?.updatedAt);
   const formattedDate = cashierStatus?.updatedAt
     ? formatSecurityDate(cashierStatus.updatedAt, currentLang)
     : '';
@@ -60,7 +60,7 @@ export default function PlatformSecurityCashierPasswordCard({ flow }) {
               type={showCashierPw ? 'text' : 'password'}
               value={cashierPw1}
               onChange={(e) => setCashierPw1(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t('platform.security.newPasswordPlaceholder', 'Yangi parol kiritish')}
               required
             />
             <button
@@ -79,7 +79,7 @@ export default function PlatformSecurityCashierPasswordCard({ flow }) {
               type={showCashierPw ? 'text' : 'password'}
               value={cashierPw2}
               onChange={(e) => setCashierPw2(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t('platform.security.confirmPasswordPlaceholder', 'Parolni qayta kiriting')}
               required
             />
           </div>
@@ -89,7 +89,7 @@ export default function PlatformSecurityCashierPasswordCard({ flow }) {
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold" style={{ color: cashierPwStrength.textColor }}>
-                Kuchlilik: {cashierPwStrength.label}
+                {t('platform.security.strengthLabel', 'Kuchlilik')}: {cashierPwStrength.label}
               </span>
               {isCashierPwMismatch ? (
                 <span className="text-rose-600 font-semibold">{t('platform.security.passwordMismatch', 'Parollar mos emas')}</span>

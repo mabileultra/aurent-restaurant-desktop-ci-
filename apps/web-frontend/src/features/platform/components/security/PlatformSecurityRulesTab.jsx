@@ -9,18 +9,6 @@ export default function PlatformSecurityRulesTab({ flow }) {
   const {
     rules,
     dirtyCount,
-    toggleTfaRole,
-    setTfaMethod,
-    setMinLen,
-    setExpiry,
-    toggleReq,
-    setConc,
-    toggleNotify,
-    toggleIpOn,
-    newIpAddr,
-    setNewIpAddr,
-    addIp,
-    removeIp,
     resetRules,
     requestSaveRules,
   } = flow;
@@ -28,31 +16,13 @@ export default function PlatformSecurityRulesTab({ flow }) {
   return (
     <div className="space-y-6">
       {/* 1. Ikki bosqichli tasdiqlash (2FA) */}
-      <PlatformSecurityTwoFactorRulesCard
-        rules={rules}
-        toggleTfaRole={toggleTfaRole}
-        setTfaMethod={setTfaMethod}
-      />
+      <PlatformSecurityTwoFactorRulesCard rules={rules} />
 
       {/* 2. Parol talablari */}
-      <PlatformSecurityPasswordRulesCard
-        rules={rules}
-        setMinLen={setMinLen}
-        setExpiry={setExpiry}
-        toggleReq={toggleReq}
-      />
+      <PlatformSecurityPasswordRulesCard rules={rules} />
 
       {/* 3. Seanslar va IP allowlist */}
-      <PlatformSecuritySessionIpRulesCard
-        rules={rules}
-        setConc={setConc}
-        toggleNotify={toggleNotify}
-        toggleIpOn={toggleIpOn}
-        newIpAddr={newIpAddr}
-        setNewIpAddr={setNewIpAddr}
-        addIp={addIp}
-        removeIp={removeIp}
-      />
+      <PlatformSecuritySessionIpRulesCard rules={rules} />
 
       {/* 4. Kassa server sozlamalari paroli kartasi */}
       <PlatformSecurityCashierPasswordCard flow={flow} />

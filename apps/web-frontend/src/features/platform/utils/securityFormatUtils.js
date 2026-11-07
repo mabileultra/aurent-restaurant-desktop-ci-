@@ -4,6 +4,11 @@
 
 const PASSWORD_CHARSET = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*';
 
+const UZ_MONTHS = [
+  'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+  'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr',
+];
+
 /**
  * Kriptografik xavfsiz tasodifiy parol yaratadi.
  * @param {number} length
@@ -26,6 +31,7 @@ export function generateSecurePassword(length = 12) {
 
 /**
  * ISO sanani chiroyli ko'rinishga formatlaydi.
+ * O'zbekcha uchun maxsus oy nomlari ishlatiladi (brauzer ICU'dagi "M09" xatosini oldini olish uchun).
  * @param {string} isoDate
  * @param {'uz' | 'ru'} locale
  * @returns {string}
@@ -35,8 +41,18 @@ export function formatSecurityDate(isoDate, locale = 'uz') {
   try {
     const d = new Date(isoDate);
     if (isNaN(d.getTime())) return String(isoDate);
-    const loc = locale === 'ru' ? 'ru-RU' : 'uz-UZ';
-    return new Intl.DateTimeFormat(loc, {
+
+    const isUzbek = !locale || String(locale).toLowerCase().startsWith('uz');
+    if (isUzbek) {
+      const day = d.getDate();
+      const month = UZ_MONTHS[d.getMonth()] || '';
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day}-${month} ${year}, ${hours}:${minutes}`;
+    }
+
+    return new Intl.DateTimeFormat('ru-RU', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',

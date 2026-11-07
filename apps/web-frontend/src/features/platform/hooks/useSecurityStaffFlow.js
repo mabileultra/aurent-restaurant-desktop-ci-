@@ -81,6 +81,7 @@ export function useSecurityStaffFlow() {
       email: staffItem.email ?? '',
       role: staffItem.role ?? 'PLATFORM_ADMIN',
       password: '',
+      confirmPassword: '',
     });
   };
 
@@ -108,6 +109,18 @@ export function useSecurityStaffFlow() {
         role: form.role,
       });
       return;
+    }
+
+    if (form.password && form.password.trim()) {
+      const pwd = form.password.trim();
+      if (pwd.length < 6) {
+        toast.error('Parol kamida 6 ta belgidan iborat bo‘lishi kerak');
+        return;
+      }
+      if (pwd !== (form.confirmPassword || '').trim()) {
+        toast.error('Parollar mos emas');
+        return;
+      }
     }
 
     updateAdminMutation.mutate({

@@ -1,52 +1,54 @@
 import React from 'react';
-import { Clock, Globe, Trash2 } from 'lucide-react';
+import { Clock, Globe, Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { BaseCheckbox } from '../../../../components/ui';
 
-export default function PlatformSecuritySessionIpRulesCard({
-  rules,
-  setConc,
-  toggleNotify,
-  toggleIpOn,
-  newIpAddr,
-  setNewIpAddr,
-  addIp,
-  removeIp,
-}) {
+export default function PlatformSecuritySessionIpRulesCard({ rules }) {
+  const { t } = useTranslation();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
       <div className="p-4 sm:p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-emerald-700" />
-          <span>Faolsizlik va seanslar</span>
-        </h3>
-        <div className="space-y-3 text-xs">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-emerald-700" />
+            <span>{t('platform.security.sessionsRuleTitle', 'Faolsizlik va seanslar')}</span>
+          </h3>
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+            {t('platform.security.comingSoon', 'Tez kunda')}
+          </span>
+        </div>
+        <div className="space-y-3 text-xs opacity-60">
           <div>
-            <span className="text-slate-500 block mb-1">Bir vaqtda ruxsat etilgan seanslar</span>
+            <span className="text-slate-500 block mb-1">
+              {t('platform.security.concSessions', 'Bir vaqtda ruxsat etilgan seanslar')}
+            </span>
             <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
               {[1, 2, 3, 5].map((c) => (
                 <button
                   key={c}
                   type="button"
-                  onClick={() => setConc(c)}
-                  className={`flex-1 py-1 font-bold rounded-md ${
+                  disabled
+                  className={`flex-1 py-1 font-bold rounded-md cursor-not-allowed ${
                     rules.conc === c
-                      ? 'bg-white dark:bg-slate-900 text-emerald-700 shadow-xs'
-                      : 'text-slate-500'
+                      ? 'bg-white dark:bg-slate-900 text-slate-700 shadow-xs'
+                      : 'text-slate-400'
                   }`}
                 >
-                  {c} ta
+                  {c} {t('platform.security.qtySuffix', 'ta')}
                 </button>
               ))}
             </div>
           </div>
-          <label className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
-            <span>Yangi qurilmadan kirganda email ogohlantirish</span>
+          <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 cursor-not-allowed">
+            <span>{t('platform.security.newDeviceAlert', 'Yangi qurilmadan kirganda email ogohlantirish')}</span>
             <BaseCheckbox
               checked={rules.notify}
-              onChange={toggleNotify}
+              onChange={() => {}}
+              disabled
               size={18}
             />
-          </label>
+          </div>
         </div>
       </div>
 
@@ -54,58 +56,28 @@ export default function PlatformSecuritySessionIpRulesCard({
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Globe className="w-4 h-4 text-emerald-700" />
-            <span>IP oq ro‘yxati</span>
+            <span>{t('platform.security.ipAllowlistTitle', 'IP oq ro‘yxati')}</span>
           </h3>
-          <button
-            type="button"
-            onClick={toggleIpOn}
-            className={`w-9 h-5 rounded-full transition-colors relative p-0.5 ${
-              rules.ipOn ? 'bg-emerald-700' : 'bg-slate-300 dark:bg-slate-700'
-            }`}
-          >
-            <div
-              className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                rules.ipOn ? 'translate-x-4' : 'translate-x-0'
-              }`}
-            />
-          </button>
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+            {t('platform.security.comingSoon', 'Tez kunda')}
+          </span>
         </div>
-        <div className={`space-y-2 ${rules.ipOn ? '' : 'opacity-50 pointer-events-none'}`}>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newIpAddr}
-              onChange={(e) => setNewIpAddr(e.target.value)}
-              placeholder="Masalan, 195.158.8.40"
-              className="flex-1 px-2.5 py-1 text-xs border rounded-lg dark:bg-slate-800 dark:border-slate-700"
-            />
-            <button
-              type="button"
-              onClick={addIp}
-              className="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs text-slate-500">
+          <Info className="w-4 h-4 shrink-0 text-slate-400" />
+          <span>{t('platform.security.ipNotice', 'IP filtrlash sozlamalari backend tayyor bo‘lgach ulanadi.')}</span>
+        </div>
+        <div className="space-y-1.5 opacity-60">
+          {rules.ips.map((ip, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700"
             >
-              Qo‘shish
-            </button>
-          </div>
-          <div className="space-y-1 max-h-24 overflow-y-auto">
-            {rules.ips.map((ip, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between text-xs p-1.5 bg-slate-50 dark:bg-slate-800 rounded"
-              >
-                <span className="font-mono text-[11px]">
-                  {ip.addr} <span className="text-slate-400">({ip.note})</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeIp(idx)}
-                  className="text-rose-500 hover:text-rose-700 p-0.5"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
+              <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
+                {ip.addr} <span className="text-slate-400">({ip.note})</span>
+              </span>
+              <span className="text-[10px] text-slate-400">Ko‘rish</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -17,11 +17,15 @@ describe('securityFormatUtils', () => {
     expect(pwd1).not.toBe(pwd2);
   });
 
-  it('formats security dates correctly', () => {
+  it('formats security dates correctly for Uzbek and Russian', () => {
     expect(formatSecurityDate('')).toBe('');
-    const formatted = formatSecurityDate('2026-09-24T09:39:25.981382Z', 'uz');
-    expect(formatted).toContain('2026');
-    expect(formatted).toContain('24');
+    const uzFormatted = formatSecurityDate('2026-09-24T09:39:25.981382Z', 'uz');
+    expect(uzFormatted).toContain('24-sentabr 2026');
+    expect(uzFormatted).not.toContain('M09');
+
+    const ruFormatted = formatSecurityDate('2026-09-24T09:39:25.981382Z', 'ru');
+    expect(ruFormatted).toContain('24');
+    expect(ruFormatted).toContain('2026');
   });
 
   it('calculates days ago properly', () => {

@@ -10,7 +10,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
   return {
     ...actual,
     useQuery: () => ({
-      data: { isSet: true, updatedAt: '2026-09-24T09:39:25.981382Z' },
+      data: { configured: true, updatedAt: '2026-09-24T09:39:25.981382Z' },
       isLoading: false,
     }),
   };
@@ -28,7 +28,9 @@ describe('useSecurityOverviewFlow', () => {
     renderToStaticMarkup(React.createElement(TestComponent));
 
     expect(state.kpis.activeSessions.count).toBe('—');
-    expect(state.kpis.failedLogins.count).toBe('0');
+    expect(state.kpis.failedLogins.count).toBe('—');
+    expect(state.kpis.newDevices.count).toBe('—');
+    expect(state.kpis.twoFactorEnabled.count).toBe('—');
     expect(state.recommendations.length).toBeGreaterThan(0);
     expect(state.loginBars).toEqual([]);
     expect(state.recentEvents).toEqual([]);
