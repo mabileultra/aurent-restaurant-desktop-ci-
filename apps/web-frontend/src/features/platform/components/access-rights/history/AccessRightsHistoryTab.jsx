@@ -6,6 +6,7 @@ import { platformModuleAccessApi } from '../../../../../api';
 import AccessRightsHistoryFiltersBar from './AccessRightsHistoryFiltersBar';
 import AccessRightsHistoryItemCard from './AccessRightsHistoryItemCard';
 import AccessRightsHistoryEmptyState from './AccessRightsHistoryEmptyState';
+import { fetchAllAccessHistory } from '../hooks/fetchAllAccessUsers';
 import {
   formatHistoryDateHeader,
   formatHistoryTime,
@@ -25,9 +26,8 @@ export default function AccessRightsHistoryTab({ onReverted }) {
     queryKey: ['access-rights-history'],
     queryFn: async () => {
       try {
-        const res = await platformModuleAccessApi.history({ page: 0, size: 50 });
-        const list = Array.isArray(res?.data) ? res.data : (res?.data?.content || []);
-        return list;
+        const packed = await fetchAllAccessHistory({ size: 50 });
+        return packed.content || [];
       } catch {
         return [];
       }

@@ -4,6 +4,7 @@ import { AlertCircle, Download, RotateCcw, Search } from 'lucide-react';
 import AnalyticsHeader from '../components/AnalyticsHeader';
 import AnalyticsReceiptDetailCard from '../components/AnalyticsReceiptDetailCard';
 import AnalyticsReceiptsTable from '../components/AnalyticsReceiptsTable';
+import AnalyticsTablePager from '../components/AnalyticsTablePager';
 import { useAnalyticsReceiptsPage } from '../hooks/useAnalyticsReceiptsPage';
 import { exportToCsv } from '../utils/analyticsExport';
 import { fmtDayFull, fmtMoney, sanitizeText } from '../utils/analyticsFormat';
@@ -126,6 +127,12 @@ export default function AnalyticsReceiptsPage() {
               selectedReceipt={flow.selectedReceipt}
               onSelectReceipt={flow.setSelectedReceipt}
               effectiveDay={flow.effectiveDay}
+            />
+            <AnalyticsTablePager
+              page={flow.listPage}
+              pageSize={flow.pageSize}
+              totalElements={flow.totalElements}
+              onPageChange={flow.setListPage}
             />
           </div>
 

@@ -1,40 +1,49 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { analyticsApi } from '../api/analyticsApi';
 import { useAnalyticsOverview } from './useAnalyticsOverview';
 
+const PAGE_SIZE = 20;
+
 /**
- * Republic-wide receipts for a day (or selected company day).
- * Chart click passes ?date=YYYY-MM-DD — must NOT be scoped to top-1 firm only.
+ * Republic-wide receipts for a day (or selected company day) with server pagination.
  */
 export function useAnalyticsReceiptsPage() {
   const [searchParams] = useSearchParams();
-  const page = useAnalyticsOverview();
+  const overview = useAnalyticsOverview();
   const initialDate = searchParams.get('date') || '';
 
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [selectedDayOverride, setSelectedDayOverride] = useState(initialDate);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [qrFilter, setQrFilter] = useState('all');
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [listPage, setListPage] = useState(0);
 
   const effectiveDay = useMemo(() => {
     if (selectedDayOverride) return selectedDayOverride;
     if (initialDate) return initialDate;
-    return page.republicDays?.slice().reverse().find((d) => Number(d.totalTurnover || 0) > 0)?.date
-      || page.republicDays?.[page.republicDays.length - 1]?.date
+    return overview.republicDays?.slice().reverse().find((d) => Number(d.totalTurnover || 0) > 0)?.date
+      || overview.republicDays?.[overview.republicDays.length - 1]?.date
       || '';
-  }, [selectedDayOverride, initialDate, page.republicDays]);
+  }, [selectedDayOverride, initialDate, overview.republicDays]);
 
   const companyScoped = Boolean(selectedCompanyId);
 
+  useEffect(() => {
+    setListPage(0);
+    setSelectedReceipt(null);
+  }, [effectiveDay, selectedCompanyId, debouncedSearch, qrFilter]);
+
   const companyDetailQuery = useQuery({
-    queryKey: ['analytics-receipts-company-detail', selectedCompanyId, page.period],
+    queryKey: ['analytics-receipts-company-detail', selectedCompanyId, overview.period],
     queryFn: () => analyticsApi.getCompanyDetail(selectedCompanyId, {
-      period: page.period === 'custom' ? 'custom' : page.period,
-      from: page.customFrom || undefined,
-      to: page.customTo || undefined,
+      period: overview.period === 'custom' ? 'custom' : overview.period,
+      from: overview.customFrom || undefined,
+      to: overview.customTo || undefined,
     }).then((res) => res.data),
     enabled: companyScoped,
   });
@@ -44,69 +53,95 @@ export function useAnalyticsReceiptsPage() {
       const list = companyDetailQuery.data?.days ?? [];
       return [...list].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
     }
-    return [...(page.republicDays || [])]
+    return [...(overview.republicDays || [])]
       .filter((d) => d.date)
       .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-  }, [companyScoped, companyDetailQuery.data?.days, page.republicDays]);
+  }, [companyScoped, companyDetailQuery.data?.days, overview.republicDays]);
+
+  const companyKind = qrFilter === 'qr' ? 'QR' : qrFilter === 'no_qr' ? 'NO_QR' : 'ALL';
 
   const receiptsQuery = useQuery({
-    queryKey: ['analytics-receipts-list', companyScoped, selectedCompanyId, effectiveDay],
+    queryKey: [
+      'analytics-receipts-list',
+      companyScoped,
+      selectedCompanyId,
+      effectiveDay,
+      listPage,
+      PAGE_SIZE,
+      debouncedSearch,
+      companyKind,
+    ],
     queryFn: async () => {
-      if (!effectiveDay) return [];
+      if (!effectiveDay) return { rows: [], totalElements: 0 };
       if (companyScoped) {
         const res = await analyticsApi.getCompanyReceipts(selectedCompanyId, {
           date: effectiveDay,
-          size: 100,
+          page: listPage,
+          size: PAGE_SIZE,
+          kind: companyKind,
         });
-        return (res.data?.rows ?? []).map((r) => ({
+        const data = res.data ?? {};
+        const rows = (data.rows ?? []).map((r) => ({
           ...r,
           companyId: r.companyId ?? Number(selectedCompanyId),
         }));
+        return { rows, totalElements: Number(data.totalElements ?? rows.length) };
       }
       const res = await analyticsApi.getReceipts({
         period: 'custom',
         from: effectiveDay,
         to: effectiveDay,
-        size: 100,
+        page: listPage,
+        size: PAGE_SIZE,
+        search: debouncedSearch.trim() || undefined,
       });
-      return res.data?.rows ?? [];
+      const data = res.data ?? {};
+      let rows = data.rows ?? [];
+      if (qrFilter === 'qr') {
+        rows = rows.filter((r) => r.hasQr || r.fiscalStatus === 'FISCAL' || r.fiscalStatus === 'CONFIRMED');
+      } else if (qrFilter === 'no_qr') {
+        rows = rows.filter((r) => !(r.hasQr || r.fiscalStatus === 'FISCAL' || r.fiscalStatus === 'CONFIRMED'));
+      }
+      return { rows, totalElements: Number(data.totalElements ?? rows.length) };
     },
     enabled: Boolean(effectiveDay) && (!companyScoped || Boolean(selectedCompanyId)),
+    placeholderData: (prev) => prev,
   });
 
-  const rawReceipts = receiptsQuery.data ?? [];
-
   const filteredReceipts = useMemo(() => {
-    return rawReceipts.filter((r) => {
-      const receiptNo = String(r.receiptNumber || r.receiptNo || r.saleId || '');
-      const store = String(r.storeName || r.store || '');
+    const rows = receiptsQuery.data?.rows ?? [];
+    if (companyScoped || !debouncedSearch.trim()) return rows;
+    // Republic search already sent to API; keep local refine for store name.
+    const q = debouncedSearch.toLowerCase();
+    return rows.filter((r) => {
+      const receiptNo = String(r.receiptNumber || r.saleId || '');
+      const store = String(r.storeName || '');
       const company = String(r.companyName || '');
-      const q = search.toLowerCase();
-      const matchSearch = !search
-        || receiptNo.toLowerCase().includes(q)
+      return receiptNo.toLowerCase().includes(q)
         || store.toLowerCase().includes(q)
         || company.toLowerCase().includes(q);
-      const hasQr = r.hasQr || r.fiscalStatus === 'FISCAL' || r.fiscalStatus === 'CONFIRMED';
-      const matchQr = qrFilter === 'all' ? true : qrFilter === 'qr' ? hasQr : !hasQr;
-      return matchSearch && matchQr;
     });
-  }, [rawReceipts, search, qrFilter]);
+  }, [receiptsQuery.data?.rows, companyScoped, debouncedSearch]);
 
-  const activeCompany = page.top10Companies.find((c) => String(c.companyId) === String(selectedCompanyId));
+  const activeCompany = overview.top10Companies.find((c) => String(c.companyId) === String(selectedCompanyId));
   const detailCompanyId = selectedReceipt?.companyId
     || selectedCompanyId
     || activeCompany?.companyId;
 
   return {
-    page,
+    page: overview,
     selectedCompanyId,
     setSelectedCompanyId: (id) => {
       setSelectedCompanyId(id);
       setSelectedDayOverride('');
       setSelectedReceipt(null);
+      setListPage(0);
     },
     effectiveDay,
-    setSelectedDayOverride,
+    setSelectedDayOverride: (d) => {
+      setSelectedDayOverride(d);
+      setListPage(0);
+    },
     search,
     setSearch,
     qrFilter,
@@ -118,5 +153,9 @@ export function useAnalyticsReceiptsPage() {
     receiptsQuery,
     activeCompany,
     detailCompanyId,
+    listPage,
+    setListPage,
+    pageSize: PAGE_SIZE,
+    totalElements: Number(receiptsQuery.data?.totalElements ?? 0),
   };
 }
