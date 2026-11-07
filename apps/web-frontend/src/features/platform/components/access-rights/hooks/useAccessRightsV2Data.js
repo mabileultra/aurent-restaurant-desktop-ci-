@@ -110,6 +110,29 @@ export function useAccessRightsV2Data() {
     }
   }, [selectedBT, users.length, isUnfilteredQuery]);
 
+  useEffect(() => {
+    const key = 'access-rights-false-exceptions-normalized';
+    if (typeof sessionStorage === 'undefined' || sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    platformModuleAccessApi
+      .normalizeFalseExceptions()
+      .then((res) => {
+        const affected = Number(res?.data?.affected ?? 0);
+        if (affected > 0) {
+          refetchStats();
+          refetchUsers();
+          toast.success(
+            currentLang === 'ru'
+              ? `Снято ложных исключений: ${affected}`
+              : `Soxta istisnolar olib tashlandi: ${affected}`
+          );
+        }
+      })
+      .catch(() => {
+        sessionStorage.removeItem(key);
+      });
+  }, [currentLang, refetchStats, refetchUsers]);
+
   const catalogMap = useMemo(() => buildCatalogMap(rawCatalog, t), [rawCatalog, t]);
   const gridBT = effectiveBT === 'ALL' ? selectedBT : effectiveBT;
   const moduleGroups = useMemo(() => buildCatalogGroups(rawCatalog, gridBT, t), [rawCatalog, gridBT, t]);

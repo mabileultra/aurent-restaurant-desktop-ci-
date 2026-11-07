@@ -38,6 +38,8 @@ export function useLoginPage() {
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [twoFactorChallenge, setTwoFactorChallenge] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
 
   const isDesktop = Boolean(window.desktopCashier?.isDesktop);
   const isAdminLogin = searchParams.get('admin') === '1';
@@ -76,6 +78,21 @@ export function useLoginPage() {
     defaultValues: { username: '', password: '', remember: false },
   });
 
+  const finishLogin = async (accessToken, profile) => {
+    resetClientSessionState();
+    setAuth(accessToken, profile);
+    const { access, businessPayload, fetchError } = await fetchMainAppAccess(profile.role);
+    if (!access.ok && !fetchError) {
+      logoutAndResetSession();
+      toast.error(t('login.wrongAppUnknown'));
+      return;
+    }
+    toast.success(t('login.welcome', { name: profile.fullName }));
+    const path = await resolvePostLoginPath(profile.role, businessPayload);
+    prefetchAppHome(path);
+    navigate(path, { replace: true });
+  };
+
   const onSubmit = async (data) => {
     setLoading(true);
     try {
@@ -83,25 +100,18 @@ export function useLoginPage() {
         username: data.username,
         password: data.password,
       });
+      if (res.data?.requiresTwoFactor && res.data?.challengeToken) {
+        setTwoFactorChallenge(res.data.challengeToken);
+        setTwoFactorCode('');
+        toast(t('login.twoFactorRequired', 'Authenticator kodini kiriting'));
+        return;
+      }
       const { token: accessToken, ...profile } = res.data;
       if (!accessToken) {
         toast.error(t('login.failed'));
         return;
       }
-      resetClientSessionState();
-      setAuth(accessToken, profile);
-
-      const { access, businessPayload, fetchError } = await fetchMainAppAccess(profile.role);
-      if (!access.ok && !fetchError) {
-        logoutAndResetSession();
-        toast.error(t('login.wrongAppUnknown'));
-        return;
-      }
-
-      toast.success(t('login.welcome', { name: profile.fullName }));
-      const path = await resolvePostLoginPath(profile.role, businessPayload);
-      prefetchAppHome(path);
-      navigate(path, { replace: true });
+      await finishLogin(accessToken, profile);
     } catch (err) {
       const apiMsg = err.response?.data?.message;
       if (!err.response) {
@@ -111,6 +121,32 @@ export function useLoginPage() {
       } else {
         toast.error(resolveAuthErrorMessage(err, t));
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onVerifyTwoFactor = async (event) => {
+    event?.preventDefault?.();
+    if (!twoFactorChallenge || twoFactorCode.trim().length < 6) {
+      toast.error(t('login.twoFactorInvalid', '6 xonali kodni kiriting'));
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authApi.verifyTwoFactor({
+        challengeToken: twoFactorChallenge,
+        code: twoFactorCode.trim(),
+      });
+      const { token: accessToken, ...profile } = res.data;
+      if (!accessToken) {
+        toast.error(t('login.failed'));
+        return;
+      }
+      setTwoFactorChallenge(null);
+      await finishLogin(accessToken, profile);
+    } catch (err) {
+      toast.error(resolveAuthErrorMessage(err, t));
     } finally {
       setLoading(false);
     }
@@ -126,5 +162,13 @@ export function useLoginPage() {
     loading,
     form,
     onSubmit: form.handleSubmit(onSubmit),
+    twoFactorChallenge,
+    twoFactorCode,
+    setTwoFactorCode,
+    onVerifyTwoFactor,
+    cancelTwoFactor: () => {
+      setTwoFactorChallenge(null);
+      setTwoFactorCode('');
+    },
   };
 }

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="identity-016-auth-sessions" author="pos">
+        <createTable tableName="auth_sessions">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_label" type="VARCHAR(160)"/>
+            <column name="device_type" type="VARCHAR(16)"/>
+            <column name="user_agent" type="VARCHAR(512)"/>
+            <column name="ip_address" type="VARCHAR(64)"/>
+            <column name="location_label" type="VARCHAR(160)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_seen_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revoked_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+        <createIndex tableName="auth_sessions" indexName="idx_auth_sessions_user_active">
+            <column name="user_id"/>
+            <column name="revoked_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="identity-017-user-totp-lock" author="pos">
+        <addColumn tableName="users">
+            <column name="totp_secret" type="VARCHAR(64)"/>
+            <column name="totp_enabled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failed_login_count" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locked_until" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="identity-018-platform-login-rules" author="pos">
+        <createTable tableName="platform_login_rules">
+            <column name="id" type="INTEGER">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rules_json" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="UUID"/>
+        </createTable>
+        <insert tableName="platform_login_rules">
+            <column name="id" valueNumeric="1"/>
+            <column name="rules_json" value='{"tfa":{"sa":true,"op":false,"an":false},"method":"app","minLen":10,"expiry":90,"req":{"case":true,"digit":true,"special":false,"history":true},"idle":0,"maxH":12,"conc":3,"notify":true,"attempts":5,"lockMin":15,"ipOn":false,"ips":[]}'/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

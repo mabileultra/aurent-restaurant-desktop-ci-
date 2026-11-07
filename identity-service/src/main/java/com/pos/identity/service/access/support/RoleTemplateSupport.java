@@ -34,33 +34,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RoleTemplateSupport {
 
-    public static final String PLATFORM_STAFF = "PLATFORM_STAFF";
-
     private final RoleModuleTemplateRepository roleModuleTemplateRepository;
     private final RoleTemplateLookup roleTemplateLookup;
     private final UserRepository userRepository;
     private final PosCoreClient posCoreClient;
+    private final ModuleAccessHistoryWriter historyWriter;
 
     @Transactional(readOnly = true)
     public RoleTemplateResponse get(String businessType, String role) {
         String bt = normalizeBusinessType(businessType);
         String roleName = normalizeRole(role);
-        List<String> scope = scopeKeys(bt, roleName);
-        Map<String, Boolean> saved = roleTemplateLookup.findModules(bt, roleName).orElse(null);
-        Map<String, Boolean> modules = new LinkedHashMap<>();
-        for (String key : scope) {
-            boolean allowed = saved != null
-                ? Boolean.TRUE.equals(saved.get(key))
-                : enumDefault(bt, roleName, key);
-            modules.put(key, allowed);
-        }
-        return new RoleTemplateResponse(
-            bt,
-            roleName,
-            modules,
-            saved != null ? "TEMPLATE" : "DEFAULT",
-            0
-        );
+        Map<String, Boolean> modules = resolveModules(bt, roleName);
+        String source = roleTemplateLookup.findModules(bt, roleName).isPresent() ? "TEMPLATE" : "DEFAULT";
+        return new RoleTemplateResponse(bt, roleName, modules, source, countNonCustomUsers(bt, roleName));
     }
 
     @Transactional
@@ -72,6 +58,13 @@ public class RoleTemplateSupport {
         String roleName = normalizeRole(role);
         List<String> scope = scopeKeys(bt, roleName);
         Set<String> scopeSet = new HashSet<>(scope);
+        Map<String, Boolean> before = resolveModules(bt, roleName);
+
+        for (String key : request.modules().keySet()) {
+            if (!scopeSet.contains(key)) {
+                throw new BadRequestException("Модуль не входит в область роли: " + key);
+            }
+        }
 
         boolean anyAllowed = false;
         List<RoleModuleTemplate> rows = new ArrayList<>();
@@ -89,38 +82,41 @@ public class RoleTemplateSupport {
                 .updatedBy(actorId)
                 .build());
         }
-        for (String key : request.modules().keySet()) {
-            if (!scopeSet.contains(key) && Boolean.TRUE.equals(request.modules().get(key))) {
-                throw new BadRequestException("Module not in role scope: " + key);
-            }
-        }
         if (!anyAllowed) {
-            throw new BadRequestException("Enable at least one module");
+            throw new BadRequestException("Включите хотя бы один модуль");
         }
 
         roleModuleTemplateRepository.deleteByBusinessTypeAndRoleName(bt, roleName);
         roleModuleTemplateRepository.saveAll(rows);
 
-        int affected = 0;
-        if (Boolean.TRUE.equals(request.applyToExisting())) {
-            affected = applyToExistingUsers(bt, roleName);
-        } else {
-            affected = countNonCustomUsers(bt, roleName);
+        Map<String, Boolean> after = new LinkedHashMap<>();
+        for (String key : scope) {
+            after.put(key, Boolean.TRUE.equals(request.modules().get(key)));
         }
+        historyWriter.writeTemplate(bt, roleName, before, after);
 
+        int affected = Boolean.TRUE.equals(request.applyToExisting())
+            ? applyToExistingUsers(bt, roleName)
+            : countNonCustomUsers(bt, roleName);
+        return new RoleTemplateResponse(bt, roleName, after, "TEMPLATE", affected);
+    }
+
+    private Map<String, Boolean> resolveModules(String bt, String roleName) {
+        List<String> scope = scopeKeys(bt, roleName);
+        Map<String, Boolean> saved = roleTemplateLookup.findModules(bt, roleName).orElse(null);
         Map<String, Boolean> modules = new LinkedHashMap<>();
         for (String key : scope) {
-            modules.put(key, Boolean.TRUE.equals(request.modules().get(key)));
+            boolean allowed = saved != null
+                ? Boolean.TRUE.equals(saved.get(key))
+                : enumDefault(bt, roleName, key);
+            modules.put(key, allowed);
         }
-        return new RoleTemplateResponse(bt, roleName, modules, "TEMPLATE", affected);
+        return modules;
     }
 
     private int applyToExistingUsers(String businessType, String roleName) {
-        List<User> users = loadUsersForTemplate(businessType, roleName).stream()
-            .filter(u -> !u.isModuleAccessCustom())
-            .toList();
-        // Non-custom users already resolve via template/roleDefault — nothing to materialize.
-        return users.size();
+        // Non-custom users already resolve via template — count who inherits the change.
+        return countNonCustomUsers(businessType, roleName);
     }
 
     private int countNonCustomUsers(String businessType, String roleName) {
@@ -130,7 +126,7 @@ public class RoleTemplateSupport {
     }
 
     private List<User> loadUsersForTemplate(String businessType, String roleName) {
-        if (PLATFORM_STAFF.equals(businessType)) {
+        if (RoleTemplateMatrix.PLATFORM_STAFF.equals(businessType)) {
             return userRepository.findPlatformOperatorsForModuleAccess().stream()
                 .filter(u -> roleName.equalsIgnoreCase(u.getRole() != null ? u.getRole().getName() : null))
                 .toList();
@@ -146,7 +142,7 @@ public class RoleTemplateSupport {
     }
 
     private List<String> scopeKeys(String businessType, String roleName) {
-        if (PLATFORM_STAFF.equals(businessType)
+        if (RoleTemplateMatrix.PLATFORM_STAFF.equals(businessType)
             || RoleName.PLATFORM_ADMIN.name().equals(roleName)
             || RoleName.PLATFORM_ANALYTICS.name().equals(roleName)) {
             if (RoleName.PLATFORM_ANALYTICS.name().equals(roleName)) {
@@ -170,7 +166,7 @@ public class RoleTemplateSupport {
     }
 
     private boolean enumDefault(String businessType, String roleName, String moduleKey) {
-        if (PLATFORM_STAFF.equals(businessType)
+        if (RoleTemplateMatrix.PLATFORM_STAFF.equals(businessType)
             || RoleName.PLATFORM_ADMIN.name().equals(roleName)) {
             return false;
         }

@@ -3,6 +3,7 @@ import { api } from '../client';
 export const platformModuleAccessApi = {
   catalog: () => api.get('/platform/module-access/catalog'),
   stats: (params = {}) => api.get('/platform/module-access/stats', { params }),
+  listRoleTemplates: (params = {}) => api.get('/platform/module-access/role-templates', { params }),
   getRoleTemplate: (businessType, role) =>
     api.get(`/platform/module-access/role-templates/${encodeURIComponent(businessType)}/${encodeURIComponent(role)}`),
   updateRoleTemplate: (businessType, role, body) =>
@@ -10,6 +11,7 @@ export const platformModuleAccessApi = {
       `/platform/module-access/role-templates/${encodeURIComponent(businessType)}/${encodeURIComponent(role)}`,
       body
     ),
+  normalizeFalseExceptions: () => api.post('/platform/module-access/normalize-false-exceptions'),
   listUsers: (params = {}) => api.get('/platform/module-access/users', { params }),
   getUser: (userId) => api.get(`/platform/module-access/users/${userId}`),
   updateUser: (userId, body) => api.put(`/platform/module-access/users/${userId}`, body),

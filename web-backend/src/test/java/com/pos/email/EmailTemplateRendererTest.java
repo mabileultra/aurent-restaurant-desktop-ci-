@@ -32,7 +32,9 @@ class EmailTemplateRendererTest {
         assertTrue(html.contains("Вход в супер-админку"), "email body heading must be present");
         assertTrue(html.contains("superadmin@platform.local"), "email field must be present");
         assertTrue(html.contains("192.168.1.10"), "ip address must be present");
+        assertTrue(html.contains("Bu avtomatik xabar"), "default uz footer must be present");
         assertFalse(html.contains("{{content}}"), "layout placeholder must be resolved");
         assertFalse(html.contains("{{fullName}}"), "template placeholders must be resolved");
+        assertFalse(html.contains("{{footerNote}}"), "footer placeholder must be resolved");
     }
 }

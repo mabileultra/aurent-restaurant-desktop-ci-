@@ -13,6 +13,8 @@ public record ModuleAccessHistoryItem(
     UUID targetUserId,
     String targetUsername,
     String targetFullName,
+    String businessType,
+    String roleName,
     String strategy,
     boolean beforeCustom,
     boolean afterCustom,

@@ -67,7 +67,8 @@ public class ModuleAccessUsersPager {
     }
 
     private List<User> loadUsers(Integer companyId, boolean platformOnly, String businessType) {
-        if (platformOnly) {
+        String bt = StringUtils.hasText(businessType) ? businessType.trim().toUpperCase(Locale.ROOT) : null;
+        if (platformOnly || RoleTemplateMatrix.PLATFORM_STAFF.equals(bt)) {
             if (!tenantAccess.isSuperAdmin()) {
                 return List.of();
             }
@@ -75,12 +76,13 @@ public class ModuleAccessUsersPager {
         }
 
         Stream<User> tenant = userRepository.findTenantUsersForModuleAccess(companyId).stream();
-        if (StringUtils.hasText(businessType) && companyId == null) {
-            Set<Integer> ids = new HashSet<>(posCoreClient.findCompanyIds(businessType.trim(), null, null));
+        if (bt != null && companyId == null) {
+            Set<Integer> ids = new HashSet<>(posCoreClient.findCompanyIds(bt, null, null));
             tenant = tenant.filter(u -> u.getCompanyId() != null && ids.contains(u.getCompanyId()));
         }
 
-        Stream<User> operators = companyId == null && tenantAccess.isSuperAdmin()
+        // Platform staff belong only to PLATFORM_STAFF — never mix into tenant business-type lists.
+        Stream<User> operators = companyId == null && bt == null && tenantAccess.isSuperAdmin()
             ? userRepository.findPlatformOperatorsForModuleAccess().stream()
             : Stream.empty();
 

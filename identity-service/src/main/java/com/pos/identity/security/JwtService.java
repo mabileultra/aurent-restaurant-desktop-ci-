@@ -37,6 +37,10 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
+        return generateToken(userDetails, null);
+    }
+
+    public String generateToken(UserDetails userDetails, UUID sessionId) {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User user) {
             if (user.getCompanyId() != null) {
@@ -48,8 +52,43 @@ public class JwtService {
             claims.put(JwtClaimNames.CAN_REQUEST_BILL, canRequestBill(user));
             claims.put(JwtClaimNames.CAN_PRINT_PICKUP_LABEL, canPrintPickupLabel(user));
             claims.put(JwtClaimNames.ACCESS_VERSION, user.getAccessVersion());
+            if (sessionId != null) {
+                claims.put(JwtClaimNames.SESSION_ID, sessionId.toString());
+            }
         }
         return generateToken(claims, userDetails);
+    }
+
+    public String generatePurposeToken(User user, String purpose, long ttlMs) {
+        Map<String, Object> claims = new HashMap<>();
+        if (user.getRole() != null) {
+            claims.put(JwtClaimNames.ROLES, List.of(user.getRole().getName()));
+        }
+        claims.put(JwtClaimNames.PURPOSE, purpose);
+        return Jwts.builder()
+            .claims(claims)
+            .subject(user.getId().toString())
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + ttlMs))
+            .signWith(getSigningKey())
+            .compact();
+    }
+
+    public UUID extractSessionId(String token) {
+        Object value = extractAllClaims(token).get(JwtClaimNames.SESSION_ID);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return UUID.fromString(String.valueOf(value));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    public String extractPurpose(String token) {
+        Object value = extractAllClaims(token).get(JwtClaimNames.PURPOSE);
+        return value != null ? String.valueOf(value) : null;
     }
 
     public Integer extractAccessVersion(String token) {

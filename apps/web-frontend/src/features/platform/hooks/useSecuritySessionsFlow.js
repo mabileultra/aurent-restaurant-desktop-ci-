@@ -1,54 +1,60 @@
 import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { platformSecurityApi } from '../../../api';
 
 /**
- * Xavfsizlik "Kirishlar va seanslar" tabi mantiq hooki.
- * Backend seanslar API taqdim etilgunga qadar xavfsiz bo'sh holatda saqlanadi.
+ * Xavfsizlik "Kirishlar va seanslar" tabi — faol seanslar API.
  */
 export function useSecuritySessionsFlow() {
+  const qc = useQueryClient();
   const [filter, setFilter] = useState('all');
   const [pendingCloseSession, setPendingCloseSession] = useState(null);
   const [isCloseAllPending, setIsCloseAllPending] = useState(false);
 
-  // Haqiqiy backend API bo'lmagani sababli bo'sh holat qaytariladi
-  const sessions = useMemo(() => [], []);
+  const { data: sessions = [], isLoading } = useQuery({
+    queryKey: ['platform-security-sessions'],
+    queryFn: () => platformSecurityApi.listSessions().then((r) => (Array.isArray(r.data) ? r.data : [])),
+  });
+
   const attempts = useMemo(() => [], []);
 
-  const requestCloseSession = (session) => {
-    setPendingCloseSession(session);
-  };
+  const revokeMutation = useMutation({
+    mutationFn: (sessionId) => platformSecurityApi.revokeSession(sessionId),
+    onSuccess: () => {
+      toast.success('Seans yopildi');
+      setPendingCloseSession(null);
+      qc.invalidateQueries({ queryKey: ['platform-security-sessions'] });
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? 'Seansni yopib bo‘lmadi'),
+  });
 
-  const confirmCloseSession = () => {
-    setPendingCloseSession(null);
-  };
-
-  const cancelCloseSession = () => {
-    setPendingCloseSession(null);
-  };
-
-  const requestCloseAllOthers = () => {
-    setIsCloseAllPending(true);
-  };
-
-  const confirmCloseAllOthers = () => {
-    setIsCloseAllPending(false);
-  };
-
-  const cancelCloseAllOthers = () => {
-    setIsCloseAllPending(false);
-  };
+  const revokeOthersMutation = useMutation({
+    mutationFn: () => platformSecurityApi.revokeOtherSessions().then((r) => r.data),
+    onSuccess: (data) => {
+      toast.success(`Yopilgan seanslar: ${data?.revoked ?? 0}`);
+      setIsCloseAllPending(false);
+      qc.invalidateQueries({ queryKey: ['platform-security-sessions'] });
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? 'Seanslarni yopib bo‘lmadi'),
+  });
 
   return {
     sessions,
     attempts,
     filter,
     setFilter,
+    isLoading,
     pendingCloseSession,
-    requestCloseSession,
-    confirmCloseSession,
-    cancelCloseSession,
+    requestCloseSession: (session) => setPendingCloseSession(session),
+    confirmCloseSession: () => {
+      if (pendingCloseSession?.id) revokeMutation.mutate(pendingCloseSession.id);
+    },
+    cancelCloseSession: () => setPendingCloseSession(null),
     isCloseAllPending,
-    requestCloseAllOthers,
-    confirmCloseAllOthers,
-    cancelCloseAllOthers,
+    requestCloseAllOthers: () => setIsCloseAllPending(true),
+    confirmCloseAllOthers: () => revokeOthersMutation.mutate(),
+    cancelCloseAllOthers: () => setIsCloseAllPending(false),
+    isRevoking: revokeMutation.isPending || revokeOthersMutation.isPending,
   };
 }

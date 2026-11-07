@@ -5,6 +5,7 @@ import com.pos.dto.email.EmailTemplatePreviewRequest;
 import com.pos.dto.email.EmailTemplatePreviewResponse;
 import com.pos.dto.email.SendBroadcastEmailRequest;
 import com.pos.dto.email.SendBroadcastEmailResponse;
+import com.pos.dto.email.SendTestEmailRequest;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface PlatformEmailService {
     EmailTemplatePreviewResponse preview(EmailTemplatePreviewRequest request);
 
     SendBroadcastEmailResponse sendBroadcast(SendBroadcastEmailRequest request);
+
+    SendBroadcastEmailResponse sendTest(SendTestEmailRequest request);
 }

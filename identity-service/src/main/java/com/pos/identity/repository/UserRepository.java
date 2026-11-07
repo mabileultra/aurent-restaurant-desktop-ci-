@@ -55,6 +55,15 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @Query("""
         SELECT DISTINCT u FROM User u
         JOIN FETCH u.role
+        LEFT JOIN FETCH u.storeIds
+        WHERE u.role.name IN ('SUPER_ADMIN', 'PLATFORM_ADMIN', 'PLATFORM_ANALYTICS')
+          AND u.companyId IS NULL
+        """)
+    List<User> findPlatformSecurityUsers();
+
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN FETCH u.role
         LEFT JOIN FETCH u.storeIds sid
         WHERE u.companyId = :companyId
           AND u.isActive = true

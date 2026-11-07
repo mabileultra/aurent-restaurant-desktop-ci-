@@ -34,12 +34,14 @@ export default function PlatformSecuritySessionsTab({ flow }) {
           </div>
           {sessions.length > 1 && (
             <div className="flex items-center gap-2">
-              <BaseButton variant="secondary" disabled className="text-xs font-semibold text-rose-600 opacity-60" onClick={requestCloseAllOthers}>
+              <BaseButton
+                variant="secondary"
+                className="text-xs font-semibold text-rose-600"
+                onClick={requestCloseAllOthers}
+                disabled={flow.isRevoking}
+              >
                 {t('platform.security.closeAllOtherSessions', 'Boshqa barcha seanslarni yopish')}
               </BaseButton>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
-                {t('platform.security.comingSoon', 'Tez kunda')}
-              </span>
             </div>
           )}
         </div>
@@ -79,9 +81,14 @@ export default function PlatformSecuritySessionsTab({ flow }) {
                       </div>
                     </div>
                     {!sess.current && (
-                      <span className="text-[11px] text-slate-400 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
-                        {t('platform.security.comingSoon', 'Tez kunda')}
-                      </span>
+                      <BaseButton
+                        variant="secondary"
+                        className="text-[11px] text-rose-600"
+                        onClick={() => flow.requestCloseSession(sess)}
+                        disabled={flow.isRevoking}
+                      >
+                        {t('platform.security.closeSession', 'Yopish')}
+                      </BaseButton>
                     )}
                   </div>
                   <div className="text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">{sess.when}</div>

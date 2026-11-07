@@ -39,7 +39,11 @@ public interface ModuleAccessService {
 
     RoleTemplateResponse getRoleTemplate(String businessType, String role);
 
+    List<RoleTemplateResponse> listRoleTemplates(String businessType);
+
     RoleTemplateResponse updateRoleTemplate(String businessType, String role, UpdateRoleTemplateRequest request);
+
+    ModuleAccessMutationResponse normalizeFalseExceptions();
 
     UserModuleAccessDetailResponse getUserAccess(UUID userId);
 

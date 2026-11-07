@@ -3,6 +3,7 @@ import { api } from './client';
 
 export const authApi = {
   login: (data) => api.post('/auth/login', data),
+  verifyTwoFactor: (data) => api.post('/auth/2fa/verify', data),
   cashierPinLogin: (data) => api.post('/auth/cashier-pin/login', data),
   register: (data) => api.post('/auth/register', data),
   refresh: () => api.post('/auth/refresh'),

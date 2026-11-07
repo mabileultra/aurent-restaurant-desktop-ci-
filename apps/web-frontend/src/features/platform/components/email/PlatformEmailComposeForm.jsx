@@ -116,19 +116,15 @@ export default function PlatformEmailComposeForm({ flow }) {
       </div>
 
       <div className="mt-auto flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 p-4 dark:border-slate-800">
-        <div className="relative group">
-          <button
-            type="button"
-            disabled
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 text-xs font-semibold text-slate-400 cursor-not-allowed dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-500"
-          >
-            <Mail className="h-4 w-4" />
-            {t('platform.email.testEmailSelf', 'O‘zimga test xat')}
-            <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-400">
-              {t('platform.email.comingSoon', 'Tez kunda')}
-            </span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={flow.handleTestEmail}
+          disabled={flow.isTesting || flow.isSending || !flow.subject.trim() || !flow.message.trim()}
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          <Mail className="h-4 w-4" />
+          {t('platform.email.testEmailSelf', 'O‘zimga test xat')}
+        </button>
         <button
           type="button"
           onClick={flow.handleSend}

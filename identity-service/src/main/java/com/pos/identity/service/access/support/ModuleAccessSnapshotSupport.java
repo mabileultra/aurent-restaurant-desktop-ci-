@@ -50,22 +50,42 @@ public class ModuleAccessSnapshotSupport {
     @Transactional
     public void applyCustomModules(User user, Map<String, Boolean> modules) {
         Map<String, Boolean> source = modules != null ? modules : Map.of();
-        userModuleAccessRepository.deleteByUserId(user.getId());
-        List<UserModuleAccess> rows = new ArrayList<>();
+        List<String> scope = scopeResolver.keysFor(user);
+        for (String key : source.keySet()) {
+            if (!scope.contains(key)) {
+                throw new BadRequestException("Модуль не входит в область роли: " + key);
+            }
+        }
+        Map<String, Boolean> proposed = new LinkedHashMap<>();
         boolean anyAllowed = false;
-        for (String moduleKey : scopeResolver.keysFor(user)) {
+        for (String moduleKey : scope) {
             boolean allowed = Boolean.TRUE.equals(source.get(moduleKey));
             if (allowed) {
                 anyAllowed = true;
             }
-            rows.add(UserModuleAccess.builder()
-                .id(new UserModuleAccessId(user.getId(), moduleKey))
-                .user(user)
-                .allowed(allowed)
-                .build());
+            proposed.put(moduleKey, allowed);
         }
         if (!anyAllowed) {
             throw new BadRequestException("Включите хотя бы один модуль");
+        }
+
+        boolean wasCustom = user.isModuleAccessCustom();
+        user.setModuleAccessCustom(false);
+        Map<String, Boolean> template = effectiveModules(user);
+        user.setModuleAccessCustom(wasCustom);
+        if (proposed.equals(template)) {
+            resetToTemplate(user);
+            return;
+        }
+
+        userModuleAccessRepository.deleteByUserId(user.getId());
+        List<UserModuleAccess> rows = new ArrayList<>();
+        for (Map.Entry<String, Boolean> entry : proposed.entrySet()) {
+            rows.add(UserModuleAccess.builder()
+                .id(new UserModuleAccessId(user.getId(), entry.getKey()))
+                .user(user)
+                .allowed(Boolean.TRUE.equals(entry.getValue()))
+                .build());
         }
         userModuleAccessRepository.saveAll(rows);
         user.setModuleAccessCustom(true);

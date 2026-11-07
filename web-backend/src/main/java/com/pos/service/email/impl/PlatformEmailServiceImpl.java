@@ -6,15 +6,16 @@ import com.pos.dto.email.EmailTemplatePreviewRequest;
 import com.pos.dto.email.EmailTemplatePreviewResponse;
 import com.pos.dto.email.SendBroadcastEmailRequest;
 import com.pos.dto.email.SendBroadcastEmailResponse;
+import com.pos.dto.email.SendTestEmailRequest;
 import com.pos.email.EmailTemplateRenderer;
 import com.pos.email.EmailTemplateType;
 import com.pos.entity.Company;
 import com.pos.entity.User;
-import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.repository.UserRepository;
-import com.pos.service.email.EmailService;
 import com.pos.service.email.PlatformEmailService;
+import com.pos.service.email.support.PlatformEmailBroadcastSupport;
+import com.pos.service.email.support.PlatformEmailLocaleSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +23,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +34,9 @@ public class PlatformEmailServiceImpl implements PlatformEmailService {
 
     private final EmailTemplateRenderer templateRenderer;
     private final UserRepository userRepository;
-    private final EmailService emailService;
     private final MailProperties mailProperties;
+    private final PlatformEmailBroadcastSupport broadcastSupport;
+    private final PlatformEmailLocaleSupport localeSupport;
 
     @Override
     public List<EmailTemplateInfoResponse> listTemplates() {
@@ -57,7 +56,7 @@ public class PlatformEmailServiceImpl implements PlatformEmailService {
     public EmailTemplatePreviewResponse preview(EmailTemplatePreviewRequest request) {
         EmailTemplateType type = request.templateType();
         User sampleUser = resolveSampleUser(request.sampleUserId());
-        Map<String, String> vars = buildVariables(type, sampleUser, request.subject(), request.message());
+        Map<String, String> vars = buildVariables(type, sampleUser, request.subject(), request.message(), "uz");
         if (request.overrides() != null) {
             vars.putAll(request.overrides());
         }
@@ -69,47 +68,15 @@ public class PlatformEmailServiceImpl implements PlatformEmailService {
     @Override
     @Transactional
     public SendBroadcastEmailResponse sendBroadcast(SendBroadcastEmailRequest request) {
-        if (!request.selectAll() && (request.userIds() == null || request.userIds().isEmpty())) {
-            throw new BadRequestException("Выберите получателей или включите «все пользователи»");
-        }
-
-        List<User> recipients = resolveRecipients(request);
-        int sent = 0;
-        int failed = 0;
-        int skipped = 0;
-
-        for (User user : recipients) {
-            if (!StringUtils.hasText(user.getEmail())) {
-                skipped++;
-                continue;
-            }
-            Map<String, String> vars = buildVariables(
-                EmailTemplateType.BROADCAST,
-                user,
-                request.subject(),
-                request.message()
-            );
-            String html = templateRenderer.render(EmailTemplateType.BROADCAST, vars);
-            emailService.sendHtml(user.getEmail(), request.subject().trim(), html);
-            sent++;
-        }
-
-        return new SendBroadcastEmailResponse(sent, failed, skipped);
+        return broadcastSupport.send(request);
     }
 
-    private List<User> resolveRecipients(SendBroadcastEmailRequest request) {
-        if (request.selectAll()) {
-            return userRepository.findAllWithDetails().stream()
-                .filter(User::isActive)
-                .collect(Collectors.toCollection(ArrayList::new));
-        }
-
-        Set<UUID> ids = new LinkedHashSet<>(request.userIds());
-        List<User> users = userRepository.findAllById(ids);
-        if (users.size() != ids.size()) {
-            throw new ResourceNotFoundException("One or more users not found");
-        }
-        return users;
+    @Override
+    @Transactional
+    public SendBroadcastEmailResponse sendTest(SendTestEmailRequest request) {
+        User actor = userRepository.findByIdWithDetails(request.actorUserId())
+            .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+        return broadcastSupport.sendToUser(actor, request.subject(), request.message(), request.locale());
     }
 
     private User resolveSampleUser(UUID sampleUserId) {
@@ -127,9 +94,11 @@ public class PlatformEmailServiceImpl implements PlatformEmailService {
         EmailTemplateType type,
         User user,
         String subject,
-        String message
+        String message,
+        String locale
     ) {
         Map<String, String> vars = new HashMap<>();
+        localeSupport.putChrome(vars, locale);
         Company company = user != null ? user.getCompany() : null;
 
         switch (type) {
@@ -151,9 +120,10 @@ public class PlatformEmailServiceImpl implements PlatformEmailService {
                 vars.put("userAgent", "Mozilla/5.0 (preview)");
             }
             case BROADCAST -> {
-                vars.put("recipientName", user != null ? safe(user.getFullName(), "Пользователь") : "Пользователь");
-                vars.put("subject", safe(subject, "Важное сообщение"));
-                vars.put("message", formatBroadcastMessage(message));
+                String fallback = vars.getOrDefault("recipientFallback", "User");
+                vars.put("recipientName", user != null ? safe(user.getFullName(), fallback) : fallback);
+                vars.put("subject", safe(subject, "Aurent POS"));
+                vars.put("message", StringUtils.hasText(message) ? message : vars.getOrDefault("emptyMessage", ""));
             }
         }
         return vars;
@@ -165,16 +135,6 @@ public class PlatformEmailServiceImpl implements PlatformEmailService {
             case SUPER_ADMIN_LOGIN -> "Вход супер-админа: " + vars.getOrDefault("fullName", "");
             case BROADCAST -> safe(subject, "Рассылка");
         };
-    }
-
-    private static String formatBroadcastMessage(String message) {
-        if (!StringUtils.hasText(message)) {
-            return "Текст сообщения для пользователей системы.";
-        }
-        return message.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;");
     }
 
     private static String safe(String value, String fallback) {

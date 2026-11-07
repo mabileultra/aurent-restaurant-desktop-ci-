@@ -72,10 +72,24 @@ export default function AccessRightsHistoryTab({ onReverted }) {
       else if (h.action === 'REVERT') type = 'revert';
 
       const actor = h.actorName || (isRu ? 'Оператор' : 'Platforma operatori');
-      const target = h.targetFullName || h.targetUsername || (isRu ? 'сотрудник' : 'xodim');
-      const actionTitle = h.action === 'REVERT'
-        ? (isRu ? `${actor} → ${target}: отменил(а) изменения` : `${actor} → ${target}: o‘zgarishlarni bekor qildi`)
-        : (isRu ? `${actor} → ${target}: изменил(а) доступ` : `${actor} → ${target}: huquqlarni o‘zgartirdi`);
+      const templateTarget = [h.businessType, h.roleName].filter(Boolean).join(' / ');
+      const target = h.action === 'TEMPLATE'
+        ? (templateTarget || h.targetFullName || (isRu ? 'шаблон роли' : 'rol shabloni'))
+        : (h.targetFullName || h.targetUsername || (isRu ? 'сотрудник' : 'xodim'));
+      let actionTitle;
+      if (h.action === 'REVERT') {
+        actionTitle = isRu
+          ? `${actor} → ${target}: отменил(а) изменения`
+          : `${actor} → ${target}: o‘zgarishlarni bekor qildi`;
+      } else if (h.action === 'TEMPLATE') {
+        actionTitle = isRu
+          ? `${actor} → ${target}: сохранил(а) шаблон`
+          : `${actor} → ${target}: shablonni saqladi`;
+      } else {
+        actionTitle = isRu
+          ? `${actor} → ${target}: изменил(а) доступ`
+          : `${actor} → ${target}: huquqlarni o‘zgartirdi`;
+      }
 
       const initials = (actor.slice(0, 2) || 'OP').toUpperCase();
 
@@ -89,7 +103,7 @@ export default function AccessRightsHistoryTab({ onReverted }) {
         actionType: type,
         subtitle: `${target}${h.strategy ? ` · ${h.strategy}` : ''}`,
         details: formatHistoryDiff(h.beforeModules, h.afterModules, h.action, isRu),
-        canRevert: h.canRevert ?? true,
+        canRevert: h.canRevert ?? false,
         revertedAt: h.revertedAt,
       };
     });

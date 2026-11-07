@@ -46,6 +46,9 @@ export function formatHistoryDiff(before = {}, after = {}, action = 'UPDATE', is
   if (action === 'BULK_RESET') {
     return isRu ? 'Массовый сброс к шаблону роли' : 'Ommaviy ravishda rol shabloniga qaytarildi';
   }
+  if (action === 'TEMPLATE') {
+    // Fall through to module diff so template saves show what changed.
+  }
 
   const keys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
   const changes = [];

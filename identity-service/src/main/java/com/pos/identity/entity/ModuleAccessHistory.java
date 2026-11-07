@@ -41,7 +41,7 @@ public class ModuleAccessHistory {
     @Column(nullable = false, length = 32)
     private String action;
 
-    @Column(name = "target_user_id", nullable = false)
+    @Column(name = "target_user_id")
     private UUID targetUserId;
 
     @Column(name = "target_username", length = 100)
@@ -49,6 +49,12 @@ public class ModuleAccessHistory {
 
     @Column(name = "target_full_name", length = 255)
     private String targetFullName;
+
+    @Column(name = "business_type", length = 32)
+    private String businessType;
+
+    @Column(name = "role_name", length = 32)
+    private String roleName;
 
     @Column(length = 16)
     private String strategy;

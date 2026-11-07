@@ -15,11 +15,13 @@ import com.pos.identity.security.PlatformAdminModule;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessFalseExceptionCleaner;
 import com.pos.identity.service.access.support.ModuleAccessHistoryWriter;
 import com.pos.identity.service.access.support.ModuleAccessMutationSupport;
 import com.pos.identity.service.access.support.ModuleAccessSnapshotSupport;
 import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
+import com.pos.identity.service.access.support.RoleTemplateCatalogSupport;
 import com.pos.identity.service.access.support.RoleTemplateLookup;
 import com.pos.identity.service.access.support.RoleTemplateSupport;
 import com.pos.identity.support.IdentityUsers;
@@ -67,6 +69,10 @@ class ModuleAccessServiceImplTest {
     @Mock
     private RoleTemplateSupport roleTemplateSupport;
     @Mock
+    private RoleTemplateCatalogSupport roleTemplateCatalogSupport;
+    @Mock
+    private ModuleAccessFalseExceptionCleaner falseExceptionCleaner;
+    @Mock
     private RoleTemplateLookup roleTemplateLookup;
     @Mock
     private ModuleAccessHistoryWriter historyWriter;
@@ -91,6 +97,8 @@ class ModuleAccessServiceImplTest {
             moduleAccessUsersPager,
             moduleAccessStatsSupport,
             roleTemplateSupport,
+            roleTemplateCatalogSupport,
+            falseExceptionCleaner,
             snapshotSupport,
             historyWriter,
             mutationSupport
@@ -189,7 +197,7 @@ class ModuleAccessServiceImplTest {
     }
 
     @Test
-    void updateSavesGrantedPlatformModulesAndIgnoresUnknownKeys() {
+    void updateSavesGrantedPlatformModules() {
         UUID id = UUID.randomUUID();
         User operator = IdentityUsers.user(id, "PLATFORM_ADMIN", null);
         when(moduleAccessUserGate.requireConfigurable(id)).thenReturn(operator);
@@ -197,16 +205,32 @@ class ModuleAccessServiceImplTest {
 
         service.updateUserAccess(id, new UpdateUserModuleAccessRequest(
             true,
-            Map.of("platformCompanies", true, "dashboard", true, "platformBilling", false)
+            Map.of("platformCompanies", true, "platformBilling", false)
         ));
 
         ArgumentCaptor<List<UserModuleAccess>> captor = ArgumentCaptor.forClass(List.class);
         verify(userModuleAccessRepository).saveAll(captor.capture());
         List<UserModuleAccess> saved = captor.getValue();
         assertTrue(saved.stream().anyMatch(row -> "platformCompanies".equals(row.getModuleKey()) && row.isAllowed()));
-        assertTrue(saved.stream().noneMatch(row -> "dashboard".equals(row.getModuleKey())));
         assertTrue(saved.stream().anyMatch(row -> "platformBilling".equals(row.getModuleKey()) && !row.isAllowed()));
         assertTrue(operator.isModuleAccessCustom());
+    }
+
+    @Test
+    void updateRejectsModulesOutsideRoleScope() {
+        UUID id = UUID.randomUUID();
+        User operator = IdentityUsers.user(id, "PLATFORM_ADMIN", null);
+        when(moduleAccessUserGate.requireConfigurable(id)).thenReturn(operator);
+
+        BadRequestException ex = assertThrows(
+            BadRequestException.class,
+            () -> service.updateUserAccess(id, new UpdateUserModuleAccessRequest(
+                true,
+                Map.of("platformCompanies", true, "dashboard", false)
+            ))
+        );
+        assertTrue(ex.getMessage().contains("Модуль не входит в область роли"));
+        verify(userModuleAccessRepository, never()).saveAll(any());
     }
 
     @Test

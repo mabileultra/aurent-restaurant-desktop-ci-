@@ -19,11 +19,6 @@ import com.pos.dto.business.SetBusinessTypeRulesRequest;
 import com.pos.dto.business.SetBusinessTypeUnitsRequest;
 import com.pos.dto.business.UpdateBusinessTypeFieldRequest;
 import com.pos.dto.business.UpdateBusinessTypeRequest;
-import com.pos.dto.email.EmailTemplateInfoResponse;
-import com.pos.dto.email.EmailTemplatePreviewRequest;
-import com.pos.dto.email.EmailTemplatePreviewResponse;
-import com.pos.dto.email.SendBroadcastEmailRequest;
-import com.pos.dto.email.SendBroadcastEmailResponse;
 import com.pos.integrations.finance.dto.FinanceSyncBackfillResponse;
 import com.pos.integrations.finance.dto.FinanceSyncOutboxDto;
 import com.pos.dto.monitoring.LogEventDto;
@@ -37,7 +32,6 @@ import com.pos.monitoring.SystemMonitorService;
 import com.pos.service.BusinessTypeConfigService;
 import com.pos.service.BusinessTypeDefinitionService;
 import com.pos.service.ReferenceBookService;
-import com.pos.service.email.PlatformEmailService;
 import com.pos.integrations.finance.service.FinanceSyncAdminService;
 import com.pos.integrations.finance.service.FinanceSyncBackfillService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -73,7 +67,6 @@ import java.util.stream.Collectors;
 public class PlatformOpsInternalController {
 
     private final SystemMonitorService monitorService;
-    private final PlatformEmailService platformEmailService;
     private final BusinessTypeDefinitionService businessTypeDefinitionService;
     private final BusinessTypeConfigService businessTypeConfigService;
     private final ReferenceBookService referenceBookService;
@@ -111,25 +104,6 @@ public class PlatformOpsInternalController {
     public ResponseEntity<Void> clearLogs() {
         monitorService.clearLogs();
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/email/templates")
-    public ResponseEntity<List<EmailTemplateInfoResponse>> templates() {
-        return ResponseEntity.ok(platformEmailService.listTemplates());
-    }
-
-    @PostMapping("/email/templates/preview")
-    public ResponseEntity<EmailTemplatePreviewResponse> preview(
-        @Valid @RequestBody EmailTemplatePreviewRequest request
-    ) {
-        return ResponseEntity.ok(platformEmailService.preview(request));
-    }
-
-    @PostMapping("/email/broadcast")
-    public ResponseEntity<SendBroadcastEmailResponse> broadcast(
-        @Valid @RequestBody SendBroadcastEmailRequest request
-    ) {
-        return ResponseEntity.ok(platformEmailService.sendBroadcast(request));
     }
 
     @GetMapping("/business-types")

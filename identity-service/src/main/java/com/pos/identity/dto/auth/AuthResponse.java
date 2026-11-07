@@ -16,5 +16,8 @@ public record AuthResponse(
     String companyLoginCode,
     List<Integer> storeIds,
     List<String> allowedModules,
-    boolean moduleAccessCustom
-) {}
+    boolean moduleAccessCustom,
+    boolean requiresTwoFactor,
+    String challengeToken
+) {
+}
