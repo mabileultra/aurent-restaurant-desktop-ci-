@@ -160,11 +160,16 @@ export function useAccessRightsTemplatesFlow({
       qc.invalidateQueries({ queryKey: ['access-v2-users'] });
     },
     onError: (err) => {
-      toast.error(
-        err?.response?.data?.message ||
-          (isRu ? 'Ошибка при сохранении шаблона' : 'Rol shablonini saqlashda xatolik')
-      );
+      const rawMsg = err?.response?.data?.message || err?.message || '';
+      let msg = isRu ? 'Ошибка при сохранении шаблона' : 'Rol shablonini saqlashda xatolik';
+      if (rawMsg.includes('not in role scope')) {
+        msg = isRu ? 'Модуль не входит в область прав данной роли' : 'Modul ushbu rol doirasiga kirmaydi';
+      } else if (rawMsg) {
+        msg = rawMsg;
+      }
+      toast.error(msg);
     },
+    meta: { suppressGlobalError: true },
   });
 
   return {

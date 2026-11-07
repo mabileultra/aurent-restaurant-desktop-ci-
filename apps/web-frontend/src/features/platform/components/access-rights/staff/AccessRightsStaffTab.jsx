@@ -91,6 +91,16 @@ export default function AccessRightsStaffTab({
     onOpenCopyModal(flow.selectedUser, targets);
   };
 
+  const handleSelectUser = (user) => {
+    flow.setSelectedUser(user);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setTimeout(() => {
+        const el = document.getElementById('staff-detail-panel');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Top filters bar */}
@@ -117,7 +127,7 @@ export default function AccessRightsStaffTab({
           exceptionsCount={realExceptionsCount}
           newCount={newCount}
           selectedUserId={flow.selectedUserId}
-          onSelectUser={flow.setSelectedUser}
+          onSelectUser={handleSelectUser}
           checkedUserIds={flow.checkedIds}
           onToggleCheckUser={flow.handleToggleCheckUser}
           onToggleCheckAll={flow.handleToggleCheckAll}

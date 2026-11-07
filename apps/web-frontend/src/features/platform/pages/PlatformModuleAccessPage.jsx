@@ -92,7 +92,7 @@ export default function PlatformModuleAccessPage() {
           onSelectRole={setSelectedTemplateRole}
           onSelectBT={setSelectedBT}
           onSwitchToStaff={handleSwitchToStaff}
-          onOpenCopyTemplate={() => copyActions.setIsCopyTemplateOpen(true)}
+          onOpenCopyTemplate={(bt, role) => copyActions.handleOpenCopyTemplate(bt || selectedBT, role || selectedTemplateRole)}
           onDirtyChange={setIsTabDirty}
         />
       )}
@@ -141,8 +141,8 @@ export default function PlatformModuleAccessPage() {
           open={copyActions.isCopyTemplateOpen}
           isOpen={copyActions.isCopyTemplateOpen}
           onClose={() => copyActions.setIsCopyTemplateOpen(false)}
-          targetBT={selectedBT}
-          targetRole="ADMIN"
+          targetBT={copyActions.copyTemplateTarget?.targetBT || selectedBT}
+          targetRole={copyActions.copyTemplateTarget?.targetRole || selectedTemplateRole || 'ADMIN'}
           businessTypes={businessTypes}
           onConfirm={copyActions.handleConfirmCopyTemplate}
           isLoading={copyActions.isCopyingTemplate}

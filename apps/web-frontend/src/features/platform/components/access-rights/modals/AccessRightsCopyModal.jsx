@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BaseModal, BaseButton } from '../../../../../components/ui';
 import AccessRightsAvatar from '../shared/AccessRightsAvatar';
@@ -20,9 +20,20 @@ export default function AccessRightsCopyModal({
   const isRu = i18n.language === 'ru';
   const isEffectiveOpen = open !== undefined ? Boolean(open) : Boolean(isOpen);
 
-  const [targetUserIds, setTargetUserIds] = useState(() => new Set(initialTargetIds));
+  const sId = sourceUser?.userId || sourceUser?.id;
+  const [targetUserIds, setTargetUserIds] = useState(() => {
+    const s = new Set(initialTargetIds);
+    if (sId) s.delete(sId);
+    return s;
+  });
   const [copyMode, setCopyMode] = useState('merge');
   const [searchTarget, setSearchTarget] = useState('');
+
+  useEffect(() => {
+    const s = new Set(initialTargetIds);
+    if (sId) s.delete(sId);
+    setTargetUserIds(s);
+  }, [initialTargetIds, sId]);
 
   const sourceRole = sourceUser?.role;
   const sourceName = sourceUser?.fullName || sourceUser?.username;
@@ -31,7 +42,6 @@ export default function AccessRightsCopyModal({
   );
 
   const candidateUsers = useMemo(() => {
-    const sId = sourceUser?.userId || sourceUser?.id;
     const q = searchTarget.trim().toLowerCase();
     const filtered = allUsers.filter((u) => {
       const uid = u.userId || u.id;
@@ -40,17 +50,19 @@ export default function AccessRightsCopyModal({
       return (u.fullName || '').toLowerCase().includes(q) || (u.username || '').toLowerCase().includes(q);
     });
     return filtered.sort((a, b) => {
+      const aId = a.userId || a.id;
+      const bId = b.userId || b.id;
+      const aChecked = targetUserIds.has(aId) ? 1 : 0;
+      const bChecked = targetUserIds.has(bId) ? 1 : 0;
+      if (aChecked !== bChecked) return bChecked - aChecked;
       const aSame = a.role === sourceRole ? 1 : 0;
       const bSame = b.role === sourceRole ? 1 : 0;
       if (aSame !== bSame) return bSame - aSame;
       return (a.fullName || a.username || '').localeCompare(b.fullName || b.username || '');
     });
-  }, [allUsers, sourceUser, searchTarget, sourceRole]);
+  }, [allUsers, sId, searchTarget, sourceRole, targetUserIds]);
 
-  const targetList = useMemo(() => {
-    return allUsers.filter((u) => targetUserIds.has(u.userId || u.id));
-  }, [allUsers, targetUserIds]);
-
+  const targetList = useMemo(() => allUsers.filter((u) => targetUserIds.has(u.userId || u.id)), [allUsers, targetUserIds]);
   const validTargets = targetList.filter((u) => u.role === sourceRole);
   const invalidTargets = targetList.filter((u) => u.role !== sourceRole);
 
@@ -114,6 +126,14 @@ export default function AccessRightsCopyModal({
           </div>
         </div>
 
+        {exceptionCount === 0 && (
+          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 font-semibold text-xs">
+            {isRu
+              ? 'У выбранного сотрудника нет исключений (действует стандартный шаблон). Копирование не требуется.'
+              : 'Tanlangan xodimda maxsus istisnolar mavjud emas (standart shablon bo‘yicha). Nusxalash talab etilmaydi.'}
+          </div>
+        )}
+
         <div className="space-y-2">
           <div className="flex items-center justify-between font-bold text-[11px] uppercase tracking-wider text-slate-500">
             <span>{isRu ? `2. КОМУ (${targetUserIds.size} выбрано)` : `2. KIMGA (${targetUserIds.size} xodim tanlandi)`}</span>
@@ -161,7 +181,7 @@ export default function AccessRightsCopyModal({
             <BaseButton
               variant="primary"
               size="sm"
-              disabled={validTargets.length === 0 || isCopying}
+              disabled={exceptionCount === 0 || validTargets.length === 0 || isCopying}
               onClick={handleCopy}
               className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
             >

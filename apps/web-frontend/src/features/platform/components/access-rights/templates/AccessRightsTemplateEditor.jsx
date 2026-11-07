@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Users, Copy, Search, AlertCircle, RotateCcw } from 'lucide-react';
+import { Search, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { BaseButton } from '../../../../../components/ui';
+import AccessRightsTemplateEditorHeader from './AccessRightsTemplateEditorHeader';
 import AccessRightsModuleGroupAccordion from './AccessRightsModuleGroupAccordion';
 import AccessRightsStickyBar from '../shared/AccessRightsStickyBar';
 
@@ -54,63 +54,20 @@ export default function AccessRightsTemplateEditor({
 
   return (
     <div className="flex-1 min-w-0 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-        <div>
-          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">
-            {businessTypeName} · {isRu ? 'шаблон роли' : 'rol shabloni'}
-          </div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{roleName}</h2>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              templateSource === 'TEMPLATE'
-                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-            }`}>
-              {templateSource === 'TEMPLATE'
-                ? (isRu ? 'Кастомный шаблон' : 'Maxsus shablon')
-                : (isRu ? 'Стандарт (система)' : 'Standart (tizim)')}
-            </span>
-          </div>
-          <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-              {enabledModulesCount} / {totalModulesCount} {isRu ? 'модулей включено' : 'modul yoqilgan'}
-            </span>
-            <span>·</span>
-            <span>{employeesCount} {isRu ? 'сотрудников' : 'xodim'}</span>
-            <span>·</span>
-            <span className={exceptionsCount > 0 ? 'text-amber-600 dark:text-amber-400 font-semibold' : ''}>
-              {exceptionsCount} {isRu ? 'с исключениями' : 'tasida istisno'}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {onResetToDefault && templateSource === 'TEMPLATE' && (
-            <BaseButton
-              variant="secondary"
-              size="sm"
-              onClick={onResetToDefault}
-              className="text-xs font-semibold gap-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
-            >
-              <RotateCcw size={13} />
-              <span>{isRu ? 'Сбросить к стандарту' : 'Standartga qaytarish'}</span>
-            </BaseButton>
-          )}
-          {onViewStaff && (
-            <BaseButton variant="secondary" size="sm" onClick={onViewStaff} className="text-xs font-semibold gap-1.5">
-              <Users size={14} className="text-slate-500" />
-              <span>{isRu ? 'Сотрудники шаблона' : 'Shablondagi xodimlar'}</span>
-            </BaseButton>
-          )}
-          {onCopyFromOther && (
-            <BaseButton variant="secondary" size="sm" onClick={onCopyFromOther} className="text-xs font-semibold gap-1.5">
-              <Copy size={14} className="text-slate-500" />
-              <span>{isRu ? 'Копия из другого шаблона' : 'Boshqa shablondan nusxa'}</span>
-            </BaseButton>
-          )}
-        </div>
-      </div>
+      <AccessRightsTemplateEditorHeader
+        businessTypeName={businessTypeName}
+        roleName={roleName}
+        templateSource={templateSource}
+        isModified={isDirty}
+        enabledModulesCount={enabledModulesCount}
+        totalModulesCount={totalModulesCount}
+        employeesCount={employeesCount}
+        exceptionsCount={exceptionsCount}
+        isRu={isRu}
+        onResetToDefault={onResetToDefault}
+        onViewStaff={onViewStaff}
+        onCopyFromOther={onCopyFromOther}
+      />
 
       <div className="p-3 rounded-xl border border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/30 text-xs text-blue-900 dark:text-blue-300 flex items-start gap-2.5">
         <AlertCircle size={16} className="text-blue-600 shrink-0 mt-0.5" />

@@ -125,7 +125,7 @@ export function getScopeForRole(roleCode, businessType) {
     return new Set(PLATFORM_MODULE_KEYS);
   }
 
-  const isCashierScope = role === 'CASHIER' || role === 'WAITER';
+  const isCashierScope = role === 'CASHIER' || role === 'WAITER' || role === 'COOK';
   const isFinanceScope = role === 'ACCOUNTANT';
 
   return new Set(

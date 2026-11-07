@@ -75,7 +75,7 @@ export default function AccessRightsHeader({
         )}
       </div>
 
-      <nav className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 -mb-[17px] overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 -mb-[17px] overflow-x-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -83,6 +83,11 @@ export default function AccessRightsHeader({
             <button
               key={tab.id}
               type="button"
+              ref={(el) => {
+                if (isActive && el && typeof el.scrollIntoView === 'function') {
+                  el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+                }
+              }}
               onClick={() => onTabChange(tab.id)}
               className={`flex items-center gap-2 py-3 px-3.5 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                 isActive
@@ -94,6 +99,7 @@ export default function AccessRightsHeader({
               <span>{tab.label}</span>
               {tab.badge != null && (
                 <span
+                  title={tab.id === 'staff' ? (isRu ? `Всего исключений по сети: ${exceptionsCount}` : `Tarmoq bo‘yicha jami istisnolar: ${exceptionsCount}`) : undefined}
                   className={`text-xs font-bold px-1.5 py-0.2 rounded-full ${
                     isActive
                       ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'

@@ -6,7 +6,7 @@ import AccessRightsAvatar from '../shared/AccessRightsAvatar';
 import AccessRightsStaffModuleItem from './AccessRightsStaffModuleItem';
 import AccessRightsStaffDetailKPIs from './AccessRightsStaffDetailKPIs';
 import AccessRightsStickyBar from '../shared/AccessRightsStickyBar';
-import { resolveRoleLabel } from '../utils/accessRightsCatalogUtils';
+import { resolveRoleLabel, resolveBusinessTypeName } from '../utils/accessRightsCatalogUtils';
 
 export default function AccessRightsStaffDetailPanel({
   user,
@@ -75,7 +75,7 @@ export default function AccessRightsStaffDetailPanel({
   };
 
   return (
-    <div className="flex-1 min-w-0 space-y-4">
+    <div id="staff-detail-panel" className="flex-1 min-w-0 space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ export default function AccessRightsStaffDetailPanel({
               <span>{user.companyName || (isRu ? 'Без компании' : 'Kompaniyasiz')}</span>
             </div>
             <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
-              {isRu ? 'Шаблон: ' : 'Shablon: '}{user.businessTypeName || (isRu ? 'Стандарт' : 'Standart')} · {resolveRoleLabel(user.role, isRu ? 'ru' : 'uz')}
+              {isRu ? 'Шаблон: ' : 'Shablon: '}{resolveBusinessTypeName(user.businessType || user.businessTypeName, isRu ? 'ru' : 'uz') || (isRu ? 'Стандарт' : 'Standart')} · {resolveRoleLabel(user.role, isRu ? 'ru' : 'uz')}
             </div>
           </div>
         </div>

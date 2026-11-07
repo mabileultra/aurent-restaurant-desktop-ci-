@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BaseModal, BaseButton } from '../../../../../components/ui';
 import PlatformSelect from '../../PlatformSelect';
@@ -22,6 +22,16 @@ export default function AccessRightsCopyTemplateModal({
   const [sourceBT, setSourceBT] = useState(() => targetBT || 'RESTAURANT');
   const [sourceRole, setSourceRole] = useState('ADMIN');
 
+  useEffect(() => {
+    if (!isEffectiveOpen) return;
+    const btCandidates = businessTypes.filter((b) => b.code !== 'ALL').map((b) => b.code);
+    const chosenBT = btCandidates.find((c) => c !== targetBT) || targetBT || 'RESTAURANT';
+    const roles = rolesForBusinessType(chosenBT);
+    const chosenRole = roles.find((r) => !(chosenBT === targetBT && r === targetRole)) || roles[0] || 'ADMIN';
+    setSourceBT(chosenBT);
+    setSourceRole(chosenRole);
+  }, [isEffectiveOpen, targetBT, targetRole, businessTypes]);
+
   const availableRoles = useMemo(() => {
     const codes = rolesForBusinessType(sourceBT);
     return codes.map((code) => ({
@@ -42,9 +52,19 @@ export default function AccessRightsCopyTemplateModal({
 
   const targetBTName = resolveBusinessTypeName(targetBT, isRu ? 'ru' : 'uz');
   const targetRoleName = resolveRoleLabel(targetRole, isRu ? 'ru' : 'uz');
+  const sourceBTName = resolveBusinessTypeName(sourceBT, isRu ? 'ru' : 'uz');
+  const sourceRoleName = resolveRoleLabel(sourceRole, isRu ? 'ru' : 'uz');
+
+  const isSameSourceAndTarget = sourceBT === targetBT && sourceRole === targetRole;
 
   const handleCopy = () => {
-    onConfirm({ sourceBT, sourceRole, targetBT, targetRole });
+    if (isSameSourceAndTarget) return;
+    const confirmMsg = isRu
+      ? `Вы уверены, что хотите скопировать шаблон из «${sourceBTName} · ${sourceRoleName}» в «${targetBTName} · ${targetRoleName}»? Существующие настройки текущего шаблона будут перезаписаны.`
+      : `Haqiqatan ham «${sourceBTName} · ${sourceRoleName}» shablonini «${targetBTName} · ${targetRoleName}» ga nusxalamoqchimisiz? Joriy shablon sozlamalari ustidan yoziladi.`;
+    if (window.confirm(confirmMsg)) {
+      onConfirm({ sourceBT, sourceRole, targetBT, targetRole });
+    }
   };
 
   if (!isEffectiveOpen) return null;
@@ -71,6 +91,14 @@ export default function AccessRightsCopyTemplateModal({
             {targetBTName} · {targetRoleName}
           </div>
         </div>
+
+        {isSameSourceAndTarget && (
+          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 font-semibold text-xs">
+            {isRu
+              ? 'Источник и цель не могут быть одинаковыми. Выберите другое направление или роль.'
+              : 'Manba va maqsad bir xil bo‘lishi mumkin emas. Boshqa faoliyat turi yoki rolni tanlang.'}
+          </div>
+        )}
 
         {/* Source Business Type */}
         <div>
@@ -114,7 +142,7 @@ export default function AccessRightsCopyTemplateModal({
           <BaseButton
             variant="primary"
             size="sm"
-            disabled={isLoading}
+            disabled={isLoading || isSameSourceAndTarget}
             onClick={handleCopy}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
           >

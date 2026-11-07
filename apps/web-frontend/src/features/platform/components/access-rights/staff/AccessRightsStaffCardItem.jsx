@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessRightsAvatar from '../shared/AccessRightsAvatar';
-import { resolveRoleLabel } from '../utils/accessRightsCatalogUtils';
+import { resolveRoleLabel, resolveBusinessTypeName } from '../utils/accessRightsCatalogUtils';
 
 export default function AccessRightsStaffCardItem({
   user,
@@ -12,8 +12,9 @@ export default function AccessRightsStaffCardItem({
 }) {
   const { i18n } = useTranslation();
   const isRu = i18n.language === 'ru';
-  const exceptionCount = Number(user.exceptionCount || (user.moduleAccessCustom ? 1 : 0));
-  const isTemplate = exceptionCount === 0;
+  const hasExactCount = typeof user.exceptionCount === 'number';
+  const hasCustom = Boolean(user.moduleAccessCustom || (hasExactCount && user.exceptionCount > 0));
+  const isTemplate = !hasCustom;
 
   return (
     <div
@@ -51,10 +52,10 @@ export default function AccessRightsStaffCardItem({
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
             <span>{user.companyName || (isRu ? 'Без компании' : 'Kompaniyasiz')}</span>
-            {user.businessTypeName && (
+            {(user.businessType || user.businessTypeName) && (
               <>
                 <span className="mx-1">·</span>
-                <span>{user.businessTypeName}</span>
+                <span>{resolveBusinessTypeName(user.businessType || user.businessTypeName, isRu ? 'ru' : 'uz')}</span>
               </>
             )}
           </div>
@@ -68,7 +69,9 @@ export default function AccessRightsStaffCardItem({
           </span>
         ) : (
           <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-            {exceptionCount} {isRu ? 'искл.' : 'istisno'}
+            {hasExactCount
+              ? `${user.exceptionCount} ${isRu ? 'искл.' : 'istisno'}`
+              : (isRu ? 'Исключения' : 'Istisnoli')}
           </span>
         )}
       </div>

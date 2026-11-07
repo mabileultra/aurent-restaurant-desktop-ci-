@@ -24,34 +24,48 @@ export {
   PLATFORM_MODULE_NAMES_RU,
 };
 
+function resolveLang(tOrLang) {
+  if (typeof tOrLang === 'string') return tOrLang.startsWith('ru') ? 'ru' : 'uz';
+  if (tOrLang?.language) return tOrLang.language.startsWith('ru') ? 'ru' : 'uz';
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const stored = window.localStorage.getItem('pos-lang');
+      if (stored) return stored.startsWith('ru') ? 'ru' : 'uz';
+    } catch {
+      // ignore
+    }
+  }
+  return 'uz';
+}
+
 export function resolveRoleLabel(roleCode, tOrLang = 'uz') {
   const code = String(roleCode || '').toUpperCase();
   if (typeof tOrLang === 'function') {
     const val = tOrLang(`roles.${code}`);
     if (val && val !== `roles.${code}`) return val;
   }
-  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
+  const lang = resolveLang(tOrLang);
   if (lang === 'ru') return ROLE_LABELS_RU[code] || code;
   return ROLE_LABELS_UZ[code] || code;
 }
 
 export function resolveBusinessTypeName(btCode, tOrLang = 'uz') {
   const code = String(btCode || '').toUpperCase();
+  const lang = resolveLang(tOrLang);
   if (code === 'PLATFORM_STAFF') {
-    return tOrLang === 'ru' || tOrLang?.language === 'ru' ? 'Платформа' : 'Platforma';
+    return lang === 'ru' ? 'Платформа' : 'Platforma';
   }
   if (typeof tOrLang === 'function') {
     const val = tOrLang(`businessTypes.${code}`);
     if (val && val !== `businessTypes.${code}`) return val;
   }
-  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
   if (lang === 'ru') return BUSINESS_TYPE_NAMES_RU[code] || code;
   return BUSINESS_TYPE_NAMES_UZ[code] || code;
 }
 
 export function resolveModuleName(moduleId, catalogMap = {}, tOrLang = 'uz') {
   const id = String(moduleId || '');
-  const lang = typeof tOrLang === 'string' ? tOrLang : (tOrLang?.language === 'ru' ? 'ru' : 'uz');
+  const lang = resolveLang(tOrLang);
   if (lang === 'ru') {
     return (
       PLATFORM_MODULE_NAMES_RU[id] ||
@@ -129,7 +143,8 @@ export function computeNetworkStats(statsByCode = new Map()) {
   let bTypesCount = 0;
 
   statsByCode.forEach((item, code) => {
-    if (code !== 'PLATFORM_STAFF' && code !== 'ALL') {
+    const upperCode = String(code || '').toUpperCase();
+    if (upperCode !== 'PLATFORM_STAFF' && upperCode !== 'ALL' && upperCode !== 'UNKNOWN') {
       bTypesCount += 1;
       totalEmployees += Number(item.totalEmployees || 0);
       exceptionEmployees += Number(item.exceptionCount || 0);

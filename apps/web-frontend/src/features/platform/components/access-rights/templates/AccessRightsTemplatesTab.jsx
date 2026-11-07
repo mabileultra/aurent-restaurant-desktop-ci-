@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
+import { platformModuleAccessApi } from '../../../../../api';
 import AccessRightsTemplatesKPIs from './AccessRightsTemplatesKPIs';
 import AccessRightsTemplatesSidebar from './AccessRightsTemplatesSidebar';
 import AccessRightsTemplateEditor from './AccessRightsTemplateEditor';
@@ -24,6 +26,7 @@ export default function AccessRightsTemplatesTab({
   onOpenCopyTemplate,
   onDirtyChange,
 }) {
+  const qc = useQueryClient();
   const { i18n } = useTranslation();
   const isRu = i18n.language === 'ru';
 
@@ -36,7 +39,19 @@ export default function AccessRightsTemplatesTab({
     onSwitchToStaff,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (typeof qc?.prefetchQuery !== 'function') return;
+    const roles = rolesForBusinessType(selectedBT);
+    roles.forEach((r) => {
+      qc.prefetchQuery({
+        queryKey: ['access-role-template', selectedBT, r],
+        queryFn: () => platformModuleAccessApi.getRoleTemplate(selectedBT, r).then((res) => res?.data || null),
+        staleTime: 60_000,
+      });
+    });
+  }, [selectedBT, qc]);
+
+  useEffect(() => {
     if (onDirtyChange) onDirtyChange(flow.isDirty);
   }, [flow.isDirty, onDirtyChange]);
 
@@ -58,9 +73,16 @@ export default function AccessRightsTemplatesTab({
           const defaultMods = getDefaultModulesForRole(roleCode, bt.code);
 
           const isCurrent = bt.code === selectedBT && roleCode === flow.currentRole;
+          const cachedData = typeof qc?.getQueryData === 'function'
+            ? qc.getQueryData(['access-role-template', bt.code, roleCode])
+            : null;
+          const cachedCount = cachedData?.modules
+            ? Object.entries(cachedData.modules).filter(([k, v]) => scope.has(k) && Boolean(v)).length
+            : null;
+
           const enabledCount = isCurrent
             ? Object.values(flow.toggles).filter(Boolean).length
-            : defaultMods.size;
+            : (cachedCount ?? defaultMods.size);
 
           return {
             code: roleCode,
@@ -79,7 +101,7 @@ export default function AccessRightsTemplatesTab({
           roles: rolesList,
         };
       });
-  }, [businessTypes, statsByCode, selectedBT, flow.currentRole, flow.toggles, isRu]);
+  }, [businessTypes, statsByCode, selectedBT, flow.currentRole, flow.toggles, qc, isRu]);
 
   const currentRoleStats = statsByCode.get(String(selectedBT || '').toUpperCase())?.roleMap?.get(flow.currentRole);
   const currentRoleEmployees = currentRoleStats ? Number(currentRoleStats.totalEmployees || 0) : 0;
@@ -140,7 +162,7 @@ export default function AccessRightsTemplatesTab({
           onResetToDefault={flow.handleResetToDefault}
           onSave={flow.handleSave}
           onViewStaff={() => onSwitchToStaff && onSwitchToStaff(selectedBT, flow.currentRole)}
-          onCopyFromOther={onOpenCopyTemplate}
+          onCopyFromOther={() => onOpenCopyTemplate && onOpenCopyTemplate(selectedBT, flow.currentRole)}
         />
       </div>
     </div>

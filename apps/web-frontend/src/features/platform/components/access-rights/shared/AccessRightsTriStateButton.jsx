@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * 3-holatli boshqaruv: Shablon (default) / Ruxsat (+grant) / Taqiq (-deny)
@@ -10,10 +11,13 @@ export default function AccessRightsTriStateButton({
   size = 'sm',
   moduleName = '',
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const options = [
-    { id: 'template', label: 'Shablon' },
-    { id: 'grant', label: 'Ruxsat' },
-    { id: 'deny', label: 'Taqiq' },
+    { id: 'template', label: isRu ? 'Шаблон' : 'Shablon' },
+    { id: 'grant', label: isRu ? 'Разрешено' : 'Ruxsat' },
+    { id: 'deny', label: isRu ? 'Запрещено' : 'Taqiq' },
   ];
 
   return (

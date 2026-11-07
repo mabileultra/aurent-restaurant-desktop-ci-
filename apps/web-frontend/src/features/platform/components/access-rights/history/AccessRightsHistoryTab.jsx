@@ -69,12 +69,13 @@ export default function AccessRightsHistoryTab({ onReverted }) {
       else if (h.action === 'BULK_RESET') type = 'bulk';
       else if (h.action === 'COPY') type = 'copy';
       else if (h.action === 'TEMPLATE') type = 'template';
+      else if (h.action === 'REVERT') type = 'revert';
 
       const actor = h.actorName || (isRu ? 'Оператор' : 'Platforma operatori');
       const target = h.targetFullName || h.targetUsername || (isRu ? 'сотрудник' : 'xodim');
-      const actionTitle = isRu
-        ? `${actor} изменил доступ для ${target}`
-        : `${actor} ${target} uchun huquqlarni o‘zgartirdi`;
+      const actionTitle = h.action === 'REVERT'
+        ? (isRu ? `${actor} → ${target}: отменил(а) изменения` : `${actor} → ${target}: o‘zgarishlarni bekor qildi`)
+        : (isRu ? `${actor} → ${target}: изменил(а) доступ` : `${actor} → ${target}: huquqlarni o‘zgartirdi`);
 
       const initials = (actor.slice(0, 2) || 'OP').toUpperCase();
 
@@ -112,7 +113,7 @@ export default function AccessRightsHistoryTab({ onReverted }) {
   }, [items, datePreset, actionType, search]);
 
   const counts = useMemo(() => {
-    const c = { all: items.length, template: 0, exception: 0, copy: 0, bulk: 0 };
+    const c = { all: items.length, template: 0, exception: 0, copy: 0, bulk: 0, revert: 0 };
     items.forEach((it) => {
       if (c[it.actionType] !== undefined) c[it.actionType] += 1;
     });

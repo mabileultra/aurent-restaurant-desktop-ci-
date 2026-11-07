@@ -29,6 +29,10 @@ export default function AccessRightsHistoryItemCard({
       label: isRu ? 'Массово' : 'Ommaviy',
       cls: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
     },
+    revert: {
+      label: isRu ? 'Отмена' : 'Qaytarish',
+      cls: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+    },
   };
 
   const actionType = item.actionType || 'exception';
