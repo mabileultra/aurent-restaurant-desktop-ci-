@@ -1,7 +1,10 @@
 import React from 'react';
 import { KeyRound, Mail, ShieldAlert } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function PlatformEmailTemplatesList({ flow }) {
+  const { t } = useTranslation();
+
   const getIcon = (code) => {
     switch (code) {
       case 'USER_CREDENTIALS':
@@ -16,17 +19,20 @@ export default function PlatformEmailTemplatesList({ flow }) {
   return (
     <section className="flex flex-col gap-3 lg:w-80 flex-shrink-0">
       <p className="text-xs text-slate-500 leading-relaxed">
-        Tizim hodisalarida avtomatik yuboriladigan xatlar. Matnni o‘zgartirsangiz, keyingi xatlar yangi matn bilan ketadi.
+        {t('platform.email.subtitle', 'Tizim hodisalarida avtomatik yuboriladigan xatlar.')}
       </p>
 
       <div className="flex flex-col gap-2.5">
-        {flow.templatesList.map((t) => {
-          const isSelected = flow.selectedKey === t.code;
+        {flow.templatesList.map((tpl) => {
+          const isSelected = flow.selectedKey === tpl.code;
 
           return (
             <div
-              key={t.code}
-              onClick={() => flow.setSelectedKey(t.code)}
+              key={tpl.code}
+              role="button"
+              tabIndex={0}
+              onClick={() => flow.setSelectedKey(tpl.code)}
+              onKeyDown={(e) => { if (e.key === 'Enter') flow.setSelectedKey(tpl.code); }}
               className={`flex flex-col gap-2.5 rounded-2xl p-4 cursor-pointer transition ${
                 isSelected
                   ? 'border-2 border-emerald-700 bg-white shadow-md dark:border-emerald-500 dark:bg-slate-900'
@@ -41,44 +47,22 @@ export default function PlatformEmailTemplatesList({ flow }) {
                       : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
                   }`}
                 >
-                  {getIcon(t.code)}
+                  {getIcon(tpl.code)}
                 </span>
                 <div className="flex flex-1 flex-col min-w-0">
                   <span className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {t.title}
+                    {tpl.title}
                   </span>
                   <span className="text-xs text-slate-500 line-clamp-2 leading-snug">
-                    {t.trigger}
+                    {tpl.trigger}
                   </span>
                 </div>
-
-                {t.hasSwitch && (
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={t.enabled}
-                    onClick={(e) => flow.toggleTemplateEnabled(t.code, e)}
-                    className={`flex h-6 w-10 flex-shrink-0 items-center rounded-full p-0.5 transition ${
-                      t.enabled ? 'bg-emerald-700 justify-end' : 'bg-slate-300 justify-start dark:bg-slate-700'
-                    }`}
-                  >
-                    <span className="h-5 w-5 rounded-full bg-white shadow-sm" />
-                  </button>
-                )}
               </div>
 
               <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] text-slate-500 dark:border-slate-800">
-                <span>{t.last}</span>
-                <span
-                  className={`font-semibold ${
-                    !t.hasSwitch
-                      ? 'text-slate-500'
-                      : t.enabled
-                      ? 'text-emerald-700 dark:text-emerald-400'
-                      : 'text-rose-600 dark:text-rose-400'
-                  }`}
-                >
-                  {!t.hasSwitch ? 'Qo‘lda' : t.enabled ? 'Faol' : 'O‘chirilgan'}
+                <span className="font-mono text-[10px] text-slate-400">{tpl.code}</span>
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                  Faol
                 </span>
               </div>
             </div>

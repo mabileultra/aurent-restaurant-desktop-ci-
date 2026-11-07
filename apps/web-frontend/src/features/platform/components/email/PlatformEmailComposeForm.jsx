@@ -1,12 +1,18 @@
 import React from 'react';
-import { Bold, Italic, Link2, List, Mail, Send } from 'lucide-react';
+import { Mail, Send } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PlatformEmailAudienceSelector from './PlatformEmailAudienceSelector';
+import PlatformEmailConfirmModal from './PlatformEmailConfirmModal';
 
 export default function PlatformEmailComposeForm({ flow }) {
+  const { t } = useTranslation();
+
   return (
     <section className="flex flex-1 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white">Yangi xabar</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+          {t('platform.email.newEmail', 'Yangi xabar')}
+        </h2>
         <span
           className={`text-xs font-medium transition-colors ${
             flow.draftStatus === 'saving'
@@ -17,10 +23,10 @@ export default function PlatformEmailComposeForm({ flow }) {
           }`}
         >
           {flow.draftStatus === 'saving'
-            ? 'Qoralama saqlanmoqda...'
+            ? t('platform.email.draftSaving', 'Qoralama saqlanmoqda...')
             : flow.draftStatus === 'error'
-            ? 'Qoralama saqlanmadi'
-            : 'Qoralama saqlandi'}
+            ? t('platform.email.draftError', 'Qoralama saqlanmadi')
+            : t('platform.email.draftSaved', 'Qoralama saqlandi')}
         </span>
       </div>
 
@@ -31,12 +37,14 @@ export default function PlatformEmailComposeForm({ flow }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
             2
           </span>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Xabar</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+            {t('platform.email.stepMessage', 'Xabar')}
+          </h3>
         </div>
 
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <label htmlFor="email-subject">Mavzu</label>
+            <label htmlFor="email-subject">{t('platform.email.subject', 'Mavzu')}</label>
             <span className="text-slate-500">{flow.subjectLength} / 120</span>
           </div>
           <input
@@ -44,6 +52,7 @@ export default function PlatformEmailComposeForm({ flow }) {
             type="text"
             value={flow.subject}
             onChange={(e) => flow.setSubject(e.target.value)}
+            placeholder={t('platform.email.subjectPlaceholder', 'Aurent POS dan muhim xabar')}
             maxLength={120}
             aria-invalid={Boolean(flow.errors?.subject)}
             aria-describedby={flow.errors?.subject ? 'email-subject-error' : undefined}
@@ -62,7 +71,7 @@ export default function PlatformEmailComposeForm({ flow }) {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email-message" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Matn
+            {t('platform.email.message', 'Matn')}
           </label>
           <div
             className={`rounded-xl border overflow-hidden transition dark:border-slate-700 ${
@@ -71,67 +80,25 @@ export default function PlatformEmailComposeForm({ flow }) {
                 : 'border-slate-300 dark:border-slate-700'
             }`}
           >
-            <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50/80 p-1.5 dark:border-slate-800 dark:bg-slate-800">
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-3 py-2 dark:border-slate-800 dark:bg-slate-800">
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                {t('platform.email.addVariable', 'Qo‘shish:')}
+              </span>
               <button
                 type="button"
-                onClick={() => flow.applyFormat?.('bold')}
-                title="Qalin matn (Bold)"
-                aria-label="Qalin matn (Bold)"
-                className="h-7 w-7 rounded font-extrabold text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
+                onClick={() => flow.insertVariable('{{recipientName}}')}
+                title={t('platform.email.variableRecipientName', 'Qabul qiluvchi ismini qo‘shish')}
+                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2.5 font-mono text-xs text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
               >
-                B
-              </button>
-              <button
-                type="button"
-                onClick={() => flow.applyFormat?.('italic')}
-                title="Kursiv matn (Italic)"
-                aria-label="Kursiv matn (Italic)"
-                className="h-7 w-7 rounded italic font-serif text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
-              >
-                I
-              </button>
-              <button
-                type="button"
-                onClick={() => flow.applyFormat?.('link')}
-                title="Havola qo‘shish (Link)"
-                aria-label="Havola qo‘shish (Link)"
-                className="flex h-7 w-7 items-center justify-center rounded text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
-              >
-                <Link2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => flow.applyFormat?.('list')}
-                title="Ro‘yxat qo‘shish (List)"
-                aria-label="Ro‘yxat qo‘shish (List)"
-                className="flex h-7 w-7 items-center justify-center rounded text-slate-700 hover:bg-slate-200 dark:text-slate-300 transition"
-              >
-                <List className="h-3.5 w-3.5" />
-              </button>
-              <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-700" />
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Qo‘shish:</span>
-              <button
-                type="button"
-                onClick={() => flow.insertVariable('{{ism}}')}
-                title="Qabul qiluvchi ismini qo‘shish"
-                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2 font-mono text-xs text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
-              >
-                &#123;&#123;ism&#125;&#125;
-              </button>
-              <button
-                type="button"
-                onClick={() => flow.insertVariable('{{korxona}}')}
-                title="Qabul qiluvchi korxona nomini qo‘shish"
-                className="h-6 rounded border border-dashed border-emerald-400 bg-emerald-50 px-2 font-mono text-xs text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
-              >
-                &#123;&#123;korxona&#125;&#125;
+                &#123;&#123;recipientName&#125;&#125;
               </button>
             </div>
             <textarea
               id="email-message"
-              rows={6}
+              rows={7}
               value={flow.message}
               onChange={(e) => flow.setMessage(e.target.value)}
+              placeholder={t('platform.email.messagePlaceholder', 'Foydalanuvchilar uchun matn kiriting…')}
               aria-invalid={Boolean(flow.errors?.message)}
               aria-describedby={flow.errors?.message ? 'email-message-error' : undefined}
               className="w-full resize-y p-3 text-sm leading-relaxed outline-none dark:bg-slate-900 dark:text-white"
@@ -142,21 +109,26 @@ export default function PlatformEmailComposeForm({ flow }) {
               {flow.errors.message}
             </span>
           )}
-          <span className="text-xs text-slate-600 dark:text-slate-400">
-            Belgilangan o‘zgaruvchilar har bir qabul qiluvchi uchun alohida to‘ldiriladi.
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {t('platform.email.variableDesc', 'Belgilangan o‘zgaruvchilar har bir qabul qiluvchi uchun alohida to‘ldiriladi.')}
           </span>
         </div>
       </div>
 
       <div className="mt-auto flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 p-4 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={flow.handleTestEmail}
-          className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-        >
-          <Mail className="h-4 w-4" />
-          O‘zimga test xat
-        </button>
+        <div className="relative group">
+          <button
+            type="button"
+            disabled
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 text-xs font-semibold text-slate-400 cursor-not-allowed dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-500"
+          >
+            <Mail className="h-4 w-4" />
+            {t('platform.email.testEmailSelf', 'O‘zimga test xat')}
+            <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-400">
+              {t('platform.email.comingSoon', 'Tez kunda')}
+            </span>
+          </button>
+        </div>
         <button
           type="button"
           onClick={flow.handleSend}
@@ -167,6 +139,16 @@ export default function PlatformEmailComposeForm({ flow }) {
           {flow.sendLabel}
         </button>
       </div>
+
+      <PlatformEmailConfirmModal
+        isOpen={flow.isConfirmOpen}
+        onClose={flow.closeConfirm}
+        onConfirm={flow.handleConfirmSend}
+        recipientCount={flow.recipientCount}
+        audienceLabel={flow.audienceLabel}
+        subject={flow.subject}
+        isSending={flow.isSending}
+      />
     </section>
   );
 }

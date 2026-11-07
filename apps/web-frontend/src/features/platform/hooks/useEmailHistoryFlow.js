@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { HISTORY_TYPES, INITIAL_HISTORY_ROWS } from '../utils/emailConstants';
+import { HISTORY_TYPES } from '../utils/emailConstants';
 import { formatNumberWithSpaces } from '../utils/emailFormatUtils';
 
 const PAGE_SIZE = 5;
@@ -17,8 +17,8 @@ export function useEmailHistoryFlow(options = {}) {
   const [search, setSearch] = useState(options.initialSearch || '');
   const [dateFilter, setDateFilter] = useState(options.initialDate || 'all');
   const [page, setPage] = useState(1);
-  const [selectedId, setSelectedId] = useState('b0');
-  const [rows, setRows] = useState(INITIAL_HISTORY_ROWS);
+  const [selectedId, setSelectedId] = useState(null);
+  const [rows, setRows] = useState(() => options.initialRows ?? []);
 
   const filteredRows = useMemo(() => {
     let result = rows;
@@ -29,20 +29,19 @@ export function useEmailHistoryFlow(options = {}) {
     if (q) {
       result = result.filter(
         (r) =>
-          r.subject.toLowerCase().includes(q) ||
-          r.audience.toLowerCase().includes(q) ||
-          r.sender.toLowerCase().includes(q)
+          r.subject?.toLowerCase().includes(q) ||
+          r.audience?.toLowerCase().includes(q) ||
+          r.sender?.toLowerCase().includes(q)
       );
     }
     if (dateFilter === 'today') {
-      result = result.filter((r) => r.time.toLowerCase().includes('bugun'));
+      result = result.filter((r) => r.time?.toLowerCase().includes('bugun'));
     } else if (dateFilter === '7days') {
-      result = result.filter((r) => r.time.toLowerCase().includes('bugun') || r.time.toLowerCase().includes('noy'));
+      result = result.filter((r) => r.time?.toLowerCase().includes('bugun') || r.time?.toLowerCase().includes('noy'));
     }
     return result;
   }, [rows, typeFilter, search, dateFilter]);
 
-  // Selected row is synchronized with filtered list; returns null when filtered list is empty
   const selectedRow = useMemo(() => {
     if (filteredRows.length === 0) return null;
     return filteredRows.find((r) => r.id === selectedId) || filteredRows[0];
@@ -70,34 +69,26 @@ export function useEmailHistoryFlow(options = {}) {
   };
 
   const handleRetryFails = (rowId) => {
-    setRows((prev) =>
-      prev.map((r) => {
-        if (r.id === rowId) {
-          return {
-            ...r,
-            ok: r.ok + r.fail,
-            fail: 0,
-            fails: [],
-          };
-        }
-        return r;
-      })
-    );
-    toast.success('Xatolik yuz bergan manzillarga xat qayta jo‘natildi');
+    toast.error('Xatolarni qayta yuborish tez kunda ishga tushadi');
   };
 
   const stats = useMemo(() => {
-    const totalSent = rows.reduce((acc, r) => acc + r.total, 0);
-    const totalOk = rows.reduce((acc, r) => acc + r.ok, 0);
-    const totalFail = rows.reduce((acc, r) => acc + r.fail, 0);
-    const totalQueued = rows.reduce((acc, r) => acc + r.queued, 0);
-    const deliveryRate = totalSent > 0 ? ((totalOk / totalSent) * 100).toFixed(1) : '100.0';
+    const totalSent = rows.reduce((acc, r) => acc + (r.total || 0), 0);
+    const totalOk = rows.reduce((acc, r) => acc + (r.ok || 0), 0);
+    const totalFail = rows.reduce((acc, r) => acc + (r.fail || 0), 0);
+    const totalQueued = rows.reduce((acc, r) => acc + (r.queued || 0), 0);
+    const bulkCount = rows.filter((r) => r.type === 'bulk').length;
+    const autoCount = rows.filter((r) => r.type !== 'bulk').length;
+    const deliveryRate = totalSent > 0 ? ((totalOk / totalSent) * 100).toFixed(1) : null;
 
     return {
       totalSent: formatNumberWithSpaces(totalSent),
-      deliveryRate: `${deliveryRate.replace('.', ',')}%`,
+      deliveryRate: deliveryRate ? `${deliveryRate.replace('.', ',')}%` : '—',
       totalFail: formatNumberWithSpaces(totalFail),
       totalQueued: formatNumberWithSpaces(totalQueued),
+      bulkCount,
+      autoCount,
+      hasData: totalSent > 0,
     };
   }, [rows]);
 

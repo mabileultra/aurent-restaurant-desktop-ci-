@@ -6,33 +6,21 @@ export const EMAIL_TAB_KEYS = {
 };
 
 export const AUDIENCE_MODES = [
-  { id: 'all', title: 'Barcha faol', sub: '349 foydalanuvchi' },
-  { id: 'role', title: 'Rol bo‘yicha', sub: '5 ta rol' },
-  { id: 'company', title: 'Korxona bo‘yicha', sub: '111 ta korxona' },
-  { id: 'manual', title: 'Qo‘lda tanlash', sub: 'Ism yoki email bo‘yicha' },
+  { id: 'all', title: 'Barcha faol', sub: 'Barcha faol xodimlar' },
+  { id: 'role', title: 'Rol bo‘yicha', sub: 'Lavozimlar bo‘yicha' },
 ];
 
 export const ROLE_OPTIONS = [
-  { id: 'ADMIN', label: 'Administrator', count: 110 },
-  { id: 'CASHIER', label: 'Kassir', count: 115 },
-  { id: 'WAITER', label: 'Ofitsiant', count: 104 },
-  { id: 'MANAGER', label: 'Menejer', count: 18 },
-  { id: 'COOK', label: 'Oshpaz', count: 1 },
+  { id: 'ADMIN', label: 'Administrator', count: 0 },
+  { id: 'CASHIER', label: 'Kassir', count: 0 },
+  { id: 'WAITER', label: 'Ofitsiant', count: 0 },
+  { id: 'MANAGER', label: 'Menejer', count: 0 },
+  { id: 'COOK', label: 'Oshpaz', count: 0 },
 ];
 
-export const INITIAL_PEOPLE = [
-  { id: 'p1', ini: 'DK', name: 'Dilshod Karimov', email: 'd.karimov@dostonkafe.uz', role: 'Administrator', company: 'DOSTON KAFE', checked: true },
-  { id: 'p2', ini: 'MY', name: 'Malika Yusupova', email: 'malika.y@xanbaliq.uz', role: 'Kassir', company: 'XAN BALIQ MCHJ', checked: true },
-  { id: 'p3', ini: 'SA', name: 'Sardor Aliyev', email: 's.aliyev@gijdivon.uz', role: 'Menejer', company: 'GIJDIVON SHASHLIK', checked: true },
-  { id: 'p4', ini: 'NR', name: 'Nodira Rahimova', email: 'nodira.r@alinurgarden.uz', role: 'Ofitsiant', company: 'Alinur Garden', checked: false },
-  { id: 'p5', ini: 'JT', name: 'Jasur Toshmatov', email: 'j.toshmatov@zafar.uz', role: 'Administrator', company: 'ZAFAR TAMADDIXONA', checked: false },
-];
+export const INITIAL_PEOPLE = [];
 
-export const INITIAL_COMPANIES = [
-  { id: 'c1', name: 'XAN BALIQ MCHJ', count: 13 },
-  { id: 'c2', name: 'DOSTON KAFE', count: 12 },
-  { id: 'c3', name: 'GIJDIVON SHASHLIK', count: 11 },
-];
+export const INITIAL_COMPANIES = [];
 
 export const HISTORY_TYPES = [
   { id: 'all', label: 'Barchasi' },
@@ -41,50 +29,7 @@ export const HISTORY_TYPES = [
   { id: 'login', label: 'Super-admin kirishi' },
 ];
 
-export const INITIAL_HISTORY_ROWS = [
-  {
-    id: 'b0', type: 'bulk', subject: 'Kassa ilovasining yangi versiyasi', audience: 'Rol: Kassir',
-    total: 115, ok: 64, fail: 0, queued: 51, time: 'Bugun, 09:20', sender: 'Administrator Super', fails: []
-  },
-  {
-    id: 'b1', type: 'bulk', subject: 'Ertaga texnik ishlar olib boriladi', audience: 'Rol: Administrator, Menejer',
-    total: 128, ok: 126, fail: 2, queued: 0, time: 'Bugun, 09:14', sender: 'Administrator Super',
-    fails: [
-      { who: 'Nodira Rahimova · Alinur Garden', email: 'nodira.r@alinurgarden.uz', reason: 'Pochta qutisi topilmadi (550)' },
-      { who: 'Jasur Toshmatov · ZAFAR TAMADDIXONA', email: 'j.toshmatov@zafar.uz', reason: 'Email manzili noto‘g‘ri' }
-    ]
-  },
-  {
-    id: 'c1', type: 'cred', subject: 'Kirish ma’lumotlari — Aurent POS', audience: 'Malika Yusupova · XAN BALIQ MCHJ',
-    total: 1, ok: 1, fail: 0, queued: 0, time: 'Bugun, 08:52', sender: 'Avtomatik', fails: []
-  },
-  {
-    id: 's1', type: 'login', subject: 'Super-admin kirishi: Administrator Super', audience: '2 ta nazorat manzili',
-    total: 2, ok: 2, fail: 0, queued: 0, time: 'Bugun, 08:31', sender: 'Avtomatik', fails: []
-  },
-  {
-    id: 'b2', type: 'bulk', subject: 'Yangi hisobotlar bo‘limi ishga tushdi', audience: 'Barcha faol foydalanuvchilar',
-    total: 349, ok: 343, fail: 6, queued: 0, time: '4-noy, 15:40', sender: 'Administrator Super',
-    fails: [
-      { who: '6 ta qabul qiluvchi', email: 'Ro‘yxatni yuklab olish mumkin', reason: '4 tasida pochta qutisi to‘la, 2 tasida domen topilmadi' }
-    ]
-  },
-  {
-    id: 'c2', type: 'cred', subject: 'Kirish ma’lumotlari — Aurent POS', audience: 'Sardor Aliyev · GIJDIVON SHASHLIK',
-    total: 1, ok: 0, fail: 1, queued: 0, time: '4-noy, 11:03', sender: 'Avtomatik',
-    fails: [
-      { who: 'Sardor Aliyev · GIJDIVON SHASHLIK', email: 's.aliyev@gijdivon.uz', reason: 'Pochta qutisi topilmadi (550)' }
-    ]
-  },
-  {
-    id: 'b3', type: 'bulk', subject: 'Noyabr oyi uchun to‘lov eslatmasi', audience: 'Korxona: 12 ta tanlangan',
-    total: 47, ok: 47, fail: 0, queued: 0, time: '1-noy, 10:00', sender: 'Administrator Super', fails: []
-  },
-  {
-    id: 's2', type: 'login', subject: 'Super-admin kirishi: yangi IP manzil', audience: '2 ta nazorat manzili',
-    total: 2, ok: 2, fail: 0, queued: 0, time: '31-okt, 22:47', sender: 'Avtomatik', fails: []
-  }
-];
+export const INITIAL_HISTORY_ROWS = [];
 
 export const INITIAL_TEMPLATES_CONFIG = {
   USER_CREDENTIALS: {

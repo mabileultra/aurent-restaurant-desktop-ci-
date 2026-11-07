@@ -22,7 +22,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 });
 
 describe('useEmailSendFlow', () => {
-  it('initializes with default role mode and recipient calculations', () => {
+  it('initializes with default role mode and empty subject by default', () => {
     let state;
     function TestComponent() {
       state = useEmailSendFlow();
@@ -32,12 +32,12 @@ describe('useEmailSendFlow', () => {
     renderToStaticMarkup(React.createElement(TestComponent));
 
     expect(state.mode).toBe('role');
-    expect(state.recipientCount).toBeGreaterThan(0);
-    expect(state.subjectLength).toBeGreaterThan(0);
+    expect(state.subjectLength).toBe(0);
     expect(state.device).toBe('desktop');
+    expect(state.isConfirmOpen).toBe(false);
   });
 
-  it('updates audience mode and toggles roles and users', () => {
+  it('updates audience mode, toggles roles, and manages confirmation modal', () => {
     let state;
     function TestComponent() {
       state = useEmailSendFlow();
@@ -48,14 +48,12 @@ describe('useEmailSendFlow', () => {
 
     state.setMode('all');
     state.toggleRole('CASHIER');
-    state.removeCompany('c1');
-    state.toggleUserCheck('p1');
-    state.toggleAllUsers(false);
-    state.insertVariable('{{ism}}');
+    state.setSubject('Yangi test mavzu');
+    state.setMessage('Test xabari');
+    state.insertVariable('{{recipientName}}');
     state.setDevice('mobile');
-    state.nextSample();
-    state.prevSample();
-    state.handleSend();
-    state.handleTestEmail();
+    state.openConfirm();
+    state.closeConfirm();
+    state.handleConfirmSend();
   });
 });

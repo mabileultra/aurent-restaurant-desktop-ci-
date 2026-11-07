@@ -80,11 +80,15 @@ export default function PlatformEmailHistoryDetail({ selectedRow, onRetryFails, 
             </div>
             <button
               type="button"
-              onClick={() => onRetryFails(selectedRow.id)}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+              disabled
+              title="Qayta yuborish funksiyasi tez kunda ishga tushadi"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-slate-200 px-4 text-xs font-semibold text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Xatolarni qayta yuborish
+              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-400">
+                Tez kunda
+              </span>
             </button>
           </>
         ) : isInProgress ? (

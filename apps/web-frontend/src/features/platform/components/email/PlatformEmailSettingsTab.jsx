@@ -1,38 +1,25 @@
 import React from 'react';
+import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PlatformEmailSecuritySettings from './PlatformEmailSecuritySettings';
 import PlatformEmailSenderSettings from './PlatformEmailSenderSettings';
 
 export default function PlatformEmailSettingsTab({ flow }) {
+  const { t } = useTranslation();
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 pb-6">
+      <div className="flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 text-xs text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300">
+        <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
+        <span>
+          {t('platform.email.settings.viewOnlyNotice', 'Pochta serveri sozlamalari hozirda faqat ko‘rish rejimida. Server sozlamalarini o‘zgartirish tez kunda ishga tushadi.')}
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
         <PlatformEmailSenderSettings flow={flow} />
         <PlatformEmailSecuritySettings flow={flow} />
       </div>
-
-      {flow.dirty && (
-        <div className="sticky bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800 dark:bg-slate-900 z-10">
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            O‘zgarishlar saqlanmagan
-          </span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={flow.handleCancel}
-              className="h-10 rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-            >
-              Bekor qilish
-            </button>
-            <button
-              type="button"
-              onClick={flow.handleSave}
-              className="h-10 rounded-xl bg-emerald-700 px-5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800"
-            >
-              Saqlash
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

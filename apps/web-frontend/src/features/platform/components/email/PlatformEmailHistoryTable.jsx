@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   formatNumberWithSpaces,
   getHistoryStatusBadge,
@@ -8,29 +9,32 @@ import {
 import PlatformEmailHistoryMobileCards from './PlatformEmailHistoryMobileCards';
 
 export default function PlatformEmailHistoryTable({ flow }) {
+  const { t } = useTranslation();
   const hasRows = flow.rows && flow.rows.length > 0;
 
   return (
     <section className="flex flex-[1.6] flex-col rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4 dark:border-slate-800">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white">Yuborilgan xabarlar</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+          {t('platform.email.tabHistory', 'Tarix')}
+        </h2>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-1">
-            {flow.types.map((t) => {
-              const active = flow.typeFilter === t.id;
+            {flow.types.map((type) => {
+              const active = flow.typeFilter === type.id;
               return (
                 <button
-                  key={t.id}
+                  key={type.id}
                   type="button"
-                  onClick={() => flow.setTypeFilter(t.id)}
+                  onClick={() => flow.setTypeFilter(type.id)}
                   className={`h-8 rounded-full px-3 text-xs font-semibold transition ${
                     active
                       ? 'bg-emerald-800 text-white shadow-sm dark:bg-emerald-600'
                       : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
                   }`}
                 >
-                  {t.label}
+                  {type.label}
                 </button>
               );
             })}
@@ -42,7 +46,7 @@ export default function PlatformEmailHistoryTable({ flow }) {
               type="text"
               value={flow.search}
               onChange={(e) => flow.setSearch(e.target.value)}
-              placeholder="Mavzu yoki email..."
+              placeholder={t('platform.email.history.searchPlaceholder', 'Mavzu yoki email...')}
               className="h-8 w-40 rounded-xl border border-slate-300 pl-8 pr-2.5 text-xs outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
@@ -66,23 +70,17 @@ export default function PlatformEmailHistoryTable({ flow }) {
       </div>
 
       {!hasRows ? (
-        <div className="flex flex-col items-center justify-center p-10 text-center">
-          <p className="text-sm font-bold text-slate-900 dark:text-white">Xabar topilmadi</p>
-          <p className="text-xs text-slate-500 mt-1">Qidiruv so‘zi yoki filtrlarni o‘zgartirib ko‘ring</p>
-          <button
-            type="button"
-            onClick={flow.clearFilters}
-            className="mt-3 text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400"
-          >
-            Filtrlarni tozalash
-          </button>
+        <div className="flex flex-col items-center justify-center p-12 text-center">
+          <p className="text-base font-bold text-slate-900 dark:text-white">
+            {t('platform.email.history.emptyTitle', 'Yuborilgan xatlar tarixi mavjud emas')}
+          </p>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm">
+            {t('platform.email.history.emptyDesc', 'Hozircha tizim orqali hech qanday ommaviy yoki avtomatik xatlar yuborilmagan.')}
+          </p>
         </div>
       ) : (
         <>
-          {/* Mobile Card List */}
           <PlatformEmailHistoryMobileCards flow={flow} />
-
-          {/* Desktop Table View */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -156,27 +154,29 @@ export default function PlatformEmailHistoryTable({ flow }) {
         </>
       )}
 
-      <div className="mt-auto flex items-center justify-between border-t border-slate-100 p-3 px-5 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-400">
-        <span className="font-medium">{flow.paginationLabel}</span>
-        <div className="flex gap-1.5">
-          <button
-            type="button"
-            disabled={!flow.canPrev}
-            onClick={flow.handlePrevPage}
-            className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-          >
-            Oldingi
-          </button>
-          <button
-            type="button"
-            disabled={!flow.canNext}
-            onClick={flow.handleNextPage}
-            className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-          >
-            Keyingi
-          </button>
+      {hasRows && (
+        <div className="mt-auto flex items-center justify-between border-t border-slate-100 p-3 px-5 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-400">
+          <span className="font-medium">{flow.paginationLabel}</span>
+          <div className="flex gap-1.5">
+            <button
+              type="button"
+              disabled={!flow.canPrev}
+              onClick={flow.handlePrevPage}
+              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            >
+              Oldingi
+            </button>
+            <button
+              type="button"
+              disabled={!flow.canNext}
+              onClick={flow.handleNextPage}
+              className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            >
+              Keyingi
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

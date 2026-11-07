@@ -1,8 +1,10 @@
 import React from 'react';
 import { CheckCircle2, RotateCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function PlatformEmailSenderSettings({ flow }) {
-  const { settings, updateSender, updateSmtp, handleTestConnection } = flow;
+  const { t } = useTranslation();
+  const { settings } = flow;
 
   return (
     <div className="flex flex-col gap-5">
@@ -20,9 +22,9 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="sender-name"
               type="text"
+              readOnly
               value={settings.sender.name}
-              onChange={(e) => updateSender('name', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
           </div>
 
@@ -33,9 +35,9 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="sender-email"
               type="email"
+              readOnly
               value={settings.sender.email}
-              onChange={(e) => updateSender('email', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
           </div>
 
@@ -46,9 +48,9 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="sender-reply-to"
               type="email"
+              readOnly
               value={settings.sender.replyTo}
-              onChange={(e) => updateSender('replyTo', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
           </div>
 
@@ -56,16 +58,13 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <label htmlFor="sender-lang" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               Xatlar tili
             </label>
-            <select
+            <input
               id="sender-lang"
-              value={settings.sender.lang}
-              onChange={(e) => updateSender('lang', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800 cursor-pointer"
-            >
-              <option value="recipient">Qabul qiluvchi tilida</option>
-              <option value="uz">Doim o‘zbekcha</option>
-              <option value="ru">Doim ruscha</option>
-            </select>
+              type="text"
+              readOnly
+              value="Qabul qiluvchi tilida"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
+            />
           </div>
         </div>
       </section>
@@ -78,7 +77,7 @@ export default function PlatformEmailSenderSettings({ flow }) {
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
-            {settings.smtp.status}
+            {t('platform.email.settings.statusActive', 'Faol')}
           </span>
         </div>
 
@@ -88,9 +87,9 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="smtp-server"
               type="text"
+              readOnly
               value={settings.smtp.server}
-              onChange={(e) => updateSmtp('server', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 font-mono px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 font-mono px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
           </div>
 
@@ -99,9 +98,9 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="smtp-port"
               type="text"
+              readOnly
               value={settings.smtp.port}
-              onChange={(e) => updateSmtp('port', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
           </div>
 
@@ -110,9 +109,9 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="smtp-login"
               type="text"
+              readOnly
               value={settings.smtp.login}
-              onChange={(e) => updateSmtp('login', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
           </div>
 
@@ -121,35 +120,22 @@ export default function PlatformEmailSenderSettings({ flow }) {
             <input
               id="smtp-pass"
               type="password"
-              value={settings.smtp.pass}
-              onChange={(e) => updateSmtp('pass', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800"
+              readOnly
+              value="••••••••••••"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200"
             />
-          </div>
-
-          <div className="flex flex-col gap-1.5 sm:col-span-6">
-            <label htmlFor="smtp-encryption" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Shifrlash</label>
-            <select
-              id="smtp-encryption"
-              value={settings.smtp.encryption}
-              onChange={(e) => updateSmtp('encryption', e.target.value)}
-              className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 dark:border-slate-700 dark:bg-slate-800 cursor-pointer"
-            >
-              <option value="STARTTLS">STARTTLS</option>
-              <option value="SSL/TLS">SSL / TLS</option>
-            </select>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 p-4 px-5 text-xs dark:border-slate-800">
-          <span className="text-slate-500">Parol shifrlangan holda saqlanadi va qayta ko‘rsatilmaydi</span>
+          <span className="text-slate-500">Parol shifrlangan holda saqlanadi</span>
           <button
             type="button"
-            onClick={handleTestConnection}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            disabled
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 px-3.5 text-xs font-semibold text-slate-400 cursor-not-allowed dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-500"
           >
             <RotateCw className="h-3.5 w-3.5" />
-            Ulanishni tekshirish
+            {t('platform.email.settings.testConnComingSoon', 'Ulanishni tekshirish tez kunda')}
           </button>
         </div>
       </section>

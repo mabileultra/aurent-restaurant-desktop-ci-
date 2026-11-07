@@ -7,7 +7,7 @@ globalThis.React = React;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, opts) => opts?.defaultValue || key,
+    t: (key, fallback) => fallback || key,
     i18n: { language: 'uz' },
   }),
 }));
@@ -30,7 +30,6 @@ describe('PlatformEmailPage', () => {
     expect(html).toContain('Tarix');
     expect(html).toContain('Avtomatik xatlar');
     expect(html).toContain('Sozlamalar');
-    expect(html).toContain('Pochta serveri ulangan');
     expect(html).toContain('Yangi xabar');
     expect(html).toContain('Ko‘rinish');
   });

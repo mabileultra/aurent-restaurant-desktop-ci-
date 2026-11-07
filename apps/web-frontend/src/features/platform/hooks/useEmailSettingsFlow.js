@@ -14,7 +14,7 @@ const INITIAL_SETTINGS = {
     login: 'noreply@aurent.uz',
     pass: '••••••••••••',
     encryption: 'STARTTLS',
-    status: 'Ulangan · 08:55 da tekshirildi',
+    status: 'Faol',
   },
   watchEmails: [
     { email: 'xavfsizlik@aurent.uz', verified: true },
@@ -85,12 +85,11 @@ export function useEmailSettingsFlow() {
   };
 
   const handleTestConnection = () => {
-    toast.success('SMTP serveriga ulanish muvaffaqiyatli tekshirildi');
+    toast.error('Ulanishni tekshirish tez kunda ishga tushadi');
   };
 
   const handleSave = () => {
-    setDirty(false);
-    toast.success('Sozlamalar muvaffaqiyatli saqlandi');
+    toast.error('Sozlamalarni saqlash tez kunda ishga tushadi');
   };
 
   const handleCancel = () => {
