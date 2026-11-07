@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, Search, Users, X } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 
 export default function PlatformEmailAudienceSelector({ flow }) {
   return (
@@ -112,13 +113,12 @@ export default function PlatformEmailAudienceSelector({ flow }) {
                 </div>
               )}
               <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
-                <input
-                  type="checkbox"
+                <BaseCheckbox
                   checked={flow.allUsersChecked}
                   onChange={(e) => flow.toggleAllUsers(e.target.checked)}
-                  className="rounded text-emerald-700"
+                  size={18}
                 />
-                Hammasini tanlash
+                <span>Hammasini tanlash</span>
               </label>
             </div>
           </div>
@@ -143,11 +143,10 @@ export default function PlatformEmailAudienceSelector({ flow }) {
                   key={u.id}
                   className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                 >
-                  <input
-                    type="checkbox"
+                  <BaseCheckbox
                     checked={u.checked}
                     onChange={() => flow.toggleUserCheck(u.id)}
-                    className="rounded text-emerald-700"
+                    size={18}
                   />
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
                     {u.ini}

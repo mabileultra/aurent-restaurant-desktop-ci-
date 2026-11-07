@@ -1,5 +1,6 @@
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import { BaseCheckbox } from '../../../components/ui';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { fmtOrderDateTime, orderStatusLabel } from '../utils/ordersDisplayUtils';
 
@@ -25,7 +26,7 @@ export default function OrdersTable({
           <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
             <tr>
               <th className="w-10 px-3 py-3">
-                <input type="checkbox" disabled className="rounded border-slate-300" aria-label="select" />
+                <BaseCheckbox disabled aria-label="select" size={16} />
               </th>
               <AdminTableNoIdHeaders />
               <th className="px-3 py-3">{t('orders.colOrderDate')}</th>
@@ -63,7 +64,7 @@ export default function OrdersTable({
               rows.map((row, index) => (
                 <tr key={row.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                   <td className="px-3 py-3">
-                    <input type="checkbox" disabled className="rounded border-slate-300" aria-label="select" />
+                    <BaseCheckbox disabled aria-label="select" size={16} />
                   </td>
                   <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-3 py-3 text-slate-800 dark:text-slate-100">

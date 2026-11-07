@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { BaseCheckbox } from '../../../components/ui';
 import { useFiscalDriveSettings } from '../hooks/useFiscalDriveSettings';
 import '../../../styles/cash-registers/multikassa-settings.css';
 
@@ -115,13 +116,13 @@ export default function FiscalDriveSettingsModal({ open, cashRegisterId, onClose
                 />
               </div>
 
-              <label className="multikassa-settings__check">
-                <input
-                  type="checkbox"
+              <label className="multikassa-settings__check flex items-center gap-2 cursor-pointer">
+                <BaseCheckbox
                   checked={p.form.useForFiscalization}
                   onChange={(e) => p.updateField('useForFiscalization', e.target.checked)}
+                  size={18}
                 />
-                {p.t('cashRegisters.fiscalDrive.useForFiscalization')}
+                <span>{p.t('cashRegisters.fiscalDrive.useForFiscalization')}</span>
               </label>
               <p className="multikassa-settings__hint">{p.t('cashRegisters.fiscalDrive.useForFiscalizationHint')}</p>
 

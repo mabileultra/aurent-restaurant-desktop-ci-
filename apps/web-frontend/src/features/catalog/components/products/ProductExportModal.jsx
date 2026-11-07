@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { BaseCheckbox } from '../../../../components/ui';
 import { productApi } from '../../../../api';
 
 export default function ProductExportModal({ stores, onClose }) {
@@ -66,8 +67,8 @@ export default function ProductExportModal({ stores, onClose }) {
                   key={s.id}
                   className="flex cursor-pointer items-center gap-2 text-sm text-slate-800 dark:text-slate-200"
                 >
-                  <input type="checkbox" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} />
-                  {s.name}
+                  <BaseCheckbox checked={selected.includes(s.id)} onChange={() => toggle(s.id)} size={18} />
+                  <span>{s.name}</span>
                 </label>
               ))}
             </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, Globe, Trash2 } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 
 export default function PlatformSecuritySessionIpRulesCard({
   rules,
@@ -40,11 +41,10 @@ export default function PlatformSecuritySessionIpRulesCard({
           </div>
           <label className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
             <span>Yangi qurilmadan kirganda email ogohlantirish</span>
-            <input
-              type="checkbox"
+            <BaseCheckbox
               checked={rules.notify}
               onChange={toggleNotify}
-              className="rounded text-emerald-700"
+              size={18}
             />
           </label>
         </div>

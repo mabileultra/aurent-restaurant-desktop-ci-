@@ -1,4 +1,5 @@
 import { AlertTriangle, MoreVertical } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 import { fmtMoney as fmtNum } from '../../../../utils/formatMoney';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { ProductsTableChangedAtCells, ProductsTableChangedAtHeaders } from './ProductsTableChangedAt';
@@ -36,12 +37,11 @@ export default function ProductsTable({
           <thead>
             <tr className="border-b border-[color:var(--admin-line)] text-left text-xs uppercase tracking-wide">
               <th className="px-3 py-3 w-10">
-                <input
+                <BaseCheckbox
                   ref={selectAllRef}
-                  type="checkbox"
                   checked={allPageSelected}
                   onChange={toggleSelectAllPage}
-                  className="rounded border-slate-400 dark:border-slate-600"
+                  size={18}
                 />
               </th>
               <ProductsTableChangedAtHeaders />
@@ -84,11 +84,10 @@ export default function ProductsTable({
               (data?.content ?? []).map((p, index) => (
                 <tr key={p.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-3 py-3">
-                    <input
-                      type="checkbox"
+                    <BaseCheckbox
                       checked={selectedIds.has(p.id)}
                       onChange={() => toggleSelect(p.id)}
-                      className="rounded border-slate-400 dark:border-slate-600"
+                      size={18}
                     />
                   </td>
                   <ProductsTableChangedAtCells

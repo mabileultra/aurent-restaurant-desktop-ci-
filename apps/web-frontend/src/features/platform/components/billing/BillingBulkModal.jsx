@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Building2 } from 'lucide-react';
-import { BaseModal } from '../../../../components/ui';
+import { BaseModal, BaseCheckbox } from '../../../../components/ui';
 import PlatformSelect from '../PlatformSelect';
 import { toIsoDate } from '../BillingPeriodCalendar';
 import PlatformDatePicker from '../PlatformDatePicker';
@@ -142,11 +142,10 @@ export default function BillingBulkModal({ p }) {
 
         {/* Explicit confirmation checkbox */}
         <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
-          <input
-            type="checkbox"
+          <BaseCheckbox
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
-            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+            size={18}
           />
           <span>{t('platform.billing.collections.bulk.confirmCheckbox', { defaultValue: 'Amalni bajarishni tasdiqlayman' })}</span>
         </label>

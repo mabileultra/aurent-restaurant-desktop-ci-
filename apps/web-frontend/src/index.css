@@ -9,6 +9,9 @@
 @import './styles/shared/page-search-field.css';
 @import './styles/shared/on-screen-keyboard.css';
 @import './styles/shared/brand-logo.css';
+@import './styles/shared/neon-checkbox.css';
+@import './styles/shared/circle-toggle-checkbox.css';
+@import './styles/shared/animated-checkbox-19.css';
 
 @tailwind base;
 @tailwind components;

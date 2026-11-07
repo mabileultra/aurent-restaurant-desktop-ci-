@@ -1,4 +1,5 @@
 import { Info } from 'lucide-react';
+import { BaseCheckbox } from '../../../components/ui';
 
 export default function CompanyBusinessTypeSelector({
   t,
@@ -35,11 +36,10 @@ export default function CompanyBusinessTypeSelector({
               }`}
             >
               <span className="flex items-center gap-2 text-sm text-slate-800 dark:text-slate-200">
-                <input
-                  type="checkbox"
-                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                <BaseCheckbox
                   checked={checked}
                   onChange={() => onToggleBusinessType(bt.id)}
+                  size={18}
                 />
                 <span className="font-medium">{displayName}</span>
                 <span className="font-mono text-xs text-slate-400">({bt.code})</span>

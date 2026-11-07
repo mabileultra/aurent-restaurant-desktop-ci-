@@ -1,4 +1,4 @@
-import { BaseButton } from '../../../../components/ui';
+import { BaseButton, BaseCheckbox } from '../../../../components/ui';
 
 const RULE_LABEL_KEYS = {
   'product.allowFraction': 'platform.businessTypes.ruleAllowFraction',
@@ -42,11 +42,11 @@ export default function PlatformBusinessTypeUnitsRules({
             const isDefault = defaultUnitCode === unit.code;
             return (
               <div key={unit.code} className="business-constructor__row">
-                <label className="business-constructor__check">
-                  <input
-                    type="checkbox"
+                <label className="business-constructor__check flex items-center gap-2 cursor-pointer">
+                  <BaseCheckbox
                     checked={checked}
                     onChange={() => onToggleUnit(unit.code)}
+                    size={18}
                   />
                   <span>{unit.labelRu}</span>
                   <span className="business-constructor__unit-code">{unit.code}</span>
@@ -75,12 +75,12 @@ export default function PlatformBusinessTypeUnitsRules({
         </div>
         <div className="business-constructor__scroll">
           {rules.map((rule) => (
-            <label key={rule.ruleKey} className="business-constructor__row business-constructor__check">
+            <label key={rule.ruleKey} className="business-constructor__row business-constructor__check flex items-center justify-between cursor-pointer">
               <span>{t(RULE_LABEL_KEYS[rule.ruleKey] ?? rule.ruleKey)}</span>
-              <input
-                type="checkbox"
+              <BaseCheckbox
                 checked={rule.enabled}
                 onChange={() => onToggleRule(rule.ruleKey)}
+                size={18}
               />
             </label>
           ))}

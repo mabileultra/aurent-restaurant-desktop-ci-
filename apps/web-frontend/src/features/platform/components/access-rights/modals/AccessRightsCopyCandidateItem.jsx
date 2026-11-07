@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 import { resolveRoleLabel } from '../utils/accessRightsCatalogUtils';
 
 export default function AccessRightsCopyCandidateItem({
@@ -24,12 +25,12 @@ export default function AccessRightsCopyCandidateItem({
       }`}
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        <input
-          type="checkbox"
+        <AnimatedCheckbox19
           checked={isChecked}
           disabled={!isSameRole}
           onChange={() => isSameRole && onToggle(uid)}
-          className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          size={18}
+          ariaLabel={`${user.fullName || user.username}ni tanlash`}
         />
         <div className="min-w-0 truncate">
           <span className="font-semibold text-xs text-slate-900 dark:text-slate-100">

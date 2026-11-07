@@ -10,6 +10,7 @@ export default function AccessRightsTemplateEditor({
   roleName = '',
   roleCode = '',
   templateSource = 'DEFAULT',
+  isModified = false,
   employeesCount = 0,
   exceptionsCount = 0,
   moduleGroups = [],
@@ -58,7 +59,7 @@ export default function AccessRightsTemplateEditor({
         businessTypeName={businessTypeName}
         roleName={roleName}
         templateSource={templateSource}
-        isModified={isDirty}
+        isModified={isModified !== undefined ? isModified : isDirty}
         enabledModulesCount={enabledModulesCount}
         totalModulesCount={totalModulesCount}
         employeesCount={employeesCount}

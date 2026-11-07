@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput, BaseModal, BaseSelect, inputCls } from '../../../../components/ui';
+import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseCheckbox, inputCls } from '../../../../components/ui';
 import { BUSINESS_TYPE_FIELD_TYPES } from '../../utils/businessTypeUtils';
 
 export default function PlatformBusinessFieldFormModal({
@@ -43,31 +43,31 @@ export default function PlatformBusinessFieldFormModal({
             label: type,
           }))}
         />
-        <div className="business-constructor__flags">
-          <label className="business-constructor__check">
-            <input
-              type="checkbox"
+        <div className="business-constructor__flags flex flex-wrap gap-4">
+          <label className="business-constructor__check flex items-center gap-2 cursor-pointer">
+            <BaseCheckbox
               checked={form.required}
               onChange={(e) => onFieldChange({ required: e.target.checked })}
+              size={18}
             />
-            {t('platform.businessTypes.required')}
+            <span>{t('platform.businessTypes.required')}</span>
           </label>
-          <label className="business-constructor__check">
-            <input
-              type="checkbox"
+          <label className="business-constructor__check flex items-center gap-2 cursor-pointer">
+            <BaseCheckbox
               checked={form.enabled}
               onChange={(e) => onFieldChange({ enabled: e.target.checked })}
+              size={18}
             />
-            {t('platform.businessTypes.enabled')}
+            <span>{t('platform.businessTypes.enabled')}</span>
           </label>
           {form.fieldType === 'LIST' ? (
-            <label className="business-constructor__check">
-              <input
-                type="checkbox"
+            <label className="business-constructor__check flex items-center gap-2 cursor-pointer">
+              <BaseCheckbox
                 checked={form.filterable}
                 onChange={(e) => onFieldChange({ filterable: e.target.checked })}
+                size={18}
               />
-              {t('platform.businessTypes.filterable')}
+              <span>{t('platform.businessTypes.filterable')}</span>
             </label>
           ) : null}
         </div>

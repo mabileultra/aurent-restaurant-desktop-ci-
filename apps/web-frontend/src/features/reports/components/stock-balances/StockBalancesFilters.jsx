@@ -1,4 +1,4 @@
-import { BaseSelect, PageSearchField } from '../../../../components/ui';
+import { BaseSelect, BaseCheckbox, PageSearchField } from '../../../../components/ui';
 import ReportStoreSelect from '../ReportStoreSelect';
 import './stock-balances-filters.css';
 
@@ -56,13 +56,13 @@ export default function StockBalancesFilters({
         </div>
       </div>
       <div className="stock-balances-filters__foot">
-        <label className="stock-balances-filters__check">
-          <input
-            type="checkbox"
+        <label className="stock-balances-filters__check flex items-center gap-2 cursor-pointer">
+          <BaseCheckbox
             checked={onlyWithStock}
             onChange={(e) => onOnlyWithStockChange(e.target.checked)}
+            size={18}
           />
-          {t('stockReports.onlyWithStock')}
+          <span>{t('stockReports.onlyWithStock')}</span>
         </label>
         <p className="stock-balances-filters__hint">{storeHint}</p>
       </div>

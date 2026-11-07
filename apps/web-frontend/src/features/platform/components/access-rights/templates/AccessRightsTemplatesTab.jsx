@@ -9,6 +9,7 @@ import { useAccessRightsTemplatesFlow } from '../hooks/useAccessRightsTemplatesF
 import { resolveRoleLabel, resolveBusinessTypeName } from '../utils/accessRightsCatalogUtils';
 import { rolesForBusinessType } from '../../../utils/rolesByBusinessType';
 import { getScopeForRole, getDefaultModulesForRole } from '../utils/roleDefaultModules';
+import { useAllRoleTemplateCounts } from '../hooks/useAllRoleTemplateCounts';
 
 export default function AccessRightsTemplatesTab({
   businessTypes = [],
@@ -39,17 +40,12 @@ export default function AccessRightsTemplatesTab({
     onSwitchToStaff,
   });
 
-  useEffect(() => {
-    if (typeof qc?.prefetchQuery !== 'function') return;
-    const roles = rolesForBusinessType(selectedBT);
-    roles.forEach((r) => {
-      qc.prefetchQuery({
-        queryKey: ['access-role-template', selectedBT, r],
-        queryFn: () => platformModuleAccessApi.getRoleTemplate(selectedBT, r).then((res) => res?.data || null),
-        staleTime: 60_000,
-      });
-    });
-  }, [selectedBT, qc]);
+  const { getEnabledCount } = useAllRoleTemplateCounts({
+    businessTypes,
+    selectedBT,
+    currentRole: flow.currentRole,
+    currentToggles: flow.toggles,
+  });
 
   useEffect(() => {
     if (onDirtyChange) onDirtyChange(flow.isDirty);
@@ -71,18 +67,7 @@ export default function AccessRightsTemplatesTab({
 
           const scope = getScopeForRole(roleCode, bt.code);
           const defaultMods = getDefaultModulesForRole(roleCode, bt.code);
-
-          const isCurrent = bt.code === selectedBT && roleCode === flow.currentRole;
-          const cachedData = typeof qc?.getQueryData === 'function'
-            ? qc.getQueryData(['access-role-template', bt.code, roleCode])
-            : null;
-          const cachedCount = cachedData?.modules
-            ? Object.entries(cachedData.modules).filter(([k, v]) => scope.has(k) && Boolean(v)).length
-            : null;
-
-          const enabledCount = isCurrent
-            ? Object.values(flow.toggles).filter(Boolean).length
-            : (cachedCount ?? defaultMods.size);
+          const enabledCount = getEnabledCount(bt.code, roleCode, defaultMods.size);
 
           return {
             code: roleCode,
@@ -101,7 +86,7 @@ export default function AccessRightsTemplatesTab({
           roles: rolesList,
         };
       });
-  }, [businessTypes, statsByCode, selectedBT, flow.currentRole, flow.toggles, qc, isRu]);
+  }, [businessTypes, statsByCode, getEnabledCount, isRu]);
 
   const currentRoleStats = statsByCode.get(String(selectedBT || '').toUpperCase())?.roleMap?.get(flow.currentRole);
   const currentRoleEmployees = currentRoleStats ? Number(currentRoleStats.totalEmployees || 0) : 0;
@@ -148,6 +133,7 @@ export default function AccessRightsTemplatesTab({
           roleName={currentRoleName}
           roleCode={flow.currentRole}
           templateSource={flow.templateSource}
+          isModified={flow.isTemplateModified}
           employeesCount={currentRoleEmployees}
           exceptionsCount={currentRoleExceptions}
           moduleGroups={flow.moduleGroups}

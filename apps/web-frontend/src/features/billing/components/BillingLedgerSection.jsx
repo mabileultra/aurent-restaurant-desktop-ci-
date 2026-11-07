@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react';
+import { BaseCheckbox } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 
 export default function BillingLedgerSection({
@@ -76,13 +77,13 @@ export default function BillingLedgerSection({
           <thead>
             <tr>
               <th className="billing-check">
-                <input
+                <BaseCheckbox
                   ref={selectAllRef}
-                  type="checkbox"
                   checked={allPageSelected}
                   disabled={ledger.length === 0}
                   onChange={toggleSelectAllPage}
-                  aria-label={t('billing.selectAll')}
+                  ariaLabel={t('billing.selectAll')}
+                  size={18}
                 />
               </th>
               <th>{t('billing.colDate')}</th>
@@ -108,11 +109,11 @@ export default function BillingLedgerSection({
                     onClick={() => openDetail(row)}
                   >
                     <td className="billing-check" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
+                      <BaseCheckbox
                         checked={selected}
                         onChange={() => toggleSelect(row.id)}
-                        aria-label={t('billing.selectRow')}
+                        ariaLabel={t('billing.selectRow')}
+                        size={18}
                       />
                     </td>
                     <td>{formatDateTime(row.createdAt)}</td>

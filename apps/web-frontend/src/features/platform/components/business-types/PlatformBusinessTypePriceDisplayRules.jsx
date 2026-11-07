@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput, BaseSelect } from '../../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect, BaseCheckbox } from '../../../../components/ui';
 
 const PRICE_RULE_LABEL_KEYS = {
   'price.requireCost': 'platform.businessTypes.priceRequireCost',
@@ -50,10 +50,10 @@ export default function PlatformBusinessTypePriceDisplayRules({
                   onChange={(e) => onPriceRuleChange(rule.ruleKey, e.target.value)}
                 />
               ) : (
-                <input
-                  type="checkbox"
+                <BaseCheckbox
                   checked={rule.enabled}
                   onChange={(e) => onPriceRuleChange(rule.ruleKey, e.target.checked ? 'true' : 'false')}
+                  size={18}
                 />
               )}
             </div>

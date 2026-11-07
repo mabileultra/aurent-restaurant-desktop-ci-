@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 import { usePharmacyIntegrationSettings } from '../../hooks/usePharmacyIntegrationSettings';
 import { storeIsPharmacy } from '../../utils/storeAslMarkingSupport';
 import '../../../../styles/tenant/pharmacy-integration-settings-modal.css';
@@ -47,11 +48,11 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
                 {pharmacyStore ? (
                   <section className="pharm-int-settings__section">
                     <h3 className="pharm-int-settings__section-title">{p.t('stores.pharmacyIntegration.dmedTitle')}</h3>
-                    <label className="pharm-int-settings__check">
-                      <input
-                        type="checkbox"
+                    <label className="pharm-int-settings__check flex items-center gap-2 cursor-pointer">
+                      <BaseCheckbox
                         checked={p.form.dmedEnabled}
                         onChange={(e) => p.updateField('dmedEnabled', e.target.checked)}
+                        size={18}
                       />
                       <span>{p.t('stores.pharmacyIntegration.dmedEnabled')}</span>
                     </label>

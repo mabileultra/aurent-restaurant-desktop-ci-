@@ -1,5 +1,6 @@
 import { Columns3 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { BaseCheckbox } from '../../../../../../components/ui';
 import { PRODUCT_IMPORT_COLUMN_DEFS } from '../../../../utils/productImportColumns';
 import './product-import-column-picker.css';
 
@@ -30,12 +31,12 @@ export default function ProductImportColumnPicker({ t, visibleColumns, onToggle 
       {open ? (
         <div className="product-import-column-picker__menu" role="menu">
           {PRODUCT_IMPORT_COLUMN_DEFS.map((col) => (
-            <label key={col.id} className="product-import-column-picker__item">
-              <input
-                type="checkbox"
+            <label key={col.id} className="product-import-column-picker__item flex items-center gap-2 cursor-pointer">
+              <BaseCheckbox
                 checked={Boolean(visibleColumns[col.id])}
                 disabled={col.sticky}
                 onChange={() => onToggle(col.id)}
+                size={16}
               />
               <span>{t(col.labelKey)}</span>
             </label>

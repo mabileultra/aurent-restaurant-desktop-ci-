@@ -33,6 +33,7 @@ export default function AccessRightsStaffTab({
   const { i18n } = useTranslation();
   const isRu = i18n.language === 'ru';
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'custom' | 'new'
+  const [mobileTab, setMobileTab] = useState('list'); // 'list' | 'detail'
 
   const roleFilteredUsers = useMemo(() => {
     if (!selectedRole || selectedRole === 'ALL') return users;
@@ -93,12 +94,7 @@ export default function AccessRightsStaffTab({
 
   const handleSelectUser = (user) => {
     flow.setSelectedUser(user);
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setTimeout(() => {
-        const el = document.getElementById('staff-detail-panel');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 50);
-    }
+    setMobileTab('detail');
   };
 
   return (
@@ -117,41 +113,80 @@ export default function AccessRightsStaffTab({
         onSelectRole={onSelectRole}
       />
 
+      {/* Mobile Tab Switcher */}
+      <div className="flex lg:hidden items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <button
+          type="button"
+          onClick={() => setMobileTab('list')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+            mobileTab === 'list'
+              ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
+              : 'text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          {isRu ? `Список (${filteredUsers.length})` : `Ro‘yxat (${filteredUsers.length})`}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('detail')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+            mobileTab === 'detail'
+              ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
+              : 'text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          {isRu ? 'Детали сотрудника' : 'Xodim tafsiloti'}
+        </button>
+      </div>
+
       {/* 2-Column Master-Detail Layout */}
       <div className="flex flex-col lg:flex-row items-start gap-6">
-        <AccessRightsStaffListPanel
-          users={filteredUsers}
-          totalCount={users.length}
-          filterTab={filterTab}
-          onFilterTabChange={setFilterTab}
-          exceptionsCount={realExceptionsCount}
-          newCount={newCount}
-          selectedUserId={flow.selectedUserId}
-          onSelectUser={handleSelectUser}
-          checkedUserIds={flow.checkedIds}
-          onToggleCheckUser={flow.handleToggleCheckUser}
-          onToggleCheckAll={flow.handleToggleCheckAll}
-          onResetBulk={flow.handleBulkReset}
-          onCopyBulk={handleBulkCopy}
-          onClearChecked={flow.handleClearChecked}
-          isResettingBulk={flow.isResettingBulk}
-        />
+        <div className={`w-full lg:w-auto ${mobileTab === 'detail' ? 'hidden lg:block' : 'block'}`}>
+          <AccessRightsStaffListPanel
+            users={filteredUsers}
+            totalCount={users.length}
+            filterTab={filterTab}
+            onFilterTabChange={setFilterTab}
+            exceptionsCount={realExceptionsCount}
+            newCount={newCount}
+            selectedUserId={flow.selectedUserId}
+            onSelectUser={handleSelectUser}
+            checkedUserIds={flow.checkedIds}
+            onToggleCheckUser={flow.handleToggleCheckUser}
+            onToggleCheckAll={flow.handleToggleCheckAll}
+            onResetBulk={flow.handleBulkReset}
+            onCopyBulk={handleBulkCopy}
+            onClearChecked={flow.handleClearChecked}
+            isResettingBulk={flow.isResettingBulk}
+          />
+        </div>
 
-        <AccessRightsStaffDetailPanel
-          user={flow.selectedUser}
-          totalUsersCount={filteredUsers.length}
-          templateModules={flow.templateModules}
-          moduleOverrides={flow.overrides}
-          allModules={userModulesWithMeta}
-          isDirty={flow.isDirty}
-          dirtyCount={flow.dirtyCount}
-          isSaving={flow.isSaving}
-          onChangeOverride={flow.handleChangeOverride}
-          onResetUserToTemplate={() => flow.handleResetUser(flow.selectedUserId)}
-          onOpenCopyModal={() => onOpenCopyModal && onOpenCopyModal(flow.selectedUser)}
-          onCancel={flow.handleCancel}
-          onSave={flow.handleSave}
-        />
+        <div className={`w-full flex-1 min-w-0 ${mobileTab === 'list' ? 'hidden lg:block' : 'block'}`}>
+          <div className="lg:hidden mb-3">
+            <button
+              type="button"
+              onClick={() => setMobileTab('list')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+            >
+              ← {isRu ? 'Назад к списку сотрудников' : 'Xodimlar ro‘yxatiga qaytish'}
+            </button>
+          </div>
+          <AccessRightsStaffDetailPanel
+            user={flow.selectedUser}
+            totalUsersCount={filteredUsers.length}
+            templateModules={flow.templateModules}
+            moduleOverrides={flow.overrides}
+            allModules={userModulesWithMeta}
+            isDirty={flow.isDirty}
+            dirtyCount={flow.dirtyCount}
+            isSaving={flow.isSaving}
+            onChangeOverride={flow.handleChangeOverride}
+            onResetUserToTemplate={() => flow.handleResetUser(flow.selectedUserId)}
+            onOpenCopyModal={() => onOpenCopyModal && onOpenCopyModal(flow.selectedUser)}
+            onCancel={flow.handleCancel}
+            onSave={flow.handleSave}
+          />
+        </div>
       </div>
     </div>
   );

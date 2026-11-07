@@ -1,5 +1,6 @@
 import React from 'react';
 import { RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 
 /**
  * Xodimlar ro'yxatidagi bitta xodim kartochkasi
@@ -26,13 +27,14 @@ export default function RoleEmployeeListItem({
     >
       <div className="flex items-center gap-2.5 min-w-0">
         {onToggleSelect && (
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect(userId)}
-            aria-label={`${user.fullName || user.username}ni tanlash`}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
-          />
+          <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+            <AnimatedCheckbox19
+              checked={isSelected}
+              onChange={() => onToggleSelect(userId)}
+              ariaLabel={`${user.fullName || user.username}ni tanlash`}
+              size={18}
+            />
+          </div>
         )}
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
           {initials}

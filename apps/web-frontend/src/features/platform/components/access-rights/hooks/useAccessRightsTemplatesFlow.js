@@ -97,31 +97,29 @@ export function useAccessRightsTemplatesFlow({
     return buildCatalogGroups(rawCatalog, selectedBT, isRu ? 'ru' : 'uz', roleScope);
   }, [rawCatalog, selectedBT, isRu, roleScope]);
 
-  const handleEnableGroup = useCallback((groupId, visibleModuleIds) => {
+  const hasDifferencesFromDefault = useMemo(() => {
+    if (!roleScope || roleScope.size === 0) return false;
+    for (const modId of roleScope) {
+      if (Boolean(toggles[modId]) !== defaultRoleModules.has(modId)) return true;
+    }
+    return false;
+  }, [roleScope, toggles, defaultRoleModules]);
+
+  const handleSetGroup = useCallback((groupId, enabled, visibleIds) => {
     setToggles((prev) => {
       const next = { ...prev };
-      if (Array.isArray(visibleModuleIds) && visibleModuleIds.length > 0) {
-        visibleModuleIds.forEach((id) => { next[id] = true; });
+      if (Array.isArray(visibleIds) && visibleIds.length > 0) {
+        visibleIds.forEach((id) => { next[id] = enabled; });
       } else {
         const group = moduleGroups.find((g) => g.id === groupId);
-        if (group) group.modules.forEach((m) => { next[m.id] = true; });
+        if (group) group.modules.forEach((m) => { next[m.id] = enabled; });
       }
       return next;
     });
   }, [moduleGroups]);
 
-  const handleDisableGroup = useCallback((groupId, visibleModuleIds) => {
-    setToggles((prev) => {
-      const next = { ...prev };
-      if (Array.isArray(visibleModuleIds) && visibleModuleIds.length > 0) {
-        visibleModuleIds.forEach((id) => { next[id] = false; });
-      } else {
-        const group = moduleGroups.find((g) => g.id === groupId);
-        if (group) group.modules.forEach((m) => { next[m.id] = false; });
-      }
-      return next;
-    });
-  }, [moduleGroups]);
+  const handleEnableGroup = useCallback((id, vIds) => handleSetGroup(id, true, vIds), [handleSetGroup]);
+  const handleDisableGroup = useCallback((id, vIds) => handleSetGroup(id, false, vIds), [handleSetGroup]);
 
   const handleReset = useCallback(() => {
     setToggles(savedToggles);
@@ -176,6 +174,7 @@ export function useAccessRightsTemplatesFlow({
     currentRole,
     setCurrentRole: setCurrentRoleState,
     templateSource,
+    isTemplateModified: hasDifferencesFromDefault,
     toggles,
     savedToggles,
     isDirty,

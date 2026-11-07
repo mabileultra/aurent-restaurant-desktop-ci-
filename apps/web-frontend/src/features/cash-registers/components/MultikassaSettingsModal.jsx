@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { BaseCheckbox } from '../../../components/ui';
 import { useMultikassaSettings } from '../hooks/useMultikassaSettings';
 import MultikassaDriveSection from './MultikassaDriveSection';
 import '../../../styles/cash-registers/multikassa-settings.css';
@@ -34,13 +35,13 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
             <div className="multikassa-settings">
               <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.hint')}</p>
 
-              <label className="multikassa-settings__check">
-                <input
-                  type="checkbox"
+              <label className="multikassa-settings__check flex items-center gap-2 cursor-pointer">
+                <BaseCheckbox
                   checked={p.form.enabled}
                   onChange={(e) => p.updateField('enabled', e.target.checked)}
+                  size={18}
                 />
-                {p.t('cashRegisters.multikassa.enabled')}
+                <span>{p.t('cashRegisters.multikassa.enabled')}</span>
               </label>
 
               <div className="multikassa-settings__row">
@@ -96,23 +97,23 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
                 />
               </div>
 
-              <label className="multikassa-settings__check">
-                <input
-                  type="checkbox"
+              <label className="multikassa-settings__check flex items-center gap-2 cursor-pointer">
+                <BaseCheckbox
                   checked={p.form.printFiscalQr}
                   onChange={(e) => p.updateField('printFiscalQr', e.target.checked)}
+                  size={18}
                 />
-                {p.t('cashRegisters.multikassa.printFiscalQr')}
+                <span>{p.t('cashRegisters.multikassa.printFiscalQr')}</span>
               </label>
               <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.printFiscalQrHint')}</p>
 
-              <label className="multikassa-settings__check">
-                <input
-                  type="checkbox"
+              <label className="multikassa-settings__check flex items-center gap-2 cursor-pointer">
+                <BaseCheckbox
                   checked={p.form.requireBeforeSale}
                   onChange={(e) => p.updateField('requireBeforeSale', e.target.checked)}
+                  size={18}
                 />
-                {p.t('cashRegisters.multikassa.requireBeforeSale')}
+                <span>{p.t('cashRegisters.multikassa.requireBeforeSale')}</span>
               </label>
               <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.requireBeforeSaleHint')}</p>
 

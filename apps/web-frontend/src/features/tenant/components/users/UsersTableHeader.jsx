@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 
 /**
  * UsersTableHeader
@@ -43,15 +44,14 @@ export default function UsersTableHeader({
       <tr className="border-b border-slate-200 bg-slate-50/90 backdrop-blur-xs text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-400 sticky top-0 z-10">
         {/* Checkbox select */}
         <th className="w-12 px-3 py-3.5 text-center">
-          <input
-            type="checkbox"
+          <BaseCheckbox
             checked={allSelected}
             ref={(input) => {
               if (input) input.indeterminate = someSelected;
             }}
             onChange={(e) => onToggleSelectAll?.(e.target.checked)}
             aria-label={t('common.selectAll', { defaultValue: 'Barchasini tanlash' })}
-            className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 dark:border-slate-700 cursor-pointer"
+            size={18}
           />
         </th>
 

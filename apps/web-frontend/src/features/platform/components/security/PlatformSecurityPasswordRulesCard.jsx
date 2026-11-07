@@ -1,5 +1,6 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 
 export default function PlatformSecurityPasswordRulesCard({
   rules,
@@ -67,11 +68,10 @@ export default function PlatformSecurityPasswordRulesCard({
           { k: 'history', l: 'Oxirgi 5 parolni takrorlamaslik' },
         ].map((c) => (
           <label key={c.k} className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
-            <input
-              type="checkbox"
+            <BaseCheckbox
               checked={Boolean(rules.req[c.k])}
               onChange={() => toggleReq(c.k)}
-              className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-500"
+              size={18}
             />
             <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{c.l}</span>
           </label>

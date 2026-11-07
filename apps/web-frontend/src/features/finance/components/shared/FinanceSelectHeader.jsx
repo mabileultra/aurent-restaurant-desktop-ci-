@@ -1,14 +1,15 @@
+import { BaseCheckbox } from '../../../../components/ui';
+
 export default function FinanceSelectHeader({ selectAllRef, checked, onChange, disabled }) {
   return (
     <th className="finance-table__check">
-      <input
+      <BaseCheckbox
         ref={selectAllRef}
-        type="checkbox"
-        className="finance-table__checkbox"
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        aria-label="Select all"
+        ariaLabel="Select all"
+        size={18}
       />
     </th>
   );
@@ -17,12 +18,11 @@ export default function FinanceSelectHeader({ selectAllRef, checked, onChange, d
 export function FinanceSelectCell({ checked, onChange, disabled }) {
   return (
     <td className="finance-table__check" onClick={(e) => e.stopPropagation()}>
-      <input
-        type="checkbox"
-        className="finance-table__checkbox"
+      <BaseCheckbox
         checked={checked}
         onChange={onChange}
         disabled={disabled}
+        size={18}
       />
     </td>
   );

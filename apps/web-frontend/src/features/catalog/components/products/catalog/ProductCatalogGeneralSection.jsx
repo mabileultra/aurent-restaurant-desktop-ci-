@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BaseSelect } from '../../../../../components/ui';
+import { BaseSelect, BaseCheckbox } from '../../../../../components/ui';
 import { stockUnitsForSaleType } from '../../../../../utils/unitConfig';
 import {
   inputCls,
@@ -128,11 +128,11 @@ export default function ProductCatalogGeneralSection({
           {showRetailFlags ? (
             <>
               <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                <input type="checkbox" {...register('soldIndividually')} className="rounded border-slate-400 dark:border-slate-600" />
-                {t('productCatalog.soldByPiece')}
+                <BaseCheckbox {...register('soldIndividually')} size={18} />
+                <span>{t('productCatalog.soldByPiece')}</span>
               </label>
               <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                <input type="checkbox" {...register('markedProduct')} className="rounded border-slate-400 dark:border-slate-600" />
+                <BaseCheckbox {...register('markedProduct')} size={18} />
                 <span>
                   {t('productCatalog.marked')}
                   <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
@@ -144,8 +144,8 @@ export default function ProductCatalogGeneralSection({
           ) : null}
           {showSection('activeField') ? (
             <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-              <input type="checkbox" {...register('active')} className="rounded border-slate-400 dark:border-slate-600" />
-              {t('productCatalog.active')}
+              <BaseCheckbox {...register('active')} size={18} />
+              <span>{t('productCatalog.active')}</span>
             </label>
           ) : (
             <input type="hidden" {...register('active')} />

@@ -1,5 +1,5 @@
 import { Save } from 'lucide-react';
-import { BaseButton, BaseInput, BaseModal, inputCls } from '../../../../components/ui';
+import { BaseButton, BaseInput, BaseModal, BaseCheckbox, inputCls } from '../../../../components/ui';
 
 export default function PlatformBusinessTypeFormModal({
   t,
@@ -38,13 +38,13 @@ export default function PlatformBusinessTypeFormModal({
           value={modal.form.description}
           onChange={(e) => onFieldChange({ description: e.target.value })}
         />
-        <label className="business-constructor__check">
-          <input
-            type="checkbox"
+        <label className="business-constructor__check flex items-center gap-2 cursor-pointer">
+          <BaseCheckbox
             checked={modal.form.active}
             onChange={(e) => onFieldChange({ active: e.target.checked })}
+            size={18}
           />
-          {t('platform.businessTypes.active')}
+          <span>{t('platform.businessTypes.active')}</span>
         </label>
       </div>
       <div className="business-constructor__modal-actions">

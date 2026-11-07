@@ -25,11 +25,17 @@ export default function AccessRightsCopyTemplateModal({
   useEffect(() => {
     if (!isEffectiveOpen) return;
     const btCandidates = businessTypes.filter((b) => b.code !== 'ALL').map((b) => b.code);
-    const chosenBT = btCandidates.find((c) => c !== targetBT) || targetBT || 'RESTAURANT';
-    const roles = rolesForBusinessType(chosenBT);
-    const chosenRole = roles.find((r) => !(chosenBT === targetBT && r === targetRole)) || roles[0] || 'ADMIN';
-    setSourceBT(chosenBT);
-    setSourceRole(chosenRole);
+    const sameRoleBT = btCandidates.find((c) => c !== targetBT && rolesForBusinessType(c).includes(targetRole));
+    if (sameRoleBT) {
+      setSourceBT(sameRoleBT);
+      setSourceRole(targetRole);
+    } else {
+      const chosenBT = btCandidates.find((c) => c !== targetBT) || targetBT || 'RESTAURANT';
+      const roles = rolesForBusinessType(chosenBT);
+      const chosenRole = roles.find((r) => !(chosenBT === targetBT && r === targetRole)) || roles[0] || 'ADMIN';
+      setSourceBT(chosenBT);
+      setSourceRole(chosenRole);
+    }
   }, [isEffectiveOpen, targetBT, targetRole, businessTypes]);
 
   const availableRoles = useMemo(() => {
@@ -112,7 +118,9 @@ export default function AccessRightsCopyTemplateModal({
               const nextBT = e.target.value;
               setSourceBT(nextBT);
               const nextRoles = rolesForBusinessType(nextBT);
-              if (!nextRoles.includes(sourceRole)) {
+              if (nextRoles.includes(targetRole)) {
+                setSourceRole(targetRole);
+              } else if (!nextRoles.includes(sourceRole)) {
                 setSourceRole(nextRoles[0] || 'ADMIN');
               }
             }}

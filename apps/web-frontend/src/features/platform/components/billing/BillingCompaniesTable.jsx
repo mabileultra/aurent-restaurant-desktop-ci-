@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
-import { PlatformErrorState } from '../../../../components/ui';
+import { PlatformErrorState, BaseCheckbox } from '../../../../components/ui';
 import { STATE_TONE, activeDeferralDay, balanceTone, dueHint, initials } from './billingCollectionsUi';
 import BillingCompanyMobileCard from './BillingCompanyMobileCard';
 import { BulkBar, ExportMenu } from './BillingCompaniesTableBulkBar';
@@ -60,11 +60,11 @@ export default function BillingCompaniesTable({ p }) {
           <thead>
             <tr>
               <th className="bc-table__check">
-                <input
-                  type="checkbox"
+                <BaseCheckbox
                   checked={c.allPageSelected}
                   onChange={c.toggleSelectPage}
-                  aria-label={k('bulk.selectPage')}
+                  ariaLabel={k('bulk.selectPage')}
+                  size={18}
                 />
               </th>
               <th>{k('colCompany')}</th>
@@ -102,11 +102,11 @@ export default function BillingCompaniesTable({ p }) {
                     onClick={() => p.selectCompany(row)}
                   >
                     <td className="bc-table__check" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
+                      <BaseCheckbox
                         checked={c.selectedIds.has(b.companyId)}
                         onChange={() => c.toggleSelect(b.companyId)}
-                        aria-label={b.companyName}
+                        ariaLabel={b.companyName}
+                        size={18}
                       />
                     </td>
                     <td>

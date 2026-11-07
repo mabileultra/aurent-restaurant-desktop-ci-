@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 
 export default function AccessRightsModuleGroupAccordion({
   group,
@@ -68,22 +69,33 @@ export default function AccessRightsModuleGroupAccordion({
           {modules.map((m) => {
             const isEnabled = Boolean(moduleToggles[m.id]);
             return (
-              <label
+              <div
                 key={m.id}
-                className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
+                role="button"
+                tabIndex={0}
+                onClick={() => onToggleModule(m.id, !isEnabled)}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    onToggleModule(m.id, !isEnabled);
+                  }
+                }}
+                className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all select-none ${
                   isEnabled
-                    ? 'border-emerald-300 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/20 text-slate-900 dark:text-slate-100'
+                    ? 'border-emerald-300 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/20 text-slate-900 dark:text-slate-100 shadow-2xs'
                     : 'border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                 }`}
               >
                 <span className="truncate pr-2">{m.name}</span>
-                <input
-                  type="checkbox"
-                  checked={isEnabled}
-                  onChange={(e) => onToggleModule(m.id, e.target.checked)}
-                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
-                />
-              </label>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <AnimatedCheckbox19
+                    checked={isEnabled}
+                    onChange={(e) => onToggleModule(m.id, e.target.checked)}
+                    size={20}
+                    ariaLabel={m.name}
+                  />
+                </div>
+              </div>
             );
           })}
         </div>

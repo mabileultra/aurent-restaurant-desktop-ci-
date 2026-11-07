@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BaseSelect } from '../../../../components/ui';
+import { BaseSelect, BaseCheckbox } from '../../../../components/ui';
 import { userFormInputCls } from '../../utils/userFormModalUtils';
 
 /**
@@ -108,11 +108,10 @@ export default function UserFormStoreSelect({
         ) : (
           filteredStoreOptions.map((s) => (
             <label key={s.id} className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
-              <input
-                type="checkbox"
+              <BaseCheckbox
                 checked={storeIds.has(Number(s.id))}
                 onChange={() => toggleStore(s.id)}
-                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 dark:border-slate-700"
+                size={18}
               />
               <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200'}>
                 {s.name}

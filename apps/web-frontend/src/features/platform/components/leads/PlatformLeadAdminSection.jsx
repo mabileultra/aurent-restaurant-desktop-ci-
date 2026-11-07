@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { RefreshCw, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 
 export default function PlatformLeadAdminSection({
   leadName,
@@ -38,11 +39,10 @@ export default function PlatformLeadAdminSection({
 
       <div className="space-y-2 rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
         <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white cursor-pointer">
-          <input
-            type="checkbox"
+          <BaseCheckbox
             checked={createAdmin}
             onChange={(e) => onCreateAdminChange(e.target.checked)}
-            className="rounded text-emerald-600 focus:ring-emerald-500"
+            size={18}
           />
           <span>Ariza egasini admin qilib yaratish</span>
         </label>

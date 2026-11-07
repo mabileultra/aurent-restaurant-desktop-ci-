@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { platformReferenceBookApi } from '../../../api';
 import { BaseButton, BaseInput, BaseModal, PageLayout, inputCls } from '../../../components/ui';
 import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
+import PlatformReferenceBookModal from '../components/PlatformReferenceBookModal';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { entriesToText, parseEntriesText } from '../utils/businessTypeUtils';
 
@@ -166,63 +167,16 @@ export default function PlatformReferenceBooksPage() {
         </table>
       </div>
 
-      {modal ? (
-        <BaseModal
-          onClose={() => setModal(null)}
-          title={modal.mode === 'create' ? t('platform.referenceBooks.add') : t('common.edit')}
-          size="lg"
-        >
-          <div className="space-y-3">
-            {modal.mode === 'create' ? (
-              <BaseInput
-                placeholder={t('platform.referenceBooks.codePh')}
-                value={form.code}
-                onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
-              />
-            ) : (
-              <p className="text-sm text-slate-500">
-                {t('platform.referenceBooks.colCode')}
-                :
-                {' '}
-                <span className="font-mono">{form.code}</span>
-              </p>
-            )}
-            <BaseInput
-              placeholder={t('platform.referenceBooks.namePh')}
-              value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-            />
-            <BaseInput
-              placeholder={t('platform.referenceBooks.descriptionPh')}
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-            />
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={form.active}
-                onChange={(e) => setForm((prev) => ({ ...prev, active: e.target.checked }))}
-              />
-              {t('platform.referenceBooks.active')}
-            </label>
-            <textarea
-              className={inputCls}
-              rows={6}
-              placeholder={t('platform.referenceBooks.entriesPh')}
-              value={form.entriesText}
-              onChange={(e) => setForm((prev) => ({ ...prev, entriesText: e.target.value }))}
-            />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <BaseButton variant="secondary" onClick={() => setModal(null)}>
-              {t('common.cancel')}
-            </BaseButton>
-            <BaseButton onClick={save} disabled={saveMutation.isPending}>
-              {t('common.save')}
-            </BaseButton>
-          </div>
-        </BaseModal>
-      ) : null}
+      <PlatformReferenceBookModal
+        modal={modal}
+        setModal={setModal}
+        form={form}
+        setForm={setForm}
+        save={save}
+        isPending={saveMutation.isPending}
+        t={t}
+        inputCls={inputCls}
+      />
     </PageLayout>
   );
 }

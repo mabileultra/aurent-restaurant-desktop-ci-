@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 
 /**
  * Role template drawer footer: save + applyToExisting.
@@ -15,11 +16,11 @@ export default function RoleTemplateDrawerFooter({
     <footer className="border-t border-slate-100 bg-slate-50/90 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-850 shrink-0">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-          <input
-            type="checkbox"
+          <AnimatedCheckbox19
             checked={Boolean(applyToExisting)}
             onChange={(e) => onApplyToExistingChange?.(e.target.checked)}
-            className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-500"
+            size={18}
+            ariaLabel="Istisnosiz xodimlarga qo‘llash"
           />
           <span className="font-medium">
             Istisnosiz xodimlarga qo‘llash

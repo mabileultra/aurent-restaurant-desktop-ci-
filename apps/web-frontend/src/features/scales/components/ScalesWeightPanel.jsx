@@ -1,5 +1,6 @@
 import { encodeWeightBarcode } from '../utils/weightBarcode';
 import { fmtMoney } from '../../../utils/formatMoney';
+import { BaseCheckbox } from '../../../components/ui';
 
 export default function ScalesWeightPanel({ t, product, weightKg, stable, printing, lastBarcode, onPrint, autoPrint }) {
   const kg = Number(weightKg);
@@ -32,9 +33,9 @@ export default function ScalesWeightPanel({ t, product, weightKg, stable, printi
       </p>
 
       <div className="scales-weight-panel__actions">
-        <label className="scales-weight-panel__auto">
-          <input type="checkbox" checked={autoPrint} onChange={(e) => onPrint?.({ toggleAuto: e.target.checked })} />
-          {t('scales.autoPrint')}
+        <label className="scales-weight-panel__auto flex items-center gap-2 cursor-pointer">
+          <BaseCheckbox checked={autoPrint} onChange={(e) => onPrint?.({ toggleAuto: e.target.checked })} size={16} />
+          <span>{t('scales.autoPrint')}</span>
         </label>
         <button
           type="button"

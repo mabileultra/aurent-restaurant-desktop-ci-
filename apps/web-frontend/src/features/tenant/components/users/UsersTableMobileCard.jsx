@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import { USER_ROLE_BADGE } from '../../constants';
 import { sanitizeUserDisplayName } from '../../utils/userFormValidationUtils';
@@ -59,13 +60,14 @@ export default function UsersTableMobileCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect?.(user.id)}
-            aria-label={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
-            className="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 cursor-pointer"
-          />
+          <div className="mt-0.5">
+            <BaseCheckbox
+              checked={isSelected}
+              onChange={() => onToggleSelect?.(user.id)}
+              ariaLabel={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
+              size={18}
+            />
+          </div>
           <div className="min-w-0">
             <p className="font-semibold text-slate-900 dark:text-white truncate text-sm">{displayName}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">

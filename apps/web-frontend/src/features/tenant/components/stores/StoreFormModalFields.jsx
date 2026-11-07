@@ -1,5 +1,5 @@
 import React from 'react';
-import { BaseInput, BaseSelect } from '../../../../components/ui';
+import { BaseInput, BaseSelect, BaseCheckbox } from '../../../../components/ui';
 import RegionDistrictFields from '../../../shared/geo/RegionDistrictFields';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 import { formatUzPhone, digitsAfter998 } from '../../../../utils/phoneUz';
@@ -123,11 +123,13 @@ export default function StoreFormModalFields({
         placeholder="+998 (90) 123-45-67"
       />
 
-      <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-        <input type="checkbox" {...register('active')} className="rounded border-slate-300" />
-        {showCompanySelect
-          ? t('platform.branchActive', { defaultValue: 'Filial faol' })
-          : t('stores.activeLabel')}
+      <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+        <BaseCheckbox {...register('active')} size={18} />
+        <span>
+          {showCompanySelect
+            ? t('platform.branchActive', { defaultValue: 'Filial faol' })
+            : t('stores.activeLabel')}
+        </span>
       </label>
     </>
   );

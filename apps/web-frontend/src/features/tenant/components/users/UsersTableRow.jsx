@@ -1,5 +1,6 @@
 import React from 'react';
 import { KeyRound } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import { USER_ROLE_BADGE } from '../../constants';
 import { sanitizeUserDisplayName } from '../../utils/userFormValidationUtils';
@@ -53,12 +54,11 @@ export default function UsersTableRow({
       }`}
     >
       <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-        <input
-          type="checkbox"
+        <BaseCheckbox
           checked={isSelected}
           onChange={() => onToggleSelect?.(user.id)}
-          aria-label={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
-          className="rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 cursor-pointer"
+          ariaLabel={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
+          size={18}
         />
       </td>
 

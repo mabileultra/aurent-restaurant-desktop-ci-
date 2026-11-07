@@ -1,6 +1,6 @@
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
-import { BaseButton, BaseInput, BaseTable, BaseSelect, ErrorBanner, PageLayout } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseTable, BaseSelect, BaseCheckbox, ErrorBanner, PageLayout } from '../../../components/ui';
 import { useFinanceSyncPage } from '../hooks/sync/useFinanceSyncPage';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
@@ -50,17 +50,17 @@ export default function FinanceSyncPage() {
             <div className="finance-filters__field">
               <BaseInput type="date" label={p.t('finance.reports.to')} value={p.backfillTo} onChange={(e) => p.setBackfillTo(e.target.value)} />
             </div>
-            <label className="finance-form__label finance-form__label--checkbox">
-              <input type="checkbox" checked={p.backfillZReports} onChange={(e) => p.setBackfillZReports(e.target.checked)} />
-              {p.t('finance.sync.backfillZReports')}
+            <label className="finance-form__label finance-form__label--checkbox flex items-center gap-2 cursor-pointer">
+              <BaseCheckbox checked={p.backfillZReports} onChange={(e) => p.setBackfillZReports(e.target.checked)} size={18} />
+              <span>{p.t('finance.sync.backfillZReports')}</span>
             </label>
-            <label className="finance-form__label finance-form__label--checkbox">
-              <input type="checkbox" checked={p.backfillPurchases} onChange={(e) => p.setBackfillPurchases(e.target.checked)} />
-              {p.t('finance.sync.backfillPurchases')}
+            <label className="finance-form__label finance-form__label--checkbox flex items-center gap-2 cursor-pointer">
+              <BaseCheckbox checked={p.backfillPurchases} onChange={(e) => p.setBackfillPurchases(e.target.checked)} size={18} />
+              <span>{p.t('finance.sync.backfillPurchases')}</span>
             </label>
-            <label className="finance-form__label finance-form__label--checkbox">
-              <input type="checkbox" checked={p.backfillSales} onChange={(e) => p.setBackfillSales(e.target.checked)} />
-              {p.t('finance.sync.backfillSales')}
+            <label className="finance-form__label finance-form__label--checkbox flex items-center gap-2 cursor-pointer">
+              <BaseCheckbox checked={p.backfillSales} onChange={(e) => p.setBackfillSales(e.target.checked)} size={18} />
+              <span>{p.t('finance.sync.backfillSales')}</span>
             </label>
             <BaseButton
               onClick={() => p.backfillMutation.mutate()}

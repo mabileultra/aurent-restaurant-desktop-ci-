@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 
 /**
  * Xodim huquqlarini tahrirlash oynasidagi guruhlar va modullar ro'yxati (SRP)
@@ -39,12 +40,14 @@ export default function RoleEmployeeEditGroupList({
                       <span className="text-xs font-medium text-slate-800 dark:text-slate-200">{m.name}</span>
                       <span className="block text-[10px] text-slate-400">Rol bo‘yicha: {isDefault ? 'yoqilgan' : 'o‘chirilgan'}</span>
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => onToggle?.(m.id)}
-                      className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                    />
+                    <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                      <AnimatedCheckbox19
+                        checked={isChecked}
+                        onChange={() => onToggle?.(m.id)}
+                        size={18}
+                        ariaLabel={m.name}
+                      />
+                    </div>
                   </label>
                 );
               })}

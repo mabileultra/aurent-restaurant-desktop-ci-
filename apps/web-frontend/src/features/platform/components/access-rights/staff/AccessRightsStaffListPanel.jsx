@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 import AccessRightsStaffCardItem from './AccessRightsStaffCardItem';
 import AccessRightsStaffBulkBar from './AccessRightsStaffBulkBar';
 
@@ -64,11 +65,15 @@ export default function AccessRightsStaffListPanel({
       {/* Select all checkbox */}
       <div className="flex items-center justify-between px-1 py-0.5 text-xs text-slate-600 dark:text-slate-400">
         <label className="flex items-center gap-2 cursor-pointer font-medium">
-          <input
-            type="checkbox"
+          <AnimatedCheckbox19
             checked={allVisibleChecked}
             onChange={(e) => onToggleCheckAll(e.target.checked)}
-            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
+            size={18}
+            ariaLabel={
+              isRu
+                ? `Выбрать всех (${users.length})`
+                : `Ko‘rinayotgan ${users.length} xodimni tanlash`
+            }
           />
           <span>
             {isRu

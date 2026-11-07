@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { platformModuleAccessApi } from '../../../../../api';
+import { getScopeForRole } from '../utils/roleDefaultModules';
 
 export function useAccessRightsCopyActions({ refetchAll, isRu }) {
   const qc = useQueryClient();
@@ -55,8 +56,20 @@ export function useAccessRightsCopyActions({ refetchAll, isRu }) {
     try {
       const res = await platformModuleAccessApi.getRoleTemplate(sourceBT, sourceRole);
       const sourceModules = res?.data?.modules || {};
+      const targetScope = getScopeForRole(targetRole, targetBT);
+      const scopedModules = {};
+      targetScope.forEach((modId) => {
+        if (sourceModules[modId] !== undefined) {
+          scopedModules[modId] = Boolean(sourceModules[modId]);
+        }
+      });
+      if (Object.keys(scopedModules).length === 0) {
+        targetScope.forEach((modId) => {
+          scopedModules[modId] = false;
+        });
+      }
       await platformModuleAccessApi.updateRoleTemplate(targetBT, targetRole, {
-        modules: sourceModules,
+        modules: scopedModules,
       });
       toast.success(
         isRu ? `Шаблон успешно скопирован в ${targetRole}` : 'Shablon muvaffaqiyatli nusxalandi'
@@ -66,10 +79,14 @@ export function useAccessRightsCopyActions({ refetchAll, isRu }) {
       setIsCopyTemplateOpen(false);
       refetchAll();
     } catch (err) {
-      toast.error(
-        err?.response?.data?.message ||
-          (isRu ? 'Ошибка при копировании шаблона' : 'Shablon nusxasini saqlashda xatolik')
-      );
+      const rawMsg = err?.response?.data?.message || err?.message || '';
+      let errorMsg = isRu ? 'Ошибка при копировании шаблона' : 'Shablon nusxasini saqlashda xatolik';
+      if (rawMsg.includes('not in role scope')) {
+        errorMsg = isRu ? 'Модуль не входит в область прав данной роли' : 'Modul ushbu rol doirasiga kirmaydi';
+      } else if (rawMsg) {
+        errorMsg = rawMsg;
+      }
+      toast.error(errorMsg);
     } finally {
       setIsCopyingTemplate(false);
     }

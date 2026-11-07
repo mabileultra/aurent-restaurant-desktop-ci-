@@ -1,6 +1,7 @@
 import { MoreVertical } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
+import { BaseCheckbox } from '../../../../components/ui';
 import { fmtMoney } from '../../../../utils/formatMoney';
 import CreditAdvanceCell from './CreditAdvanceCell';
 import PaymentIcon from './PaymentIcon';
@@ -35,12 +36,11 @@ export default function SalesLedgerTable({
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
               <th className="w-10 px-3 py-3">
-                <input
+                <BaseCheckbox
                   ref={selectAllRef}
-                  type="checkbox"
                   checked={allPageSelected}
                   onChange={toggleSelectAllPage}
-                  className="rounded border-slate-300"
+                  size={18}
                 />
               </th>
               <AdminTableNoIdHeaders />
@@ -73,11 +73,10 @@ export default function SalesLedgerTable({
               rows.map((row, index) => (
                 <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-3 py-2">
-                    <input
-                      type="checkbox"
+                    <BaseCheckbox
                       checked={selectedIds.has(row.id)}
                       onChange={() => toggleSelect(row.id)}
-                      className="rounded border-slate-300"
+                      size={18}
                     />
                   </td>
                   <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />

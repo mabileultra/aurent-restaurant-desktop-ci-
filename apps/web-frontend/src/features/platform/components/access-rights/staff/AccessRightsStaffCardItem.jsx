@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 import AccessRightsAvatar from '../shared/AccessRightsAvatar';
 import { resolveRoleLabel, resolveBusinessTypeName } from '../utils/accessRightsCatalogUtils';
 
@@ -26,16 +27,14 @@ export default function AccessRightsStaffCardItem({
       }`}
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => {
-            e.stopPropagation();
-            onCheck(e.target.checked);
-          }}
-          className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer shrink-0"
-        />
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <AnimatedCheckbox19
+            checked={isChecked}
+            onChange={(e) => onCheck(e.target.checked)}
+            size={18}
+            ariaLabel={`${user.fullName || user.username}ni tanlash`}
+          />
+        </div>
 
         <AccessRightsAvatar name={user.fullName || user.username} size="md" />
 

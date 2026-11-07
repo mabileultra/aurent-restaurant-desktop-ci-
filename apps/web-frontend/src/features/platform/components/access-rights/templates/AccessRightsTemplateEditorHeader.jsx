@@ -16,7 +16,7 @@ export default function AccessRightsTemplateEditorHeader({
   onViewStaff,
   onCopyFromOther,
 }) {
-  const isChangedTemplate = isModified || templateSource === 'TEMPLATE';
+  const isChangedTemplate = Boolean(isModified);
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -34,17 +34,17 @@ export default function AccessRightsTemplateEditorHeader({
             }`}
           >
             {isChangedTemplate
-              ? (isRu ? 'Изменённый шаблон' : 'O‘zgartirilgan andoza')
+              ? (isRu ? 'Изменённый шаблон' : 'O‘zgartirilgan shablon')
               : (isRu ? 'Стандартный (система)' : 'Standart (tizim)')}
           </span>
         </div>
-        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-2">
+        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
             {enabledModulesCount} / {totalModulesCount} {isRu ? 'модулей включено' : 'modul yoqilgan'}
           </span>
-          <span>·</span>
+          <span className="text-slate-400 dark:text-slate-600 font-bold select-none">·</span>
           <span className="whitespace-nowrap">{employeesCount} {isRu ? 'сотрудников' : 'xodim'}</span>
-          <span>·</span>
+          <span className="text-slate-400 dark:text-slate-600 font-bold select-none">·</span>
           <span className={`whitespace-nowrap ${exceptionsCount > 0 ? 'text-amber-600 dark:text-amber-400 font-semibold' : ''}`}>
             {exceptionsCount} {isRu ? 'с исключениями' : 'tasida istisno'}
           </span>

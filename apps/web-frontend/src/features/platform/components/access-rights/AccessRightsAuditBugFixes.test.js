@@ -12,6 +12,7 @@ import {
 import AccessRightsStaffCardItem from './staff/AccessRightsStaffCardItem';
 import AccessRightsStaffDetailKPIs from './staff/AccessRightsStaffDetailKPIs';
 import AccessRightsTriStateButton from './shared/AccessRightsTriStateButton';
+import AccessRightsHeader from './AccessRightsHeader';
 
 globalThis.React = React;
 
@@ -130,5 +131,22 @@ describe('Access Rights Audit Bug Fixes', () => {
     expect(html).toContain('Shablon');
     expect(html).toContain('Ruxsat');
     expect(html).toContain('Taqiq');
+  });
+
+  it('AccessRightsHeader renders cleanly without inline scrollIntoView ref callbacks', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(AccessRightsHeader, {
+        activeTab: 'templates',
+        onTabChange: vi.fn(),
+        exceptionsCount: 5,
+        isLoading: false,
+        onRefresh: vi.fn(),
+      })
+    );
+
+    expect(html).toContain('Rol shablonlari');
+    expect(html).toContain('Xodimlar va istisnolar');
+    expect(html).toContain('O‘zgarishlar tarixi');
+    expect(html).toContain('Yangilash');
   });
 });

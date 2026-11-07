@@ -1,4 +1,4 @@
-import { BaseSelect } from '../../../../../components/ui';
+import { BaseSelect, BaseCheckbox } from '../../../../../components/ui';
 import { resolveFieldDisplayState } from '../../../../../utils/businessConfigUtils';
 import { inputCls, ProductCatalogField } from './productCatalogFormUi';
 
@@ -53,9 +53,11 @@ export default function ProductCatalogDynamicFieldsSection({
                 key={field.id ?? field.fieldKey}
                 className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300 md:col-span-2"
               >
-                <input type="checkbox" {...register(name, rules)} className="rounded border-slate-400 dark:border-slate-600" />
-                {field.label}
-                {state.required ? <span className="text-red-500">*</span> : null}
+                <BaseCheckbox {...register(name, rules)} size={18} />
+                <span>
+                  {field.label}
+                  {state.required ? <span className="text-red-500 ml-1">*</span> : null}
+                </span>
               </label>
             );
           }

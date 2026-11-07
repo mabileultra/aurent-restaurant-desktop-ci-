@@ -1,5 +1,6 @@
 import { Eye, EyeOff, Loader, Lock, ArrowRight, UserRound } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { BaseCheckbox } from '../../../components/ui';
 
 export default function LoginForm({
   t,
@@ -70,7 +71,7 @@ export default function LoginForm({
       </div>
 
       <label className="login-form__remember">
-        <input type="checkbox" {...register('remember')} />
+        <BaseCheckbox {...register('remember')} size={18} />
         <span>{t('login.rememberMe')}</span>
       </label>
 

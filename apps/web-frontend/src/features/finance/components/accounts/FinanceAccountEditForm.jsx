@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput, BaseSelect } from '../../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect, BaseCheckbox } from '../../../../components/ui';
 
 export default function FinanceAccountEditForm({
   t,
@@ -22,13 +22,13 @@ export default function FinanceAccountEditForm({
         onChange={(e) => setForm({ ...form, type: e.target.value })}
         options={accountTypes.map((type) => ({ value: type, label: type }))}
       />
-      <label className="finance-form__label finance-form__label--checkbox">
-        <input
-          type="checkbox"
+      <label className="finance-form__label finance-form__label--checkbox flex items-center gap-2 cursor-pointer">
+        <BaseCheckbox
           checked={form.active}
           onChange={(e) => setForm({ ...form, active: e.target.checked })}
+          size={18}
         />
-        {t('common.active')}
+        <span>{t('common.active')}</span>
       </label>
       <div className="finance-form__actions">
         <BaseButton variant="secondary" onClick={onCancel}>{t('common.cancel')}</BaseButton>

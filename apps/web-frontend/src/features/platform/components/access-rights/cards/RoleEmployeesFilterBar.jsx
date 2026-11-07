@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
+import { AnimatedCheckbox19 } from '../../../../../components/ui';
 
 /**
  * Xodimlar ro'yxati panelidagi qidiruv, filtr tugmalari va barchasini tanlash (SRP)
@@ -52,11 +53,11 @@ export default function RoleEmployeesFilterBar({
         </div>
         {onSelectAll && totalCount > 0 && (
           <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium cursor-pointer shrink-0">
-            <input
-              type="checkbox"
+            <AnimatedCheckbox19
               checked={isAllSelected}
               onChange={(e) => onSelectAll(e.target.checked)}
-              className="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              size={16}
+              ariaLabel="Barchasi"
             />
             <span className="text-[11px]">Barchasi</span>
           </label>

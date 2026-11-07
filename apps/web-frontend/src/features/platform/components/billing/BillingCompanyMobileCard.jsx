@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { BaseCheckbox } from '../../../../components/ui';
 import {
   STATE_TONE,
   activeDeferralDay,
@@ -49,12 +50,11 @@ export default function BillingCompanyMobileCard({
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <input
-              type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+            <BaseCheckbox
               checked={c.selectedIds.has(b.companyId)}
               onChange={() => c.toggleSelect(b.companyId)}
-              aria-label={b.companyName}
+              ariaLabel={b.companyName}
+              size={18}
             />
           </div>
           <div className="flex items-center space-x-2 min-w-0">

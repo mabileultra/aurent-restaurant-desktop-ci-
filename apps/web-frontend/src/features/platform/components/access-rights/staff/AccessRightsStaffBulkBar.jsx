@@ -53,16 +53,15 @@ export default function AccessRightsStaffBulkBar({
       )}
 
       <div className="flex flex-wrap items-center gap-2 pt-1">
-        <BaseButton
-          variant="secondary"
-          size="sm"
+        <button
+          type="button"
           disabled={isResetting}
           onClick={handleConfirmReset}
-          className="text-xs font-semibold gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-600 transition-colors disabled:opacity-50 cursor-pointer"
         >
           <RotateCcw size={13} />
           <span>{isRu ? 'Сбросить к шаблону' : 'Shablonga qaytarish'}</span>
-        </BaseButton>
+        </button>
 
         <BaseButton
           variant="primary"

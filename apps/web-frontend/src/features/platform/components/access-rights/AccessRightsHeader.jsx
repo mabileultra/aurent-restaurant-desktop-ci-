@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { KeyRound, RotateCcw, Users, Layers, History, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +11,27 @@ export default function AccessRightsHeader({
 }) {
   const { i18n } = useTranslation();
   const isRu = i18n.language === 'ru';
+  const navRef = useRef(null);
+  const activeTabRef = useRef(null);
+
+  // Faqat activeTab o'zgarganda va faqat nav konteynerining gorizontal scrollini to'g'rilaymiz.
+  // Window yoki butun sahifaning vertikal scrolliga mutlaqo tegmaymiz (sahifa sakrashining oldini oladi).
+  useEffect(() => {
+    const nav = navRef.current;
+    const activeEl = activeTabRef.current;
+    if (!nav || !activeEl) return;
+
+    if (nav.scrollWidth > nav.clientWidth) {
+      const navRect = nav.getBoundingClientRect();
+      const tabRect = activeEl.getBoundingClientRect();
+
+      if (tabRect.left < navRect.left) {
+        nav.scrollLeft += tabRect.left - navRect.left - 16;
+      } else if (tabRect.right > navRect.right) {
+        nav.scrollLeft += tabRect.right - navRect.right + 16;
+      }
+    }
+  }, [activeTab]);
 
   const tabs = [
     { id: 'templates', label: isRu ? 'Шаблоны ролей' : 'Rol shablonlari', icon: Layers },
@@ -75,7 +96,10 @@ export default function AccessRightsHeader({
         )}
       </div>
 
-      <nav className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 -mb-[17px] overflow-x-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <nav
+        ref={navRef}
+        className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 -mb-[17px] overflow-x-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -83,13 +107,9 @@ export default function AccessRightsHeader({
             <button
               key={tab.id}
               type="button"
-              ref={(el) => {
-                if (isActive && el && typeof el.scrollIntoView === 'function') {
-                  el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
-                }
-              }}
+              ref={isActive ? activeTabRef : null}
               onClick={() => onTabChange(tab.id)}
-              className={`flex items-center gap-2 py-3 px-3.5 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 py-3 px-3.5 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 rounded-t-lg transition-all ${
                 isActive
                   ? 'border-emerald-700 text-emerald-700 dark:border-emerald-400 dark:text-emerald-300'
                   : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'

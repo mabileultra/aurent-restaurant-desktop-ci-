@@ -20,6 +20,7 @@ export default function AccessRightsHistoryFiltersBar({
     { id: 'exception', label: isRu ? `Исключение ${counts.exception ?? 0}` : `Istisno ${counts.exception ?? 0}` },
     { id: 'copy', label: isRu ? `Копия ${counts.copy ?? 0}` : `Nusxa ${counts.copy ?? 0}` },
     { id: 'bulk', label: isRu ? `Массово ${counts.bulk ?? 0}` : `Ommaviy ${counts.bulk ?? 0}` },
+    { id: 'revert', label: isRu ? `Отмена ${counts.revert ?? 0}` : `Qaytarish ${counts.revert ?? 0}` },
   ];
 
   const presets = [

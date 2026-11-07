@@ -85,23 +85,30 @@ export function useAccessRightsV2Data() {
   const selectedStats = statsByCode.get(String(effectiveBT === 'ALL' ? selectedBT : effectiveBT || '').toUpperCase()) || null;
 
   const users = useMemo(() => {
-    return rawUsers.map((u) => {
-      const company = u.companyId ? companiesMap.get(u.companyId) : null;
-      const btCode = u.businessType || company?.businessType || (u.companyId ? null : 'PLATFORM_STAFF') || (selectedBT === 'ALL' ? 'RESTAURANT' : selectedBT);
-      return {
-        ...u,
-        businessType: btCode,
-        businessTypeName: resolveBusinessTypeName(btCode, t),
-        companyName: u.companyName || company?.name || '',
-      };
-    });
-  }, [rawUsers, companiesMap, selectedBT, t]);
+    return rawUsers
+      .filter((u) => {
+        const isPlatform = !u.companyId || u.role === 'PLATFORM_ADMIN' || u.role === 'PLATFORM_ANALYST' || u.businessType === 'PLATFORM_STAFF';
+        if (effectiveBT === 'PLATFORM_STAFF') return isPlatform;
+        if (effectiveBT !== 'ALL' && isPlatform) return false;
+        return true;
+      })
+      .map((u) => {
+        const company = u.companyId ? companiesMap.get(u.companyId) : null;
+        const btCode = u.businessType || company?.businessType || (u.companyId ? null : 'PLATFORM_STAFF') || (selectedBT === 'ALL' ? 'RESTAURANT' : selectedBT);
+        return {
+          ...u,
+          businessType: btCode,
+          businessTypeName: resolveBusinessTypeName(btCode, t),
+          companyName: u.companyName || company?.name || '',
+        };
+      });
+  }, [rawUsers, companiesMap, effectiveBT, selectedBT, t]);
 
   useEffect(() => {
-    if (selectedBT && typeof usersTotalElements === 'number' && isUnfilteredQuery) {
-      setVisitedCounts((prev) => ({ ...prev, [selectedBT]: usersTotalElements }));
+    if (selectedBT && isUnfilteredQuery) {
+      setVisitedCounts((prev) => ({ ...prev, [selectedBT]: users.length }));
     }
-  }, [selectedBT, usersTotalElements, isUnfilteredQuery]);
+  }, [selectedBT, users.length, isUnfilteredQuery]);
 
   const catalogMap = useMemo(() => buildCatalogMap(rawCatalog, t), [rawCatalog, t]);
   const gridBT = effectiveBT === 'ALL' ? selectedBT : effectiveBT;
