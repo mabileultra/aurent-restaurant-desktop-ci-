@@ -1,11 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import AccessRightsStaffCardItem from './AccessRightsStaffCardItem';
 import AccessRightsStaffBulkBar from './AccessRightsStaffBulkBar';
 
 export default function AccessRightsStaffListPanel({
   users = [],
   totalCount = 0,
-  filterTab = 'all', // 'all' | 'custom' | 'new'
+  filterTab = 'all',
   onFilterTabChange,
   exceptionsCount = 0,
   newCount = 0,
@@ -19,24 +20,31 @@ export default function AccessRightsStaffListPanel({
   onClearChecked,
   isResettingBulk = false,
 }) {
-  const allVisibleChecked = users.length > 0 && users.every((u) => checkedUserIds.has(u.userId || u.id));
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
+  const allVisibleChecked =
+    users.length > 0 && users.every((u) => checkedUserIds.has(u.userId || u.id));
+
+  const checkedUsers = users.filter((u) => checkedUserIds.has(u.userId || u.id));
+  const isSameRole = new Set(checkedUsers.map((u) => u.role)).size <= 1;
 
   return (
-    <aside className="w-full lg:w-[340px] shrink-0 space-y-3">
+    <aside className="w-full lg:w-[340px] shrink-0 space-y-3 relative flex flex-col">
       {/* Header & count */}
       <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-        <span>Xodimlar</span>
-        <span className="text-[11px] font-normal text-slate-500">
-          {users.length} / {totalCount} ko‘rsatildi
+        <span>{isRu ? 'Сотрудники' : 'Xodimlar'}</span>
+        <span className="text-xs font-normal text-slate-500">
+          {users.length} / {totalCount} {isRu ? 'показано' : 'ko‘rsatildi'}
         </span>
       </div>
 
       {/* Filter chips: Hammasi, Istisnoli, Yangi */}
       <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
         {[
-          { id: 'all', label: `Hammasi ${totalCount}` },
-          { id: 'custom', label: `Istisnoli ${exceptionsCount}` },
-          { id: 'new', label: `Yangi ${newCount}` },
+          { id: 'all', label: isRu ? `Все ${totalCount}` : `Hammasi ${totalCount}` },
+          { id: 'custom', label: isRu ? `Искл. ${exceptionsCount}` : `Istisnoli ${exceptionsCount}` },
+          { id: 'new', label: isRu ? `Новые ${newCount}` : `Yangi ${newCount}` },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -62,15 +70,19 @@ export default function AccessRightsStaffListPanel({
             onChange={(e) => onToggleCheckAll(e.target.checked)}
             className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
           />
-          <span>Ko‘rinayotgan {users.length} xodimni tanlash</span>
+          <span>
+            {isRu
+              ? `Выбрать всех (${users.length})`
+              : `Ko‘rinayotgan ${users.length} xodimni tanlash`}
+          </span>
         </label>
       </div>
 
       {/* User list */}
-      <div className="space-y-2 max-h-[calc(100vh-340px)] overflow-y-auto pr-1">
+      <div className="space-y-2 max-h-[calc(100vh-340px)] overflow-y-auto pr-1 flex-1">
         {users.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-500 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-            Hech qanday xodim topilmadi
+            {isRu ? 'Сотрудники не найдены' : 'Hech qanday xodim topilmadi'}
           </div>
         ) : (
           users.map((user) => {
@@ -92,6 +104,7 @@ export default function AccessRightsStaffListPanel({
       {/* Bulk action bar */}
       <AccessRightsStaffBulkBar
         selectedCount={checkedUserIds.size}
+        isSameRole={isSameRole}
         onResetToTemplate={onResetBulk}
         onApplyCopy={onCopyBulk}
         onClearSelection={onClearChecked}

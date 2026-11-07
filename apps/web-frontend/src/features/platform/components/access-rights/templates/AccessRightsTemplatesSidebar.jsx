@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Search, ChevronDown, ChevronRight, Users, Shield } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function AccessRightsTemplatesSidebar({
   groupedTemplates = [],
@@ -7,13 +8,22 @@ export default function AccessRightsTemplatesSidebar({
   selectedRole,
   onSelectRole,
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const [search, setSearch] = useState('');
   const [collapsedBTs, setCollapsedBTs] = useState({});
-  const activeRoleRef = React.useRef(null);
+  const sidebarContainerRef = useRef(null);
+  const activeRoleRef = useRef(null);
 
-  React.useEffect(() => {
-    if (activeRoleRef.current) {
-      activeRoleRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  useEffect(() => {
+    if (activeRoleRef.current && sidebarContainerRef.current) {
+      const container = sidebarContainerRef.current;
+      const element = activeRoleRef.current;
+      const elTop = element.offsetTop - container.offsetTop;
+      if (elTop < container.scrollTop || elTop > container.scrollTop + container.clientHeight - 60) {
+        container.scrollTo({ top: Math.max(0, elTop - 40), behavior: 'smooth' });
+      }
     }
   }, [selectedBT, selectedRole]);
 
@@ -36,8 +46,10 @@ export default function AccessRightsTemplatesSidebar({
   return (
     <aside className="w-full lg:w-80 shrink-0 space-y-3">
       <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-        <span>Shablonlar</span>
-        <span className="text-[11px] font-normal text-slate-500">faoliyat turi › rol</span>
+        <span>{isRu ? 'Шаблоны' : 'Shablonlar'}</span>
+        <span className="text-xs font-normal text-slate-500">
+          {isRu ? 'тип бизнеса › роль' : 'faoliyat turi › rol'}
+        </span>
       </div>
 
       <div className="relative">
@@ -46,12 +58,12 @@ export default function AccessRightsTemplatesSidebar({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rol yoki faoliyat turi..."
+          placeholder={isRu ? 'Поиск роли или типа бизнеса...' : 'Rol yoki faoliyat turi...'}
           className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
 
-      <div className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+      <div ref={sidebarContainerRef} className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
         {filteredGroups.map((bt) => {
           const isSelectedBT = selectedBT === bt.code;
           const isCollapsed = Boolean(collapsedBTs[bt.code]) && !isSelectedBT && !cleanSearch;
@@ -66,8 +78,8 @@ export default function AccessRightsTemplatesSidebar({
                   {isCollapsed ? <ChevronRight size={13} className="text-slate-400" /> : <ChevronDown size={13} className="text-slate-400" />}
                   <span>{bt.name}</span>
                 </div>
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                  {bt.totalEmployees || 0} xodim
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {bt.totalEmployees || 0} {isRu ? 'сотр.' : 'xodim'}
                 </span>
               </button>
 
@@ -91,19 +103,19 @@ export default function AccessRightsTemplatesSidebar({
                           <div className="font-bold flex items-center gap-1.5">
                             <span>{r.name}</span>
                           </div>
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            <span>{r.totalEmployees || 0} xodim</span>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            <span>{r.totalEmployees || 0} {isRu ? 'сотр.' : 'xodim'}</span>
                             {r.exceptionCount > 0 ? (
                               <span className="text-amber-600 dark:text-amber-400 ml-1">
-                                · {r.exceptionCount} ta istisno
+                                · {r.exceptionCount} {isRu ? 'искл.' : 'ta istisno'}
                               </span>
                             ) : (
-                              <span className="ml-1 text-slate-400">· istisnosiz</span>
+                              <span className="ml-1 text-slate-400">· {isRu ? 'без искл.' : 'istisnosiz'}</span>
                             )}
                           </div>
                         </div>
 
-                        <span className={`text-[11px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${
                           isSelected
                             ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'

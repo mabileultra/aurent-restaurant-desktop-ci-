@@ -10,11 +10,10 @@ import {
   buildCatalogGroups,
   buildCatalogMap,
   resolveBusinessTypeName,
+  computeNetworkStats,
 } from '../utils/accessRightsCatalogUtils';
 import { buildRoleSummaries } from '../utils/accessRightsRoleSummaryUtils';
-import { useRoleDefaultsQuery } from './useRoleDefaultsQuery';
 import { useAccessRightsCompanies, useAccessRightsCompaniesMap } from './useAccessRightsCompanies';
-import { useAccessRightsUnconfiguredCount } from './useAccessRightsUnconfiguredCount';
 import { useAccessRightsStats } from './useAccessRightsStats';
 
 const MAX_USERS_PAGE_SIZE = 250;
@@ -26,6 +25,7 @@ export function useAccessRightsV2Data() {
   const canManagePlatformStaff = isSuperAdminRole(userRole);
 
   const [selectedBT, setSelectedBTState] = useState('RESTAURANT');
+  const [selectedRole, setSelectedRole] = useState('ALL');
   const [searchBT, setSearchBT] = useState('ALL');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +46,7 @@ export function useAccessRightsV2Data() {
       setSelectedBTState(bt);
     }
     setSelectedCompanyId('');
+    setSelectedRole('ALL');
   }, [isSearching]);
 
   const { data: rawBusinessTypes = [], isLoading: btLoading, isError: btError, error: btErrorObj, refetch: refetchBT } =
@@ -56,11 +57,10 @@ export function useAccessRightsV2Data() {
 
   const { companies, companiesLoading } = useAccessRightsCompanies(isPlatformStaff ? '' : effectiveBT);
   const companiesMap = useAccessRightsCompaniesMap();
-  const unconfiguredCount = useAccessRightsUnconfiguredCount({ selectedBT: effectiveBT, selectedCompanyId, isPlatformStaff });
   const { statsByCode, refetchStats } = useAccessRightsStats();
 
   const { data: usersResponse = { content: [], totalElements: 0 }, isLoading: usersLoading, isError: usersError, error: usersErrorObj, refetch: refetchUsers } = useQuery({
-    queryKey: ['access-v2-users', effectiveBT, selectedCompanyId, debouncedSearch, accessFilter],
+    queryKey: ['access-v2-users', effectiveBT, selectedCompanyId, debouncedSearch, accessFilter, selectedRole],
     queryFn: async () => {
       const queryBT = (isPlatformStaff || effectiveBT === 'ALL') ? undefined : effectiveBT;
       const res = await platformModuleAccessApi.listUsers({
@@ -68,6 +68,7 @@ export function useAccessRightsV2Data() {
         companyId: isPlatformStaff ? undefined : (selectedCompanyId || undefined),
         platformOnly: isPlatformStaff || undefined,
         search: debouncedSearch || undefined,
+        role: selectedRole !== 'ALL' ? selectedRole : undefined,
         accessFilter: accessFilter !== 'all' ? accessFilter : undefined,
         size: MAX_USERS_PAGE_SIZE,
       });
@@ -95,8 +96,6 @@ export function useAccessRightsV2Data() {
       };
     });
   }, [rawUsers, companiesMap, selectedBT, t]);
-
-  const roleDefaultsFromBackend = useRoleDefaultsQuery(rawUsers);
 
   useEffect(() => {
     if (selectedBT && typeof usersTotalElements === 'number' && isUnfilteredQuery) {
@@ -141,28 +140,28 @@ export function useAccessRightsV2Data() {
     return list;
   }, [rawBusinessTypes, canManagePlatformStaff, visitedCounts, effectiveBT, usersTotalElements, isUnfilteredQuery, isSearching, statsByCode, currentLang, t]);
 
+  const networkStats = useMemo(() => computeNetworkStats(statsByCode), [statsByCode]);
+
   const roles = useMemo(() => {
     return buildRoleSummaries({
       businessType: gridBT,
       users,
       rawCatalog,
-      roleDefaultsFromBackend,
+      roleDefaultsFromBackend: {},
       selectedStats,
       isUnfilteredQuery,
       t,
     });
-  }, [gridBT, users, rawCatalog, roleDefaultsFromBackend, selectedStats, isUnfilteredQuery, t]);
-
-  const isTruncated = rawUsers.length >= MAX_USERS_PAGE_SIZE && usersTotalElements > rawUsers.length;
+  }, [gridBT, users, rawCatalog, selectedStats, isUnfilteredQuery, t]);
 
   const handleResetUser = async (userId) => {
     try {
       await platformModuleAccessApi.resetUser(userId);
-      toast.success(currentLang === 'ru' ? 'Пользователь успешно сброшен к шаблону' : 'Xodim muvaffaqiyatli rol shabloniga qaytarildi');
+      toast.success(currentLang === 'ru' ? 'Пользователь сброшен к шаблону' : 'Xodim rol shabloniga qaytarildi');
       refetchUsers();
       refetchStats();
     } catch {
-      toast.error(currentLang === 'ru' ? 'Ошибка при сбросе пользователя' : 'Xodimni qaytarishda xatolik yuz berdi');
+      toast.error(currentLang === 'ru' ? 'Ошибка при сбросе' : 'Xodimni qaytarishda xatolik yuz berdi');
     }
   };
 
@@ -175,14 +174,13 @@ export function useAccessRightsV2Data() {
 
   return {
     selectedBT: effectiveBT, setSelectedBT, selectedCompanyId, setSelectedCompanyId,
-    searchTerm, setSearchTerm, accessFilter, setAccessFilter,
-    unconfiguredCount, isPlatformStaff, canManagePlatformStaff,
-    companies, companiesLoading, companiesMap, businessTypes, roles,
-    users, rawUsers: users, rawCatalog, moduleGroups, catalogMap,
+    selectedRole, setSelectedRole, searchTerm, setSearchTerm, accessFilter, setAccessFilter,
+    isPlatformStaff, canManagePlatformStaff, companies, companiesLoading, companiesMap,
+    businessTypes, roles, users, rawUsers: users, rawCatalog, moduleGroups, catalogMap,
+    statsByCode, networkStats,
     isLoading: btLoading || catalogLoading || usersLoading,
     isError: btError || catalogError || usersError,
     error: btErrorObj || catalogErrorObj || usersErrorObj,
-    isTruncated, totalCount: usersTotalElements,
-    refetchAll, handleResetUser,
+    totalCount: usersTotalElements, refetchAll, handleResetUser,
   };
 }

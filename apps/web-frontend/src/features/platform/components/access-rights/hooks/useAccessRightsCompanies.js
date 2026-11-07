@@ -1,24 +1,32 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { loadCompaniesOptionsPage } from '../../../utils/loadCompaniesOptionsPage';
 
 /**
  * Super Admin kirish huquqlari sahifasida kompaniyalar ro'yxatini yuklash hooki (SRP)
+ * Barcha kompaniyalar bitta keshlangan so'rov bilan yuklanadi, takroriy so'rovlar oldi olinadi.
  */
 export function useAccessRightsCompanies(businessType) {
   const isAll = !businessType || businessType === 'ALL';
   const {
-    data: companies = [],
+    data: allCompanies = [],
     isLoading: companiesLoading,
     isError: companiesError,
     refetch: refetchCompanies,
   } = useQuery({
-    queryKey: isAll ? ['access-v2-all-companies'] : ['access-v2-companies', businessType],
-    queryFn: () => (isAll ? loadCompaniesOptionsPage() : loadCompaniesOptionsPage({ businessType })),
-    staleTime: isAll ? 300_000 : 120_000,
+    queryKey: ['access-v2-all-companies'],
+    queryFn: () => loadCompaniesOptionsPage(),
+    staleTime: 300_000,
   });
+
+  const companies = useMemo(() => {
+    if (isAll) return allCompanies;
+    return allCompanies.filter((c) => String(c.businessType || '').toUpperCase() === String(businessType).toUpperCase());
+  }, [allCompanies, isAll, businessType]);
 
   return {
     companies,
+    allCompanies,
     companiesLoading,
     companiesError,
     refetchCompanies,
@@ -27,7 +35,6 @@ export function useAccessRightsCompanies(businessType) {
 
 /**
  * Barcha kompaniyalar xaritasi (id -> company) hooki (SRP)
- * Global qidiruvda har bir xodimning faoliyat turini (businessType) aniqlash uchun ishlatiladi
  */
 export function useAccessRightsCompaniesMap() {
   const { data: allCompanies = [] } = useQuery({
@@ -36,8 +43,11 @@ export function useAccessRightsCompaniesMap() {
     staleTime: 300_000,
   });
 
-  return allCompanies.reduce((acc, c) => {
-    if (c && c.id != null) acc.set(c.id, c);
-    return acc;
-  }, new Map());
+  return useMemo(() => {
+    const map = new Map();
+    allCompanies.forEach((c) => {
+      if (c && c.id != null) map.set(c.id, c);
+    });
+    return map;
+  }, [allCompanies]);
 }

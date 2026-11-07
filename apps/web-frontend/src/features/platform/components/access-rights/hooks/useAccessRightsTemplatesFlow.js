@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { platformModuleAccessApi } from '../../../../../api';
-import { getRoleDefaultModules } from '../utils/roleDefaultModules';
+import { getDefaultModulesForRole, getScopeForRole } from '../utils/roleDefaultModules';
 import { buildCatalogGroups } from '../utils/accessRightsCatalogUtils';
 
 export function useAccessRightsTemplatesFlow({
@@ -10,20 +11,37 @@ export function useAccessRightsTemplatesFlow({
   rawCatalog = [],
   roles = [],
   selectedBT = 'RESTAURANT',
+  initialRole = 'ADMIN',
   onSelectBT,
   onSwitchToStaff,
 }) {
   const qc = useQueryClient();
-  const [currentRole, setCurrentRole] = useState('ADMIN');
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
+  const [currentRole, setCurrentRoleState] = useState(initialRole);
   const [toggles, setToggles] = useState({});
   const [savedToggles, setSavedToggles] = useState({});
 
-  const { data: templateData, isLoading: isTemplateLoading, refetch: refetchTemplate } = useQuery({
+  const roleScope = useMemo(() => {
+    return getScopeForRole(currentRole, selectedBT);
+  }, [currentRole, selectedBT]);
+
+  const defaultRoleModules = useMemo(() => {
+    return getDefaultModulesForRole(currentRole, selectedBT);
+  }, [currentRole, selectedBT]);
+
+  // Load template from backend (modules, source: TEMPLATE | DEFAULT, affectedCount)
+  const {
+    data: templateResponse,
+    isLoading: isTemplateLoading,
+    refetch: refetchTemplate,
+  } = useQuery({
     queryKey: ['access-role-template', selectedBT, currentRole],
     queryFn: async () => {
       try {
         const res = await platformModuleAccessApi.getRoleTemplate(selectedBT, currentRole);
-        return res?.data?.modules || null;
+        return res?.data || null;
       } catch {
         return null;
       }
@@ -31,55 +49,76 @@ export function useAccessRightsTemplatesFlow({
     staleTime: 60_000,
   });
 
-  // Calculate default or backend toggles
+  const templateModules = templateResponse?.modules || null;
+  const templateSource = templateResponse?.source || 'DEFAULT';
+
+  // Calculate default or backend toggles scoped to this role
   useEffect(() => {
-    const defaultIds = getRoleDefaultModules(selectedBT, currentRole);
     const initial = {};
-    rawCatalog.forEach((m) => {
-      if (templateData && typeof templateData[m.id] === 'boolean') {
-        initial[m.id] = templateData[m.id];
+    roleScope.forEach((modId) => {
+      if (templateModules && typeof templateModules[modId] === 'boolean') {
+        initial[modId] = templateModules[modId];
       } else {
-        initial[m.id] = defaultIds.includes(m.id);
+        initial[modId] = defaultRoleModules.has(modId);
       }
     });
     setToggles(initial);
     setSavedToggles(initial);
-  }, [selectedBT, currentRole, templateData, rawCatalog]);
+  }, [selectedBT, currentRole, templateModules, roleScope, defaultRoleModules]);
 
   const dirtyCount = useMemo(() => {
     let count = 0;
-    Object.keys(toggles).forEach((k) => {
+    roleScope.forEach((k) => {
       if (Boolean(toggles[k]) !== Boolean(savedToggles[k])) count += 1;
     });
     return count;
-  }, [toggles, savedToggles]);
+  }, [toggles, savedToggles, roleScope]);
 
   const isDirty = dirtyCount > 0;
+
+  // Unload warning for templates tab
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 
   const handleToggleModule = useCallback((moduleId, enabled) => {
     setToggles((prev) => ({ ...prev, [moduleId]: enabled }));
   }, []);
 
+  // Filter catalog groups by current role's allowed scope
   const moduleGroups = useMemo(() => {
-    return buildCatalogGroups(rawCatalog, selectedBT, 'uz');
-  }, [rawCatalog, selectedBT]);
+    return buildCatalogGroups(rawCatalog, selectedBT, isRu ? 'ru' : 'uz', roleScope);
+  }, [rawCatalog, selectedBT, isRu, roleScope]);
 
-  const handleEnableGroup = useCallback((groupId) => {
-    const group = moduleGroups.find((g) => g.id === groupId);
-    if (!group) return;
+  const handleEnableGroup = useCallback((groupId, visibleModuleIds) => {
     setToggles((prev) => {
       const next = { ...prev };
-      group.modules.forEach((m) => { next[m.id] = true; });
+      if (Array.isArray(visibleModuleIds) && visibleModuleIds.length > 0) {
+        visibleModuleIds.forEach((id) => { next[id] = true; });
+      } else {
+        const group = moduleGroups.find((g) => g.id === groupId);
+        if (group) group.modules.forEach((m) => { next[m.id] = true; });
+      }
       return next;
     });
   }, [moduleGroups]);
 
-  const handleDisableGroup = useCallback((groupId) => {
-    const group = moduleGroups.find((g) => g.id === groupId);
-    if (!group) return;
+  const handleDisableGroup = useCallback((groupId, visibleModuleIds) => {
     setToggles((prev) => {
       const next = { ...prev };
-      group.modules.forEach((m) => { next[m.id] = false; });
+      if (Array.isArray(visibleModuleIds) && visibleModuleIds.length > 0) {
+        visibleModuleIds.forEach((id) => { next[id] = false; });
+      } else {
+        const group = moduleGroups.find((g) => g.id === groupId);
+        if (group) group.modules.forEach((m) => { next[m.id] = false; });
+      }
       return next;
     });
   }, [moduleGroups]);
@@ -88,27 +127,50 @@ export function useAccessRightsTemplatesFlow({
     setToggles(savedToggles);
   }, [savedToggles]);
 
+  // Reset to system default (Standartga qaytarish)
+  const handleResetToDefault = useCallback(() => {
+    const defaultInitial = {};
+    roleScope.forEach((modId) => {
+      defaultInitial[modId] = defaultRoleModules.has(modId);
+    });
+    setToggles(defaultInitial);
+    toast.success(
+      isRu
+        ? 'Шаблон сброшен к системным стандартам. Нажмите "Сохранить", чтобы применить.'
+        : 'Shablon tizim standartlariga tiklandi. Qo‘llash uchun "Saqlash"ni bosing.'
+    );
+  }, [roleScope, defaultRoleModules, isRu]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // Send ONLY modules within this role's scope
+      const scopedPayload = {};
+      roleScope.forEach((k) => {
+        scopedPayload[k] = Boolean(toggles[k]);
+      });
       return platformModuleAccessApi.updateRoleTemplate(selectedBT, currentRole, {
-        modules: toggles,
+        modules: scopedPayload,
       });
     },
     onSuccess: () => {
       setSavedToggles(toggles);
-      toast.success('Rol shabloni muvaffaqiyatli saqlandi');
+      toast.success(isRu ? 'Шаблон роли сохранён' : 'Rol shabloni muvaffaqiyatli saqlandi');
       qc.invalidateQueries({ queryKey: ['access-role-template', selectedBT, currentRole] });
       qc.invalidateQueries({ queryKey: ['platform-module-access-stats'] });
       qc.invalidateQueries({ queryKey: ['access-v2-users'] });
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || 'Rol shablonini saqlashda xatolik');
+      toast.error(
+        err?.response?.data?.message ||
+          (isRu ? 'Ошибка при сохранении шаблона' : 'Rol shablonini saqlashda xatolik')
+      );
     },
   });
 
   return {
     currentRole,
-    setCurrentRole,
+    setCurrentRole: setCurrentRoleState,
+    templateSource,
     toggles,
     savedToggles,
     isDirty,
@@ -120,6 +182,7 @@ export function useAccessRightsTemplatesFlow({
     handleEnableGroup,
     handleDisableGroup,
     handleReset,
+    handleResetToDefault,
     handleSave: () => saveMutation.mutate(),
     refetchTemplate,
   };

@@ -122,3 +122,24 @@ export function buildCatalogMap(rawCatalog = [], tOrLang = 'uz') {
   });
   return map;
 }
+
+export function computeNetworkStats(statsByCode = new Map()) {
+  let totalEmployees = 0;
+  let exceptionEmployees = 0;
+  let bTypesCount = 0;
+
+  statsByCode.forEach((item, code) => {
+    if (code !== 'PLATFORM_STAFF' && code !== 'ALL') {
+      bTypesCount += 1;
+      totalEmployees += Number(item.totalEmployees || 0);
+      exceptionEmployees += Number(item.exceptionCount || 0);
+    }
+  });
+
+  return {
+    totalEmployees,
+    exceptionEmployees,
+    standardEmployees: Math.max(0, totalEmployees - exceptionEmployees),
+    businessTypesCount: bTypesCount,
+  };
+}

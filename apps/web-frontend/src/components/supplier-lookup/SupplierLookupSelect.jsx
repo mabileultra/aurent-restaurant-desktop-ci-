@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { Search, X } from 'lucide-react';
 import { useSupplierLookupSelect } from './useSupplierLookupSelect';
+import SupplierLookupMenu from './SupplierLookupMenu';
 import '../../styles/shared/product-lookup-select.css';
 
 export default function SupplierLookupSelect({
@@ -32,7 +32,6 @@ export default function SupplierLookupSelect({
     close,
     query,
     setQuery,
-    debouncedQuery,
     candidates,
     selectedSupplier,
     searchLoading,
@@ -48,7 +47,6 @@ export default function SupplierLookupSelect({
 
   const placeholderText = placeholder ?? t('finance.expenses.counterpartyPlaceholder');
   const searchPlaceholder = t('finance.expenses.counterpartySearch');
-
   const showSelectedChip = !open && normalizedValue && selectedSupplier;
   const inputPlaceholder = open ? searchPlaceholder : showSelectedChip ? '' : placeholderText;
 
@@ -65,54 +63,30 @@ export default function SupplierLookupSelect({
     close();
   };
 
-  const menu = open
-    ? createPortal(
-        <div
-          ref={menuRef}
-          id={listId}
-          role="listbox"
-          className="product-lookup__menu"
-          style={{
-            position: 'fixed',
-            top: menuStyle.top,
-            left: menuStyle.left,
-            width: menuStyle.width,
-            zIndex: 9999,
-          }}
-        >
-          {searchLoading ? (
-            <p className="product-lookup__empty">{t('common.loading')}</p>
-          ) : candidates.length === 0 ? (
-            <p className="product-lookup__empty">{t('finance.expenses.counterpartyEmpty')}</p>
-          ) : (
-            candidates.map((supplier, index) => {
-              const isSelected = String(supplier.id) === normalizedValue;
-              const isHighlighted = index === highlightIndex;
-              return (
-                <button
-                  key={supplier.id}
-                  type="button"
-                  role="option"
-                  aria-selected={isSelected}
-                  className={clsx(
-                    'product-lookup__option',
-                    isHighlighted && 'product-lookup__option--highlight',
-                  )}
-                  onMouseEnter={() => setHighlightIndex(index)}
-                  onClick={() => pickSupplier(supplier)}
-                >
-                  <span className="product-lookup__option-name">{supplier.name}</span>
-                  {supplier.taxId ? (
-                    <span className="product-lookup__option-meta">{supplier.taxId}</span>
-                  ) : null}
-                </button>
-              );
-            })
-          )}
-        </div>,
-        document.body,
-      )
-    : null;
+  const handleKeyDown = (event) => {
+    if (disabled) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (!open) openMenu();
+    }
+    if (event.key === 'Escape') close();
+    if (event.key === 'ArrowDown' && !open) {
+      event.preventDefault();
+      openMenu();
+    }
+    if (open && event.key === 'ArrowDown') {
+      event.preventDefault();
+      setHighlightIndex((prev) => Math.min(prev + 1, candidates.length - 1));
+    }
+    if (open && event.key === 'ArrowUp') {
+      event.preventDefault();
+      setHighlightIndex((prev) => Math.max(prev - 1, 0));
+    }
+    if (open && event.key === 'Enter' && highlightIndex >= 0 && candidates[highlightIndex]) {
+      event.preventDefault();
+      pickSupplier(candidates[highlightIndex]);
+    }
+  };
 
   return (
     <div
@@ -139,30 +113,7 @@ export default function SupplierLookupSelect({
           if (!open) openMenu();
           inputRef.current?.focus();
         }}
-        onKeyDown={(event) => {
-          if (disabled) return;
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            if (!open) openMenu();
-          }
-          if (event.key === 'Escape') close();
-          if (event.key === 'ArrowDown' && !open) {
-            event.preventDefault();
-            openMenu();
-          }
-          if (open && event.key === 'ArrowDown') {
-            event.preventDefault();
-            setHighlightIndex((prev) => Math.min(prev + 1, candidates.length - 1));
-          }
-          if (open && event.key === 'ArrowUp') {
-            event.preventDefault();
-            setHighlightIndex((prev) => Math.max(prev - 1, 0));
-          }
-          if (open && event.key === 'Enter' && highlightIndex >= 0 && candidates[highlightIndex]) {
-            event.preventDefault();
-            pickSupplier(candidates[highlightIndex]);
-          }
-        }}
+        onKeyDown={handleKeyDown}
         role="combobox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
@@ -198,7 +149,19 @@ export default function SupplierLookupSelect({
       </div>
 
       {error ? <p className="product-lookup__error">{error}</p> : null}
-      {menu}
+
+      <SupplierLookupMenu
+        open={open}
+        listId={listId}
+        menuRef={menuRef}
+        menuStyle={menuStyle}
+        searchLoading={searchLoading}
+        candidates={candidates}
+        normalizedValue={normalizedValue}
+        highlightIndex={highlightIndex}
+        setHighlightIndex={setHighlightIndex}
+        onPickSupplier={pickSupplier}
+      />
     </div>
   );
 }

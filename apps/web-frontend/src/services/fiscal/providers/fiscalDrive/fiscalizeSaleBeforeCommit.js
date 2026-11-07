@@ -6,78 +6,22 @@ import {
 import { FISCAL_STATUS } from '../../fiscalStatus';
 import { logFiscal } from '../../../desktop/activityLog';
 import { buildFiscalDriveReceipt } from './buildFiscalDriveReceipt';
-import { ensureFiscalDriveReady, openFiscalDriveZReport } from './ensureFiscalDriveReady';
+import { ensureFiscalDriveReady } from './ensureFiscalDriveReady';
 import {
   FISCAL_DRIVE_DEFAULT_BASE_URL,
   getReceiptTxid,
   parseReceiptTxid,
-  registerReceiptTxid,
-  syncFiscalDriveState,
   syncFullReceipts,
 } from './fiscalDriveHttpClient';
-import {
-  isFiscalDriveNeedsSyncError,
-  isFiscalDriveZNotOpenError,
-  mapFiscalDriveError,
-} from './mapFiscalDriveError';
+import { mapFiscalDriveError } from './mapFiscalDriveError';
 import { parseFiscalDriveRegisterResult, toFiscalDriveSalePayload } from './parseFiscalDriveResult';
 import { validateFiscalDriveReceipt } from './validateFiscalDriveReceipt';
 import { assertOnkmMarking } from '../../../../features/marking/onkm';
-
-function pendingPayload({ txid, receipt, message }) {
-  return {
-    fiscalStatus: FISCAL_STATUS.PENDING,
-    fiscalSign: null,
-    fiscalReceiptSeq: null,
-    multikassaSaleId: null,
-    fiscalQrUrl: null,
-    fiscalError: message || 'Pending fiscal sync',
-    fiscalTerminalId: null,
-    fiscalProvider: 'FISCAL_DRIVE',
-    fiscalDriveTxid: txid || null,
-    fiscalDriveRetry: txid ? { txid, receipt } : { receipt },
-  };
-}
-
-function isFiscalDriveCaps(capabilities) {
-  return (
-    Boolean(capabilities?.enabled) ||
-    String(capabilities?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE'
-  );
-}
-
-async function registerWithRetry({ baseUrl, factoryId, txid, attempts = 2 }) {
-  let lastErr = null;
-  for (let i = 0; i < attempts; i += 1) {
-    try {
-      return await registerReceiptTxid(baseUrl, factoryId, txid);
-    } catch (err) {
-      lastErr = err;
-      const unreachable = err?.code === 'LOCAL_DEVICE_UNREACHABLE' || !err?.status;
-      if (!unreachable || i === attempts - 1) throw err;
-    }
-  }
-  throw lastErr;
-}
-
-/** RegisterTXID с тем же TXID: открыть Z / State/Sync и повторить, без повторного GetTXID. */
-async function registerTxidReady({ baseUrl, factoryId, txid }) {
-  try {
-    return await registerWithRetry({ baseUrl, factoryId, txid });
-  } catch (err) {
-    const mapped = mapFiscalDriveError(err);
-    if (isFiscalDriveZNotOpenError(mapped)) {
-      await openFiscalDriveZReport(baseUrl, factoryId);
-      return registerWithRetry({ baseUrl, factoryId, txid });
-    }
-    if (isFiscalDriveNeedsSyncError(mapped)) {
-      await syncFiscalDriveState(baseUrl, factoryId);
-      await openFiscalDriveZReport(baseUrl, factoryId);
-      return registerWithRetry({ baseUrl, factoryId, txid });
-    }
-    throw mapped;
-  }
-}
+import {
+  pendingPayload,
+  isFiscalDriveCaps,
+  registerTxidReady,
+} from './fiscalizeSaleHelpers';
 
 /**
  * Фискализация продажи через FiscalDrive (ФМ 0400) до commit продажи.

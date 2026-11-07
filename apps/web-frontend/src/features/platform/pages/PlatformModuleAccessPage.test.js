@@ -17,7 +17,29 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    useQuery: () => ({ data: [], isLoading: false, isPending: false }),
+    useQuery: (opts) => {
+      const key = Array.isArray(opts?.queryKey) ? opts.queryKey[0] : '';
+      if (key === 'access-rights-history') {
+        return {
+          data: [
+            {
+              id: 'hist-1',
+              createdAt: '2026-11-07T08:00:00Z',
+              action: 'UPDATE',
+              actorName: 'Sardor Aliyev',
+              targetFullName: 'Dilnoza Rashidova',
+              targetRole: 'CASHIER',
+              moduleDelta: { added: ['pos'], removed: [] },
+              reverted: false,
+            },
+          ],
+          isLoading: false,
+          isPending: false,
+          refetch: vi.fn(),
+        };
+      }
+      return { data: [], isLoading: false, isPending: false };
+    },
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   };

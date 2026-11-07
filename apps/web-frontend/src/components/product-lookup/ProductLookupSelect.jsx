@@ -1,17 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { Search, X } from 'lucide-react';
 import { useProductLookupSelect } from './useProductLookupSelect';
-
-function formatProductMeta(product, t) {
-  const parts = [product.sku];
-  if (product.barcode) parts.push(product.barcode);
-  if (product.stockQuantity != null) {
-    parts.push(`${product.stockQuantity} ${t('stockReports.unitsSuffix')}`);
-  }
-  return parts.join(' · ');
-}
+import ProductLookupMenu from './ProductLookupMenu';
 
 export default function ProductLookupSelect({
   value = '',
@@ -94,57 +85,6 @@ export default function ProductLookupSelect({
 
   const showMenu = open && debouncedQuery.length >= minLen;
 
-  const menu = showMenu
-    ? createPortal(
-        <div
-          ref={menuRef}
-          id={listId}
-          role="listbox"
-          className="product-lookup__menu"
-          style={{
-            position: 'fixed',
-            top: menuStyle.top,
-            left: menuStyle.left,
-            width: menuStyle.width,
-          }}
-        >
-          {searchLoading && (
-            <p className="product-lookup__hint">{t('common.loading')}</p>
-          )}
-          {!searchLoading && candidates.length === 0 && (
-            <p className="product-lookup__hint">{t('stockReports.lifecycleSearchEmpty')}</p>
-          )}
-          {!searchLoading &&
-            candidates.map((product, index) => (
-              <button
-                key={product.id}
-                type="button"
-                role="option"
-                aria-selected={String(product.id) === normalizedValue}
-                className={clsx(
-                  'product-lookup__option',
-                  index === highlightIndex && 'product-lookup__option--highlight'
-                )}
-                onMouseEnter={() => setHighlightIndex(index)}
-                onClick={() => pickProduct(product)}
-              >
-                <span className="product-lookup__option-name">{product.name}</span>
-                <span className="product-lookup__option-meta">
-                  {formatProductMeta(
-                    {
-                      ...product,
-                      stockQuantity: showStockInList ? product.stockQuantity : undefined,
-                    },
-                    t
-                  )}
-                </span>
-              </button>
-            ))}
-        </div>,
-        document.body
-      )
-    : null;
-
   const minCharsHint =
     open && query.trim().length > 0 && query.trim().length < minLen ? (
       <p className="product-lookup__min-hint">
@@ -210,7 +150,19 @@ export default function ProductLookupSelect({
       </div>
       {minCharsHint}
       {error ? <p className="product-lookup__error">{error}</p> : null}
-      {menu}
+      <ProductLookupMenu
+        showMenu={showMenu}
+        menuRef={menuRef}
+        listId={listId}
+        menuStyle={menuStyle}
+        searchLoading={searchLoading}
+        candidates={candidates}
+        normalizedValue={normalizedValue}
+        highlightIndex={highlightIndex}
+        setHighlightIndex={setHighlightIndex}
+        onPickProduct={pickProduct}
+        showStockInList={showStockInList}
+      />
     </div>
   );
 }

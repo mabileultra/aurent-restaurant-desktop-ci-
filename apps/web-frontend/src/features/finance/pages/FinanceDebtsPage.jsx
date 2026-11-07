@@ -1,7 +1,8 @@
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
-import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
+import { BaseButton, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceDebtEntriesModal from '../components/debts/FinanceDebtEntriesModal';
+import FinanceDebtPayModal from '../components/debts/FinanceDebtPayModal';
 import { useClientTablePagination } from '../hooks/shared/useClientTablePagination';
 import { useFinanceDebtsPage } from '../hooks/debts/useFinanceDebtsPage';
 import { formatMoney } from '../utils/shared/formatMoney';
@@ -117,83 +118,21 @@ export default function FinanceDebtsPage() {
         </BaseTable>
       </div>
 
-      <BaseModal
-        open={!!p.payModal}
+      <FinanceDebtPayModal
+        payModal={p.payModal}
         onClose={() => p.setPayModal(null)}
-        title={
-          p.payModal?.type === 'advance'
-            ? p.t('finance.debts.applyAdvanceTitle', { name: p.payModal?.counterpartyName ?? '' })
-            : p.t('finance.debts.payTitle', { name: p.payModal?.counterpartyName ?? '' })
-        }
-        size="lg"
-        className="finance-modal finance-modal--wide"
-        bodyClassName="finance-modal__body"
-      >
-        <div className="finance-form">
-          <BaseInput
-            label={p.t('finance.common.amount')}
-            type="number"
-            value={p.payModal?.type === 'advance' ? p.applyForm.amount : p.form.amount}
-            onChange={(e) => (
-              p.payModal?.type === 'advance'
-                ? p.setApplyForm({ ...p.applyForm, amount: e.target.value })
-                : p.setForm({ ...p.form, amount: e.target.value })
-            )}
-          />
-          {p.payModal?.type !== 'advance' ? (
-            <>
-              <BaseSelect
-                label={p.t('finance.common.account')}
-                value={p.form.accountId}
-                onChange={(e) => p.setForm({ ...p.form, accountId: e.target.value })}
-                placeholder={p.t('common.select')}
-                options={[
-                  { value: '', label: p.t('common.select') },
-                  ...(p.accountsQuery.data ?? []).map((a) => ({ value: String(a.id), label: a.name })),
-                ]}
-              />
-              <BaseSelect
-                label={p.t('finance.common.paymentMethod')}
-                value={p.form.paymentMethod}
-                onChange={(e) => p.setForm({ ...p.form, paymentMethod: e.target.value })}
-                options={[
-                  { value: 'CASH', label: p.t('finance.payment.cash') },
-                  { value: 'CARD', label: p.t('finance.payment.card') },
-                  { value: 'BANK', label: p.t('finance.payment.bank') },
-                ]}
-              />
-            </>
-          ) : null}
-          <BaseInput
-            label={p.t('finance.common.comment')}
-            value={p.payModal?.type === 'advance' ? p.applyForm.comment : p.form.comment}
-            onChange={(e) => (
-              p.payModal?.type === 'advance'
-                ? p.setApplyForm({ ...p.applyForm, comment: e.target.value })
-                : p.setForm({ ...p.form, comment: e.target.value })
-            )}
-          />
-          <div className="finance-form__actions">
-            <BaseButton variant="secondary" onClick={() => p.setPayModal(null)}>{p.t('common.cancel')}</BaseButton>
-            <BaseButton
-              onClick={p.submitPay}
-              disabled={
-                p.payPending
-                || (p.payModal?.type === 'advance'
-                  ? !p.applyForm.amount
-                  : !p.form.amount || !p.form.accountId)
-              }
-            >
-              {p.payModal?.type === 'advance'
-                ? p.t('finance.debts.confirmApplyAdvance')
-                : p.t('finance.debts.confirmPay')}
-            </BaseButton>
-          </div>
-        </div>
-      </BaseModal>
+        form={p.form}
+        setForm={p.setForm}
+        applyForm={p.applyForm}
+        setApplyForm={p.setApplyForm}
+        accounts={p.accountsQuery.data ?? []}
+        onSubmit={p.submitPay}
+        isPending={p.payPending}
+        t={p.t}
+      />
 
       <FinanceDebtEntriesModal
-        open={!!p.historyModal}
+        open={Boolean(p.historyModal)}
         onClose={() => p.setHistoryModal(null)}
         type={p.historyModal?.type}
         counterpartyId={p.historyModal?.counterpartyId}

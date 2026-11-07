@@ -1,8 +1,7 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { warehouseApi, productApi, categoryApi, storeApi } from '../../../api';
+import { warehouseApi, categoryApi, storeApi } from '../../../api';
 import { useAuthStore } from '../../../store/authStore';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import {
@@ -10,6 +9,7 @@ import {
   STOCK_PRODUCT_DEFAULT_FILTERS,
   canManageStock,
 } from '../constants';
+import { useStockProductsPageModals } from './useStockProductsPageModals';
 
 export function useStockProductsPage({ preferredStoreId = null } = {}) {
   const { t } = useTranslation();
@@ -22,17 +22,10 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
   const [pageSize, setPageSize] = useState(STOCK_PAGE_SIZE_DEFAULT);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
-  const [createStore, setCreateStore] = useState(null);
   const [filters, setFilters] = useState(STOCK_PRODUCT_DEFAULT_FILTERS);
   const [applied, setApplied] = useState(STOCK_PRODUCT_DEFAULT_FILTERS);
 
-  const [rowMenu, setRowMenu] = useState(null);
-  const [editProduct, setEditProduct] = useState(null);
-  const [stockProduct, setStockProduct] = useState(null);
-  const [receiveProduct, setReceiveProduct] = useState(null);
-  const [deleteProduct, setDeleteProduct] = useState(null);
-  const [infoProductId, setInfoProductId] = useState(null);
+  const invalidateCaches = useCallback(() => invalidateProductCaches(qc), [qc]);
 
   const queryParams = useMemo(
     () => ({
@@ -65,6 +58,13 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
     queryFn: () => storeApi.getAll().then((r) => r.data),
   });
 
+  const modals = useStockProductsPageModals({
+    stores,
+    preferredStoreId,
+    invalidateCaches,
+    t,
+  });
+
   const rows = data?.content ?? [];
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
@@ -78,16 +78,16 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
   }, [totalPages, page]);
 
   useEffect(() => {
-    if (!rowMenu) return undefined;
+    if (!modals.rowMenu) return undefined;
     const onKey = (e) => {
-      if (e.key === 'Escape') setRowMenu(null);
+      if (e.key === 'Escape') modals.setRowMenu(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [rowMenu]);
+  }, [modals]);
 
   useEffect(() => {
-    setRowMenu(null);
+    modals.setRowMenu(null);
   }, [page, search, applied.barcode, applied.markedProduct]);
 
   const displayBarcode = useCallback((p) => {
@@ -113,55 +113,6 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
     setFiltersOpen(false);
   };
 
-  const openRowMenu = (product, rect) => {
-    setRowMenu((cur) => (cur?.product?.id === product.id ? null : { product, rect }));
-  };
-
-  const closeRowMenu = () => setRowMenu(null);
-
-  const invalidateCaches = useCallback(() => invalidateProductCaches(qc), [qc]);
-
-  const resolveCreateStore = useCallback(() => {
-    if (preferredStoreId != null) {
-      const preferred = stores.find((store) => Number(store.id) === Number(preferredStoreId));
-      if (preferred) return preferred;
-    }
-    return stores[0] ?? null;
-  }, [preferredStoreId, stores]);
-
-  const handleAddProduct = useCallback(() => {
-    if (stores.length === 0) {
-      toast.error(t('productTemplates.noStoresHint'));
-      return;
-    }
-    setEditProduct(null);
-    setCreateStore(resolveCreateStore());
-    setShowCreate(true);
-  }, [stores, resolveCreateStore, t]);
-
-  const handleCreateStoreChange = useCallback((store) => {
-    if (!createStore || !store || store.id === createStore.id) return;
-    setCreateStore(store);
-  }, [createStore]);
-
-  const closeCatalogModal = useCallback(() => {
-    setEditProduct(null);
-    setShowCreate(false);
-    setCreateStore(null);
-  }, []);
-
-  const confirmDelete = async () => {
-    if (!deleteProduct) return;
-    try {
-      await productApi.deactivate(deleteProduct.id);
-      toast.success(t('products.deactivated'));
-      invalidateCaches();
-      setDeleteProduct(null);
-    } catch (e) {
-      toast.error(e?.response?.data?.message ?? t('productModal.saveFailed'));
-    }
-  };
-
   const errorMessage =
     error?.response?.data?.message ?? error?.message ?? t('stockModule.loadError');
 
@@ -177,29 +128,8 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
     setFiltersOpen,
     receiveOpen,
     setReceiveOpen,
-    showCreate,
-    createStore,
-    handleAddProduct,
-    handleCreateStoreChange,
-    closeCatalogModal,
-    catalogModalKey: editProduct?.id ?? (showCreate ? `new-${createStore?.id ?? 'x'}` : 'closed'),
     filters,
     setFilters,
-    rowMenu,
-    editProduct,
-    setEditProduct: (product) => {
-      setShowCreate(false);
-      setCreateStore(null);
-      setEditProduct(product);
-    },
-    stockProduct,
-    setStockProduct,
-    receiveProduct,
-    setReceiveProduct,
-    deleteProduct,
-    setDeleteProduct,
-    infoProductId,
-    setInfoProductId,
     rows,
     total,
     totalPages,
@@ -213,9 +143,7 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
     handleSearchChange,
     resetFilters,
     applyFilters,
-    openRowMenu,
-    closeRowMenu,
     invalidateCaches,
-    confirmDelete,
+    ...modals,
   };
 }

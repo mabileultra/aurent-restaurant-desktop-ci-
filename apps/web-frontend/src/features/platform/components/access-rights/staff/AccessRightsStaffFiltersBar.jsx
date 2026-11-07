@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import PlatformSelect from '../../PlatformSelect';
+import { rolesForBusinessType } from '../../../utils/rolesByBusinessType';
+import { resolveRoleLabel } from '../utils/accessRightsCatalogUtils';
 
 export default function AccessRightsStaffFiltersBar({
   searchTerm = '',
@@ -13,14 +17,37 @@ export default function AccessRightsStaffFiltersBar({
   selectedRole = 'ALL',
   onSelectRole,
 }) {
-  const roles = [
-    { code: 'ALL', name: 'Barcha rollar' },
-    { code: 'ADMIN', name: 'Admin' },
-    { code: 'MANAGER', name: 'Menejer' },
-    { code: 'CASHIER', name: 'Kassir' },
-    { code: 'WAITER', name: 'Ofitsiant' },
-    { code: 'COOK', name: 'Oshpaz' },
-  ];
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
+  const businessTypeOptions = useMemo(() => {
+    return [
+      { value: 'ALL', label: isRu ? 'Тип бизнеса: все' : 'Faoliyat turi: barchasi' },
+      ...businessTypes.map((bt) => ({
+        value: bt.code,
+        label: bt.name,
+      })),
+    ];
+  }, [businessTypes, isRu]);
+
+  const companyOptions = useMemo(() => {
+    return [
+      { value: '', label: isRu ? 'Компания: все' : 'Kompaniya: barchasi' },
+      ...companies.map((c) => ({
+        value: c.id,
+        label: c.name,
+      })),
+    ];
+  }, [companies, isRu]);
+
+  const roleOptions = useMemo(() => {
+    const list = [{ value: 'ALL', label: isRu ? 'Все роли' : 'Barcha rollar' }];
+    const codes = rolesForBusinessType(selectedBT === 'ALL' ? 'UNIVERSAL' : selectedBT);
+    codes.forEach((code) => {
+      list.push({ value: code, label: resolveRoleLabel(code, isRu ? 'ru' : 'uz') });
+    });
+    return list;
+  }, [selectedBT, isRu]);
 
   return (
     <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -30,52 +57,46 @@ export default function AccessRightsStaffFiltersBar({
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Ism, login yoki kompaniya bo‘yicha qidiruv..."
+          placeholder={
+            isRu
+              ? 'Поиск по имени, логину или компании...'
+              : 'Ism, login yoki kompaniya bo‘yicha qidiruv...'
+          }
           className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
 
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-        {/* Faoliyat turi */}
-        <select
-          value={selectedBT}
-          onChange={(e) => onSelectBT(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          <option value="ALL">Faoliyat turi: barchasi</option>
-          {businessTypes.map((bt) => (
-            <option key={bt.code} value={bt.code}>
-              {bt.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-44 shrink-0">
+          <PlatformSelect
+            options={businessTypeOptions}
+            value={selectedBT}
+            onChange={(e) => onSelectBT(e.target.value)}
+            size="sm"
+            ariaLabel={isRu ? 'Тип бизнеса' : 'Faoliyat turi'}
+          />
+        </div>
 
-        {/* Kompaniya */}
-        <select
-          value={selectedCompanyId}
-          onChange={(e) => onSelectCompanyId(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 max-w-[200px] truncate"
-        >
-          <option value="">Kompaniya: barchasi</option>
-          {companies.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-48 shrink-0">
+          <PlatformSelect
+            options={companyOptions}
+            value={selectedCompanyId}
+            onChange={(e) => onSelectCompanyId(e.target.value)}
+            size="sm"
+            searchable
+            ariaLabel={isRu ? 'Компания' : 'Kompaniya'}
+          />
+        </div>
 
-        {/* Rol */}
-        <select
-          value={selectedRole}
-          onChange={(e) => onSelectRole(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          {roles.map((r) => (
-            <option key={r.code} value={r.code}>
-              {r.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-40 shrink-0">
+          <PlatformSelect
+            options={roleOptions}
+            value={selectedRole}
+            onChange={(e) => onSelectRole(e.target.value)}
+            size="sm"
+            ariaLabel={isRu ? 'Роль' : 'Rol'}
+          />
+        </div>
       </div>
     </div>
   );

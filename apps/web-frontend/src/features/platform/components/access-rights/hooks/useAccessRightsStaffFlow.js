@@ -1,37 +1,41 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { platformModuleAccessApi } from '../../../../../api';
-import { getRoleDefaultModules } from '../utils/roleDefaultModules';
+import { parseUserDetailModules } from './staffFlowHelpers';
+import { useStaffFlowMutations } from './useStaffFlowMutations';
 
 export function useAccessRightsStaffFlow({
   users = [],
   rawCatalog = [],
   onStaffUpdated,
 }) {
-  const qc = useQueryClient();
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [overrides, setOverrides] = useState({});
   const [savedOverrides, setSavedOverrides] = useState({});
   const [checkedIds, setCheckedIds] = useState(new Set());
 
-  // Auto-select first user or sync with filtered users
+  // Auto-select first user if selection is missing or not in filtered list
   useEffect(() => {
     if (users.length === 0) {
       if (selectedUser) setSelectedUser(null);
       return;
     }
     const currentId = selectedUser?.userId || selectedUser?.id;
-    const exists = users.some((u) => (u.userId || u.id) === currentId);
-    if (!exists) {
-      setSelectedUser(users[0]);
-    }
+    const found = users.find((u) => (u.userId || u.id) === currentId);
+    if (!found) setSelectedUser(users[0]);
   }, [users, selectedUser]);
 
   const selectedUserId = selectedUser?.userId || selectedUser?.id;
 
-  // Load user detail from backend
-  const { data: userDetail, isLoading: isUserDetailLoading, refetch: refetchUserDetail } = useQuery({
+  const {
+    data: userDetail,
+    isLoading: isUserDetailLoading,
+    refetch: refetchUserDetail,
+  } = useQuery({
     queryKey: ['access-user-detail', selectedUserId],
     queryFn: async () => {
       if (!selectedUserId) return null;
@@ -42,37 +46,14 @@ export function useAccessRightsStaffFlow({
     staleTime: 30_000,
   });
 
-  // Calculate template modules for the selected user
-  const templateModules = useMemo(() => {
-    if (!selectedUser) return new Set();
-    const bt = selectedUser.businessType || 'RESTAURANT';
-    const role = selectedUser.role || 'CASHIER';
-    const defaults = getRoleDefaultModules(bt, role);
-    return new Set(defaults);
-  }, [selectedUser]);
+  const { userModules, templateModules, initialOverrides } = useMemo(() => {
+    return parseUserDetailModules(userDetail, selectedUser, rawCatalog);
+  }, [userDetail, selectedUser, rawCatalog]);
 
-  // Sync overrides when user or userDetail changes
   useEffect(() => {
-    if (!selectedUser) return;
-    const initial = {};
-    const detailModules = userDetail?.modules || {};
-    const hasCustom = Boolean(userDetail?.moduleAccessCustom || selectedUser.moduleAccessCustom);
-
-    rawCatalog.forEach((m) => {
-      const inTpl = templateModules.has(m.id);
-      if (hasCustom && typeof detailModules[m.id] === 'boolean') {
-        const val = detailModules[m.id];
-        if (val && !inTpl) initial[m.id] = 'grant';
-        else if (!val && inTpl) initial[m.id] = 'deny';
-        else initial[m.id] = 'template';
-      } else {
-        initial[m.id] = 'template';
-      }
-    });
-
-    setOverrides(initial);
-    setSavedOverrides(initial);
-  }, [selectedUser, userDetail, templateModules, rawCatalog]);
+    setOverrides(initialOverrides);
+    setSavedOverrides(initialOverrides);
+  }, [initialOverrides]);
 
   const dirtyCount = useMemo(() => {
     let count = 0;
@@ -84,6 +65,17 @@ export function useAccessRightsStaffFlow({
 
   const isDirty = dirtyCount > 0;
 
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
   const handleChangeOverride = useCallback((moduleId, newMode) => {
     setOverrides((prev) => ({ ...prev, [moduleId]: newMode }));
   }, []);
@@ -92,63 +84,32 @@ export function useAccessRightsStaffFlow({
     setOverrides(savedOverrides);
   }, [savedOverrides]);
 
-  // Save staff overrides
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedUserId) return;
-      const finalModules = {};
-      rawCatalog.forEach((m) => {
-        const inTpl = templateModules.has(m.id);
-        const mode = overrides[m.id] || 'template';
-        if (mode === 'grant') finalModules[m.id] = true;
-        else if (mode === 'deny') finalModules[m.id] = false;
-        else finalModules[m.id] = inTpl;
-      });
+  const handleSelectUser = useCallback(
+    (nextUser) => {
+      if (!nextUser) return;
+      const nextId = nextUser.userId || nextUser.id;
+      if (nextId === selectedUserId) return;
 
-      return platformModuleAccessApi.updateUser(selectedUserId, {
-        customAccess: true,
-        modules: finalModules,
-      });
+      if (isDirty) {
+        const confirmMsg = isRu
+          ? 'У вас есть несохранённые изменения. Переключить сотрудника без сохранения?'
+          : 'Sizda saqlanmagan o‘zgarishlar bor. Bekor qilib boshqa xodimga o‘tishni xohlaysizmi?';
+        if (!window.confirm(confirmMsg)) return;
+      }
+      setSelectedUser(nextUser);
     },
-    onSuccess: () => {
-      setSavedOverrides(overrides);
-      toast.success('Xodim ruxsatlari saqlandi');
-      qc.invalidateQueries({ queryKey: ['access-user-detail', selectedUserId] });
-      qc.invalidateQueries({ queryKey: ['access-v2-users'] });
-      qc.invalidateQueries({ queryKey: ['platform-module-access-stats'] });
-      if (onStaffUpdated) onStaffUpdated();
-    },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message || 'Ruxsatlarni saqlashda xatolik');
-    },
-  });
+    [isDirty, isRu, selectedUserId]
+  );
 
-  // Reset to template
-  const resetMutation = useMutation({
-    mutationFn: async (userId) => {
-      return platformModuleAccessApi.resetUser(userId || selectedUserId);
-    },
-    onSuccess: () => {
-      toast.success('Xodim rol shabloniga qaytarildi');
-      qc.invalidateQueries({ queryKey: ['access-user-detail', selectedUserId] });
-      qc.invalidateQueries({ queryKey: ['access-v2-users'] });
-      qc.invalidateQueries({ queryKey: ['platform-module-access-stats'] });
-      if (onStaffUpdated) onStaffUpdated();
-    },
-  });
-
-  // Bulk reset
-  const bulkResetMutation = useMutation({
-    mutationFn: async (userIds) => {
-      return platformModuleAccessApi.bulkReset({ userIds });
-    },
-    onSuccess: () => {
-      toast.success('Tanlangan xodimlar shablonga qaytarildi');
-      setCheckedIds(new Set());
-      qc.invalidateQueries({ queryKey: ['access-v2-users'] });
-      qc.invalidateQueries({ queryKey: ['platform-module-access-stats'] });
-      if (onStaffUpdated) onStaffUpdated();
-    },
+  const { saveMutation, resetMutation, bulkResetMutation } = useStaffFlowMutations({
+    selectedUserId,
+    userModules,
+    overrides,
+    templateModules,
+    isRu,
+    onStaffUpdated,
+    setSavedOverrides,
+    setCheckedIds,
   });
 
   const handleToggleCheckUser = useCallback((uid, checked) => {
@@ -160,18 +121,18 @@ export function useAccessRightsStaffFlow({
     });
   }, []);
 
-  const handleToggleCheckAll = useCallback((checked) => {
-    if (checked) {
-      setCheckedIds(new Set(users.map((u) => u.userId || u.id)));
-    } else {
-      setCheckedIds(new Set());
-    }
-  }, [users]);
+  const handleToggleCheckAll = useCallback(
+    (checked) => {
+      setCheckedIds(checked ? new Set(users.map((u) => u.userId || u.id)) : new Set());
+    },
+    [users]
+  );
 
   return {
     selectedUser,
-    setSelectedUser,
+    setSelectedUser: handleSelectUser,
     selectedUserId,
+    userModules,
     overrides,
     templateModules,
     isDirty,
@@ -179,6 +140,7 @@ export function useAccessRightsStaffFlow({
     isSaving: saveMutation.isPending,
     isResetting: resetMutation.isPending,
     isResettingBulk: bulkResetMutation.isPending,
+    isUserDetailLoading,
     checkedIds,
     handleChangeOverride,
     handleCancel,
@@ -188,5 +150,6 @@ export function useAccessRightsStaffFlow({
     handleToggleCheckUser,
     handleToggleCheckAll,
     handleClearChecked: () => setCheckedIds(new Set()),
+    refetchUserDetail,
   };
 }

@@ -1,84 +1,118 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import AccessRightsTemplatesKPIs from './AccessRightsTemplatesKPIs';
 import AccessRightsTemplatesSidebar from './AccessRightsTemplatesSidebar';
 import AccessRightsTemplateEditor from './AccessRightsTemplateEditor';
 import { useAccessRightsTemplatesFlow } from '../hooks/useAccessRightsTemplatesFlow';
 import { resolveRoleLabel, resolveBusinessTypeName } from '../utils/accessRightsCatalogUtils';
+import { rolesForBusinessType } from '../../../utils/rolesByBusinessType';
+import { getScopeForRole, getDefaultModulesForRole } from '../utils/roleDefaultModules';
 
 export default function AccessRightsTemplatesTab({
   businessTypes = [],
-  roles = [],
   rawCatalog = [],
+  statsByCode = new Map(),
   totalEmployees = 0,
   standardEmployees = 0,
   exceptionEmployees = 0,
+  businessTypesCount = 0,
   selectedBT = 'RESTAURANT',
+  initialRole = 'ADMIN',
   onSelectBT,
+  onSelectRole,
   onSwitchToStaff,
   onOpenCopyTemplate,
+  onDirtyChange,
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const flow = useAccessRightsTemplatesFlow({
     businessTypes,
     rawCatalog,
-    roles,
     selectedBT,
+    initialRole,
     onSelectBT,
     onSwitchToStaff,
   });
 
-  // Build groupedTemplates for sidebar
-  const groupedTemplates = businessTypes.map((bt) => {
-    const total = Number(bt.totalEmployees || 0);
-    const adminCount = total > 0 ? Math.max(1, Math.round(total * 0.15)) : 0;
-    const mgrCount = total > 0 ? Math.max(1, Math.round(total * 0.25)) : 0;
-    const cashierCount = total > 0 ? Math.max(0, total - adminCount - mgrCount) : 0;
+  React.useEffect(() => {
+    if (onDirtyChange) onDirtyChange(flow.isDirty);
+  }, [flow.isDirty, onDirtyChange]);
 
-    return {
-      code: bt.code,
-      name: bt.name,
-      totalEmployees: bt.totalEmployees,
-      roles: (roles.length > 0 && bt.code === selectedBT ? roles : [
-        { code: 'ADMIN', name: resolveRoleLabel('ADMIN'), totalEmployees: adminCount, exceptionCount: 0, enabledModulesCount: 42, totalModulesCount: 50 },
-        { code: 'MANAGER', name: resolveRoleLabel('MANAGER'), totalEmployees: mgrCount, exceptionCount: 0, enabledModulesCount: 30, totalModulesCount: 50 },
-        { code: 'CASHIER', name: resolveRoleLabel('CASHIER'), totalEmployees: cashierCount, exceptionCount: 0, enabledModulesCount: 12, totalModulesCount: 20 },
-      ]),
-    };
-  });
+  // Build groupedTemplates with REAL backend stats and accurate scopes
+  const groupedTemplates = useMemo(() => {
+    return businessTypes
+      .filter((bt) => bt.code !== 'ALL')
+      .map((bt) => {
+        const btStats = statsByCode.get(String(bt.code || '').toUpperCase());
+        const totalEmp = btStats?.totalEmployees ?? bt.totalEmployees ?? 0;
+        const allowedRoles = rolesForBusinessType(bt.code);
 
-  const currentRoleObj = roles.find((r) => r.code === flow.currentRole) || {
-    name: resolveRoleLabel(flow.currentRole),
-    totalEmployees: 0,
-    exceptionCount: 0,
-  };
+        const rolesList = allowedRoles.map((roleCode) => {
+          const roleStats = btStats?.roleMap?.get(roleCode.toUpperCase());
+          const roleTotal = roleStats ? Number(roleStats.totalEmployees || 0) : 0;
+          const roleExceptions = roleStats ? Number(roleStats.exceptionCount || 0) : 0;
 
-  const currentBTObj = businessTypes.find((b) => b.code === selectedBT) || {
-    name: resolveBusinessTypeName(selectedBT),
-  };
+          const scope = getScopeForRole(roleCode, bt.code);
+          const defaultMods = getDefaultModulesForRole(roleCode, bt.code);
+
+          const isCurrent = bt.code === selectedBT && roleCode === flow.currentRole;
+          const enabledCount = isCurrent
+            ? Object.values(flow.toggles).filter(Boolean).length
+            : defaultMods.size;
+
+          return {
+            code: roleCode,
+            name: resolveRoleLabel(roleCode, isRu ? 'ru' : 'uz'),
+            totalEmployees: roleTotal,
+            exceptionCount: roleExceptions,
+            enabledModulesCount: enabledCount,
+            totalModulesCount: scope.size,
+          };
+        });
+
+        return {
+          code: bt.code,
+          name: bt.name,
+          totalEmployees: totalEmp,
+          roles: rolesList,
+        };
+      });
+  }, [businessTypes, statsByCode, selectedBT, flow.currentRole, flow.toggles, isRu]);
+
+  const currentRoleStats = statsByCode.get(String(selectedBT || '').toUpperCase())?.roleMap?.get(flow.currentRole);
+  const currentRoleEmployees = currentRoleStats ? Number(currentRoleStats.totalEmployees || 0) : 0;
+  const currentRoleExceptions = currentRoleStats ? Number(currentRoleStats.exceptionCount || 0) : 0;
+
+  const currentBTName = resolveBusinessTypeName(selectedBT, isRu ? 'ru' : 'uz');
+  const currentRoleName = resolveRoleLabel(flow.currentRole, isRu ? 'ru' : 'uz');
 
   const handleSelectRole = (btCode, roleCode) => {
     if (btCode === selectedBT && roleCode === flow.currentRole) return;
     if (flow.isDirty) {
       const confirmLeave = window.confirm(
-        'Sizda saqlanmagan o‘zgarishlar bor. Bekor qilib boshqa rolga o‘tishni xohlaysizmi?'
+        isRu
+          ? 'У вас есть несохранённые изменения. Отменить их и перейти к другой роли?'
+          : 'Sizda saqlanmagan o‘zgarishlar bor. Bekor qilib boshqa rolga o‘tishni xohlaysizmi?'
       );
       if (!confirmLeave) return;
       flow.handleReset();
     }
     if (btCode !== selectedBT) onSelectBT(btCode);
     flow.setCurrentRole(roleCode);
+    if (onSelectRole) onSelectRole(roleCode);
   };
 
   return (
     <div className="space-y-6">
-      {/* 4 KPIs per Page 1 */}
       <AccessRightsTemplatesKPIs
         totalEmployees={totalEmployees}
         standardEmployees={standardEmployees}
         exceptionEmployees={exceptionEmployees}
-        businessTypesCount={businessTypes.length}
+        businessTypesCount={businessTypesCount}
       />
 
-      {/* 2-Column Master-Detail Layout */}
       <div className="flex flex-col lg:flex-row items-start gap-6">
         <AccessRightsTemplatesSidebar
           groupedTemplates={groupedTemplates}
@@ -88,11 +122,12 @@ export default function AccessRightsTemplatesTab({
         />
 
         <AccessRightsTemplateEditor
-          businessTypeName={currentBTObj.name}
-          roleName={currentRoleObj.name || resolveRoleLabel(flow.currentRole)}
+          businessTypeName={currentBTName}
+          roleName={currentRoleName}
           roleCode={flow.currentRole}
-          employeesCount={currentRoleObj.totalEmployees || 0}
-          exceptionsCount={currentRoleObj.exceptionCount || 0}
+          templateSource={flow.templateSource}
+          employeesCount={currentRoleEmployees}
+          exceptionsCount={currentRoleExceptions}
           moduleGroups={flow.moduleGroups}
           moduleToggles={flow.toggles}
           isDirty={flow.isDirty}
@@ -102,6 +137,7 @@ export default function AccessRightsTemplatesTab({
           onEnableGroup={flow.handleEnableGroup}
           onDisableGroup={flow.handleDisableGroup}
           onReset={flow.handleReset}
+          onResetToDefault={flow.handleResetToDefault}
           onSave={flow.handleSave}
           onViewStaff={() => onSwitchToStaff && onSwitchToStaff(selectedBT, flow.currentRole)}
           onCopyFromOther={onOpenCopyTemplate}

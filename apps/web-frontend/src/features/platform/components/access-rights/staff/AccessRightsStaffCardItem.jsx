@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import AccessRightsAvatar from '../shared/AccessRightsAvatar';
 import { resolveRoleLabel } from '../utils/accessRightsCatalogUtils';
 
@@ -9,6 +10,8 @@ export default function AccessRightsStaffCardItem({
   onSelect,
   onCheck,
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
   const exceptionCount = Number(user.exceptionCount || (user.moduleAccessCustom ? 1 : 0));
   const isTemplate = exceptionCount === 0;
 
@@ -25,6 +28,7 @@ export default function AccessRightsStaffCardItem({
         <input
           type="checkbox"
           checked={isChecked}
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => {
             e.stopPropagation();
             onCheck(e.target.checked);
@@ -35,18 +39,18 @@ export default function AccessRightsStaffCardItem({
         <AccessRightsAvatar name={user.fullName || user.username} size="md" />
 
         <div className="min-w-0">
-          <div className="font-bold text-slate-900 dark:text-slate-100 truncate">
+          <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
             {user.fullName || user.username}
           </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+          <div className="text-xs text-slate-600 dark:text-slate-400 truncate">
             <span>{user.username}</span>
             <span className="mx-1">·</span>
-            <span className="font-medium text-slate-700 dark:text-slate-300">
-              {resolveRoleLabel(user.role)}
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              {resolveRoleLabel(user.role, isRu ? 'ru' : 'uz')}
             </span>
           </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-            <span>{user.companyName || 'Kompaniyasiz'}</span>
+          <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+            <span>{user.companyName || (isRu ? 'Без компании' : 'Kompaniyasiz')}</span>
             {user.businessTypeName && (
               <>
                 <span className="mx-1">·</span>
@@ -59,12 +63,12 @@ export default function AccessRightsStaffCardItem({
 
       <div className="shrink-0 pl-2">
         {isTemplate ? (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-            Shablon
+          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            {isRu ? 'Шаблон' : 'Shablon'}
           </span>
         ) : (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-            {exceptionCount} istisno
+          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+            {exceptionCount} {isRu ? 'искл.' : 'istisno'}
           </span>
         )}
       </div>

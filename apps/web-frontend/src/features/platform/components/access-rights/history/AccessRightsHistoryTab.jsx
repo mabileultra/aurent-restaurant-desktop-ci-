@@ -1,23 +1,25 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { platformModuleAccessApi } from '../../../../../api';
 import AccessRightsHistoryFiltersBar from './AccessRightsHistoryFiltersBar';
 import AccessRightsHistoryItemCard from './AccessRightsHistoryItemCard';
 import AccessRightsHistoryEmptyState from './AccessRightsHistoryEmptyState';
+import {
+  formatHistoryDateHeader,
+  formatHistoryTime,
+  formatHistoryDiff,
+} from './historyFormatUtils';
 
 export default function AccessRightsHistoryTab({ onReverted }) {
   const qc = useQueryClient();
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const [search, setSearch] = useState('');
   const [datePreset, setDatePreset] = useState('7d');
   const [actionType, setActionType] = useState('all');
-
-  const todayHeader = useMemo(() => {
-    const d = new Date();
-    const day = d.getDate();
-    const month = new Intl.DateTimeFormat('uz-UZ', { month: 'long' }).format(d).toUpperCase();
-    return `BUGUN · ${day}-${month}`;
-  }, []);
 
   const { data: rawHistory = [], isLoading, refetch } = useQuery({
     queryKey: ['access-rights-history'],
@@ -38,78 +40,59 @@ export default function AccessRightsHistoryTab({ onReverted }) {
       return platformModuleAccessApi.revertHistory(historyId);
     },
     onSuccess: () => {
-      toast.success('O‘zgarish muvaffaqiyatli bekor qilindi (avvalgi holatga qaytarildi)');
+      toast.success(
+        isRu
+          ? 'Действие успешно отменено (предыдущее состояние восстановлено)'
+          : 'O‘zgarish muvaffaqiyatli bekor qilindi (avvalgi holatga qaytarildi)'
+      );
       refetch();
       qc.invalidateQueries({ queryKey: ['access-v2-users'] });
       qc.invalidateQueries({ queryKey: ['platform-module-access-stats'] });
       if (onReverted) onReverted();
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || 'Qaytarishda xatolik yuz berdi');
+      toast.error(
+        err?.response?.data?.message ||
+          (isRu ? 'Ошибка при отмене действия' : 'Qaytarishda xatolik yuz berdi')
+      );
     },
   });
 
-  // Sample fallback mock history if backend table is empty yet
   const items = useMemo(() => {
-    if (rawHistory.length > 0) {
-      return rawHistory.map((h, i) => {
-        let daysAgo = 0;
-        if (h.createdAt) {
-          const diffMs = Date.now() - new Date(h.createdAt).getTime();
-          daysAgo = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-        } else if (h.dateHeader && !h.dateHeader.includes('BUGUN')) {
-          daysAgo = 7;
-        }
-        return {
-          id: h.id || `h-${i}`,
-          dateHeader: daysAgo === 0 ? todayHeader : (h.dateHeader || 'Oldingi'),
-          daysAgo,
-          time: h.time || '11:05',
-          operatorInitials: h.operatorInitials || 'Po',
-          title: h.title || `${h.operatorName || 'Platforma operatori'} ${h.targetName || 'xodim'} uchun istisno berdi`,
-          actionType: h.actionType || 'exception',
-          subtitle: h.subtitle || `${h.companyName || 'Dorixona'} · ${h.role || 'Admin'} · 1 xodim`,
-          details: h.details || JSON.stringify(h.diff || h.modules || {}),
-        };
-      });
-    }
+    return rawHistory.map((h, i) => {
+      const createdAt = h.createdAt ? new Date(h.createdAt) : null;
+      const diffMs = createdAt ? Date.now() - createdAt.getTime() : 0;
+      const daysAgo = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 
-    return [
-      {
-        id: 'h-1',
-        dateHeader: todayHeader,
-        daysAgo: 0,
-        time: '11:05',
-        operatorInitials: 'Po',
-        title: 'Platforma operatori Bekzod Ergashev uchun istisno berdi',
-        actionType: 'exception',
-        subtitle: 'Shifo Dorixona · Administrator · 1 xodim',
-        details: '+ Oflayn rejim: ruxsat berildi, + AI-assistent: ruxsat berildi',
-      },
-      {
-        id: 'h-2',
-        dateHeader: '30-OKTABR',
-        daysAgo: 7,
-        time: '10:02',
-        operatorInitials: 'Po',
-        title: 'Platforma operatori Madina Yusupova uchun istisno berdi',
-        actionType: 'exception',
-        subtitle: 'Bahor Restoran · Ofitsiant · 1 xodim',
-        details: '+ Yetkazib berish: ruxsat berildi',
-      },
-      {
-        id: 'h-3',
-        dateHeader: '28-OKTABR',
-        daysAgo: 9,
-        time: '16:40',
-        operatorInitials: 'Ad',
-        title: 'Admin Restoran shabloniga o‘zgartirish kiritdi',
-        actionType: 'template',
-        subtitle: 'Restoran · Kassir · 42 xodimga ta‘sir qildi',
-        details: 'Kassa oynasi guruhi modullari yangilandi',
-      },
-    ];
-  }, [rawHistory, todayHeader]);
+      let type = 'exception';
+      if (h.action === 'RESET') type = 'exception';
+      else if (h.action === 'BULK_RESET') type = 'bulk';
+      else if (h.action === 'COPY') type = 'copy';
+      else if (h.action === 'TEMPLATE') type = 'template';
+
+      const actor = h.actorName || (isRu ? 'Оператор' : 'Platforma operatori');
+      const target = h.targetFullName || h.targetUsername || (isRu ? 'сотрудник' : 'xodim');
+      const actionTitle = isRu
+        ? `${actor} изменил доступ для ${target}`
+        : `${actor} ${target} uchun huquqlarni o‘zgartirdi`;
+
+      const initials = (actor.slice(0, 2) || 'OP').toUpperCase();
+
+      return {
+        id: h.id || `h-${i}`,
+        dateHeader: formatHistoryDateHeader(h.createdAt, isRu),
+        daysAgo,
+        time: formatHistoryTime(h.createdAt),
+        operatorInitials: initials,
+        title: actionTitle,
+        actionType: type,
+        subtitle: `${target}${h.strategy ? ` · ${h.strategy}` : ''}`,
+        details: formatHistoryDiff(h.beforeModules, h.afterModules, h.action, isRu),
+        canRevert: h.canRevert ?? true,
+        revertedAt: h.revertedAt,
+      };
+    });
+  }, [rawHistory, isRu]);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -121,7 +104,8 @@ export default function AccessRightsHistoryTab({ onReverted }) {
         const query = search.toLowerCase();
         const matchesTitle = item.title.toLowerCase().includes(query);
         const matchesSub = item.subtitle.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesSub) return false;
+        const matchesDetails = item.details.toLowerCase().includes(query);
+        if (!matchesTitle && !matchesSub && !matchesDetails) return false;
       }
       return true;
     });
@@ -135,16 +119,15 @@ export default function AccessRightsHistoryTab({ onReverted }) {
     return c;
   }, [items]);
 
-  // Group by dateHeader
   const groupedByDate = useMemo(() => {
     const map = new Map();
     filteredItems.forEach((it) => {
-      const header = it.dateHeader || 'Boshqa';
+      const header = it.dateHeader || (isRu ? 'Ранее' : 'Oldingi');
       if (!map.has(header)) map.set(header, []);
       map.get(header).push(it);
     });
     return Array.from(map.entries());
-  }, [filteredItems]);
+  }, [filteredItems, isRu]);
 
   return (
     <div className="space-y-4">
@@ -161,10 +144,10 @@ export default function AccessRightsHistoryTab({ onReverted }) {
       <div className="space-y-6">
         {filteredItems.length === 0 ? (
           <AccessRightsHistoryEmptyState
-            canClear={Boolean(search || datePreset !== '30d' || actionType !== 'all')}
+            canClear={Boolean(search || datePreset !== '7d' || actionType !== 'all')}
             onClearFilters={() => {
               setSearch('');
-              setDatePreset('30d');
+              setDatePreset('7d');
               setActionType('all');
             }}
           />

@@ -9,12 +9,26 @@ const COLOR_CLASSES = [
   'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
 ];
 
+export function resolveAvatarInitials(name = '') {
+  const cleanName = String(name || '').trim();
+  const words = cleanName
+    .split(/\s+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter(Boolean);
+
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+  const fallback = cleanName.replace(/[^\p{L}\p{N}]/gu, '');
+  return (fallback.slice(0, 2) || 'U').toUpperCase();
+}
+
 export default function AccessRightsAvatar({ name = '', size = 'md', className = '' }) {
   const cleanName = String(name || '').trim();
-  const parts = cleanName.split(/\s+/).filter(Boolean);
-  const initials = parts.length >= 2
-    ? (parts[0][0] + parts[1][0]).toUpperCase()
-    : (cleanName.slice(0, 2) || 'U').toUpperCase();
+  const initials = resolveAvatarInitials(cleanName);
 
   let hash = 0;
   for (let i = 0; i < cleanName.length; i += 1) {

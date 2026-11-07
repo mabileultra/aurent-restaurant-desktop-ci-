@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function AccessRightsModuleGroupAccordion({
   group,
@@ -8,11 +9,25 @@ export default function AccessRightsModuleGroupAccordion({
   onEnableAll,
   onDisableAll,
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
   const [isOpen, setIsOpen] = useState(true);
 
   const modules = group.modules || [];
   const enabledCount = modules.filter((m) => Boolean(moduleToggles[m.id])).length;
   const totalCount = modules.length;
+
+  const handleEnable = () => {
+    if (onEnableAll) {
+      onEnableAll(modules.map((m) => m.id));
+    }
+  };
+
+  const handleDisable = () => {
+    if (onDisableAll) {
+      onDisableAll(modules.map((m) => m.id));
+    }
+  };
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden transition-all">
@@ -32,18 +47,18 @@ export default function AccessRightsModuleGroupAccordion({
         <div className="flex items-center gap-3 text-xs">
           <button
             type="button"
-            onClick={onEnableAll}
+            onClick={handleEnable}
             className="text-emerald-700 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
           >
-            Hammasini yoqish
+            {isRu ? 'Включить все' : 'Hammasini yoqish'}
           </button>
           <span className="text-slate-300 dark:text-slate-700">·</span>
           <button
             type="button"
-            onClick={onDisableAll}
+            onClick={handleDisable}
             className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold cursor-pointer"
           >
-            Hammasini o‘chirish
+            {isRu ? 'Отключить все' : 'Hammasini o‘chirish'}
           </button>
         </div>
       </div>

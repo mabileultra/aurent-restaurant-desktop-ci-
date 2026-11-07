@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { platformModuleAccessApi } from '../../../../../api';
+import RoleEmployeesDrawerHeader from './RoleEmployeesDrawerHeader';
 import RoleEmployeeResetConfirmDialog from './RoleEmployeeResetConfirmDialog';
 import RoleEmployeeEditDrawer from './RoleEmployeeEditDrawer';
 import RoleEmployeesFilterBar from './RoleEmployeesFilterBar';
@@ -11,6 +9,7 @@ import RoleEmployeesListSection from './RoleEmployeesListSection';
 import RoleEmployeeBulkDrawer from './RoleEmployeeBulkDrawer';
 import { useRoleEmployeesSelection } from '../hooks/useRoleEmployeesSelection';
 import { useRoleEmployeesDrawerState } from '../hooks/useRoleEmployeesDrawerState';
+import { useRoleEmployeesBulkActions } from '../hooks/useRoleEmployeesBulkActions';
 import { trapFocus } from '../utils/focusTrapUtils';
 import { filterRoleEmployees } from '../utils/roleEmployeeFilterUtils';
 
@@ -53,6 +52,23 @@ export default function RoleEmployeesDrawer({
     closeButtonRef, drawerRef,
   } = useRoleEmployeesDrawerState({ isOpen, clearSelection, onResetUserToTemplate });
 
+  const selectedUsers = useMemo(
+    () => filteredUsers.filter((u) => selectedUserIds.has(u.userId || u.id)),
+    [filteredUsers, selectedUserIds]
+  );
+  const copySourceUser = useMemo(
+    () => selectedUsers.find((u) => Boolean(u.moduleAccessCustom || u.customAccess || u.hasExceptions)),
+    [selectedUsers]
+  );
+  const canCopyFromSelection = Boolean(copySourceUser) && selectedUserIds.size >= 2;
+
+  const { handleBulkReset, handleCopy } = useRoleEmployeesBulkActions({
+    selectedUserIds,
+    copySourceUser,
+    clearSelection,
+    onUserUpdated,
+  });
+
   useEffect(() => {
     if (!isOpen) return undefined;
     const handleKeyDown = (e) => {
@@ -69,16 +85,6 @@ export default function RoleEmployeesDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, confirmUser, editingUser, isBulkOpen, drawerRef]);
 
-  const selectedUsers = useMemo(
-    () => filteredUsers.filter((u) => selectedUserIds.has(u.userId || u.id)),
-    [filteredUsers, selectedUserIds]
-  );
-  const copySourceUser = useMemo(
-    () => selectedUsers.find((u) => Boolean(u.moduleAccessCustom || u.customAccess || u.hasExceptions)),
-    [selectedUsers]
-  );
-  const canCopyFromSelection = Boolean(copySourceUser) && selectedUserIds.size >= 2;
-
   if (!isOpen || !role) return null;
 
   const drawerNode = (
@@ -90,33 +96,14 @@ export default function RoleEmployeesDrawer({
       aria-labelledby="employees-drawer-title"
     >
       <div className="flex flex-col w-full max-w-xl bg-white h-full shadow-2xl dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 animate-in slide-in-from-right duration-200">
-        <header className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800 shrink-0">
-          <div>
-            <h3 id="employees-drawer-title" className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>{role.name} xodimlari</span>
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">· {businessTypeName}</span>
-            </h3>
-            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">
-              Jami {totalCount} ta xodim · {exceptionsCount} tasida istisno bor
-            </p>
-          </div>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Panelni yopish"
-            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </header>
-
-        {totalCount >= 250 && (
-          <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 flex items-center gap-1.5 shrink-0">
-            <AlertCircle size={13} className="shrink-0 text-amber-700" />
-            <span>Dastlabki 250 ta xodim ko‘rsatilmoqda (Jami: {totalCount} ta). Qidiruvdan foydalaning.</span>
-          </div>
-        )}
+        <RoleEmployeesDrawerHeader
+          role={role}
+          businessTypeName={businessTypeName}
+          totalCount={totalCount}
+          exceptionsCount={exceptionsCount}
+          closeButtonRef={closeButtonRef}
+          onClose={onClose}
+        />
 
         <RoleEmployeesFilterBar
           searchQuery={searchQuery}
@@ -142,40 +129,8 @@ export default function RoleEmployeesDrawer({
           selectedCount={selectedUserIds.size}
           canCopy={canCopyFromSelection}
           onApply={() => setIsBulkOpen(true)}
-          onBulkReset={async () => {
-            const ids = Array.from(selectedUserIds);
-            if (!ids.length) return;
-            try {
-              await platformModuleAccessApi.bulkReset({ userIds: ids });
-              toast.success(`${ids.length} ta xodim shablonga qaytarildi`);
-              clearSelection();
-              onUserUpdated?.();
-            } catch (err) {
-              toast.error(err?.response?.data?.message || 'Bulk reset xato');
-            }
-          }}
-          onCopy={async () => {
-            const source = copySourceUser;
-            if (!source) return;
-            const sourceId = source.userId || source.id;
-            const targets = Array.from(selectedUserIds).filter((id) => id !== sourceId);
-            if (!targets.length) {
-              toast.error('Nusxa uchun yana kamida 1 ta xodim tanlang');
-              return;
-            }
-            try {
-              await platformModuleAccessApi.copy({
-                sourceUserId: sourceId,
-                targetUserIds: targets,
-                strategy: 'REPLACE',
-              });
-              toast.success(`Huquqlar ${targets.length} ta xodimga ko‘chirildi`);
-              clearSelection();
-              onUserUpdated?.();
-            } catch (err) {
-              toast.error(err?.response?.data?.message || 'Nusxa olish xato');
-            }
-          }}
+          onBulkReset={handleBulkReset}
+          onCopy={handleCopy}
           onClear={clearSelection}
         />
 

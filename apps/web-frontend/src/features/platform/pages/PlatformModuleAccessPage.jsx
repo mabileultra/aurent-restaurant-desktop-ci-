@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import AccessRightsHeader from '../components/access-rights/AccessRightsHeader';
 import AccessRightsTemplatesTab from '../components/access-rights/templates/AccessRightsTemplatesTab';
 import AccessRightsStaffTab from '../components/access-rights/staff/AccessRightsStaffTab';
@@ -8,14 +8,17 @@ import AccessRightsHistoryTab from '../components/access-rights/history/AccessRi
 import AccessRightsCopyModal from '../components/access-rights/modals/AccessRightsCopyModal';
 import AccessRightsCopyTemplateModal from '../components/access-rights/modals/AccessRightsCopyTemplateModal';
 import { useAccessRightsV2Data } from '../components/access-rights/hooks/useAccessRightsV2Data';
-import { platformModuleAccessApi } from '../../../api';
+import { useAccessRightsCopyActions } from '../components/access-rights/hooks/useAccessRightsCopyActions';
 
 export default function PlatformModuleAccessPage() {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'templates';
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [selectedTemplateRole, setSelectedTemplateRole] = useState('ADMIN');
+  const [isTabDirty, setIsTabDirty] = useState(false);
 
-  // Sync tab with URL
   useEffect(() => {
     const currentParam = searchParams.get('tab');
     if (currentParam && currentParam !== activeTab) {
@@ -24,6 +27,14 @@ export default function PlatformModuleAccessPage() {
   }, [searchParams]);
 
   const handleTabChange = (tabId) => {
+    if (tabId === activeTab) return;
+    if (isTabDirty) {
+      const confirmMsg = isRu
+        ? 'У вас есть несохранённые изменения. Перейти на другую вкладку без сохранения?'
+        : 'Sizda saqlanmagan o‘zgarishlar bor. Saqlamasdan boshqa bo‘limga o‘tishni xohlaysizmi?';
+      if (!window.confirm(confirmMsg)) return;
+    }
+    setIsTabDirty(false);
     setActiveTab(tabId);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -34,57 +45,26 @@ export default function PlatformModuleAccessPage() {
 
   const {
     selectedBT, setSelectedBT,
-    companies = [], businessTypes = [], roles = [],
-    users = [], rawCatalog = [],
-    isLoading = false, totalCount = 0, refetchAll,
+    selectedCompanyId, setSelectedCompanyId,
+    selectedRole, setSelectedRole,
+    searchTerm, setSearchTerm,
+    companies = [], businessTypes = [],
+    users = [], rawCatalog = [], statsByCode = new Map(),
+    networkStats = {}, isLoading = false, totalCount = 0, refetchAll,
   } = useAccessRightsV2Data() || {};
 
-  // Copy permissions modal state
-  const [copySourceUser, setCopySourceUser] = useState(null);
-  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
-  const [isCopying, setIsCopying] = useState(false);
+  const copyActions = useAccessRightsCopyActions({ refetchAll, isRu });
 
-  // Copy template modal state
-  const [isCopyTemplateOpen, setIsCopyTemplateOpen] = useState(false);
-
-  // KPI counts
-  const exceptionEmployees = users.filter((u) => Boolean(u.moduleAccessCustom || u.exceptionCount > 0)).length;
-  const standardEmployees = Math.max(0, totalCount - exceptionEmployees);
-
-  const handleOpenCopyStaff = (user) => {
-    setCopySourceUser(user);
-    setIsCopyModalOpen(true);
-  };
-
-  const handleConfirmCopyStaff = async ({ sourceUserId, targetUserIds, mode }) => {
-    setIsCopying(true);
-    try {
-      await platformModuleAccessApi.copy({
-        fromUserId: sourceUserId,
-        targetUserIds,
-        mode: mode === 'replace' ? 'OVERWRITE' : 'MERGE',
-      });
-      toast.success(`${targetUserIds.length} ta xodimga ruxsatlar muvaffaqiyatli nusxalandi`);
-      setIsCopyModalOpen(false);
-      refetchAll();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Nusxalashda xatolik yuz berdi');
-    } finally {
-      setIsCopying(false);
-    }
-  };
-
-  const [staffFilterBT, setStaffFilterBT] = useState('ALL');
-  const [staffFilterRole, setStaffFilterRole] = useState('ALL');
+  const {
+    totalEmployees = totalCount,
+    standardEmployees = totalCount,
+    exceptionEmployees = 0,
+    businessTypesCount = 0,
+  } = networkStats || {};
 
   const handleSwitchToStaff = (btCode, roleCode) => {
-    if (btCode) {
-      setSelectedBT(btCode);
-      setStaffFilterBT(btCode);
-    }
-    if (roleCode) {
-      setStaffFilterRole(roleCode);
-    }
+    if (btCode) setSelectedBT(btCode);
+    if (roleCode) setSelectedRole(roleCode);
     handleTabChange('staff');
   };
 
@@ -101,15 +81,19 @@ export default function PlatformModuleAccessPage() {
       {activeTab === 'templates' && (
         <AccessRightsTemplatesTab
           businessTypes={businessTypes}
-          roles={roles}
           rawCatalog={rawCatalog}
-          totalEmployees={totalCount}
+          statsByCode={statsByCode}
+          totalEmployees={totalEmployees}
           standardEmployees={standardEmployees}
           exceptionEmployees={exceptionEmployees}
+          businessTypesCount={businessTypesCount}
           selectedBT={selectedBT}
+          initialRole={selectedTemplateRole}
+          onSelectRole={setSelectedTemplateRole}
           onSelectBT={setSelectedBT}
           onSwitchToStaff={handleSwitchToStaff}
-          onOpenCopyTemplate={() => setIsCopyTemplateOpen(true)}
+          onOpenCopyTemplate={() => copyActions.setIsCopyTemplateOpen(true)}
+          onDirtyChange={setIsTabDirty}
         />
       )}
 
@@ -119,12 +103,19 @@ export default function PlatformModuleAccessPage() {
           rawCatalog={rawCatalog}
           businessTypes={businessTypes}
           companies={companies}
-          totalEmployees={totalCount}
+          totalEmployees={totalEmployees}
           exceptionEmployees={exceptionEmployees}
-          initialBT={staffFilterBT}
-          initialRole={staffFilterRole}
-          onOpenCopyModal={handleOpenCopyStaff}
+          selectedBT={selectedBT}
+          onSelectBT={setSelectedBT}
+          selectedCompanyId={selectedCompanyId}
+          onSelectCompanyId={setSelectedCompanyId}
+          selectedRole={selectedRole}
+          onSelectRole={setSelectedRole}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onOpenCopyModal={copyActions.handleOpenCopyStaff}
           onStaffUpdated={refetchAll}
+          onDirtyChange={setIsTabDirty}
         />
       )}
 
@@ -132,30 +123,29 @@ export default function PlatformModuleAccessPage() {
         <AccessRightsHistoryTab onReverted={refetchAll} />
       )}
 
-      {isCopyModalOpen && (
+      {copyActions.isCopyModalOpen && (
         <AccessRightsCopyModal
-          open={isCopyModalOpen}
-          isOpen={isCopyModalOpen}
-          onClose={() => setIsCopyModalOpen(false)}
-          sourceUser={copySourceUser}
+          open={copyActions.isCopyModalOpen}
+          isOpen={copyActions.isCopyModalOpen}
+          onClose={() => copyActions.setIsCopyModalOpen(false)}
+          sourceUser={copyActions.copySourceUser}
+          initialTargetIds={copyActions.copyInitialTargets}
           allUsers={users}
-          onConfirmCopy={handleConfirmCopyStaff}
-          isCopying={isCopying}
+          onConfirmCopy={copyActions.handleConfirmCopyStaff}
+          isCopying={copyActions.isCopying}
         />
       )}
 
-      {isCopyTemplateOpen && (
+      {copyActions.isCopyTemplateOpen && (
         <AccessRightsCopyTemplateModal
-          open={isCopyTemplateOpen}
-          isOpen={isCopyTemplateOpen}
-          onClose={() => setIsCopyTemplateOpen(false)}
+          open={copyActions.isCopyTemplateOpen}
+          isOpen={copyActions.isCopyTemplateOpen}
+          onClose={() => copyActions.setIsCopyTemplateOpen(false)}
           targetBT={selectedBT}
+          targetRole="ADMIN"
           businessTypes={businessTypes}
-          onConfirm={() => {
-            setIsCopyTemplateOpen(false);
-            toast.success('Andoza nusxasi muvaffaqiyatli qo‘llandi');
-            refetchAll();
-          }}
+          onConfirm={copyActions.handleConfirmCopyTemplate}
+          isLoading={copyActions.isCopyingTemplate}
         />
       )}
     </div>

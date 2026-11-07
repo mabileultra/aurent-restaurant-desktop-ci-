@@ -1,8 +1,15 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import AccessRightsStaffFiltersBar from './AccessRightsStaffFiltersBar';
 import AccessRightsStaffListPanel from './AccessRightsStaffListPanel';
 import AccessRightsStaffDetailPanel from './AccessRightsStaffDetailPanel';
 import { useAccessRightsStaffFlow } from '../hooks/useAccessRightsStaffFlow';
+import { isNewStaffUser } from '../hooks/staffFlowHelpers';
+import {
+  resolveModuleName,
+  GROUP_TITLES_UZ,
+  GROUP_TITLES_RU,
+} from '../utils/accessRightsCatalogUtils';
 
 export default function AccessRightsStaffTab({
   users = [],
@@ -11,48 +18,48 @@ export default function AccessRightsStaffTab({
   companies = [],
   totalEmployees = 0,
   exceptionEmployees = 0,
-  initialBT = 'ALL',
-  initialRole = 'ALL',
+  selectedBT = 'ALL',
+  onSelectBT,
+  selectedCompanyId = '',
+  onSelectCompanyId,
+  selectedRole = 'ALL',
+  onSelectRole,
+  searchTerm = '',
+  onSearchChange,
   onOpenCopyModal,
   onStaffUpdated,
+  onDirtyChange,
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBT, setSelectedBT] = useState(initialBT);
-  const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [selectedRole, setSelectedRole] = useState(initialRole);
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'custom' | 'new'
 
-  React.useEffect(() => {
-    if (initialBT) setSelectedBT(initialBT);
-  }, [initialBT]);
+  const roleFilteredUsers = useMemo(() => {
+    if (!selectedRole || selectedRole === 'ALL') return users;
+    return users.filter((u) => u.role === selectedRole);
+  }, [users, selectedRole]);
 
-  React.useEffect(() => {
-    if (initialRole) setSelectedRole(initialRole);
-  }, [initialRole]);
+  const newCount = useMemo(() => {
+    return roleFilteredUsers.filter((u) => isNewStaffUser(u.createdAt)).length;
+  }, [roleFilteredUsers]);
 
-  // Filter users based on top bar filters
+  const realExceptionsCount = useMemo(() => {
+    return roleFilteredUsers.filter((u) => Boolean(u.moduleAccessCustom || u.exceptionCount > 0)).length;
+  }, [roleFilteredUsers]);
+
+  // Client-side quick filter for chips (custom, new)
   const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
-      if (selectedBT !== 'ALL' && u.businessType !== selectedBT) return false;
-      if (selectedCompanyId && String(u.companyId) !== String(selectedCompanyId)) return false;
-      if (selectedRole !== 'ALL' && u.role !== selectedRole) return false;
-
-      if (searchTerm) {
-        const query = searchTerm.toLowerCase();
-        const matchesName = (u.fullName || '').toLowerCase().includes(query);
-        const matchesUser = (u.username || '').toLowerCase().includes(query);
-        const matchesComp = (u.companyName || '').toLowerCase().includes(query);
-        if (!matchesName && !matchesUser && !matchesComp) return false;
-      }
-
+    return roleFilteredUsers.filter((u) => {
       if (filterTab === 'custom') {
         const hasEx = Boolean(u.moduleAccessCustom || u.exceptionCount > 0);
         if (!hasEx) return false;
       }
-
+      if (filterTab === 'new') {
+        if (!isNewStaffUser(u.createdAt)) return false;
+      }
       return true;
     });
-  }, [users, selectedBT, selectedCompanyId, selectedRole, searchTerm, filterTab]);
+  }, [roleFilteredUsers, filterTab]);
 
   const flow = useAccessRightsStaffFlow({
     users: filteredUsers,
@@ -60,20 +67,44 @@ export default function AccessRightsStaffTab({
     onStaffUpdated,
   });
 
+  React.useEffect(() => {
+    if (onDirtyChange) onDirtyChange(flow.isDirty);
+  }, [flow.isDirty, onDirtyChange]);
+
+  // Map user-scoped modules with names and group titles
+  const userModulesWithMeta = useMemo(() => {
+    const titles = isRu ? GROUP_TITLES_RU : GROUP_TITLES_UZ;
+    return (flow.userModules || []).map((m) => {
+      const cat = rawCatalog.find((c) => c.id === m.id);
+      const groupId = cat?.group || 'main';
+      return {
+        ...m,
+        name: resolveModuleName(m.id, {}, isRu ? 'ru' : 'uz'),
+        groupTitle: titles[groupId] || (isRu ? 'Основной' : 'Asosiy'),
+      };
+    });
+  }, [flow.userModules, rawCatalog, isRu]);
+
+  const handleBulkCopy = () => {
+    if (!onOpenCopyModal) return;
+    const targets = Array.from(flow.checkedIds);
+    onOpenCopyModal(flow.selectedUser, targets);
+  };
+
   return (
     <div className="space-y-4">
       {/* Top filters bar */}
       <AccessRightsStaffFiltersBar
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={onSearchChange}
         businessTypes={businessTypes}
         selectedBT={selectedBT}
-        onSelectBT={setSelectedBT}
+        onSelectBT={onSelectBT}
         companies={companies}
         selectedCompanyId={selectedCompanyId}
-        onSelectCompanyId={setSelectedCompanyId}
+        onSelectCompanyId={onSelectCompanyId}
         selectedRole={selectedRole}
-        onSelectRole={setSelectedRole}
+        onSelectRole={onSelectRole}
       />
 
       {/* 2-Column Master-Detail Layout */}
@@ -83,24 +114,25 @@ export default function AccessRightsStaffTab({
           totalCount={users.length}
           filterTab={filterTab}
           onFilterTabChange={setFilterTab}
-          exceptionsCount={exceptionEmployees}
-          newCount={Math.max(0, Math.round(users.length * 0.1))}
+          exceptionsCount={realExceptionsCount}
+          newCount={newCount}
           selectedUserId={flow.selectedUserId}
           onSelectUser={flow.setSelectedUser}
           checkedUserIds={flow.checkedIds}
           onToggleCheckUser={flow.handleToggleCheckUser}
           onToggleCheckAll={flow.handleToggleCheckAll}
           onResetBulk={flow.handleBulkReset}
-          onCopyBulk={() => onOpenCopyModal && onOpenCopyModal(flow.selectedUser)}
+          onCopyBulk={handleBulkCopy}
           onClearChecked={flow.handleClearChecked}
           isResettingBulk={flow.isResettingBulk}
         />
 
         <AccessRightsStaffDetailPanel
           user={flow.selectedUser}
+          totalUsersCount={filteredUsers.length}
           templateModules={flow.templateModules}
           moduleOverrides={flow.overrides}
-          allModules={rawCatalog}
+          allModules={userModulesWithMeta}
           isDirty={flow.isDirty}
           dirtyCount={flow.dirtyCount}
           isSaving={flow.isSaving}

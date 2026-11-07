@@ -1,21 +1,31 @@
 import React from 'react';
 import { Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function AccessRightsHistoryFiltersBar({
   search = '',
   onSearchChange,
-  datePreset = '7d', // 'today' | '7d' | '30d'
+  datePreset = '7d',
   onDatePresetChange,
-  actionType = 'all', // 'all' | 'template' | 'exception' | 'copy' | 'bulk'
+  actionType = 'all',
   onActionTypeChange,
   counts = {},
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const chips = [
-    { id: 'all', label: `Barcha amallar ${counts.all ?? 0}` },
-    { id: 'template', label: `Shablon ${counts.template ?? 0}` },
-    { id: 'exception', label: `Istisno ${counts.exception ?? 0}` },
-    { id: 'copy', label: `Nusxa ${counts.copy ?? 0}` },
-    { id: 'bulk', label: `Ommaviy ${counts.bulk ?? 0}` },
+    { id: 'all', label: isRu ? `Все действия ${counts.all ?? 0}` : `Barcha amallar ${counts.all ?? 0}` },
+    { id: 'template', label: isRu ? `Шаблон ${counts.template ?? 0}` : `Shablon ${counts.template ?? 0}` },
+    { id: 'exception', label: isRu ? `Исключение ${counts.exception ?? 0}` : `Istisno ${counts.exception ?? 0}` },
+    { id: 'copy', label: isRu ? `Копия ${counts.copy ?? 0}` : `Nusxa ${counts.copy ?? 0}` },
+    { id: 'bulk', label: isRu ? `Массово ${counts.bulk ?? 0}` : `Ommaviy ${counts.bulk ?? 0}` },
+  ];
+
+  const presets = [
+    { id: 'today', label: isRu ? 'Сегодня' : 'Bugun' },
+    { id: '7d', label: isRu ? '7 дней' : '7 kun' },
+    { id: '30d', label: isRu ? '30 дней' : '30 kun' },
   ];
 
   return (
@@ -27,17 +37,15 @@ export default function AccessRightsHistoryFiltersBar({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Xodim, shablon yoki modul..."
+            placeholder={
+              isRu ? 'Сотрудник, шаблон или модуль...' : 'Xodim, shablon yoki modul...'
+            }
             className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
           />
         </div>
 
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-          {[
-            { id: 'today', label: 'Bugun' },
-            { id: '7d', label: '7 kun' },
-            { id: '30d', label: '30 kun' },
-          ].map((preset) => (
+          {presets.map((preset) => (
             <button
               key={preset.id}
               type="button"

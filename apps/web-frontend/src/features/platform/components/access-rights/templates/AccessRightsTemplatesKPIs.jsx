@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, ShieldCheck, AlertCircle, Briefcase } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function AccessRightsTemplatesKPIs({
   totalEmployees = 0,
@@ -7,34 +8,37 @@ export default function AccessRightsTemplatesKPIs({
   exceptionEmployees = 0,
   businessTypesCount = 0,
 }) {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === 'ru';
+
   const cards = [
     {
-      title: 'Jami xodim',
+      title: isRu ? 'Всего сотрудников' : 'Jami xodim',
       value: totalEmployees,
       icon: Users,
       color: 'text-slate-900 dark:text-slate-100',
-      badge: 'Barcha tarmoq',
+      badge: isRu ? 'Вся сеть' : 'Barcha tarmoq',
     },
     {
-      title: 'Faqat shablon bo‘yicha ishlaydi',
+      title: isRu ? 'Только по шаблону' : 'Faqat shablon bo‘yicha ishlaydi',
       value: standardEmployees,
       icon: ShieldCheck,
       color: 'text-emerald-700 dark:text-emerald-400',
-      badge: 'Standart huquq',
+      badge: isRu ? 'Стандарт' : 'Standart huquq',
     },
     {
-      title: 'Istisnosi bor xodim',
+      title: isRu ? 'С исключениями' : 'Istisnosi bor xodim',
       value: exceptionEmployees,
       icon: AlertCircle,
       color: 'text-amber-600 dark:text-amber-400',
-      badge: 'Alohida ruxsat/taqiq',
+      badge: isRu ? 'Персональные' : 'Alohida ruxsat/taqiq',
     },
     {
-      title: 'Faoliyat turi',
+      title: isRu ? 'Направлений бизнеса' : 'Faoliyat turi',
       value: businessTypesCount,
       icon: Briefcase,
       color: 'text-slate-900 dark:text-slate-100',
-      badge: 'Yo‘nalishlar',
+      badge: isRu ? 'Отрасли' : 'Yo‘nalishlar',
     },
   ];
 
@@ -55,7 +59,7 @@ export default function AccessRightsTemplatesKPIs({
               <span className={`text-2xl font-bold tracking-tight ${c.color}`}>
                 {c.value}
               </span>
-              <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
                 {c.badge}
               </span>
             </div>
