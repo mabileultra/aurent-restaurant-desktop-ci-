@@ -4,6 +4,7 @@ import path from 'node:path';
 import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import eslint from 'vite-plugin-eslint2';
 
 function serviceWorkerVersionPlugin() {
   return {
@@ -55,7 +56,17 @@ export default defineConfig(async ({ mode }) => {
   };
 
   return {
-    plugins: [react(), serviceWorkerVersionPlugin(), visualizerPlugin].filter(Boolean),
+    plugins: [
+      react(),
+      eslint({
+        dev: true,
+        build: false,
+        cache: true,
+        cacheLocation: path.resolve(__dirname, 'node_modules/.cache/.eslintcache'),
+      }),
+      serviceWorkerVersionPlugin(),
+      visualizerPlugin,
+    ].filter(Boolean),
     server: {
       port: 5173,
       // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).
