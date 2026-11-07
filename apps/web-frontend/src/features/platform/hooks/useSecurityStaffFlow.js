@@ -2,49 +2,8 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { platformSecurityApi } from '../../../api';
-import { resolveUserInitials } from '../utils/securityFormatUtils';
+import { generateSecurePassword, resolveUserInitials } from '../utils/securityFormatUtils';
 import { PERMISSIONS_MATRIX_ROWS } from '../utils/securityConstants';
-
-const INITIAL_STAFF = [
-  {
-    id: 'sa',
-    firstName: 'Administrator',
-    lastName: 'Super',
-    fullName: 'Administrator Super',
-    username: 'superadmin',
-    email: 'superadmin@platform.local',
-    role: 'SUPER_ADMIN',
-    twoFactor: true,
-    lastSeen: 'Bugun 12:31 · Samarqand',
-    status: 'active',
-  },
-  {
-    id: 'op',
-    firstName: 'Operator',
-    lastName: 'Platform',
-    fullName: 'Operator Platform',
-    username: 'platformadmin',
-    email: 'platformadmin@platform.local',
-    role: 'PLATFORM_ADMIN',
-    twoFactor: false,
-    lastSeen: 'Bugun 09:02 · Toshkent',
-    status: 'locked',
-  },
-  {
-    id: 'an',
-    firstName: 'Analitika',
-    lastName: 'Analitika',
-    fullName: 'Analitika Analitika',
-    username: 'analitik',
-    email: 'analitik@gmail.com',
-    role: 'PLATFORM_ANALYTICS',
-    twoFactor: false,
-    lastSeen: 'Bugun 10:40 · Samarqand',
-    status: 'active',
-  },
-];
-
-const TEMP_PASSWORDS = ['Kz7#pR2m-Vq', 'tU4!hN9w-Lx', 'Bq8$eY3s-Jd', 'Wp5#mF2x-Qr'];
 
 const emptyStaffForm = () => ({
   mode: 'create',
@@ -54,9 +13,6 @@ const emptyStaffForm = () => ({
   email: '',
   password: '',
   role: 'PLATFORM_ADMIN',
-  twoFactor: true,
-  mustChangePassword: true,
-  isActive: true,
 });
 
 /**
@@ -65,7 +21,7 @@ const emptyStaffForm = () => ({
 export function useSecurityStaffFlow() {
   const qc = useQueryClient();
   const [form, setForm] = useState(null);
-  const [tempPwIndex, setTempPwIndex] = useState(0);
+  const [currentTempPassword, setCurrentTempPassword] = useState(() => generateSecurePassword(12));
 
   const { data: remoteAdmins = [], isLoading } = useQuery({
     queryKey: ['platform-security-super-admins'],
@@ -73,25 +29,21 @@ export function useSecurityStaffFlow() {
   });
 
   const staffList = useMemo(() => {
-    if (Array.isArray(remoteAdmins) && remoteAdmins.length > 0) {
+    if (Array.isArray(remoteAdmins)) {
       return remoteAdmins.map((item) => ({
         id: item.id,
         firstName: item.firstName || '',
         lastName: item.lastName || '',
         fullName: item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username,
         username: item.username,
-        email: item.email || `${item.username}@platform.local`,
+        email: item.email || '',
         role: item.role || 'PLATFORM_ADMIN',
-        twoFactor: item.role === 'SUPER_ADMIN',
-        lastSeen: 'Faol hozir',
-        status: 'active',
+        active: item.active !== false,
+        status: item.active !== false ? 'active' : 'inactive',
         initials: resolveUserInitials(item.firstName, item.lastName),
       }));
     }
-    return INITIAL_STAFF.map((item) => ({
-      ...item,
-      initials: resolveUserInitials(item.firstName, item.lastName),
-    }));
+    return [];
   }, [remoteAdmins]);
 
   const createAdminMutation = useMutation({
@@ -115,6 +67,7 @@ export function useSecurityStaffFlow() {
   });
 
   const openCreate = () => {
+    setCurrentTempPassword(generateSecurePassword(12));
     setForm(emptyStaffForm());
   };
 
@@ -127,9 +80,6 @@ export function useSecurityStaffFlow() {
       username: staffItem.username ?? '',
       email: staffItem.email ?? '',
       role: staffItem.role ?? 'PLATFORM_ADMIN',
-      twoFactor: !!staffItem.twoFactor,
-      mustChangePassword: false,
-      isActive: staffItem.status === 'active',
       password: '',
     });
   };
@@ -141,10 +91,8 @@ export function useSecurityStaffFlow() {
   };
 
   const cycleTempPassword = () => {
-    setTempPwIndex((prev) => (prev + 1) % TEMP_PASSWORDS.length);
+    setCurrentTempPassword(generateSecurePassword(12));
   };
-
-  const currentTempPassword = TEMP_PASSWORDS[tempPwIndex];
 
   const handleSubmit = (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -156,7 +104,7 @@ export function useSecurityStaffFlow() {
         lastName: form.lastName.trim(),
         username: form.username.trim(),
         email: form.email.trim(),
-        password: form.password || currentTempPassword,
+        password: form.password ? form.password.trim() : currentTempPassword,
         role: form.role,
       });
       return;
@@ -167,7 +115,7 @@ export function useSecurityStaffFlow() {
       payload: {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
-        password: form.password ? form.password : undefined,
+        password: form.password && form.password.trim() ? form.password.trim() : undefined,
       },
     });
   };

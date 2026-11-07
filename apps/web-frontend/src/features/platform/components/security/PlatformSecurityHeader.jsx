@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, UserPlus, Lock } from 'lucide-react';
+import { UserPlus, Lock } from 'lucide-react';
 import { BaseButton } from '../../../../components/ui';
 
 export default function PlatformSecurityHeader({ onOpenCreateStaff, onGoToRules }) {
@@ -17,7 +17,7 @@ export default function PlatformSecurityHeader({ onOpenCreateStaff, onGoToRules 
           </h1>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-            Oxirgi tekshiruv: bugun 12:31
+            Monitoring faol
           </span>
         </div>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">

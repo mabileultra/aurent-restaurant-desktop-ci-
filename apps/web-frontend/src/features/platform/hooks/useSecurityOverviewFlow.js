@@ -1,107 +1,7 @@
 import { useMemo, useState } from 'react';
-
-const INITIAL_RECOMMENDATIONS = [
-  {
-    id: 'r1',
-    severity: 'high',
-    title: '2 ta xodimda ikki bosqichli tasdiqlash o‘chirilgan',
-    desc: 'Operator Platform va Analitika Analitika hisoblari faqat parol bilan himoyalangan.',
-    action: '2FA’ni majburiy qilish',
-    targetTab: 'rules',
-  },
-  {
-    id: 'r2',
-    severity: 'high',
-    title: 'Xodimlarning email manzili ishlamaydi',
-    desc: 'superadmin@platform.local manzillariga xat yetib bormaydi — kirish ogohlantirishlari va parolni tiklash ishlamaydi.',
-    action: 'Manzillarni yangilash',
-    targetTab: 'staff',
-  },
-  {
-    id: 'r3',
-    severity: 'mid',
-    title: 'Kassa server paroli 43 kundan beri o‘zgarmagan',
-    desc: 'Har 90 kunda kassa server sozlamalari parolini yangilash tavsiya etiladi.',
-    action: 'Parolni almashtirish',
-    targetTab: 'rules',
-  },
-  {
-    id: 'r4',
-    severity: 'mid',
-    title: 'Faolsizlikda avtomatik chiqish yo‘q',
-    desc: 'Ochiq qolgan brauzerda super-admin seansi muddatsiz faol turadi.',
-    action: 'Seans muddatini belgilash',
-    targetTab: 'rules',
-  },
-  {
-    id: 'r5',
-    severity: 'low',
-    title: 'IP cheklovi o‘chirilgan',
-    desc: 'Super-admin paneliga istalgan tarmoqdan kirish mumkin.',
-    action: 'Sozlash',
-    targetTab: 'rules',
-  },
-];
-
-const COMPLETED_CHECKS = [
-  'Kassa server sozlamalari paroli o‘rnatilgan (standart parol ishlatilmayapti)',
-  'Super-admin roli faqat 1 ta xodimda',
-  'Barcha xodimlar hisobi faol va egasi aniq',
-  'Super-admin kirishlari haqida email ogohlantirish yoqilgan',
-];
-
-const RECENT_SECURITY_EVENTS = [
-  {
-    id: 'e1',
-    type: 'login',
-    tone: 'ok',
-    title: 'Administrator Super tizimga kirdi',
-    meta: 'Chrome · Linux · 213.230.98.17 · Samarqand',
-    time: '12:31',
-  },
-  {
-    id: 'e2',
-    type: 'warn',
-    tone: 'bad',
-    title: '3 marta noto‘g‘ri parol: platformadmin',
-    meta: '185.139.137.4 · Toshkent · hisob 15 daqiqaga bloklandi',
-    time: '11:58',
-  },
-  {
-    id: 'e3',
-    type: 'key',
-    tone: 'info',
-    title: 'Analitika Analitika parolini almashtirdi',
-    meta: 'Profil sozlamalari orqali',
-    time: '10:42',
-  },
-  {
-    id: 'e4',
-    type: 'edit',
-    tone: 'info',
-    title: 'Operator Platform tarifni o‘zgartirdi',
-    meta: 'XAN BALIQ MCHJ · Biznes → Standart',
-    time: '09:15',
-  },
-  {
-    id: 'e5',
-    type: 'device',
-    tone: 'warn',
-    title: 'Yangi qurilmadan super-admin kirishi',
-    meta: 'Safari · iPhone · 84.54.70.212 · Toshkent',
-    time: 'kecha 22:47',
-  },
-];
-
-const SEVEN_DAYS_STATS = [
-  { day: '31-okt', ok: 12, fail: 1 },
-  { day: '1-noy', ok: 9, fail: 0 },
-  { day: '2-noy', ok: 14, fail: 2 },
-  { day: '3-noy', ok: 11, fail: 0 },
-  { day: '4-noy', ok: 8, fail: 3 },
-  { day: '5-noy', ok: 3, fail: 0 },
-  { day: '6-noy', ok: 10, fail: 1 },
-];
+import { useQuery } from '@tanstack/react-query';
+import { platformSecurityApi } from '../../../api';
+import { calculateDaysAgo } from '../utils/securityFormatUtils';
 
 /**
  * Xavfsizlik "Umumiy holat" tabi mantiq hooki.
@@ -110,25 +10,82 @@ const SEVEN_DAYS_STATS = [
 export function useSecurityOverviewFlow({ onSelectTab }) {
   const [doneOpen, setDoneOpen] = useState(false);
 
+  // Kassa server paroli holatini olish
+  const { data: cashierStatus } = useQuery({
+    queryKey: ['platform-security-password'],
+    queryFn: () => platformSecurityApi.getCashierServerPassword().then((r) => r.data),
+    staleTime: 60000,
+  });
+
+  const { data: remoteAdmins = [] } = useQuery({
+    queryKey: ['platform-security-super-admins'],
+    queryFn: () => platformSecurityApi.listSuperAdmins().then((r) => r.data),
+    staleTime: 60000,
+  });
+
+  // Dinamik tavsiyalar
+  const recommendations = useMemo(() => {
+    const list = [];
+    const daysAgo = calculateDaysAgo(cashierStatus?.updatedAt);
+
+    if (daysAgo !== null) {
+      if (daysAgo >= 30) {
+        list.push({
+          id: 'rec-cashier-pwd-age',
+          severity: daysAgo >= 90 ? 'high' : 'mid',
+          title: `Kassa server paroli ${daysAgo} kundan beri o‘zgarmagan`,
+          desc: 'Xavfsizlik talablariga muvofiq, kassa server sozlamalari parolini muntazam ravishda yangilab turish tavsiya etiladi.',
+          action: 'Parolni almashtirish',
+          targetTab: 'rules',
+        });
+      }
+    } else if (cashierStatus && !cashierStatus.isSet && !cashierStatus.updatedAt) {
+      list.push({
+        id: 'rec-cashier-pwd-missing',
+        severity: 'high',
+        title: 'Kassa server sozlamalari paroli o‘rnatilmagan',
+        desc: 'Desktop kassa sozlamalarini begona aralashuvlardan himoya qilish uchun yangi murakkab parol o‘rnating.',
+        action: 'Parol o‘rnatish',
+        targetTab: 'rules',
+      });
+    }
+
+    // Xodimlarda email yo'qligi tekshiruvi
+    const adminsWithoutEmail = Array.isArray(remoteAdmins)
+      ? remoteAdmins.filter((a) => !a.email || /@platform\.local$/i.test(a.email))
+      : [];
+    if (adminsWithoutEmail.length > 0) {
+      list.push({
+        id: 'rec-staff-email',
+        severity: 'mid',
+        title: `${adminsWithoutEmail.length} ta xodimda to‘g‘ri email ko‘rsatilmagan`,
+        desc: 'Parolni tiklash va tizim ogohlantirishlarini olish uchun haqiqiy elektron pochta manzili kiritilishi zarur.',
+        action: 'Xodimlarni ko‘rish',
+        targetTab: 'staff',
+      });
+    }
+
+    return list;
+  }, [cashierStatus, remoteAdmins]);
+
+  const completedChecks = useMemo(() => {
+    const checks = ['Super-admin roli uchun ruxsatlar chegaralangan'];
+    if (cashierStatus?.isSet || cashierStatus?.updatedAt) {
+      checks.push('Kassa server sozlamalari paroli o‘rnatilgan');
+    }
+    if (Array.isArray(remoteAdmins) && remoteAdmins.length > 0) {
+      checks.push(`Tizimda ${remoteAdmins.length} ta administrator hisobi faol`);
+    }
+    return checks;
+  }, [cashierStatus, remoteAdmins]);
+
   const kpis = useMemo(
     () => ({
-      activeSessions: { count: 4, sub: '3 ta xodim' },
-      failedLogins: { count: 7, sub: 'oxirgi 7 kunda' },
-      newDevices: { count: 2, sub: 'oxirgi 7 kunda' },
-      twoFactorEnabled: { count: '1 / 3', sub: 'xodimda' },
+      activeSessions: { count: '—', sub: 'Monitoring kutilmoqda' },
+      failedLogins: { count: '0', sub: 'oxirgi 7 kunda' },
+      newDevices: { count: '0', sub: 'oxirgi 7 kunda' },
+      twoFactorEnabled: { count: '—', sub: 'Integratsiya kutilmoqda' },
     }),
-    []
-  );
-
-  const maxLogins = 17;
-  const loginBars = useMemo(
-    () =>
-      SEVEN_DAYS_STATS.map((item) => ({
-        day: item.day,
-        total: item.ok + item.fail,
-        okHeight: Math.round((item.ok / maxLogins) * 110),
-        failHeight: Math.round((item.fail / maxLogins) * 110),
-      })),
     []
   );
 
@@ -142,12 +99,12 @@ export function useSecurityOverviewFlow({ onSelectTab }) {
 
   return {
     kpis,
-    recommendations: INITIAL_RECOMMENDATIONS,
-    completedChecks: COMPLETED_CHECKS,
+    recommendations,
+    completedChecks,
     doneOpen,
     toggleDone,
-    loginBars,
-    recentEvents: RECENT_SECURITY_EVENTS,
+    loginBars: [],
+    recentEvents: [],
     handleAction,
   };
 }

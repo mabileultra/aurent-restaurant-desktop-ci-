@@ -35,7 +35,6 @@ export function useSecurityRulesFlow() {
     onError: (e) => toast.error(e.response?.data?.message ?? 'Kassa parolini saqlashda xatolik yuz berdi'),
   });
 
-  // Kassa paroli kuchliligi va mosligi
   const cashierPwStrength = useMemo(() => evaluatePasswordStrength(cashierPw1), [cashierPw1]);
   const isCashierPwMismatch = Boolean(cashierPw2 && cashierPw1 !== cashierPw2);
   const canSaveCashierPw = Boolean(
@@ -48,7 +47,7 @@ export function useSecurityRulesFlow() {
     cashierMutation.mutate(cashierPw1);
   };
 
-  // Qoidalar o'zgarishlarini hisoblash (dirty tracking)
+  // Qoidalar o'zgarishlarini hisoblash
   const dirtyCount = useMemo(() => {
     let count = 0;
     const def = DEFAULT_SECURITY_RULES;
@@ -66,75 +65,27 @@ export function useSecurityRulesFlow() {
   }, [rules]);
 
   const toggleTfaRole = (roleKey) => {
-    setRules((prev) => ({
-      ...prev,
-      tfa: { ...prev.tfa, [roleKey]: !prev.tfa[roleKey] },
-    }));
+    setRules((prev) => ({ ...prev, tfa: { ...prev.tfa, [roleKey]: !prev.tfa[roleKey] } }));
   };
 
-  const setTfaMethod = (method) => {
-    setRules((prev) => ({ ...prev, method }));
-  };
-
-  const setMinLen = (minLen) => {
-    setRules((prev) => ({ ...prev, minLen }));
-  };
-
-  const setExpiry = (expiry) => {
-    setRules((prev) => ({ ...prev, expiry }));
-  };
-
-  const toggleReq = (reqKey) => {
-    setRules((prev) => ({
-      ...prev,
-      req: { ...prev.req, [reqKey]: !prev.req[reqKey] },
-    }));
-  };
-
-  const setAttempts = (attempts) => {
-    setRules((prev) => ({ ...prev, attempts }));
-  };
-
-  const setLockMin = (lockMin) => {
-    setRules((prev) => ({ ...prev, lockMin }));
-  };
-
-  const setIdle = (idle) => {
-    setRules((prev) => ({ ...prev, idle }));
-  };
-
-  const setMaxH = (maxH) => {
-    setRules((prev) => ({ ...prev, maxH }));
-  };
-
-  const setConc = (conc) => {
-    setRules((prev) => ({ ...prev, conc }));
-  };
-
-  const toggleNotify = () => {
-    setRules((prev) => ({ ...prev, notify: !prev.notify }));
-  };
-
-  const toggleIpOn = () => {
-    setRules((prev) => ({ ...prev, ipOn: !prev.ipOn }));
-  };
+  const setTfaMethod = (method) => setRules((prev) => ({ ...prev, method }));
+  const setMinLen = (minLen) => setRules((prev) => ({ ...prev, minLen }));
+  const setExpiry = (expiry) => setRules((prev) => ({ ...prev, expiry }));
+  const toggleReq = (reqKey) => setRules((prev) => ({ ...prev, req: { ...prev.req, [reqKey]: !prev.req[reqKey] } }));
+  const setConc = (conc) => setRules((prev) => ({ ...prev, conc }));
+  const toggleNotify = () => setRules((prev) => ({ ...prev, notify: !prev.notify }));
+  const toggleIpOn = () => setRules((prev) => ({ ...prev, ipOn: !prev.ipOn }));
 
   const addIp = () => {
     const trimmed = (newIpAddr || '').trim();
     if (!trimmed) return;
-    setRules((prev) => ({
-      ...prev,
-      ips: [...prev.ips, { addr: trimmed, note: 'Yangi qo‘shilgan' }],
-    }));
+    setRules((prev) => ({ ...prev, ips: [...prev.ips, { addr: trimmed, note: 'Yangi qo‘shilgan' }] }));
     setNewIpAddr('');
     toast.success('IP oq ro‘yxatiga qo‘shildi');
   };
 
   const removeIp = (index) => {
-    setRules((prev) => ({
-      ...prev,
-      ips: prev.ips.filter((_, i) => i !== index),
-    }));
+    setRules((prev) => ({ ...prev, ips: prev.ips.filter((_, i) => i !== index) }));
   };
 
   const resetRules = () => {
@@ -143,13 +94,13 @@ export function useSecurityRulesFlow() {
   };
 
   const requestSaveRules = () => {
-    if (dirtyCount === 0) return;
-    setIsSudoModalOpen(true);
+    toast('Kirish qoidalarini serverda saqlash backend tayyor bo‘lgach ishga tushadi (Tez kunda)', {
+      icon: 'ℹ️',
+    });
   };
 
   const confirmSudoAndSave = () => {
     setIsSudoModalOpen(false);
-    toast.success('Xavfsizlik qoidalari muvaffaqiyatli saqlandi');
   };
 
   return {
@@ -160,10 +111,6 @@ export function useSecurityRulesFlow() {
     setMinLen,
     setExpiry,
     toggleReq,
-    setAttempts,
-    setLockMin,
-    setIdle,
-    setMaxH,
     setConc,
     toggleNotify,
     toggleIpOn,

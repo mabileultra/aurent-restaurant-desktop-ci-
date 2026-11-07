@@ -20,7 +20,7 @@ export const SECURITY_TABS = Object.freeze([
 
 export const DEFAULT_SECURITY_RULES = Object.freeze({
   tfa: { sa: true, op: false, an: false },
-  method: 'app', // 'app' | 'email'
+  method: 'app',
   minLen: 10,
   expiry: 90,
   req: { case: true, digit: true, special: false, history: true },

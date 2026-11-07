@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { LayoutDashboard, Radio, History, Users, Sliders } from 'lucide-react';
 import { SECURITY_TAB_KEYS, SECURITY_TABS } from '../../utils/securityConstants';
 
@@ -10,9 +10,27 @@ const TAB_ICONS = {
   [SECURITY_TAB_KEYS.RULES]: Sliders,
 };
 
-export default function PlatformSecurityTabsNav({ activeTab, onSelectTab, staffCount = 3 }) {
+export default function PlatformSecurityTabsNav({ activeTab, onSelectTab, staffCount = 0 }) {
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    if (!navRef.current) return;
+    const activeBtn = navRef.current.querySelector('[data-active="true"]');
+    if (!activeBtn) return;
+
+    const nav = navRef.current;
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+
+    if (btnRect.left < navRect.left || btnRect.right > navRect.right) {
+      const scrollOffset = activeBtn.offsetLeft - (nav.clientWidth / 2 - activeBtn.clientWidth / 2);
+      nav.scrollTo({ left: Math.max(0, scrollOffset), behavior: 'smooth' });
+    }
+  }, [activeTab]);
+
   return (
     <nav
+      ref={navRef}
       className="flex items-center gap-1 overflow-x-auto no-scrollbar border-b border-slate-200 dark:border-slate-800 -mb-px"
       aria-label="Xavfsizlik bo'limlari"
     >
@@ -24,6 +42,7 @@ export default function PlatformSecurityTabsNav({ activeTab, onSelectTab, staffC
           <button
             key={tab.id}
             type="button"
+            data-active={isActive ? 'true' : 'false'}
             onClick={() => onSelectTab(tab.id)}
             className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
               isActive

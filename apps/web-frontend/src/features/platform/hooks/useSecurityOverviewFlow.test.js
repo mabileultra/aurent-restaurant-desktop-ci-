@@ -5,8 +5,19 @@ import { useSecurityOverviewFlow } from './useSecurityOverviewFlow';
 
 globalThis.React = React;
 
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: { isSet: true, updatedAt: '2026-09-24T09:39:25.981382Z' },
+      isLoading: false,
+    }),
+  };
+});
+
 describe('useSecurityOverviewFlow', () => {
-  it('initializes with default KPIs, recommendations, and events', () => {
+  it('initializes with dynamic recommendations and clean states', () => {
     let state;
     const onSelectTab = vi.fn();
     function TestComponent() {
@@ -16,11 +27,11 @@ describe('useSecurityOverviewFlow', () => {
 
     renderToStaticMarkup(React.createElement(TestComponent));
 
-    expect(state.kpis.activeSessions.count).toBe(4);
-    expect(state.kpis.failedLogins.count).toBe(7);
+    expect(state.kpis.activeSessions.count).toBe('—');
+    expect(state.kpis.failedLogins.count).toBe('0');
     expect(state.recommendations.length).toBeGreaterThan(0);
-    expect(state.loginBars.length).toBe(7);
-    expect(state.recentEvents.length).toBeGreaterThan(0);
+    expect(state.loginBars).toEqual([]);
+    expect(state.recentEvents).toEqual([]);
     expect(state.doneOpen).toBe(false);
 
     state.toggleDone();

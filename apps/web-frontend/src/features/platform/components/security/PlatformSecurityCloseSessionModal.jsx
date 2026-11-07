@@ -30,8 +30,8 @@ export default function PlatformSecurityCloseSessionModal({
           <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
           <span>
             {isCloseAll
-              ? 'Barcha boshqa qurilmalardagi faol seanslar darhol to‘xtatiladi. Qayta kirish uchun qaytadan tizimga kirish talab etiladi.'
-              : 'Xodim darhol tizimdan chiqariladi. Saqlanmagan o‘zgarishlari yo‘qolishi mumkin. Qayta kirish uchun parolini yana kiritishi kerak bo‘ladi.'}
+              ? 'Barcha boshqa qurilmalardagi faol seanslar to‘xtatiladi. Qayta kirish uchun qaytadan tizimga kirish talab etiladi.'
+              : 'Xodim darhol tizimdan chiqariladi. Saqlanmagan o‘zgarishlari yo‘qolishi mumkin.'}
           </span>
         </div>
 
@@ -45,7 +45,7 @@ export default function PlatformSecurityCloseSessionModal({
             onClick={onConfirm}
           >
             <LogOut className="w-3.5 h-3.5 mr-1" />
-            Seansni yopish
+            Ha, seansni yopish
           </BaseButton>
         </div>
       </div>

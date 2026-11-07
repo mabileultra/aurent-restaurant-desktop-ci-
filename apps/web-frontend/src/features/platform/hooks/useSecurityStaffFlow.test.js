@@ -5,11 +5,24 @@ import { useSecurityStaffFlow } from './useSecurityStaffFlow';
 
 globalThis.React = React;
 
+const mockAdmins = [
+  {
+    id: 'admin-1',
+    username: 'superadmin',
+    email: 'admin@aurent.uz',
+    firstName: 'Super',
+    lastName: 'Admin',
+    fullName: 'Super Admin',
+    role: 'SUPER_ADMIN',
+    active: true,
+  },
+];
+
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    useQuery: () => ({ data: [], isLoading: false, isPending: false }),
+    useQuery: () => ({ data: mockAdmins, isLoading: false, isPending: false }),
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   };
@@ -26,7 +39,9 @@ describe('useSecurityStaffFlow', () => {
     renderToStaticMarkup(React.createElement(TestComponent));
 
     expect(state.form).toBeNull();
-    expect(state.staffList.length).toBeGreaterThan(0);
+    expect(state.staffList.length).toBe(1);
+    expect(state.staffList[0].username).toBe('superadmin');
+    expect(state.staffList[0].active).toBe(true);
     expect(state.currentTempPassword).toBeTruthy();
 
     state.openCreate();

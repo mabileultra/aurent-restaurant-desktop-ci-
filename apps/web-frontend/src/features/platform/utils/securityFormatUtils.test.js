@@ -1,11 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import {
+  generateSecurePassword,
+  formatSecurityDate,
+  calculateDaysAgo,
   evaluatePasswordStrength,
   resolveAttemptBadge,
   resolveUserInitials,
 } from './securityFormatUtils';
 
 describe('securityFormatUtils', () => {
+  it('generates secure random password of specified length', () => {
+    const pwd1 = generateSecurePassword(12);
+    const pwd2 = generateSecurePassword(12);
+    expect(pwd1).toHaveLength(12);
+    expect(pwd2).toHaveLength(12);
+    expect(pwd1).not.toBe(pwd2);
+  });
+
+  it('formats security dates correctly', () => {
+    expect(formatSecurityDate('')).toBe('');
+    const formatted = formatSecurityDate('2026-09-24T09:39:25.981382Z', 'uz');
+    expect(formatted).toContain('2026');
+    expect(formatted).toContain('24');
+  });
+
+  it('calculates days ago properly', () => {
+    expect(calculateDaysAgo('')).toBeNull();
+    const tenDaysAgo = new Date(Date.now() - 10 * 86400000).toISOString();
+    expect(calculateDaysAgo(tenDaysAgo)).toBe(10);
+  });
+
   it('evaluates password strength correctly', () => {
     expect(evaluatePasswordStrength('').score).toBe(0);
     expect(evaluatePasswordStrength('short').score).toBe(0);

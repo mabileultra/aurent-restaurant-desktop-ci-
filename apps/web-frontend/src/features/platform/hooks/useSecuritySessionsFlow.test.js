@@ -6,7 +6,7 @@ import { useSecuritySessionsFlow } from './useSecuritySessionsFlow';
 globalThis.React = React;
 
 describe('useSecuritySessionsFlow', () => {
-  it('filters login attempts and manages session closing', () => {
+  it('initializes with empty sessions and attempts', () => {
     let state;
     function TestComponent() {
       state = useSecuritySessionsFlow();
@@ -15,14 +15,14 @@ describe('useSecuritySessionsFlow', () => {
 
     renderToStaticMarkup(React.createElement(TestComponent));
 
+    expect(state.sessions).toEqual([]);
+    expect(state.attempts).toEqual([]);
     expect(state.filter).toBe('all');
-    expect(state.sessions.length).toBeGreaterThan(0);
-    expect(state.attempts.length).toBeGreaterThan(0);
     expect(state.pendingCloseSession).toBeNull();
     expect(state.isCloseAllPending).toBe(false);
 
-    state.setFilter('ok');
-    state.requestCloseSession(state.sessions[0]);
+    state.setFilter('fail');
+    state.requestCloseSession({ id: 's1' });
     state.cancelCloseSession();
     state.requestCloseAllOthers();
     state.cancelCloseAllOthers();

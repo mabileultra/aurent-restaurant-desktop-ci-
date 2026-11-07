@@ -2,6 +2,69 @@
  * Xavfsizlik bo'limi uchun yordamchi formatlash va baholash funksiyalari.
  */
 
+const PASSWORD_CHARSET = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*';
+
+/**
+ * Kriptografik xavfsiz tasodifiy parol yaratadi.
+ * @param {number} length
+ * @returns {string}
+ */
+export function generateSecurePassword(length = 12) {
+  const len = Math.max(8, length);
+  const chars = PASSWORD_CHARSET;
+  const charsLen = chars.length;
+
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(len);
+    window.crypto.getRandomValues(array);
+    return Array.from(array, (x) => chars[x % charsLen]).join('');
+  }
+
+  // Node.js test muhiti uchun fallback
+  return Array.from({ length: len }, () => chars[Math.floor(Math.random() * charsLen)]).join('');
+}
+
+/**
+ * ISO sanani chiroyli ko'rinishga formatlaydi.
+ * @param {string} isoDate
+ * @param {'uz' | 'ru'} locale
+ * @returns {string}
+ */
+export function formatSecurityDate(isoDate, locale = 'uz') {
+  if (!isoDate) return '';
+  try {
+    const d = new Date(isoDate);
+    if (isNaN(d.getTime())) return String(isoDate);
+    const loc = locale === 'ru' ? 'ru-RU' : 'uz-UZ';
+    return new Intl.DateTimeFormat(loc, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return String(isoDate);
+  }
+}
+
+/**
+ * ISO sanadan boshlab o'tgan kunlar sonini hisoblaydi.
+ * @param {string} isoDate
+ * @returns {number | null}
+ */
+export function calculateDaysAgo(isoDate) {
+  if (!isoDate) return null;
+  try {
+    const d = new Date(isoDate);
+    if (isNaN(d.getTime())) return null;
+    const diffMs = Date.now() - d.getTime();
+    return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Parol kuchliligini baholaydi (0 dan 4 gacha).
  * @param {string} password

@@ -9,14 +9,17 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    useQuery: () => ({ data: { updatedAt: '2026-11-06' }, isLoading: false, isPending: false }),
+    useQuery: () => ({
+      data: { isSet: true, updatedAt: '2026-09-24T09:39:25.981382Z' },
+      isLoading: false,
+    }),
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   };
 });
 
 describe('useSecurityRulesFlow', () => {
-  it('initializes rules and handles IP allowlist', () => {
+  it('manages security rules form, dirty count, and cashier password state', () => {
     let state;
     function TestComponent() {
       state = useSecurityRulesFlow();
@@ -25,15 +28,14 @@ describe('useSecurityRulesFlow', () => {
 
     renderToStaticMarkup(React.createElement(TestComponent));
 
+    expect(state.rules).toBeDefined();
     expect(state.dirtyCount).toBe(0);
-    expect(state.rules.ips.length).toBeGreaterThan(0);
     expect(state.canSaveCashierPw).toBe(false);
 
-    state.setMinLen(14);
-    state.resetRules();
-    state.setNewIpAddr('10.0.0.1');
+    state.setMinLen(12);
     state.addIp();
-    state.removeIp(0);
+    state.resetRules();
     state.requestSaveRules();
+    state.confirmSudoAndSave();
   });
 });
