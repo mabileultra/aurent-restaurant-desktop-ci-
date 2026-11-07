@@ -3,6 +3,7 @@ import {
   fetchAllCompanies,
   aggregateRepublicDays,
   aggregateRepublicWeeks,
+  weeksFromRepublicDays,
 } from './analyticsCompanyLoader';
 import { analyticsApi } from '../api/analyticsApi';
 
@@ -101,6 +102,19 @@ describe('analyticsCompanyLoader', () => {
       expect(res.rows).toHaveLength(114);
       expect(res.totalElements).toBe(114);
       vi.restoreAllMocks();
+    });
+  });
+
+  describe('weeksFromRepublicDays', () => {
+    it('rolls consecutive days into week buckets with fiscal share', () => {
+      const weeks = weeksFromRepublicDays([
+        { date: '2026-11-02', fiscalTurnover: 100, nonFiscalTurnover: 0, totalTurnover: 100 },
+        { date: '2026-11-03', fiscalTurnover: 50, nonFiscalTurnover: 50, totalTurnover: 100 },
+        { date: '2026-11-09', fiscalTurnover: 200, nonFiscalTurnover: 0, totalTurnover: 200 },
+      ]);
+      expect(weeks.length).toBeGreaterThanOrEqual(2);
+      expect(weeks[0].totalTurnover).toBe(200);
+      expect(weeks[0].fiscalSharePct).toBe(75);
     });
   });
 });

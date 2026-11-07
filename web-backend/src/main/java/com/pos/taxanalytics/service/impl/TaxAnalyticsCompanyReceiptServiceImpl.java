@@ -50,7 +50,7 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
         long total = receipts.count(companyId, start, end, safeKind);
         List<TaxAnalyticsReceiptRowResponse> rows = receipts.list(companyId, start, end, safeKind, safeSize, safePage * safeSize)
             .stream()
-            .map(this::row)
+            .map((map) -> row(map, companyId))
             .toList();
         return new TaxAnalyticsReceiptsResponse(
             start.toString(), safeKind, total, safePage, safeSize, rows, start.toString(), end.toString()
@@ -91,7 +91,7 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
         );
     }
 
-    private TaxAnalyticsReceiptRowResponse row(Map<String, Object> row) {
+    private TaxAnalyticsReceiptRowResponse row(Map<String, Object> row, int companyId) {
         return new TaxAnalyticsReceiptRowResponse(
             str(row.get("sale_id")),
             str(row.get("receipt_number")),
@@ -99,7 +99,9 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
             str(row.get("store_name")),
             money(row.get("total_amount")),
             str(row.get("fiscal_status")),
-            bool(row.get("has_qr"))
+            bool(row.get("has_qr")),
+            companyId,
+            null
         );
     }
 

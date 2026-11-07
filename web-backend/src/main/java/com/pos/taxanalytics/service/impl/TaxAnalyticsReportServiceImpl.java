@@ -78,7 +78,9 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
                 row.get("store_name") == null ? null : String.valueOf(row.get("store_name")),
                 decimal(row.get("total_amount")),
                 row.get("fiscal_status") == null ? null : String.valueOf(row.get("fiscal_status")),
-                Boolean.TRUE.equals(row.get("has_qr"))
+                Boolean.TRUE.equals(row.get("has_qr")),
+                row.get("company_id") instanceof Number n ? n.intValue() : null,
+                row.get("company_name") == null ? null : String.valueOf(row.get("company_name"))
             ));
         }
         return new TaxAnalyticsReceiptListResponse(

@@ -19,8 +19,9 @@ export function buildChartPoints(days = [], topCompanyName = '') {
       nonFiscal,
       total,
       avg7: Math.round(avg7),
-      topFirm: d.topCompany || topCompanyName || '—',
-      topSharePct: topSharePct > 0 ? topSharePct : (d.topCompany ? 76 : 0),
+      topFirm: d.topCompany || d.leaderCompanyName || topCompanyName || '—',
+      // Never invent a share — only show when we know the leader amount.
+      topSharePct,
     };
   });
 }

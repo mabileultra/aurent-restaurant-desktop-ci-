@@ -86,7 +86,8 @@ public class TaxAnalyticsReportQueryRepository {
         sql.insert(0, withConnected() + """
             SELECT s.id::text AS sale_id, s.receipt_number, s.created_at, st.name AS store_name,
                    s.total_amount, s.fiscal_status,
-                   NULLIF(BTRIM(s.fiscal_qr_url), '') IS NOT NULL AS has_qr
+                   NULLIF(BTRIM(s.fiscal_qr_url), '') IS NOT NULL AS has_qr,
+                   c.id AS company_id, c.name AS company_name
             """);
         sql.append(" ORDER BY s.created_at DESC LIMIT ? OFFSET ? ");
         args.add(limit);

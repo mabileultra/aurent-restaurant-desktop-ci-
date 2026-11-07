@@ -22,29 +22,26 @@ export default function AnalyticsReportsPage() {
     queryFn: () => fetchAllCompanies({ period: page.period }),
   });
 
-  const topCompanies = useMemo(
-    () => page.top10Companies.slice(0, 4),
-    [page.top10Companies]
-  );
+  const receiptDay = useMemo(() => {
+    const withSales = [...(page.republicDays || [])]
+      .filter((d) => Number(d.totalTurnover || 0) > 0)
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    return withSales[0]?.date || page.republicDays?.[page.republicDays.length - 1]?.date || '';
+  }, [page.republicDays]);
 
   const recentReceiptsQuery = useQuery({
-    queryKey: ['analytics-reports-receipts', topCompanies.map((c) => c.companyId)],
+    queryKey: ['analytics-reports-receipts', receiptDay, page.period],
     queryFn: async () => {
-      if (topCompanies.length === 0) return [];
-      const settled = await Promise.allSettled(
-        topCompanies.map(async (c) => {
-          const detail = await analyticsApi.getCompanyDetail(c.companyId).then((r) => r.data).catch(() => null);
-          const daysWithSales = detail?.days?.filter((d) => Number(d.totalTurnover || 0) > 0) || [];
-          const activeDate = daysWithSales[0]?.date || detail?.days?.[0]?.date;
-          if (!activeDate) return [];
-          const res = await analyticsApi.getCompanyReceipts(c.companyId, { date: activeDate, size: 50 }).catch(() => null);
-          const rows = res?.data?.rows ?? [];
-          return rows.map((r) => ({ ...r, companyName: c.name }));
-        })
-      );
-      return settled.filter((s) => s.status === 'fulfilled').flatMap((s) => s.value);
+      if (!receiptDay) return [];
+      const res = await analyticsApi.getReceipts({
+        period: 'custom',
+        from: receiptDay,
+        to: receiptDay,
+        size: 100,
+      });
+      return res.data?.rows ?? [];
     },
-    enabled: selectedType === 'receipts' && topCompanies.length > 0,
+    enabled: selectedType === 'receipts' && Boolean(receiptDay),
   });
 
   const handleGenerateReport = () => {

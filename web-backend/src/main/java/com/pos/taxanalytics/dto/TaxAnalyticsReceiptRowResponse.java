@@ -9,6 +9,8 @@ public record TaxAnalyticsReceiptRowResponse(
     String storeName,
     BigDecimal totalAmount,
     String fiscalStatus,
-    boolean hasQr
+    boolean hasQr,
+    Integer companyId,
+    String companyName
 ) {
 }

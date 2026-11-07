@@ -4,10 +4,21 @@ import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { analyticsApi } from '../api/analyticsApi';
 import {
   fetchAllCompanies,
-  aggregateRepublicDays,
-  aggregateRepublicWeeks,
+  weeksFromRepublicDays,
 } from '../utils/analyticsCompanyLoader';
 import { useAnalyticsPeriodStore } from './useAnalyticsPeriodStore';
+
+function mapDailyRows(days = []) {
+  return (days || []).map((d) => ({
+    date: d.date,
+    fiscalTurnover: Number(d.fiscalTurnover || 0),
+    nonFiscalTurnover: Number(d.nonFiscalTurnover || 0),
+    totalTurnover: Number(d.totalTurnover || 0),
+    topCompany: d.leaderCompanyName || d.topCompany || null,
+    leaderCompanyId: d.leaderCompanyId ?? null,
+    maxCompanyTurnover: null,
+  }));
+}
 
 export function useAnalyticsOverview() {
   const period = useAnalyticsPeriodStore((s) => s.period);
@@ -42,6 +53,12 @@ export function useAnalyticsOverview() {
     placeholderData: (prev) => prev,
   });
 
+  const dailyQuery = useQuery({
+    queryKey: ['analytics-overview-daily', queryParams],
+    queryFn: () => analyticsApi.getDaily(queryParams).then((res) => res.data),
+    placeholderData: (prev) => prev,
+  });
+
   const resultsQuery = useQuery({
     queryKey: ['analytics-results-regions', queryParams],
     queryFn: () => analyticsApi.getResults({ ...queryParams, level: 'REGION', size: 100 }).then((res) => res.data),
@@ -60,7 +77,6 @@ export function useAnalyticsOverview() {
     staleTime: 600_000,
   });
 
-  // Sync backend dates to period store when overview data arrives
   useEffect(() => {
     if (overviewQuery.data?.periodFrom && overviewQuery.data?.periodTo) {
       setBackendDates(overviewQuery.data.periodFrom, overviewQuery.data.periodTo);
@@ -73,7 +89,6 @@ export function useAnalyticsOverview() {
     return [...list].sort((a, b) => Number(b.totalTurnover || 0) - Number(a.totalTurnover || 0));
   }, [companiesQuery.data?.rows]);
 
-  // True republic totals matching KPI and company sums without contradictions
   const totals = useMemo(() => {
     const kpiTotal = Number(overviewQuery.data?.kpi?.totalTurnover || 0);
     const sumCompaniesTotal = allCompanies.reduce((s, c) => s + Number(c.totalTurnover || 0), 0);
@@ -106,32 +121,15 @@ export function useAnalyticsOverview() {
 
   const top10Companies = useMemo(() => allCompanies.slice(0, 10), [allCompanies]);
 
-  // Parallel fetch active top companies to aggregate true republic dynamics
-  const activeCompanyIds = useMemo(() => {
-    return allCompanies.filter((c) => Number(c.totalTurnover || 0) > 0).slice(0, 8).map((c) => c.companyId);
-  }, [allCompanies]);
+  const republicDays = useMemo(
+    () => mapDailyRows(dailyQuery.data?.days),
+    [dailyQuery.data?.days]
+  );
 
-  const activeDetailsQuery = useQuery({
-    queryKey: ['analytics-overview-republic-details', activeCompanyIds, queryParams],
-    queryFn: async () => {
-      if (activeCompanyIds.length === 0) return [];
-      const promises = activeCompanyIds.map((id) =>
-        analyticsApi.getCompanyDetail(id, queryParams).then((r) => r.data).catch(() => null)
-      );
-      const results = await Promise.all(promises);
-      return results.filter(Boolean);
-    },
-    enabled: activeCompanyIds.length > 0,
-    staleTime: 300_000,
-  });
-
-  const republicDays = useMemo(() => {
-    return aggregateRepublicDays(activeDetailsQuery.data ?? []);
-  }, [activeDetailsQuery.data]);
-
-  const republicWeeks = useMemo(() => {
-    return aggregateRepublicWeeks(activeDetailsQuery.data ?? []);
-  }, [activeDetailsQuery.data]);
+  const republicWeeks = useMemo(
+    () => weeksFromRepublicDays(republicDays),
+    [republicDays]
+  );
 
   const topCompanyId = top10Companies[0]?.companyId;
   const topCompanyName = top10Companies[0]?.name ?? '';
@@ -142,8 +140,8 @@ export function useAnalyticsOverview() {
     setConnectionStatus('');
   };
 
-  const isLoading = overviewQuery.isLoading || resultsQuery.isLoading;
-  const isError = overviewQuery.isError || resultsQuery.isError;
+  const isLoading = overviewQuery.isLoading || resultsQuery.isLoading || dailyQuery.isLoading;
+  const isError = overviewQuery.isError || resultsQuery.isError || dailyQuery.isError;
 
   return {
     period,
@@ -178,6 +176,7 @@ export function useAnalyticsOverview() {
       overviewQuery.refetch();
       resultsQuery.refetch();
       companiesQuery.refetch();
+      dailyQuery.refetch();
     },
     regions: regionsQuery.data ?? [],
   };
