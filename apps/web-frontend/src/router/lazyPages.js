@@ -26,6 +26,8 @@ export const PlatformLeadsPage = lazy(() => import('../features/platform/pages/P
 export const PlatformBillingPage = lazy(() => import('../features/platform/pages/PlatformBillingPage'));
 export const PlatformAnalyticsPage = lazy(() => import('../features/analytics/pages/AnalyticsOverviewPage'));
 export const PlatformAnalyticsRegionsPage = lazy(() => import('../features/analytics/pages/AnalyticsRegionsPage'));
+export const PlatformAnalyticsViloyatlarPage = lazy(() => import('../features/analytics/pages/PlatformAnalyticsViloyatlarPage'));
+export const PlatformAnalyticsViloyatDetailPage = lazy(() => import('../features/analytics/pages/PlatformAnalyticsViloyatDetailPage'));
 export const PlatformCompanyAnalyticsPage = lazy(() => import('../features/analytics/pages/AnalyticsCompaniesPage'));
 export const PlatformCompanyAnalyticsDetailPage = lazy(() => import('../features/analytics/pages/AnalyticsCompanyDetailPage'));
 export const PlatformAnalyticsComparePage = lazy(() => import('../features/analytics/pages/AnalyticsComparePage'));

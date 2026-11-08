@@ -735,6 +735,8 @@
     },
     "analytics": {
       "nav": "Analitika",
+      "currentNav": "Analitika V1",
+      "viloyatlarNav": "Analitika V2",
       "tabRegions": "Viloyatlar",
       "tabCompanies": "Firmalar",
       "companiesTitle": "Firmalar bo‘yicha analitika",
