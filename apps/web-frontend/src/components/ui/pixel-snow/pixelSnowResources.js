@@ -85,5 +85,4 @@ export function destroyPixelSnowGl(gl, res) {
   if (res.instanceBuffer) gl.deleteBuffer(res.instanceBuffer);
   if (res.quadVao) gl.deleteVertexArray(res.quadVao);
   if (res.flakeVao) gl.deleteVertexArray(res.flakeVao);
-  gl.getExtension('WEBGL_lose_context')?.loseContext();
 }

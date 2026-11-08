@@ -14,7 +14,10 @@ export function usePixelSnowRenderer(containerRef, canvasRef, settingsRef) {
     if (!container || !canvas) return;
 
     const gl = canvas.getContext('webgl2', { alpha: true, depth: false, antialias: false, preserveDrawingBuffer: false });
-    if (!gl) return;
+    if (!gl || gl.isContextLost()) return;
+
+    const onContextLost = (e) => { e.preventDefault(); cancelAnimationFrame(raf); };
+    canvas.addEventListener('webglcontextlost', onContextLost, false);
 
     const res = initPixelSnowGl(gl);
     if (!res) return;
@@ -159,6 +162,7 @@ export function usePixelSnowRenderer(containerRef, canvasRef, settingsRef) {
       window.removeEventListener('pointermove', onPointerMove);
       document.documentElement.removeEventListener('pointerleave', onPointerLeave);
       document.removeEventListener('visibilitychange', onVisibility);
+      canvas.removeEventListener('webglcontextlost', onContextLost);
       destroyPixelSnowGl(gl, res);
     };
   }, []);

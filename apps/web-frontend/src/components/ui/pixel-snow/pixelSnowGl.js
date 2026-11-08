@@ -19,7 +19,8 @@ export const compile = (gl, type, source) => {
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
   if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
-  console.error('[PixelSnow] Shader compile error:', gl.getShaderInfoLog(shader), '\nSource:\n', source);
+  const info = gl.getShaderInfoLog(shader);
+  if (info && info.trim()) console.error('[PixelSnow] Shader compile error:', info);
   gl.deleteShader(shader);
   return null;
 };

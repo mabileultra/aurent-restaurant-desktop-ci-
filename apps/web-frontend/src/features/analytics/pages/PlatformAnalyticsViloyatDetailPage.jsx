@@ -6,7 +6,6 @@ import ViloyatBusinessTypeBar from '../components/ViloyatBusinessTypeBar';
 import ViloyatTurnoverSection from '../components/ViloyatTurnoverSection';
 import ViloyatSalesAnalysisSection from '../components/ViloyatSalesAnalysisSection';
 import ViloyatCompaniesTableSection from '../components/ViloyatCompaniesTableSection';
-import PlatformAnalyticsBackground from '../components/PlatformAnalyticsBackground';
 
 export default function PlatformAnalyticsViloyatDetailPage() {
   const { regionCode } = useParams();
@@ -45,10 +44,8 @@ export default function PlatformAnalyticsViloyatDetailPage() {
   } = useViloyatDetailAnalytics(regionCode);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-200/70 via-slate-100 to-slate-200/50 dark:from-slate-950 dark:via-[#0F172A] dark:to-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 overflow-hidden">
-      <PlatformAnalyticsBackground />
-      <div className="relative z-10 space-y-6">
-        <ViloyatDetailHeader
+    <div className="min-h-screen bg-[#F3F6F4] dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
+      <ViloyatDetailHeader
           padCode={padCode}
           regionName={regionName}
           meta={meta}
@@ -100,7 +97,6 @@ export default function PlatformAnalyticsViloyatDetailPage() {
         onPrevPage={onPrevPage}
         onNextPage={onNextPage}
       />
-      </div>
     </div>
   );
 }

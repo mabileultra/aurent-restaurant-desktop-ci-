@@ -102,10 +102,10 @@ describe('PlatformAnalyticsKorxonaDetailPage', () => {
     expect(html).not.toContain('Makon Mobile');
   });
 
-  it('renders background with prism-canvas in normal fiscal mode', () => {
+  it('renders clean dashboard background without WebGL background canvases', () => {
     const html = renderPage('/platform/analytics/viloyatlar/18/companies/103');
-    expect(html).toContain('fixed inset-0');
-    expect(html).toContain('prism-canvas');
+    expect(html).toContain('bg-[#F3F6F4]');
+    expect(html).not.toContain('prism-canvas');
     expect(html).not.toContain('pixel-snow-canvas');
   });
 });

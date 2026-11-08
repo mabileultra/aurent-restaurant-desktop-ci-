@@ -2,7 +2,6 @@ import React from 'react';
 import { Calendar, RefreshCw } from 'lucide-react';
 import ChromaGridContainer from '../components/ChromaGridContainer';
 import RubberSegment from '../../../components/ui/rubber-segment/RubberSegment';
-import PlatformAnalyticsBackground from '../components/PlatformAnalyticsBackground';
 import { useViloyatlarAnalytics } from '../hooks/useViloyatlarAnalytics';
 import ViloyatlarKpiCards from '../components/ViloyatlarKpiCards';
 import ViloyatlarFilterBar from '../components/ViloyatlarFilterBar';
@@ -36,13 +35,8 @@ export default function PlatformAnalyticsViloyatlarPage() {
   } = useViloyatlarAnalytics();
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-200/70 via-slate-100 to-slate-200/50 dark:from-slate-950 dark:via-[#0F172A] dark:to-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 overflow-hidden">
-      {/* Prism WebGL Background Animation */}
-      <PlatformAnalyticsBackground />
-
-      {/* Page Content Container */}
-      <div className="relative z-10 space-y-6">
-        {/* Top Header */}
+    <div className="min-h-screen bg-[#F3F6F4] dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
+      {/* Top Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -134,7 +128,6 @@ export default function PlatformAnalyticsViloyatlarPage() {
         <footer className="pt-4 border-t border-slate-200 text-xs text-slate-400">
           Aylanma — fiskal va nofiskal savdolar yig‘indisi. Foiz — oldingi teng davrga nisbatan o‘zgarish. Fiskal ulush — aylanmaning fiskal chek bilan o‘tgan qismi.
         </footer>
-      </div>
     </div>
   );
 }
