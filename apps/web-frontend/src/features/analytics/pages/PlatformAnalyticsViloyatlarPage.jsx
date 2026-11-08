@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, RefreshCw } from 'lucide-react';
 import ChromaGridContainer from '../components/ChromaGridContainer';
+import RubberSegment from '../../../components/ui/rubber-segment/RubberSegment';
 import { useViloyatlarAnalytics } from '../hooks/useViloyatlarAnalytics';
 import ViloyatlarKpiCards from '../components/ViloyatlarKpiCards';
 import ViloyatlarFilterBar from '../components/ViloyatlarFilterBar';
@@ -52,31 +53,18 @@ export default function PlatformAnalyticsViloyatlarPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Period Selector Tabs */}
-          <div
-            role="group"
+          {/* Period Selector with RubberSegment Physics Animation */}
+          <RubberSegment
+            items={PERIODS.map((p) => ({ value: p.id, label: p.label }))}
+            value={period}
+            onChange={(val) => setPeriod(val)}
+            size="sm"
+            radius={10}
+            inset={3}
+            stretch={90}
+            squash={2.5}
             aria-label="Davrni tanlash"
-            className="inline-flex p-1 bg-slate-200/80 dark:bg-slate-900 rounded-xl"
-          >
-            {PERIODS.map((p) => {
-              const isSelected = period === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => setPeriod(p.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer ${
-                    isSelected
-                      ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
+          />
 
           {/* Date range display */}
           <div className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-xs">
