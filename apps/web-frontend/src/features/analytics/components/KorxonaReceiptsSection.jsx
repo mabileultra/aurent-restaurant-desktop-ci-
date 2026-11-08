@@ -36,6 +36,7 @@ export function KorxonaReceiptsSection({
   dayTotalCount = 0,
   dayTotal = 0,
   dayTotalFormatted,
+  totalReceiptsCount,
   selectedReceiptNo,
   onSelectReceipt,
   receiptDetail,
@@ -57,7 +58,7 @@ export function KorxonaReceiptsSection({
         <div className="p-4 sm:p-5 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-0.5">
             <h2 id="ch-h" className="text-lg font-bold text-slate-900 dark:text-white">Cheklar</h2>
-            <span className="text-xs text-slate-500">{dayChips.length} ta savdo kuni · 43 ta chek · oxirgi 30 kun</span>
+            <span className="text-xs text-slate-500">{dayChips.length} ta savdo kuni · {totalReceiptsCount || dayTotalCount} ta chek · oxirgi 30 kun</span>
           </div>
           <div className="flex items-center gap-2">
             <DayNavBtn dir="left" onClick={onPrevDay} disabled={!hasPrevDay} label="Oldingi savdo kuni" />

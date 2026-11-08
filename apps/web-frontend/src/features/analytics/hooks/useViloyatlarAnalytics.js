@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../api/analyticsApi';
 import { geoApi } from '../../../api/geo.api';
+import { fmtDayShort } from '../utils/analyticsFormat';
 import {
   buildSamarqandDistricts,
   filterAndSortDistricts,
@@ -29,7 +30,7 @@ export function useViloyatlarAnalytics() {
 
   const resultsQuery = useQuery({
     queryKey: ['analytics-results-viloyatlar', period],
-    queryFn: () => analyticsApi.getResults({ regionCode: '18', period }).then((r) => r.data),
+    queryFn: () => analyticsApi.getResults({ level: 'DISTRICT', regionCode: '18', period }).then((r) => r.data),
     staleTime: 60_000,
   });
 
@@ -41,8 +42,8 @@ export function useViloyatlarAnalytics() {
 
   const overview = overviewQuery.data || {};
   const rangeLabel = overview.periodFrom && overview.periodTo
-    ? `${overview.periodFrom} – ${overview.periodTo}`
-    : (period === '30d' ? '2026-10-10 – 2026-11-08' : (PERIOD_LABELS[period]?.label ?? '30 kun'));
+    ? `${fmtDayShort(overview.periodFrom)} – ${fmtDayShort(overview.periodTo)}`
+    : (PERIOD_LABELS[period]?.label ?? '30 kun');
 
   const rawDistricts = useMemo(
     () => buildSamarqandDistricts(undefined, resultsQuery.data?.rows),
@@ -70,12 +71,28 @@ export function useViloyatlarAnalytics() {
     [rawDistricts]
   );
 
-  const unassigned = useMemo(() => ({
-    turnover: 0,
-    companies: 0,
-    connected: 0,
-    sharePct: 0,
-  }), []);
+  const unassigned = useMemo(() => {
+    const totalViloyatTurnover = Number(overview.kpi?.totalTurnover || 0);
+    const sumDistrictsTurnover = rawDistricts.reduce((s, d) => s + (d.turnover || 0), 0);
+    const unassignedTurnover = Math.max(0, totalViloyatTurnover - sumDistrictsTurnover);
+
+    const totalViloyatComps = Number(overview.kpi?.totalEnterprises || overview.kpi?.enterprises || 0);
+    const sumDistrictsComps = rawDistricts.reduce((s, d) => s + (d.companies || 0), 0);
+    const unassignedCompanies = Math.max(0, totalViloyatComps - sumDistrictsComps);
+
+    const totalViloyatConn = Number(overview.kpi?.connected || 0);
+    const sumDistrictsConn = rawDistricts.reduce((s, d) => s + (d.connected || 0), 0);
+    const unassignedConnected = Math.max(0, totalViloyatConn - sumDistrictsConn);
+
+    const sharePct = totalViloyatTurnover > 0 ? (unassignedTurnover / totalViloyatTurnover) * 100 : 0;
+
+    return {
+      turnover: unassignedTurnover,
+      companies: unassignedCompanies,
+      connected: unassignedConnected,
+      sharePct,
+    };
+  }, [overview.kpi, rawDistricts]);
 
   return {
     period,

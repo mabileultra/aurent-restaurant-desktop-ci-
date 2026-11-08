@@ -112,4 +112,36 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Tuman rasmi');
     expect(html).toContain('Ishtixon tumani surati shu yerga qo‘yiladi');
   });
+
+  it('renders district companies and excludes other districts when viewing Samarqand shahri', () => {
+    const queryClient = new QueryClient();
+
+    const html = renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(
+          MemoryRouter,
+          { initialEntries: ['/platform/analytics/viloyatlar/18?district=01'] },
+          React.createElement(
+            Routes,
+            null,
+            React.createElement(Route, {
+              path: '/platform/analytics/viloyatlar/:regionCode',
+              element: React.createElement(PlatformAnalyticsViloyatDetailPage),
+            })
+          )
+        )
+      )
+    );
+
+    expect(html).toContain('Samarqand shahri');
+    expect(html).toContain('Shahar · kod 01');
+    expect(html).toContain('Korxonalar bo‘yicha aylanma');
+    expect(html).toContain('Farina Invest');
+    expect(html).toContain('Makon Mobile');
+    // Crucial requirement: Urgut and Pastdarg'om must NOT be in Korxonalar bo'yicha aylanma
+    expect(html).not.toContain('Urgut tumani ·');
+    expect(html).not.toContain('Pastdarg‘om tumani ·');
+  });
 });

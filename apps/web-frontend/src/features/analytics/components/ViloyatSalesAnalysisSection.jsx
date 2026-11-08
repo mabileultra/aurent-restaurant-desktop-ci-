@@ -13,12 +13,15 @@ export default function ViloyatSalesAnalysisSection({
   lowProducts,
   districtsBreakdown,
   isDistrictView = false,
+  rangeLabel = '10-okt – 8-noy',
 }) {
   const fShareText = formatPercent(turnover.f30);
   const connShareText = formatPercent(connPercent);
   const quietDistricts = districtsBreakdown.quietCount;
   const districtsNote = isDistrictView
-    ? 'Ushbu hudud bo‘yicha tahlil ko‘rsatilgan'
+    ? (quietDistricts > 0
+      ? `Yana ${quietDistricts} ta korxonada 30 kunda savdo yo‘q`
+      : 'Ushbu hududdagi barcha korxonalar ko‘rsatilgan')
     : (quietDistricts > 0
       ? `Yana ${quietDistricts} ta tumanda korxona bor, lekin 30 kunda savdo yo‘q`
       : 'Korxonasi bor barcha tumanlar ko‘rsatilgan');
@@ -30,7 +33,7 @@ export default function ViloyatSalesAnalysisSection({
           Savdo tahlili
         </h2>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          Oxirgi 30 kun · 10-oktabr – 8-noyabr
+          Oxirgi 30 kun · {rangeLabel}
         </span>
       </div>
 
@@ -141,7 +144,9 @@ export default function ViloyatSalesAnalysisSection({
                   <div className="flex items-center justify-between text-xs">
                     <span className="truncate">
                       <b className="font-semibold text-slate-800 dark:text-slate-200">{d.name}</b>
-                      <span className="text-slate-400"> · {d.count} korxona</span>
+                      <span className="text-slate-400">
+                        {isDistrictView ? (d.extra ? ` · ${d.extra}` : '') : ` · ${d.count} korxona`}
+                      </span>
                     </span>
                     <span className="font-bold font-mono text-slate-900 dark:text-white shrink-0">{formatCompact(d.turnover)} so‘m</span>
                   </div>
@@ -155,7 +160,9 @@ export default function ViloyatSalesAnalysisSection({
               ))}
             </ul>
           ) : (
-            <p className="my-auto text-xs text-slate-400 text-center">Hech bir tumanda savdo qayd etilmagan</p>
+            <p className="my-auto text-xs text-slate-400 text-center">
+              {isDistrictView ? 'Bu turdagi korxonalarda 30 kun ichida savdo qayd etilmagan' : 'Hech bir tumanda savdo qayd etilmagan'}
+            </p>
           )}
 
           <p className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 leading-tight">

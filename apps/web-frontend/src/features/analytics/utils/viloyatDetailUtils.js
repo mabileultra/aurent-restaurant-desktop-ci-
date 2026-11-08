@@ -98,8 +98,12 @@ const FULL_DISTRICT_NAMES = {
 export function mapDistrictNames(geoDistricts = [], fallback = {}) {
   const map = { ...fallback, ...FULL_DISTRICT_NAMES };
   geoDistricts.forEach((d) => {
-    const code = String(d.code || '').padStart(2, '0');
-    map[code] = d.nameUz || d.nameRu || FULL_DISTRICT_NAMES[code] || code;
+    const raw = String(d.code || '');
+    const name = d.nameUz || d.nameRu || FULL_DISTRICT_NAMES[raw] || raw;
+    map[raw] = name;
+    if (raw.length >= 2) {
+      map[raw.slice(-2)] = name;
+    }
   });
   return map;
 }
@@ -132,11 +136,12 @@ export function filterAndPaginateCompanies(companies, {
   pageSize = 10,
 }) {
   const cleanQ = String(query || '').trim().toLowerCase();
+  const targetDist = district && district !== 'all' ? String(district).slice(-2) : null;
   const filtered = companies.filter((comp) => {
     const matchesType = type === 'A' || comp[4] === type;
     if (!matchesType) return false;
 
-    const matchesDistrict = district === 'all' || comp[3] === district;
+    const matchesDistrict = !targetDist || String(comp[3] || '').slice(-2) === targetDist;
     if (!matchesDistrict) return false;
 
     const isConnected = comp[5] === 1;

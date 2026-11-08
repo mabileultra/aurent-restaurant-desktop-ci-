@@ -11,7 +11,7 @@ export default function ViloyatDetailHeader({
   districtName = null,
   onClearDistrict = null,
 }) {
-  const isShahar = districtName?.toLowerCase().includes('shahar') || districtName?.toLowerCase().includes('sh.');
+  const isShahar = districtName?.toLowerCase().includes('shahar') || districtName?.toLowerCase().includes('shahr') || districtName?.toLowerCase().includes('sh.');
   const resolvedBadge = isDistrictView
     ? `${isShahar ? 'Shahar' : 'Tuman'} · kod ${districtCode}`
     : `Viloyat · kod ${padCode}`;

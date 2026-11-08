@@ -6,6 +6,7 @@ export function KorxonaProductsAndFiscalSection({
   donuts = [],
   products = [],
   totalProductsCount = 0,
+  totalReceiptsCount = 0,
   productSort = 'sum',
   onSortChange,
   setProductSort,
@@ -23,18 +24,18 @@ export function KorxonaProductsAndFiscalSection({
       {/* Left: Fiskal holati */}
       <section
         aria-labelledby="fiscal-status-heading"
-        className="flex-1 lg:flex-[1_1_360px] max-w-full bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-5 shadow-xs"
+        className="flex-1 lg:flex-[1_1_380px] max-w-full bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 sm:p-6 flex flex-col justify-start gap-6 shadow-xs"
       >
-        <div className="space-y-0.5">
-          <h2 id="fiscal-status-heading" className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+        <div className="space-y-1">
+          <h2 id="fiscal-status-heading" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             Fiskal holati
           </h2>
           <span className="text-xs text-slate-400 dark:text-slate-500">
-            Oxirgi 30 kun · 43 ta chek
+            {totalReceiptsCount > 0 ? `Oxirgi 30 kun · ${totalReceiptsCount} ta chek` : 'Oxirgi 30 kun'}
           </span>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6 pt-1">
           {donuts.map((d, i) => (
             <KorxonaCenterDonut key={i} {...d} />
           ))}

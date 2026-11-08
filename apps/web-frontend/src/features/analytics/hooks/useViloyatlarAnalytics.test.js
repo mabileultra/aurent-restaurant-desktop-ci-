@@ -32,7 +32,7 @@ describe('useViloyatlarAnalytics', () => {
     renderToStaticMarkup(React.createElement(TestComponent));
 
     expect(hookState.loading).toBe(false);
-    expect(hookState.rangeLabel).toBe('2026-10-10 – 2026-11-08');
+    expect(hookState.rangeLabel).toBe('10-okt – 8-noy');
     expect(hookState.counts.all).toBe(16);
     expect(hookState.counts.active).toBe(10);
     expect(hookState.counts.empty).toBe(6);

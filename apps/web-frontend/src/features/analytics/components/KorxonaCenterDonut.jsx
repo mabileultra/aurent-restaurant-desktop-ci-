@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function KorxonaCenterDonut({ label, color, pct, amount, hint, dash, aria }) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-5 sm:gap-6">
       <svg
-        width="104"
-        height="104"
+        width="120"
+        height="120"
         viewBox="0 0 112 112"
         role="img"
         aria-label={aria}
@@ -24,24 +24,24 @@ export default function KorxonaCenterDonut({ label, color, pct, amount, hint, da
         />
         <text
           x="56"
-          y="62"
+          y="63"
           textAnchor="middle"
-          fontSize="18"
-          fontWeight="700"
+          fontSize="22"
+          fontWeight="800"
           className="fill-slate-900 dark:fill-white font-mono"
         >
           {pct}
         </text>
       </svg>
-      <div className="space-y-0.5 min-w-0">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-          <span style={{ backgroundColor: color }} className="w-2 h-2 rounded-xs" />
+      <div className="space-y-1 min-w-0">
+        <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <span style={{ backgroundColor: color }} className="w-2.5 h-2.5 rounded-xs shrink-0" />
           {label}
         </span>
-        <span className="text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-white block">
+        <span className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-slate-900 dark:text-white block tracking-tight">
           {amount}
         </span>
-        <span className="text-xs text-slate-400 dark:text-slate-500 block">
+        <span className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 block">
           {hint}
         </span>
       </div>

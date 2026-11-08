@@ -36,12 +36,12 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
       <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-[#FCFCFD] dark:bg-slate-950/60 p-4 space-y-3 text-[13px] leading-snug">
         <div className="text-center space-y-0.5">
           <span className="text-[15px] font-bold tracking-wider text-slate-900 dark:text-white block uppercase">
-            {companyInfo?.name || 'MAKON MOBILE'}
+            {companyInfo?.name || 'Korxona'}
           </span>
           <span className="text-slate-500 text-xs block">
-            {companyInfo?.legalName || 'TURAN M-PAY MCHJ'} · STIR {companyInfo?.tin || '309121333'}
+            {companyInfo?.legalName || companyInfo?.name || '—'} · STIR {companyInfo?.tin || '—'}
           </span>
-          <span className="text-slate-400 text-xs block">Samarqand sh., Makon Mall</span>
+          <span className="text-slate-400 text-xs block">{receiptDetail.storeName || companyInfo?.address || '—'}</span>
         </div>
 
         <div className="border-t border-dashed border-slate-300 dark:border-slate-700" />
@@ -57,7 +57,7 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
           </div>
           <div className="flex justify-between">
             <dt className="text-slate-500 font-sans">Kassir</dt>
-            <dd className="text-slate-700 dark:text-slate-300 font-sans">test MakonMobile test</dd>
+            <dd className="text-slate-700 dark:text-slate-300 font-sans">{receiptDetail.cashierName || 'Kassir'}</dd>
           </div>
         </dl>
 
@@ -128,7 +128,7 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-500 font-sans">Fiskal modul</dt>
-                <dd className="font-semibold text-slate-900 dark:text-white tabular-nums">LG420230633512</dd>
+                <dd className="font-semibold text-slate-900 dark:text-white tabular-nums">{receiptDetail.fiscalTerminalId || '—'}</dd>
               </div>
               <span className="text-[10px] text-slate-400 font-sans block pt-0.5">QR orqali soliq.uz da tekshiriladi</span>
             </dl>

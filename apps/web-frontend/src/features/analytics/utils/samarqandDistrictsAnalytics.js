@@ -1,7 +1,4 @@
-import {
-  SAMARQAND_COMPANIES,
-  SAMARQAND_TURNOVER,
-} from '../data/samarqandMockData';
+import { SAMARQAND_COMPANIES, SAMARQAND_TURNOVER } from '../data/samarqandMockData';
 import { fmtMoney, fmtPercent } from './analyticsFormat';
 
 export const SAMARQAND_FULL_DISTRICTS = [
@@ -35,13 +32,18 @@ export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES, backend
   const rowsMap = new Map();
   if (Array.isArray(backendResultsRows)) {
     backendResultsRows.forEach((r) => {
-      const code = String(r.code || '').padStart(2, '0');
-      rowsMap.set(code, r);
+      const raw = String(r.code || '');
+      rowsMap.set(raw, r);
+      if (raw.length >= 2) {
+        rowsMap.set(raw.slice(-2), r);
+      }
     });
   }
 
+  const hasBackend = Array.isArray(backendResultsRows);
+
   return SAMARQAND_FULL_DISTRICTS.map((d) => {
-    const backendRow = rowsMap.get(d.code);
+    const backendRow = rowsMap.get(d.code) || rowsMap.get(`18${d.code}`);
     if (backendRow) {
       const enterprises = Number(backendRow.enterprises ?? 0);
       const connected = Number(backendRow.connected ?? 0);
@@ -64,13 +66,26 @@ export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES, backend
       };
     }
 
-    const comps = companies.filter((c) => c[3] === d.code);
+    if (hasBackend) {
+      return {
+        code: d.code,
+        name: d.name,
+        shortName: d.shortName,
+        companies: 0,
+        connected: 0,
+        turnover: 0,
+        fiscalTurnover: 0,
+        fiscalSharePct: null,
+        turnoverDeltaPct: null,
+        hasCompanies: false,
+        link: `/platform/analytics/viloyatlar/18?district=${d.code}`,
+      };
+    }
+
+    const comps = Array.isArray(companies) ? companies.filter((c) => c[3] === d.code) : [];
     const count = comps.length;
     const connected = comps.filter((c) => c[5] === 1).length;
     const turnover = comps.reduce((sum, c) => sum + (c[7] || 0), 0);
-    const mockMeta = { '01': [512.7, 97.6], '15': [-96.5, 95.3], '11': [-82.1, 97.4] }[d.code];
-    const delta = mockMeta ? mockMeta[0] : null;
-    const fiscalPct = mockMeta ? mockMeta[1] : (turnover > 0 ? 97.6 : null);
 
     return {
       code: d.code,
@@ -79,9 +94,9 @@ export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES, backend
       companies: count,
       connected,
       turnover,
-      fiscalTurnover: turnover > 0 ? (turnover * (fiscalPct || 97.6)) / 100 : 0,
-      fiscalSharePct: fiscalPct,
-      turnoverDeltaPct: delta,
+      fiscalTurnover: turnover > 0 ? (turnover * 0.95) : 0,
+      fiscalSharePct: turnover > 0 ? 95 : null,
+      turnoverDeltaPct: null,
       hasCompanies: count > 0,
       link: `/platform/analytics/viloyatlar/18?district=${d.code}`,
     };
@@ -106,7 +121,7 @@ export function filterAndSortDistricts(districts, filter = 'all', sort = 'turnov
   });
 }
 
-export function buildSamarqandKpis(districts, period = '30d', backendKpi = null) {
+export function buildSamarqandKpis(districts = [], period = '30d', backendKpi = null) {
   if (backendKpi && (backendKpi.totalEnterprises > 0 || backendKpi.totalTurnover > 0)) {
     const totalComps = Number(backendKpi.totalEnterprises || 0);
     const totalConn = Number(backendKpi.connected || 0);
@@ -120,7 +135,7 @@ export function buildSamarqandKpis(districts, period = '30d', backendKpi = null)
         label: 'Umumiy aylanma',
         value: fmtMoney(Number(backendKpi.totalTurnover || 0)),
         delta: backendKpi.totalTurnoverDeltaPct != null ? Number(backendKpi.totalTurnoverDeltaPct) : null,
-        hint: PERIOD_LABELS[period]?.cmp || 'oldingi 30 kunga nisbatan',
+        hint: PERIOD_LABELS[period]?.cmp || 'oldingi davrga nisbatan',
       },
       {
         label: 'Jami korxonalar',
@@ -135,29 +150,26 @@ export function buildSamarqandKpis(districts, period = '30d', backendKpi = null)
       },
       {
         label: 'Yangi ulanishlar',
-        value: String(backendKpi.newConnections ?? 11),
-        delta: backendKpi.newConnectionsDeltaPct != null ? Number(backendKpi.newConnectionsDeltaPct) : 22.2,
+        value: String(backendKpi.newConnections ?? 0),
+        delta: backendKpi.newConnectionsDeltaPct != null ? Number(backendKpi.newConnectionsDeltaPct) : null,
         hint: 'Tanlangan davrda',
       },
     ];
   }
-  const tA = SAMARQAND_TURNOVER.A;
-  let periodTurnover = tA.m30;
-  if (period === '7d') periodTurnover = tA.d7;
-  else if (period === 'today') periodTurnover = tA.day;
-  else if (period === 'year') periodTurnover = tA.all;
 
-  const totalComps = districts.reduce((acc, d) => acc + d.companies, 0);
-  const totalConn = districts.reduce((acc, d) => acc + d.connected, 0);
+  const totalComps = districts.reduce((acc, d) => acc + (d.companies || 0), 0);
+  const totalConn = districts.reduce((acc, d) => acc + (d.connected || 0), 0);
+  const totalTurnover = districts.reduce((acc, d) => acc + (d.turnover || 0), 0);
   const notConnected = Math.max(0, totalComps - totalConn);
   const connPct = totalComps > 0 ? fmtPercent((totalConn / totalComps) * 100) : '0%';
+  const fallbackTurnover = totalTurnover > 0 ? totalTurnover : (SAMARQAND_TURNOVER?.A?.m30 || 0);
 
   return [
     {
       label: 'Umumiy aylanma',
-      value: fmtMoney(periodTurnover),
-      delta: 512.7,
-      hint: PERIOD_LABELS[period]?.cmp || 'oldingi 30 kunga nisbatan',
+      value: fmtMoney(fallbackTurnover),
+      delta: null,
+      hint: PERIOD_LABELS[period]?.cmp || 'oldingi davrga nisbatan',
     },
     {
       label: 'Jami korxonalar',
@@ -172,8 +184,8 @@ export function buildSamarqandKpis(districts, period = '30d', backendKpi = null)
     },
     {
       label: 'Yangi ulanishlar',
-      value: '11',
-      delta: 22.2,
+      value: '0',
+      delta: null,
       hint: 'Tanlangan davrda',
     },
   ];

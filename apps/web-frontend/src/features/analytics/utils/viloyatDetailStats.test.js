@@ -6,6 +6,8 @@ import {
   computeBusinessTypeTabs,
   generateDailyBars,
   resolveDistrictMeta,
+  calculateCompaniesBreakdown,
+  resolveScopedProducts,
 } from './viloyatDetailStats';
 
 describe('viloyatDetailStats', () => {
@@ -107,5 +109,50 @@ describe('viloyatDetailStats', () => {
       totalDistricts: 16,
     });
     expect(regionMeta).toBe('63 korxona · 16 ulangan · 16 ta tuman va shahar');
+  });
+
+  it('calculates company breakdown in district view accurately', () => {
+    const companies = [
+      [101, 'Farina Invest', '303190578', '01', 'G', 1, 1, 2000000],
+      [102, 'Makon Mobile', '309121333', '01', 'G', 1, 1, 500000],
+      [103, 'Quiet Company', '300000000', '01', 'R', 0, 1, 0],
+    ];
+
+    const res = calculateCompaniesBreakdown(companies, { G: 'Oziq-ovqat', R: 'Restoranlar' });
+    expect(res.districts).toHaveLength(2);
+    expect(res.districts[0].name).toBe('Farina Invest');
+    expect(res.districts[0].extra).toBe('Oziq-ovqat');
+    expect(res.districts[0].turnover).toBe(2000000);
+    expect(res.maxTurnover).toBe(2000000);
+    expect(res.quietCount).toBe(1);
+  });
+
+  it('resolves scoped products filtering out other districts', () => {
+    const allProducts = {
+      A: {
+        top: [
+          ['Product 1', 'Farina Invest', 10, 1000],
+          ['Product 2', 'Urgut Toys', 5, 500],
+        ],
+        low: [
+          ['Product 3', 'Farina Invest', 1, 10],
+          ['Product 4', 'Urgut Toys', 1, 5],
+        ],
+      },
+    };
+
+    const districtCompanies = [
+      [101, 'Farina Invest', '303190578', '01', 'G', 1, 1, 2000000],
+    ];
+
+    const scoped = resolveScopedProducts(allProducts, 'A', true, districtCompanies);
+    expect(scoped.top).toHaveLength(1);
+    expect(scoped.top[0][0]).toBe('Product 1');
+    expect(scoped.low).toHaveLength(1);
+    expect(scoped.low[0][0]).toBe('Product 3');
+
+    // Falls back to group when not in district view
+    const unscoped = resolveScopedProducts(allProducts, 'A', false, districtCompanies);
+    expect(unscoped.top).toHaveLength(2);
   });
 });

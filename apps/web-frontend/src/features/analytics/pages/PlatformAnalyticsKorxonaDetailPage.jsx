@@ -48,6 +48,7 @@ export default function PlatformAnalyticsKorxonaDetailPage() {
           donuts={analytics.donuts}
           products={analytics.products}
           totalProductsCount={analytics.totalProductsCount}
+          totalReceiptsCount={analytics.totalReceiptsCount}
           productSort={analytics.productSort}
           setProductSort={analytics.setProductSort}
           productPage={analytics.productPage}
@@ -77,6 +78,7 @@ export default function PlatformAnalyticsKorxonaDetailPage() {
           dayTotalCount={analytics.dayTotalCount}
           dayTotal={analytics.dayTotal}
           dayTotalFormatted={analytics.dayTotalFormatted}
+          totalReceiptsCount={analytics.totalReceiptsCount}
           selectedReceiptNo={analytics.selectedReceiptNo}
           onSelectReceipt={analytics.onSelectReceipt}
           receiptDetail={analytics.receiptDetail}

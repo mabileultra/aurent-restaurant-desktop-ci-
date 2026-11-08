@@ -117,4 +117,28 @@ describe('samarqandDistrictsAnalytics', () => {
     expect(kpis[2].badgeText).toBe('75,0%');
     expect(kpis[3].value).toBe('14');
   });
+
+  it('correctly matches 4-digit district codes like 1801 to 2-digit district 01', () => {
+    const mockBackendRows = [
+      {
+        code: '1801',
+        nameUz: 'Samarqand shahri',
+        enterprises: 42,
+        connected: 20,
+        totalTurnover: 800000000,
+        fiscalTurnover: 790000000,
+        fiscalSharePct: 98.75,
+        turnoverDeltaPct: 15.2,
+      },
+    ];
+
+    const districts = buildSamarqandDistricts([], mockBackendRows);
+    const samSh = districts.find((d) => d.code === '01');
+    expect(samSh).toBeDefined();
+    expect(samSh.companies).toBe(42);
+    expect(samSh.connected).toBe(20);
+    expect(samSh.turnover).toBe(800000000);
+    expect(samSh.fiscalSharePct).toBe(98.75);
+    expect(samSh.hasCompanies).toBe(true);
+  });
 });

@@ -107,8 +107,31 @@ export function filterDayReceipts(receipts, day, kind = 'all') {
 
 export function prepareReceiptDetail(r) {
   if (!r) return null;
+  if (!Array.isArray(r) && typeof r === 'object') {
+    const isFiscal = Boolean(r.printFiscalQr || r.fiscalSign || r.hasQr);
+    const dateFormatted = r.createdAt ? `${r.createdAt.slice(0, 10).split('-').reverse().join('.')}, ${r.createdAt.slice(11, 16)}` : '—';
+    return {
+      no: r.receiptNumber || r.saleId || '—',
+      when: dateFormatted,
+      items: (r.items || []).map((i) => ({
+        name: i.name,
+        line: `${formatNumber(i.quantity)} × ${formatNumber(i.price)}`,
+        total: formatNumber(i.total ?? (Number(i.quantity || 1) * Number(i.price || 0))),
+      })),
+      subtotal: formatNumber(r.subtotal ?? r.totalAmount),
+      tax: formatNumber(r.taxTotal ?? 0),
+      total: formatNumber(r.totalAmount),
+      payMethod: r.paymentMethod === 'CASH' ? 'Naqd pul' : (r.paymentMethod === 'CARD' ? 'Plastik karta' : (r.paymentMethod || 'Naqd pul')),
+      cashierName: r.cashierName || 'Kassir',
+      storeName: r.storeName,
+      isFiscal,
+      fiscalSign: r.fiscalSign || '—',
+      fiscalSeq: r.fiscalReceiptSeq || '—',
+      fiscalTerminalId: r.fiscalTerminalId || '—',
+    };
+  }
   const isFiscal = Boolean(r[7]);
-  const dateFormatted = r[1].split('-').reverse().join('.');
+  const dateFormatted = typeof r[1] === 'string' && r[1].includes('-') ? r[1].split('-').reverse().join('.') : r[1];
   return {
     no: r[0],
     when: `${dateFormatted}, ${r[2]}`,
@@ -124,5 +147,6 @@ export function prepareReceiptDetail(r) {
     isFiscal,
     fiscalSign: r[8] || '—',
     fiscalSeq: r[9] || '—',
+    fiscalTerminalId: r[11] || '—',
   };
 }

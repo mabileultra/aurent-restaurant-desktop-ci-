@@ -39,6 +39,7 @@ export default function PlatformAnalyticsViloyatDetailPage() {
     searchQuery,
     setSearchQuery,
     tableData,
+    rangeLabel,
     onPrevPage,
     onNextPage,
   } = useViloyatDetailAnalytics(regionCode);
@@ -70,6 +71,7 @@ export default function PlatformAnalyticsViloyatDetailPage() {
           activeType={activeType}
           isDistrictView={isDistrictView}
           districtName={districtName}
+          rangeLabel={rangeLabel}
         />
 
         <ViloyatSalesAnalysisSection
@@ -82,6 +84,7 @@ export default function PlatformAnalyticsViloyatDetailPage() {
           lowProducts={lowProducts}
           districtsBreakdown={districtsBreakdown}
           isDistrictView={isDistrictView}
+          rangeLabel={rangeLabel}
         />
 
       <ViloyatCompaniesTableSection

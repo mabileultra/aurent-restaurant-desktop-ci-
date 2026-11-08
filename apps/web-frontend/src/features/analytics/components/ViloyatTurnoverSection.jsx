@@ -43,6 +43,7 @@ export default function ViloyatTurnoverSection({
   activeType,
   isDistrictView = false,
   districtName = null,
+  rangeLabel = '10-okt – 8-noy',
 }) {
   return (
     <section aria-label="Pul aylanmasi" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -115,31 +116,31 @@ export default function ViloyatTurnoverSection({
       <div className="grid grid-cols-2 gap-3">
         <PeriodMiniCard
           label="Oylik"
-          sub="Oxirgi 30 kun · 10-okt – 8-noy"
+          sub={`Oxirgi 30 kun · ${rangeLabel}`}
           amount={turnover.m30}
-          delta={activeType === 'A' ? 512.7 : null}
+          delta={turnover.turnoverDeltaPct != null ? turnover.turnoverDeltaPct : null}
           emptyText="Savdo yo‘q"
         />
         <PeriodMiniCard
           label="Haftalik"
-          sub="Oxirgi 7 kun · 2 – 8-noy"
+          sub="Oxirgi 7 kun"
           amount={turnover.d7}
-          delta={activeType === 'A' ? -93.3 : null}
+          delta={null}
           emptyText="Savdo yo‘q"
         />
         <PeriodMiniCard
           label="Yillik"
-          sub="2026-yil · 1-yan – 8-noy"
+          sub="2026-yil · Butun davr"
           amount={turnover.all}
           delta={null}
           emptyText="Savdo yo‘q"
         />
         <PeriodMiniCard
           label="Kunlik"
-          sub="Bugun · 8-noyabr"
+          sub="Bugun"
           amount={turnover.day}
           delta={null}
-          emptyText={hasSales ? 'Oxirgi savdo: 2-noyabr' : 'Savdo yo‘q'}
+          emptyText={hasSales ? 'Oxirgi savdo qayd etilgan' : 'Savdo yo‘q'}
         />
       </div>
 

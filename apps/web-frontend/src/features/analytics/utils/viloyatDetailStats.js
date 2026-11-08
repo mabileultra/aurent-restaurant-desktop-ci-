@@ -11,7 +11,8 @@ export function normalizeBackendCompany(raw) {
   const id = raw.companyId ?? raw.id;
   const name = raw.name || raw.storeNames || '—';
   const tin = raw.tin || '_';
-  const districtCode = String(raw.districtCode || '').padStart(2, '0');
+  const rawDist = String(raw.districtCode || '');
+  const districtCode = rawDist.length > 2 ? rawDist.slice(-2) : rawDist.padStart(2, '0');
   const type = raw.businessType || raw.activitySubtype || 'O';
   const isConnected = raw.connected ? 1 : 0;
   const storeCount = raw.storeCount || 1;
@@ -38,7 +39,7 @@ export function computeDistrictTurnover({ companies = [], activeType = 'A', isDi
   const total = inType.reduce((sum, c) => sum + Number(c[7] || 0), 0);
   const fiscal = inType.reduce((sum, c) => sum + Number(c[9] || (c[7] ? c[7] * 0.95 : 0)), 0);
   const nonFiscal = Math.max(0, total - fiscal);
-  const fShare = total > 0 ? (fiscal / total) * 100 : 0;
+  const fShare = total > 0 ? (fiscal / total) * 100 : null;
   const d7 = total > 0 ? Math.round(total * 0.25) : 0;
 
   return {
@@ -50,19 +51,15 @@ export function computeDistrictTurnover({ companies = [], activeType = 'A', isDi
     d7,
     day: 0,
     fShareText: formatPercent(fShare),
-    nfShareText: formatPercent(100 - fShare),
+    nfShareText: fShare != null ? formatPercent(100 - fShare) : '—',
   };
 }
 
 export function computeBusinessTypeTabs({ companies = [], isDistrictView = false, baseTypes = [] }) {
-  if (!isDistrictView && baseTypes.length > 0) {
-    return baseTypes;
-  }
-
   const allN = companies.length;
   const allC = companies.filter((c) => c[5] === 1).length;
   const byType = (tId) => {
-    const matching = companies.filter((c) => c[4] === tId);
+    const matching = companies.filter((c) => c[4] === tId || (tId === 'F' && c[4] === 'G'));
     return { n: matching.length, c: matching.filter((c) => c[5] === 1).length };
   };
 
@@ -99,8 +96,13 @@ export function resolveDistrictMeta({ isDistrictView, totalCount, connectedCount
 
 export function buildDistrictOptions(districtNames = {}) {
   const list = [{ value: 'all', label: 'Barcha tumanlar' }];
+  const seen = new Set();
   Object.entries(districtNames).forEach(([code, name]) => {
-    list.push({ value: code, label: name });
+    const shortCode = code.length > 2 ? code.slice(-2) : code;
+    if (!seen.has(shortCode) && shortCode !== 'all') {
+      seen.add(shortCode);
+      list.push({ value: shortCode, label: name });
+    }
   });
   return list;
 }
@@ -117,4 +119,39 @@ export function mapProductList(rawProducts = []) {
     isSuspiciousPrice: p[3] / p[2] < 100,
     unitPrice: Math.round(p[3] / p[2]),
   }));
+}
+
+export function calculateCompaniesBreakdown(companies = [], typeNames = {}) {
+  const sorted = [...companies].sort((a, b) => (Number(b[7] || 0) - Number(a[7] || 0)) || (b[5] - a[5]));
+  const withSales = sorted.filter((c) => Number(c[7] || 0) > 0);
+  const targetList = withSales.length > 0 ? withSales : sorted;
+  const maxTurnover = withSales.length ? Number(withSales[0][7] || 0) : 1;
+  const quietCount = sorted.length - withSales.length;
+
+  const list = targetList.slice(0, 5).map((comp) => ({
+    code: String(comp[0]),
+    name: comp[1],
+    extra: typeNames[comp[4]] || comp[4],
+    count: 1,
+    turnover: Number(comp[7] || 0),
+  }));
+
+  return {
+    districts: list,
+    quietCount,
+    maxTurnover,
+    totalWithDistricts: sorted.length,
+  };
+}
+
+export function resolveScopedProducts(allProducts = {}, activeType = 'A', isDistrictView = false, districtCompanies = []) {
+  const group = allProducts[activeType] || { top: [], low: [] };
+  if (!isDistrictView || !districtCompanies.length) return group;
+  const allowedNames = new Set(districtCompanies.map((c) => c[1]));
+  const filteredTop = group.top.filter((p) => allowedNames.has(p[1]));
+  const filteredLow = group.low.filter((p) => allowedNames.has(p[1]));
+  return {
+    top: filteredTop.length > 0 ? filteredTop : group.top,
+    low: filteredLow.length > 0 ? filteredLow : group.low,
+  };
 }
