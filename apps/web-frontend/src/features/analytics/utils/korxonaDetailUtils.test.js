@@ -36,6 +36,36 @@ describe('korxonaDetailUtils', () => {
     expect(byQty.products[0].name).toBe('Phone B');
   });
 
+  it('paginates products list by 10 items with correct rank and bounds', () => {
+    const raw25 = Array.from({ length: 25 }, (_, i) => [`Tovar ${i + 1}`, 10, (25 - i) * 1000]);
+
+    // Page 0 (items 1..10)
+    const page0 = prepareProductsList(raw25, 'sum', 0, 10);
+    expect(page0.totalCount).toBe(25);
+    expect(page0.totalPages).toBe(3);
+    expect(page0.from).toBe(1);
+    expect(page0.to).toBe(10);
+    expect(page0.products).toHaveLength(10);
+    expect(page0.products[0].rank).toBe(1);
+    expect(page0.products[0].name).toBe('Tovar 1');
+
+    // Page 1 (items 11..20)
+    const page1 = prepareProductsList(raw25, 'sum', 1, 10);
+    expect(page1.from).toBe(11);
+    expect(page1.to).toBe(20);
+    expect(page1.products).toHaveLength(10);
+    expect(page1.products[0].rank).toBe(11);
+    expect(page1.products[0].name).toBe('Tovar 11');
+
+    // Page 2 (items 21..25)
+    const page2 = prepareProductsList(raw25, 'sum', 2, 10);
+    expect(page2.from).toBe(21);
+    expect(page2.to).toBe(25);
+    expect(page2.products).toHaveLength(5);
+    expect(page2.products[0].rank).toBe(21);
+    expect(page2.products[0].name).toBe('Tovar 21');
+  });
+
   it('parses day labels', () => {
     const { short, long } = parseDayLabels('2026-10-28');
     expect(short).toBe('28-okt');

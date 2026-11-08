@@ -65,7 +65,10 @@ const PlatformSelect = forwardRef(function PlatformSelect(
 
   const autoSearchable = searchable ?? (normalizedOptions.length > 5);
   const isAnalyticsRoute = typeof window !== 'undefined' && window.location.pathname.includes('/analytics');
-  const isBlueTheme = theme === 'blue' || isAnalyticsRoute || (typeof className === 'string' && className.includes('platform-select--blue'));
+  const isBlueTheme =
+    theme === 'blue' ||
+    (isAnalyticsRoute && theme !== 'emerald' && theme !== 'default' && theme !== 'slate') ||
+    (typeof className === 'string' && className.includes('platform-select--blue'));
 
   return (
     <BaseSelect

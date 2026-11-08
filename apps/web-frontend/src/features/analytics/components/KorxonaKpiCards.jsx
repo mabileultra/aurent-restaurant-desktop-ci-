@@ -14,7 +14,7 @@ export function KorxonaKpiCards({ cards = [] }) {
       {cards.map((c, idx) => (
         <div
           key={idx}
-          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col justify-between gap-2 shadow-2xs"
+          className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between gap-2 shadow-xs"
         >
           <div className="space-y-0.5">
             <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">{c.label}</span>

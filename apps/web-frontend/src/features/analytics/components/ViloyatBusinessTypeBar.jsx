@@ -5,7 +5,7 @@ export default function ViloyatBusinessTypeBar({ types, activeType, onSelectType
     <div
       role="group"
       aria-label="Faoliyat turi bo‘yicha ajratish"
-      className="flex flex-wrap gap-1 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xs"
+      className="flex flex-wrap gap-1 p-1 bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl shadow-xs"
     >
       {types.map((t) => {
         const isActive = t.id === activeType;

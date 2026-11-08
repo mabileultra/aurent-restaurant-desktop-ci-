@@ -20,7 +20,7 @@ export function KorxonaHeaderCard({ info, companyInfo }) {
   } = data;
 
   return (
-    <section aria-label="Korxona haqida" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-2xs">
+    <section aria-label="Korxona haqida" className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 space-y-4 shadow-xs">
       {/* Top Header Row */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">

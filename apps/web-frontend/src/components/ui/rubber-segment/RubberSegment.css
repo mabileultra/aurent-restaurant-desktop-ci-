@@ -31,10 +31,10 @@
 }
 
 :is(.dark .rubber-segment, [data-theme='dark'] .rubber-segment) {
-  --rs-track: #0f172a;
-  --rs-thumb: #1e293b;
+  --rs-track: rgba(15, 23, 42, 0.75);
+  --rs-thumb: rgba(16, 185, 129, 0.25);
   --rs-ink: #94a3b8;
-  --rs-ink-active: #60a5fa;
+  --rs-ink-active: #34d399;
 }
 
 .rubber-segment[data-equal] {

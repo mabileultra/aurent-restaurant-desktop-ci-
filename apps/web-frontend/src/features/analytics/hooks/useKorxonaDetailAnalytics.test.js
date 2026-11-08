@@ -49,4 +49,28 @@ describe('useKorxonaDetailAnalytics', () => {
     expect(captured.dayReceipts.length).toBeGreaterThan(0);
     expect(captured.receiptDetail).not.toBeNull();
   });
+
+  it('correctly loads Aminjon Samarqand XK when companyId is 29 without falling back to Makon Mobile', () => {
+    const queryClient = new QueryClient();
+    let captured = null;
+
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(TestHarness, {
+          companyId: 29,
+          onCaptured: (val) => { captured = val; },
+        })
+      )
+    );
+
+    expect(captured).not.toBeNull();
+    expect(captured.companyInfo.name).toBe('Aminjon Samarqand XK');
+    expect(captured.companyInfo.tin).toBe('300575194');
+    expect(captured.companyInfo.monogram).toBe('AS');
+    expect(captured.cards[0].v).toBe(479088600);
+    expect(captured.products[0].name).toContain('Плиты из травертина');
+    expect(captured.dayReceipts.length).toBeGreaterThan(0);
+  });
 });

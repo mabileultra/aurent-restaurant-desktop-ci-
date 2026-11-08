@@ -29,15 +29,24 @@ export function calculateDonutArc(percent, radius = 44) {
   return `${dashLen.toFixed(1)} ${circ.toFixed(1)}`;
 }
 
-export function prepareProductsList(rawProducts, sortType = 'sum', showAll = false) {
+export function prepareProductsList(rawProducts, sortType = 'sum', pageOrShowAll = 0, pageSize = 10) {
   const byQty = sortType === 'qty';
   const total = rawProducts.reduce((acc, p) => acc + (p[2] || 0), 0) || 1;
   const sorted = [...rawProducts].sort((a, b) => (byQty ? (b[1] - a[1]) || (b[2] - a[2]) : b[2] - a[2]));
   const maxV = byQty ? (sorted[0]?.[1] || 1) : (sorted[0]?.[2] || 1);
-  const visible = showAll ? sorted : sorted.slice(0, 10);
+
+  const isShowAll = pageOrShowAll === true;
+  const totalCount = rawProducts.length;
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  const page = isShowAll ? 0 : Math.max(0, Math.min(typeof pageOrShowAll === 'number' ? pageOrShowAll : 0, totalPages - 1));
+  const start = isShowAll ? 0 : page * pageSize;
+  const visible = isShowAll ? sorted : sorted.slice(start, start + pageSize);
+
+  const from = totalCount === 0 ? 0 : start + 1;
+  const to = isShowAll ? totalCount : Math.min(start + pageSize, totalCount);
 
   const products = visible.map((p, idx) => ({
-    rank: idx + 1,
+    rank: start + idx + 1,
     name: p[0],
     qty: `${formatNumber(p[1])} dona`,
     amount: `${formatCompact(p[2])} so‘m`,
@@ -45,7 +54,7 @@ export function prepareProductsList(rawProducts, sortType = 'sum', showAll = fal
     barWidth: `${Math.max(2, ((byQty ? p[1] : p[2]) / maxV) * 100)}%`,
   }));
 
-  return { products, totalCount: rawProducts.length };
+  return { products, totalCount, from, to, page, totalPages, pageSize };
 }
 
 export function parseDayLabels(dateStr) {

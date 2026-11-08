@@ -5,7 +5,7 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
     return (
       <section
         aria-labelledby="rc-h"
-        className="w-full max-w-[380px] lg:flex-[1_1_340px] xl:max-w-[380px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"
+        className="w-full max-w-[380px] lg:flex-[1_1_340px] xl:max-w-[380px] bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 shadow-xs"
       >
         <h2 id="rc-h" className="text-lg font-bold text-slate-900 dark:text-white">Chek</h2>
         <p className="py-16 text-center text-sm text-slate-400">Chap tomondagi ro‘yxatdan chekni tanlang</p>
@@ -18,7 +18,7 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
   return (
     <section
       aria-labelledby="rc-h"
-      className="w-full max-w-[380px] lg:flex-[1_1_340px] xl:max-w-[380px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5 box-border flex flex-col gap-3.5 shrink-0"
+      className="w-full max-w-[380px] lg:flex-[1_1_340px] xl:max-w-[380px] bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4.5 box-border flex flex-col gap-3.5 shrink-0 shadow-xs"
     >
       <div className="flex items-center justify-between gap-2">
         <h2 id="rc-h" className="text-lg font-bold text-slate-900 dark:text-white">Chek</h2>

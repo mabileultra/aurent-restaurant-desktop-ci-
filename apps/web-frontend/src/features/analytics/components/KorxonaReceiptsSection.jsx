@@ -51,7 +51,7 @@ export function KorxonaReceiptsSection({
     <div className="flex flex-wrap gap-4 items-start">
       <section
         aria-labelledby="ch-h"
-        className="flex-1 lg:flex-[999_1_620px] min-w-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col overflow-hidden"
+        className="flex-1 lg:flex-[999_1_620px] min-w-0 bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl flex flex-col overflow-hidden shadow-xs"
       >
         {/* Header */}
         <div className="p-4 sm:p-5 pb-3 flex flex-wrap items-center justify-between gap-3">

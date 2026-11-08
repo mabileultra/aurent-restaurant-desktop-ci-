@@ -91,4 +91,21 @@ describe('PlatformAnalyticsKorxonaDetailPage', () => {
     expect(html).toContain('STIR 309121333');
     expect(html).toContain('Cheklar');
   });
+
+  it('renders Aminjon Samarqand XK details when companyId is 29', () => {
+    const html = renderPage('/platform/analytics/viloyatlar/18/companies/29');
+    expect(html).toContain('Aminjon Samarqand XK');
+    expect(html).toContain('STIR 300575194');
+    expect(html).toContain('AS');
+    expect(html).toContain('479,1 mln');
+    expect(html).toContain('Плиты из травертина');
+    expect(html).not.toContain('Makon Mobile');
+  });
+
+  it('renders background with prism-canvas in normal fiscal mode', () => {
+    const html = renderPage('/platform/analytics/viloyatlar/18/companies/103');
+    expect(html).toContain('fixed inset-0');
+    expect(html).toContain('prism-canvas');
+    expect(html).not.toContain('pixel-snow-canvas');
+  });
 });

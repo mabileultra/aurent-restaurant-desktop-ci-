@@ -76,6 +76,53 @@ export function calculateDistrictsBreakdown(companies, districtNames = {}) {
   };
 }
 
+const FULL_DISTRICT_NAMES = {
+  '01': 'Samarqand shahri',
+  '02': 'Oqdaryo tumani',
+  '03': 'Bulung‘ur tumani',
+  '04': 'Jomboy tumani',
+  '05': 'Ishtixon tumani',
+  '06': 'Kattaqo‘rg‘on tumani',
+  '07': 'Qo‘shrabot tumani',
+  '08': 'Narpay tumani',
+  '09': 'Nurobod tumani',
+  '10': 'Payariq tumani',
+  '11': 'Pastdarg‘om tumani',
+  '12': 'Paxtachi tumani',
+  '13': 'Samarqand tumani',
+  '14': 'Toyloq tumani',
+  '15': 'Urgut tumani',
+  '16': 'Kattaqo‘rg‘on shahri',
+};
+
+export function mapDistrictNames(geoDistricts = [], fallback = {}) {
+  const map = { ...fallback, ...FULL_DISTRICT_NAMES };
+  geoDistricts.forEach((d) => {
+    const code = String(d.code || '').padStart(2, '0');
+    map[code] = d.nameUz || d.nameRu || FULL_DISTRICT_NAMES[code] || code;
+  });
+  return map;
+}
+
+export function formatCompanyRows(paginationResult, districtNames = {}, typeNames = {}) {
+  const { rows = [], from = 0 } = paginationResult;
+  return rows.map((comp, idx) => {
+    const deltaObj = calculateDeltaBadge(comp[8]);
+    return {
+      rowNumber: from + idx,
+      id: comp[0],
+      name: comp[1],
+      tin: comp[2] && comp[2] !== '_' ? comp[2] : '—',
+      district: districtNames[comp[3]] || comp[3] || '—',
+      type: typeNames[comp[4]] || comp[4],
+      isConnected: comp[5] === 1,
+      turnover30d: comp[7],
+      deltaText: deltaObj ? deltaObj.text : '—',
+      isDeltaUp: deltaObj ? deltaObj.isUp : null,
+    };
+  });
+}
+
 export function filterAndPaginateCompanies(companies, {
   type = 'A',
   district = 'all',

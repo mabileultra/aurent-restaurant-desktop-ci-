@@ -81,4 +81,35 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Oldingi');
     expect(html).toContain('Keyingi');
   });
+
+  it('renders district scoped title, badge, breadcrumb and action when district param is present', () => {
+    const queryClient = new QueryClient();
+
+    const html = renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(
+          MemoryRouter,
+          { initialEntries: ['/platform/analytics/viloyatlar/18?district=05'] },
+          React.createElement(
+            Routes,
+            null,
+            React.createElement(Route, {
+              path: '/platform/analytics/viloyatlar/:regionCode',
+              element: React.createElement(PlatformAnalyticsViloyatDetailPage),
+            })
+          )
+        )
+      )
+    );
+
+    // District-specific header elements
+    expect(html).toContain('Ishtixon tumani');
+    expect(html).toContain('Tuman · kod 05');
+    expect(html).toContain('Samarqand viloyati');
+    expect(html).toContain('Viloyat ko‘rinishi');
+    expect(html).toContain('Tuman rasmi');
+    expect(html).toContain('Ishtixon tumani surati shu yerga qo‘yiladi');
+  });
 });

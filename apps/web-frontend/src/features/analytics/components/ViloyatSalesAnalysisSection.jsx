@@ -12,13 +12,16 @@ export default function ViloyatSalesAnalysisSection({
   topProducts,
   lowProducts,
   districtsBreakdown,
+  isDistrictView = false,
 }) {
   const fShareText = formatPercent(turnover.f30);
   const connShareText = formatPercent(connPercent);
   const quietDistricts = districtsBreakdown.quietCount;
-  const districtsNote = quietDistricts > 0
-    ? `Yana ${quietDistricts} ta tumanda korxona bor, lekin 30 kunda savdo yo‘q`
-    : 'Korxonasi bor barcha tumanlar ko‘rsatilgan';
+  const districtsNote = isDistrictView
+    ? 'Ushbu hudud bo‘yicha tahlil ko‘rsatilgan'
+    : (quietDistricts > 0
+      ? `Yana ${quietDistricts} ta tumanda korxona bor, lekin 30 kunda savdo yo‘q`
+      : 'Korxonasi bor barcha tumanlar ko‘rsatilgan');
 
   return (
     <section aria-labelledby="sales-analysis-heading" className="space-y-3">
@@ -33,7 +36,7 @@ export default function ViloyatSalesAnalysisSection({
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Card 1: 2 Donut Gauges */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-around gap-4 shadow-2xs">
+        <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 flex flex-col justify-around gap-4 shadow-xs">
           <DonutGauge
             label="Fiskal ulush"
             valueText={fShareText}
@@ -54,7 +57,7 @@ export default function ViloyatSalesAnalysisSection({
         </div>
 
         {/* Card 2: Eng ko‘p sotilgan tovarlar */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-2xs">
+        <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center shrink-0">
               <TrendingUp size={16} strokeWidth={2.2} />
@@ -86,7 +89,7 @@ export default function ViloyatSalesAnalysisSection({
         </div>
 
         {/* Card 3: Eng kam sotilgan tovarlar */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-2xs">
+        <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-lg bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 flex items-center justify-center shrink-0">
               <TrendingDown size={16} strokeWidth={2.2} />
@@ -121,12 +124,14 @@ export default function ViloyatSalesAnalysisSection({
         </div>
 
         {/* Card 4: Tumanlar bo‘yicha aylanma */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-2xs">
+        <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 flex items-center justify-center shrink-0">
               <MapPin size={16} strokeWidth={2} />
             </span>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Tumanlar bo‘yicha aylanma</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              {isDistrictView ? 'Korxonalar bo‘yicha aylanma' : 'Tumanlar bo‘yicha aylanma'}
+            </h3>
           </div>
 
           {districtsBreakdown.districts.length > 0 ? (

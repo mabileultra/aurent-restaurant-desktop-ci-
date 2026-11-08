@@ -2,6 +2,7 @@ import React from 'react';
 import { Calendar, RefreshCw } from 'lucide-react';
 import ChromaGridContainer from '../components/ChromaGridContainer';
 import RubberSegment from '../../../components/ui/rubber-segment/RubberSegment';
+import PlatformAnalyticsBackground from '../components/PlatformAnalyticsBackground';
 import { useViloyatlarAnalytics } from '../hooks/useViloyatlarAnalytics';
 import ViloyatlarKpiCards from '../components/ViloyatlarKpiCards';
 import ViloyatlarFilterBar from '../components/ViloyatlarFilterBar';
@@ -35,44 +36,54 @@ export default function PlatformAnalyticsViloyatlarPage() {
   } = useViloyatlarAnalytics();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Samarqand viloyati tumanlari
-            </h1>
-            {loading ? (
-              <RefreshCw size={18} className="animate-spin text-blue-600 dark:text-blue-400" />
-            ) : null}
-          </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            16 ta tuman va shahar · {totalCompanies} korxona. Batafsil ko‘rish uchun tumanni tanlang.
-          </p>
-        </div>
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-200/70 via-slate-100 to-slate-200/50 dark:from-slate-950 dark:via-[#0F172A] dark:to-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 overflow-hidden">
+      {/* Prism WebGL Background Animation */}
+      <PlatformAnalyticsBackground />
 
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Period Selector with RubberSegment Physics Animation */}
-          <RubberSegment
-            items={PERIODS.map((p) => ({ value: p.id, label: p.label }))}
-            value={period}
-            onChange={(val) => setPeriod(val)}
-            size="sm"
-            radius={10}
-            inset={3}
-            stretch={90}
-            squash={2.5}
-            aria-label="Davrni tanlash"
-          />
+      {/* Page Content Container */}
+      <div className="relative z-10 space-y-6">
+        {/* Top Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Samarqand viloyati tumanlari
+              </h1>
+              {loading ? (
+                <RefreshCw size={18} className="animate-spin text-emerald-600" />
+              ) : null}
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              16 ta tuman va shahar · {totalCompanies} korxona. Batafsil ko‘rish uchun tumanni tanlang.
+            </p>
+          </div>
 
-          {/* Date range display */}
-          <div className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-xs">
-            <Calendar size={14} className="text-slate-400 shrink-0" />
-            <span>{rangeLabel}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Period Selector with RubberSegment Physics Animation */}
+            <RubberSegment
+              items={PERIODS.map((p) => ({ value: p.id, label: p.label }))}
+              value={period}
+              onChange={(val) => setPeriod(val)}
+              size="sm"
+              radius={10}
+              inset={3}
+              stretch={90}
+              squash={2.5}
+              trackColor="#f1f5f9"
+              thumbColor="#ffffff"
+              textColor="#64748b"
+              activeTextColor="#006847"
+              className="backdrop-blur-xl border border-slate-200/80 shadow-xs"
+              aria-label="Davrni tanlash"
+            />
+
+            {/* Date range display */}
+            <div className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200/80 bg-white/85 text-xs font-medium text-slate-700 backdrop-blur-xl shadow-xs">
+              <Calendar size={14} className="text-emerald-600 shrink-0" />
+              <span>{rangeLabel}</span>
+            </div>
           </div>
         </div>
-      </div>
 
       {error ? (
         <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-sm flex items-center justify-between">
@@ -119,10 +130,11 @@ export default function PlatformAnalyticsViloyatlarPage() {
         </section>
       </ChromaGridContainer>
 
-      {/* Footnote */}
-      <footer className="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-500">
-        Aylanma — fiskal va nofiskal savdolar yig‘indisi. Foiz — oldingi teng davrga nisbatan o‘zgarish. Fiskal ulush — aylanmaning fiskal chek bilan o‘tgan qismi.
-      </footer>
+        {/* Footnote */}
+        <footer className="pt-4 border-t border-slate-200 text-xs text-slate-400">
+          Aylanma — fiskal va nofiskal savdolar yig‘indisi. Foiz — oldingi teng davrga nisbatan o‘zgarish. Fiskal ulush — aylanmaning fiskal chek bilan o‘tgan qismi.
+        </footer>
+      </div>
     </div>
   );
 }

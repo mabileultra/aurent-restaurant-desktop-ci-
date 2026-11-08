@@ -1,8 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import PlatformSelect from '../../platform/components/PlatformSelect';
-import { formatCompact } from '../utils/viloyatDetailUtils';
+import ViloyatCompanyTableRow from './ViloyatCompanyTableRow';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Hammasi' },
@@ -29,7 +28,7 @@ export default function ViloyatCompaniesTableSection({
   );
 
   return (
-    <section aria-labelledby="companies-table-heading" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-2xs">
+    <section aria-labelledby="companies-table-heading" className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl flex flex-col overflow-hidden shadow-xs">
       {/* Table Header */}
       <div className="p-4 sm:p-5 pb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="companies-table-heading" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -95,56 +94,11 @@ export default function ViloyatCompaniesTableSection({
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {rows.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <td className="py-3 pl-5 pr-2 text-slate-400 font-mono tabular-nums">{row.rowNumber}</td>
-                <td className="py-3 px-2 max-w-[240px]">
-                  <Link
-                    to={companyLink(row.id)}
-                    className="font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline block truncate"
-                  >
-                    {row.name}
-                  </Link>
-                </td>
-                <td className="py-3 px-2 font-mono tabular-nums text-slate-600 dark:text-slate-400">{row.tin}</td>
-                <td className="py-3 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">{row.district}</td>
-                <td className="py-3 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">{row.type}</td>
-                <td className="py-3 px-2">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                    row.isConnected
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
-                      : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                  }`}>
-                    {row.isConnected ? 'Ulangan' : 'Ulanmagan'}
-                  </span>
-                </td>
-                <td className="py-3 px-2 text-right font-mono tabular-nums">
-                  <span className={row.turnover30d > 0 ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-400'}>
-                    {formatCompact(row.turnover30d)} so‘m
-                  </span>
-                </td>
-                <td className="py-3 px-2 text-right font-mono tabular-nums">
-                  {row.isDeltaUp != null ? (
-                    <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-xs font-semibold ${
-                      row.isDeltaUp
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300'
-                    }`}>
-                      {row.deltaText}
-                    </span>
-                  ) : (
-                    <span className="text-slate-400">—</span>
-                  )}
-                </td>
-                <td className="py-3 pr-5 pl-2 text-right">
-                  <Link
-                    to={companyLink(row.id)}
-                    aria-label={`${row.name} — batafsil ochish`}
-                    className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition"
-                  >
-                    <ChevronRight size={18} />
-                  </Link>
-                </td>
-              </tr>
+              <ViloyatCompanyTableRow
+                key={row.id}
+                row={row}
+                targetUrl={companyLink(row.id)}
+              />
             ))}
             {rows.length === 0 && (
               <tr>

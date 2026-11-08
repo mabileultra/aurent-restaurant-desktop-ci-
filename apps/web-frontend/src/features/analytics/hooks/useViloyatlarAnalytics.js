@@ -23,7 +23,13 @@ export function useViloyatlarAnalytics() {
 
   const overviewQuery = useQuery({
     queryKey: ['analytics-overview-viloyatlar', period],
-    queryFn: () => analyticsApi.getOverview({ period }).then((r) => r.data),
+    queryFn: () => analyticsApi.getOverview({ period, regionCode: '18' }).then((r) => r.data),
+    staleTime: 60_000,
+  });
+
+  const resultsQuery = useQuery({
+    queryKey: ['analytics-results-viloyatlar', period],
+    queryFn: () => analyticsApi.getResults({ regionCode: '18', period }).then((r) => r.data),
     staleTime: 60_000,
   });
 
@@ -38,7 +44,10 @@ export function useViloyatlarAnalytics() {
     ? `${overview.periodFrom} – ${overview.periodTo}`
     : (period === '30d' ? '2026-10-10 – 2026-11-08' : (PERIOD_LABELS[period]?.label ?? '30 kun'));
 
-  const rawDistricts = useMemo(() => buildSamarqandDistricts(), []);
+  const rawDistricts = useMemo(
+    () => buildSamarqandDistricts(undefined, resultsQuery.data?.rows),
+    [resultsQuery.data?.rows]
+  );
 
   const counts = useMemo(() => ({
     all: rawDistricts.length,
@@ -52,8 +61,8 @@ export function useViloyatlarAnalytics() {
   );
 
   const kpis = useMemo(
-    () => buildSamarqandKpis(rawDistricts, period),
-    [rawDistricts, period]
+    () => buildSamarqandKpis(rawDistricts, period, overview.kpi),
+    [rawDistricts, period, overview.kpi]
   );
 
   const totalCompanies = useMemo(
@@ -85,6 +94,7 @@ export function useViloyatlarAnalytics() {
     error: overviewQuery.isError || districtsQuery.isError,
     refetch: () => {
       overviewQuery.refetch();
+      resultsQuery.refetch();
       districtsQuery.refetch();
     },
   };

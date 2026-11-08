@@ -5,7 +5,6 @@ import { geoApi } from '../../../api/geo.api';
 import { analyticsApi } from '../api/analyticsApi';
 import {
   SAMARQAND_TYPES,
-  SAMARQAND_META,
   SAMARQAND_TURNOVER,
   SAMARQAND_DAYS,
   SAMARQAND_PRODUCTS,
@@ -14,17 +13,25 @@ import {
   BUSINESS_TYPE_NAMES,
 } from '../data/samarqandMockData';
 import {
-  formatCompact,
-  formatPercent,
   calculateRingDash,
-  calculateDeltaBadge,
   calculateDistrictsBreakdown,
   filterAndPaginateCompanies,
+  formatCompanyRows,
+  mapDistrictNames,
 } from '../utils/viloyatDetailUtils';
+import {
+  normalizeCompaniesList,
+  computeDistrictTurnover,
+  computeBusinessTypeTabs,
+  generateDailyBars,
+  resolveDistrictMeta,
+  buildDistrictOptions,
+  mapProductList,
+} from '../utils/viloyatDetailStats';
 
 export function useViloyatDetailAnalytics(regionCode) {
   const padCode = String(regionCode || '18').padStart(2, '0');
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const districtParam = searchParams.get('district');
   const [activeType, setActiveType] = useState('A');
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,8 +43,14 @@ export function useViloyatDetailAnalytics(regionCode) {
     if (districtParam && districtParam !== selectedDistrict) {
       setSelectedDistrict(districtParam);
       setCurrentPage(0);
+    } else if (!districtParam && selectedDistrict !== 'all') {
+      setSelectedDistrict('all');
+      setCurrentPage(0);
     }
   }, [districtParam]);
+
+  const isDistrictView = Boolean(selectedDistrict && selectedDistrict !== 'all');
+  const districtCode = isDistrictView ? selectedDistrict : null;
 
   const { data: regions = [] } = useQuery({
     queryKey: ['geo-regions'],
@@ -52,62 +65,67 @@ export function useViloyatDetailAnalytics(regionCode) {
     staleTime: 600_000,
   });
 
+  const { data: backendCompaniesData } = useQuery({
+    queryKey: ['analytics-companies-detail', padCode, districtCode],
+    queryFn: () => analyticsApi.getCompanies({ regionCode: padCode, districtCode: districtCode || undefined, size: 100 }).then((r) => r.data),
+    staleTime: 60_000,
+  });
+
   const currentRegion = regions.find((r) => String(r.code).padStart(2, '0') === padCode);
   const regionName = currentRegion?.nameUz || currentRegion?.nameRu || (padCode === '18' ? 'Samarqand viloyati' : `Viloyat (${padCode})`);
 
-  const districtNames = useMemo(() => {
-    const map = { ...SAMARQAND_DISTRICTS };
-    geoDistricts.forEach((d) => {
-      const code = String(d.code || '').padStart(2, '0');
-      map[code] = d.nameUz || d.nameRu || code;
-    });
-    return map;
-  }, [geoDistricts]);
+  const districtNames = useMemo(
+    () => mapDistrictNames(geoDistricts, SAMARQAND_DISTRICTS),
+    [geoDistricts]
+  );
 
-  const districtOptions = useMemo(() => {
-    const list = [{ value: 'all', label: 'Barcha tumanlar' }];
-    Object.entries(districtNames).forEach(([code, name]) => {
-      list.push({ value: code, label: name });
-    });
-    return list;
-  }, [districtNames]);
+  const districtOptions = useMemo(() => buildDistrictOptions(districtNames), [districtNames]);
+  const districtName = districtCode ? (districtNames[districtCode] || `Tuman (${districtCode})`) : null;
+  const rawCompanies = useMemo(
+    () => normalizeCompaniesList(backendCompaniesData?.rows, SAMARQAND_COMPANIES),
+    [backendCompaniesData?.rows]
+  );
 
-  const rawCompanies = SAMARQAND_COMPANIES;
-  const currentMeta = SAMARQAND_META[activeType] || SAMARQAND_META.A;
-  const turnover = SAMARQAND_TURNOVER[activeType] || SAMARQAND_TURNOVER.A;
+  const districtScopedCompanies = useMemo(() => {
+    if (!isDistrictView) return rawCompanies;
+    return rawCompanies.filter((c) => c[3] === districtCode);
+  }, [rawCompanies, isDistrictView, districtCode]);
+
+  const turnover = useMemo(() => computeDistrictTurnover({
+    companies: districtScopedCompanies,
+    activeType,
+    isDistrictView,
+    baseTurnover: SAMARQAND_TURNOVER[activeType] || SAMARQAND_TURNOVER.A,
+  }), [districtScopedCompanies, activeType, isDistrictView]);
+
   const hasSales = turnover.all > 0;
   const fShare = hasSales ? (turnover.allF / turnover.all) * 100 : 0;
+  const types = useMemo(() => computeBusinessTypeTabs({
+    companies: districtScopedCompanies,
+    isDistrictView,
+    baseTypes: SAMARQAND_TYPES,
+  }), [districtScopedCompanies, isDistrictView]);
 
-  const maxDay = Math.max(...SAMARQAND_DAYS);
-  const monthNames = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'];
-  const dailyBars = SAMARQAND_DAYS.map((val, idx) => {
-    const d = new Date(2026, 9, 10 + idx);
-    const dayLabel = `${d.getDate()}-${monthNames[d.getMonth()]}`;
-    const tip = val ? `${dayLabel}: ${val.toLocaleString('ru-RU')} mln so‘m` : `${dayLabel}: savdo yo‘q`;
-    const heightPercent = val ? Math.max(6, (val / maxDay) * 100) : 4;
-    return { tip, heightPercent, val };
-  });
-
-  const currentTypeConfig = SAMARQAND_TYPES.find((t) => t.id === activeType) || SAMARQAND_TYPES[0];
-  const connPct = (currentTypeConfig.c / currentTypeConfig.n) * 100;
+  const currentTypeConfig = types.find((t) => t.id === activeType) || types[0];
+  const connPct = currentTypeConfig.n > 0 ? (currentTypeConfig.c / currentTypeConfig.n) * 100 : 0;
   const fiscalRing = calculateRingDash(turnover.f30);
   const connRing = calculateRingDash(connPct);
 
-  const productGroup = SAMARQAND_PRODUCTS[activeType] || { top: [], low: [] };
-  const topMax = productGroup.top.length ? productGroup.top[0][3] : 1;
-  const mapProd = (p, idx) => ({
-    rank: idx + 1,
-    name: p[0],
-    company: p[1],
-    qty: p[2],
-    amount: p[3],
-    barPercent: Math.max(3, (p[3] / topMax) * 100),
-    isSuspiciousPrice: p[3] / p[2] < 100,
-    unitPrice: Math.round(p[3] / p[2]),
-  });
+  const meta = useMemo(() => resolveDistrictMeta({
+    isDistrictView,
+    totalCount: districtScopedCompanies.length,
+    connectedCount: districtScopedCompanies.filter((c) => c[5] === 1).length,
+    totalDistricts: Object.keys(districtNames).length,
+  }), [isDistrictView, districtScopedCompanies, districtNames]);
 
-  const topProducts = productGroup.top.map(mapProd);
-  const lowProducts = productGroup.low.map(mapProd);
+  const dailyBars = useMemo(
+    () => generateDailyBars(SAMARQAND_DAYS, isDistrictView ? (turnover.all / (SAMARQAND_TURNOVER.A?.all || 1)) : 1),
+    [isDistrictView, turnover.all]
+  );
+
+  const productGroup = SAMARQAND_PRODUCTS[activeType] || { top: [], low: [] };
+  const topProducts = useMemo(() => mapProductList(productGroup.top), [productGroup.top]);
+  const lowProducts = useMemo(() => mapProductList(productGroup.low), [productGroup.low]);
 
   const filteredDistricts = useMemo(() => {
     const inType = rawCompanies.filter((c) => activeType === 'A' || c[4] === activeType);
@@ -123,33 +141,31 @@ export function useViloyatDetailAnalytics(regionCode) {
       page: currentPage,
       pageSize: 10,
     });
-
-    const rows = res.rows.map((comp, idx) => {
-      const deltaObj = calculateDeltaBadge(comp[8]);
-      return {
-        rowNumber: res.from + idx,
-        id: comp[0],
-        name: comp[1],
-        tin: comp[2] && comp[2] !== '_' ? comp[2] : '—',
-        district: districtNames[comp[3]] || comp[3] || '—',
-        type: BUSINESS_TYPE_NAMES[comp[4]] || comp[4],
-        isConnected: comp[5] === 1,
-        turnover30d: comp[7],
-        deltaText: deltaObj ? deltaObj.text : '—',
-        isDeltaUp: deltaObj ? deltaObj.isUp : null,
-      };
-    });
-
+    const rows = formatCompanyRows(res, districtNames, BUSINESS_TYPE_NAMES);
     return { ...res, rows };
   }, [rawCompanies, activeType, selectedDistrict, selectedStatus, searchQuery, currentPage, districtNames]);
+
+  const handleDistrictChange = (d) => {
+    setSelectedDistrict(d);
+    setCurrentPage(0);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (d && d !== 'all') next.set('district', d);
+      else next.delete('district');
+      return next;
+    });
+  };
 
   return {
     padCode,
     regionName,
+    districtCode,
+    districtName,
+    isDistrictView,
     activeType,
     setActiveType: (t) => { setActiveType(t); setCurrentPage(0); },
-    types: SAMARQAND_TYPES,
-    meta: currentMeta,
+    types,
+    meta,
     turnover,
     hasSales,
     fShare,
@@ -163,7 +179,8 @@ export function useViloyatDetailAnalytics(regionCode) {
     districtsBreakdown: filteredDistricts,
     districtOptions,
     selectedDistrict,
-    setSelectedDistrict: (d) => { setSelectedDistrict(d); setCurrentPage(0); },
+    setSelectedDistrict: handleDistrictChange,
+    onClearDistrict: () => handleDistrictChange('all'),
     selectedStatus,
     setSelectedStatus: (s) => { setSelectedStatus(s); setCurrentPage(0); },
     searchQuery,
@@ -173,3 +190,5 @@ export function useViloyatDetailAnalytics(regionCode) {
     onNextPage: () => setCurrentPage((p) => Math.min(tableData.totalPages - 1, p + 1)),
   };
 }
+
+export default useViloyatDetailAnalytics;

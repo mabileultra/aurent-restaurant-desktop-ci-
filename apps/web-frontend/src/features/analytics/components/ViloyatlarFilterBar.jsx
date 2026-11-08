@@ -39,8 +39,8 @@ export default function ViloyatlarFilterBar({
               onClick={() => setFilter(f.id)}
               className={`h-10 px-3.5 inline-flex items-center gap-2 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer border ${
                 isActive
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                  : 'bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <span>{f.label}</span>
@@ -48,7 +48,7 @@ export default function ViloyatlarFilterBar({
                 className={`min-w-5 h-5 px-1.5 rounded-full inline-flex items-center justify-center text-xs font-bold ${
                   isActive
                     ? 'bg-white/25 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                    : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-300'
                 }`}
               >
                 {count}
@@ -58,7 +58,7 @@ export default function ViloyatlarFilterBar({
         })}
       </div>
 
-      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
         <label htmlFor="viloyat-sort" className="shrink-0 font-medium">
           Saralash:
         </label>
@@ -69,6 +69,7 @@ export default function ViloyatlarFilterBar({
             onValueChange={setSort}
             options={SORT_OPTIONS}
             size="sm"
+            theme="emerald"
           />
         </div>
       </div>

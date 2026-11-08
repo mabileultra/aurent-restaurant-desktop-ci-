@@ -76,4 +76,45 @@ describe('samarqandDistrictsAnalytics', () => {
     expect(kpis[2].value).toBe('16');
     expect(kpis[2].badgeText).toBe('25,4%');
   });
+
+  it('integrates backend results rows and KPI when available', () => {
+    const mockBackendRows = [
+      {
+        code: '15',
+        nameUz: 'Urgut tumani',
+        enterprises: 10,
+        connected: 8,
+        totalTurnover: 120000000,
+        fiscalTurnover: 110000000,
+        fiscalSharePct: 91.6,
+        turnoverDeltaPct: 25.4,
+      },
+    ];
+
+    const districts = buildSamarqandDistricts([], mockBackendRows);
+    const urgut = districts.find((d) => d.code === '15');
+    expect(urgut.companies).toBe(10);
+    expect(urgut.connected).toBe(8);
+    expect(urgut.turnover).toBe(120000000);
+    expect(urgut.fiscalSharePct).toBe(91.6);
+    expect(urgut.turnoverDeltaPct).toBe(25.4);
+
+    const mockBackendKpi = {
+      totalEnterprises: 100,
+      connected: 75,
+      connectedSharePct: 75,
+      totalTurnover: 5000000000,
+      totalTurnoverDeltaPct: 18.2,
+      newConnections: 14,
+      newConnectionsDeltaPct: 10.5,
+    };
+
+    const kpis = buildSamarqandKpis(districts, '30d', mockBackendKpi);
+    expect(kpis[0].value).toContain('5,00 mlrd');
+    expect(kpis[0].delta).toBe(18.2);
+    expect(kpis[1].value).toBe('100');
+    expect(kpis[2].value).toBe('75');
+    expect(kpis[2].badgeText).toBe('75,0%');
+    expect(kpis[3].value).toBe('14');
+  });
 });

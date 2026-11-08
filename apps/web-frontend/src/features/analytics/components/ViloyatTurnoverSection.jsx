@@ -7,7 +7,7 @@ function PeriodMiniCard({ label, sub, amount, delta, emptyText }) {
   const deltaObj = calculateDeltaBadge(delta);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-1.5 shadow-2xs">
+    <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 flex flex-col justify-between gap-1.5 shadow-xs">
       <div className="space-y-0.5">
         <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</span>
         <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 leading-tight">{sub}</p>
@@ -41,11 +41,13 @@ export default function ViloyatTurnoverSection({
   fShare,
   dailyBars,
   activeType,
+  isDistrictView = false,
+  districtName = null,
 }) {
   return (
     <section aria-label="Pul aylanmasi" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {/* 1. Big Card: Umumiy aylanma */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-2xs">
+      <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-xs">
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">Umumiy aylanma</h2>
@@ -142,13 +144,17 @@ export default function ViloyatTurnoverSection({
       </div>
 
       {/* 3. Viloyat rasmi placeholder */}
-      <figure className="min-h-[220px] md:min-h-0 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 flex flex-col items-center justify-center gap-3 p-6 text-center shadow-2xs">
+      <figure className="min-h-[220px] md:min-h-0 border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 rounded-xl bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex flex-col items-center justify-center gap-3 p-6 text-center shadow-xs">
         <span className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
           <ImageIcon size={26} strokeWidth={1.8} />
         </span>
         <figcaption className="space-y-1">
-          <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">Viloyat rasmi</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400 block">{regionName} surati shu yerga qo‘yiladi</span>
+          <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">
+            {isDistrictView ? 'Tuman rasmi' : 'Viloyat rasmi'}
+          </span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 block">
+            {(isDistrictView ? districtName : regionName) || regionName} surati shu yerga qo‘yiladi
+          </span>
         </figcaption>
       </figure>
     </section>

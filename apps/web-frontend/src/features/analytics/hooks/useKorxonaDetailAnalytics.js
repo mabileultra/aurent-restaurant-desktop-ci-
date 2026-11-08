@@ -1,81 +1,96 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../api/analyticsApi';
-import {
-  MAKON_MOBILE_INFO,
-  MAKON_MOBILE_CARDS,
-  MAKON_MOBILE_PRODUCTS,
-  MAKON_MOBILE_RECEIPTS,
-} from '../data/makonMobileMockData';
+import { SAMARQAND_COMPANIES, SAMARQAND_DISTRICTS } from '../data/samarqandMockData';
 import {
   formatCompact,
-  formatPercent,
-  calculateDonutArc,
   prepareProductsList,
   prepareDayChips,
   filterDayReceipts,
   prepareReceiptDetail,
 } from '../utils/korxonaDetailUtils';
+import {
+  resolveCompanyInfo,
+  resolveCompanyCards,
+  resolveCompanyDonuts,
+  resolveCompanyProducts,
+  resolveCompanyReceipts,
+} from '../utils/korxonaCompanyResolver';
 
 export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
   const numId = Number(companyId || 103);
   const [productSort, setProductSort] = useState('sum');
+  const [productPage, setProductPage] = useState(0);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [selectedDay, setSelectedDay] = useState('2026-10-28');
   const [fiscalKind, setFiscalKind] = useState('all');
   const [selectedReceiptNo, setSelectedReceiptNo] = useState('');
 
+  useEffect(() => {
+    setProductPage(0);
+  }, [productSort, numId]);
+
   const { data: apiDetail } = useQuery({
     queryKey: ['tax-analytics-company', numId],
-    queryFn: () => analyticsApi.getCompany(numId, { period: '30d' }).then((r) => r.data),
+    queryFn: () => analyticsApi.getCompanyDetail(numId, { period: '30d' }).then((r) => r.data),
     enabled: Boolean(numId),
     staleTime: 60_000,
   });
 
-  const companyInfo = useMemo(() => {
-    if (apiDetail?.name && numId !== 103) {
-      return {
-        ...MAKON_MOBILE_INFO,
-        id: numId,
-        name: apiDetail.name,
-        legalName: apiDetail.legalName || apiDetail.name,
-        tin: apiDetail.tin || '—',
-        regionCode: String(regionCode).padStart(2, '0'),
-        regionName: apiDetail.regionNameUz || apiDetail.regionNameRu || 'Samarqand viloyati',
-        businessType: apiDetail.businessTypeName || 'Oziq-ovqat',
-        isConnected: Boolean(apiDetail.connected),
-      };
-    }
-    return MAKON_MOBILE_INFO;
-  }, [apiDetail, numId, regionCode]);
+  const companyInfo = useMemo(
+    () => resolveCompanyInfo({ numId, apiDetail, regionCode, districtNames: SAMARQAND_DISTRICTS }),
+    [numId, apiDetail, regionCode]
+  );
 
-  const cards = MAKON_MOBILE_CARDS;
-  const donuts = useMemo(() => ([
-    {
-      label: 'Fiskal bilan urilgan',
-      color: '#0E7C4F',
-      pct: formatPercent(99.2),
-      amount: `${formatCompact(508339000)} so‘m`,
-      hint: '41 ta chek · QR-kod bilan',
-      dash: calculateDonutArc(99.2),
-      aria: 'Fiskal bilan urilgan: 99,2%, 508,3 mln so‘m',
-    },
-    {
-      label: 'Fiskalsiz',
-      color: '#EF4444',
-      pct: formatPercent(0.8),
-      amount: `${formatCompact(4100000)} so‘m`,
-      hint: '2 ta chek · soliqqa yuborilmagan',
-      dash: calculateDonutArc(0.8),
-      aria: 'Fiskalsiz: 0,8%, 4,1 mln so‘m',
-    },
-  ]), []);
+  const mockComp = useMemo(() => SAMARQAND_COMPANIES.find((c) => c[0] === numId), [numId]);
+  const turnover = Number(apiDetail?.totalTurnover ?? mockComp?.[7] ?? 512439000);
+  const delta = apiDetail?.weekDeltaPct ?? mockComp?.[8] ?? null;
 
-  const { products, totalCount: totalProductsCount } = useMemo(() => (
-    prepareProductsList(MAKON_MOBILE_PRODUCTS, productSort, showAllProducts)
-  ), [productSort, showAllProducts]);
+  const cards = useMemo(
+    () => resolveCompanyCards({ numId, turnover, delta, apiDetail }),
+    [numId, turnover, delta, apiDetail]
+  );
 
-  const dayChips = useMemo(() => prepareDayChips(MAKON_MOBILE_RECEIPTS), []);
+  const donuts = useMemo(
+    () => resolveCompanyDonuts({
+      numId,
+      turnover,
+      fiscalTurnover: apiDetail?.fiscalTurnover,
+      nonFiscalTurnover: apiDetail?.nonFiscalTurnover,
+      apiDetail,
+    }),
+    [numId, turnover, apiDetail]
+  );
+
+  const rawProducts = useMemo(
+    () => resolveCompanyProducts({ numId, companyName: companyInfo.name, apiDetail }),
+    [numId, companyInfo.name, apiDetail]
+  );
+
+  const {
+    products,
+    totalCount: totalProductsCount,
+    from: productFrom,
+    to: productTo,
+    totalPages: productTotalPages,
+  } = useMemo(() => (
+    prepareProductsList(rawProducts, productSort, showAllProducts ? true : productPage, 10)
+  ), [rawProducts, productSort, showAllProducts, productPage]);
+
+  const onPrevProductPage = () => {
+    setProductPage((p) => Math.max(0, p - 1));
+  };
+
+  const onNextProductPage = () => {
+    setProductPage((p) => Math.min(productTotalPages - 1, p + 1));
+  };
+
+  const rawReceipts = useMemo(
+    () => resolveCompanyReceipts({ numId, companyName: companyInfo.name, products: rawProducts }),
+    [numId, companyInfo.name, rawProducts]
+  );
+
+  const dayChips = useMemo(() => prepareDayChips(rawReceipts), [rawReceipts]);
   const dayIndex = Math.max(0, dayChips.findIndex((c) => c.date === selectedDay));
   const activeDay = dayChips[dayIndex] || dayChips[0];
 
@@ -86,8 +101,8 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     totalCount: dayTotalCount,
     dayTotal,
   } = useMemo(() => (
-    filterDayReceipts(MAKON_MOBILE_RECEIPTS, activeDay?.date || selectedDay, fiscalKind)
-  ), [activeDay, selectedDay, fiscalKind]);
+    filterDayReceipts(rawReceipts, activeDay?.date || selectedDay, fiscalKind)
+  ), [rawReceipts, activeDay, selectedDay, fiscalKind]);
 
   const activeReceiptRow = useMemo(() => {
     if (selectedReceiptNo) {
@@ -121,6 +136,13 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     donuts,
     products,
     totalProductsCount,
+    productPage,
+    productFrom,
+    productTo,
+    productTotalPages,
+    onPrevProductPage,
+    onNextProductPage,
+    setProductPage,
     productSort,
     setProductSort,
     showAllProducts,

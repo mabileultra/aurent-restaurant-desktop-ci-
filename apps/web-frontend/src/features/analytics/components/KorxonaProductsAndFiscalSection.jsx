@@ -1,73 +1,29 @@
 import React from 'react';
-
-function CenterDonut({ label, color, pct, amount, hint, dash, aria }) {
-  return (
-    <div className="flex items-center gap-4">
-      <svg
-        width="104"
-        height="104"
-        viewBox="0 0 112 112"
-        role="img"
-        aria-label={aria}
-        className="shrink-0"
-      >
-        <circle cx="56" cy="56" r="44" fill="none" stroke="#EEF1F4" strokeWidth="12" className="dark:stroke-slate-800" />
-        <circle
-          cx="56"
-          cy="56"
-          r="44"
-          fill="none"
-          stroke={color}
-          strokeWidth="12"
-          strokeDasharray={dash}
-          transform="rotate(-90 56 56)"
-        />
-        <text
-          x="56"
-          y="62"
-          textAnchor="middle"
-          fontSize="18"
-          fontWeight="700"
-          className="fill-slate-900 dark:fill-white font-mono"
-        >
-          {pct}
-        </text>
-      </svg>
-      <div className="space-y-0.5 min-w-0">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-          <span style={{ backgroundColor: color }} className="w-2 h-2 rounded-xs" />
-          {label}
-        </span>
-        <span className="text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-white block">
-          {amount}
-        </span>
-        <span className="text-xs text-slate-400 dark:text-slate-500 block">
-          {hint}
-        </span>
-      </div>
-    </div>
-  );
-}
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import KorxonaCenterDonut from './KorxonaCenterDonut';
 
 export function KorxonaProductsAndFiscalSection({
-  donuts,
-  products,
-  totalProductsCount,
-  productSort,
+  donuts = [],
+  products = [],
+  totalProductsCount = 0,
+  productSort = 'sum',
   onSortChange,
   setProductSort,
-  showAllProducts,
-  onToggleShowAll,
-  toggleShowAllProducts,
+  productPage = 0,
+  productFrom = 1,
+  productTo = 10,
+  productTotalPages = 1,
+  onPrevProductPage,
+  onNextProductPage,
 }) {
   const handleSortChange = onSortChange || setProductSort;
-  const handleToggleShowAll = onToggleShowAll || toggleShowAllProducts;
+
   return (
     <div className="flex flex-wrap gap-4 items-stretch">
       {/* Left: Fiskal holati */}
       <section
         aria-labelledby="fiscal-status-heading"
-        className="flex-1 lg:flex-[1_1_360px] max-w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-5 shadow-2xs"
+        className="flex-1 lg:flex-[1_1_360px] max-w-full bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-5 shadow-xs"
       >
         <div className="space-y-0.5">
           <h2 id="fiscal-status-heading" className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
@@ -80,7 +36,7 @@ export function KorxonaProductsAndFiscalSection({
 
         <div className="space-y-5">
           {donuts.map((d, i) => (
-            <CenterDonut key={i} {...d} />
+            <KorxonaCenterDonut key={i} {...d} />
           ))}
         </div>
       </section>
@@ -88,7 +44,7 @@ export function KorxonaProductsAndFiscalSection({
       {/* Right: Eng ko‘p urilgan tovarlar */}
       <section
         aria-labelledby="top-products-heading"
-        className="flex-1 lg:flex-[999_1_560px] min-w-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-2xs overflow-hidden"
+        className="flex-1 lg:flex-[999_1_560px] min-w-0 bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-xs overflow-hidden"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-0.5">
@@ -106,7 +62,7 @@ export function KorxonaProductsAndFiscalSection({
               type="button"
               aria-pressed={productSort === 'sum'}
               onClick={() => handleSortChange?.('sum')}
-              className={`h-8 px-3 rounded-md text-xs font-semibold transition ${
+              className={`h-8 px-3 rounded-md text-xs font-semibold transition cursor-pointer ${
                 productSort === 'sum'
                   ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -118,7 +74,7 @@ export function KorxonaProductsAndFiscalSection({
               type="button"
               aria-pressed={productSort === 'qty'}
               onClick={() => handleSortChange?.('qty')}
-              className={`h-8 px-3 rounded-md text-xs font-semibold transition ${
+              className={`h-8 px-3 rounded-md text-xs font-semibold transition cursor-pointer ${
                 productSort === 'qty'
                   ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -170,14 +126,35 @@ export function KorxonaProductsAndFiscalSection({
           </table>
         </div>
 
+        {/* 10 tadan sahifalab o‘tkazish (Pagination) */}
         {totalProductsCount > 10 && (
-          <button
-            type="button"
-            onClick={handleToggleShowAll}
-            className="self-center py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 transition cursor-pointer"
-          >
-            {showAllProducts ? 'Kamroq ko‘rsatish' : `Barcha ${totalProductsCount} ta tovarni ko‘rsatish`}
-          </button>
+          <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs sm:text-sm">
+            <button
+              type="button"
+              onClick={onPrevProductPage}
+              disabled={productPage === 0}
+              aria-label="Oldingi 10 ta tovar"
+              className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 font-semibold text-slate-700 dark:text-slate-200 disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center gap-1 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+              <span className="hidden sm:inline">Oldingi</span>
+            </button>
+
+            <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums text-xs sm:text-sm">
+              {productFrom}–{productTo} / {totalProductsCount} ta tovar
+            </span>
+
+            <button
+              type="button"
+              onClick={onNextProductPage}
+              disabled={productPage >= (productTotalPages || 1) - 1}
+              aria-label="Keyingi 10 ta tovar"
+              className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 font-semibold text-slate-700 dark:text-slate-200 disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center gap-1 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              <span className="hidden sm:inline">Keyingi</span>
+              <ChevronRight size={16} />
+            </button>
+          </div>
         )}
       </section>
     </div>

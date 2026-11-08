@@ -6,14 +6,14 @@ import { fmtMoney, fmtPercent } from '../utils/analyticsFormat';
 function RegionDeltaBadge({ delta, turnover, connected }) {
   if (turnover === 0) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60">
         {connected > 0 ? 'Savdo yo‘q' : 'Ulanmagan'}
       </span>
     );
   }
   if (delta == null) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60">
         Taqqoslash yo‘q
       </span>
     );
@@ -23,8 +23,8 @@ function RegionDeltaBadge({ delta, turnover, connected }) {
     <span
       className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums ${
         isUp
-          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-          : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+          ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-500/30'
+          : 'bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-500/30'
       }`}
     >
       {isUp ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
@@ -49,14 +49,14 @@ export function ViloyatActiveCard({ region }) {
 
   const accent = region.turnoverDeltaPct > 0
     ? '#10b981'
-    : (region.turnoverDeltaPct < 0 ? '#f43f5e' : '#3b82f6');
+    : (region.turnoverDeltaPct < 0 ? '#f43f5e' : '#10b981');
 
   const cardTarget = region.link || `/platform/analytics/viloyatlar/${region.code}`;
 
   return (
     <Link
       to={cardTarget}
-      className="chroma-card group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 transition hover:shadow-md focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+      className="chroma-card group bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-4 transition hover:shadow-lg hover:border-emerald-500/50 dark:hover:bg-slate-900/80 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
       data-chroma-area=""
       style={{ '--chroma-accent': accent }}
       aria-label={`${region.name}: ${region.companies} korxona, aylanma ${fmtMoney(region.turnover)}`}
@@ -64,16 +64,16 @@ export function ViloyatActiveCard({ region }) {
       <ChromaDecorations />
       <div className="relative z-[1] flex flex-col justify-between gap-4 h-full">
         <div className="flex items-start justify-between gap-2">
-          <span className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+          <span className="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
             {region.name}
           </span>
-          <ChevronRight size={18} className="text-slate-400 group-hover:text-blue-600 transition shrink-0 mt-0.5" />
+          <ChevronRight size={18} className="text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition shrink-0 mt-0.5" />
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Aylanma</span>
+          <span className="text-xs text-slate-400 font-medium">Aylanma</span>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tabular-nums">
+            <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
               {fmtMoney(region.turnover)}
             </span>
             <RegionDeltaBadge
@@ -86,20 +86,20 @@ export function ViloyatActiveCard({ region }) {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-2 text-xs sm:text-sm">
-            <span className="text-slate-700 dark:text-slate-300">
+            <span className="text-slate-600 dark:text-slate-300">
               <b className="font-bold text-slate-900 dark:text-white tabular-nums">{region.companies}</b> korxona
             </span>
-            <span className="text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold tabular-nums">
               {fmtPercent(sharePct)} ulangan
             </span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
             <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-300"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300 shadow-xs shadow-emerald-500/50"
               style={{ width: `${Math.min(100, Math.max(0, sharePct))}%` }}
             />
           </div>
-          <span className="text-xs text-slate-400 dark:text-slate-500">
+          <span className="text-xs text-slate-400">
             {region.connected} ta ulangan, {Math.max(0, region.companies - region.connected)} ta ulanmagan
           </span>
         </div>
@@ -118,7 +118,7 @@ export function ViloyatActiveCard({ region }) {
 export function ViloyatEmptyCard({ region }) {
   return (
     <div
-      className="chroma-card bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between min-h-[220px]"
+      className="chroma-card bg-slate-50/70 dark:bg-slate-900/50 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between min-h-[220px]"
       data-chroma-area=""
       style={{ '--chroma-accent': '#94a3b8' }}
     >
@@ -144,7 +144,7 @@ export function ViloyatEmptyCard({ region }) {
 export function ViloyatUnassignedCard({ unassigned }) {
   return (
     <div
-      className="chroma-card bg-white dark:bg-slate-900 border-2 border-dashed border-amber-300 dark:border-amber-700/60 rounded-xl p-5 flex flex-col justify-between gap-4"
+      className="chroma-card bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border-2 border-dashed border-amber-300 dark:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between gap-4"
       data-chroma-area=""
       style={{ '--chroma-accent': '#f59e0b' }}
     >
@@ -156,30 +156,30 @@ export function ViloyatUnassignedCard({ unassigned }) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Aylanma</span>
-          <span className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tabular-nums">
+          <span className="text-xs text-slate-400 font-medium">Aylanma</span>
+          <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {fmtMoney(unassigned.turnover)}
           </span>
         </div>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-2 text-xs sm:text-sm">
-            <span className="text-slate-700 dark:text-slate-300">
+            <span className="text-slate-600 dark:text-slate-300">
               <b className="font-bold text-slate-900 dark:text-white tabular-nums">{unassigned.companies}</b> korxona
             </span>
-            <span className="text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold tabular-nums">
               {fmtPercent(unassigned.sharePct)} ulangan
             </span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
             <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-300"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300 shadow-xs shadow-emerald-500/50"
               style={{ width: `${Math.min(100, Math.max(0, unassigned.sharePct))}%` }}
             />
           </div>
         </div>
 
-        <p className="text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-auto">
+        <p className="text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-auto">
           Korxona kartasida viloyat tanlanmagan, shuning uchun ular hech bir viloyat hisobiga kirmaydi.
         </p>
       </div>

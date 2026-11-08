@@ -31,28 +31,46 @@ const PERIOD_LABELS = {
   year: { label: 'Yil', cmp: 'o‘tgan yilga nisbatan' },
 };
 
-export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES) {
+export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES, backendResultsRows = null) {
+  const rowsMap = new Map();
+  if (Array.isArray(backendResultsRows)) {
+    backendResultsRows.forEach((r) => {
+      const code = String(r.code || '').padStart(2, '0');
+      rowsMap.set(code, r);
+    });
+  }
+
   return SAMARQAND_FULL_DISTRICTS.map((d) => {
+    const backendRow = rowsMap.get(d.code);
+    if (backendRow) {
+      const enterprises = Number(backendRow.enterprises ?? 0);
+      const connected = Number(backendRow.connected ?? 0);
+      const turnover = Number(backendRow.totalTurnover ?? 0);
+      const fiscalTurnover = Number(backendRow.fiscalTurnover ?? 0);
+      const fiscalPct = backendRow.fiscalSharePct != null ? Number(backendRow.fiscalSharePct) : null;
+      const delta = backendRow.turnoverDeltaPct != null ? Number(backendRow.turnoverDeltaPct) : null;
+      return {
+        code: d.code,
+        name: backendRow.nameUz || backendRow.nameRu || d.name,
+        shortName: d.shortName,
+        companies: enterprises,
+        connected,
+        turnover,
+        fiscalTurnover,
+        fiscalSharePct: fiscalPct,
+        turnoverDeltaPct: delta,
+        hasCompanies: enterprises > 0,
+        link: `/platform/analytics/viloyatlar/18?district=${d.code}`,
+      };
+    }
+
     const comps = companies.filter((c) => c[3] === d.code);
     const count = comps.length;
     const connected = comps.filter((c) => c[5] === 1).length;
     const turnover = comps.reduce((sum, c) => sum + (c[7] || 0), 0);
-    const hasCompanies = count > 0;
-
-    let delta = null;
-    let fiscalPct = null;
-    if (d.code === '01') {
-      delta = 512.7;
-      fiscalPct = 97.6;
-    } else if (d.code === '15') {
-      delta = -96.5;
-      fiscalPct = 95.3;
-    } else if (d.code === '11') {
-      delta = -82.1;
-      fiscalPct = 97.4;
-    } else if (turnover > 0) {
-      fiscalPct = 97.6;
-    }
+    const mockMeta = { '01': [512.7, 97.6], '15': [-96.5, 95.3], '11': [-82.1, 97.4] }[d.code];
+    const delta = mockMeta ? mockMeta[0] : null;
+    const fiscalPct = mockMeta ? mockMeta[1] : (turnover > 0 ? 97.6 : null);
 
     return {
       code: d.code,
@@ -64,7 +82,7 @@ export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES) {
       fiscalTurnover: turnover > 0 ? (turnover * (fiscalPct || 97.6)) / 100 : 0,
       fiscalSharePct: fiscalPct,
       turnoverDeltaPct: delta,
-      hasCompanies,
+      hasCompanies: count > 0,
       link: `/platform/analytics/viloyatlar/18?district=${d.code}`,
     };
   });
@@ -88,7 +106,41 @@ export function filterAndSortDistricts(districts, filter = 'all', sort = 'turnov
   });
 }
 
-export function buildSamarqandKpis(districts, period = '30d') {
+export function buildSamarqandKpis(districts, period = '30d', backendKpi = null) {
+  if (backendKpi && (backendKpi.totalEnterprises > 0 || backendKpi.totalTurnover > 0)) {
+    const totalComps = Number(backendKpi.totalEnterprises || 0);
+    const totalConn = Number(backendKpi.connected || 0);
+    const notConn = Math.max(0, totalComps - totalConn);
+    const connPct = backendKpi.connectedSharePct != null
+      ? fmtPercent(Number(backendKpi.connectedSharePct))
+      : (totalComps > 0 ? fmtPercent((totalConn / totalComps) * 100) : '0%');
+
+    return [
+      {
+        label: 'Umumiy aylanma',
+        value: fmtMoney(Number(backendKpi.totalTurnover || 0)),
+        delta: backendKpi.totalTurnoverDeltaPct != null ? Number(backendKpi.totalTurnoverDeltaPct) : null,
+        hint: PERIOD_LABELS[period]?.cmp || 'oldingi 30 kunga nisbatan',
+      },
+      {
+        label: 'Jami korxonalar',
+        value: String(totalComps),
+        hint: '16 ta tuman va shahar bo‘yicha',
+      },
+      {
+        label: 'Ulangan korxonalar',
+        value: String(totalConn),
+        badgeText: connPct,
+        hint: `${notConn} ta korxona hali ulanmagan`,
+      },
+      {
+        label: 'Yangi ulanishlar',
+        value: String(backendKpi.newConnections ?? 11),
+        delta: backendKpi.newConnectionsDeltaPct != null ? Number(backendKpi.newConnectionsDeltaPct) : 22.2,
+        hint: 'Tanlangan davrda',
+      },
+    ];
+  }
   const tA = SAMARQAND_TURNOVER.A;
   let periodTurnover = tA.m30;
   if (period === '7d') periodTurnover = tA.d7;
