@@ -41,14 +41,14 @@ export default function PlatformAnalyticsViloyatlarPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Viloyatlar
+              Samarqand viloyati tumanlari
             </h1>
             {loading ? (
               <RefreshCw size={18} className="animate-spin text-blue-600 dark:text-blue-400" />
             ) : null}
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            14 ta hudud · {totalCompanies} korxona. Batafsil ko‘rish uchun viloyatni tanlang.
+            16 ta tuman va shahar · {totalCompanies} korxona. Batafsil ko‘rish uchun tumanni tanlang.
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export default function PlatformAnalyticsViloyatlarPage() {
       {/* Regions Grid with Chroma Spotlight */}
       <ChromaGridContainer radius={300} softness={0.65} glow={0.6} borderGlow={1}>
         <section
-          aria-label="Viloyatlar ro‘yxati"
+          aria-label="Tumanlar ro‘yxati"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
           {regions.map((region) => (

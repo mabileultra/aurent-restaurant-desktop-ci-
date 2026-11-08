@@ -12,7 +12,7 @@ export default function ViloyatDetailHeader({ padCode, regionName, meta }) {
           className="inline-flex items-center gap-1.5 font-semibold text-blue-600 dark:text-blue-400 hover:underline min-h-[44px]"
         >
           <ChevronLeft size={16} />
-          Viloyatlar
+          Tumanlar
         </Link>
         <span className="text-slate-400">/</span>
         <span aria-current="page" className="font-semibold text-slate-800 dark:text-slate-200">
@@ -39,7 +39,7 @@ export default function ViloyatDetailHeader({ padCode, regionName, meta }) {
           className="inline-flex items-center gap-2 h-10 sm:h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-2xs"
         >
           <Layers size={16} />
-          Boshqa viloyat
+          Barcha tumanlar
         </Link>
       </div>
     </div>

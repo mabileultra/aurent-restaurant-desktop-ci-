@@ -12,30 +12,40 @@ vi.mock('../hooks/useViloyatlarAnalytics', () => ({
     setPeriod: vi.fn(),
     rangeLabel: '10-oktabr – 8-noyabr, 2026',
     kpis: [
-      { label: 'Umumiy aylanma', value: '4,22 mlrd so‘m', delta: 445.2, hint: 'oldingi 30 kunga nisbatan' },
-      { label: 'Jami korxonalar', value: '114', hint: '65 tasi viloyatga biriktirilgan, 49 tasi — yo‘q' },
-      { label: 'Ulangan korxonalar', value: '32', badgeText: '28,1%', hint: '82 ta korxona hali ulanmagan' },
+      { label: 'Umumiy aylanma', value: '4,04 mlrd so‘m', delta: 512.7, hint: 'oldingi 30 kunga nisbatan' },
+      { label: 'Jami korxonalar', value: '63', hint: '16 ta tuman va shahar bo‘yicha' },
+      { label: 'Ulangan korxonalar', value: '16', badgeText: '25,4%', hint: '47 ta korxona hali ulanmagan' },
       { label: 'Yangi ulanishlar', value: '11', delta: 22.2, hint: 'Tanlangan davrda' },
     ],
     filter: 'all',
     setFilter: vi.fn(),
-    counts: { all: 14, active: 3, empty: 11 },
+    counts: { all: 16, active: 10, empty: 6 },
     sort: 'turnover',
     setSort: vi.fn(),
     regions: [
       {
-        code: '18',
-        name: 'Samarqand viloyati',
-        companies: 63,
-        connected: 16,
-        turnover: 4044796184.82,
+        code: '01',
+        name: 'Samarqand shahri',
+        companies: 36,
+        connected: 13,
+        turnover: 4008345884,
         fiscalSharePct: 97.6,
         turnoverDeltaPct: 512.7,
         hasCompanies: true,
+        link: '/platform/analytics/viloyatlar/18?district=01',
       },
       {
-        code: '03',
-        name: 'Andijon viloyati',
+        code: '05',
+        name: 'Ishtixon tumani',
+        companies: 2,
+        connected: 0,
+        turnover: 0,
+        hasCompanies: true,
+        link: '/platform/analytics/viloyatlar/18?district=05',
+      },
+      {
+        code: '07',
+        name: 'Qo‘shrabot tumani',
         companies: 0,
         connected: 0,
         turnover: 0,
@@ -43,12 +53,12 @@ vi.mock('../hooks/useViloyatlarAnalytics', () => ({
       },
     ],
     unassigned: {
-      turnover: 175600000,
-      companies: 49,
-      connected: 15,
-      sharePct: 30.6,
+      turnover: 0,
+      companies: 0,
+      connected: 0,
+      sharePct: 0,
     },
-    totalCompanies: 114,
+    totalCompanies: 63,
     loading: false,
     error: false,
     refetch: vi.fn(),
@@ -56,7 +66,7 @@ vi.mock('../hooks/useViloyatlarAnalytics', () => ({
 }));
 
 describe('PlatformAnalyticsViloyatlarPage', () => {
-  it('renders page header, KPI cards, filters, and regions grid', () => {
+  it('renders page header, KPI cards, filters, and districts grid', () => {
     const html = renderToStaticMarkup(
       React.createElement(
         MemoryRouter,
@@ -65,12 +75,14 @@ describe('PlatformAnalyticsViloyatlarPage', () => {
       )
     );
 
-    expect(html).toContain('Viloyatlar');
+    expect(html).toContain('Samarqand viloyati tumanlari');
+    expect(html).toContain('16 ta tuman va shahar · 63 korxona');
     expect(html).toContain('10-oktabr – 8-noyabr, 2026');
-    expect(html).toContain('4,22 mlrd so‘m');
-    expect(html).toContain('Samarqand viloyati');
-    expect(html).toContain('Andijon viloyati');
-    expect(html).toContain('Hududi ko‘rsatilmagan');
-    expect(html).toContain('href="/platform/analytics/viloyatlar/18"');
+    expect(html).toContain('4,04 mlrd so‘m');
+    expect(html).toContain('Samarqand shahri');
+    expect(html).toContain('Ishtixon tumani');
+    expect(html).toContain('Qo‘shrabot tumani');
+    expect(html).toContain('href="/platform/analytics/viloyatlar/18?district=01"');
+    expect(html).toContain('href="/platform/analytics/viloyatlar/18?district=05"');
   });
 });

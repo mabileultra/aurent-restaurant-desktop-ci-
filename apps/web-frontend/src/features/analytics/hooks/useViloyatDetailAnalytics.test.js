@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useViloyatDetailAnalytics } from './useViloyatDetailAnalytics';
 
@@ -34,18 +35,23 @@ describe('useViloyatDetailAnalytics', () => {
       React.createElement(
         QueryClientProvider,
         { client: queryClient },
-        React.createElement(TestHarness, {
-          regionCode: '18',
-          onCaptured: (val) => { captured = val; },
-        })
+        React.createElement(
+          MemoryRouter,
+          { initialEntries: ['/platform/analytics/viloyatlar/18?district=05'] },
+          React.createElement(TestHarness, {
+            regionCode: '18',
+            onCaptured: (val) => { captured = val; },
+          })
+        )
       )
     );
 
     expect(captured).not.toBeNull();
     expect(captured.padCode).toBe('18');
+    expect(captured.selectedDistrict).toBe('05');
     expect(captured.activeType).toBe('A');
     expect(captured.types).toHaveLength(5);
-    expect(captured.tableData.total).toBe(63);
+    expect(captured.tableData.total).toBe(2);
     expect(captured.dailyBars).toHaveLength(30);
     expect(captured.topProducts).toHaveLength(5);
     expect(captured.districtsBreakdown.districts.length).toBeGreaterThan(0);

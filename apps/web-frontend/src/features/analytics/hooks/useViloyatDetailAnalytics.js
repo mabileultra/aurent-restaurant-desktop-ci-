@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { geoApi } from '../../../api/geo.api';
 import { analyticsApi } from '../api/analyticsApi';
@@ -23,11 +24,20 @@ import {
 
 export function useViloyatDetailAnalytics(regionCode) {
   const padCode = String(regionCode || '18').padStart(2, '0');
+  const [searchParams] = useSearchParams();
+  const districtParam = searchParams.get('district');
   const [activeType, setActiveType] = useState('A');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('all');
+  const [selectedDistrict, setSelectedDistrict] = useState(districtParam || 'all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
+
+  useEffect(() => {
+    if (districtParam && districtParam !== selectedDistrict) {
+      setSelectedDistrict(districtParam);
+      setCurrentPage(0);
+    }
+  }, [districtParam]);
 
   const { data: regions = [] } = useQuery({
     queryKey: ['geo-regions'],

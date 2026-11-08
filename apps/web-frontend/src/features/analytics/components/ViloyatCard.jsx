@@ -51,9 +51,11 @@ export function ViloyatActiveCard({ region }) {
     ? '#10b981'
     : (region.turnoverDeltaPct < 0 ? '#f43f5e' : '#3b82f6');
 
+  const cardTarget = region.link || `/platform/analytics/viloyatlar/${region.code}`;
+
   return (
     <Link
-      to={`/platform/analytics/viloyatlar/${region.code}`}
+      to={cardTarget}
       className="chroma-card group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between gap-4 transition hover:shadow-md focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
       data-chroma-area=""
       style={{ '--chroma-accent': accent }}
