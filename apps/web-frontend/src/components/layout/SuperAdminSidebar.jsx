@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
@@ -19,6 +18,7 @@ import {
   BarChart3,
   ChevronDown,
 } from 'lucide-react';
+import SuperAdminSidebarItem from './SuperAdminSidebarItem';
 
 const NAV_ICONS = {
   '/platform/companies': Building2,
@@ -113,54 +113,15 @@ export default function SuperAdminSidebar({
                     role="region"
                     className="accordion-content mt-1 space-y-1 pl-2"
                   >
-                    {group.items.map((item) => {
-                      const Icon = NAV_ICONS[item.to];
-                      const sectionOpen = Boolean(item.children)
-                        && (location.pathname === item.to || location.pathname.startsWith(`${item.to}/`));
-                      return (
-                        <div key={item.to}>
-                          <NavLink
-                            to={item.to}
-                            onClick={onCloseMobileNav}
-                            className={({ isActive }) =>
-                              `flex items-center space-x-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                                isActive
-                                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-semibold border-l-[3px] border-emerald-600 dark:border-emerald-400 pl-[9px] pr-3 shadow-xs'
-                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white border-l-[3px] border-transparent pl-[9px] pr-3'
-                              }`
-                            }
-                          >
-                            {Icon ? (
-                              <span className="w-5 h-5 flex items-center justify-center shrink-0 text-current" aria-hidden="true">
-                                <Icon size={18} />
-                              </span>
-                            ) : null}
-                            <span className="truncate">{t(item.key)}</span>
-                          </NavLink>
-                          {item.children && sectionOpen ? (
-                            <div className="mt-1 space-y-1 pl-8" role="group" aria-label={t(item.key)}>
-                              {item.children.map((child) => (
-                                <NavLink
-                                  key={child.to}
-                                  to={child.to}
-                                  end={Boolean(child.end)}
-                                  onClick={onCloseMobileNav}
-                                  className={({ isActive }) =>
-                                    `block py-1.5 px-3 rounded-md text-xs font-medium transition ${
-                                      isActive
-                                        ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 font-semibold'
-                                        : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-                                    }`
-                                  }
-                                >
-                                  {t(child.key)}
-                                </NavLink>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      );
-                    })}
+                    {group.items.map((item) => (
+                      <SuperAdminSidebarItem
+                        key={item.to}
+                        item={item}
+                        location={location}
+                        onCloseMobileNav={onCloseMobileNav}
+                        NAV_ICONS={NAV_ICONS}
+                      />
+                    ))}
                   </div>
                 ) : null}
               </div>

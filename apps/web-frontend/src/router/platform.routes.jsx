@@ -21,6 +21,9 @@ import {
   PlatformBillingPage,
   PlatformAnalyticsPage,
   PlatformAnalyticsRegionsPage,
+  PlatformAnalyticsViloyatlarPage,
+  PlatformAnalyticsViloyatDetailPage,
+  PlatformAnalyticsKorxonaDetailPage,
   PlatformCompanyAnalyticsPage,
   PlatformCompanyAnalyticsDetailPage,
   PlatformAnalyticsComparePage,
@@ -63,9 +66,12 @@ export const platformRoutes = (
     <Route path="leads" element={guarded(<PlatformLeadsPage />, 'platform-leads')} />
     <Route path="billing" element={guarded(<PlatformBillingPage />, 'platform-billing')} />
     <Route path="analytics" element={guarded(<PlatformAnalyticsPage />, 'platform-analytics')} />
+    <Route path="analytics/viloyatlar" element={guarded(<PlatformAnalyticsViloyatlarPage />, 'platform-analytics-viloyatlar')} />
+    <Route path="analytics/viloyatlar/:regionCode" element={guarded(<PlatformAnalyticsViloyatDetailPage />, 'platform-analytics-viloyat-detail')} />
+    <Route path="analytics/viloyatlar/:regionCode/companies/:companyId" element={guarded(<PlatformAnalyticsKorxonaDetailPage />, 'platform-analytics-korxona-detail')} />
     <Route path="analytics/regions" element={guarded(<PlatformAnalyticsRegionsPage />, 'platform-analytics-regions')} />
     <Route path="analytics/companies" element={guarded(<PlatformCompanyAnalyticsPage />, 'platform-analytics-companies')} />
-    <Route path="analytics/companies/:companyId" element={guarded(<PlatformCompanyAnalyticsDetailPage />, 'platform-analytics-company')} />
+    <Route path="analytics/companies/:companyId" element={guarded(<PlatformAnalyticsKorxonaDetailPage />, 'platform-analytics-korxona-detail')} />
     <Route path="analytics/comparison" element={guarded(<PlatformAnalyticsComparePage />, 'platform-analytics-compare')} />
     <Route path="analytics/compare" element={guarded(<PlatformAnalyticsComparePage />, 'platform-analytics-compare')} />
     <Route path="analytics/receipts" element={guarded(<PlatformAnalyticsReceiptsPage />, 'platform-analytics-receipts')} />

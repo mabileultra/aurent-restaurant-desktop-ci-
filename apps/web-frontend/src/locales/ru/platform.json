@@ -735,6 +735,8 @@
     },
     "analytics": {
       "nav": "Аналитика",
+      "currentNav": "Аналитика V1",
+      "viloyatlarNav": "Аналитика V2",
       "tabRegions": "По регионам",
       "tabCompanies": "По фирмам",
       "companiesTitle": "Аналитика по фирмам",

@@ -42,11 +42,15 @@ describe('platformNav', () => {
     ]);
   });
 
-  it('shows analytics without nested tabs to SUPER_ADMIN', () => {
+  it('shows analytics with collapsible sub-navigation to SUPER_ADMIN', () => {
     const links = visiblePlatformNav('SUPER_ADMIN', () => false);
     const analytics = links.find((item) => item.to === '/platform/analytics');
-    expect(analytics?.children).toBeUndefined();
+    expect(analytics?.children?.map((c) => c.to)).toEqual([
+      '/platform/analytics',
+      '/platform/analytics/viloyatlar',
+    ]);
     expect(canOpenPlatformPath('SUPER_ADMIN', () => false, '/platform/analytics')).toBe(true);
+    expect(canOpenPlatformPath('SUPER_ADMIN', () => false, '/platform/analytics/viloyatlar')).toBe(true);
   });
 
   it('shows only analytics and account to PLATFORM_ANALYTICS', () => {

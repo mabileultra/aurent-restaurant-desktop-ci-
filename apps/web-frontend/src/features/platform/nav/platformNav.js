@@ -15,7 +15,16 @@ export const PLATFORM_NAV = [
   // Moliya va hisob
   { to: '/platform/billing', key: 'platform.billing.nav', module: 'platformBilling', group: 'finance' },
   { to: '/platform/desktop-notifications', key: 'platform.desktopNotifications.nav', module: 'platformDesktopNotifications', group: 'finance' },
-  { to: '/platform/analytics', key: 'platform.analytics.nav', module: 'platformAnalytics', group: 'finance' },
+  {
+    to: '/platform/analytics',
+    key: 'platform.analytics.nav',
+    module: 'platformAnalytics',
+    group: 'finance',
+    children: [
+      { to: '/platform/analytics', key: 'platform.analytics.currentNav', end: true },
+      { to: '/platform/analytics/viloyatlar', key: 'platform.analytics.viloyatlarNav' },
+    ],
+  },
 
   // Boshqaruv
   { to: '/platform/access', key: 'platform.moduleAccess.nav', module: 'platformAccess', group: 'management' },
