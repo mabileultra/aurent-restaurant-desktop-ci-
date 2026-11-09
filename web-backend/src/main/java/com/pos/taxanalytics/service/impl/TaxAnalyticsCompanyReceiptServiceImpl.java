@@ -7,6 +7,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsReceiptRowResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsReceiptsResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsReceiptQueryRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsCompanyReceiptService;
+import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +37,19 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
         int page,
         int size
     ) {
-        LocalDate start = date != null ? date : from;
-        LocalDate end = date != null ? date : (to != null ? to : from);
+        LocalDate start;
+        LocalDate end;
+        if (date != null) {
+            start = date;
+            end = date;
+        } else if (from != null || to != null) {
+            start = from != null ? from : to;
+            end = to != null ? to : from;
+        } else {
+            TaxAnalyticsPeriod fallback = TaxAnalyticsPeriod.resolve("30d", null, null);
+            start = fallback.from();
+            end = fallback.to();
+        }
         if (start == null || end == null) {
             throw PosExceptions.badRequest("from and to are required");
         }

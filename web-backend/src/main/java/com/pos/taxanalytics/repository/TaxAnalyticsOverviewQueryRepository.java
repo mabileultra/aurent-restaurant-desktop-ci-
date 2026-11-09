@@ -1,8 +1,8 @@
 package com.pos.taxanalytics.repository;
 
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsConnectedSql;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
-import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,7 +21,13 @@ public class TaxAnalyticsOverviewQueryRepository {
 
     private final JdbcTemplate jdbc;
 
-    public long countCompanies(String regionCode, String connectionStatus, String search) {
+    public long countCompanies(
+        String regionCode,
+        String districtCode,
+        String businessType,
+        String connectionStatus,
+        String search
+    ) {
         StringBuilder sql = new StringBuilder();
         sql.append("WITH connected AS ( ").append(TaxAnalyticsConnectedSql.SQL).append(" ) ");
         sql.append("""
@@ -30,12 +36,19 @@ public class TaxAnalyticsOverviewQueryRepository {
             LEFT JOIN connected conn ON conn.company_id = c.id
             WHERE 1=1
             """);
-        List<Object> args = filters(sql, regionCode, connectionStatus, search);
+        List<Object> args = new ArrayList<>();
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, connectionStatus, search);
         Long count = jdbc.queryForObject(sql.toString(), Long.class, args.toArray());
         return count == null ? 0L : count;
     }
 
-    public long countConnected(String regionCode, String connectionStatus, String search) {
+    public long countConnected(
+        String regionCode,
+        String districtCode,
+        String businessType,
+        String connectionStatus,
+        String search
+    ) {
         if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
             return 0L;
         }
@@ -47,7 +60,8 @@ public class TaxAnalyticsOverviewQueryRepository {
             JOIN connected conn ON conn.company_id = c.id
             WHERE 1=1
             """);
-        List<Object> args = filters(sql, regionCode, null, search);
+        List<Object> args = new ArrayList<>();
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, null, search);
         Long count = jdbc.queryForObject(sql.toString(), Long.class, args.toArray());
         return count == null ? 0L : count;
     }
@@ -57,6 +71,8 @@ public class TaxAnalyticsOverviewQueryRepository {
         boolean fiscalOnly,
         boolean nonFiscalOnly,
         String regionCode,
+        String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     ) {
@@ -79,13 +95,15 @@ public class TaxAnalyticsOverviewQueryRepository {
         List<Object> args = new ArrayList<>();
         args.add(ts(period.from()));
         args.add(ts(period.to().plusDays(1)));
-        args.addAll(filters(sql, regionCode, connectionStatus, search));
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, connectionStatus, search);
         BigDecimal value = jdbc.queryForObject(sql.toString(), BigDecimal.class, args.toArray());
         return value == null ? BigDecimal.ZERO : value;
     }
 
     public List<Map<String, Object>> regionEnterpriseCounts(
         String regionCode,
+        String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     ) {
@@ -97,7 +115,8 @@ public class TaxAnalyticsOverviewQueryRepository {
             LEFT JOIN connected conn ON conn.company_id = c.id
             WHERE c.region_code IS NOT NULL
             """);
-        List<Object> args = filters(sql, regionCode, connectionStatus, search);
+        List<Object> args = new ArrayList<>();
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, connectionStatus, search);
         sql.append(" GROUP BY c.region_code ");
         return jdbc.queryForList(sql.toString(), args.toArray());
     }
@@ -105,6 +124,8 @@ public class TaxAnalyticsOverviewQueryRepository {
     public List<Map<String, Object>> regionTurnover(
         TaxAnalyticsPeriod period,
         String regionCode,
+        String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     ) {
@@ -123,31 +144,9 @@ public class TaxAnalyticsOverviewQueryRepository {
         List<Object> args = new ArrayList<>();
         args.add(ts(period.from()));
         args.add(ts(period.to().plusDays(1)));
-        args.addAll(filters(sql, regionCode, connectionStatus, search));
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, connectionStatus, search);
         sql.append(" GROUP BY c.region_code ");
         return jdbc.queryForList(sql.toString(), args.toArray());
-    }
-
-    private static List<Object> filters(
-        StringBuilder sql,
-        String regionCode,
-        String connectionStatus,
-        String search
-    ) {
-        List<Object> args = new ArrayList<>();
-        TaxAnalyticsRegionFilter.append(sql, args, regionCode);
-        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
-            sql.append(" AND conn.company_id IS NOT NULL ");
-        } else if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
-            sql.append(" AND conn.company_id IS NULL ");
-        }
-        if (search != null && !search.isBlank()) {
-            sql.append(" AND (LOWER(c.name) LIKE ? OR LOWER(COALESCE(c.tin, '')) LIKE ?) ");
-            String query = "%" + search.trim().toLowerCase() + "%";
-            args.add(query);
-            args.add(query);
-        }
-        return args;
     }
 
     private static Timestamp ts(LocalDate day) {

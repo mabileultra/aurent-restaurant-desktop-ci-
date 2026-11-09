@@ -26,17 +26,19 @@ public class TaxAnalyticsController {
 
     @GetMapping("/overview")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "KPI + region cards. Day boundaries are Asia/Tashkent. Filters apply to KPI and cards.")
+    @Operation(summary = "KPI + region cards. Day boundaries are Asia/Tashkent. regionCode/districtCode/businessType apply to KPI and cards.")
     public ResponseEntity<TaxAnalyticsOverviewResponse> overview(
         @RequestParam(required = false, defaultValue = "30d") String period,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String connectionStatus,
         @RequestParam(required = false) String search
     ) {
         return ResponseEntity.ok(taxAnalyticsService.overview(
-            period, from, to, regionCode, connectionStatus, search
+            period, from, to, regionCode, districtCode, businessType, connectionStatus, search
         ));
     }
 
@@ -49,6 +51,7 @@ public class TaxAnalyticsController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) String regionCode,
         @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String connectionStatus,
         @RequestParam(required = false) String search,
         @RequestParam(required = false) String level,
@@ -56,7 +59,7 @@ public class TaxAnalyticsController {
         @RequestParam(required = false, defaultValue = "20") int size
     ) {
         return ResponseEntity.ok(taxAnalyticsService.results(
-            period, from, to, regionCode, districtCode, connectionStatus, search, level, page, size
+            period, from, to, regionCode, districtCode, businessType, connectionStatus, search, level, page, size
         ));
     }
 }

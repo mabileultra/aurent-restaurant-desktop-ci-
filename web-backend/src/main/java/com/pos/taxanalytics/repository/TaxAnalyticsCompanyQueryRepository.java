@@ -1,8 +1,8 @@
 package com.pos.taxanalytics.repository;
 
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsConnectedSql;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
-import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +24,7 @@ public class TaxAnalyticsCompanyQueryRepository {
     public long countCompanies(
         String regionCode,
         String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     ) {
@@ -36,7 +37,7 @@ public class TaxAnalyticsCompanyQueryRepository {
             WHERE 1=1
             """);
         List<Object> args = new ArrayList<>();
-        appendFilters(sql, args, regionCode, districtCode, connectionStatus, search);
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, connectionStatus, search);
         Long count = args.isEmpty()
             ? jdbc.queryForObject(sql.toString(), Long.class)
             : jdbc.queryForObject(sql.toString(), Long.class, args.toArray());
@@ -48,6 +49,7 @@ public class TaxAnalyticsCompanyQueryRepository {
         TaxAnalyticsWeekWindow week,
         String regionCode,
         String districtCode,
+        String businessType,
         String connectionStatus,
         String search,
         int limit,
@@ -96,6 +98,10 @@ public class TaxAnalyticsCompanyQueryRepository {
             SELECT c.id AS company_id,
                    c.name AS name,
                    c.tin AS tin,
+                   c.business_type AS business_type,
+                   c.legal_name AS legal_name,
+                   c.address AS address,
+                   c.phone AS phone,
                    c.region_code AS region_code,
                    gr.name_ru AS region_name_ru,
                    gr.name_uz AS region_name_uz,
@@ -129,7 +135,7 @@ public class TaxAnalyticsCompanyQueryRepository {
         args.add(ts(week.weekTo().plusDays(1)));
         args.add(ts(week.prevWeekFrom()));
         args.add(ts(week.prevWeekTo().plusDays(1)));
-        appendFilters(sql, args, regionCode, districtCode, connectionStatus, search);
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, districtCode, businessType, connectionStatus, search);
         sql.append(" ORDER BY COALESCE(wt.total_turnover, 0) DESC, c.name ASC LIMIT ? OFFSET ? ");
         args.add(limit);
         args.add(offset);
@@ -142,6 +148,10 @@ public class TaxAnalyticsCompanyQueryRepository {
             SELECT c.id AS company_id,
                    c.name AS name,
                    c.tin AS tin,
+                   c.business_type AS business_type,
+                   c.legal_name AS legal_name,
+                   c.address AS address,
+                   c.phone AS phone,
                    c.region_code AS region_code,
                    gr.name_ru AS region_name_ru,
                    gr.name_uz AS region_name_uz,
@@ -176,7 +186,8 @@ public class TaxAnalyticsCompanyQueryRepository {
         String sql = """
             SELECT (s.created_at AT TIME ZONE 'Asia/Tashkent')::date AS sale_date,
                    COALESCE(SUM(CASE WHEN s.fiscal_status = 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS fiscal_turnover,
-                   COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover
+                   COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover,
+                   COUNT(*) AS receipt_count
             FROM sales s
             LEFT JOIN stores st ON st.id = s.store_id
             WHERE s.status = 'COMPLETED'
@@ -239,32 +250,6 @@ public class TaxAnalyticsCompanyQueryRepository {
             LIMIT ?
             """;
         return jdbc.queryForList(sql, companyId, period.from(), period.to().plusDays(1), limit);
-    }
-
-    private static void appendFilters(
-        StringBuilder sql,
-        List<Object> args,
-        String regionCode,
-        String districtCode,
-        String connectionStatus,
-        String search
-    ) {
-        TaxAnalyticsRegionFilter.append(sql, args, regionCode);
-        if (districtCode != null && !districtCode.isBlank()) {
-            sql.append(" AND c.district_code = ? ");
-            args.add(districtCode);
-        }
-        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
-            sql.append(" AND conn.company_id IS NOT NULL ");
-        } else if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
-            sql.append(" AND conn.company_id IS NULL ");
-        }
-        if (search != null && !search.isBlank()) {
-            sql.append(" AND (LOWER(c.name) LIKE ? OR LOWER(COALESCE(c.tin, '')) LIKE ?) ");
-            String query = "%" + search.trim().toLowerCase() + "%";
-            args.add(query);
-            args.add(query);
-        }
     }
 
     private static Timestamp ts(LocalDate date) {

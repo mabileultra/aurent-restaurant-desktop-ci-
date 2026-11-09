@@ -1,8 +1,8 @@
 package com.pos.taxanalytics.repository;
 
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsConnectedSql;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
-import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,7 +20,69 @@ public class TaxAnalyticsReportQueryRepository {
 
     private final JdbcTemplate jdbc;
 
-    public List<Map<String, Object>> daily(TaxAnalyticsPeriod period) {
+    public List<Map<String, Object>> daily(
+        TaxAnalyticsPeriod period,
+        String regionCode,
+        String districtCode,
+        String businessType
+    ) {
+        boolean filtered = TaxAnalyticsCompanyFilter.any(regionCode, districtCode, businessType, null, null);
+        if (!filtered) {
+            return dailyUnfiltered(period);
+        }
+        StringBuilder daysSql = new StringBuilder("""
+            SELECT (s.created_at AT TIME ZONE 'Asia/Tashkent')::date AS day,
+                   COALESCE(SUM(CASE WHEN s.fiscal_status = 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS fiscal_turnover,
+                   COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover
+            FROM sales s
+            LEFT JOIN stores st ON st.id = s.store_id
+            JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id)
+            WHERE s.status = 'COMPLETED'
+              AND s.created_at >= ? AND s.created_at < ?
+            """);
+        List<Object> dayArgs = new ArrayList<>();
+        dayArgs.add(ts(period.from()));
+        dayArgs.add(ts(period.to().plusDays(1)));
+        TaxAnalyticsCompanyFilter.append(daysSql, dayArgs, regionCode, districtCode, businessType, null, null);
+        daysSql.append(" GROUP BY 1 ");
+
+        StringBuilder rankedSql = new StringBuilder("""
+            SELECT (s.created_at AT TIME ZONE 'Asia/Tashkent')::date AS day,
+                   c.id AS company_id,
+                   c.name AS company_name,
+                   SUM(s.total_amount) AS total,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY (s.created_at AT TIME ZONE 'Asia/Tashkent')::date
+                     ORDER BY SUM(s.total_amount) DESC, c.id
+                   ) AS rn
+            FROM sales s
+            LEFT JOIN stores st ON st.id = s.store_id
+            JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id)
+            WHERE s.status = 'COMPLETED'
+              AND s.created_at >= ? AND s.created_at < ?
+            """);
+        List<Object> rankedArgs = new ArrayList<>();
+        rankedArgs.add(ts(period.from()));
+        rankedArgs.add(ts(period.to().plusDays(1)));
+        TaxAnalyticsCompanyFilter.append(rankedSql, rankedArgs, regionCode, districtCode, businessType, null, null);
+        rankedSql.append(" GROUP BY 1, c.id, c.name ");
+
+        String sql = """
+            WITH days AS ( %s ),
+            ranked AS ( %s )
+            SELECT d.day, d.fiscal_turnover, d.non_fiscal_turnover,
+                   r.company_id AS leader_company_id, r.company_name AS leader_company_name
+            FROM days d
+            LEFT JOIN ranked r ON r.day = d.day AND r.rn = 1
+            ORDER BY d.day
+            """.formatted(daysSql, rankedSql);
+        List<Object> args = new ArrayList<>();
+        args.addAll(dayArgs);
+        args.addAll(rankedArgs);
+        return jdbc.queryForList(sql, args.toArray());
+    }
+
+    private List<Map<String, Object>> dailyUnfiltered(TaxAnalyticsPeriod period) {
         return jdbc.queryForList(
             """
                 WITH days AS (
@@ -122,18 +184,7 @@ public class TaxAnalyticsReportQueryRepository {
         List<Object> args = new ArrayList<>();
         args.add(ts(period.from()));
         args.add(ts(period.to().plusDays(1)));
-        TaxAnalyticsRegionFilter.append(sql, args, regionCode);
-        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
-            sql.append(" AND conn.company_id IS NOT NULL ");
-        } else if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
-            sql.append(" AND conn.company_id IS NULL ");
-        }
-        if (search != null && !search.isBlank()) {
-            sql.append(" AND (LOWER(c.name) LIKE ? OR LOWER(COALESCE(c.tin, '')) LIKE ?) ");
-            String query = "%" + search.trim().toLowerCase() + "%";
-            args.add(query);
-            args.add(query);
-        }
+        TaxAnalyticsCompanyFilter.append(sql, args, regionCode, null, null, connectionStatus, search);
         return args;
     }
 

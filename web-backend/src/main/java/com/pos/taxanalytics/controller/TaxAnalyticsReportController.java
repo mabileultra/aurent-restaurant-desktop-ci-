@@ -3,6 +3,8 @@ package com.pos.taxanalytics.controller;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompareResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsDailyResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsExportItemResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsProductsResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsReceiptCountsResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsReceiptListResponse;
 import com.pos.taxanalytics.service.TaxAnalyticsReportService;
 import com.pos.taxanalytics.service.impl.TaxAnalyticsExportServiceImpl;
@@ -37,13 +39,51 @@ public class TaxAnalyticsReportController {
 
     @GetMapping("/overview/daily")
     @PreAuthorize(ANALYTICS)
-    @Operation(summary = "Daily turnover in Asia/Tashkent. Receipt instants elsewhere are UTC (Z). Includes the day's leader company.")
+    @Operation(summary = "Daily turnover by region/district/businessType. Asia/Tashkent day boundaries.")
     public ResponseEntity<TaxAnalyticsDailyResponse> daily(
         @RequestParam(required = false, defaultValue = "30d") String period,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String businessType
     ) {
-        return ResponseEntity.ok(taxAnalyticsReportService.daily(period, from, to));
+        return ResponseEntity.ok(taxAnalyticsReportService.daily(
+            period, from, to, regionCode, districtCode, businessType
+        ));
+    }
+
+    @GetMapping("/products")
+    @PreAuthorize(ANALYTICS)
+    @Operation(summary = "Top and bottom sold products for region/district/businessType")
+    public ResponseEntity<TaxAnalyticsProductsResponse> products(
+        @RequestParam(required = false, defaultValue = "30d") String period,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String businessType,
+        @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(taxAnalyticsReportService.products(
+            period, from, to, regionCode, districtCode, businessType, limit
+        ));
+    }
+
+    @GetMapping("/receipt-counts")
+    @PreAuthorize(ANALYTICS)
+    @Operation(summary = "Fiscal and non-fiscal receipt counts for the period and geo/type filters")
+    public ResponseEntity<TaxAnalyticsReceiptCountsResponse> receiptCounts(
+        @RequestParam(required = false, defaultValue = "30d") String period,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String businessType
+    ) {
+        return ResponseEntity.ok(taxAnalyticsReportService.receiptCounts(
+            period, from, to, regionCode, districtCode, businessType
+        ));
     }
 
     @GetMapping("/receipts")

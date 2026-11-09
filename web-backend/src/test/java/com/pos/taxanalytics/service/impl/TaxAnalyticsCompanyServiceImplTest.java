@@ -6,6 +6,7 @@ import com.pos.taxanalytics.client.TaxAnalyticsRestaurantClient;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompaniesResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyQueryRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsCompanyStatsRepository;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
 import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class TaxAnalyticsCompanyServiceImplTest {
     private TaxAnalyticsCompanyQueryRepository repository;
 
     @Mock
+    private TaxAnalyticsCompanyStatsRepository statsRepository;
+
+    @Mock
     private TaxAnalyticsVerticalSnapshotLoader verticalLoader;
 
     @Mock
@@ -50,15 +54,17 @@ class TaxAnalyticsCompanyServiceImplTest {
     void listMapsWeekDeltaFromRepositoryRows() {
         when(verticalLoader.load(any(), any(), any(), any(), any(), any()))
             .thenReturn(new TaxAnalyticsVerticalSnapshotLoader.Pair(null, null));
-        when(repository.listCompanies(any(), any(), isNull(), isNull(), isNull(), isNull(), eq(10_000), eq(0)))
+        when(repository.listCompanies(any(), any(), isNull(), isNull(), isNull(), isNull(), isNull(), eq(10_000), eq(0)))
             .thenReturn(List.of(companyRow()));
 
         TaxAnalyticsCompaniesResponse response = service.list(
-            "30d", null, null, null, null, null, null, 0, 20, "totalTurnover,desc"
+            "30d", null, null, null, null, null, null, null, 0, 20, "totalTurnover,desc"
         );
 
         assertEquals(1, response.rows().size());
         assertEquals(7, response.rows().get(0).companyId());
+        assertEquals("RESTAURANT", response.rows().get(0).businessType());
+        assertEquals("Alinur LLC", response.rows().get(0).legalName());
         assertEquals(new BigDecimal("100"), response.rows().get(0).totalTurnover());
         assertEquals(new BigDecimal("10"), response.rows().get(0).weekDeltaAmount());
         assertEquals(new BigDecimal("25.0"), response.rows().get(0).weekDeltaPct());
@@ -75,12 +81,23 @@ class TaxAnalyticsCompanyServiceImplTest {
     void detailUsesPeriodTurnoverAndEightWeeks() {
         when(repository.findCompany(3)).thenReturn(Map.of(
             "name", "Firma",
+            "business_type", "GROCERY",
             "connected", 0
         ));
         when(repository.periodTurnover(eq(3), any(TaxAnalyticsPeriod.class))).thenReturn(Map.of(
             "fiscal_turnover", new BigDecimal("15"),
             "non_fiscal_turnover", new BigDecimal("5")
         ));
+        when(statsRepository.periodReceiptStats(eq(3), any(TaxAnalyticsPeriod.class))).thenReturn(Map.of(
+            "fiscal_receipt_count", 3L,
+            "non_fiscal_receipt_count", 1L,
+            "average_check", new BigDecimal("5")
+        ));
+        when(statsRepository.saleBounds(3)).thenReturn(Map.of(
+            "first_sale_date", "2026-01-01",
+            "last_sale_date", "2026-11-08"
+        ));
+        when(statsRepository.latestFiscalTerminal(3)).thenReturn("TERM-1");
         when(repository.dailyTurnover(eq(3), any(), any())).thenReturn(List.of());
         when(repository.topProducts(eq(3), any(TaxAnalyticsPeriod.class), eq(200))).thenReturn(List.of());
         when(repository.supplySummary(eq(3), any(TaxAnalyticsPeriod.class))).thenReturn(Map.of(
@@ -98,6 +115,13 @@ class TaxAnalyticsCompanyServiceImplTest {
         TaxAnalyticsCompanyDetailResponse detail = service.detail(3, "7d", null, null);
 
         assertEquals(new BigDecimal("20"), detail.totalTurnover());
+        assertEquals("GROCERY", detail.businessType());
+        assertEquals(3L, detail.fiscalReceiptCount());
+        assertEquals(1L, detail.nonFiscalReceiptCount());
+        assertEquals(new BigDecimal("5.00"), detail.averageCheck());
+        assertEquals("TERM-1", detail.fiscalTerminalId());
+        assertEquals("2026-01-01", detail.firstSaleDate());
+        assertEquals("2026-11-08", detail.lastSaleDate());
         assertEquals(false, detail.connected());
         assertEquals(8, detail.weeks().size());
         assertEquals(7, detail.days().size());
@@ -113,6 +137,10 @@ class TaxAnalyticsCompanyServiceImplTest {
         row.put("company_id", 7);
         row.put("name", "Firma");
         row.put("tin", "123");
+        row.put("business_type", "RESTAURANT");
+        row.put("legal_name", "Alinur LLC");
+        row.put("address", "Samarkand");
+        row.put("phone", "+99890");
         row.put("region_code", "01");
         row.put("region_name_ru", "Ташкент");
         row.put("region_name_uz", "Toshkent");

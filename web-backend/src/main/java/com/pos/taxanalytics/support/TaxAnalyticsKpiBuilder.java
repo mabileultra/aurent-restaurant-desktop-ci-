@@ -4,11 +4,13 @@ import com.pos.taxanalytics.client.dto.TaxAnalyticsVerticalSnapshotDto;
 import com.pos.taxanalytics.dto.TaxAnalyticsKpiResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsOverviewQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsReceiptCountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -17,31 +19,41 @@ public class TaxAnalyticsKpiBuilder {
 
     private final TaxAnalyticsQueryRepository repository;
     private final TaxAnalyticsOverviewQueryRepository overviewRepository;
+    private final TaxAnalyticsReceiptCountRepository receiptCountRepository;
     private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
 
     public TaxAnalyticsKpiResponse build(TaxAnalyticsPeriod range) {
-        return build(range, null, null, null);
+        return build(range, null, null, null, null, null);
     }
 
     public TaxAnalyticsKpiResponse build(
         TaxAnalyticsPeriod range,
         String regionCode,
+        String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     ) {
-        if (isBlank(regionCode) && isBlank(connectionStatus) && isBlank(search)) {
+        if (!TaxAnalyticsCompanyFilter.any(regionCode, districtCode, businessType, connectionStatus, search)) {
             return unfiltered(range);
         }
-        long total = overviewRepository.countCompanies(regionCode, connectionStatus, search);
-        long connected = overviewRepository.countConnected(regionCode, connectionStatus, search);
+        long total = overviewRepository.countCompanies(regionCode, districtCode, businessType, connectionStatus, search);
+        long connected = overviewRepository.countConnected(regionCode, districtCode, businessType, connectionStatus, search);
         long notConnected = Math.max(0, total - connected);
-        BigDecimal fiscal = overviewRepository.sumTurnover(range, true, false, regionCode, connectionStatus, search);
-        BigDecimal nonFiscal = overviewRepository.sumTurnover(range, false, true, regionCode, connectionStatus, search);
+        BigDecimal fiscal = overviewRepository.sumTurnover(
+            range, true, false, regionCode, districtCode, businessType, connectionStatus, search
+        );
+        BigDecimal nonFiscal = overviewRepository.sumTurnover(
+            range, false, true, regionCode, districtCode, businessType, connectionStatus, search
+        );
         TaxAnalyticsPeriod prev = new TaxAnalyticsPeriod(
             range.prevFrom(), range.prevTo(), range.prevFrom(), range.prevTo(), range.key()
         );
-        BigDecimal prevTurnover = overviewRepository.sumTurnover(prev, false, false, regionCode, connectionStatus, search);
+        BigDecimal prevTurnover = overviewRepository.sumTurnover(
+            prev, false, false, regionCode, districtCode, businessType, connectionStatus, search
+        );
         BigDecimal totalTurnover = fiscal.add(nonFiscal);
+        long[] receiptCounts = receiptCounts(range, regionCode, districtCode, businessType);
         return new TaxAnalyticsKpiResponse(
             total,
             null,
@@ -55,6 +67,8 @@ public class TaxAnalyticsKpiBuilder {
             fiscal,
             nonFiscal,
             TaxAnalyticsMath.deltaPct(totalTurnover, prevTurnover),
+            receiptCounts[0],
+            receiptCounts[1],
             0,
             null,
             0,
@@ -95,6 +109,7 @@ public class TaxAnalyticsKpiBuilder {
         long prevNewConn = repository.countNewFiscalConnections(prev);
         long errors = repository.countFiscalErrors(range);
         long prevErrors = repository.countFiscalErrors(prev);
+        long[] receiptCounts = receiptCounts(range, null, null, null);
 
         return new TaxAnalyticsKpiResponse(
             total,
@@ -109,6 +124,8 @@ public class TaxAnalyticsKpiBuilder {
             fiscal,
             nonFiscal,
             TaxAnalyticsMath.deltaPct(totalTurnover, prevTurnover),
+            receiptCounts[0],
+            receiptCounts[1],
             newConn,
             TaxAnalyticsMath.deltaPct(BigDecimal.valueOf(newConn), BigDecimal.valueOf(prevNewConn)),
             errors,
@@ -116,8 +133,21 @@ public class TaxAnalyticsKpiBuilder {
         );
     }
 
-    private static boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    private long[] receiptCounts(
+        TaxAnalyticsPeriod range,
+        String regionCode,
+        String districtCode,
+        String businessType
+    ) {
+        Map<String, Object> row = receiptCountRepository.counts(range, regionCode, districtCode, businessType);
+        return new long[] {
+            asLong(row.get("fiscal_receipt_count")),
+            asLong(row.get("non_fiscal_receipt_count"))
+        };
+    }
+
+    private static long asLong(Object value) {
+        return value instanceof Number number ? number.longValue() : 0L;
     }
 
     private static BigDecimal fiscalOf(TaxAnalyticsVerticalSnapshotDto snapshot) {

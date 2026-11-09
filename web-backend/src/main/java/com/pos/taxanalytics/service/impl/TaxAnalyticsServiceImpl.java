@@ -5,6 +5,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsOverviewResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsRegionCardResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultRowResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultsResponse;
+import com.pos.taxanalytics.repository.TaxAnalyticsGeoAggregateRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsMissingRegionRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsOverviewQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
 
     private final TaxAnalyticsQueryRepository repository;
+    private final TaxAnalyticsGeoAggregateRepository geoAggregateRepository;
     private final TaxAnalyticsOverviewQueryRepository overviewRepository;
     private final TaxAnalyticsKpiBuilder kpiBuilder;
     private final TaxAnalyticsMissingRegionRepository missingRegionRepository;
@@ -39,6 +41,8 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         LocalDate from,
         LocalDate to,
         String regionCode,
+        String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     ) {
@@ -46,16 +50,30 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         TaxAnalyticsPeriod prev = new TaxAnalyticsPeriod(
             range.prevFrom(), range.prevTo(), range.prevFrom(), range.prevTo(), range.key()
         );
-        TaxAnalyticsKpiResponse kpi = kpiBuilder.build(range, regionCode, connectionStatus, search);
+        TaxAnalyticsKpiResponse kpi = kpiBuilder.build(
+            range, regionCode, districtCode, businessType, connectionStatus, search
+        );
 
         Map<String, Long> counts = repository.toLongMap(
-            overviewRepository.regionEnterpriseCounts(regionCode, connectionStatus, search), "region_code", "cnt"
+            overviewRepository.regionEnterpriseCounts(
+                regionCode, districtCode, businessType, connectionStatus, search
+            ),
+            "region_code",
+            "cnt"
         );
         Map<String, BigDecimal> curTurnover = repository.toDecimalMap(
-            overviewRepository.regionTurnover(range, regionCode, connectionStatus, search), "region_code", "turnover"
+            overviewRepository.regionTurnover(
+                range, regionCode, districtCode, businessType, connectionStatus, search
+            ),
+            "region_code",
+            "turnover"
         );
         Map<String, BigDecimal> prevTurnoverMap = repository.toDecimalMap(
-            overviewRepository.regionTurnover(prev, regionCode, connectionStatus, search), "region_code", "turnover"
+            overviewRepository.regionTurnover(
+                prev, regionCode, districtCode, businessType, connectionStatus, search
+            ),
+            "region_code",
+            "turnover"
         );
 
         List<TaxAnalyticsRegionCardResponse> regions = new ArrayList<>();
@@ -71,7 +89,10 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
                     String.valueOf(row.get("name_ru")),
                     String.valueOf(row.get("name_uz")),
                     counts.getOrDefault(code, 0L),
-                    TaxAnalyticsMath.deltaPct(curTurnover.getOrDefault(code, BigDecimal.ZERO), prevTurnoverMap.getOrDefault(code, BigDecimal.ZERO))
+                    TaxAnalyticsMath.deltaPct(
+                        curTurnover.getOrDefault(code, BigDecimal.ZERO),
+                        prevTurnoverMap.getOrDefault(code, BigDecimal.ZERO)
+                    )
                 ));
             }
         }
@@ -95,6 +116,7 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         LocalDate to,
         String regionCode,
         String districtCode,
+        String businessType,
         String connectionStatus,
         String search,
         String level,
@@ -107,14 +129,14 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         String resolvedLevel = resolveLevel(level, regionCode, districtCode, search);
 
         if ("ENTERPRISE".equals(resolvedLevel)) {
-            long total = repository.countEnterprises(range, regionCode, districtCode, connectionStatus, search);
+            long total = repository.countEnterprises(
+                range, regionCode, districtCode, businessType, connectionStatus, search
+            );
             List<Map<String, Object>> raw = repository.aggregateEnterprises(
-                range, regionCode, districtCode, connectionStatus, search, safeSize, safePage * safeSize
+                range, regionCode, districtCode, businessType, connectionStatus, search, safeSize, safePage * safeSize
             );
             List<TaxAnalyticsResultRowResponse> rows = new ArrayList<>();
-            int i = safePage * safeSize;
             for (Map<String, Object> row : raw) {
-                i++;
                 rows.add(toEnterpriseRow(row));
             }
             return new TaxAnalyticsResultsResponse(
@@ -124,8 +146,8 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         }
 
         List<Map<String, Object>> raw = "DISTRICT".equals(resolvedLevel)
-            ? repository.aggregateByDistrict(range, regionCode, connectionStatus)
-            : repository.aggregateByRegion(range, connectionStatus);
+            ? geoAggregateRepository.aggregateByDistrict(range, regionCode, connectionStatus, businessType)
+            : geoAggregateRepository.aggregateByRegion(range, connectionStatus, businessType);
 
         List<TaxAnalyticsResultRowResponse> all = new ArrayList<>(raw.stream().map(r -> toGeoRow(r, resolvedLevel)).toList());
         if ("REGION".equals(resolvedLevel)) {

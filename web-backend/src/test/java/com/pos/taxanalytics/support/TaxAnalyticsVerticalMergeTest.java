@@ -14,7 +14,8 @@ class TaxAnalyticsVerticalMergeTest {
     @Test
     void mergeRowAddsRestaurantMoneyAndConnected() {
         TaxAnalyticsCompanyRowResponse base = new TaxAnalyticsCompanyRowResponse(
-            7, "Alinur", "310849314", null, null, null, null, null, null,
+            7, "Alinur", "310849314", "RESTAURANT", "Alinur LLC", "Samarkand", "+99890",
+            null, null, null, null, null, null,
             false, 1, "Hall",
             BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, null
@@ -28,6 +29,7 @@ class TaxAnalyticsVerticalMergeTest {
         );
         TaxAnalyticsCompanyRowResponse merged = TaxAnalyticsVerticalMerge.mergeRow(base, extra, true);
         assertTrue(merged.connected());
+        assertEquals("RESTAURANT", merged.businessType());
         assertEquals(new BigDecimal("150000"), merged.nonFiscalTurnover());
         assertEquals(new BigDecimal("150000"), merged.totalTurnover());
         assertEquals(new BigDecimal("40000"), merged.weekTurnover());

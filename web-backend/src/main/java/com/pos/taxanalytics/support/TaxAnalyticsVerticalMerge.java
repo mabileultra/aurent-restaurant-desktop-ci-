@@ -67,6 +67,10 @@ public final class TaxAnalyticsVerticalMerge {
             base.companyId(),
             base.name(),
             base.tin(),
+            base.businessType(),
+            base.legalName(),
+            base.address(),
+            base.phone(),
             base.regionCode(),
             base.regionNameRu(),
             base.regionNameUz(),
@@ -102,11 +106,12 @@ public final class TaxAnalyticsVerticalMerge {
             BigDecimal fiscal = nz(day.fiscalTurnover());
             BigDecimal nonFiscal = nz(day.nonFiscalTurnover());
             if (existing == null) {
-                byDate.put(date, new TaxAnalyticsCompanyWeeks.DayTurnover(fiscal, nonFiscal));
+                byDate.put(date, new TaxAnalyticsCompanyWeeks.DayTurnover(fiscal, nonFiscal, 0L));
             } else {
                 byDate.put(date, new TaxAnalyticsCompanyWeeks.DayTurnover(
                     existing.fiscal().add(fiscal),
-                    existing.nonFiscal().add(nonFiscal)
+                    existing.nonFiscal().add(nonFiscal),
+                    existing.receiptCount()
                 ));
             }
         }

@@ -6,6 +6,7 @@ public record TaxAnalyticsCompanyDayResponse(
     String date,
     BigDecimal fiscalTurnover,
     BigDecimal nonFiscalTurnover,
-    BigDecimal totalTurnover
+    BigDecimal totalTurnover,
+    long receiptCount
 ) {
 }
