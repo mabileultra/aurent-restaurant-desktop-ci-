@@ -151,7 +151,12 @@ public class TaxAnalyticsReportQueryRepository {
             SELECT s.id::text AS sale_id, s.receipt_number, s.created_at, st.name AS store_name,
                    s.total_amount, s.fiscal_status,
                    NULLIF(BTRIM(s.fiscal_qr_url), '') IS NOT NULL AS has_qr,
-                   c.id AS company_id, c.name AS company_name
+                   c.id AS company_id, c.name AS company_name,
+                   (
+                     SELECT COALESCE(SUM(si.quantity - COALESCE(si.returned_quantity, 0)), 0)
+                     FROM sale_items si
+                     WHERE si.sale_id = s.id
+                   ) AS items_quantity
             """);
         sql.append(" ORDER BY s.created_at DESC LIMIT ? OFFSET ? ");
         args.add(limit);

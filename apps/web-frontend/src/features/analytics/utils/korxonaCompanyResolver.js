@@ -11,6 +11,7 @@ import {
 } from '../data/samarqandMockData';
 import { formatNumber, formatPercent, calculateDonutArc } from './korxonaDetailUtils';
 import { mapBusinessTypeTabCode } from './viloyatDetailStats';
+import { resolveRollingCardWindows } from './korxonaCardWindows';
 
 const BUSINESS_TYPE_LABELS = {
   F: 'Oziq-ovqat',
@@ -103,26 +104,32 @@ export function resolveCompanyCards({ numId, turnover, delta, apiDetail }) {
   }
 
   const t = Number(turnover || apiDetail?.totalTurnover || 0);
-  const weeks = apiDetail?.weeks;
-  const lastWeek = Array.isArray(weeks) && weeks.length > 0 ? weeks[weeks.length - 1] : null;
-  const weekVal = lastWeek ? Number(lastWeek.totalTurnover || 0) : Math.round(t * 0.15);
-  const weekDelta = lastWeek?.deltaPct != null ? Number(lastWeek.deltaPct) : delta;
-
-  const days = apiDetail?.days;
-  const lastDay = Array.isArray(days) && days.length > 0 ? days[days.length - 1] : null;
-  const dayVal = lastDay ? Number(lastDay.totalTurnover || 0) : 0;
+  const win = resolveRollingCardWindows(apiDetail?.days);
+  const weekVal = apiDetail?.days ? win.weekVal : Math.round(t * 0.15);
+  const weekDelta = apiDetail?.days ? win.weekDelta : delta;
+  const weekSub = win.weekFrom && win.weekTo
+    ? `${win.weekFrom} – ${win.weekTo}`
+    : 'Oxirgi 7 kun';
+  const dayVal = apiDetail?.days ? win.dayVal : 0;
+  const dayDate = win.dayDate;
 
   return [
     { label: 'Umumiy aylanma', sub: 'Butun davr', v: t, badge: 'Birinchi savdo: 20-oktabr', badgeType: 'mute' },
     { label: '1 oylik aylanma', sub: 'Oxirgi 30 kun · 10-okt – 8-noy', v: t, badge: '30 kunlik', badgeType: 'info' },
     {
       label: 'Haftalik',
-      sub: lastWeek?.weekFrom ? `${lastWeek.weekFrom} – ${lastWeek.weekTo}` : 'Oxirgi 7 kun · 2 – 8-noy',
+      sub: weekSub,
       v: weekVal,
       badge: weekDelta != null ? `${weekDelta >= 0 ? '▲' : '▼'} ${Math.abs(weekDelta)}%` : '7 kunlik',
       badgeType: weekDelta != null && weekDelta < 0 ? 'down' : 'up',
     },
-    { label: 'Kunlik', sub: lastDay?.date || 'Bugun · 8-noyabr', v: dayVal, badge: lastDay ? `${lastDay.date}` : 'Oxirgi savdo: 2-noyabr', badgeType: 'mute' },
+    {
+      label: 'Kunlik',
+      sub: dayDate || 'Bugun',
+      v: dayVal,
+      badge: dayDate || 'Savdo yo‘q',
+      badgeType: 'mute',
+    },
   ];
 }
 
@@ -203,20 +210,23 @@ export function resolveCompanyProducts({ numId, companyName, apiDetail }) {
 
 export function resolveCompanyReceipts({ numId, companyName, products = [], backendReceipts = null }) {
   if (Array.isArray(backendReceipts)) {
-    return backendReceipts.map((r) => [
-      r.receiptNumber || r.saleId || '—',
-      r.createdAt ? r.createdAt.slice(0, 10) : '—',
-      r.createdAt ? r.createdAt.slice(11, 16) : '—',
-      Number(r.totalAmount || 0),
-      0,
-      Number(r.totalAmount || 0),
-      r.paymentMethod || 'CASH',
-      (r.hasQr || r.fiscalStatus === 'FISCALIZED') ? 1 : 0,
-      null,
-      null,
-      [],
-      r.saleId,
-    ]);
+    return backendReceipts.map((r) => {
+      const qty = Number(r.itemsQuantity ?? r.items_quantity ?? 0);
+      return [
+        r.receiptNumber || r.saleId || '—',
+        r.createdAt ? r.createdAt.slice(0, 10) : '—',
+        r.createdAt ? r.createdAt.slice(11, 16) : '—',
+        Number(r.totalAmount || 0),
+        0,
+        Number(r.totalAmount || 0),
+        r.paymentMethod || 'CASH',
+        (r.hasQr || r.fiscalStatus === 'FISCALIZED') ? 1 : 0,
+        null,
+        null,
+        qty > 0 ? [['', qty, 0]] : [],
+        r.saleId,
+      ];
+    });
   }
 
   if (numId === 103) {

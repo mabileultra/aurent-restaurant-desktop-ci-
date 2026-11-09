@@ -38,7 +38,8 @@ public final class TaxAnalyticsVerticalReceiptMapper {
             row.fiscalStatus(),
             row.hasQr(),
             companyId,
-            null
+            null,
+            nz(row.itemsQuantity())
         );
     }
 

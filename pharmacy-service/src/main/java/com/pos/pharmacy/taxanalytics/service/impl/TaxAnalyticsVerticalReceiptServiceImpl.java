@@ -53,7 +53,8 @@ public class TaxAnalyticsVerticalReceiptServiceImpl implements TaxAnalyticsVerti
                 text(row.get("store_name")),
                 decimal(row.get("total_amount")),
                 text(row.get("fiscal_status")),
-                bool(row.get("has_qr"))
+                bool(row.get("has_qr")),
+                decimal(row.get("items_quantity"))
             ));
         }
         return rows;

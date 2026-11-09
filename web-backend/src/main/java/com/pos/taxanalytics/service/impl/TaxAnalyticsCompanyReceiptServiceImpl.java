@@ -125,7 +125,8 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
             str(row.get("fiscal_status")),
             bool(row.get("has_qr")),
             companyId,
-            null
+            null,
+            money(row.get("items_quantity"))
         );
     }
 
