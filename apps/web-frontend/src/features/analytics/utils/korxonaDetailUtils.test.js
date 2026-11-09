@@ -81,6 +81,7 @@ describe('korxonaDetailUtils', () => {
     const chips = prepareDayChips(receipts);
     expect(chips).toHaveLength(1);
     expect(chips[0].hasPending).toBe(true);
+    expect(chips[0].sub).toBe('2 chek · 3 300 so‘m');
 
     const fRes = filterDayReceipts(receipts, '2026-10-28', 'f');
     expect(fRes.rows).toHaveLength(1);
@@ -88,6 +89,7 @@ describe('korxonaDetailUtils', () => {
     expect(fRes.totalNonFiscal).toBe(1);
     expect(fRes.dayTotalCount).toBe(2);
     expect(fRes.totalCount).toBe(2);
+    expect(fRes.dayTotalFormatted).toBe('3 300 so‘m');
 
     const detail = prepareReceiptDetail(receipts[0]);
     expect(detail.no).toBe('RCP-1');

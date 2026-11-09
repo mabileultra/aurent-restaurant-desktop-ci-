@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatNumber, formatCompact } from '../utils/korxonaDetailUtils';
+import { formatNumber } from '../utils/korxonaDetailUtils';
 import { KorxonaReceiptSlip } from './KorxonaReceiptSlip';
 
 function DayNavBtn({ dir, onClick, disabled, label }) {
@@ -119,7 +119,7 @@ export function KorxonaReceiptsSection({
             ))}
           </div>
           <span className="text-xs text-slate-500 font-mono">
-            Kun jami: <b className="text-slate-900 dark:text-white font-bold">{dayTotalFormatted || `${formatCompact(dayTotal)} so‘m`}</b>
+            Kun jami: <b className="text-slate-900 dark:text-white font-bold">{dayTotalFormatted || `${formatNumber(dayTotal)} so‘m`}</b>
           </span>
         </div>
 

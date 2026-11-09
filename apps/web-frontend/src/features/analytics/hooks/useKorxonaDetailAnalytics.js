@@ -4,7 +4,7 @@ import { analyticsApi } from '../api/analyticsApi';
 import { companyApi } from '../../../api/company.api';
 import { SAMARQAND_COMPANIES, SAMARQAND_DISTRICTS } from '../data/samarqandMockData';
 import {
-  formatCompact, parseDayLabels, prepareProductsList,
+  formatNumber, parseDayLabels, prepareProductsList,
   prepareDayChips, filterDayReceipts, prepareReceiptDetail,
 } from '../utils/korxonaDetailUtils';
 import {
@@ -74,8 +74,8 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
             label: short,
             shortLabel: short,
             longLabel: long,
-            sub: `${formatCompact(tot)} so‘m`,
-            subText: `${formatCompact(tot)} so‘m`,
+            sub: `${formatNumber(tot)} so‘m`,
+            subText: `${formatNumber(tot)} so‘m`,
             totalAmount: tot,
             hasPending: Number(d.nonFiscalTurnover || 0) > 0,
           };
@@ -156,7 +156,7 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     onSelectDay: (d) => { setSelectedDay(d); setSelectedReceiptNo(''); },
     fiscalKind, setFiscalKind: (k) => { setFiscalKind(k); setSelectedReceiptNo(''); },
     dayReceipts, totalFiscal, totalNonFiscal, dayTotalCount, dayTotal,
-    dayTotalFormatted: `${formatCompact(dayTotal)} so‘m`,
+    dayTotalFormatted: `${formatNumber(dayTotal)} so‘m`,
     totalReceiptsCount: receiptsData?.totalElements || dayTotalCount,
     selectedReceiptNo: activeReceiptRow ? activeReceiptRow[0] : '',
     onSelectReceipt: (no) => setSelectedReceiptNo(no),

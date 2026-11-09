@@ -51,7 +51,7 @@ export function prepareProductsList(rawProducts, sortType = 'sum', pageOrShowAll
     rank: start + idx + 1,
     name: p[0],
     qty: `${formatNumber(p[1])} dona`,
-    amount: `${formatCompact(p[2])} so‘m`,
+    amount: `${formatNumber(p[2])} so‘m`,
     share: formatPercent((p[2] / total) * 100),
     barWidth: `${Math.max(2, ((byQty ? p[1] : p[2]) / maxV) * 100)}%`,
   }));
@@ -79,8 +79,8 @@ export function prepareDayChips(receipts) {
       label: short,
       shortLabel: short,
       longLabel: long,
-      sub: `${rs.length} chek · ${formatCompact(daySum)}`,
-      subText: `${rs.length} chek · ${formatCompact(daySum)}`,
+      sub: `${rs.length} chek · ${formatNumber(daySum)} so‘m`,
+      subText: `${rs.length} chek · ${formatNumber(daySum)} so‘m`,
       totalAmount: daySum,
       hasPending,
     };
@@ -104,7 +104,7 @@ export function filterDayReceipts(receipts, day, kind = 'all') {
     totalCount: dayRecs.length,
     dayTotalCount: dayRecs.length,
     dayTotal,
-    dayTotalFormatted: `${formatCompact(dayTotal)} so‘m`,
+    dayTotalFormatted: `${formatNumber(dayTotal)} so‘m`,
   };
 }
 

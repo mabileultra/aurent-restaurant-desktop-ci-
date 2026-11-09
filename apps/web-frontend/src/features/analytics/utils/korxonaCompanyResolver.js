@@ -9,7 +9,7 @@ import {
   SAMARQAND_PRODUCTS,
   BUSINESS_TYPE_NAMES,
 } from '../data/samarqandMockData';
-import { formatCompact, formatPercent, calculateDonutArc } from './korxonaDetailUtils';
+import { formatNumber, formatPercent, calculateDonutArc } from './korxonaDetailUtils';
 
 function createMonogram(name = '') {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -85,19 +85,19 @@ export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFisca
         label: 'Fiskal bilan urilgan',
         color: '#0E7C4F',
         pct: formatPercent(99.2),
-        amount: `${formatCompact(508339000)} so‘m`,
+        amount: `${formatNumber(508339000)} so‘m`,
         hint: '41 ta chek · QR-kod bilan',
         dash: calculateDonutArc(99.2),
-        aria: 'Fiskal bilan urilgan: 99,2%, 508,3 mln so‘m',
+        aria: 'Fiskal bilan urilgan: 99,2%, 508 339 000 so‘m',
       },
       {
         label: 'Fiskalsiz',
         color: '#EF4444',
         pct: formatPercent(0.8),
-        amount: `${formatCompact(4100000)} so‘m`,
+        amount: `${formatNumber(4100000)} so‘m`,
         hint: '2 ta chek · soliqqa yuborilmagan',
         dash: calculateDonutArc(0.8),
-        aria: 'Fiskalsiz: 0,8%, 4,1 mln so‘m',
+        aria: 'Fiskalsiz: 0,8%, 4 100 000 so‘m',
       },
     ];
   }
@@ -114,19 +114,19 @@ export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFisca
       label: 'Fiskal bilan urilgan',
       color: '#0E7C4F',
       pct: formatPercent(fPct),
-      amount: `${formatCompact(f)} so‘m`,
+      amount: `${formatNumber(f)} so‘m`,
       hint: 'QR-kod bilan',
       dash: calculateDonutArc(fPct),
-      aria: `Fiskal bilan urilgan: ${formatPercent(fPct)}, ${formatCompact(f)} so‘m`,
+      aria: `Fiskal bilan urilgan: ${formatPercent(fPct)}, ${formatNumber(f)} so‘m`,
     },
     {
       label: 'Fiskalsiz',
       color: '#EF4444',
       pct: formatPercent(nfPct),
-      amount: `${formatCompact(nf)} so‘m`,
+      amount: `${formatNumber(nf)} so‘m`,
       hint: 'Soliqqa yuborilmagan',
       dash: calculateDonutArc(nfPct),
-      aria: `Fiskalsiz: ${formatPercent(nfPct)}, ${formatCompact(nf)} so‘m`,
+      aria: `Fiskalsiz: ${formatPercent(nfPct)}, ${formatNumber(nf)} so‘m`,
     },
   ];
 }

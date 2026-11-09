@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatCompact } from '../utils/korxonaDetailUtils';
+import { formatNumber } from '../utils/korxonaDetailUtils';
 
 export function KorxonaHeaderCard({ info, companyInfo }) {
   const data = companyInfo || info || {};
@@ -58,7 +58,7 @@ export function KorxonaHeaderCard({ info, companyInfo }) {
           <div className="space-y-0.5">
             <span className="text-xs text-slate-400 dark:text-slate-500 block">O‘rtacha chek</span>
             <span className="text-lg sm:text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-white block">
-              {formatCompact(avgCheck)} so‘m
+              {formatNumber(avgCheck)} so‘m
             </span>
           </div>
           <div className="space-y-0.5">
