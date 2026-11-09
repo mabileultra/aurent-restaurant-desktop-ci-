@@ -16,4 +16,6 @@ public interface TaxAnalyticsVerticalReceiptService {
     List<TaxAnalyticsReceiptRowDto> list(int companyId, LocalDate from, LocalDate to, String kind, int limit, int offset);
 
     TaxAnalyticsReceiptDetailDto detail(int companyId, String saleId);
+
+    List<Map<String, Object>> topProducts(int companyId, LocalDate from, LocalDate to, int limit);
 }

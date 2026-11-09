@@ -107,6 +107,12 @@ public class TaxAnalyticsVerticalReceiptServiceImpl implements TaxAnalyticsVerti
         );
     }
 
+    @Override
+    public List<Map<String, Object>> topProducts(int companyId, LocalDate from, LocalDate to, int limit) {
+        int safe = Math.min(Math.max(limit, 1), 200);
+        return repository.topProducts(companyId, from, to.plusDays(1), safe);
+    }
+
     private static String text(Object value) {
         return value == null ? null : String.valueOf(value);
     }

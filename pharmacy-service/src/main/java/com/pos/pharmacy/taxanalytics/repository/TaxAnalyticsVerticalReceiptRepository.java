@@ -110,6 +110,22 @@ public class TaxAnalyticsVerticalReceiptRepository {
             """, saleId);
     }
 
+    public List<Map<String, Object>> topProducts(int companyId, LocalDate from, LocalDate toExclusive, int limit) {
+        return jdbc.queryForList("""
+            SELECT si.product_name AS product_name,
+                   COALESCE(SUM(si.quantity - COALESCE(si.returned_quantity, 0)), 0) AS quantity,
+                   COALESCE(SUM(si.line_total), 0) AS amount
+            FROM sale_items si
+            JOIN sales s ON s.id = si.sale_id
+            WHERE s.status = 'COMPLETED'
+              AND s.company_id = ?
+              AND s.created_at >= ? AND s.created_at < ?
+            GROUP BY si.product_name
+            ORDER BY amount DESC, quantity DESC
+            LIMIT ?
+            """, companyId, ts(from), ts(toExclusive), limit);
+    }
+
     private static String kindSql(String kind) {
         if ("QR".equalsIgnoreCase(kind)) {
             return " AND NULLIF(BTRIM(fiscal_qr_url), '') IS NOT NULL ";

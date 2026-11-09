@@ -7,6 +7,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsCompaniesResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyStatsRepository;
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyProductsLoader;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
 import com.pos.taxanalytics.support.TaxAnalyticsVerticalReceiptBridge;
 import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
@@ -44,6 +45,9 @@ class TaxAnalyticsCompanyServiceImplTest {
 
     @Mock
     private TaxAnalyticsVerticalReceiptBridge verticalReceipts;
+
+    @Mock
+    private TaxAnalyticsCompanyProductsLoader productsLoader;
 
     @Mock
     private TaxAnalyticsRestaurantClient restaurantClient;
@@ -103,7 +107,7 @@ class TaxAnalyticsCompanyServiceImplTest {
         ));
         when(statsRepository.latestFiscalTerminal(3)).thenReturn("TERM-1");
         when(repository.dailyTurnover(eq(3), any(), any())).thenReturn(List.of());
-        when(repository.topProducts(eq(3), any(TaxAnalyticsPeriod.class), eq(200))).thenReturn(List.of());
+        when(productsLoader.load(eq(3), any(TaxAnalyticsPeriod.class))).thenReturn(List.of());
         when(repository.supplySummary(eq(3), any(TaxAnalyticsPeriod.class))).thenReturn(Map.of(
             "receipt_count", 0L,
             "total_quantity", BigDecimal.ZERO,

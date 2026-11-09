@@ -2,6 +2,7 @@ package com.pos.taxanalytics.client;
 
 import com.pos.shared.log.LogUtil;
 import com.pos.taxanalytics.client.dto.TaxAnalyticsDayMoneyDto;
+import com.pos.taxanalytics.client.dto.TaxAnalyticsVerticalProductDto;
 import com.pos.taxanalytics.client.dto.TaxAnalyticsVerticalReceiptDetailDto;
 import com.pos.taxanalytics.client.dto.TaxAnalyticsVerticalReceiptRowDto;
 import com.pos.taxanalytics.client.dto.TaxAnalyticsVerticalSnapshotDto;
@@ -139,6 +140,25 @@ public class TaxAnalyticsRestaurantClient {
         } catch (Exception ex) {
             LogUtil.warn(TaxAnalyticsRestaurantClient.class, "Restaurant receipt detail failed saleId=" + saleId, ex);
             return null;
+        }
+    }
+
+    public List<TaxAnalyticsVerticalProductDto> topProducts(int companyId, LocalDate from, LocalDate to, int limit) {
+        try {
+            return restaurantRestClient.get()
+                .uri(uri -> uri.pathSegment(
+                        "internal", ROOT, "tax-analytics", "companies", String.valueOf(companyId), "products"
+                    )
+                    .queryParam("from", from)
+                    .queryParam("to", to)
+                    .queryParam("limit", limit)
+                    .build())
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
+        } catch (Exception ex) {
+            LogUtil.warn(TaxAnalyticsRestaurantClient.class, "Restaurant top products failed companyId=" + companyId, ex);
+            return List.of();
         }
     }
 

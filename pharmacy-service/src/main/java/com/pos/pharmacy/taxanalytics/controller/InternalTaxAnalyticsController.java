@@ -93,4 +93,14 @@ public class InternalTaxAnalyticsController {
         }
         return detail;
     }
+
+    @GetMapping("/companies/{companyId}/products")
+    public List<Map<String, Object>> topProducts(
+        @PathVariable int companyId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        return receipts.topProducts(companyId, from, to, limit);
+    }
 }

@@ -15,6 +15,7 @@ import com.pos.taxanalytics.repository.TaxAnalyticsCompanyStatsRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsCompanyService;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyDays;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyListPage;
+import com.pos.taxanalytics.support.TaxAnalyticsCompanyProductsLoader;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyRowMapper;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks.DayTurnover;
@@ -49,6 +50,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
     private final TaxAnalyticsCompanyStatsRepository statsRepository;
     private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
     private final TaxAnalyticsVerticalReceiptBridge verticalReceipts;
+    private final TaxAnalyticsCompanyProductsLoader productsLoader;
     private final TaxAnalyticsRestaurantClient restaurantClient;
     private final TaxAnalyticsPharmacyClient pharmacyClient;
 
@@ -187,21 +189,9 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             dateText(bounds.get("last_sale_date")),
             TaxAnalyticsCompanyWeeks.build(today, byDate),
             TaxAnalyticsCompanyDays.build(dayFrom, dayTo, byDate),
-            topProducts(companyId, range),
+            productsLoader.load(companyId, range),
             supplies(companyId, range)
         );
-    }
-
-    private List<TaxAnalyticsCompanyProductResponse> topProducts(int companyId, TaxAnalyticsPeriod range) {
-        List<TaxAnalyticsCompanyProductResponse> products = new ArrayList<>();
-        for (Map<String, Object> row : repository.topProducts(companyId, range, 200)) {
-            products.add(new TaxAnalyticsCompanyProductResponse(
-                text(row.get("product_name")),
-                TaxAnalyticsWeekMath.decimal(row.get("quantity")),
-                TaxAnalyticsWeekMath.decimal(row.get("amount"))
-            ));
-        }
-        return products;
     }
 
     private TaxAnalyticsCompanySupplyResponse supplies(int companyId, TaxAnalyticsPeriod range) {

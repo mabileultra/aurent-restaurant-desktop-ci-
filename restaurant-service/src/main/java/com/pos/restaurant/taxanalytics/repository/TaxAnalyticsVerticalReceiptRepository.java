@@ -122,6 +122,26 @@ public class TaxAnalyticsVerticalReceiptRepository {
             """, orderId);
     }
 
+    public List<Map<String, Object>> topProducts(int companyId, LocalDate from, LocalDate toExclusive, int limit) {
+        return jdbc.queryForList("""
+            SELECT i.name AS product_name,
+                   COALESCE(SUM(i.quantity), 0) AS quantity,
+                   COALESCE(SUM(ROUND(i.quantity * i.unit_price, 2)), 0) AS amount
+            FROM floor_order_items i
+            JOIN floor_orders o ON o.id = i.order_id
+            WHERE o.status = 'CLOSED'
+              AND o.company_id = ?
+              AND EXISTS (
+                SELECT 1 FROM floor_order_payments p
+                WHERE p.order_id = o.id
+                  AND p.paid_at >= ? AND p.paid_at < ?
+              )
+            GROUP BY i.name
+            ORDER BY amount DESC, quantity DESC
+            LIMIT ?
+            """, companyId, ts(from), ts(toExclusive), limit);
+    }
+
     private static Timestamp ts(LocalDate date) {
         Instant instant = date.atStartOfDay(ZONE).toInstant();
         return Timestamp.from(instant);
