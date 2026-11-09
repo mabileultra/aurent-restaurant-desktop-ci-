@@ -47,6 +47,8 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
     phone: realCompany?.phone || (numId === 103 ? '+998 88 934 44 44' : '—'),
     address: realCompany?.address || (numId === 103 ? 'Samarqand sh., Makon Mall' : `${districtName}, O‘zbekiston`),
     fiscalModule: '—',
+    totalChecks30d: apiDetail?.totalReceiptsCount ?? apiDetail?.totalChecks30d ?? null,
+    avgCheck: apiDetail?.avgReceiptAmount ?? apiDetail?.avgCheck ?? null,
   };
 }
 

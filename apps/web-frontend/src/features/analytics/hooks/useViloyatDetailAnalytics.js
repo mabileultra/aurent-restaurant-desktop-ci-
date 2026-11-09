@@ -1,8 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { geoApi } from '../../../api/geo.api';
-import { analyticsApi } from '../api/analyticsApi';
+import { useViloyatDetailQueries } from './useViloyatDetailQueries';
 import { fmtDayShort } from '../utils/analyticsFormat';
 import {
   SAMARQAND_TYPES,
@@ -15,6 +13,7 @@ import {
 import {
   normalizeBackendCompany, computeDistrictTurnover, computeBusinessTypeTabs,
   resolveDistrictMeta, buildDistrictOptions, calculateCompaniesBreakdown,
+  generateDailyBars, mapProductList,
 } from '../utils/viloyatDetailStats';
 
 export function useViloyatDetailAnalytics(regionCode) {
@@ -40,34 +39,18 @@ export function useViloyatDetailAnalytics(regionCode) {
   const isDistrictView = Boolean(selectedDistrict && selectedDistrict !== 'all');
   const districtCode = isDistrictView ? selectedDistrict : null;
 
-  const { data: regions = [] } = useQuery({
-    queryKey: ['geo-regions'],
-    queryFn: () => geoApi.regions().then((r) => r.data || []),
-    staleTime: 600_000,
-  });
-
-  const { data: geoDistricts = [] } = useQuery({
-    queryKey: ['geo-districts', padCode],
-    queryFn: () => geoApi.districts(padCode).then((r) => r.data || []),
-    enabled: Boolean(padCode),
-    staleTime: 600_000,
-  });
-
   const backendDistrictCode = districtCode
     ? (districtCode.length <= 2 ? `${padCode}${districtCode}` : districtCode)
     : undefined;
 
-  const { data: backendCompaniesData } = useQuery({
-    queryKey: ['analytics-companies-detail', padCode, backendDistrictCode],
-    queryFn: () => analyticsApi.getCompanies({ regionCode: padCode, districtCode: backendDistrictCode, size: 100 }).then((r) => r.data),
-    staleTime: 60_000,
-  });
-
-  const { data: resultsData } = useQuery({
-    queryKey: ['analytics-results-detail', padCode, backendDistrictCode],
-    queryFn: () => analyticsApi.getResults({ level: districtCode ? 'DISTRICT' : 'REGION', regionCode: padCode, period: '30d' }).then((r) => r.data),
-    staleTime: 60_000,
-  });
+  const {
+    regions,
+    geoDistricts,
+    backendCompaniesData,
+    resultsData,
+    dailyData,
+    productsData,
+  } = useViloyatDetailQueries({ padCode, backendDistrictCode, districtCode, activeType });
 
   const currentRegion = regions.find((r) => String(r.code).padStart(2, '0') === padCode);
   const regionName = currentRegion?.nameUz || currentRegion?.nameRu || (padCode === '18' ? 'Samarqand viloyati' : `Viloyat (${padCode})`);
@@ -106,8 +89,10 @@ export function useViloyatDetailAnalytics(regionCode) {
       const allF = Number(resultRow.fiscalTurnover || 0);
       const allN = Number(resultRow.nonFiscalTurnover || 0);
       const f30 = resultRow.fiscalSharePct != null ? Number(resultRow.fiscalSharePct) : (all > 0 ? (allF / all) * 100 : null);
+      const d7 = resultRow.weekTurnover != null ? Number(resultRow.weekTurnover) : null;
+      const day = resultRow.todayTurnover != null ? Number(resultRow.todayTurnover) : 0;
       return {
-        all, allF, allN, f30, m30: all, d7: null, day: 0,
+        all, allF, allN, f30, m30: all, d7, day,
         turnoverDeltaPct: resultRow.turnoverDeltaPct != null ? Number(resultRow.turnoverDeltaPct) : null,
       };
     }
@@ -130,12 +115,26 @@ export function useViloyatDetailAnalytics(regionCode) {
     totalDistricts: Object.keys(districtNames).length,
   }), [isDistrictView, districtScopedCompanies, districtNames]);
 
-  // Real daily bars kutilmoqda (backend integratsiyasi)
-  const dailyBars = useMemo(() => [], []);
+  const dailyBars = useMemo(() => {
+    if (Array.isArray(dailyData) && dailyData.length > 0) {
+      return generateDailyBars(dailyData.map((d) => Number(d.totalTurnover || 0) / 1_000_000));
+    }
+    return [];
+  }, [dailyData]);
 
-  // Real tovarlar kutilmoqda (backend integratsiyasi)
-  const topProducts = useMemo(() => [], []);
-  const lowProducts = useMemo(() => [], []);
+  const topProducts = useMemo(() => {
+    if (Array.isArray(productsData?.topProducts) && productsData.topProducts.length > 0) {
+      return mapProductList(productsData.topProducts.map((p) => [p.name, p.companyName, p.quantity, p.totalAmount]));
+    }
+    return [];
+  }, [productsData?.topProducts]);
+
+  const lowProducts = useMemo(() => {
+    if (Array.isArray(productsData?.lowProducts) && productsData.lowProducts.length > 0) {
+      return mapProductList(productsData.lowProducts.map((p) => [p.name, p.companyName, p.quantity, p.totalAmount]));
+    }
+    return [];
+  }, [productsData?.lowProducts]);
 
   const filteredDistricts = useMemo(() => {
     if (isDistrictView) {

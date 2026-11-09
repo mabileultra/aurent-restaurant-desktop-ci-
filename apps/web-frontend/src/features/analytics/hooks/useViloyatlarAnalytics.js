@@ -67,8 +67,10 @@ export function useViloyatlarAnalytics() {
   );
 
   const totalCompanies = useMemo(
-    () => rawDistricts.reduce((acc, d) => acc + d.companies, 0),
-    [rawDistricts]
+    () => (overview.kpi?.totalEnterprises != null
+      ? Number(overview.kpi.totalEnterprises)
+      : rawDistricts.reduce((acc, d) => acc + d.companies, 0)),
+    [overview.kpi?.totalEnterprises, rawDistricts]
   );
 
   const unassigned = useMemo(() => {
@@ -107,8 +109,8 @@ export function useViloyatlarAnalytics() {
     regions: sortedDistricts,
     unassigned,
     totalCompanies,
-    loading: overviewQuery.isLoading || districtsQuery.isLoading,
-    error: overviewQuery.isError || districtsQuery.isError,
+    loading: overviewQuery.isLoading || resultsQuery.isLoading || districtsQuery.isLoading,
+    error: overviewQuery.isError || resultsQuery.isError || districtsQuery.isError,
     refetch: () => {
       overviewQuery.refetch();
       resultsQuery.refetch();

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  resolveCompanyTypeCode,
   normalizeBackendCompany,
   normalizeCompaniesList,
   computeDistrictTurnover,
@@ -11,6 +12,18 @@ import {
 } from './viloyatDetailStats';
 
 describe('viloyatDetailStats', () => {
+  it('resolves business type codes for various raw formats', () => {
+    expect(resolveCompanyTypeCode('UNIVERSAL')).toBe('F');
+    expect(resolveCompanyTypeCode('RETAIL')).toBe('F');
+    expect(resolveCompanyTypeCode('FOOD')).toBe('F');
+    expect(resolveCompanyTypeCode('RESTAURANT')).toBe('R');
+    expect(resolveCompanyTypeCode('CAFE')).toBe('R');
+    expect(resolveCompanyTypeCode('PHARMACY')).toBe('P');
+    expect(resolveCompanyTypeCode('APTEKA')).toBe('P');
+    expect(resolveCompanyTypeCode('SERVICES')).toBe('O');
+    expect(resolveCompanyTypeCode(null)).toBe('O');
+  });
+
   it('normalizes backend company object into uniform array', () => {
     const raw = {
       companyId: 101,

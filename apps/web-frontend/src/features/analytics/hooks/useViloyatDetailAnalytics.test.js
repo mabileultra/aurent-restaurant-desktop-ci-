@@ -17,6 +17,9 @@ vi.mock('../../../api/geo.api', () => ({
 vi.mock('../api/analyticsApi', () => ({
   analyticsApi: {
     getCompanies: vi.fn().mockResolvedValue({ data: [] }),
+    getResults: vi.fn().mockResolvedValue({ data: { rows: [] } }),
+    getResultsDaily: vi.fn().mockResolvedValue({ data: [] }),
+    getResultsProducts: vi.fn().mockResolvedValue({ data: { topProducts: [], lowProducts: [] } }),
   },
 }));
 

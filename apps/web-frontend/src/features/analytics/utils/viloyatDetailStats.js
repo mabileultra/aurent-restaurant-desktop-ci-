@@ -1,5 +1,20 @@
 import { formatPercent } from './viloyatDetailUtils';
 
+export function resolveCompanyTypeCode(rawType) {
+  if (!rawType) return 'O';
+  const code = String(rawType).trim().toUpperCase();
+  if (code === 'F' || code === 'G' || code === 'UNIVERSAL' || code === 'RETAIL' || code === 'GROCERY' || code === 'FOOD') {
+    return 'F';
+  }
+  if (code === 'R' || code === 'RESTAURANT' || code === 'CAFE') {
+    return 'R';
+  }
+  if (code === 'P' || code === 'PHARMACY' || code === 'APTEKA') {
+    return 'P';
+  }
+  return 'O';
+}
+
 /**
  * Normalizes backend company JSON or mock array to a uniform tuple:
  * [id, name, tin, districtCode, type, isConnected (0/1), storeCount, turnover, delta, fiscalTurnover]
@@ -13,7 +28,7 @@ export function normalizeBackendCompany(raw) {
   const tin = raw.tin || '_';
   const rawDist = String(raw.districtCode || '');
   const districtCode = rawDist.length > 2 ? rawDist.slice(-2) : rawDist.padStart(2, '0');
-  const type = raw.businessType || raw.activitySubtype || 'O';
+  const type = resolveCompanyTypeCode(raw.businessType || raw.activitySubtype || raw.businessTypeCode);
   const isConnected = raw.connected ? 1 : 0;
   const storeCount = raw.storeCount || 1;
   const turnover = Number(raw.totalTurnover || 0);
