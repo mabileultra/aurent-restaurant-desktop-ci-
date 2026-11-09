@@ -29,9 +29,6 @@ export default function PlatformAnalyticsViloyatDetailPage() {
     topProducts,
     lowProducts,
     districtsBreakdown,
-    districtOptions,
-    selectedDistrict,
-    setSelectedDistrict,
     onClearDistrict,
     selectedStatus,
     setSelectedStatus,
@@ -90,9 +87,6 @@ export default function PlatformAnalyticsViloyatDetailPage() {
         regionCode={padCode}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        districtOptions={districtOptions}
-        selectedDistrict={selectedDistrict}
-        onDistrictChange={setSelectedDistrict}
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
         tableData={tableData}

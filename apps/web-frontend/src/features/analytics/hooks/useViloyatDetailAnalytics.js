@@ -176,7 +176,12 @@ export function useViloyatDetailAnalytics(regionCode) {
     connPercent: connPct, currentTypeConfig, topProducts, lowProducts,
     districtsBreakdown: filteredDistricts, districtOptions, selectedDistrict,
     setSelectedDistrict: handleDistrictChange, onClearDistrict: () => handleDistrictChange('all'),
-    selectedStatus, setSelectedStatus: (s) => { setSelectedStatus(s); setCurrentPage(0); },
+    selectedStatus,
+    setSelectedStatus: (s) => {
+      const val = typeof s === 'object' && s !== null ? s?.target?.value ?? s?.value ?? '' : s;
+      setSelectedStatus(val);
+      setCurrentPage(0);
+    },
     searchQuery, setSearchQuery: (q) => { setSearchQuery(q); setCurrentPage(0); },
     tableData, rangeLabel,
     onPrevPage: () => setCurrentPage((p) => Math.max(0, p - 1)),

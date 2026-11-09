@@ -77,6 +77,7 @@ export default function PlatformAnalyticsKorxonaDetailPage() {
           fiscalKind={analytics.fiscalKind}
           setFiscalKind={analytics.setFiscalKind}
           dayReceipts={analytics.dayReceipts}
+          pagedReceipts={analytics.pagedReceipts}
           totalFiscal={analytics.totalFiscal}
           totalNonFiscal={analytics.totalNonFiscal}
           dayTotalCount={analytics.dayTotalCount}
@@ -86,6 +87,13 @@ export default function PlatformAnalyticsKorxonaDetailPage() {
           selectedReceiptNo={analytics.selectedReceiptNo}
           onSelectReceipt={analytics.onSelectReceipt}
           receiptDetail={analytics.receiptDetail}
+          receiptPage={analytics.receiptPage}
+          receiptFrom={analytics.receiptFrom}
+          receiptTo={analytics.receiptTo}
+          receiptTotalPages={analytics.receiptTotalPages}
+          receiptTotalCount={analytics.receiptTotalCount}
+          onPrevReceiptPage={analytics.onPrevReceiptPage}
+          onNextReceiptPage={analytics.onNextReceiptPage}
         />
       </main>
     </div>

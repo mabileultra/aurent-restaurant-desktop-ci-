@@ -90,4 +90,27 @@ describe('useViloyatDetailAnalytics', () => {
     expect(captured.meta).toContain('63 korxona');
     expect(captured.meta).toContain('16 ta tuman va shahar');
   });
+
+  it('safely handles event object or string in setSelectedStatus without becoming [object Object]', () => {
+    const queryClient = new QueryClient();
+    let captured = null;
+
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(
+          MemoryRouter,
+          { initialEntries: ['/platform/analytics/viloyatlar/18'] },
+          React.createElement(TestHarness, {
+            regionCode: '18',
+            onCaptured: (val) => { captured = val; },
+          })
+        )
+      )
+    );
+
+    expect(captured.selectedStatus).toBe('all');
+    expect(typeof captured.setSelectedStatus).toBe('function');
+  });
 });
