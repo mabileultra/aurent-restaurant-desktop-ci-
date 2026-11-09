@@ -56,8 +56,8 @@ describe('useViloyatDetailAnalytics', () => {
     expect(captured.activeType).toBe('A');
     expect(captured.types).toHaveLength(5);
     expect(captured.tableData.total).toBe(2);
-    expect(captured.dailyBars).toHaveLength(30);
-    expect(captured.topProducts).toHaveLength(5);
+    expect(captured.dailyBars).toHaveLength(0);
+    expect(captured.topProducts).toHaveLength(0);
     expect(captured.districtsBreakdown.districts.length).toBeGreaterThan(0);
   });
 

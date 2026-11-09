@@ -5,7 +5,7 @@ import { geoApi } from '../../../api/geo.api';
 import { analyticsApi } from '../api/analyticsApi';
 import { fmtDayShort } from '../utils/analyticsFormat';
 import {
-  SAMARQAND_TYPES, SAMARQAND_DAYS, SAMARQAND_PRODUCTS,
+  SAMARQAND_TYPES,
   SAMARQAND_COMPANIES, SAMARQAND_DISTRICTS, BUSINESS_TYPE_NAMES,
 } from '../data/samarqandMockData';
 import {
@@ -14,8 +14,7 @@ import {
 } from '../utils/viloyatDetailUtils';
 import {
   normalizeBackendCompany, computeDistrictTurnover, computeBusinessTypeTabs,
-  generateDailyBars, resolveDistrictMeta, buildDistrictOptions,
-  mapProductList, calculateCompaniesBreakdown, resolveScopedProducts,
+  resolveDistrictMeta, buildDistrictOptions, calculateCompaniesBreakdown,
 } from '../utils/viloyatDetailStats';
 
 export function useViloyatDetailAnalytics(regionCode) {
@@ -108,7 +107,7 @@ export function useViloyatDetailAnalytics(regionCode) {
       const allN = Number(resultRow.nonFiscalTurnover || 0);
       const f30 = resultRow.fiscalSharePct != null ? Number(resultRow.fiscalSharePct) : (all > 0 ? (allF / all) * 100 : null);
       return {
-        all, allF, allN, f30, m30: all, d7: Math.round(all * 0.25), day: 0,
+        all, allF, allN, f30, m30: all, d7: null, day: 0,
         turnoverDeltaPct: resultRow.turnoverDeltaPct != null ? Number(resultRow.turnoverDeltaPct) : null,
       };
     }
@@ -131,17 +130,12 @@ export function useViloyatDetailAnalytics(regionCode) {
     totalDistricts: Object.keys(districtNames).length,
   }), [isDistrictView, districtScopedCompanies, districtNames]);
 
-  const dailyBars = useMemo(
-    () => generateDailyBars(SAMARQAND_DAYS, isDistrictView ? (turnover.all / 4705580191) : 1),
-    [isDistrictView, turnover.all]
-  );
+  // Real daily bars kutilmoqda (backend integratsiyasi)
+  const dailyBars = useMemo(() => [], []);
 
-  const productGroup = useMemo(
-    () => resolveScopedProducts(SAMARQAND_PRODUCTS, activeType, isDistrictView, districtScopedCompanies),
-    [activeType, isDistrictView, districtScopedCompanies]
-  );
-  const topProducts = useMemo(() => mapProductList(productGroup.top), [productGroup.top]);
-  const lowProducts = useMemo(() => mapProductList(productGroup.low), [productGroup.low]);
+  // Real tovarlar kutilmoqda (backend integratsiyasi)
+  const topProducts = useMemo(() => [], []);
+  const lowProducts = useMemo(() => [], []);
 
   const filteredDistricts = useMemo(() => {
     if (isDistrictView) {

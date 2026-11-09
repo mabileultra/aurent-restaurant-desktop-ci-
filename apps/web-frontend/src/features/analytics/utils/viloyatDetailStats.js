@@ -37,10 +37,10 @@ export function computeDistrictTurnover({ companies = [], activeType = 'A', isDi
 
   const inType = companies.filter((c) => activeType === 'A' || c[4] === activeType);
   const total = inType.reduce((sum, c) => sum + Number(c[7] || 0), 0);
-  const fiscal = inType.reduce((sum, c) => sum + Number(c[9] || (c[7] ? c[7] * 0.95 : 0)), 0);
+  const fiscal = inType.reduce((sum, c) => sum + Number(c[9] || 0), 0);
   const nonFiscal = Math.max(0, total - fiscal);
   const fShare = total > 0 ? (fiscal / total) * 100 : null;
-  const d7 = total > 0 ? Math.round(total * 0.25) : 0;
+  const d7 = null;
 
   return {
     all: total,

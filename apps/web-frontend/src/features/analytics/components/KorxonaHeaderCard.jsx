@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatNumber } from '../utils/korxonaDetailUtils';
 
-export function KorxonaHeaderCard({ info, companyInfo }) {
+export function KorxonaHeaderCard({ info, companyInfo, totalReceiptsCount, turnover }) {
   const data = companyInfo || info || {};
   const {
     name,
@@ -10,14 +10,19 @@ export function KorxonaHeaderCard({ info, companyInfo }) {
     tin,
     businessType,
     isConnected,
-    avgCheck,
-    totalChecks30d,
+    avgCheck: rawAvgCheck,
+    totalChecks30d: rawTotalChecks,
     address,
     phone,
-    storesCount,
+    storesCount: rawStoresCount,
+    storeCount,
     storeName,
     fiscalModule,
   } = data;
+
+  const storesCount = rawStoresCount ?? storeCount ?? 1;
+  const totalChecks = rawTotalChecks ?? (totalReceiptsCount > 0 ? totalReceiptsCount : null);
+  const avgCheck = rawAvgCheck ?? (totalChecks && turnover ? Math.round(Number(turnover) / totalChecks) : 0);
 
   return (
     <section aria-label="Korxona haqida" className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 space-y-4 shadow-xs">
@@ -58,13 +63,13 @@ export function KorxonaHeaderCard({ info, companyInfo }) {
           <div className="space-y-0.5">
             <span className="text-xs text-slate-400 dark:text-slate-500 block">O‘rtacha chek</span>
             <span className="text-lg sm:text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-white block">
-              {formatNumber(avgCheck)} so‘m
+              {avgCheck > 0 ? `${formatNumber(avgCheck)} so‘m` : '—'}
             </span>
           </div>
           <div className="space-y-0.5">
             <span className="text-xs text-slate-400 dark:text-slate-500 block">Cheklar · 30 kun</span>
             <span className="text-lg sm:text-xl font-bold font-mono tabular-nums text-slate-900 dark:text-white block">
-              {totalChecks30d} ta
+              {totalChecks ? `${totalChecks} ta` : '—'}
             </span>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { SAMARQAND_COMPANIES, SAMARQAND_TURNOVER } from '../data/samarqandMockData';
+import { SAMARQAND_COMPANIES } from '../data/samarqandMockData';
 import { fmtMoney, fmtPercent } from './analyticsFormat';
 
 export const SAMARQAND_FULL_DISTRICTS = [
@@ -162,7 +162,7 @@ export function buildSamarqandKpis(districts = [], period = '30d', backendKpi = 
   const totalTurnover = districts.reduce((acc, d) => acc + (d.turnover || 0), 0);
   const notConnected = Math.max(0, totalComps - totalConn);
   const connPct = totalComps > 0 ? fmtPercent((totalConn / totalComps) * 100) : '0%';
-  const fallbackTurnover = totalTurnover > 0 ? totalTurnover : (SAMARQAND_TURNOVER?.A?.m30 || 0);
+  const fallbackTurnover = Math.max(0, totalTurnover);
 
   return [
     {

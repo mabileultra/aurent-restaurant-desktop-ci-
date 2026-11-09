@@ -3,7 +3,7 @@ import { Image as ImageIcon } from 'lucide-react';
 import { formatCompact, formatPercent, calculateDeltaBadge } from '../utils/viloyatDetailUtils';
 
 function PeriodMiniCard({ label, sub, amount, delta, emptyText }) {
-  const isZero = amount === 0;
+  const isZero = amount === 0 || amount == null;
   const deltaObj = calculateDeltaBadge(delta);
 
   return (
@@ -14,7 +14,7 @@ function PeriodMiniCard({ label, sub, amount, delta, emptyText }) {
       </div>
       <div className="space-y-1.5 pt-1">
         <div className={`text-lg sm:text-xl font-bold font-mono tabular-nums ${isZero ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'}`}>
-          {formatCompact(amount)} so‘m
+          {amount != null ? `${formatCompact(amount)} so‘m` : '—'}
         </div>
         {deltaObj ? (
           <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums ${
@@ -24,11 +24,11 @@ function PeriodMiniCard({ label, sub, amount, delta, emptyText }) {
           }`}>
             {deltaObj.text}
           </span>
-        ) : emptyText ? (
+        ) : (
           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500">
-            {emptyText}
+            {amount == null ? "Ma'lumot kutilmoqda" : emptyText}
           </span>
-        ) : null}
+        )}
       </div>
     </div>
   );
@@ -89,25 +89,35 @@ export default function ViloyatTurnoverSection({
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-700 dark:text-slate-300">Kunlik aylanma · 30 kun</span>
-              <span className="text-slate-400 dark:text-slate-500">Eng yuqori: 24-okt, 1,21 mlrd</span>
+              <span className="text-slate-400 dark:text-slate-500">
+                {dailyBars.length > 0 ? 'Dinamika' : 'Backend integratsiyasi kutilmoqda'}
+              </span>
             </div>
-            <div className="h-14 flex items-end gap-0.5 border-b border-slate-200 dark:border-slate-800 pb-0.5">
-              {dailyBars.map((b, i) => (
-                <span
-                  key={i}
-                  title={b.tip}
-                  style={{ height: `${b.heightPercent}%` }}
-                  className={`flex-1 rounded-t-xs transition-colors cursor-pointer ${
-                    b.val ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-200 dark:bg-slate-700'
-                  }`}
-                />
-              ))}
-            </div>
-            <div className="flex justify-between text-[10px] text-slate-400 font-medium">
-              <span>10-okt</span>
-              <span>24-okt</span>
-              <span>8-noy</span>
-            </div>
+            {dailyBars.length > 0 ? (
+              <>
+                <div className="h-14 flex items-end gap-0.5 border-b border-slate-200 dark:border-slate-800 pb-0.5">
+                  {dailyBars.map((b, i) => (
+                    <span
+                      key={i}
+                      title={b.tip}
+                      style={{ height: `${b.heightPercent}%` }}
+                      className={`flex-1 rounded-t-xs transition-colors cursor-pointer ${
+                        b.val ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-200 dark:bg-slate-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                  <span>10-okt</span>
+                  <span>24-okt</span>
+                  <span>8-noy</span>
+                </div>
+              </>
+            ) : (
+              <div className="py-3 px-2 text-center text-xs text-slate-400 dark:text-slate-500 bg-slate-50/60 dark:bg-slate-800/30 rounded-lg">
+                Kunlik savdo dinamikasi: Backend orqali ma’lumotlar ulanishi kutilmoqda
+              </div>
+            )}
           </div>
         )}
       </div>

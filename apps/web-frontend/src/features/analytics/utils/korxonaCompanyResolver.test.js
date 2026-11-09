@@ -45,6 +45,38 @@ describe('korxonaCompanyResolver', () => {
     expect(cards[2].badge).toContain('86.3%');
   });
 
+  it('builds realistic cards from apiDetail with sorted active days and newly started week', () => {
+    const apiDetail = {
+      totalTurnover: 119827414,
+      from: '2026-10-10',
+      to: '2026-11-09',
+      weeks: [
+        { weekFrom: '2026-11-02', weekTo: '2026-11-08', totalTurnover: 15000000, deltaPct: 10 },
+        { weekFrom: '2026-11-09', weekTo: '2026-11-09', totalTurnover: 0, deltaPct: -100 },
+      ],
+      days: [
+        { date: '2026-11-09', totalTurnover: 0 },
+        { date: '2026-11-08', totalTurnover: 5000000 },
+        { date: '2026-10-11', totalTurnover: 3290000 },
+      ],
+    };
+    const cards = resolveCompanyCards({ numId: 62, apiDetail });
+    expect(cards).toHaveLength(4);
+    // 1. Umumiy aylanma
+    expect(cards[0].v).toBe(119827414);
+    expect(cards[0].badge).toBe('Ilk savdo: 11-okt');
+    // 2. 1 oylik aylanma
+    expect(cards[1].v).toBe(119827414);
+    expect(cards[1].badge).toBe('2 kun savdo');
+    // 3. Haftalik
+    expect(cards[2].v).toBe(0);
+    expect(cards[2].badge).toBe('Yangi hafta');
+    expect(cards[2].sub).toContain('Joriy hafta · 9-noy');
+    // 4. Kunlik
+    expect(cards[3].v).toBe(0);
+    expect(cards[3].badge).toBe('Oxirgi savdo: 8-noy');
+  });
+
   it('builds dynamic donuts for non-103 companies', () => {
     const donuts = resolveCompanyDonuts({
       numId: 29,
