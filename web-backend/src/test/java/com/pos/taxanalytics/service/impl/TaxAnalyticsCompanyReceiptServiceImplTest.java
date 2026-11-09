@@ -3,6 +3,7 @@ package com.pos.taxanalytics.service.impl;
 import com.pos.taxanalytics.dto.TaxAnalyticsReceiptsResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsReceiptQueryRepository;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalReceiptBridge;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,7 +14,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -25,6 +25,9 @@ class TaxAnalyticsCompanyReceiptServiceImplTest {
     @Mock
     private TaxAnalyticsReceiptQueryRepository receipts;
 
+    @Mock
+    private TaxAnalyticsVerticalReceiptBridge verticalReceipts;
+
     @InjectMocks
     private TaxAnalyticsCompanyReceiptServiceImpl service;
 
@@ -32,7 +35,8 @@ class TaxAnalyticsCompanyReceiptServiceImplTest {
     void withoutDatesFallsBackToLast30Days() {
         TaxAnalyticsPeriod expected = TaxAnalyticsPeriod.resolve("30d", null, null);
         when(receipts.count(eq(5), eq(expected.from()), eq(expected.to()), eq("ALL"))).thenReturn(0L);
-        when(receipts.list(eq(5), eq(expected.from()), eq(expected.to()), eq("ALL"), anyInt(), anyInt()))
+        when(verticalReceipts.count(eq(5), eq(expected.from()), eq(expected.to()), eq("ALL"))).thenReturn(0L);
+        when(verticalReceipts.list(eq(5), eq(expected.from()), eq(expected.to()), eq("ALL"), anyInt(), anyInt()))
             .thenReturn(List.of());
 
         TaxAnalyticsReceiptsResponse response = service.list(5, null, null, null, "ALL", 0, 10);
@@ -40,6 +44,7 @@ class TaxAnalyticsCompanyReceiptServiceImplTest {
         assertEquals(expected.from().toString(), response.from());
         assertEquals(expected.to().toString(), response.to());
         verify(receipts).count(5, expected.from(), expected.to(), "ALL");
+        verify(verticalReceipts).count(5, expected.from(), expected.to(), "ALL");
     }
 
     @Test

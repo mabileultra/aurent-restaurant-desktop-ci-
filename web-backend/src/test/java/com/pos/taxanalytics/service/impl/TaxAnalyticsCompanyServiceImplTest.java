@@ -8,6 +8,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsCompanyDetailResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsCompanyStatsRepository;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalReceiptBridge;
 import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,9 @@ class TaxAnalyticsCompanyServiceImplTest {
 
     @Mock
     private TaxAnalyticsVerticalSnapshotLoader verticalLoader;
+
+    @Mock
+    private TaxAnalyticsVerticalReceiptBridge verticalReceipts;
 
     @Mock
     private TaxAnalyticsRestaurantClient restaurantClient;

@@ -8,6 +8,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsReceiptsResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsReceiptQueryRepository;
 import com.pos.taxanalytics.service.TaxAnalyticsCompanyReceiptService;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalReceiptBridge;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompanyReceiptService {
 
     private final TaxAnalyticsReceiptQueryRepository receipts;
+    private final TaxAnalyticsVerticalReceiptBridge verticalReceipts;
 
     @Override
     @Transactional(readOnly = true)
@@ -60,10 +62,16 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
         int safeSize = Math.min(100, Math.max(1, size));
         int safePage = Math.max(0, page);
         long total = receipts.count(companyId, start, end, safeKind);
-        List<TaxAnalyticsReceiptRowResponse> rows = receipts.list(companyId, start, end, safeKind, safeSize, safePage * safeSize)
-            .stream()
-            .map((map) -> row(map, companyId))
-            .toList();
+        List<TaxAnalyticsReceiptRowResponse> rows;
+        if (total > 0) {
+            rows = receipts.list(companyId, start, end, safeKind, safeSize, safePage * safeSize)
+                .stream()
+                .map((map) -> row(map, companyId))
+                .toList();
+        } else {
+            total = verticalReceipts.count(companyId, start, end, safeKind);
+            rows = verticalReceipts.list(companyId, start, end, safeKind, safeSize, safePage * safeSize);
+        }
         return new TaxAnalyticsReceiptsResponse(
             start.toString(), safeKind, total, safePage, safeSize, rows, start.toString(), end.toString()
         );
@@ -73,34 +81,38 @@ public class TaxAnalyticsCompanyReceiptServiceImpl implements TaxAnalyticsCompan
     @Transactional(readOnly = true)
     public TaxAnalyticsReceiptDetailResponse detail(int companyId, UUID saleId) {
         Map<String, Object> sale = receipts.find(companyId, saleId);
-        if (sale == null) {
+        if (sale != null) {
+            List<TaxAnalyticsReceiptLineResponse> items = receipts.items(saleId).stream().map(this::line).toList();
+            return new TaxAnalyticsReceiptDetailResponse(
+                str(sale.get("sale_id")),
+                str(sale.get("receipt_number")),
+                instant(sale.get("created_at")),
+                str(sale.get("store_name")),
+                str(sale.get("cashier_name")),
+                money(sale.get("subtotal")),
+                money(sale.get("tax_total")),
+                money(sale.get("discount_total")),
+                money(sale.get("total_amount")),
+                str(sale.get("payment_method")),
+                money(sale.get("cash_amount")),
+                money(sale.get("card_amount")),
+                money(sale.get("amount_tendered")),
+                money(sale.get("change_given")),
+                str(sale.get("status")),
+                str(sale.get("fiscal_status")),
+                str(sale.get("fiscal_sign")),
+                str(sale.get("fiscal_receipt_seq")),
+                str(sale.get("fiscal_qr_url")),
+                str(sale.get("fiscal_terminal_id")),
+                bool(sale.get("print_fiscal_qr")),
+                items
+            );
+        }
+        TaxAnalyticsReceiptDetailResponse vertical = verticalReceipts.detail(companyId, saleId.toString());
+        if (vertical == null) {
             throw PosExceptions.notFound("Чек", saleId);
         }
-        List<TaxAnalyticsReceiptLineResponse> items = receipts.items(saleId).stream().map(this::line).toList();
-        return new TaxAnalyticsReceiptDetailResponse(
-            str(sale.get("sale_id")),
-            str(sale.get("receipt_number")),
-            instant(sale.get("created_at")),
-            str(sale.get("store_name")),
-            str(sale.get("cashier_name")),
-            money(sale.get("subtotal")),
-            money(sale.get("tax_total")),
-            money(sale.get("discount_total")),
-            money(sale.get("total_amount")),
-            str(sale.get("payment_method")),
-            money(sale.get("cash_amount")),
-            money(sale.get("card_amount")),
-            money(sale.get("amount_tendered")),
-            money(sale.get("change_given")),
-            str(sale.get("status")),
-            str(sale.get("fiscal_status")),
-            str(sale.get("fiscal_sign")),
-            str(sale.get("fiscal_receipt_seq")),
-            str(sale.get("fiscal_qr_url")),
-            str(sale.get("fiscal_terminal_id")),
-            bool(sale.get("print_fiscal_qr")),
-            items
-        );
+        return vertical;
     }
 
     private TaxAnalyticsReceiptRowResponse row(Map<String, Object> row, int companyId) {

@@ -20,6 +20,7 @@ import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks;
 import com.pos.taxanalytics.support.TaxAnalyticsCompanyWeeks.DayTurnover;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
 import com.pos.taxanalytics.support.TaxAnalyticsVerticalMerge;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalReceiptBridge;
 import com.pos.taxanalytics.support.TaxAnalyticsVerticalSnapshotLoader;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekMath;
 import com.pos.taxanalytics.support.TaxAnalyticsWeekWindow;
@@ -47,6 +48,7 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
     private final TaxAnalyticsCompanyQueryRepository repository;
     private final TaxAnalyticsCompanyStatsRepository statsRepository;
     private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
+    private final TaxAnalyticsVerticalReceiptBridge verticalReceipts;
     private final TaxAnalyticsRestaurantClient restaurantClient;
     private final TaxAnalyticsPharmacyClient pharmacyClient;
 
@@ -148,6 +150,13 @@ public class TaxAnalyticsCompanyServiceImpl implements TaxAnalyticsCompanyServic
             .add(extra == null ? BigDecimal.ZERO : nz(extra.nonFiscalTurnover()));
         long fiscalReceipts = asLong(receiptStats.get("fiscal_receipt_count"));
         long nonFiscalReceipts = asLong(receiptStats.get("non_fiscal_receipt_count"));
+        if (fiscalReceipts + nonFiscalReceipts == 0) {
+            TaxAnalyticsVerticalReceiptBridge.Counts verticalCounts = verticalReceipts.receiptCounts(
+                companyId, range.from(), range.to()
+            );
+            fiscalReceipts = verticalCounts.fiscal();
+            nonFiscalReceipts = verticalCounts.nonFiscal();
+        }
         BigDecimal averageCheck = averageCheck(fiscal.add(nonFiscal), fiscalReceipts + nonFiscalReceipts);
         return new TaxAnalyticsCompanyDetailResponse(
             companyId,

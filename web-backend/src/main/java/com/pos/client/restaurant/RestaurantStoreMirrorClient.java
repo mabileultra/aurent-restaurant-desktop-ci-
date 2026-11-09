@@ -36,7 +36,7 @@ public class RestaurantStoreMirrorClient {
         body.put("active", active);
         try {
             restaurantRestClient.put()
-                .uri("/internal/rst/stores")
+                .uri("internal/rst/stores")
                 .body(body)
                 .retrieve()
                 .toBodilessEntity();
@@ -52,7 +52,7 @@ public class RestaurantStoreMirrorClient {
         }
         try {
             restaurantRestClient.delete()
-                .uri("/internal/rst/stores/{storeId}", storeId)
+                .uri("internal/rst/stores/{storeId}", storeId)
                 .retrieve()
                 .toBodilessEntity();
         } catch (Exception ex) {
