@@ -37,6 +37,13 @@ describe('viloyatDetailStats', () => {
     expect(norm[9]).toBe(48000000);
   });
 
+  it('maps backend GROCERY/RESTAURANT/PHARMACY businessType to F/R/P tabs', () => {
+    expect(normalizeBackendCompany({ companyId: 1, businessType: 'GROCERY' })[4]).toBe('F');
+    expect(normalizeBackendCompany({ companyId: 2, businessType: 'RESTAURANT' })[4]).toBe('R');
+    expect(normalizeBackendCompany({ companyId: 3, businessType: 'PHARMACY' })[4]).toBe('P');
+    expect(normalizeBackendCompany({ companyId: 4, businessType: 'UNIVERSAL' })[4]).toBe('O');
+  });
+
   it('keeps existing array as-is', () => {
     const arr = [1, 'Name', 'TIN', '01', 'F', 1, 1, 1000, 10, 950];
     expect(normalizeBackendCompany(arr)).toBe(arr);

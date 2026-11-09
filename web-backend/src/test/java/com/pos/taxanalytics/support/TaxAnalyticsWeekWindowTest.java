@@ -9,20 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TaxAnalyticsWeekWindowTest {
 
     @Test
-    void wednesdaySplitsCurrentPartialWeekFromPreviousFullWeek() {
+    void rollingSevenDaysOnWednesday() {
         TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.of(LocalDate.of(2026, 10, 28));
-        assertEquals(LocalDate.of(2026, 10, 26), week.weekFrom());
+        assertEquals(LocalDate.of(2026, 10, 22), week.weekFrom());
         assertEquals(LocalDate.of(2026, 10, 28), week.weekTo());
-        assertEquals(LocalDate.of(2026, 10, 19), week.prevWeekFrom());
-        assertEquals(LocalDate.of(2026, 10, 25), week.prevWeekTo());
+        assertEquals(LocalDate.of(2026, 10, 15), week.prevWeekFrom());
+        assertEquals(LocalDate.of(2026, 10, 21), week.prevWeekTo());
     }
 
     @Test
-    void mondayStartsANewWeekAgainstThePreviousSunday() {
-        TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.of(LocalDate.of(2026, 10, 26));
-        assertEquals(LocalDate.of(2026, 10, 26), week.weekFrom());
-        assertEquals(LocalDate.of(2026, 10, 26), week.weekTo());
-        assertEquals(LocalDate.of(2026, 10, 19), week.prevWeekFrom());
-        assertEquals(LocalDate.of(2026, 10, 25), week.prevWeekTo());
+    void rollingSevenDaysOnMondayDoesNotCompareOneDayToSeven() {
+        TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.of(LocalDate.of(2026, 11, 9));
+        assertEquals(LocalDate.of(2026, 11, 3), week.weekFrom());
+        assertEquals(LocalDate.of(2026, 11, 9), week.weekTo());
+        assertEquals(LocalDate.of(2026, 10, 27), week.prevWeekFrom());
+        assertEquals(LocalDate.of(2026, 11, 2), week.prevWeekTo());
     }
 }

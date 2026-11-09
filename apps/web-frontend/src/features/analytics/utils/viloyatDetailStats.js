@@ -1,5 +1,16 @@
 import { formatPercent } from './viloyatDetailUtils';
 
+/** Map backend businessType (GROCERY/RESTAURANT/…) to viloyat tab codes F/R/P/O. */
+export function mapBusinessTypeTabCode(rawType) {
+  if (rawType == null || rawType === '') return 'O';
+  const key = String(rawType).trim().toUpperCase();
+  if (key === 'F' || key === 'G' || key === 'GROCERY' || key === 'FOOD' || key === 'RETAIL') return 'F';
+  if (key === 'R' || key === 'RESTAURANT' || key === 'CAFE' || key === 'CANTEEN') return 'R';
+  if (key === 'P' || key === 'PHARMACY') return 'P';
+  if (key === 'O' || key === 'UNIVERSAL' || key === 'OTHER') return 'O';
+  return 'O';
+}
+
 /**
  * Normalizes backend company JSON or mock array to a uniform tuple:
  * [id, name, tin, districtCode, type, isConnected (0/1), storeCount, turnover, delta, fiscalTurnover]
@@ -13,7 +24,7 @@ export function normalizeBackendCompany(raw) {
   const tin = raw.tin || '_';
   const rawDist = String(raw.districtCode || '');
   const districtCode = rawDist.length > 2 ? rawDist.slice(-2) : rawDist.padStart(2, '0');
-  const type = raw.businessType || raw.activitySubtype || 'O';
+  const type = mapBusinessTypeTabCode(raw.businessType || raw.activitySubtype);
   const isConnected = raw.connected ? 1 : 0;
   const storeCount = raw.storeCount || 1;
   const turnover = Number(raw.totalTurnover || 0);

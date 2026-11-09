@@ -10,6 +10,32 @@ import {
   BUSINESS_TYPE_NAMES,
 } from '../data/samarqandMockData';
 import { formatNumber, formatPercent, calculateDonutArc } from './korxonaDetailUtils';
+import { mapBusinessTypeTabCode } from './viloyatDetailStats';
+
+const BUSINESS_TYPE_LABELS = {
+  F: 'Oziq-ovqat',
+  G: 'Oziq-ovqat',
+  R: 'Restoran',
+  P: 'Dorixona',
+  O: 'Boshqa',
+  GROCERY: 'Oziq-ovqat',
+  RESTAURANT: 'Restoran',
+  PHARMACY: 'Dorixona',
+  UNIVERSAL: 'Boshqa',
+};
+
+function resolveBusinessTypeLabel(rawType, mockCode) {
+  if (rawType) {
+    const key = String(rawType).trim();
+    if (BUSINESS_TYPE_LABELS[key]) return BUSINESS_TYPE_LABELS[key];
+    const upper = key.toUpperCase();
+    if (BUSINESS_TYPE_LABELS[upper]) return BUSINESS_TYPE_LABELS[upper];
+    const tab = mapBusinessTypeTabCode(rawType);
+    return BUSINESS_TYPE_NAMES[tab] || BUSINESS_TYPE_LABELS[tab] || key;
+  }
+  if (mockCode) return BUSINESS_TYPE_NAMES[mockCode] || 'Boshqa';
+  return 'Boshqa';
+}
 
 function createMonogram(name = '') {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -28,7 +54,18 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
   const districtName = apiDetail?.districtNameUz || districtNames[dCode] || 'Samarqand sh.';
   const regionName = apiDetail?.regionNameUz || apiDetail?.regionNameRu || 'Samarqand viloyati';
   const tin = realCompany?.tin || apiDetail?.tin || (mock?.[2] && mock[2] !== '_' ? mock[2] : (numId === 103 ? '309121333' : '—'));
-  const businessType = realCompany?.businessType || apiDetail?.businessTypeName || (mock?.[4] ? (BUSINESS_TYPE_NAMES[mock[4]] || 'Boshqa') : (numId === 103 ? 'Oziq-ovqat' : 'Boshqa'));
+  const businessType = resolveBusinessTypeLabel(
+    realCompany?.businessType || apiDetail?.businessType || apiDetail?.businessTypeName,
+    mock?.[4]
+  ) || (numId === 103 ? 'Oziq-ovqat' : 'Boshqa');
+  const fiscalReceiptCount = Number(apiDetail?.fiscalReceiptCount || 0);
+  const nonFiscalReceiptCount = Number(apiDetail?.nonFiscalReceiptCount || 0);
+  const totalChecks30d = fiscalReceiptCount + nonFiscalReceiptCount;
+  const avgCheck = apiDetail?.averageCheck != null
+    ? Number(apiDetail.averageCheck)
+    : (totalChecks30d > 0 && apiDetail?.totalTurnover != null
+      ? Number(apiDetail.totalTurnover) / totalChecks30d
+      : null);
 
   return {
     id: numId,
@@ -43,9 +80,12 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
     isConnected: Boolean(realCompany?.active ?? apiDetail?.connected ?? (mock ? mock[5] === 1 : (numId === 103))),
     storeName: name,
     storeCount: realCompany?.storeCount || apiDetail?.storeCount || 1,
-    phone: realCompany?.phone || (numId === 103 ? '+998 88 934 44 44' : '—'),
-    address: realCompany?.address || (numId === 103 ? 'Samarqand sh., Makon Mall' : `${districtName}, O‘zbekiston`),
+    storesCount: realCompany?.storeCount || apiDetail?.storeCount || 1,
+    phone: realCompany?.phone || apiDetail?.phone || (numId === 103 ? '+998 88 934 44 44' : '—'),
+    address: realCompany?.address || apiDetail?.address || (numId === 103 ? 'Samarqand sh., Makon Mall' : `${districtName}, O‘zbekiston`),
     fiscalModule: '—',
+    avgCheck,
+    totalChecks30d: totalChecks30d || null,
   };
 }
 
@@ -108,6 +148,8 @@ export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFisca
   const total = f + nf > 0 ? f + nf : t;
   const fPct = total > 0 ? (f / total) * 100 : 0;
   const nfPct = Math.max(0, 100 - fPct);
+  const fiscalReceipts = Number(apiDetail?.fiscalReceiptCount || 0);
+  const nonFiscalReceipts = Number(apiDetail?.nonFiscalReceiptCount || 0);
 
   return [
     {
@@ -115,7 +157,7 @@ export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFisca
       color: '#0E7C4F',
       pct: formatPercent(fPct),
       amount: `${formatNumber(f)} so‘m`,
-      hint: 'QR-kod bilan',
+      hint: fiscalReceipts > 0 ? `${fiscalReceipts} ta chek · QR-kod bilan` : 'QR-kod bilan',
       dash: calculateDonutArc(fPct),
       aria: `Fiskal bilan urilgan: ${formatPercent(fPct)}, ${formatNumber(f)} so‘m`,
     },
@@ -124,7 +166,7 @@ export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFisca
       color: '#EF4444',
       pct: formatPercent(nfPct),
       amount: `${formatNumber(nf)} so‘m`,
-      hint: 'Soliqqa yuborilmagan',
+      hint: nonFiscalReceipts > 0 ? `${nonFiscalReceipts} ta chek · soliqqa yuborilmagan` : 'Soliqqa yuborilmagan',
       dash: calculateDonutArc(nfPct),
       aria: `Fiskalsiz: ${formatPercent(nfPct)}, ${formatNumber(nf)} so‘m`,
     },
