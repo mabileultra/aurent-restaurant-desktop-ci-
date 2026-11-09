@@ -52,11 +52,13 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
             BigDecimal fiscal = decimal(row.get("fiscal_turnover"));
             BigDecimal nonFiscal = decimal(row.get("non_fiscal_turnover"));
             Integer leaderId = row.get("leader_company_id") instanceof Number number ? number.intValue() : null;
+            long receipts = row.get("receipts_count") instanceof Number number ? number.longValue() : 0L;
             days.add(new TaxAnalyticsDayPointResponse(
                 String.valueOf(row.get("day")),
                 fiscal,
                 nonFiscal,
                 fiscal.add(nonFiscal),
+                receipts,
                 leaderId,
                 row.get("leader_company_name") == null ? null : String.valueOf(row.get("leader_company_name"))
             ));

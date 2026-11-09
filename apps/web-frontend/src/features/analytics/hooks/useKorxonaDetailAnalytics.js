@@ -142,9 +142,14 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
 
   const dayIndex = Math.max(0, dayChips.findIndex((c) => c.date === queryDay));
 
-  const detailReceiptCount = Number(apiDetail?.fiscalReceiptCount || 0)
-    + Number(apiDetail?.nonFiscalReceiptCount || 0);
-  const averageCheck = apiDetail?.averageCheck != null ? Number(apiDetail.averageCheck) : null;
+  const detailReceiptCount = Number(
+    apiDetail?.totalReceiptsCount
+      ?? ((apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0)
+        + (apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0))
+  );
+  const averageCheck = apiDetail?.avgReceiptAmount != null
+    ? Number(apiDetail.avgReceiptAmount)
+    : (apiDetail?.averageCheck != null ? Number(apiDetail.averageCheck) : null);
 
   return {
     companyInfo, cards, donuts, products, totalProductsCount,

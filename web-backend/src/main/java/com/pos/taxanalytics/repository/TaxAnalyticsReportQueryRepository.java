@@ -33,7 +33,8 @@ public class TaxAnalyticsReportQueryRepository {
         StringBuilder daysSql = new StringBuilder("""
             SELECT (s.created_at AT TIME ZONE 'Asia/Tashkent')::date AS day,
                    COALESCE(SUM(CASE WHEN s.fiscal_status = 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS fiscal_turnover,
-                   COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover
+                   COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover,
+                   COUNT(*)::bigint AS receipts_count
             FROM sales s
             LEFT JOIN stores st ON st.id = s.store_id
             JOIN companies c ON c.id = COALESCE(s.company_id, st.company_id)
@@ -70,7 +71,7 @@ public class TaxAnalyticsReportQueryRepository {
         String sql = """
             WITH days AS ( %s ),
             ranked AS ( %s )
-            SELECT d.day, d.fiscal_turnover, d.non_fiscal_turnover,
+            SELECT d.day, d.fiscal_turnover, d.non_fiscal_turnover, d.receipts_count,
                    r.company_id AS leader_company_id, r.company_name AS leader_company_name
             FROM days d
             LEFT JOIN ranked r ON r.day = d.day AND r.rn = 1
@@ -88,7 +89,8 @@ public class TaxAnalyticsReportQueryRepository {
                 WITH days AS (
                   SELECT (s.created_at AT TIME ZONE 'Asia/Tashkent')::date AS day,
                          COALESCE(SUM(CASE WHEN s.fiscal_status = 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS fiscal_turnover,
-                         COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover
+                         COALESCE(SUM(CASE WHEN s.fiscal_status IS DISTINCT FROM 'FISCALIZED' THEN s.total_amount ELSE 0 END), 0) AS non_fiscal_turnover,
+                         COUNT(*)::bigint AS receipts_count
                   FROM sales s
                   WHERE s.status = 'COMPLETED'
                     AND s.created_at >= ? AND s.created_at < ?
@@ -110,7 +112,7 @@ public class TaxAnalyticsReportQueryRepository {
                     AND s.created_at >= ? AND s.created_at < ?
                   GROUP BY 1, c.id, c.name
                 )
-                SELECT d.day, d.fiscal_turnover, d.non_fiscal_turnover,
+                SELECT d.day, d.fiscal_turnover, d.non_fiscal_turnover, d.receipts_count,
                        r.company_id AS leader_company_id, r.company_name AS leader_company_name
                 FROM days d
                 LEFT JOIN ranked r ON r.day = d.day AND r.rn = 1

@@ -6,6 +6,7 @@ import com.pos.taxanalytics.dto.TaxAnalyticsRegionCardResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultRowResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultsResponse;
 import com.pos.taxanalytics.repository.TaxAnalyticsGeoAggregateRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsGeoWindowsRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsMissingRegionRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsOverviewQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
@@ -32,6 +33,7 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
 
     private final TaxAnalyticsQueryRepository repository;
     private final TaxAnalyticsGeoAggregateRepository geoAggregateRepository;
+    private final TaxAnalyticsGeoWindowsRepository geoWindowsRepository;
     private final TaxAnalyticsOverviewQueryRepository overviewRepository;
     private final TaxAnalyticsKpiBuilder kpiBuilder;
     private final TaxAnalyticsMissingRegionRepository missingRegionRepository;
@@ -158,10 +160,15 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             ? geoAggregateRepository.aggregateByDistrict(range, regionCode, connectionStatus, businessType)
             : geoAggregateRepository.aggregateByRegion(range, connectionStatus, businessType);
         verticalGeoEnricher.addToGeoRows(raw, range, regionCode, businessType, districtLevel);
+        Map<String, Map<String, Object>> windows = districtLevel
+            ? geoWindowsRepository.byDistrict(regionCode, connectionStatus, businessType)
+            : geoWindowsRepository.byRegion(connectionStatus, businessType);
 
-        List<TaxAnalyticsResultRowResponse> all = new ArrayList<>(raw.stream().map(r -> toGeoRow(r, resolvedLevel)).toList());
+        List<TaxAnalyticsResultRowResponse> all = new ArrayList<>(
+            raw.stream().map(r -> toGeoRow(r, resolvedLevel, windows)).toList()
+        );
         if ("REGION".equals(resolvedLevel)) {
-            appendMissingRegionRow(all, range, connectionStatus);
+            appendMissingRegionRow(all, range, connectionStatus, windows);
         }
         long total = all.size();
         int fromIdx = Math.min(safePage * safeSize, all.size());
@@ -191,7 +198,11 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         return "REGION";
     }
 
-    private TaxAnalyticsResultRowResponse toGeoRow(Map<String, Object> row, String level) {
+    private TaxAnalyticsResultRowResponse toGeoRow(
+        Map<String, Object> row,
+        String level,
+        Map<String, Map<String, Object>> windows
+    ) {
         long enterprises = ((Number) row.get("enterprises")).longValue();
         long connected = ((Number) row.get("connected")).longValue();
         long notConnected = Math.max(0, enterprises - connected);
@@ -199,6 +210,11 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         BigDecimal nonFiscal = decimal(row.get("non_fiscal_turnover"));
         BigDecimal total = fiscal.add(nonFiscal);
         BigDecimal prev = decimal(row.get("prev_turnover"));
+        Map<String, Object> window = windows == null ? null : windows.get(String.valueOf(row.get("code")));
+        BigDecimal week = decimal(window == null ? null : window.get("week_turnover"));
+        BigDecimal prevWeek = decimal(window == null ? null : window.get("prev_week_turnover"));
+        BigDecimal today = decimal(window == null ? null : window.get("today_turnover"));
+        BigDecimal year = decimal(window == null ? null : window.get("year_turnover"));
         return new TaxAnalyticsResultRowResponse(
             String.valueOf(row.get("code")),
             row.get("name_ru") == null ? String.valueOf(row.get("code")) : String.valueOf(row.get("name_ru")),
@@ -213,7 +229,11 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             total,
             TaxAnalyticsMath.shareAmount(fiscal, total),
             TaxAnalyticsMath.deltaPct(total, prev),
-            level
+            level,
+            week,
+            TaxAnalyticsMath.deltaPct(week, prevWeek),
+            today,
+            year
         );
     }
 
@@ -242,7 +262,11 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             total,
             TaxAnalyticsMath.shareAmount(fiscal, total),
             TaxAnalyticsMath.deltaPct(total, prev),
-            "ENTERPRISE"
+            "ENTERPRISE",
+            BigDecimal.ZERO,
+            null,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO
         );
     }
 
@@ -273,7 +297,8 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
     private void appendMissingRegionRow(
         List<TaxAnalyticsResultRowResponse> rows,
         TaxAnalyticsPeriod range,
-        String connectionStatus
+        String connectionStatus,
+        Map<String, Map<String, Object>> windows
     ) {
         Map<String, Object> row = missingRegionRepository.totals(range, connectionStatus);
         if (!TaxAnalyticsMissingRegionRepository.hasSignal(row)) {
@@ -282,6 +307,6 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
         row.put("code", TaxAnalyticsRegionFilter.MISSING_CODE);
         row.put("name_ru", TaxAnalyticsRegionFilter.MISSING_NAME_RU);
         row.put("name_uz", TaxAnalyticsRegionFilter.MISSING_NAME_UZ);
-        rows.add(toGeoRow(row, "REGION"));
+        rows.add(toGeoRow(row, "REGION", windows));
     }
 }

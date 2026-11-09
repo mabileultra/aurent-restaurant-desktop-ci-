@@ -1,5 +1,7 @@
 package com.pos.taxanalytics.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public record TaxAnalyticsProductsResponse(
@@ -13,4 +15,13 @@ public record TaxAnalyticsProductsResponse(
     List<TaxAnalyticsProductRankResponse> top,
     List<TaxAnalyticsProductRankResponse> bottom
 ) {
+    @JsonProperty("topProducts")
+    public List<TaxAnalyticsProductRankResponse> topProducts() {
+        return top;
+    }
+
+    @JsonProperty("lowProducts")
+    public List<TaxAnalyticsProductRankResponse> lowProducts() {
+        return bottom;
+    }
 }

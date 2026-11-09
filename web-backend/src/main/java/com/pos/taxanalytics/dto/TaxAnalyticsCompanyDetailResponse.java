@@ -1,5 +1,7 @@
 package com.pos.taxanalytics.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -35,4 +37,23 @@ public record TaxAnalyticsCompanyDetailResponse(
     List<TaxAnalyticsCompanyProductResponse> topProducts,
     TaxAnalyticsCompanySupplyResponse supplies
 ) {
+    @JsonProperty("totalReceiptsCount")
+    public long totalReceiptsCount() {
+        return fiscalReceiptCount + nonFiscalReceiptCount;
+    }
+
+    @JsonProperty("fiscalReceiptsCount")
+    public long fiscalReceiptsCount() {
+        return fiscalReceiptCount;
+    }
+
+    @JsonProperty("nonFiscalReceiptsCount")
+    public long nonFiscalReceiptsCount() {
+        return nonFiscalReceiptCount;
+    }
+
+    @JsonProperty("avgReceiptAmount")
+    public BigDecimal avgReceiptAmount() {
+        return averageCheck;
+    }
 }

@@ -58,14 +58,22 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
     realCompany?.businessType || apiDetail?.businessType || apiDetail?.businessTypeName,
     mock?.[4]
   ) || (numId === 103 ? 'Oziq-ovqat' : 'Boshqa');
-  const fiscalReceiptCount = Number(apiDetail?.fiscalReceiptCount || 0);
-  const nonFiscalReceiptCount = Number(apiDetail?.nonFiscalReceiptCount || 0);
-  const totalChecks30d = fiscalReceiptCount + nonFiscalReceiptCount;
-  const avgCheck = apiDetail?.averageCheck != null
-    ? Number(apiDetail.averageCheck)
-    : (totalChecks30d > 0 && apiDetail?.totalTurnover != null
-      ? Number(apiDetail.totalTurnover) / totalChecks30d
-      : null);
+  const fiscalReceiptCount = Number(
+    apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0
+  );
+  const nonFiscalReceiptCount = Number(
+    apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0
+  );
+  const totalChecks30d = Number(
+    apiDetail?.totalReceiptsCount ?? (fiscalReceiptCount + nonFiscalReceiptCount)
+  );
+  const avgCheck = apiDetail?.avgReceiptAmount != null
+    ? Number(apiDetail.avgReceiptAmount)
+    : (apiDetail?.averageCheck != null
+      ? Number(apiDetail.averageCheck)
+      : (totalChecks30d > 0 && apiDetail?.totalTurnover != null
+        ? Number(apiDetail.totalTurnover) / totalChecks30d
+        : null));
 
   return {
     id: numId,
@@ -148,8 +156,8 @@ export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFisca
   const total = f + nf > 0 ? f + nf : t;
   const fPct = total > 0 ? (f / total) * 100 : 0;
   const nfPct = Math.max(0, 100 - fPct);
-  const fiscalReceipts = Number(apiDetail?.fiscalReceiptCount || 0);
-  const nonFiscalReceipts = Number(apiDetail?.nonFiscalReceiptCount || 0);
+  const fiscalReceipts = Number(apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0);
+  const nonFiscalReceipts = Number(apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0);
 
   return [
     {

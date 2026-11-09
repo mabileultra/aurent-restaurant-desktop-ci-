@@ -75,11 +75,20 @@ public class TaxAnalyticsProductServiceImpl {
 
     private static List<TaxAnalyticsProductRankResponse> mapRows(List<Map<String, Object>> rows) {
         List<TaxAnalyticsProductRankResponse> out = new ArrayList<>(rows.size());
+        int rank = 1;
         for (Map<String, Object> row : rows) {
+            var quantity = TaxAnalyticsWeekMath.decimal(row.get("quantity"));
+            var amount = TaxAnalyticsWeekMath.decimal(row.get("amount"));
+            var unitPrice = row.get("unit_price") == null
+                ? (quantity.signum() > 0 ? amount.divide(quantity, 2, java.math.RoundingMode.HALF_UP) : java.math.BigDecimal.ZERO)
+                : TaxAnalyticsWeekMath.decimal(row.get("unit_price"));
             out.add(new TaxAnalyticsProductRankResponse(
+                rank++,
                 row.get("product_name") == null ? "" : String.valueOf(row.get("product_name")),
-                TaxAnalyticsWeekMath.decimal(row.get("quantity")),
-                TaxAnalyticsWeekMath.decimal(row.get("amount"))
+                row.get("company_name") == null ? null : String.valueOf(row.get("company_name")),
+                quantity,
+                amount,
+                unitPrice
             ));
         }
         return out;

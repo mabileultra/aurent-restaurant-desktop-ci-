@@ -15,7 +15,8 @@ import {
 import {
   normalizeBackendCompany, computeDistrictTurnover, computeBusinessTypeTabs,
   generateDailyBars, resolveDistrictMeta, buildDistrictOptions,
-  mapProductList, calculateCompaniesBreakdown, resolveScopedProducts,
+  mapProductList, mapBackendProductList, mapBackendDailyBars,
+  calculateCompaniesBreakdown, resolveScopedProducts,
 } from '../utils/viloyatDetailStats';
 
 export function useViloyatDetailAnalytics(regionCode) {
@@ -70,6 +71,27 @@ export function useViloyatDetailAnalytics(regionCode) {
     staleTime: 60_000,
   });
 
+  const { data: dailyData } = useQuery({
+    queryKey: ['analytics-daily-detail', padCode, backendDistrictCode],
+    queryFn: () => analyticsApi.getDaily({
+      regionCode: padCode,
+      districtCode: backendDistrictCode,
+      period: '30d',
+    }).then((r) => r.data),
+    staleTime: 60_000,
+  });
+
+  const { data: productsData } = useQuery({
+    queryKey: ['analytics-products-detail', padCode, backendDistrictCode],
+    queryFn: () => analyticsApi.getProducts({
+      regionCode: padCode,
+      districtCode: backendDistrictCode,
+      period: '30d',
+      limit: 5,
+    }).then((r) => r.data),
+    staleTime: 60_000,
+  });
+
   const currentRegion = regions.find((r) => String(r.code).padStart(2, '0') === padCode);
   const regionName = currentRegion?.nameUz || currentRegion?.nameRu || (padCode === '18' ? 'Samarqand viloyati' : `Viloyat (${padCode})`);
 
@@ -108,7 +130,11 @@ export function useViloyatDetailAnalytics(regionCode) {
       const allN = Number(resultRow.nonFiscalTurnover || 0);
       const f30 = resultRow.fiscalSharePct != null ? Number(resultRow.fiscalSharePct) : (all > 0 ? (allF / all) * 100 : null);
       return {
-        all, allF, allN, f30, m30: all, d7: Math.round(all * 0.25), day: 0,
+        all, allF, allN, f30, m30: all,
+        d7: resultRow.weekTurnover != null ? Number(resultRow.weekTurnover) : Math.round(all * 0.25),
+        day: resultRow.todayTurnover != null ? Number(resultRow.todayTurnover) : 0,
+        year: resultRow.yearTurnover != null ? Number(resultRow.yearTurnover) : null,
+        weekDeltaPct: resultRow.weekDeltaPct != null ? Number(resultRow.weekDeltaPct) : null,
         turnoverDeltaPct: resultRow.turnoverDeltaPct != null ? Number(resultRow.turnoverDeltaPct) : null,
       };
     }
@@ -131,17 +157,24 @@ export function useViloyatDetailAnalytics(regionCode) {
     totalDistricts: Object.keys(districtNames).length,
   }), [isDistrictView, districtScopedCompanies, districtNames]);
 
-  const dailyBars = useMemo(
-    () => generateDailyBars(SAMARQAND_DAYS, isDistrictView ? (turnover.all / 4705580191) : 1),
-    [isDistrictView, turnover.all]
-  );
+  const dailyBars = useMemo(() => {
+    const backendBars = mapBackendDailyBars(dailyData?.days);
+    if (backendBars.length > 0) return backendBars;
+    return generateDailyBars(SAMARQAND_DAYS, isDistrictView ? (turnover.all / 4705580191) : 1);
+  }, [dailyData?.days, isDistrictView, turnover.all]);
 
   const productGroup = useMemo(
     () => resolveScopedProducts(SAMARQAND_PRODUCTS, activeType, isDistrictView, districtScopedCompanies),
     [activeType, isDistrictView, districtScopedCompanies]
   );
-  const topProducts = useMemo(() => mapProductList(productGroup.top), [productGroup.top]);
-  const lowProducts = useMemo(() => mapProductList(productGroup.low), [productGroup.low]);
+  const topProducts = useMemo(() => {
+    const fromApi = mapBackendProductList(productsData?.topProducts || productsData?.top);
+    return fromApi.length > 0 ? fromApi : mapProductList(productGroup.top);
+  }, [productsData?.topProducts, productsData?.top, productGroup.top]);
+  const lowProducts = useMemo(() => {
+    const fromApi = mapBackendProductList(productsData?.lowProducts || productsData?.bottom);
+    return fromApi.length > 0 ? fromApi : mapProductList(productGroup.low);
+  }, [productsData?.lowProducts, productsData?.bottom, productGroup.low]);
 
   const filteredDistricts = useMemo(() => {
     if (isDistrictView) {
