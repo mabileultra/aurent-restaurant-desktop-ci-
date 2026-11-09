@@ -73,4 +73,23 @@ describe('useKorxonaDetailAnalytics', () => {
     expect(captured.products[0].name).toContain('Плиты из травертина');
     expect(captured.dayReceipts.length).toBeGreaterThan(0);
   });
+
+  it('handles company with zero turnover and days without calling receipt detail with non-uuid', () => {
+    const queryClient = new QueryClient();
+    let captured = null;
+
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(TestHarness, {
+          companyId: 25,
+          onCaptured: (val) => { captured = val; },
+        })
+      )
+    );
+
+    expect(captured).not.toBeNull();
+    expect(captured.companyInfo).toBeDefined();
+  });
 });

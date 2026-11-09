@@ -64,7 +64,7 @@ describe('PlatformAnalyticsKorxonaDetailPage', () => {
     expect(html).toContain('1 oylik aylanma');
     expect(html).toContain('Haftalik');
     expect(html).toContain('Kunlik');
-    expect(html).toContain('512,4 mln');
+    expect(html).toContain('512 439 000 so‘m');
 
     // 3. Middle Section: Fiskal Donuts & Top Products
     expect(html).toContain('Fiskal holati');
@@ -97,7 +97,7 @@ describe('PlatformAnalyticsKorxonaDetailPage', () => {
     expect(html).toContain('Aminjon Samarqand XK');
     expect(html).toContain('STIR 300575194');
     expect(html).toContain('AS');
-    expect(html).toContain('479,1 mln');
+    expect(html).toContain('479 088 600 so‘m');
     expect(html).toContain('Плиты из травертина');
     expect(html).not.toContain('Makon Mobile');
   });

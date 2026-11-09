@@ -1,3 +1,5 @@
+import { buildQrPayload } from '../../../utils/fiscalReceiptFormat';
+
 const MON_SHORT = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'];
 const MON_FULL = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
 
@@ -49,7 +51,7 @@ export function prepareProductsList(rawProducts, sortType = 'sum', pageOrShowAll
     rank: start + idx + 1,
     name: p[0],
     qty: `${formatNumber(p[1])} dona`,
-    amount: `${formatCompact(p[2])} so‘m`,
+    amount: `${formatNumber(p[2])} so‘m`,
     share: formatPercent((p[2] / total) * 100),
     barWidth: `${Math.max(2, ((byQty ? p[1] : p[2]) / maxV) * 100)}%`,
   }));
@@ -77,8 +79,8 @@ export function prepareDayChips(receipts) {
       label: short,
       shortLabel: short,
       longLabel: long,
-      sub: `${rs.length} chek · ${formatCompact(daySum)}`,
-      subText: `${rs.length} chek · ${formatCompact(daySum)}`,
+      sub: `${rs.length} chek · ${formatNumber(daySum)} so‘m`,
+      subText: `${rs.length} chek · ${formatNumber(daySum)} so‘m`,
       totalAmount: daySum,
       hasPending,
     };
@@ -100,38 +102,57 @@ export function filterDayReceipts(receipts, day, kind = 'all') {
     totalFiscal,
     totalNonFiscal,
     totalCount: dayRecs.length,
+    dayTotalCount: dayRecs.length,
     dayTotal,
-    dayTotalFormatted: `${formatCompact(dayTotal)} so‘m`,
+    dayTotalFormatted: `${formatNumber(dayTotal)} so‘m`,
   };
 }
 
 export function prepareReceiptDetail(r) {
   if (!r) return null;
   if (!Array.isArray(r) && typeof r === 'object') {
-    const isFiscal = Boolean(r.printFiscalQr || r.fiscalSign || r.hasQr);
+    const hasFiscalSign = Boolean(r.fiscalSign && String(r.fiscalSign).trim() !== '' && r.fiscalSign !== '—');
+    const hasFiscalQr = Boolean(r.fiscalQrUrl && String(r.fiscalQrUrl).trim() !== '' && r.fiscalQrUrl !== '—');
+    const isFiscal = Boolean(hasFiscalSign || hasFiscalQr || r.fiscalStatus === 'FISCALIZED' || r.hasQr === true);
     const dateFormatted = r.createdAt ? `${r.createdAt.slice(0, 10).split('-').reverse().join('.')}, ${r.createdAt.slice(11, 16)}` : '—';
+    const qrValue = r.fiscalQrUrl || (isFiscal ? buildQrPayload(r) : null);
     return {
       no: r.receiptNumber || r.saleId || '—',
       when: dateFormatted,
-      items: (r.items || []).map((i) => ({
-        name: i.name,
-        line: `${formatNumber(i.quantity)} × ${formatNumber(i.price)}`,
-        total: formatNumber(i.total ?? (Number(i.quantity || 1) * Number(i.price || 0))),
-      })),
+      items: (r.items || []).map((i) => {
+        const qty = Number(i.quantity ?? 1);
+        const price = Number(i.unitPrice ?? i.price ?? 0);
+        const total = i.lineTotal != null ? Number(i.lineTotal) : (i.total != null ? Number(i.total) : qty * price);
+        return {
+          name: i.productName || i.name || 'Tovar',
+          line: `${formatNumber(qty)} × ${formatNumber(price)}`,
+          total: formatNumber(total),
+        };
+      }),
       subtotal: formatNumber(r.subtotal ?? r.totalAmount),
       tax: formatNumber(r.taxTotal ?? 0),
       total: formatNumber(r.totalAmount),
-      payMethod: r.paymentMethod === 'CASH' ? 'Naqd pul' : (r.paymentMethod === 'CARD' ? 'Plastik karta' : (r.paymentMethod || 'Naqd pul')),
+      payMethod: r.paymentMethod === 'CASH' ? 'Naqd pul' : (r.paymentMethod === 'CARD' ? 'Plastik karta' : (r.paymentMethod === 'CASHLESS' ? 'Karta / Naqdsiz' : (r.paymentMethod || 'Naqd pul'))),
       cashierName: r.cashierName || 'Kassir',
       storeName: r.storeName,
       isFiscal,
       fiscalSign: r.fiscalSign || '—',
       fiscalSeq: r.fiscalReceiptSeq || '—',
       fiscalTerminalId: r.fiscalTerminalId || '—',
+      fiscalQrUrl: r.fiscalQrUrl || null,
+      qrValue,
     };
   }
   const isFiscal = Boolean(r[7]);
   const dateFormatted = typeof r[1] === 'string' && r[1].includes('-') ? r[1].split('-').reverse().join('.') : r[1];
+  const qrValue = isFiscal
+    ? buildQrPayload({
+        fiscalTerminalId: r[11],
+        fiscalReceiptSeq: r[9],
+        fiscalSign: r[8],
+        createdAt: r[1] ? `${r[1]}T${r[2] || '00:00'}:00Z` : undefined,
+      })
+    : null;
   return {
     no: r[0],
     when: `${dateFormatted}, ${r[2]}`,
@@ -148,5 +169,7 @@ export function prepareReceiptDetail(r) {
     fiscalSign: r[8] || '—',
     fiscalSeq: r[9] || '—',
     fiscalTerminalId: r[11] || '—',
+    fiscalQrUrl: null,
+    qrValue,
   };
 }
