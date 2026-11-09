@@ -23,6 +23,8 @@ export default function RubberSegment({
   speed = 1,
   glide = 75,
   draggable = true,
+  /** Rubber spring on click/drag. Off = instant thumb jump (safer on heavy analytics pages). */
+  physics = true,
   disabled = false,
   className = '',
   'aria-label': ariaLabel = 'Segmented control',
@@ -49,8 +51,9 @@ export default function RubberSegment({
 
   const drag = useRubberDrag({
     disabled,
-    draggable,
+    draggable: physics && draggable,
     reduce: animation.reduce,
+    physics,
     index,
     list,
     inset,
