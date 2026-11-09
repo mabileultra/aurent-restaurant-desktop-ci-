@@ -14,6 +14,7 @@ import com.pos.taxanalytics.support.TaxAnalyticsKpiBuilder;
 import com.pos.taxanalytics.support.TaxAnalyticsMath;
 import com.pos.taxanalytics.support.TaxAnalyticsPeriod;
 import com.pos.taxanalytics.support.TaxAnalyticsRegionFilter;
+import com.pos.taxanalytics.support.TaxAnalyticsVerticalGeoEnricher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
     private final TaxAnalyticsOverviewQueryRepository overviewRepository;
     private final TaxAnalyticsKpiBuilder kpiBuilder;
     private final TaxAnalyticsMissingRegionRepository missingRegionRepository;
+    private final TaxAnalyticsVerticalGeoEnricher verticalGeoEnricher;
 
     @Override
     public TaxAnalyticsOverviewResponse overview(
@@ -74,6 +76,12 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             ),
             "region_code",
             "turnover"
+        );
+        verticalGeoEnricher.addToRegionTurnover(
+            curTurnover, range, regionCode, districtCode, businessType, search
+        );
+        verticalGeoEnricher.addToRegionTurnover(
+            prevTurnoverMap, prev, regionCode, districtCode, businessType, search
         );
 
         List<TaxAnalyticsRegionCardResponse> regions = new ArrayList<>();
@@ -145,9 +153,11 @@ public class TaxAnalyticsServiceImpl implements TaxAnalyticsService {
             );
         }
 
-        List<Map<String, Object>> raw = "DISTRICT".equals(resolvedLevel)
+        boolean districtLevel = "DISTRICT".equals(resolvedLevel);
+        List<Map<String, Object>> raw = districtLevel
             ? geoAggregateRepository.aggregateByDistrict(range, regionCode, connectionStatus, businessType)
             : geoAggregateRepository.aggregateByRegion(range, connectionStatus, businessType);
+        verticalGeoEnricher.addToGeoRows(raw, range, regionCode, businessType, districtLevel);
 
         List<TaxAnalyticsResultRowResponse> all = new ArrayList<>(raw.stream().map(r -> toGeoRow(r, resolvedLevel)).toList());
         if ("REGION".equals(resolvedLevel)) {

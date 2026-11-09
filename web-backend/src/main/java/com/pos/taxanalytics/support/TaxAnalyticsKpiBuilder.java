@@ -2,6 +2,7 @@ package com.pos.taxanalytics.support;
 
 import com.pos.taxanalytics.client.dto.TaxAnalyticsVerticalSnapshotDto;
 import com.pos.taxanalytics.dto.TaxAnalyticsKpiResponse;
+import com.pos.taxanalytics.repository.TaxAnalyticsCompanyScopeRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsOverviewQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
 import com.pos.taxanalytics.repository.TaxAnalyticsReceiptCountRepository;
@@ -20,6 +21,7 @@ public class TaxAnalyticsKpiBuilder {
     private final TaxAnalyticsQueryRepository repository;
     private final TaxAnalyticsOverviewQueryRepository overviewRepository;
     private final TaxAnalyticsReceiptCountRepository receiptCountRepository;
+    private final TaxAnalyticsCompanyScopeRepository companyScopeRepository;
     private final TaxAnalyticsVerticalSnapshotLoader verticalLoader;
 
     public TaxAnalyticsKpiResponse build(TaxAnalyticsPeriod range) {
@@ -37,21 +39,58 @@ public class TaxAnalyticsKpiBuilder {
         if (!TaxAnalyticsCompanyFilter.any(regionCode, districtCode, businessType, connectionStatus, search)) {
             return unfiltered(range);
         }
+        TaxAnalyticsWeekWindow week = TaxAnalyticsWeekWindow.current();
+        TaxAnalyticsPeriod prev = new TaxAnalyticsPeriod(
+            range.prevFrom(), range.prevTo(), range.prevFrom(), range.prevTo(), range.key()
+        );
+        TaxAnalyticsVerticalSnapshotLoader.Pair vertical = verticalLoader.load(
+            range.from(), range.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
+        );
+        TaxAnalyticsVerticalSnapshotLoader.Pair verticalPrev = verticalLoader.load(
+            prev.from(), prev.to(), week.weekFrom(), week.weekTo(), week.prevWeekFrom(), week.prevWeekTo()
+        );
+
+        Set<Integer> scope = companyScopeRepository.companyIds(regionCode, districtCode, businessType, search);
+        Set<Integer> groceryConnected = companyScopeRepository.groceryConnectedIds(
+            regionCode, districtCode, businessType, search
+        );
+        Set<Integer> connectedIds = new HashSet<>(groceryConnected);
+        connectedIds.addAll(TaxAnalyticsVerticalScope.connectedInScope(
+            vertical.restaurant(), vertical.pharmacy(), scope
+        ));
+        Set<Integer> moneyScope = applyConnection(scope, connectedIds, connectionStatus);
+
         long total = overviewRepository.countCompanies(regionCode, districtCode, businessType, connectionStatus, search);
-        long connected = overviewRepository.countConnected(regionCode, districtCode, businessType, connectionStatus, search);
+        // Restaurant Multikassa is outside grocery connected SQL — union into filtered totals.
+        if (connectionStatus == null || connectionStatus.isBlank()) {
+            total = Math.max(total, scope.size());
+        } else if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            total = Math.max(total, connectedIds.size());
+        }
+        long connected = "NOT_CONNECTED".equalsIgnoreCase(connectionStatus) ? 0L : connectedIds.size();
+        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            connected = total;
+        }
         long notConnected = Math.max(0, total - connected);
+
         BigDecimal fiscal = overviewRepository.sumTurnover(
             range, true, false, regionCode, districtCode, businessType, connectionStatus, search
         );
         BigDecimal nonFiscal = overviewRepository.sumTurnover(
             range, false, true, regionCode, districtCode, businessType, connectionStatus, search
         );
-        TaxAnalyticsPeriod prev = new TaxAnalyticsPeriod(
-            range.prevFrom(), range.prevTo(), range.prevFrom(), range.prevTo(), range.key()
+        TaxAnalyticsVerticalScope.Money verticalMoney = TaxAnalyticsVerticalScope.money(
+            vertical.restaurant(), vertical.pharmacy(), moneyScope
         );
+        fiscal = fiscal.add(verticalMoney.fiscal());
+        nonFiscal = nonFiscal.add(verticalMoney.nonFiscal());
+
         BigDecimal prevTurnover = overviewRepository.sumTurnover(
             prev, false, false, regionCode, districtCode, businessType, connectionStatus, search
-        );
+        ).add(TaxAnalyticsVerticalScope.money(
+            verticalPrev.restaurant(), verticalPrev.pharmacy(), moneyScope
+        ).total());
+
         BigDecimal totalTurnover = fiscal.add(nonFiscal);
         long[] receiptCounts = receiptCounts(range, regionCode, districtCode, businessType);
         return new TaxAnalyticsKpiResponse(
@@ -131,6 +170,34 @@ public class TaxAnalyticsKpiBuilder {
             errors,
             TaxAnalyticsMath.deltaPct(BigDecimal.valueOf(errors), BigDecimal.valueOf(prevErrors))
         );
+    }
+
+    private static Set<Integer> applyConnection(
+        Set<Integer> scope,
+        Set<Integer> connectedIds,
+        String connectionStatus
+    ) {
+        if (connectionStatus == null || connectionStatus.isBlank()) {
+            return scope;
+        }
+        Set<Integer> filtered = new HashSet<>();
+        if ("CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            for (Integer id : scope) {
+                if (connectedIds.contains(id)) {
+                    filtered.add(id);
+                }
+            }
+            return filtered;
+        }
+        if ("NOT_CONNECTED".equalsIgnoreCase(connectionStatus)) {
+            for (Integer id : scope) {
+                if (!connectedIds.contains(id)) {
+                    filtered.add(id);
+                }
+            }
+            return filtered;
+        }
+        return scope;
     }
 
     private long[] receiptCounts(
