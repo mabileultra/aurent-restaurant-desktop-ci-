@@ -2,7 +2,6 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useViloyatDetailAnalytics } from '../hooks/useViloyatDetailAnalytics';
 import ViloyatDetailHeader from '../components/ViloyatDetailHeader';
-import ViloyatBusinessTypeBar from '../components/ViloyatBusinessTypeBar';
 import ViloyatTurnoverSection from '../components/ViloyatTurnoverSection';
 import ViloyatSalesAnalysisSection from '../components/ViloyatSalesAnalysisSection';
 import ViloyatCompaniesTableSection from '../components/ViloyatCompaniesTableSection';
@@ -47,20 +46,20 @@ export default function PlatformAnalyticsViloyatDetailPage() {
   return (
     <div className="min-h-screen bg-[#F3F6F4] dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
       <ViloyatDetailHeader
-          padCode={padCode}
-          regionName={regionName}
-          meta={meta}
-          isDistrictView={isDistrictView}
-          districtCode={districtCode}
-          districtName={districtName}
-          onClearDistrict={onClearDistrict}
-        />
-
-        <ViloyatBusinessTypeBar
-          types={types}
-          activeType={activeType}
-          onSelectType={setActiveType}
-        />
+        padCode={padCode}
+        regionName={regionName}
+        meta={meta}
+        isDistrictView={isDistrictView}
+        districtCode={districtCode}
+        districtName={districtName}
+        onClearDistrict={onClearDistrict}
+        activeType={activeType}
+        types={types}
+        onSelectType={setActiveType}
+        turnover={turnover}
+        currentTypeConfig={currentTypeConfig}
+        connPercent={connPercent}
+      />
 
         <ViloyatTurnoverSection
           regionName={regionName}

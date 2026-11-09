@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { Image as ImageIcon } from 'lucide-react';
 import { formatCompact, formatPercent, calculateDeltaBadge } from '../utils/viloyatDetailUtils';
 
 function PeriodMiniCard({ label, sub, amount, delta, emptyText }) {
@@ -172,17 +171,23 @@ export default function ViloyatTurnoverSection({
         />
       </div>
 
-      <figure className="min-h-[220px] md:min-h-0 border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 rounded-xl bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex flex-col items-center justify-center gap-3 p-6 text-center shadow-xs">
-        <span className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-          <ImageIcon size={26} strokeWidth={1.8} />
-        </span>
-        <figcaption className="space-y-1">
-          <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 block">
-            {isDistrictView ? 'Tuman rasmi' : 'Viloyat rasmi'}
+      <figure className="relative min-h-[220px] md:min-h-0 rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-slate-950 shadow-xs group flex flex-col justify-end">
+        <img
+          src="/analytics/turnover-analytics.webp"
+          alt={isDistrictView ? districtName : regionName}
+          className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+        <figcaption className="relative z-10 p-5 space-y-1">
+          <span className="text-[11px] font-semibold text-emerald-400 block tracking-wider uppercase">
+            {isDistrictView ? 'Hududiy aylanma' : 'Viloyat aylanmasi'}
           </span>
-          <span className="text-xs text-slate-500 dark:text-slate-400 block">
-            {(isDistrictView ? districtName : regionName) || regionName} surati shu yerga qo‘yiladi
-          </span>
+          <h3 className="text-base sm:text-lg font-bold text-white drop-shadow-xs">
+            {(isDistrictView ? districtName : regionName) || regionName}
+          </h3>
+          <p className="text-xs text-slate-300/90 leading-tight">
+            Moliyaviy tahlil va aylanma dinamikasi
+          </p>
         </figcaption>
       </figure>
     </section>

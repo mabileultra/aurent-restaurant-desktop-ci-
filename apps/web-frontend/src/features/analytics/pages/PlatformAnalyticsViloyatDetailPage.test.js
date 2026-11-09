@@ -64,7 +64,9 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Haftalik');
     expect(html).toContain('Yillik');
     expect(html).toContain('Kunlik');
-    expect(html).toContain('Viloyat rasmi');
+    expect(html).toContain('grocery.jpg');
+    expect(html).toContain('restaurant.jpg');
+    expect(html).toContain('pharmacy.jpg');
 
     // 4. Sales Analysis Section
     expect(html).toContain('Savdo tahlili');
@@ -106,8 +108,7 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Tuman · kod 05');
     expect(html).toContain('Samarqand viloyati');
     expect(html).toContain('Viloyat ko‘rinishi');
-    expect(html).toContain('Tuman rasmi');
-    expect(html).toContain('Ishtixon tumani surati shu yerga qo‘yiladi');
+    expect(html).toContain('Aylanma · 30 kun');
   });
 
   it('renders district companies and excludes other districts when viewing Samarqand shahri', () => {
