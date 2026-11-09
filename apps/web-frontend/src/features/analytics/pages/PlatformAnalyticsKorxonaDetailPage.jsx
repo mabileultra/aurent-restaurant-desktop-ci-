@@ -38,7 +38,11 @@ export default function PlatformAnalyticsKorxonaDetailPage() {
         </nav>
 
         {/* 1. Header Card */}
-        <KorxonaHeaderCard companyInfo={companyInfo} />
+        <KorxonaHeaderCard
+          companyInfo={companyInfo}
+          totalReceiptsCount={analytics.totalReceiptsCount}
+          turnover={analytics.turnover}
+        />
 
         {/* 2. 4 KPI Cards */}
         <KorxonaKpiCards cards={analytics.cards} />

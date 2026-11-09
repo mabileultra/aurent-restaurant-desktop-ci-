@@ -87,7 +87,14 @@ export default function ViloyatSalesAnalysisSection({
               ))}
             </ol>
           ) : (
-            <p className="my-auto text-xs text-slate-400 text-center">Bu turdagi korxonalarda 30 kun ichida sotuv qayd etilmagan</p>
+            <div className="my-auto py-6 text-center space-y-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {isDistrictView ? 'Tuman bo‘yicha tovarlar tahlili kutilmoqda' : 'Viloyat bo‘yicha tovarlar tahlili kutilmoqda'}
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                Backend orqali tovarlar statistikasi integratsiyasi kutilmoqda
+              </p>
+            </div>
           )}
         </div>
 
@@ -122,7 +129,14 @@ export default function ViloyatSalesAnalysisSection({
               ))}
             </ol>
           ) : (
-            <p className="my-auto text-xs text-slate-400 text-center">Bu turdagi korxonalarda 30 kun ichida sotuv qayd etilmagan</p>
+            <div className="my-auto py-6 text-center space-y-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Eng kam sotilgan tovarlar ro‘yxati kutilmoqda
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                Backend orqali tovarlar statistikasi integratsiyasi kutilmoqda
+              </p>
+            </div>
           )}
         </div>
 
