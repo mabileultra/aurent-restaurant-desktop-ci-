@@ -33,5 +33,8 @@ class TaxAnalyticsVerticalMergeTest {
         assertEquals(new BigDecimal("150000"), merged.nonFiscalTurnover());
         assertEquals(new BigDecimal("150000"), merged.totalTurnover());
         assertEquals(new BigDecimal("40000"), merged.weekTurnover());
+        assertEquals(new BigDecimal("20000"), merged.prevWeekTurnover());
+        assertEquals(new BigDecimal("20000"), merged.weekDeltaAmount());
+        assertEquals(new BigDecimal("100.0"), merged.weekDeltaPct());
     }
 }

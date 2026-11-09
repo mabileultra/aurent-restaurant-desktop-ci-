@@ -160,6 +160,8 @@ class TaxAnalyticsCompanyServiceImplTest {
         row.put("non_fiscal_turnover", new BigDecimal("20"));
         row.put("week_turnover", new BigDecimal("50"));
         row.put("prev_week_turnover", new BigDecimal("40"));
+        // SQL always COALESCE's this; must not steal weekDelta* into period-over-period.
+        row.put("prev_period_turnover", new BigDecimal("0"));
         return row;
     }
 }

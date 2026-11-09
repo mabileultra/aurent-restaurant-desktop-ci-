@@ -15,13 +15,7 @@ public final class TaxAnalyticsCompanyRowMapper {
         BigDecimal nonFiscal = TaxAnalyticsWeekMath.decimal(row.get("non_fiscal_turnover"));
         BigDecimal week = TaxAnalyticsWeekMath.decimal(row.get("week_turnover"));
         BigDecimal prevWeek = TaxAnalyticsWeekMath.decimal(row.get("prev_week_turnover"));
-        BigDecimal currentDelta = fiscal.add(nonFiscal);
-        BigDecimal previousDelta = row.get("prev_period_turnover") == null
-            ? prevWeek
-            : TaxAnalyticsWeekMath.decimal(row.get("prev_period_turnover"));
-        if (row.get("prev_period_turnover") == null) {
-            currentDelta = week;
-        }
+        // weekDelta* = rolling 7d vs previous 7d (ignore prev_period_turnover from list SQL).
         return new TaxAnalyticsCompanyRowResponse(
             ((Number) row.get("company_id")).intValue(),
             text(row.get("name")),
@@ -44,8 +38,8 @@ public final class TaxAnalyticsCompanyRowMapper {
             fiscal.add(nonFiscal),
             week,
             prevWeek,
-            TaxAnalyticsWeekMath.deltaAmount(currentDelta, previousDelta),
-            TaxAnalyticsWeekMath.deltaPct(currentDelta, previousDelta)
+            TaxAnalyticsWeekMath.deltaAmount(week, prevWeek),
+            TaxAnalyticsWeekMath.deltaPct(week, prevWeek)
         );
     }
 

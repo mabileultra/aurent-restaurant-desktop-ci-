@@ -85,8 +85,8 @@ public final class TaxAnalyticsVerticalMerge {
             fiscal.add(nonFiscal),
             week,
             prevWeek,
-            base.weekDeltaAmount(),
-            base.weekDeltaPct()
+            TaxAnalyticsWeekMath.deltaAmount(week, prevWeek),
+            TaxAnalyticsWeekMath.deltaPct(week, prevWeek)
         );
     }
 
