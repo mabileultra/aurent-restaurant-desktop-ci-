@@ -45,7 +45,7 @@ export default function ViloyatTurnoverSection({
   rangeLabel = '10-okt – 8-noy',
 }) {
   return (
-    <section aria-label="Pul aylanmasi" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <section aria-label="Pul aylanmasi" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {/* 1. Big Card: Umumiy aylanma */}
       <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-xs">
         <div className="space-y-2">
@@ -152,6 +152,27 @@ export default function ViloyatTurnoverSection({
           emptyText={hasSales ? 'Oxirgi savdo qayd etilgan' : 'Savdo yo‘q'}
         />
       </div>
+
+      {/* 3. Moliyaviy tahlil rasmli karta */}
+      <figure className="relative min-h-[220px] md:min-h-0 rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-slate-950 shadow-xs group flex flex-col justify-end">
+        <img
+          src="/analytics/turnover-analytics.webp"
+          alt={isDistrictView ? districtName : regionName}
+          className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+        <figcaption className="relative z-10 p-5 space-y-1">
+          <span className="text-[11px] font-semibold text-emerald-400 block tracking-wider uppercase">
+            {isDistrictView ? 'Hududiy aylanma' : 'Viloyat aylanmasi'}
+          </span>
+          <h3 className="text-base sm:text-lg font-bold text-white drop-shadow-xs">
+            {(isDistrictView ? districtName : regionName) || regionName}
+          </h3>
+          <p className="text-xs text-slate-300/90 leading-tight">
+            Moliyaviy tahlil va aylanma dinamikasi
+          </p>
+        </figcaption>
+      </figure>
     </section>
   );
 }

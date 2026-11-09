@@ -71,10 +71,13 @@ export function useRubberAnimation({
   const listKey = list.map((item) => item.value).join('|');
   useLayoutEffect(() => {
     measure();
-    const observer = new ResizeObserver(measure);
-    if (trackRef.current) observer.observe(trackRef.current);
+    let observer;
+    if (typeof ResizeObserver !== 'undefined' && trackRef.current) {
+      observer = new ResizeObserver(measure);
+      observer.observe(trackRef.current);
+    }
     if (typeof document !== 'undefined' && document.fonts) document.fonts.ready.then(measure);
-    return () => observer.disconnect();
+    return () => observer?.disconnect();
   }, [listKey, size, inset, equalSlots]);
 
   useEffect(() => () => {

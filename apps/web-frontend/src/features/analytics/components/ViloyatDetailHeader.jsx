@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Layers } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import ViloyatHeroBackground from './ViloyatHeroBackground';
+import RubberSegment from '../../../components/ui/rubber-segment/RubberSegment';
 import { formatCompact, formatPercent } from '../utils/viloyatDetailUtils';
 
 const SUBTITLES = {
@@ -42,6 +43,21 @@ export default function ViloyatDetailHeader({
   const subtitleResolver = SUBTITLES[activeType] || SUBTITLES.A;
   const resolvedSubtitle = subtitleResolver(isDistrictView);
   const displayTitle = isDistrictView ? districtName : regionName;
+  const segmentItems = useMemo(
+    () =>
+      types.map((t) => ({
+        value: t.id,
+        label: (
+          <span className="inline-flex items-center gap-2">
+            <span>{t.label}</span>
+            <span className="viloyat-tab-badge min-w-5 h-5 px-1.5 rounded-full inline-flex items-center justify-center text-xs font-bold tabular-nums">
+              {t.n}
+            </span>
+          </span>
+        ),
+      })),
+    [types]
+  );
 
   return (
     <header className="relative rounded-2xl overflow-hidden bg-slate-950 text-white shadow-xl border border-slate-800/80">
@@ -50,8 +66,8 @@ export default function ViloyatDetailHeader({
 
       {/* Hero content overlay */}
       <div className="relative z-10 p-5 sm:p-7 space-y-6">
-        {/* Top Breadcrumb & Action Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Top Breadcrumb Row */}
+        <div>
           <nav aria-label="Joylashuv" className="flex items-center gap-2 text-xs sm:text-sm text-slate-300">
             <Link
               to="/platform/analytics/viloyatlar"
@@ -77,15 +93,6 @@ export default function ViloyatDetailHeader({
               <span className="font-semibold text-white">{regionName}</span>
             )}
           </nav>
-
-          <Link
-            to={isDistrictView ? `/platform/analytics/viloyatlar/${padCode}` : '/platform/analytics/viloyatlar'}
-            onClick={isDistrictView ? onClearDistrict : undefined}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md text-xs font-semibold border border-white/10 transition shadow-xs"
-          >
-            <Layers size={14} />
-            {isDistrictView ? 'Viloyat ko‘rinishi' : 'Barcha tumanlar'}
-          </Link>
         </div>
 
         {/* Title, Badge and Subtitle */}
@@ -117,40 +124,27 @@ export default function ViloyatDetailHeader({
           </div>
         </div>
 
-        {/* Integrated Bottom Tabs Bar */}
-        {types.length > 0 && (
-          <div
-            role="group"
-            aria-label="Faoliyat turi bo‘yicha ajratish"
-            className="bg-white dark:bg-slate-900 rounded-2xl p-1.5 flex flex-wrap gap-1 shadow-lg border border-slate-200/80 dark:border-slate-800"
-          >
-            {types.map((t) => {
-              const isActive = t.id === activeType;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  aria-pressed={isActive}
-                  onClick={() => onSelectType(t.id)}
-                  className={`flex-1 min-w-[120px] sm:min-w-[140px] h-11 px-3 sm:px-4 rounded-xl inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold transition cursor-pointer select-none ${
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <span>{t.label}</span>
-                  <span
-                    className={`min-w-6 h-5 px-1.5 rounded-full inline-flex items-center justify-center text-xs font-bold tabular-nums ${
-                      isActive
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                    }`}
-                  >
-                    {t.n}
-                  </span>
-                </button>
-              );
-            })}
+        {/* Integrated Bottom Rubber Segmented Tabs */}
+        {segmentItems.length > 0 && (
+          <div className="w-full overflow-x-auto pb-0.5">
+            <div className="min-w-[560px] sm:min-w-0">
+              <RubberSegment
+                items={segmentItems}
+                value={activeType}
+                onChange={(val) => onSelectType(val)}
+                size="lg"
+                radius={16}
+                inset={4}
+                equalSlots
+                stretch={100}
+                squash={3}
+                speed={1}
+                glide={75}
+                draggable
+                className="rubber-segment--viloyat w-full shadow-lg border border-slate-200/80 dark:border-slate-800"
+                aria-label="Faoliyat turi bo‘yicha ajratish"
+              />
+            </div>
           </div>
         )}
       </div>
