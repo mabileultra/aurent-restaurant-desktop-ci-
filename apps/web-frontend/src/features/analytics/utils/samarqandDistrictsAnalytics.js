@@ -33,6 +33,7 @@ export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES, backend
   if (Array.isArray(backendResultsRows)) {
     backendResultsRows.forEach((r) => {
       const raw = String(r.code || '');
+      if (raw.toUpperCase() === 'UNASSIGNED') return;
       rowsMap.set(raw, r);
       if (raw.length >= 2) {
         rowsMap.set(raw.slice(-2), r);

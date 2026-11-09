@@ -37,7 +37,7 @@ public class TaxAnalyticsReportController {
     private final TaxAnalyticsReportService taxAnalyticsReportService;
     private final TaxAnalyticsExportServiceImpl taxAnalyticsExportService;
 
-    @GetMapping("/overview/daily")
+    @GetMapping({"/overview/daily", "/results/daily"})
     @PreAuthorize(ANALYTICS)
     @Operation(summary = "Daily turnover by region/district/businessType. Asia/Tashkent day boundaries.")
     public ResponseEntity<TaxAnalyticsDailyResponse> daily(
@@ -53,7 +53,7 @@ public class TaxAnalyticsReportController {
         ));
     }
 
-    @GetMapping("/products")
+    @GetMapping({"/products", "/results/products"})
     @PreAuthorize(ANALYTICS)
     @Operation(summary = "Top and bottom sold products for region/district/businessType")
     public ResponseEntity<TaxAnalyticsProductsResponse> products(

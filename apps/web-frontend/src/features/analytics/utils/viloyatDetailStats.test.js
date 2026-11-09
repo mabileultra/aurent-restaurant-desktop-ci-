@@ -42,6 +42,7 @@ describe('viloyatDetailStats', () => {
     expect(normalizeBackendCompany({ companyId: 2, businessType: 'RESTAURANT' })[4]).toBe('R');
     expect(normalizeBackendCompany({ companyId: 3, businessType: 'PHARMACY' })[4]).toBe('P');
     expect(normalizeBackendCompany({ companyId: 4, businessType: 'UNIVERSAL' })[4]).toBe('O');
+    expect(normalizeBackendCompany({ companyId: 5, business_type: 'RETAIL' })[4]).toBe('F');
   });
 
   it('keeps existing array as-is', () => {

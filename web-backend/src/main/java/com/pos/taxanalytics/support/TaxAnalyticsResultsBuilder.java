@@ -1,0 +1,228 @@
+package com.pos.taxanalytics.support;
+
+import com.pos.taxanalytics.dto.TaxAnalyticsKpiResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsResultRowResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsResultsResponse;
+import com.pos.taxanalytics.repository.TaxAnalyticsGeoAggregateRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsGeoWindowsRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsMissingRegionRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsQueryRepository;
+import com.pos.taxanalytics.repository.TaxAnalyticsUnassignedDistrictRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Component
+@RequiredArgsConstructor
+public class TaxAnalyticsResultsBuilder {
+
+    private final TaxAnalyticsQueryRepository repository;
+    private final TaxAnalyticsGeoAggregateRepository geoAggregateRepository;
+    private final TaxAnalyticsGeoWindowsRepository geoWindowsRepository;
+    private final TaxAnalyticsMissingRegionRepository missingRegionRepository;
+    private final TaxAnalyticsUnassignedDistrictRepository unassignedDistrictRepository;
+    private final TaxAnalyticsVerticalGeoEnricher verticalGeoEnricher;
+    private final TaxAnalyticsKpiBuilder kpiBuilder;
+
+    public TaxAnalyticsResultsResponse build(
+        TaxAnalyticsPeriod range,
+        String regionCode,
+        String districtCode,
+        String businessType,
+        String connectionStatus,
+        String search,
+        String level,
+        int page,
+        int size
+    ) {
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        String resolvedLevel = resolveLevel(level, regionCode, districtCode, search);
+
+        if ("ENTERPRISE".equals(resolvedLevel)) {
+            long total = repository.countEnterprises(
+                range, regionCode, districtCode, businessType, connectionStatus, search
+            );
+            List<Map<String, Object>> raw = repository.aggregateEnterprises(
+                range, regionCode, districtCode, businessType, connectionStatus, search, safeSize, safePage * safeSize
+            );
+            List<TaxAnalyticsResultRowResponse> rows = new ArrayList<>();
+            for (Map<String, Object> row : raw) {
+                rows.add(toEnterpriseRow(row));
+            }
+            return new TaxAnalyticsResultsResponse(
+                range.key(), range.from().toString(), range.to().toString(),
+                resolvedLevel, regionCode, total, safePage, safeSize, rows, null
+            );
+        }
+
+        boolean districtLevel = "DISTRICT".equals(resolvedLevel);
+        List<Map<String, Object>> raw = districtLevel
+            ? geoAggregateRepository.aggregateByDistrict(range, regionCode, connectionStatus, businessType)
+            : geoAggregateRepository.aggregateByRegion(range, connectionStatus, businessType);
+        verticalGeoEnricher.addToGeoRows(raw, range, regionCode, businessType, districtLevel);
+        Map<String, Map<String, Object>> windows = districtLevel
+            ? geoWindowsRepository.byDistrict(regionCode, connectionStatus, businessType)
+            : geoWindowsRepository.byRegion(connectionStatus, businessType);
+
+        List<TaxAnalyticsResultRowResponse> all = new ArrayList<>(
+            raw.stream().map(r -> toGeoRow(r, resolvedLevel, windows)).toList()
+        );
+        if ("REGION".equals(resolvedLevel)) {
+            appendMissingRegionRow(all, range, connectionStatus, windows);
+        }
+        if (districtLevel && regionCode != null && !regionCode.isBlank()) {
+            appendUnassignedDistrictRow(all, range, regionCode, connectionStatus, businessType, windows);
+        }
+
+        TaxAnalyticsKpiResponse summary = kpiBuilder.build(
+            range, regionCode, null, businessType, connectionStatus, search
+        );
+
+        long total = all.size();
+        int fromIdx = Math.min(safePage * safeSize, all.size());
+        int toIdx = Math.min(fromIdx + safeSize, all.size());
+        return new TaxAnalyticsResultsResponse(
+            range.key(), range.from().toString(), range.to().toString(),
+            resolvedLevel, regionCode, total, safePage, safeSize, all.subList(fromIdx, toIdx), summary
+        );
+    }
+
+    static String resolveLevel(String level, String regionCode, String districtCode, String search) {
+        if (level != null && !level.isBlank()) {
+            return level.trim().toUpperCase();
+        }
+        if (search != null && !search.isBlank()) {
+            return "ENTERPRISE";
+        }
+        if (districtCode != null && !districtCode.isBlank()) {
+            return "ENTERPRISE";
+        }
+        if (TaxAnalyticsRegionFilter.isMissing(regionCode)) {
+            return "ENTERPRISE";
+        }
+        if (regionCode != null && !regionCode.isBlank()) {
+            return "DISTRICT";
+        }
+        return "REGION";
+    }
+
+    private void appendUnassignedDistrictRow(
+        List<TaxAnalyticsResultRowResponse> rows,
+        TaxAnalyticsPeriod range,
+        String regionCode,
+        String connectionStatus,
+        String businessType,
+        Map<String, Map<String, Object>> windows
+    ) {
+        Map<String, Object> row = unassignedDistrictRepository.totals(
+            range, regionCode, connectionStatus, businessType
+        );
+        if (!TaxAnalyticsUnassignedDistrictRepository.hasSignal(row)) {
+            return;
+        }
+        row.put("code", TaxAnalyticsDistrictFilter.UNASSIGNED_CODE);
+        row.put("name_ru", TaxAnalyticsDistrictFilter.UNASSIGNED_NAME_RU);
+        row.put("name_uz", TaxAnalyticsDistrictFilter.UNASSIGNED_NAME_UZ);
+        rows.add(toGeoRow(row, "DISTRICT", windows));
+    }
+
+    private void appendMissingRegionRow(
+        List<TaxAnalyticsResultRowResponse> rows,
+        TaxAnalyticsPeriod range,
+        String connectionStatus,
+        Map<String, Map<String, Object>> windows
+    ) {
+        Map<String, Object> row = missingRegionRepository.totals(range, connectionStatus);
+        if (!TaxAnalyticsMissingRegionRepository.hasSignal(row)) {
+            return;
+        }
+        row.put("code", TaxAnalyticsRegionFilter.MISSING_CODE);
+        row.put("name_ru", TaxAnalyticsRegionFilter.MISSING_NAME_RU);
+        row.put("name_uz", TaxAnalyticsRegionFilter.MISSING_NAME_UZ);
+        rows.add(toGeoRow(row, "REGION", windows));
+    }
+
+    private static TaxAnalyticsResultRowResponse toGeoRow(
+        Map<String, Object> row,
+        String level,
+        Map<String, Map<String, Object>> windows
+    ) {
+        long enterprises = ((Number) row.get("enterprises")).longValue();
+        long connected = row.get("connected") instanceof Number number ? number.longValue() : 0L;
+        long notConnected = Math.max(0, enterprises - connected);
+        BigDecimal fiscal = decimal(row.get("fiscal_turnover"));
+        BigDecimal nonFiscal = decimal(row.get("non_fiscal_turnover"));
+        BigDecimal total = fiscal.add(nonFiscal);
+        BigDecimal prev = decimal(row.get("prev_turnover"));
+        Map<String, Object> window = windows == null ? null : windows.get(String.valueOf(row.get("code")));
+        BigDecimal week = decimal(window == null ? null : window.get("week_turnover"));
+        BigDecimal prevWeek = decimal(window == null ? null : window.get("prev_week_turnover"));
+        BigDecimal today = decimal(window == null ? null : window.get("today_turnover"));
+        BigDecimal year = decimal(window == null ? null : window.get("year_turnover"));
+        return new TaxAnalyticsResultRowResponse(
+            String.valueOf(row.get("code")),
+            row.get("name_ru") == null ? String.valueOf(row.get("code")) : String.valueOf(row.get("name_ru")),
+            row.get("name_uz") == null ? String.valueOf(row.get("code")) : String.valueOf(row.get("name_uz")),
+            enterprises,
+            connected,
+            TaxAnalyticsMath.share(connected, enterprises),
+            notConnected,
+            TaxAnalyticsMath.share(notConnected, enterprises),
+            fiscal,
+            nonFiscal,
+            total,
+            TaxAnalyticsMath.shareAmount(fiscal, total),
+            TaxAnalyticsMath.deltaPct(total, prev),
+            level,
+            week,
+            TaxAnalyticsMath.deltaPct(week, prevWeek),
+            today,
+            year
+        );
+    }
+
+    private static TaxAnalyticsResultRowResponse toEnterpriseRow(Map<String, Object> row) {
+        boolean connected = ((Number) row.get("connected")).intValue() == 1;
+        BigDecimal fiscal = decimal(row.get("fiscal_turnover"));
+        BigDecimal nonFiscal = decimal(row.get("non_fiscal_turnover"));
+        BigDecimal total = fiscal.add(nonFiscal);
+        BigDecimal prev = decimal(row.get("prev_turnover"));
+        String name = String.valueOf(row.get("name_ru"));
+        Object tin = row.get("tin");
+        if (tin != null && !String.valueOf(tin).isBlank()) {
+            name = name + " · " + tin;
+        }
+        return new TaxAnalyticsResultRowResponse(
+            String.valueOf(row.get("code")),
+            name,
+            name,
+            1,
+            connected ? 1 : 0,
+            connected ? BigDecimal.valueOf(100) : BigDecimal.ZERO,
+            connected ? 0 : 1,
+            connected ? BigDecimal.ZERO : BigDecimal.valueOf(100),
+            fiscal,
+            nonFiscal,
+            total,
+            TaxAnalyticsMath.shareAmount(fiscal, total),
+            TaxAnalyticsMath.deltaPct(total, prev),
+            "ENTERPRISE",
+            BigDecimal.ZERO,
+            null,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO
+        );
+    }
+
+    private static BigDecimal decimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(value.toString());
+    }
+}

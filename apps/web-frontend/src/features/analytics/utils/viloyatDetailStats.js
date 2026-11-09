@@ -24,7 +24,9 @@ export function normalizeBackendCompany(raw) {
   const tin = raw.tin || '_';
   const rawDist = String(raw.districtCode || '');
   const districtCode = rawDist.length > 2 ? rawDist.slice(-2) : rawDist.padStart(2, '0');
-  const type = mapBusinessTypeTabCode(raw.businessType || raw.activitySubtype);
+  const type = mapBusinessTypeTabCode(
+    raw.businessType || raw.business_type || raw.activitySubtype || raw.activity_subtype
+  );
   const isConnected = raw.connected ? 1 : 0;
   const storeCount = raw.storeCount || 1;
   const turnover = Number(raw.totalTurnover || 0);
