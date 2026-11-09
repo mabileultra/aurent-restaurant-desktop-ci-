@@ -13,9 +13,6 @@ export default function ViloyatCompaniesTableSection({
   regionCode,
   searchQuery,
   onSearchChange,
-  districtOptions,
-  selectedDistrict,
-  onDistrictChange,
   selectedStatus,
   onStatusChange,
   tableData,
@@ -54,21 +51,11 @@ export default function ViloyatCompaniesTableSection({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 shrink-0">Tuman:</span>
-          <PlatformSelect
-            value={selectedDistrict}
-            onChange={onDistrictChange}
-            options={districtOptions}
-            size="sm"
-            aria-label="Tuman bo‘yicha filtr"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
           <span className="text-xs text-slate-500 shrink-0">Holati:</span>
           <PlatformSelect
             value={selectedStatus}
-            onChange={onStatusChange}
+            onChange={(e) => onStatusChange?.(e?.target?.value ?? e)}
+            onValueChange={onStatusChange}
             options={STATUS_OPTIONS}
             size="sm"
             aria-label="Holat bo‘yicha filtr"

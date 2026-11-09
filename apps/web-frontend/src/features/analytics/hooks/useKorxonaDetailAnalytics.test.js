@@ -47,7 +47,32 @@ describe('useKorxonaDetailAnalytics', () => {
     expect(captured.products).toHaveLength(10);
     expect(captured.dayChips).toHaveLength(11);
     expect(captured.dayReceipts.length).toBeGreaterThan(0);
+    expect(captured.pagedReceipts.length).toBeLessThanOrEqual(10);
+    expect(captured.receiptPage).toBe(0);
+    expect(captured.receiptFrom).toBe(1);
+    expect(captured.receiptTotalCount).toBe(captured.dayReceipts.length);
     expect(captured.receiptDetail).not.toBeNull();
+  });
+
+  it('provides pagination methods for receipts', () => {
+    const queryClient = new QueryClient();
+    let captured = null;
+
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(TestHarness, {
+          companyId: 103,
+          onCaptured: (val) => { captured = val; },
+        })
+      )
+    );
+
+    expect(captured).not.toBeNull();
+    expect(typeof captured.onNextReceiptPage).toBe('function');
+    expect(typeof captured.onPrevReceiptPage).toBe('function');
+    expect(captured.receiptTotalPages).toBeGreaterThanOrEqual(1);
   });
 
   it('correctly loads Aminjon Samarqand XK when companyId is 29 without falling back to Makon Mobile', () => {

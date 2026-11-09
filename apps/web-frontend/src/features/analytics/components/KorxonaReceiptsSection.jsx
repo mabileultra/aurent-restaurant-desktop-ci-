@@ -1,6 +1,8 @@
 import React from 'react';
 import { formatNumber } from '../utils/korxonaDetailUtils';
 import { KorxonaReceiptSlip } from './KorxonaReceiptSlip';
+import { KorxonaReceiptsPagination } from './KorxonaReceiptsPagination';
+import { KorxonaReceiptRow } from './KorxonaReceiptRow';
 
 function DayNavBtn({ dir, onClick, disabled, label }) {
   return (
@@ -31,6 +33,7 @@ export function KorxonaReceiptsSection({
   fiscalKind,
   setFiscalKind,
   dayReceipts = [],
+  pagedReceipts,
   totalFiscal = 0,
   totalNonFiscal = 0,
   dayTotalCount = 0,
@@ -40,6 +43,13 @@ export function KorxonaReceiptsSection({
   selectedReceiptNo,
   onSelectReceipt,
   receiptDetail,
+  receiptPage = 0,
+  receiptFrom,
+  receiptTo,
+  receiptTotalPages = 1,
+  receiptTotalCount,
+  onPrevReceiptPage,
+  onNextReceiptPage,
 }) {
   const currentChip = dayChips[dayIndex] || dayChips[0];
   const fiscalFilters = [
@@ -47,6 +57,11 @@ export function KorxonaReceiptsSection({
     { key: 'f', label: `Fiskal ${totalFiscal}` },
     { key: 'n', label: `Fiskalsiz ${totalNonFiscal}` },
   ];
+  const visibleReceipts = pagedReceipts || dayReceipts;
+  const totalCount = receiptTotalCount ?? dayReceipts.length;
+  const from = receiptFrom ?? (totalCount === 0 ? 0 : 1);
+  const to = receiptTo ?? visibleReceipts.length;
+  const totalPages = receiptTotalPages ?? 1;
 
   return (
     <div className="flex flex-wrap gap-4 items-start">
@@ -138,45 +153,30 @@ export function KorxonaReceiptsSection({
               <span>Holati</span>
             </div>
             <ul aria-label="Kun cheklari" className="divide-y divide-slate-100 dark:divide-slate-800/60 max-h-128 overflow-y-auto">
-              {dayReceipts.map((r) => {
-                const isSelected = r[0] === selectedReceiptNo;
-                const isFiscal = Boolean(r[7]);
-                return (
-                  <li key={r[0]}>
-                    <button
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => onSelectReceipt(r[0])}
-                      className={`w-full text-left grid grid-cols-[minmax(160px,1.5fr)_64px_72px_70px_minmax(110px,1fr)_90px] gap-2 items-center px-5 py-3 text-xs transition ${
-                        isSelected
-                          ? 'bg-[#EAF1FE] dark:bg-blue-950/50 border-l-[3px] border-l-[#2563EB] text-blue-950 dark:text-blue-100 font-semibold'
-                          : 'hover:bg-[#F5F8FF] dark:hover:bg-slate-800/40 border-l-[3px] border-l-transparent text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">{r[0]}</span>
-                      <span className="font-mono text-slate-500">{r[2]}</span>
-                      <span className="text-slate-500">{r[6] === 'CASH' ? 'Naqd' : 'Karta'}</span>
-                      <span className="text-right font-mono text-slate-500">{(r[10] || []).reduce((s, i) => s + (i[1] || 0), 0)} dona</span>
-                      <span className="text-right font-mono font-bold text-slate-900 dark:text-white">{formatNumber(r[5])}</span>
-                      <span>
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${isFiscal ? 'bg-[#E7F6EE] text-[#0E7C4F]' : 'bg-[#FDECEC] text-[#B42318]'}`}>
-                          {isFiscal ? 'QR bilan' : 'Fiskalsiz'}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-              {dayReceipts.length === 0 && (
+              {visibleReceipts.map((r) => (
+                <KorxonaReceiptRow
+                  key={r[0]}
+                  receipt={r}
+                  isSelected={r[0] === selectedReceiptNo}
+                  onSelect={onSelectReceipt}
+                />
+              ))}
+              {visibleReceipts.length === 0 && (
                 <li className="py-12 text-center text-xs text-slate-400">Bu kunda bunday chek topilmadi</li>
               )}
             </ul>
           </div>
         </div>
 
-        <div className="p-3 sm:px-5 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 flex justify-between items-center">
-          <span>{dayReceipts.length} ta chek ko‘rsatilmoqda · chekni bosing, o‘ng tomonda ochiladi</span>
-        </div>
+        <KorxonaReceiptsPagination
+          page={receiptPage}
+          from={from}
+          to={to}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPrevPage={onPrevReceiptPage}
+          onNextPage={onNextReceiptPage}
+        />
       </section>
 
       <KorxonaReceiptSlip receiptDetail={receiptDetail} companyInfo={companyInfo} />

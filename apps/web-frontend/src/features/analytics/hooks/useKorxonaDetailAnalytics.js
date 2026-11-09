@@ -11,6 +11,7 @@ import {
   resolveCompanyInfo, resolveCompanyCards, resolveCompanyDonuts,
   resolveCompanyProducts, resolveCompanyReceipts,
 } from '../utils/korxonaCompanyResolver';
+import { paginateList } from '../utils/korxonaPaginationUtils';
 
 export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
   const numId = Number(companyId || 103);
@@ -20,8 +21,10 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
   const [selectedDay, setSelectedDay] = useState('2026-10-28');
   const [fiscalKind, setFiscalKind] = useState('all');
   const [selectedReceiptNo, setSelectedReceiptNo] = useState('');
+  const [receiptPage, setReceiptPage] = useState(0);
 
   useEffect(() => { setProductPage(0); }, [productSort, numId]);
+  useEffect(() => { setReceiptPage(0); }, [selectedDay, fiscalKind, numId]);
 
   const { data: realCompany } = useQuery({
     queryKey: ['company-by-id', numId],
@@ -118,13 +121,21 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     [rawReceipts, queryDay, fiscalKind]
   );
 
+  const {
+    rows: pagedReceipts,
+    totalCount: receiptTotalCount,
+    from: receiptFrom,
+    to: receiptTo,
+    totalPages: receiptTotalPages,
+  } = useMemo(() => paginateList(dayReceipts, receiptPage, 10), [dayReceipts, receiptPage]);
+
   const activeReceiptRow = useMemo(() => {
     if (selectedReceiptNo) {
-      const found = dayReceipts.find((r) => r[0] === selectedReceiptNo || r[11] === selectedReceiptNo);
+      const found = pagedReceipts.find((r) => r[0] === selectedReceiptNo || r[11] === selectedReceiptNo);
       if (found) return found;
     }
-    return dayReceipts[0] || null;
-  }, [dayReceipts, selectedReceiptNo]);
+    return pagedReceipts[0] || null;
+  }, [pagedReceipts, selectedReceiptNo]);
 
   const activeSaleId = activeReceiptRow?.[11];
   const isValidSaleUuid = typeof activeSaleId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(activeSaleId.trim());
@@ -164,7 +175,12 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     onNextDay: () => { if (dayIndex < dayChips.length - 1) { setSelectedDay(dayChips[dayIndex + 1].date); setSelectedReceiptNo(''); } },
     onSelectDay: (d) => { setSelectedDay(d); setSelectedReceiptNo(''); },
     fiscalKind, setFiscalKind: (k) => { setFiscalKind(k); setSelectedReceiptNo(''); },
-    dayReceipts, totalFiscal, totalNonFiscal, dayTotalCount, dayTotal,
+    dayReceipts, pagedReceipts, receiptPage, receiptFrom, receiptTo,
+    receiptTotalPages, receiptTotalCount,
+    onPrevReceiptPage: () => { setReceiptPage((p) => Math.max(0, p - 1)); setSelectedReceiptNo(''); },
+    onNextReceiptPage: () => { setReceiptPage((p) => Math.min(receiptTotalPages - 1, p + 1)); setSelectedReceiptNo(''); },
+    setReceiptPage,
+    totalFiscal, totalNonFiscal, dayTotalCount, dayTotal,
     dayTotalFormatted: `${formatNumber(dayTotal)} so‘m`,
     // Prefer detail COUNT from backend — avoid waiting on /receipts list for header KPI.
     totalReceiptsCount: detailReceiptCount || receiptsData?.totalElements || dayTotalCount,

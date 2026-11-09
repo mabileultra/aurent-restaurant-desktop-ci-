@@ -83,6 +83,9 @@ describe('PlatformAnalyticsKorxonaDetailPage', () => {
     expect(html).toContain('Chek №');
     expect(html).toContain('JAMI');
     expect(html).toContain('QQS');
+    expect(html).toContain('Oldingi 10 ta chek');
+    expect(html).toContain('Keyingi 10 ta chek');
+    expect(html).toContain('ta chek');
   });
 
   it('renders correctly when accessed via direct /platform/analytics/companies/:companyId', () => {

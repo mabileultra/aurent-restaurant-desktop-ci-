@@ -49,7 +49,7 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     // 1. Header & Breadcrumbs
     expect(html).toContain('Samarqand viloyati');
     expect(html).toContain('Viloyat · kod 18');
-    expect(html).toContain('Barcha tumanlar');
+    expect(html).toContain('Barcha faoliyat turlari');
 
     // 2. Business Type Tabs
     expect(html).toContain('Oziq-ovqat');
