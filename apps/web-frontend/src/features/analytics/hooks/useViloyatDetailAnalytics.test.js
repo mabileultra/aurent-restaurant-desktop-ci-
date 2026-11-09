@@ -16,7 +16,7 @@ vi.mock('../../../api/geo.api', () => ({
 
 vi.mock('../api/analyticsApi', () => ({
   analyticsApi: {
-    getCompanies: vi.fn().mockResolvedValue({ data: [] }),
+    getCompanies: vi.fn().mockResolvedValue({ data: { rows: [] } }),
     getResults: vi.fn().mockResolvedValue({ data: { rows: [] } }),
     getDaily: vi.fn().mockResolvedValue({ data: { days: [] } }),
     getProducts: vi.fn().mockResolvedValue({ data: { top: [], bottom: [] } }),
@@ -30,7 +30,7 @@ function TestHarness({ regionCode, onCaptured }) {
 }
 
 describe('useViloyatDetailAnalytics', () => {
-  it('initializes with default Samarqand data and computes KPIs', () => {
+  it('scopes to district from query and does not flash mock KPIs before API', () => {
     const queryClient = new QueryClient();
     let captured = null;
 
@@ -55,13 +55,13 @@ describe('useViloyatDetailAnalytics', () => {
     expect(captured.isDistrictView).toBe(true);
     expect(captured.districtCode).toBe('05');
     expect(captured.districtName).toBe('Ishtixon tumani');
-    expect(captured.meta).toBe('2 korxona · 0 ulangan');
     expect(captured.activeType).toBe('A');
     expect(captured.types).toHaveLength(5);
-    expect(captured.tableData.total).toBe(2);
-    expect(captured.dailyBars).toHaveLength(30);
-    expect(captured.topProducts).toHaveLength(5);
-    expect(captured.districtsBreakdown.districts.length).toBeGreaterThan(0);
+    // No SAMARQAND mock while queries are still pending on first paint.
+    expect(captured.dailyBars).toEqual([]);
+    expect(captured.topProducts).toEqual([]);
+    expect(captured.lowProducts).toEqual([]);
+    expect(captured.tableData.total).toBe(0);
   });
 
   it('initializes with region wide scope when no district query param is given', () => {
@@ -87,7 +87,6 @@ describe('useViloyatDetailAnalytics', () => {
     expect(captured.districtCode).toBeNull();
     expect(captured.selectedDistrict).toBe('all');
     expect(captured.regionName).toBe('Samarqand viloyati');
-    expect(captured.meta).toContain('63 korxona');
-    expect(captured.meta).toContain('16 ta tuman va shahar');
+    expect(captured.meta).toContain('0 korxona');
   });
 });
