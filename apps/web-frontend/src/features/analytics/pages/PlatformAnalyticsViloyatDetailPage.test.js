@@ -64,6 +64,7 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Haftalik');
     expect(html).toContain('Yillik');
     expect(html).toContain('Kunlik');
+    expect(html).toContain('turnover-analytics.webp');
     expect(html).toContain('grocery.jpg');
     expect(html).toContain('restaurant.jpg');
     expect(html).toContain('pharmacy.jpg');
@@ -107,7 +108,7 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Ishtixon tumani');
     expect(html).toContain('Tuman · kod 05');
     expect(html).toContain('Samarqand viloyati');
-    expect(html).toContain('Viloyat ko‘rinishi');
+    expect(html).not.toContain('Viloyat ko‘rinishi');
     expect(html).toContain('Aylanma · 30 kun');
   });
 

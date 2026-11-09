@@ -122,6 +122,41 @@
   cursor: default;
 }
 
+/* Viloyat Hero Tabs Theme Variant */
+.rubber-segment--viloyat {
+  --rs-track: #ffffff;
+  --rs-thumb: #2563eb;
+  --rs-ink: #334155;
+  --rs-ink-active: #ffffff;
+  --rs-idle: 1;
+  --rs-hover: 1;
+}
+
+:is(.dark .rubber-segment--viloyat, [data-theme='dark'] .rubber-segment--viloyat) {
+  --rs-track: #0f172a;
+  --rs-thumb: #2563eb;
+  --rs-ink: #cbd5e1;
+  --rs-ink-active: #ffffff;
+  --rs-idle: 1;
+  --rs-hover: 1;
+}
+
+.rubber-segment--viloyat .viloyat-tab-badge {
+  background-color: #f1f5f9;
+  color: #64748b;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+:is(.dark .rubber-segment--viloyat, [data-theme='dark'] .rubber-segment--viloyat) .viloyat-tab-badge {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+
+.rubber-segment--viloyat .rubber-segment__copy .viloyat-tab-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rubber-segment__item {
     transition: opacity 160ms ease;

@@ -93,7 +93,7 @@ describe('ViloyatDetailHeader', () => {
     expect(html).toContain('iso-cubes');
   });
 
-  it('renders district scoped title and return button when viewing a district', () => {
+  it('renders district scoped title and breadcrumbs when viewing a district', () => {
     const html = renderHeader({
       isDistrictView: true,
       districtCode: '05',
@@ -102,6 +102,7 @@ describe('ViloyatDetailHeader', () => {
 
     expect(html).toContain('Ishtixon tumani');
     expect(html).toContain('Tuman · kod 05');
-    expect(html).toContain('Viloyat ko‘rinishi');
+    expect(html).toContain('Samarqand viloyati');
+    expect(html).not.toContain('Viloyat ko‘rinishi');
   });
 });
