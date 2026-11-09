@@ -4,44 +4,45 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import ViloyatHeroBackground from './ViloyatHeroBackground';
 
 describe('ViloyatHeroBackground', () => {
-  it('renders composite strips for type A', () => {
+  it('keeps all layers mounted without transition classes', () => {
     const html = renderToStaticMarkup(
       React.createElement(ViloyatHeroBackground, { activeType: 'A' })
     );
     expect(html).toContain('grocery.jpg');
     expect(html).toContain('restaurant.jpg');
     expect(html).toContain('pharmacy.jpg');
+    expect(html).toContain('iso-cubes');
+    expect(html).not.toContain('transition-all');
+    expect(html).not.toContain('duration-700');
   });
 
-  it('renders grocery image for type F', () => {
+  it('shows grocery layer for type F', () => {
     const html = renderToStaticMarkup(
       React.createElement(ViloyatHeroBackground, { activeType: 'F' })
     );
-    expect(html).toContain('grocery.jpg');
-    expect(html).not.toContain('pharmacy.jpg');
+    expect(html).toContain('data-hero="grocery"');
+    expect(html).toContain('opacity-100');
   });
 
-  it('renders restaurant image for type R', () => {
+  it('shows restaurant layer for type R', () => {
     const html = renderToStaticMarkup(
       React.createElement(ViloyatHeroBackground, { activeType: 'R' })
     );
-    expect(html).toContain('restaurant.jpg');
-    expect(html).not.toContain('grocery.jpg');
+    expect(html).toContain('data-hero="restaurant"');
   });
 
-  it('renders pharmacy image for type P', () => {
+  it('shows pharmacy layer for type P', () => {
     const html = renderToStaticMarkup(
       React.createElement(ViloyatHeroBackground, { activeType: 'P' })
     );
-    expect(html).toContain('pharmacy.jpg');
-    expect(html).not.toContain('restaurant.jpg');
+    expect(html).toContain('data-hero="pharmacy"');
   });
 
-  it('renders isometric pattern for type O', () => {
+  it('shows isometric layer for type O', () => {
     const html = renderToStaticMarkup(
       React.createElement(ViloyatHeroBackground, { activeType: 'O' })
     );
+    expect(html).toContain('data-hero="other"');
     expect(html).toContain('iso-cubes');
-    expect(html).not.toContain('grocery.jpg');
   });
 });

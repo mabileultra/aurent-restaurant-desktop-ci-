@@ -67,9 +67,6 @@
   white-space: nowrap;
   cursor: pointer;
   outline: none;
-  transition:
-    opacity 160ms ease,
-    transform 160ms var(--rs-ease-out);
 }
 
 .rubber-segment__item[aria-checked='true'] {
@@ -83,10 +80,6 @@
 .rubber-segment[data-held],
 .rubber-segment[data-held] .rubber-segment__item {
   cursor: grabbing;
-}
-
-.rubber-segment__item[data-pressed] {
-  transform: scale(0.96);
 }
 
 .rubber-segment__item:focus-visible {

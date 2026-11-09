@@ -57,8 +57,6 @@ export function useRubberDrag({
       gen.current += 1;
       edgeL.stop();
       edgeR.stop();
-    } else if (allowPhysics) {
-      e.currentTarget.dataset.pressed = '';
     }
   };
 
@@ -98,8 +96,6 @@ export function useRubberDrag({
     const d = drag.current;
     drag.current = null;
     if (trackRef.current) delete trackRef.current.dataset.held;
-    const el = itemRefs.current[d.slot];
-    if (el) delete el.dataset.pressed;
     return d;
   };
 
