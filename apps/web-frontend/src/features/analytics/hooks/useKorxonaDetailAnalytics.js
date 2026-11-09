@@ -63,19 +63,23 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
 
   const dayChips = useMemo(() => {
     const rawDays = apiDetail?.days;
-    if (Array.isArray(rawDays) && rawDays.length > 0) {
-      const active = rawDays.filter((d) => Number(d.totalTurnover || 0) > 0);
-      if (active.length > 0) {
-        return active.map((d) => {
+    if (Array.isArray(rawDays)) {
+      return rawDays
+        .filter((d) => Number(d.totalTurnover || 0) > 0)
+        .map((d) => {
           const tot = Number(d.totalTurnover || 0);
           const { short, long } = parseDayLabels(d.date);
           return {
-            date: d.date, label: short, shortLabel: short, longLabel: long,
-            sub: `${formatCompact(tot)} so‘m`, subText: `${formatCompact(tot)} so‘m`,
-            totalAmount: tot, hasPending: Number(d.nonFiscalTurnover || 0) > 0,
+            date: d.date,
+            label: short,
+            shortLabel: short,
+            longLabel: long,
+            sub: `${formatCompact(tot)} so‘m`,
+            subText: `${formatCompact(tot)} so‘m`,
+            totalAmount: tot,
+            hasPending: Number(d.nonFiscalTurnover || 0) > 0,
           };
         });
-      }
     }
     return prepareDayChips(fallbackReceipts);
   }, [apiDetail?.days, fallbackReceipts]);
@@ -87,14 +91,14 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
   }, [dayChips, selectedDay]);
 
   const activeDay = dayChips.find((c) => c.date === selectedDay) || dayChips[0];
-  const queryDay = activeDay?.date || selectedDay;
+  const queryDay = activeDay?.date || null;
 
   const { data: receiptsData } = useQuery({
-    queryKey: ['tax-analytics-receipts', numId, queryDay, fiscalKind],
+    queryKey: ['tax-analytics-receipts', numId, queryDay],
     queryFn: () => analyticsApi.getCompanyReceipts(numId, {
       date: queryDay || undefined,
-      kind: fiscalKind === 'f' ? 'QR' : (fiscalKind === 'n' ? 'NO_QR' : 'ALL'),
-      size: 50,
+      kind: 'ALL',
+      size: 100,
     }).then((r) => r.data).catch(() => null),
     enabled: Boolean(numId && queryDay),
     staleTime: 30_000,
@@ -104,8 +108,11 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     if (receiptsData?.rows) {
       return resolveCompanyReceipts({ backendReceipts: receiptsData.rows });
     }
+    if (Array.isArray(apiDetail?.days)) {
+      return [];
+    }
     return fallbackReceipts;
-  }, [receiptsData?.rows, fallbackReceipts]);
+  }, [receiptsData?.rows, apiDetail?.days, fallbackReceipts]);
   const { rows: dayReceipts, totalFiscal, totalNonFiscal, dayTotalCount, dayTotal } = useMemo(
     () => filterDayReceipts(rawReceipts, queryDay, fiscalKind),
     [rawReceipts, queryDay, fiscalKind]
@@ -119,11 +126,12 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     return dayReceipts[0] || null;
   }, [dayReceipts, selectedReceiptNo]);
 
-  const activeSaleId = activeReceiptRow?.[11] || activeReceiptRow?.[0];
+  const activeSaleId = activeReceiptRow?.[11];
+  const isValidSaleUuid = typeof activeSaleId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(activeSaleId.trim());
   const { data: receiptDetailData } = useQuery({
     queryKey: ['tax-analytics-receipt-detail', numId, activeSaleId],
     queryFn: () => analyticsApi.getCompanyReceiptDetail(numId, activeSaleId).then((r) => r.data).catch(() => null),
-    enabled: Boolean(numId && activeSaleId),
+    enabled: Boolean(numId && isValidSaleUuid),
     staleTime: 60_000,
   });
 

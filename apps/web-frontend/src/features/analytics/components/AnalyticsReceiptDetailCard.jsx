@@ -12,11 +12,12 @@ export default function AnalyticsReceiptDetailCard({ receipt, companyId, effecti
   const receiptNo = receipt.receiptNumber || receipt.saleId;
   const dateStr = receipt.createdAt ? fmtDateTimeUz(receipt.createdAt) : (receipt.date || effectiveDay || '—');
   const amount = receipt.totalAmount || receipt.amount || 0;
+  const isValidSaleUuid = typeof saleId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(saleId.trim());
 
   const detailQuery = useQuery({
     queryKey: ['analytics-receipt-detail', companyId, saleId],
     queryFn: () => analyticsApi.getCompanyReceiptDetail(companyId, saleId).then((r) => r.data),
-    enabled: Boolean(companyId && saleId && !receipt.items?.length),
+    enabled: Boolean(companyId && isValidSaleUuid && !receipt.items?.length),
   });
 
   const fullReceipt = detailQuery.data || receipt;

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReceiptQrCode from '../../../components/receipt/ReceiptQrCode';
 
 export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
   if (!receiptDetail) {
@@ -108,14 +109,28 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
 
         {isFiscal ? (
           <div className="flex items-center gap-3.5 pt-0.5">
-            <div className="w-20 h-20 shrink-0 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 flex flex-col items-center justify-center text-slate-500 shadow-2xs">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <path d="M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3" />
-              </svg>
-              <span className="text-[11px] font-bold mt-0.5">QR</span>
+            <div className="w-20 h-20 shrink-0 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-1 overflow-hidden shadow-2xs">
+              {receiptDetail.qrValue ? (
+                <a
+                  href={receiptDetail.qrValue}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Soliq.uz da tekshirish"
+                  className="block hover:opacity-85 transition"
+                >
+                  <ReceiptQrCode value={receiptDetail.qrValue} sizePx={72} />
+                </a>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-slate-400">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <path d="M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3" />
+                  </svg>
+                  <span className="text-[10px] font-bold mt-0.5">QR</span>
+                </div>
+              )}
             </div>
             <dl className="flex-1 space-y-1 font-mono text-[11px] leading-tight">
               <div className="flex justify-between">
@@ -130,7 +145,18 @@ export function KorxonaReceiptSlip({ receiptDetail, companyInfo }) {
                 <dt className="text-slate-500 font-sans">Fiskal modul</dt>
                 <dd className="font-semibold text-slate-900 dark:text-white tabular-nums">{receiptDetail.fiscalTerminalId || '—'}</dd>
               </div>
-              <span className="text-[10px] text-slate-400 font-sans block pt-0.5">QR orqali soliq.uz da tekshiriladi</span>
+              {receiptDetail.qrValue?.startsWith('http') ? (
+                <a
+                  href={receiptDetail.qrValue}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-sans block pt-0.5 font-medium"
+                >
+                  soliq.uz da tekshirish ↗
+                </a>
+              ) : (
+                <span className="text-[10px] text-slate-400 font-sans block pt-0.5">QR orqali soliq.uz da tekshiriladi</span>
+              )}
             </dl>
           </div>
         ) : (
