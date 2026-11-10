@@ -2,7 +2,6 @@ package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductStorePriceRequest;
-import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.domain.ProductType;
 import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
@@ -21,10 +20,10 @@ import java.util.Map;
 @Component
 public class PharmacyImportProductFactory {
 
-    private final ProductRepository productRepository;
+    private final PharmacyImportCatalogMatcher catalogMatcher;
 
-    public PharmacyImportProductFactory(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public PharmacyImportProductFactory(PharmacyImportCatalogMatcher catalogMatcher) {
+        this.catalogMatcher = catalogMatcher;
     }
 
     public String sku(String invoiceId, PharmacyImportConfirmItem item) {
@@ -110,7 +109,8 @@ public class PharmacyImportProductFactory {
         if (value == null || companyId == null) {
             return null;
         }
-        return productRepository.findByCompanyIdAndBarcode(companyId, value).isPresent() ? null : value;
+        // List-lookup: дубликаты barcode не должны валить импорт NonUniqueResult.
+        return catalogMatcher.barcodeTaken(companyId, value) ? null : value;
     }
 
     private static String autoSku(String name, int rowIndex) {

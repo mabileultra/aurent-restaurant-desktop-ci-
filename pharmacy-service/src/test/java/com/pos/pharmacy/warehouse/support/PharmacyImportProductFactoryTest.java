@@ -1,12 +1,10 @@
 package com.pos.pharmacy.warehouse.support;
 
-import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,11 +16,15 @@ import static org.mockito.Mockito.when;
 
 class PharmacyImportProductFactoryTest {
 
+    private static PharmacyImportProductFactory factory() {
+        PharmacyImportCatalogMatcher matcher = mock(PharmacyImportCatalogMatcher.class);
+        when(matcher.barcodeTaken(anyInt(), any())).thenReturn(false);
+        return new PharmacyImportProductFactory(matcher);
+    }
+
     @Test
     void copiesInvoiceMarkAndPrescriptionOntoNewProduct() {
-        ProductRepository repository = mock(ProductRepository.class);
-        when(repository.findByCompanyIdAndBarcode(anyInt(), any())).thenReturn(Optional.empty());
-        PharmacyImportProductFactory factory = new PharmacyImportProductFactory(repository);
+        PharmacyImportProductFactory factory = factory();
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             0, null, true, "Кюпен таб", null, null,
             BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("12"), new BigDecimal("11"),
@@ -37,8 +39,7 @@ class PharmacyImportProductFactoryTest {
 
     @Test
     void leavesUnmarkedWhenInvoiceHasNoFlag() {
-        ProductRepository repository = mock(ProductRepository.class);
-        PharmacyImportProductFactory factory = new PharmacyImportProductFactory(repository);
+        PharmacyImportProductFactory factory = factory();
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             1, null, true, "Трусы", null, null,
             BigDecimal.ONE, BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.TEN,
@@ -52,8 +53,7 @@ class PharmacyImportProductFactoryTest {
 
     @Test
     void copiesTasnifPackageAndFoundStatus() {
-        ProductRepository repository = mock(ProductRepository.class);
-        PharmacyImportProductFactory factory = new PharmacyImportProductFactory(repository);
+        PharmacyImportProductFactory factory = factory();
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             0, null, true, "Кюпен таб", null, null,
             BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("12"), new BigDecimal("11"),

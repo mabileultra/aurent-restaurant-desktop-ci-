@@ -68,7 +68,9 @@ function MatchRow({ t, item, imp }) {
         <span className={`pharmacy-import-match__status is-${tone}`}>
           {t(`pharmacyStock.importMatch.${tone}`)}
         </span>
-        <p className="pharmacy-import-match__note">{t(`pharmacyStock.importMatch.${tone}Hint`)}</p>
+        <p className="pharmacy-import-match__note">
+          {item.message || t(`pharmacyStock.importMatch.${tone}Hint`)}
+        </p>
       </td>
       <td className="pharmacy-stock__import-name">{item.excelName}</td>
       <td className="pharmacy-stock__import-marks">

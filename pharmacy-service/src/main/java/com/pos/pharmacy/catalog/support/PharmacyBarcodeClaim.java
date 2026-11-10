@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -27,9 +28,10 @@ public class PharmacyBarcodeClaim {
             return;
         }
         String normalized = barcode.trim();
-        productRepository.findByCompanyIdAndBarcode(companyId, normalized).ifPresent(existing -> {
+        // List API: дубликаты barcode в products не должны давать NonUniqueResultException.
+        for (Product existing : productRepository.findByCompanyIdAndBarcodeIn(companyId, List.of(normalized))) {
             if (ignoreProductId != null && ignoreProductId.equals(existing.getId())) {
-                return;
+                continue;
             }
             if (existing.isActive()) {
                 throw PharmacyErrors.of(
@@ -41,10 +43,10 @@ public class PharmacyBarcodeClaim {
             }
             release(existing);
             productRepository.saveAndFlush(existing);
-        });
-        productBarcodeRepository.findByBarcode(normalized).ifPresent(line -> {
+        }
+        for (var line : productBarcodeRepository.findByBarcodeIn(List.of(normalized))) {
             if (ignoreProductId != null && ignoreProductId.equals(line.getProductId())) {
-                return;
+                continue;
             }
             productRepository.findById(line.getProductId())
                 .filter(owner -> companyId.equals(owner.getCompanyId()))
@@ -60,7 +62,7 @@ public class PharmacyBarcodeClaim {
                     productBarcodeRepository.delete(line);
                     productBarcodeRepository.flush();
                 });
-        });
+        }
     }
 
     public void release(Product product) {

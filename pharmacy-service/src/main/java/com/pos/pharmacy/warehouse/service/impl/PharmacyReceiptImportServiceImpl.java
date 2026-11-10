@@ -1,23 +1,33 @@
 package com.pos.pharmacy.warehouse.service.impl;
 
 import com.pos.pharmacy.common.TenantSupport;
+import com.pos.pharmacy.config.PharmacyExecutorNames;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
+import com.pos.pharmacy.support.PharmacyDbFieldLimits;
+import com.pos.pharmacy.support.PharmacyParallelTasks;
+import com.pos.pharmacy.util.ProductImportParseUtil;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
-import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
-import com.pos.pharmacy.warehouse.dto.importing.*;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmRequest;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmResult;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchItem;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchRequest;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchResponse;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportParseResponse;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyReceiptImportService;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
-import com.pos.pharmacy.config.PharmacyExecutorNames;
-import com.pos.pharmacy.support.PharmacyDbFieldLimits;
-import com.pos.pharmacy.support.PharmacyParallelTasks;
-import com.pos.pharmacy.warehouse.support.*;
-import com.pos.pharmacy.util.ProductImportParseUtil;
-import com.pos.pharmacy.importing.spreadsheet.parser.ExcelBarcodeText;
-import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
+import com.pos.pharmacy.warehouse.support.PharmacyImportGridSupport;
+import com.pos.pharmacy.warehouse.support.PharmacyImportMatchSupport;
+import com.pos.pharmacy.warehouse.support.PharmacyImportPercent;
+import com.pos.pharmacy.warehouse.support.PharmacyImportProductWriter;
+import com.pos.pharmacy.warehouse.support.PharmacyImportRoleMap;
+import com.pos.pharmacy.warehouse.support.PharmacyImportRowMapper;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptPricing;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -41,9 +50,6 @@ import java.util.function.Supplier;
 @Transactional
 public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportService {
 
-    private static final String STATUS_NEW = "NEW";
-    private static final String STATUS_DUPLICATE = "DUPLICATE";
-
     private final StockReceiptRepository stockReceiptRepository;
     private final TenantSupport tenant;
     private final PharmacyReceiptSupport pharmacyReceipt;
@@ -51,7 +57,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     private final PharmacyImportMatchSupport matchSupport;
     private final PharmacyStockReceiptService pharmacyStockReceiptService;
     private final PharmacyImportProductWriter productWriter;
-    private final PharmacyImportTasnifEnricher tasnifEnricher;
+    private final PharmacyImportRowMapper rowMapper;
     private final Executor importExecutor;
 
     public PharmacyReceiptImportServiceImpl(
@@ -62,7 +68,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         PharmacyImportMatchSupport matchSupport,
         PharmacyStockReceiptService pharmacyStockReceiptService,
         PharmacyImportProductWriter productWriter,
-        PharmacyImportTasnifEnricher tasnifEnricher,
+        PharmacyImportRowMapper rowMapper,
         @Qualifier(PharmacyExecutorNames.IMPORT) Executor importExecutor
     ) {
         this.stockReceiptRepository = stockReceiptRepository;
@@ -72,7 +78,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         this.matchSupport = matchSupport;
         this.pharmacyStockReceiptService = pharmacyStockReceiptService;
         this.productWriter = productWriter;
-        this.tasnifEnricher = tasnifEnricher;
+        this.rowMapper = rowMapper;
         this.importExecutor = importExecutor;
     }
 
@@ -122,8 +128,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             final int rowIndex = rowOffset + i;
             final List<String> row = rows.get(i);
             final boolean rowDuplicate = blocked || skuAlreadySaved(savedSkus, invoiceId, rowIndex);
-            tasks.add(() -> mapRow(
-                rowIndex, row, roles, defaultMarkup, request.useFinalSums(), rowDuplicate, invoiceId
+            tasks.add(() -> rowMapper.map(
+                rowIndex, row, roles, defaultMarkup, request.useFinalSums(), rowDuplicate, invoiceId, companyId
             ));
         }
         List<PharmacyImportMatchItem> items = PharmacyParallelTasks.supplyAll(tasks, importExecutor).stream()
@@ -168,109 +174,6 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         }
         pharmacyStockReceiptService.addLines(receiptId, lines);
         return new PharmacyImportConfirmResult(lines.size());
-    }
-
-    private PharmacyImportMatchItem mapRow(
-        int rowIndex,
-        List<String> row,
-        Map<String, Integer> roles,
-        BigDecimal defaultMarkup,
-        boolean useFinalSums,
-        boolean rowDuplicate,
-        String invoiceId
-    ) {
-        String name = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.NAME);
-        if (!StringUtils.hasText(name) || looksLikeTotal(name)) {
-            return null;
-        }
-        String manufacturer = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.MANUFACTURER);
-        String country = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.COUNTRY);
-        String barcode = ExcelBarcodeText.normalize(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.BARCODE)
-        );
-        String ikpu = PharmacyImportIkpu.code(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.IKPU)
-        );
-        String batch = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.BATCH);
-        LocalDate expiry = PharmacyImportValueParser.date(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.EXPIRY)
-        );
-        if (expiry == null) {
-            expiry = PharmacyImportBatchExpiry.fromBatch(batch).orElse(null);
-        }
-        BigDecimal qty = PharmacyImportValueParser.decimal(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.QTY)
-        );
-        BigDecimal vat = PharmacyImportPercent.vatRate(PharmacyImportValueParser.decimal(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.VAT_RATE)
-        ));
-        BigDecimal purchase = PharmacyImportValueParser.decimal(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE)
-        );
-        BigDecimal purchaseWithVat = PharmacyImportValueParser.decimal(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE_WITH_VAT)
-        );
-        if (purchase == null && purchaseWithVat != null) {
-            purchase = PharmacyReceiptPricing.withoutVat(purchaseWithVat, vat);
-        }
-        if (purchase == null) {
-            purchase = BigDecimal.ZERO;
-        }
-        BigDecimal markupPercent = roles.get(PharmacyImportRoles.MARKUP) == null
-            ? null
-            : PharmacyImportValueParser.decimal(
-                PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.MARKUP)
-            );
-        BigDecimal retailRaw = PharmacyImportValueParser.decimal(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.RETAIL)
-        );
-        BigDecimal retail = PharmacyImportRetailResolve.resolve(purchase, vat, markupPercent, retailRaw, qty);
-        if (retail == null) {
-            BigDecimal base = purchaseWithVat != null ? purchaseWithVat : PharmacyReceiptPricing.withVat(purchase, vat);
-            retail = base.multiply(BigDecimal.ONE.add(defaultMarkup.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)))
-                .setScale(2, RoundingMode.HALF_UP);
-        }
-        if (useFinalSums && qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
-            purchase = purchase.divide(qty, 2, RoundingMode.HALF_UP);
-            if (markupPercent == null) {
-                retail = retail.divide(qty, 2, RoundingMode.HALF_UP);
-            }
-        }
-        BigDecimal units = PharmacyImportValueParser.decimal(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.UNITS_IN_PACK)
-        );
-        List<String> markCodes = PharmacyImportMarkCodesParser.parse(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.MARK_CODES)
-        );
-        Boolean prescription = PharmacyImportInvoiceRxLook.of(
-            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PRESCRIPTION)
-        );
-        boolean invoiceMarked = PharmacyImportInvoiceMarkLook.of(row);
-        PharmacyImportCatalogHints hints = tasnifEnricher.apply(ikpu, invoiceMarked, prescription);
-        return new PharmacyImportMatchItem(
-            rowIndex,
-            name,
-            blankToNull(manufacturer),
-            blankToNull(country),
-            rowDuplicate ? STATUS_DUPLICATE : STATUS_NEW,
-            rowDuplicate ? PharmacyImportMatchSupport.duplicateMessage(invoiceId) : null,
-            null,
-            null,
-            qty,
-            purchase,
-            vat,
-            retail,
-            blankToNull(batch),
-            expiry,
-            blankToNull(barcode),
-            blankToNull(ikpu),
-            units,
-            markCodes,
-            hints.markedProduct(),
-            hints.prescriptionRequired(),
-            hints.packageCode(),
-            hints.ikpuStatus()
-        );
     }
 
     private PharmacyStockReceiptLineRequest toLine(
@@ -319,13 +222,5 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         }
         String sku = ProductImportParseUtil.resolveUzInvoiceSku(invoiceId, rowIndex + 1);
         return savedSkus.contains(sku.toUpperCase(Locale.ROOT));
-    }
-
-    private static boolean looksLikeTotal(String name) {
-        return DidoxInvoiceFooterFilter.isFooterText(name);
-    }
-
-    private static String blankToNull(String value) {
-        return StringUtils.hasText(value) ? value.trim() : null;
     }
 }

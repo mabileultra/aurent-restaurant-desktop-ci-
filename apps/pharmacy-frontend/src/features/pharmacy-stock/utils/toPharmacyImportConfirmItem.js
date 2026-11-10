@@ -2,9 +2,12 @@ import { filterPlausibleImportMarkCodes } from './isPlausibleImportMarkCode';
 
 export function toPharmacyImportConfirmItem(item) {
   const expiry = item.expiryDate && String(item.expiryDate).length >= 8 ? item.expiryDate : undefined;
+  const productId = item.productId || undefined;
   return {
     rowIndex: item.rowIndex,
-    createIfMissing: true,
+    productId,
+    // Уже найден в каталоге — только строка прихода (qty), новую карточку не создаём.
+    createIfMissing: !productId,
     excelName: item.excelName,
     manufacturer: item.manufacturer,
     country: item.country,

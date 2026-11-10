@@ -84,6 +84,17 @@ public class PharmacyImportProductWriter {
     ) {
         PharmacyTenantContext.set(companyId, userId, role);
         try {
+            if (item.productId() != null) {
+                return productRepository.findById(item.productId())
+                    .filter(product -> companyId.equals(product.getCompanyId()))
+                    .map(product -> applyRetail(product, item))
+                    .orElseThrow(() -> new IllegalStateException(
+                        "Товар из каталога не найден: " + item.productId()
+                    ));
+            }
+            if (!item.createIfMissing()) {
+                throw new IllegalStateException("Нет productId и createIfMissing=false");
+            }
             String sku = productFactory.sku(invoiceId, item);
             return productRepository.findByCompanyIdAndSku(companyId, sku)
                 .map(product -> applyRetail(product, item))

@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -35,8 +35,8 @@ class PharmacyBarcodeClaimTest {
     void ignoresOwnPrimaryBarcode() {
         UUID id = UUID.randomUUID();
         Product self = Product.builder().id(id).companyId(1).active(true).barcode("111").build();
-        when(productRepository.findByCompanyIdAndBarcode(1, "111")).thenReturn(Optional.of(self));
-        when(productBarcodeRepository.findByBarcode("111")).thenReturn(Optional.empty());
+        when(productRepository.findByCompanyIdAndBarcodeIn(1, List.of("111"))).thenReturn(List.of(self));
+        when(productBarcodeRepository.findByBarcodeIn(List.of("111"))).thenReturn(List.of());
 
         assertDoesNotThrow(() -> claim.claim(1, "111", id));
         verify(productRepository, never()).saveAndFlush(self);
@@ -46,7 +46,7 @@ class PharmacyBarcodeClaimTest {
     void rejectsActiveForeignBarcode() {
         UUID otherId = UUID.randomUUID();
         Product other = Product.builder().id(otherId).companyId(1).active(true).barcode("111").build();
-        when(productRepository.findByCompanyIdAndBarcode(1, "111")).thenReturn(Optional.of(other));
+        when(productRepository.findByCompanyIdAndBarcodeIn(1, List.of("111"))).thenReturn(List.of(other));
 
         assertThrows(BusinessException.class, () -> claim.claim(1, "111", UUID.randomUUID()));
     }
@@ -55,8 +55,8 @@ class PharmacyBarcodeClaimTest {
     void ignoresOwnExtraBarcodeLine() {
         UUID id = UUID.randomUUID();
         ProductBarcode extra = ProductBarcode.builder().id(UUID.randomUUID()).productId(id).barcode("222").build();
-        when(productRepository.findByCompanyIdAndBarcode(1, "222")).thenReturn(Optional.empty());
-        when(productBarcodeRepository.findByBarcode("222")).thenReturn(Optional.of(extra));
+        when(productRepository.findByCompanyIdAndBarcodeIn(1, List.of("222"))).thenReturn(List.of());
+        when(productBarcodeRepository.findByBarcodeIn(List.of("222"))).thenReturn(List.of(extra));
 
         assertDoesNotThrow(() -> claim.claim(1, "222", id));
         verify(productBarcodeRepository, never()).delete(extra);
