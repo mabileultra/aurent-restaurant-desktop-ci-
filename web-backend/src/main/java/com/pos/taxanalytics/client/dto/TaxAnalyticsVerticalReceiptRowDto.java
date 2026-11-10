@@ -9,6 +9,7 @@ public record TaxAnalyticsVerticalReceiptRowDto(
     String storeName,
     BigDecimal totalAmount,
     String fiscalStatus,
-    boolean hasQr
+    boolean hasQr,
+    BigDecimal itemsQuantity
 ) {
 }

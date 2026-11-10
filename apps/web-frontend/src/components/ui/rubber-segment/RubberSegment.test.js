@@ -24,5 +24,21 @@ describe('RubberSegment', () => {
     expect(html).toContain('7 kun');
     expect(html).toContain('30 kun');
     expect(html).toContain('aria-checked="true"');
+    expect(html).toContain('rubber-segment__thumb');
+  });
+
+  it('skips sliding thumb when physics is false', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(RubberSegment, {
+        items: [
+          { value: 'A', label: 'Hammasi' },
+          { value: 'F', label: 'Oziq-ovqat' },
+        ],
+        value: 'A',
+        physics: false,
+      })
+    );
+    expect(html).toContain('data-static');
+    expect(html).not.toContain('rubber-segment__thumb');
   });
 });

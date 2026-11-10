@@ -123,20 +123,23 @@ export function resolveCompanyProducts({ numId, companyName, apiDetail }) {
 
 export function resolveCompanyReceipts({ numId, companyName, products = [], backendReceipts = null }) {
   if (Array.isArray(backendReceipts)) {
-    return backendReceipts.map((r) => [
-      r.receiptNumber || r.saleId || '—',
-      r.createdAt ? r.createdAt.slice(0, 10) : '—',
-      r.createdAt ? r.createdAt.slice(11, 16) : '—',
-      Number(r.totalAmount || 0),
-      0,
-      Number(r.totalAmount || 0),
-      r.paymentMethod || 'CASH',
-      (r.hasQr || r.fiscalStatus === 'FISCALIZED') ? 1 : 0,
-      null,
-      null,
-      [],
-      r.saleId,
-    ]);
+    return backendReceipts.map((r) => {
+      const qty = Number(r.itemsQuantity ?? r.items_quantity ?? 0);
+      return [
+        r.receiptNumber || r.saleId || '—',
+        r.createdAt ? r.createdAt.slice(0, 10) : '—',
+        r.createdAt ? r.createdAt.slice(11, 16) : '—',
+        Number(r.totalAmount || 0),
+        0,
+        Number(r.totalAmount || 0),
+        r.paymentMethod || 'CASH',
+        (r.hasQr || r.fiscalStatus === 'FISCALIZED') ? 1 : 0,
+        null,
+        null,
+        qty > 0 ? [['', qty, 0]] : [],
+        r.saleId,
+      ];
+    });
   }
 
   if (numId === 103) {

@@ -67,13 +67,26 @@
   white-space: nowrap;
   cursor: pointer;
   outline: none;
-  transition:
-    opacity 160ms ease,
-    transform 160ms var(--rs-ease-out);
 }
 
 .rubber-segment__item[aria-checked='true'] {
   cursor: default;
+}
+
+/* No sliding thumb — solid active chip (analytics / physics=false). */
+.rubber-segment[data-static] .rubber-segment__item {
+  opacity: 1;
+}
+
+.rubber-segment[data-static] .rubber-segment__item[aria-checked='true'] {
+  background: var(--rs-thumb);
+  color: var(--rs-ink-active);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+
+.rubber-segment[data-static].rubber-segment--viloyat .rubber-segment__item[aria-checked='true'] .viloyat-tab-badge {
+  background-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
 }
 
 .rubber-segment[data-draggable] .rubber-segment__item[aria-checked='true'] {
@@ -83,10 +96,6 @@
 .rubber-segment[data-held],
 .rubber-segment[data-held] .rubber-segment__item {
   cursor: grabbing;
-}
-
-.rubber-segment__item[data-pressed] {
-  transform: scale(0.96);
 }
 
 .rubber-segment__item:focus-visible {
@@ -144,7 +153,6 @@
 .rubber-segment--viloyat .viloyat-tab-badge {
   background-color: #f1f5f9;
   color: #64748b;
-  transition: background-color 150ms ease, color 150ms ease;
 }
 
 :is(.dark .rubber-segment--viloyat, [data-theme='dark'] .rubber-segment--viloyat) .viloyat-tab-badge {

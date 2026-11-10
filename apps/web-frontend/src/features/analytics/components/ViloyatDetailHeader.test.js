@@ -57,7 +57,7 @@ describe('ViloyatDetailHeader', () => {
     expect(html).toContain('Oziq-ovqat korxonalari');
     expect(html).toContain('Oziq-ovqat, supermarket va savdo do‘konlari');
     expect(html).toContain('grocery.jpg');
-    expect(html).not.toContain('pharmacy.jpg');
+    expect(html).toContain('data-hero="grocery"');
   });
 
   it('renders restaurant category (type R) with hall background', () => {

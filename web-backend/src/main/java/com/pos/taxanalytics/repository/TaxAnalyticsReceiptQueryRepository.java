@@ -43,7 +43,12 @@ public class TaxAnalyticsReceiptQueryRepository {
             """
                 SELECT s.id::text AS sale_id, s.receipt_number, s.created_at, st.name AS store_name,
                        s.total_amount, s.fiscal_status,
-                       NULLIF(BTRIM(s.fiscal_qr_url), '') IS NOT NULL AS has_qr
+                       NULLIF(BTRIM(s.fiscal_qr_url), '') IS NOT NULL AS has_qr,
+                       (
+                         SELECT COALESCE(SUM(si.quantity - COALESCE(si.returned_quantity, 0)), 0)
+                         FROM sale_items si
+                         WHERE si.sale_id = s.id
+                       ) AS items_quantity
                 FROM sales s
                 LEFT JOIN stores st ON st.id = s.store_id
                 WHERE

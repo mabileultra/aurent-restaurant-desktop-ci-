@@ -16,74 +16,59 @@ function IsometricPattern() {
   );
 }
 
+function CoverImage({ src, alt }) {
+  return (
+    <>
+      <img src={src} alt={alt} className="absolute inset-0 w-full h-full object-cover object-center" />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/45" />
+    </>
+  );
+}
+
+function layerClass(active) {
+  return `absolute inset-0 ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`;
+}
+
+/** Keep all layers mounted — no remount / transition wave on tab click. */
 export default function ViloyatHeroBackground({ activeType = 'A' }) {
-  if (activeType === 'F') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <img
-          src="/analytics/grocery.jpg"
-          alt="Oziq-ovqat"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-all duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/45" />
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className={layerClass(activeType === 'A')} aria-hidden={activeType !== 'A'}>
+        <div className="absolute top-0 right-0 bottom-0 w-full md:w-3/5 lg:w-1/2 flex">
+          <div className="w-1/3 h-full overflow-hidden relative">
+            <img src="/analytics/grocery.jpg" alt="Oziq-ovqat" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-slate-950/20" />
+          </div>
+          <div className="w-1/3 h-full overflow-hidden relative border-l border-white/10">
+            <img src="/analytics/restaurant.jpg" alt="Restoran" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-slate-950/20" />
+          </div>
+          <div className="w-1/3 h-full overflow-hidden relative border-l border-white/10">
+            <img src="/analytics/pharmacy.jpg" alt="Dorixona" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-slate-950/20" />
+          </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent md:hidden" />
       </div>
-    );
-  }
 
-  if (activeType === 'R') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <img
-          src="/analytics/restaurant.jpg"
-          alt="Restoranlar"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-all duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/45" />
+      <div className={layerClass(activeType === 'F')} aria-hidden={activeType !== 'F'} data-hero="grocery">
+        <CoverImage src="/analytics/grocery.jpg" alt="Oziq-ovqat" />
       </div>
-    );
-  }
-
-  if (activeType === 'P') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <img
-          src="/analytics/pharmacy.jpg"
-          alt="Dorixonalar"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-all duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/45" />
+      <div className={layerClass(activeType === 'R')} aria-hidden={activeType !== 'R'} data-hero="restaurant">
+        <CoverImage src="/analytics/restaurant.jpg" alt="Restoranlar" />
       </div>
-    );
-  }
-
-  if (activeType === 'O') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden bg-gradient-to-br from-slate-950 via-[#0B1528] to-slate-900">
+      <div className={layerClass(activeType === 'P')} aria-hidden={activeType !== 'P'} data-hero="pharmacy">
+        <CoverImage src="/analytics/pharmacy.jpg" alt="Dorixonalar" />
+      </div>
+      <div
+        className={`${layerClass(activeType === 'O')} bg-gradient-to-br from-slate-950 via-[#0B1528] to-slate-900`}
+        aria-hidden={activeType !== 'O'}
+        data-hero="other"
+      >
         <IsometricPattern />
         <div className="absolute inset-0 bg-radial from-transparent to-slate-950/80" />
       </div>
-    );
-  }
-
-  // Default: 'A' (Hammasi) — 3 ta rasm yonma-yon o‘ng tomonda
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      <div className="absolute top-0 right-0 bottom-0 w-full md:w-3/5 lg:w-1/2 flex">
-        <div className="w-1/3 h-full overflow-hidden relative">
-          <img src="/analytics/grocery.jpg" alt="Oziq-ovqat" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-slate-950/20" />
-        </div>
-        <div className="w-1/3 h-full overflow-hidden relative border-l border-white/10">
-          <img src="/analytics/restaurant.jpg" alt="Restoran" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-slate-950/20" />
-        </div>
-        <div className="w-1/3 h-full overflow-hidden relative border-l border-white/10">
-          <img src="/analytics/pharmacy.jpg" alt="Dorixona" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-slate-950/20" />
-        </div>
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent md:hidden" />
     </div>
   );
 }

@@ -6,6 +6,7 @@ export function useRubberDrag({
   disabled,
   draggable,
   reduce,
+  physics,
   index,
   list,
   inset,
@@ -30,13 +31,15 @@ export function useRubberDrag({
   } = animation;
 
   const drag = useRef(null);
+  const allowPhysics = physics !== false && !reduce;
 
   useEffect(() => {
     if (!drag.current && committed.current !== index) {
       committed.current = index;
       jumpTo(index);
     }
-  });
+    // Sync thumb when controlled value changes — not on every parent render.
+  }, [index]); // eslint-disable-line react-hooks/exhaustive-deps -- jumpTo/committed are stable refs from animation hook
 
   const localX = (e) => e.clientX - (box.current ? box.current.left : 0) - inset;
 
@@ -54,8 +57,6 @@ export function useRubberDrag({
       gen.current += 1;
       edgeL.stop();
       edgeR.stop();
-    } else if (!reduce) {
-      e.currentTarget.dataset.pressed = '';
     }
   };
 
@@ -95,8 +96,6 @@ export function useRubberDrag({
     const d = drag.current;
     drag.current = null;
     if (trackRef.current) delete trackRef.current.dataset.held;
-    const el = itemRefs.current[d.slot];
-    if (el) delete el.dataset.pressed;
     return d;
   };
 
@@ -109,7 +108,8 @@ export function useRubberDrag({
       if (Math.abs(x - d.x0) <= SLOP && d.slot !== committed.current) {
         const from = committed.current;
         commit(d.slot);
-        travel(from, d.slot);
+        if (allowPhysics) travel(from, d.slot);
+        else jumpTo(d.slot);
       }
       return;
     }
@@ -118,7 +118,7 @@ export function useRubberDrag({
     let to = nearestSlot(slots.current, (edgeL.get() + edgeR.get()) / 2 + project(v, glide));
     if (flick && to === committed.current) to = clamp(to + Math.sign(v), 0, list.length - 1);
     commit(to);
-    if (reduce) jumpTo(to);
+    if (!allowPhysics) jumpTo(to);
     else land(to, v, flick, flick);
   };
 
@@ -127,7 +127,7 @@ export function useRubberDrag({
     if (!d || e.pointerId !== d.id) return;
     release();
     if (!d.live) return;
-    if (reduce) jumpTo(committed.current);
+    if (!allowPhysics) jumpTo(committed.current);
     else land(committed.current, null, false, false);
   };
 

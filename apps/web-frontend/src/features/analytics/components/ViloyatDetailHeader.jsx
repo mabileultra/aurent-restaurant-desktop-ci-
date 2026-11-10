@@ -136,11 +136,8 @@ export default function ViloyatDetailHeader({
                 radius={16}
                 inset={4}
                 equalSlots
-                stretch={100}
-                squash={3}
-                speed={1}
-                glide={75}
-                draggable
+                physics={false}
+                draggable={false}
                 className="rubber-segment--viloyat w-full shadow-lg border border-slate-200/80 dark:border-slate-800"
                 aria-label="Faoliyat turi bo‘yicha ajratish"
               />

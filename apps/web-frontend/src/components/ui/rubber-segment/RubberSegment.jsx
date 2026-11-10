@@ -23,6 +23,8 @@ export default function RubberSegment({
   speed = 1,
   glide = 75,
   draggable = true,
+  /** Rubber spring on click/drag. Off = instant thumb jump (safer on heavy analytics pages). */
+  physics = true,
   disabled = false,
   className = '',
   'aria-label': ariaLabel = 'Segmented control',
@@ -49,8 +51,9 @@ export default function RubberSegment({
 
   const drag = useRubberDrag({
     disabled,
-    draggable,
+    draggable: physics && draggable,
     reduce: animation.reduce,
+    physics,
     index,
     list,
     inset,
@@ -59,15 +62,24 @@ export default function RubberSegment({
   });
 
   const preset = SIZES[size] || SIZES.md;
+  const staticMode = physics === false;
+  const thumbRadius = Math.max(0, radius - inset);
+
+  const selectIndex = (i) => {
+    if (disabled || i === index) return;
+    if (value === undefined) setInner(list[i].value);
+    onChange?.(list[i].value, i);
+  };
 
   return (
     <div
-      ref={animation.trackRef}
+      ref={staticMode ? undefined : animation.trackRef}
       role="radiogroup"
       aria-label={ariaLabel}
       aria-disabled={disabled || undefined}
       data-equal={equalSlots ? '' : undefined}
-      data-draggable={draggable && !disabled ? '' : undefined}
+      data-draggable={!staticMode && draggable && !disabled ? '' : undefined}
+      data-static={staticMode ? '' : undefined}
       className={`rubber-segment${className ? ` ${className}` : ''}`}
       style={{
         ...(trackColor ? { '--rs-track': trackColor } : {}),
@@ -76,21 +88,21 @@ export default function RubberSegment({
         ...(activeTextColor ? { '--rs-ink-active': activeTextColor } : {}),
         '--rs-radius': `${radius}px`,
         '--rs-inset': `${inset}px`,
-        '--rs-thumb-radius': `${animation.thumbRadius}px`,
+        '--rs-thumb-radius': `${staticMode ? thumbRadius : animation.thumbRadius}px`,
         '--rs-h': `${preset.height}px`,
         '--rs-font': `${preset.font}px`,
         '--rs-pad': `${preset.pad}px`,
         '--rs-min': `${preset.min}px`,
       }}
-      onPointerMove={drag.handlePointerMove}
-      onPointerUp={drag.handlePointerUp}
-      onPointerCancel={drag.handlePointerCancel}
-      onLostPointerCapture={drag.handlePointerCancel}
+      onPointerMove={staticMode ? undefined : drag.handlePointerMove}
+      onPointerUp={staticMode ? undefined : drag.handlePointerUp}
+      onPointerCancel={staticMode ? undefined : drag.handlePointerCancel}
+      onLostPointerCapture={staticMode ? undefined : drag.handlePointerCancel}
     >
       {list.map((item, i) => (
         <button
           key={item.value}
-          ref={(el) => {
+          ref={staticMode ? undefined : (el) => {
             animation.itemRefs.current[i] = el;
           }}
           type="button"
@@ -99,21 +111,36 @@ export default function RubberSegment({
           tabIndex={i === index ? 0 : -1}
           disabled={disabled}
           className="rubber-segment__item"
-          onPointerDown={(e) => drag.handlePointerDown(e, i)}
-          onKeyDown={drag.handleKeyDown}
+          onClick={staticMode ? () => selectIndex(i) : undefined}
+          onPointerDown={staticMode ? undefined : (e) => drag.handlePointerDown(e, i)}
+          onKeyDown={staticMode
+            ? (e) => {
+                const last = list.length - 1;
+                let next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = Math.min(last, index + 1);
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = Math.max(0, index - 1);
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = last;
+                if (next === null || next === index) return;
+                e.preventDefault();
+                selectIndex(next);
+              }
+            : drag.handleKeyDown}
         >
           {item.icon}
           {item.label}
         </button>
       ))}
-      <motion.div className="rubber-segment__thumb" aria-hidden="true" style={{ clipPath: animation.clipPath }}>
-        {list.map((item) => (
-          <span key={item.value} className="rubber-segment__item rubber-segment__copy">
-            {item.icon}
-            {item.label}
-          </span>
-        ))}
-      </motion.div>
+      {!staticMode ? (
+        <motion.div className="rubber-segment__thumb" aria-hidden="true" style={{ clipPath: animation.clipPath }}>
+          {list.map((item) => (
+            <span key={item.value} className="rubber-segment__item rubber-segment__copy">
+              {item.icon}
+              {item.label}
+            </span>
+          ))}
+        </motion.div>
+      ) : null}
     </div>
   );
 }

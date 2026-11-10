@@ -53,7 +53,7 @@ export default function PlatformAnalyticsViloyatlarPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Period Selector with RubberSegment Physics Animation */}
+            {/* Period selector — physics off to avoid freeze on heavy analytics refetch */}
             <RubberSegment
               items={PERIODS.map((p) => ({ value: p.id, label: p.label }))}
               value={period}
@@ -61,8 +61,8 @@ export default function PlatformAnalyticsViloyatlarPage() {
               size="sm"
               radius={10}
               inset={3}
-              stretch={90}
-              squash={2.5}
+              physics={false}
+              draggable={false}
               trackColor="#f1f5f9"
               thumbColor="#ffffff"
               textColor="#64748b"

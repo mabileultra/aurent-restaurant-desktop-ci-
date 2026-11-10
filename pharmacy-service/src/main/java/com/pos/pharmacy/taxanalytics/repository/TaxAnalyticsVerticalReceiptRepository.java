@@ -57,7 +57,12 @@ public class TaxAnalyticsVerticalReceiptRepository {
                        ('Do‘kon #' || store_id)::text AS store_name,
                        total_amount,
                        fiscal_status,
-                       NULLIF(BTRIM(fiscal_qr_url), '') IS NOT NULL AS has_qr
+                       NULLIF(BTRIM(fiscal_qr_url), '') IS NOT NULL AS has_qr,
+                       (
+                         SELECT COALESCE(SUM(si.quantity - COALESCE(si.returned_quantity, 0)), 0)
+                         FROM sale_items si
+                         WHERE si.sale_id = sales.id
+                       ) AS items_quantity
                 FROM sales
                 WHERE status = 'COMPLETED'
                   AND company_id = ?

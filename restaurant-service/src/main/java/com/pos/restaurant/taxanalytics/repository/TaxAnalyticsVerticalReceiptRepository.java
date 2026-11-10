@@ -66,7 +66,12 @@ public class TaxAnalyticsVerticalReceiptRepository {
                    ('Do‘kon #' || o.store_id)::text AS store_name,
                    p.amount AS total_amount,
                    'NOT_FISCALIZED'::text AS fiscal_status,
-                   FALSE AS has_qr
+                   FALSE AS has_qr,
+                   (
+                     SELECT COALESCE(SUM(i.quantity), 0)
+                     FROM floor_order_items i
+                     WHERE i.order_id = o.id
+                   ) AS items_quantity
             FROM floor_order_payments p
             JOIN floor_orders o ON o.id = p.order_id
             WHERE o.status = 'CLOSED'
