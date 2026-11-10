@@ -1,3 +1,5 @@
+import { aaTheme } from './src/styles/aa/tailwind-theme.js';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -18,10 +20,18 @@ export default {
           hover: 'var(--color-brand-hover)',
           soft: 'var(--color-brand-soft)',
         },
+        ...aaTheme.colors,
       },
       spacing: {
         shell: 'var(--shell-pad)',
       },
+      borderRadius: aaTheme.borderRadius,
+      boxShadow: aaTheme.boxShadow,
+      fontFamily: aaTheme.fontFamily,
+      fontSize: aaTheme.fontSize,
+      height: aaTheme.height,
+      width: aaTheme.width,
+      maxWidth: aaTheme.maxWidth,
     },
   },
   plugins: [],

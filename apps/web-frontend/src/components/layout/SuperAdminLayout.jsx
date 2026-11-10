@@ -7,6 +7,8 @@ import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { visiblePlatformNavGrouped } from '../../features/platform/nav/platformNav';
 import SuperAdminTopHeader from './SuperAdminTopHeader';
 import SuperAdminSidebar from './SuperAdminSidebar';
+import '../../styles/aa/tokens.css';
+import '../../styles/aa/components.css';
 
 export default function SuperAdminLayout() {
   const { user } = useAuthStore();
@@ -14,6 +16,14 @@ export default function SuperAdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add('app-area--platform');
+    return () => {
+      root.classList.remove('app-area--platform');
+    };
+  }, []);
 
   const groupedLinks = useMemo(
     () => visiblePlatformNavGrouped(user?.role, hasModule),
