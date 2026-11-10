@@ -41,6 +41,8 @@ class PaymentFloorRevisionTest {
     @Mock
     private GetOrderPaymentHandler getOrderPaymentHandler;
     @Mock
+    private AttachPaymentFiscalHandler attachPaymentFiscalHandler;
+    @Mock
     private FloorRevisionBump floorRevision;
 
     @InjectMocks

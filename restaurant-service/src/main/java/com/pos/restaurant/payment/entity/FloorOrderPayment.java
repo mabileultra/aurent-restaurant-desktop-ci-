@@ -90,6 +90,25 @@ public class FloorOrderPayment {
     @Column(name = "paid_at", nullable = false)
     private Instant paidAt;
 
+    /** Multikassa / OFD proof — QR URL is never persisted. */
+    @Column(name = "fiscal_status", length = 32)
+    private String fiscalStatus;
+
+    @Column(name = "fiscal_sign", length = 128)
+    private String fiscalSign;
+
+    @Column(name = "fiscal_receipt_seq", length = 64)
+    private String fiscalReceiptSeq;
+
+    @Column(name = "multikassa_sale_id", length = 128)
+    private String multikassaSaleId;
+
+    @Column(name = "fiscal_terminal_id", length = 64)
+    private String fiscalTerminalId;
+
+    @Column(name = "fiscalized_at")
+    private Instant fiscalizedAt;
+
     @PrePersist
     void prePersist() {
         if (paidAt == null) {

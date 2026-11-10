@@ -9,6 +9,9 @@ const mk = vi.hoisted(() => ({
 }));
 
 vi.mock('../../../../src/restaurant/api/order.api', () => ({ rstOrderApi: api }));
+vi.mock('../../../../src/restaurant/api/payment.api', () => ({
+  rstPaymentApi: { attachFiscal: vi.fn().mockResolvedValue({ data: {} }) },
+}));
 vi.mock('../../../../src/services/multikassa', () => mk);
 
 const { payRestaurantOrderWithFiscal } = await import(

@@ -2,6 +2,7 @@
 
 import { FISCAL_STATUS, resolvePendingFiscalProvider } from '../../../services/fiscal';
 import { isRestaurantDesktop } from '../../../utils/restaurantDesktop';
+import { persistRestaurantPaymentFiscal } from './persistRestaurantPaymentFiscal';
 
 const LS_KEY = 'rst-pending-fiscals';
 
@@ -83,6 +84,10 @@ export async function flushPendingFiscals() {
     });
     if (next?.fiscal?.fiscalStatus === FISCAL_STATUS.PENDING) {
       left.push({ ...row, fiscal: next.fiscal });
+      continue;
+    }
+    if (row.orderId && next?.fiscal) {
+      await persistRestaurantPaymentFiscal(row.orderId, next.fiscal);
     }
   }
   writeQueue(left);

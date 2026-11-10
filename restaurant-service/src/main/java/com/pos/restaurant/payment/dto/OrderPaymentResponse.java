@@ -17,5 +17,11 @@ public record OrderPaymentResponse(
     BigDecimal amountTendered,
     BigDecimal changeGiven,
     PaymentCardType cardType,
-    Instant paidAt
+    Instant paidAt,
+    String fiscalStatus,
+    String fiscalSign,
+    String fiscalReceiptSeq,
+    String multikassaSaleId,
+    String fiscalTerminalId,
+    Instant fiscalizedAt
 ) {}

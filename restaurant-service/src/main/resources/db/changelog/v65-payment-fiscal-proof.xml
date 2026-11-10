@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- OFD proof on payment — no fiscal_qr_url; client rebuilds QR from sign/seq/terminal. -->
+    <changeSet id="rst-065-payment-fiscal-proof" author="pos">
+        <addColumn tableName="floor_order_payments">
+            <column name="fiscal_status" type="VARCHAR(32)"/>
+            <column name="fiscal_sign" type="VARCHAR(128)"/>
+            <column name="fiscal_receipt_seq" type="VARCHAR(64)"/>
+            <column name="multikassa_sale_id" type="VARCHAR(128)"/>
+            <column name="fiscal_terminal_id" type="VARCHAR(64)"/>
+            <column name="fiscalized_at" type="TIMESTAMPTZ"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

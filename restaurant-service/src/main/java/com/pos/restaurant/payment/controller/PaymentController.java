@@ -5,6 +5,7 @@ import com.pos.restaurant.payment.dto.OrderPaymentResponse;
 import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import com.pos.restaurant.payment.dto.PartialRefundRequest;
 import com.pos.restaurant.payment.dto.PayOrderRequest;
+import com.pos.restaurant.payment.dto.PaymentFiscalPayload;
 import com.pos.restaurant.payment.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,5 +81,15 @@ public class PaymentController {
     @Operation(summary = "Платёж по заказу")
     public OrderPaymentResponse getPayment(@PathVariable UUID orderId) {
         return paymentService.getPayment(orderId);
+    }
+
+    @PostMapping("/orders/{orderId}/payment/fiscal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Сохранить OFD-признак платежа (без QR URL)")
+    public OrderPaymentResponse attachFiscal(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody PaymentFiscalPayload payload
+    ) {
+        return paymentService.attachFiscal(orderId, payload);
     }
 }

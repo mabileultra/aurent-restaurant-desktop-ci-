@@ -12,6 +12,7 @@ import { toPayAmountPayload } from './restaurantPayAmount';
 import { isNonFiscalPayMethod } from './restaurantPayForm';
 import { round2 } from '../../../utils/taxAmounts';
 import { enqueuePendingFiscal } from './pendingFiscalQueue';
+import { persistRestaurantPaymentFiscal } from './persistRestaurantPaymentFiscal';
 
 function pendingFiscalFromError(err) {
   return {
@@ -216,6 +217,11 @@ export async function payRestaurantOrderWithFiscal({
       orderId: order?.id,
       fiscal: fiscalPayload,
     });
+  }
+
+  // DB keeps OFD proof only (no QR URL). Tax-off / non-fiscal → nothing written.
+  if (order?.id && fiscalPayload) {
+    await persistRestaurantPaymentFiscal(order.id, fiscalPayload);
   }
 
   return { order: paidOrder, sale, fiscal: fiscalPayload };

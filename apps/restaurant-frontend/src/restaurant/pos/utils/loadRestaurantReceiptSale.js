@@ -11,6 +11,22 @@ function channelCustomerLabel(order, t) {
   return order?.clientName || null;
 }
 
+/** Map payment OFD columns → fiscal bag (QR rebuilt in buildQrPayload). */
+function fiscalFromPayment(payment) {
+  if (!payment?.fiscalStatus && !payment?.fiscalSign && !payment?.multikassaSaleId) {
+    return null;
+  }
+  return {
+    fiscalStatus: payment.fiscalStatus || null,
+    fiscalSign: payment.fiscalSign || null,
+    fiscalReceiptSeq: payment.fiscalReceiptSeq || null,
+    multikassaSaleId: payment.multikassaSaleId || null,
+    fiscalTerminalId: payment.fiscalTerminalId || null,
+    fiscalizedAt: payment.fiscalizedAt || null,
+    fiscalQrUrl: null,
+  };
+}
+
 /**
  * Load closed order + payment and build FiscalReceiptBody-compatible sale.
  */
@@ -40,6 +56,7 @@ export async function loadRestaurantReceiptSale({
     amountTendered: payment?.amountTendered,
     changeGiven: payment?.changeGiven,
     cardType: payment?.cardType || null,
+    fiscal: fiscalFromPayment(payment),
     storeId: order?.storeId,
     storeName,
     cashierName,
