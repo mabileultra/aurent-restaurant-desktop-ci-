@@ -1,9 +1,9 @@
 import React from 'react';
-import { UserPlus, Lock } from 'lucide-react';
+import { UserPlus, Lock, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseButton } from '../../../../components/ui';
 
-export default function PlatformSecurityHeader({ onOpenCreateStaff, onGoToRules }) {
+export default function PlatformSecurityHeader({ onOpenCreateStaff, onGoToRules, onOpen2fa }) {
   const { t } = useTranslation();
 
   return (
@@ -20,16 +20,21 @@ export default function PlatformSecurityHeader({ onOpenCreateStaff, onGoToRules 
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             {t('platform.security.title', 'Xavfsizlik')}
           </h1>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
-            {t('platform.security.monitoringComingSoon', 'Monitoring: Tez kunda')}
-          </span>
         </div>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
           {t('platform.security.subtitle', 'Kirishlar, xodimlar harakatlari va kirish qoidalari nazorati')}
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap justify-end">
+        <BaseButton
+          variant="secondary"
+          className="text-xs sm:text-sm font-semibold gap-1.5"
+          onClick={onOpen2fa}
+        >
+          <Shield className="w-4 h-4 text-emerald-700" />
+          <span>{t('platform.security.setupMy2fa', 'Mening 2FA')}</span>
+        </BaseButton>
         <BaseButton
           variant="secondary"
           className="text-xs sm:text-sm font-semibold gap-1.5"

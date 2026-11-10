@@ -123,3 +123,49 @@ export function aggregateRepublicWeeks(companyDetails = []) {
       fiscalSharePct: w.totalTurnover > 0 ? (w.fiscalTurnover / w.totalTurnover) * 100 : 0,
     }));
 }
+
+/**
+ * Roll republic daily points into week buckets (Mon–Sun, Asia/Tashkent dates as ISO strings).
+ */
+export function weeksFromRepublicDays(days = []) {
+  if (!Array.isArray(days) || days.length === 0) return [];
+
+  const map = new Map();
+  days.forEach((d) => {
+    if (!d?.date) return;
+    const date = new Date(`${d.date}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return;
+    const day = date.getDay(); // 0 Sun .. 6 Sat
+    const mondayOffset = day === 0 ? -6 : 1 - day;
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + mondayOffset);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const weekFrom = monday.toISOString().slice(0, 10);
+    const weekTo = sunday.toISOString().slice(0, 10);
+    const key = weekFrom;
+
+    const fisc = Number(d.fiscalTurnover || 0);
+    const nonFisc = Number(d.nonFiscalTurnover || 0);
+    const tot = Number(d.totalTurnover || (fisc + nonFisc) || 0);
+    const existing = map.get(key) || {
+      weekFrom,
+      weekTo,
+      label: `${fmtDayShort(weekFrom)}–${fmtDayShort(weekTo)}`,
+      fiscalTurnover: 0,
+      nonFiscalTurnover: 0,
+      totalTurnover: 0,
+    };
+    existing.fiscalTurnover += fisc;
+    existing.nonFiscalTurnover += nonFisc;
+    existing.totalTurnover += tot;
+    map.set(key, existing);
+  });
+
+  return Array.from(map.values())
+    .sort((a, b) => String(a.weekFrom).localeCompare(String(b.weekFrom)))
+    .map((w) => ({
+      ...w,
+      fiscalSharePct: w.totalTurnover > 0 ? (w.fiscalTurnover / w.totalTurnover) * 100 : 0,
+    }));
+}

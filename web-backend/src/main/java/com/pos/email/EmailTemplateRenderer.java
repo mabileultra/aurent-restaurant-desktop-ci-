@@ -30,6 +30,9 @@ public class EmailTemplateRenderer {
         merged.putIfAbsent("logoUrl", logoProvider.logoDataUri());
         merged.putIfAbsent("appName", "Aurent POS");
         merged.putIfAbsent("year", String.valueOf(java.time.Year.now().getValue()));
+        merged.putIfAbsent("lang", "uz");
+        merged.putIfAbsent("greeting", "Assalomu alaykum,");
+        merged.putIfAbsent("footerNote", "Bu avtomatik xabar. Javob yozish shart emas.");
 
         String body = applyPlaceholders(loadTemplate(type), merged);
         String layout = loadLayout().replace("{{content}}", body);

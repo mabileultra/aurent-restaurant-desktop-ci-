@@ -1,6 +1,5 @@
 import {
   MAKON_MOBILE_INFO,
-  MAKON_MOBILE_CARDS,
   MAKON_MOBILE_PRODUCTS,
   MAKON_MOBILE_RECEIPTS,
 } from '../data/makonMobileMockData';
@@ -9,11 +8,37 @@ import {
   SAMARQAND_PRODUCTS,
   BUSINESS_TYPE_NAMES,
 } from '../data/samarqandMockData';
-import { formatNumber, formatPercent, calculateDonutArc, parseDayLabels } from './korxonaDetailUtils';
+import { mapBusinessTypeTabCode } from './viloyatDetailStats';
+export { resolveCompanyCards, resolveCompanyDonuts } from './korxonaMetricsResolver';
+
+const BUSINESS_TYPE_LABELS = {
+  F: 'Oziq-ovqat',
+  G: 'Oziq-ovqat',
+  R: 'Restoran',
+  P: 'Dorixona',
+  O: 'Boshqa',
+  GROCERY: 'Oziq-ovqat',
+  RESTAURANT: 'Restoran',
+  PHARMACY: 'Dorixona',
+  UNIVERSAL: 'Boshqa',
+};
+
+function resolveBusinessTypeLabel(rawType, mockCode) {
+  if (rawType) {
+    const key = String(rawType).trim();
+    if (BUSINESS_TYPE_LABELS[key]) return BUSINESS_TYPE_LABELS[key];
+    const upper = key.toUpperCase();
+    if (BUSINESS_TYPE_LABELS[upper]) return BUSINESS_TYPE_LABELS[upper];
+    const tab = mapBusinessTypeTabCode(rawType);
+    return BUSINESS_TYPE_NAMES[tab] || BUSINESS_TYPE_LABELS[tab] || key;
+  }
+  if (mockCode) return BUSINESS_TYPE_NAMES[mockCode] || 'Boshqa';
+  return 'Boshqa';
+}
 
 function createMonogram(name = '') {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'K';
+  if (!parts.length) return 'KM';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
@@ -28,7 +53,26 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
   const districtName = apiDetail?.districtNameUz || districtNames[dCode] || 'Samarqand sh.';
   const regionName = apiDetail?.regionNameUz || apiDetail?.regionNameRu || 'Samarqand viloyati';
   const tin = realCompany?.tin || apiDetail?.tin || (mock?.[2] && mock[2] !== '_' ? mock[2] : (numId === 103 ? '309121333' : '—'));
-  const businessType = realCompany?.businessType || apiDetail?.businessTypeName || (mock?.[4] ? (BUSINESS_TYPE_NAMES[mock[4]] || 'Boshqa') : (numId === 103 ? 'Oziq-ovqat' : 'Boshqa'));
+  const businessType = resolveBusinessTypeLabel(
+    realCompany?.businessType || apiDetail?.businessType || apiDetail?.businessTypeName,
+    mock?.[4]
+  ) || (numId === 103 ? 'Oziq-ovqat' : 'Boshqa');
+
+  const fiscalReceiptCount = Number(apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0);
+  const nonFiscalReceiptCount = Number(apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0);
+  const totalChecks30d = apiDetail?.totalReceiptsCount != null
+    ? Number(apiDetail.totalReceiptsCount)
+    : (apiDetail?.totalChecks30d != null
+      ? Number(apiDetail.totalChecks30d)
+      : (fiscalReceiptCount + nonFiscalReceiptCount > 0 ? fiscalReceiptCount + nonFiscalReceiptCount : null));
+
+  const avgCheck = apiDetail?.avgReceiptAmount != null
+    ? Number(apiDetail.avgReceiptAmount)
+    : (apiDetail?.avgCheck != null
+      ? Number(apiDetail.avgCheck)
+      : (apiDetail?.averageCheck != null
+        ? Number(apiDetail.averageCheck)
+        : (totalChecks30d && apiDetail?.totalTurnover != null ? Number(apiDetail.totalTurnover) / totalChecks30d : null)));
 
   return {
     id: numId,
@@ -44,100 +88,12 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
     storeName: name,
     storeCount: realCompany?.storeCount || apiDetail?.storeCount || 1,
     storesCount: realCompany?.storeCount || apiDetail?.storeCount || 1,
-    phone: realCompany?.phone || (numId === 103 ? '+998 88 934 44 44' : '—'),
-    address: realCompany?.address || (numId === 103 ? 'Samarqand sh., Makon Mall' : `${districtName}, O‘zbekiston`),
+    phone: realCompany?.phone || apiDetail?.phone || (numId === 103 ? '+998 88 934 44 44' : '—'),
+    address: realCompany?.address || apiDetail?.address || (numId === 103 ? 'Samarqand sh., Makon Mall' : `${districtName}, O‘zbekiston`),
     fiscalModule: '—',
-    totalChecks30d: apiDetail?.totalReceiptsCount ?? apiDetail?.totalChecks30d ?? null,
-    avgCheck: apiDetail?.avgReceiptAmount ?? apiDetail?.avgCheck ?? null,
+    totalChecks30d: totalChecks30d || null,
+    avgCheck,
   };
-}
-
-export function resolveCompanyCards({ numId, turnover, delta, apiDetail }) {
-  if (numId === 103 && !apiDetail) {
-    return MAKON_MOBILE_CARDS;
-  }
-
-  const t = Number(turnover || apiDetail?.totalTurnover || 0);
-  const weeks = apiDetail?.weeks;
-  const lastWeek = Array.isArray(weeks) && weeks.length > 0 ? weeks[weeks.length - 1] : null;
-  const weekVal = lastWeek ? Number(lastWeek.totalTurnover || 0) : Math.round(t * 0.15);
-  const weekDelta = lastWeek?.deltaPct != null ? Number(lastWeek.deltaPct) : delta;
-
-  const rawDays = apiDetail?.days;
-  const sortedDays = Array.isArray(rawDays) ? [...rawDays].sort((a, b) => a.date.localeCompare(b.date)) : [];
-  const activeDays = sortedDays.filter((d) => Number(d.totalTurnover || 0) > 0);
-  const oldestActive = activeDays[0];
-  const latestActive = activeDays[activeDays.length - 1];
-
-  const todayIso = new Date().toISOString().slice(0, 10);
-  const todayEntry = sortedDays.find((d) => d.date === todayIso);
-  const todayVal = Number(todayEntry?.totalTurnover || 0);
-
-  let weekSub = 'Oxirgi 7 kun';
-  let weekBadge = weekDelta != null ? `${weekDelta >= 0 ? '▲' : '▼'} ${Math.abs(weekDelta)}%` : '7 kunlik';
-  let weekBadgeType = weekDelta != null && weekDelta < 0 ? 'down' : 'up';
-  if (lastWeek?.weekFrom) {
-    const fStr = parseDayLabels(lastWeek.weekFrom).short;
-    const tStr = parseDayLabels(lastWeek.weekTo).short;
-    if (lastWeek.weekFrom === lastWeek.weekTo) {
-      weekSub = `Joriy hafta · ${fStr}`;
-      if (weekVal === 0) { weekBadge = 'Yangi hafta'; weekBadgeType = 'mute'; }
-    } else {
-      weekSub = `${fStr} – ${tStr}`;
-    }
-  }
-
-  const daySub = `Bugun · ${parseDayLabels(todayIso).short || todayIso}`;
-  const dayBadge = todayVal > 0
-    ? 'Bugungi savdo'
-    : (latestActive ? `Oxirgi savdo: ${parseDayLabels(latestActive.date).short}` : (apiDetail ? 'Savdo yo‘q' : 'Oxirgi savdo: 2-noyabr'));
-  const dayBadgeType = todayVal > 0 ? 'up' : 'mute';
-
-  const periodSub = apiDetail?.from && apiDetail?.to
-    ? `Oxirgi 30 kun · ${parseDayLabels(apiDetail.from).short} – ${parseDayLabels(apiDetail.to).short}`
-    : 'Oxirgi 30 kun';
-  const firstSaleBadge = oldestActive
-    ? `Ilk savdo: ${parseDayLabels(oldestActive.date).short}`
-    : (apiDetail ? '30 kunlik' : 'Birinchi savdo: 20-oktabr');
-  const monthBadge = activeDays.length > 0 ? `${activeDays.length} kun savdo` : '30 kunlik';
-
-  return [
-    { label: 'Umumiy aylanma', sub: 'Oxirgi 30 kun', v: t, badge: firstSaleBadge, badgeType: 'mute' },
-    { label: '1 oylik aylanma', sub: periodSub, v: t, badge: monthBadge, badgeType: 'info' },
-    { label: 'Haftalik', sub: weekSub, v: weekVal, badge: weekBadge, badgeType: weekBadgeType },
-    { label: 'Kunlik', sub: daySub, v: todayVal, badge: dayBadge, badgeType: dayBadgeType },
-  ];
-}
-
-export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFiscalTurnover, apiDetail }) {
-  const isMock103 = numId === 103 && !apiDetail;
-  const t = isMock103 ? 512439000 : Number(turnover || apiDetail?.totalTurnover || 0);
-  const f = isMock103 ? 508339000 : (fiscalTurnover != null ? Number(fiscalTurnover) : Number(apiDetail?.fiscalTurnover || 0));
-  const nf = isMock103 ? 4100000 : (nonFiscalTurnover != null ? Number(nonFiscalTurnover) : Number(apiDetail?.nonFiscalTurnover || Math.max(0, t - f)));
-  const total = f + nf > 0 ? f + nf : t;
-  const fPct = total > 0 ? (f / total) * 100 : 0;
-  const nfPct = Math.max(0, 100 - fPct);
-
-  return [
-    {
-      label: 'Fiskal bilan urilgan',
-      color: '#0E7C4F',
-      pct: formatPercent(fPct),
-      amount: `${formatNumber(f)} so‘m`,
-      hint: isMock103 ? '41 ta chek · QR-kod bilan' : 'QR-kod bilan',
-      dash: calculateDonutArc(fPct),
-      aria: `Fiskal bilan urilgan: ${formatPercent(fPct)}, ${formatNumber(f)} so‘m`,
-    },
-    {
-      label: 'Fiskalsiz',
-      color: '#EF4444',
-      pct: formatPercent(nfPct),
-      amount: `${formatNumber(nf)} so‘m`,
-      hint: isMock103 ? '2 ta chek · soliqqa yuborilmagan' : 'Soliqqa yuborilmagan',
-      dash: calculateDonutArc(nfPct),
-      aria: `Fiskalsiz: ${formatPercent(nfPct)}, ${formatNumber(nf)} so‘m`,
-    },
-  ];
 }
 
 export function resolveCompanyProducts({ numId, companyName, apiDetail }) {
@@ -151,6 +107,11 @@ export function resolveCompanyProducts({ numId, companyName, apiDetail }) {
 
   if (numId === 103 && !apiDetail) {
     return MAKON_MOBILE_PRODUCTS;
+  }
+
+  if (numId === 29 || companyName?.includes('Aminjon')) {
+    const aminjon = SAMARQAND_PRODUCTS['Aminjon Samarqand XK'];
+    if (aminjon) return aminjon;
   }
 
   const all = [...(SAMARQAND_PRODUCTS.A?.top || []), ...(SAMARQAND_PRODUCTS.O?.top || [])];

@@ -17,6 +17,7 @@ import {
   printSettingsToPayload,
   isPrintDirtySuppressed,
 } from '../utils/tenantDisplaySync';
+import { useAuthStore } from './authStore';
 import { usePrintSettingsStore } from './printSettingsStore';
 
 export {
@@ -277,10 +278,15 @@ export const useTenantDisplayStore = create((set, get) => ({
             ...displayToPayload(legacyDisplay),
             printSettings: readLegacyPrintSettings(),
           });
-          try {
-            await get().saveToServer();
-          } catch {
-            /* migration best-effort */
+          // Platform SA/ops have no company context — PUT is ADMIN-only and returns 403.
+          const role = useAuthStore.getState()?.user?.role;
+          const canMigrateToServer = role === 'ADMIN' || role === 'MANAGER';
+          if (canMigrateToServer) {
+            try {
+              await get().saveToServer();
+            } catch {
+              /* migration best-effort */
+            }
           }
           return;
         }

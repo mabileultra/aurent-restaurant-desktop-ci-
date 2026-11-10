@@ -58,17 +58,22 @@ export default function AnalyticsReceiptDetailCard({ receipt, companyId, effecti
             <span>Summa</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
-            {items.map((item, idx) => (
-              <div key={item.id || idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', padding: '4px 0', borderBottom: '1px dashed #F1F5F9' }}>
-                <div>
-                  <div style={{ fontWeight: 500, color: '#1E293B' }}>{item.name || item.productName || `Mahsulot #${idx + 1}`}</div>
-                  <div style={{ fontSize: '11px', color: '#94A3B8' }}>{item.quantity || 1} × {fmtMoney(item.price || item.total || 0, { showCurrency: false })}</div>
+            {items.map((item, idx) => {
+              const qty = Number(item.quantity ?? 1);
+              const unit = Number(item.unitPrice ?? item.price ?? 0);
+              const line = Number(item.lineTotal ?? item.total ?? (unit * qty));
+              return (
+                <div key={item.id || idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', padding: '4px 0', borderBottom: '1px dashed #F1F5F9' }}>
+                  <div>
+                    <div style={{ fontWeight: 500, color: '#1E293B' }}>{item.productName || item.name || `Mahsulot #${idx + 1}`}</div>
+                    <div style={{ fontSize: '11px', color: '#94A3B8' }}>{qty} × {fmtMoney(unit, { showCurrency: false })}</div>
+                  </div>
+                  <div style={{ fontWeight: 600, color: '#334155' }}>
+                    {fmtMoney(line)}
+                  </div>
                 </div>
-                <div style={{ fontWeight: 600, color: '#334155' }}>
-                  {fmtMoney(item.total || (Number(item.price || 0) * Number(item.quantity || 1)))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

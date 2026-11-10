@@ -31,10 +31,7 @@ export const DEFAULT_SECURITY_RULES = Object.freeze({
   attempts: 5,
   lockMin: 15,
   ipOn: false,
-  ips: [
-    { addr: '213.230.98.0/24', note: 'Samarqand ofisi', mine: true },
-    { addr: '195.158.8.40', note: 'Toshkent ofisi' },
-  ],
+  ips: [],
 });
 
 export const AUDIT_MODULES = Object.freeze([

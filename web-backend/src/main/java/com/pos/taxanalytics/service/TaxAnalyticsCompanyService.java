@@ -13,6 +13,7 @@ public interface TaxAnalyticsCompanyService {
         LocalDate to,
         String regionCode,
         String districtCode,
+        String businessType,
         String connectionStatus,
         String search,
         int page,

@@ -38,6 +38,33 @@ describe('korxonaCompanyResolver', () => {
     expect(info.isConnected).toBe(true);
   });
 
+  it('maps GROCERY businessType and receipt KPIs from apiDetail', () => {
+    const apiDetail = {
+      name: 'Grocery Corp',
+      tin: '111',
+      businessType: 'GROCERY',
+      averageCheck: 250000,
+      fiscalReceiptCount: 40,
+      nonFiscalReceiptCount: 10,
+    };
+    const info = resolveCompanyInfo({ numId: 77, apiDetail });
+    expect(info.businessType).toBe('Oziq-ovqat');
+    expect(info.avgCheck).toBe(250000);
+    expect(info.totalChecks30d).toBe(50);
+  });
+
+  it('shows receipt counts on donut hints when apiDetail provides them', () => {
+    const donuts = resolveCompanyDonuts({
+      numId: 29,
+      turnover: 100000000,
+      fiscalTurnover: 98000000,
+      nonFiscalTurnover: 2000000,
+      apiDetail: { fiscalReceiptCount: 41, nonFiscalReceiptCount: 2 },
+    });
+    expect(donuts[0].hint).toContain('41 ta chek');
+    expect(donuts[1].hint).toContain('2 ta chek');
+  });
+
   it('builds dynamic cards for non-103 companies', () => {
     const cards = resolveCompanyCards({ numId: 29, turnover: 479088600, delta: -86.3 });
     expect(cards).toHaveLength(4);

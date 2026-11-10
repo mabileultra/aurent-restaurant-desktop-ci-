@@ -5,7 +5,7 @@ import PlatformSecuritySessionIpRulesCard from './PlatformSecuritySessionIpRules
 import PlatformSecurityCashierPasswordCard from './PlatformSecurityCashierPasswordCard';
 import PlatformSecurityRulesStickyBar from './PlatformSecurityRulesStickyBar';
 
-export default function PlatformSecurityRulesTab({ flow }) {
+export default function PlatformSecurityRulesTab({ flow, onOpenPersonal2fa }) {
   const {
     rules,
     dirtyCount,
@@ -16,13 +16,17 @@ export default function PlatformSecurityRulesTab({ flow }) {
   return (
     <div className="space-y-6">
       {/* 1. Ikki bosqichli tasdiqlash (2FA) */}
-      <PlatformSecurityTwoFactorRulesCard rules={rules} />
+      <PlatformSecurityTwoFactorRulesCard
+        rules={rules}
+        flow={flow}
+        onOpenPersonal2fa={onOpenPersonal2fa}
+      />
 
       {/* 2. Parol talablari */}
-      <PlatformSecurityPasswordRulesCard rules={rules} />
+      <PlatformSecurityPasswordRulesCard rules={rules} flow={flow} />
 
       {/* 3. Seanslar va IP allowlist */}
-      <PlatformSecuritySessionIpRulesCard rules={rules} />
+      <PlatformSecuritySessionIpRulesCard rules={rules} flow={flow} />
 
       {/* 4. Kassa server sozlamalari paroli kartasi */}
       <PlatformSecurityCashierPasswordCard flow={flow} />

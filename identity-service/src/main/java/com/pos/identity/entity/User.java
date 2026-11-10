@@ -82,6 +82,20 @@ public class User implements UserDetails {
     @Builder.Default
     private int accessVersion = 0;
 
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled", nullable = false)
+    @Builder.Default
+    private boolean totpEnabled = false;
+
+    @Column(name = "failed_login_count", nullable = false)
+    @Builder.Default
+    private int failedLoginCount = 0;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
     @Column(name = "created_at")
     private Instant createdAt;
 

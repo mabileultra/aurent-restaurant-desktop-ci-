@@ -30,7 +30,7 @@ export default function AnalyticsFiscalShareCard({
     >
       <div>
         <h2 id="fn" className="t">Fiskal va nofiskal aylanma</h2>
-        <p className="s">Ulush va davr bo‘yicha taqsimot · 8 ta yirik korxona haftalik ko‘rsatkichi</p>
+        <p className="s">Ulush va davr bo‘yicha taqsimot · respublika kunlik seriyasidan haftalar</p>
       </div>
 
       {/* Top split bar */}

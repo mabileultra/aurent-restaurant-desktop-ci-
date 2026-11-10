@@ -6,6 +6,9 @@ import com.pos.identity.client.dto.SuperAdminLoginEmailRequest;
 import com.pos.identity.dto.auth.AuthRequest;
 import com.pos.identity.dto.auth.AuthResponse;
 import com.pos.identity.dto.auth.RegisterRequest;
+import com.pos.identity.dto.auth.TwoFactorVerifyRequest;
+import com.pos.identity.dto.security.LoginRulesDto;
+import com.pos.identity.entity.AuthSession;
 import com.pos.identity.entity.Role;
 import com.pos.identity.entity.User;
 import com.pos.identity.exception.BadRequestException;
@@ -19,6 +22,11 @@ import com.pos.identity.service.auth.AuthLoginService;
 import com.pos.identity.service.auth.support.AuthResponseFactory;
 import com.pos.identity.service.auth.support.LoginAuditPublisher;
 import com.pos.identity.service.auth.support.LoginGuard;
+import com.pos.identity.service.security.support.AuthSessionSupport;
+import com.pos.identity.service.security.support.IpAllowlistMatcher;
+import com.pos.identity.service.security.support.LoginLockSupport;
+import com.pos.identity.service.security.support.LoginRulesSupport;
+import com.pos.identity.service.security.support.TotpSupport;
 import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.service.support.UserLookupSupport;
 import com.pos.identity.service.support.UserSyncSupport;
@@ -36,6 +44,8 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class AuthLoginServiceImpl implements AuthLoginService {
 
+    private static final long CHALLENGE_TTL_MS = 5 * 60 * 1000L;
+
     private final UserRepository userRepository;
     private final UserLookupSupport userLookup;
     private final TenantAccessSupport tenantAccess;
@@ -48,6 +58,11 @@ public class AuthLoginServiceImpl implements AuthLoginService {
     private final LoginGuard loginGuard;
     private final LoginAuditPublisher loginAuditPublisher;
     private final AuthResponseFactory authResponseFactory;
+    private final LoginRulesSupport loginRulesSupport;
+    private final LoginLockSupport loginLockSupport;
+    private final IpAllowlistMatcher ipAllowlistMatcher;
+    private final AuthSessionSupport authSessionSupport;
+    private final TotpSupport totpSupport;
 
     @Override
     @Transactional
@@ -77,14 +92,20 @@ public class AuthLoginServiceImpl implements AuthLoginService {
         userSyncSupport.syncCreate(user);
         loginAuditPublisher.publish(user, "USER_REGISTERED", "User", user.getId().toString());
 
-        String token = jwtService.generateToken(user);
+        AuthSession session = authSessionSupport.open(user, null, null);
+        String token = jwtService.generateToken(user, session.getId());
         LogUtil.info(AuthLoginServiceImpl.class, "User registered: username={}", user.getUsername());
         return authResponseFactory.build(user, token, null);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse authenticate(AuthRequest request, String clientIp, String userAgent) {
+        LoginRulesDto rules = loginRulesSupport.get();
+        if (!ipAllowlistMatcher.isAllowed(rules, clientIp)) {
+            throw new BadRequestException("Вход с этого IP запрещён правилами безопасности");
+        }
+
         String username = UserLoginUtil.normalizeUsername(request.username());
         String companyCode = CompanyLoginCodeUtil.normalize(request.companyLoginCode());
 
@@ -107,11 +128,55 @@ public class AuthLoginServiceImpl implements AuthLoginService {
         }
 
         loginGuard.assertAllowed(user, company);
+        loginLockSupport.assertNotLocked(user);
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            loginLockSupport.onFailure(user, rules);
             throw new BadRequestException("Invalid username or password");
         }
 
+        // Challenge only after the user enrolled. Role-mandated 2FA must not block first-time setup.
+        boolean enrolledTotp = user.isTotpEnabled() && StringUtils.hasText(user.getTotpSecret());
+        if (enrolledTotp) {
+            String challenge = jwtService.generatePurposeToken(user, "2fa_challenge", CHALLENGE_TTL_MS);
+            return authResponseFactory.challenge(user, challenge);
+        }
+
+        return completeLogin(user, company, clientIp, userAgent, rules);
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse verifyTwoFactor(TwoFactorVerifyRequest request, String clientIp, String userAgent) {
+        if (!"2fa_challenge".equals(jwtService.extractPurpose(request.challengeToken()))
+            || !jwtService.isTokenValid(request.challengeToken())) {
+            throw new BadRequestException("Недействительный или истёкший 2FA-челлендж");
+        }
+        User user = userRepository.findByIdWithDetails(jwtService.extractSubjectUserId(request.challengeToken()))
+            .orElseThrow(() -> new BadRequestException("User not found"));
+        loginLockSupport.assertNotLocked(user);
+        if (!totpSupport.verify(user.getTotpSecret(), request.code())) {
+            loginLockSupport.onFailure(user, loginRulesSupport.get());
+            throw new BadRequestException("Неверный код 2FA");
+        }
+        LoginRulesDto rules = loginRulesSupport.get();
+        if (!ipAllowlistMatcher.isAllowed(rules, clientIp)) {
+            throw new BadRequestException("Вход с этого IP запрещён правилами безопасности");
+        }
+        CompanyDto company = user.getCompanyId() != null
+            ? posCoreClient.getCompanyById(user.getCompanyId())
+            : null;
+        return completeLogin(user, company, clientIp, userAgent, rules);
+    }
+
+    private AuthResponse completeLogin(
+        User user,
+        CompanyDto company,
+        String clientIp,
+        String userAgent,
+        LoginRulesDto rules
+    ) {
+        loginLockSupport.onSuccess(user);
         loginAuditPublisher.publish(user, "LOGIN", null, null);
 
         if (RoleName.SUPER_ADMIN.matches(user)) {
@@ -127,7 +192,9 @@ public class AuthLoginServiceImpl implements AuthLoginService {
             userSyncSupport.syncUpdate(user);
         }
 
-        String token = jwtService.generateToken(user);
+        AuthSession session = authSessionSupport.open(user, clientIp, userAgent);
+        authSessionSupport.enforceConcurrentLimit(user.getId(), session.getId(), rules.conc());
+        String token = jwtService.generateToken(user, session.getId());
         LogUtil.info(
             AuthLoginServiceImpl.class,
             "User authenticated: username={}, companyId={}",

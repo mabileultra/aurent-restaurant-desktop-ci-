@@ -27,11 +27,13 @@ public final class TaxAnalyticsCompanyDays {
             DayTurnover turnover = byDate.get(day);
             BigDecimal fiscal = turnover == null ? BigDecimal.ZERO : turnover.fiscal();
             BigDecimal nonFiscal = turnover == null ? BigDecimal.ZERO : turnover.nonFiscal();
+            long receiptCount = turnover == null ? 0L : turnover.receiptCount();
             days.add(new TaxAnalyticsCompanyDayResponse(
                 day.toString(),
                 fiscal,
                 nonFiscal,
-                fiscal.add(nonFiscal)
+                fiscal.add(nonFiscal),
+                receiptCount
             ));
         }
         return days;

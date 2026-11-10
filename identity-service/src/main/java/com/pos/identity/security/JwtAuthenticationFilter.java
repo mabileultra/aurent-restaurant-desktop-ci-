@@ -1,6 +1,8 @@
 package com.pos.identity.security;
 
 import com.pos.identity.repository.UserRepository;
+import com.pos.identity.service.security.support.AuthSessionSupport;
+import com.pos.identity.service.security.support.LoginRulesSupport;
 import com.pos.shared.http.TenantHeaders;
 import com.pos.shared.jwt.JwtClaimsExtractor;
 import jakarta.servlet.FilterChain;
@@ -25,6 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final AuthSessionSupport authSessionSupport;
+    private final LoginRulesSupport loginRulesSupport;
 
     @Override
     protected void doFilterInternal(
@@ -36,7 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                if (jwtService.isTokenValid(token) && isAccessVersionCurrent(token)) {
+                if (jwtService.isTokenValid(token)
+                    && isAccessVersionCurrent(token)
+                    && isSessionCurrent(token)
+                    && !"2fa_challenge".equals(jwtService.extractPurpose(token))
+                    && !"sudo".equals(jwtService.extractPurpose(token))) {
                     String role = jwtService.extractRole(token);
                     Integer companyId = JwtClaimsExtractor.resolveCompanyIdSecure(
                         jwtService.extractCompanyId(token),
@@ -45,6 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     UUID userId = jwtService.extractSubjectUserId(token);
                     IdentityTenantContext.set(companyId, userId, role);
+                    UUID sessionId = jwtService.extractSessionId(token);
+                    if (sessionId != null) {
+                        IdentityTenantContext.setSessionId(sessionId);
+                        authSessionSupport.touch(sessionId);
+                    }
                     var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
                     var authentication = new UsernamePasswordAuthenticationToken(
                         userId.toString(),
@@ -61,7 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    /** Reject tokens whose access_version claim no longer matches DB (module access changed). */
     private boolean isAccessVersionCurrent(String token) {
         Integer claimVersion = jwtService.extractAccessVersion(token);
         if (claimVersion == null) {
@@ -70,5 +82,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         UUID userId = jwtService.extractSubjectUserId(token);
         Integer dbVersion = userRepository.findAccessVersionById(userId).orElse(null);
         return dbVersion != null && dbVersion.equals(claimVersion);
+    }
+
+    private boolean isSessionCurrent(String token) {
+        UUID sessionId = jwtService.extractSessionId(token);
+        if (sessionId == null) {
+            return true;
+        }
+        if (!authSessionSupport.isActive(sessionId)) {
+            return false;
+        }
+        int maxH = loginRulesSupport.get().maxH();
+        return !authSessionSupport.isExpiredByMaxHours(sessionId, maxH);
     }
 }

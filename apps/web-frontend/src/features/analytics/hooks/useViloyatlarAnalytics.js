@@ -22,15 +22,15 @@ export function useViloyatlarAnalytics() {
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('turnover');
 
-  const overviewQuery = useQuery({
-    queryKey: ['analytics-overview-viloyatlar', period],
-    queryFn: () => analyticsApi.getOverview({ period, regionCode: '18' }).then((r) => r.data),
-    staleTime: 60_000,
-  });
-
+  // Single results call carries district rows + region KPI summary (no second /overview flicker).
   const resultsQuery = useQuery({
     queryKey: ['analytics-results-viloyatlar', period],
-    queryFn: () => analyticsApi.getResults({ level: 'DISTRICT', regionCode: '18', period }).then((r) => r.data),
+    queryFn: () => analyticsApi.getResults({
+      level: 'DISTRICT',
+      regionCode: '18',
+      period,
+      size: 100,
+    }).then((r) => r.data),
     staleTime: 60_000,
   });
 
@@ -40,15 +40,22 @@ export function useViloyatlarAnalytics() {
     staleTime: 600_000,
   });
 
-  const overview = overviewQuery.data || {};
-  const rangeLabel = overview.periodFrom && overview.periodTo
-    ? `${fmtDayShort(overview.periodFrom)} – ${fmtDayShort(overview.periodTo)}`
+  const results = resultsQuery.data || {};
+  const rangeLabel = results.periodFrom && results.periodTo
+    ? `${fmtDayShort(results.periodFrom)} – ${fmtDayShort(results.periodTo)}`
     : (PERIOD_LABELS[period]?.label ?? '30 kun');
 
+  // Always pass an array so we never fall back to SAMARQAND_COMPANIES mock mid-load.
+  const backendRows = Array.isArray(resultsQuery.data?.rows) ? resultsQuery.data.rows : [];
+
   const rawDistricts = useMemo(
-    () => buildSamarqandDistricts(undefined, resultsQuery.data?.rows),
-    [resultsQuery.data?.rows]
+    () => buildSamarqandDistricts([], backendRows),
+    [backendRows]
   );
+
+  const unassignedRow = useMemo(() => {
+    return backendRows.find((r) => String(r.code || '').toUpperCase() === 'UNASSIGNED') || null;
+  }, [backendRows]);
 
   const counts = useMemo(() => ({
     all: rawDistricts.length,
@@ -61,40 +68,54 @@ export function useViloyatlarAnalytics() {
     [rawDistricts, filter, sort]
   );
 
-  const kpis = useMemo(
-    () => buildSamarqandKpis(rawDistricts, period, overview.kpi),
-    [rawDistricts, period, overview.kpi]
-  );
+  const kpis = useMemo(() => {
+    // Only paint KPIs from backend summary — never mock, never district-sum while summary pending.
+    if (!resultsQuery.isSuccess || !results.summary) {
+      return buildSamarqandKpis([], period, null);
+    }
+    return buildSamarqandKpis(rawDistricts, period, results.summary);
+  }, [resultsQuery.isSuccess, results.summary, rawDistricts, period]);
 
-  const totalCompanies = useMemo(
-    () => (overview.kpi?.totalEnterprises != null
-      ? Number(overview.kpi.totalEnterprises)
-      : rawDistricts.reduce((acc, d) => acc + d.companies, 0)),
-    [overview.kpi?.totalEnterprises, rawDistricts]
-  );
+  const totalCompanies = useMemo(() => {
+    if (!resultsQuery.isSuccess) return 0;
+    const fromSummary = Number(results.summary?.totalEnterprises || 0);
+    if (fromSummary > 0) return fromSummary;
+    return rawDistricts.reduce((acc, d) => acc + d.companies, 0)
+      + Number(unassignedRow?.enterprises || 0);
+  }, [resultsQuery.isSuccess, results.summary, rawDistricts, unassignedRow]);
 
   const unassigned = useMemo(() => {
-    const totalViloyatTurnover = Number(overview.kpi?.totalTurnover || 0);
+    if (!resultsQuery.isSuccess) {
+      return { turnover: 0, companies: 0, connected: 0, sharePct: 0 };
+    }
+    if (unassignedRow) {
+      const turnover = Number(unassignedRow.totalTurnover || 0);
+      const companies = Number(unassignedRow.enterprises || 0);
+      const connected = Number(unassignedRow.connected || 0);
+      const totalViloyatTurnover = Number(results.summary?.totalTurnover || 0);
+      return {
+        turnover,
+        companies,
+        connected,
+        sharePct: totalViloyatTurnover > 0 ? (turnover / totalViloyatTurnover) * 100 : 0,
+      };
+    }
+    const totalViloyatTurnover = Number(results.summary?.totalTurnover || 0);
     const sumDistrictsTurnover = rawDistricts.reduce((s, d) => s + (d.turnover || 0), 0);
     const unassignedTurnover = Math.max(0, totalViloyatTurnover - sumDistrictsTurnover);
-
-    const totalViloyatComps = Number(overview.kpi?.totalEnterprises || overview.kpi?.enterprises || 0);
+    const totalViloyatComps = Number(results.summary?.totalEnterprises || 0);
     const sumDistrictsComps = rawDistricts.reduce((s, d) => s + (d.companies || 0), 0);
     const unassignedCompanies = Math.max(0, totalViloyatComps - sumDistrictsComps);
-
-    const totalViloyatConn = Number(overview.kpi?.connected || 0);
+    const totalViloyatConn = Number(results.summary?.connected || 0);
     const sumDistrictsConn = rawDistricts.reduce((s, d) => s + (d.connected || 0), 0);
     const unassignedConnected = Math.max(0, totalViloyatConn - sumDistrictsConn);
-
-    const sharePct = totalViloyatTurnover > 0 ? (unassignedTurnover / totalViloyatTurnover) * 100 : 0;
-
     return {
       turnover: unassignedTurnover,
       companies: unassignedCompanies,
       connected: unassignedConnected,
-      sharePct,
+      sharePct: totalViloyatTurnover > 0 ? (unassignedTurnover / totalViloyatTurnover) * 100 : 0,
     };
-  }, [overview.kpi, rawDistricts]);
+  }, [resultsQuery.isSuccess, unassignedRow, results.summary, rawDistricts]);
 
   return {
     period,
@@ -109,10 +130,9 @@ export function useViloyatlarAnalytics() {
     regions: sortedDistricts,
     unassigned,
     totalCompanies,
-    loading: overviewQuery.isLoading || resultsQuery.isLoading || districtsQuery.isLoading,
-    error: overviewQuery.isError || resultsQuery.isError || districtsQuery.isError,
+    loading: resultsQuery.isLoading || districtsQuery.isLoading,
+    error: resultsQuery.isError || districtsQuery.isError,
     refetch: () => {
-      overviewQuery.refetch();
       resultsQuery.refetch();
       districtsQuery.refetch();
     },

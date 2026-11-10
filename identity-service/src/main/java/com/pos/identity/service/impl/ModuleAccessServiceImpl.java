@@ -19,11 +19,13 @@ import com.pos.identity.service.ModuleAccessService;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.access.support.ModuleAccessFalseExceptionCleaner;
 import com.pos.identity.service.access.support.ModuleAccessMutationSupport;
 import com.pos.identity.service.access.support.ModuleAccessHistoryWriter;
 import com.pos.identity.service.access.support.ModuleAccessSnapshotSupport;
 import com.pos.identity.service.access.support.ModuleAccessStatsSupport;
 import com.pos.identity.service.access.support.ModuleAccessUsersPager;
+import com.pos.identity.service.access.support.RoleTemplateCatalogSupport;
 import com.pos.identity.service.access.support.RoleTemplateSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +47,8 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     private final ModuleAccessUsersPager moduleAccessUsersPager;
     private final ModuleAccessStatsSupport moduleAccessStatsSupport;
     private final RoleTemplateSupport roleTemplateSupport;
+    private final RoleTemplateCatalogSupport roleTemplateCatalogSupport;
+    private final ModuleAccessFalseExceptionCleaner falseExceptionCleaner;
     private final ModuleAccessSnapshotSupport snapshotSupport;
     private final ModuleAccessHistoryWriter historyWriter;
     private final ModuleAccessMutationSupport mutationSupport;
@@ -85,6 +89,11 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     }
 
     @Override
+    public List<RoleTemplateResponse> listRoleTemplates(String businessType) {
+        return roleTemplateCatalogSupport.listAll(businessType);
+    }
+
+    @Override
     @Transactional(readOnly = false)
     public RoleTemplateResponse updateRoleTemplate(
         String businessType,
@@ -92,6 +101,12 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         UpdateRoleTemplateRequest request
     ) {
         return roleTemplateSupport.put(businessType, role, request);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public ModuleAccessMutationResponse normalizeFalseExceptions() {
+        return falseExceptionCleaner.normalize();
     }
 
     @Override

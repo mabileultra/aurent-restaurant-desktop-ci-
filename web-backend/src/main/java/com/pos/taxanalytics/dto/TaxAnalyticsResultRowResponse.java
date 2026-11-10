@@ -17,5 +17,9 @@ public record TaxAnalyticsResultRowResponse(
     BigDecimal fiscalSharePct,
     BigDecimal turnoverDeltaPct,
     /** REGION | DISTRICT | ENTERPRISE */
-    String level
+    String level,
+    BigDecimal weekTurnover,
+    BigDecimal weekDeltaPct,
+    BigDecimal todayTurnover,
+    BigDecimal yearTurnover
 ) {}

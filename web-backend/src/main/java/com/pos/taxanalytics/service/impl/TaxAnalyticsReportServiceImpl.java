@@ -3,6 +3,8 @@ package com.pos.taxanalytics.service.impl;
 import com.pos.taxanalytics.dto.TaxAnalyticsCompareResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsDailyResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsDayPointResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsProductsResponse;
+import com.pos.taxanalytics.dto.TaxAnalyticsReceiptCountsResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsReceiptListResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsReceiptRowResponse;
 import com.pos.taxanalytics.dto.TaxAnalyticsResultRowResponse;
@@ -33,25 +35,60 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
     private final TaxAnalyticsKpiBuilder kpiBuilder;
     private final TaxAnalyticsService taxAnalyticsService;
     private final TaxAnalyticsCompanyService companyService;
+    private final TaxAnalyticsProductServiceImpl productService;
 
     @Override
-    public TaxAnalyticsDailyResponse daily(String period, LocalDate from, LocalDate to) {
+    public TaxAnalyticsDailyResponse daily(
+        String period,
+        LocalDate from,
+        LocalDate to,
+        String regionCode,
+        String districtCode,
+        String businessType
+    ) {
         TaxAnalyticsPeriod range = TaxAnalyticsPeriod.resolve(period, from, to);
         List<TaxAnalyticsDayPointResponse> days = new ArrayList<>();
-        for (Map<String, Object> row : repository.daily(range)) {
+        for (Map<String, Object> row : repository.daily(range, regionCode, districtCode, businessType)) {
             BigDecimal fiscal = decimal(row.get("fiscal_turnover"));
             BigDecimal nonFiscal = decimal(row.get("non_fiscal_turnover"));
             Integer leaderId = row.get("leader_company_id") instanceof Number number ? number.intValue() : null;
+            long receipts = row.get("receipts_count") instanceof Number number ? number.longValue() : 0L;
             days.add(new TaxAnalyticsDayPointResponse(
                 String.valueOf(row.get("day")),
                 fiscal,
                 nonFiscal,
                 fiscal.add(nonFiscal),
+                receipts,
                 leaderId,
                 row.get("leader_company_name") == null ? null : String.valueOf(row.get("leader_company_name"))
             ));
         }
         return new TaxAnalyticsDailyResponse(range.from().toString(), range.to().toString(), days);
+    }
+
+    @Override
+    public TaxAnalyticsProductsResponse products(
+        String period,
+        LocalDate from,
+        LocalDate to,
+        String regionCode,
+        String districtCode,
+        String businessType,
+        int limit
+    ) {
+        return productService.products(period, from, to, regionCode, districtCode, businessType, limit);
+    }
+
+    @Override
+    public TaxAnalyticsReceiptCountsResponse receiptCounts(
+        String period,
+        LocalDate from,
+        LocalDate to,
+        String regionCode,
+        String districtCode,
+        String businessType
+    ) {
+        return productService.receiptCounts(period, from, to, regionCode, districtCode, businessType);
     }
 
     @Override
@@ -78,7 +115,9 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
                 row.get("store_name") == null ? null : String.valueOf(row.get("store_name")),
                 decimal(row.get("total_amount")),
                 row.get("fiscal_status") == null ? null : String.valueOf(row.get("fiscal_status")),
-                Boolean.TRUE.equals(row.get("has_qr"))
+                Boolean.TRUE.equals(row.get("has_qr")),
+                row.get("company_id") instanceof Number n ? n.intValue() : null,
+                row.get("company_name") == null ? null : String.valueOf(row.get("company_name"))
             ));
         }
         return new TaxAnalyticsReceiptListResponse(
@@ -129,7 +168,9 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
     }
 
     private List<TaxAnalyticsResultRowResponse> regions(String period, LocalDate from, LocalDate to) {
-        return taxAnalyticsService.results(period, from, to, null, null, null, null, "REGION", 0, 100).rows();
+        return taxAnalyticsService.results(
+            period, from, to, null, null, null, null, null, "REGION", 0, 100
+        ).rows();
     }
 
     private List<com.pos.taxanalytics.dto.TaxAnalyticsCompanyRowResponse> companies(
@@ -138,13 +179,15 @@ public class TaxAnalyticsReportServiceImpl implements TaxAnalyticsReportService 
         LocalDate to
     ) {
         return companyService.list(
-            period, from, to, null, null, null, null, 0, 10, "totalTurnover,desc"
+            period, from, to, null, null, null, null, null, 0, 10, "totalTurnover,desc"
         ).rows();
     }
 
     @Override
     public String exportCsv(String period, LocalDate from, LocalDate to) {
-        var page = taxAnalyticsService.results(period, from, to, null, null, null, null, "REGION", 0, 100);
+        var page = taxAnalyticsService.results(
+            period, from, to, null, null, null, null, null, "REGION", 0, 100
+        );
         StringBuilder csv = new StringBuilder();
         csv.append("code,name_uz,enterprises,fiscal_turnover,non_fiscal_turnover,total_turnover\n");
         for (TaxAnalyticsResultRowResponse row : page.rows()) {

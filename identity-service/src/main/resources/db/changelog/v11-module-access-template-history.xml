@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="identity-015-module-access-history-template" author="pos">
+        <dropNotNullConstraint tableName="module_access_history" columnName="target_user_id" columnDataType="UUID"/>
+        <addColumn tableName="module_access_history">
+            <column name="business_type" type="VARCHAR(32)"/>
+            <column name="role_name" type="VARCHAR(32)"/>
+        </addColumn>
+        <createIndex tableName="module_access_history" indexName="idx_module_access_history_action">
+            <column name="action"/>
+        </createIndex>
+        <createIndex tableName="module_access_history" indexName="idx_module_access_history_template">
+            <column name="business_type"/>
+            <column name="role_name"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

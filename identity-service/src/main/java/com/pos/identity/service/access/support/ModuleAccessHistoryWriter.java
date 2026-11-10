@@ -27,6 +27,41 @@ public class ModuleAccessHistoryWriter {
         Map<String, Boolean> beforeModules,
         Map<String, Boolean> afterModules
     ) {
+        return historyRepository.save(baseBuilder(action, strategy, beforeCustom, afterCustom, beforeModules, afterModules)
+            .targetUserId(target.getId())
+            .targetUsername(target.getUsername())
+            .targetFullName(target.getFullName())
+            .build());
+    }
+
+    public ModuleAccessHistory writeTemplate(
+        String businessType,
+        String roleName,
+        Map<String, Boolean> beforeModules,
+        Map<String, Boolean> afterModules
+    ) {
+        return historyRepository.save(baseBuilder(
+            "TEMPLATE",
+            null,
+            false,
+            false,
+            beforeModules,
+            afterModules
+        )
+            .businessType(businessType)
+            .roleName(roleName)
+            .targetFullName(businessType + " / " + roleName)
+            .build());
+    }
+
+    private ModuleAccessHistory.ModuleAccessHistoryBuilder baseBuilder(
+        String action,
+        String strategy,
+        boolean beforeCustom,
+        boolean afterCustom,
+        Map<String, Boolean> beforeModules,
+        Map<String, Boolean> afterModules
+    ) {
         UUID actorId = IdentityTenantContext.userId();
         String actorName = null;
         if (actorId != null) {
@@ -34,19 +69,14 @@ public class ModuleAccessHistoryWriter {
                 .map(User::getFullName)
                 .orElse(IdentityTenantContext.role());
         }
-        ModuleAccessHistory row = ModuleAccessHistory.builder()
+        return ModuleAccessHistory.builder()
             .actorUserId(actorId)
             .actorName(actorName)
             .action(action)
-            .targetUserId(target.getId())
-            .targetUsername(target.getUsername())
-            .targetFullName(target.getFullName())
             .strategy(strategy)
             .beforeCustom(beforeCustom)
             .afterCustom(afterCustom)
             .beforeModulesJson(ModuleAccessJson.toJson(beforeModules))
-            .afterModulesJson(ModuleAccessJson.toJson(afterModules))
-            .build();
-        return historyRepository.save(row);
+            .afterModulesJson(ModuleAccessJson.toJson(afterModules));
     }
 }

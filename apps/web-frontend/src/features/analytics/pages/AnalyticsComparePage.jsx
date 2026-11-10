@@ -66,7 +66,7 @@ export default function AnalyticsComparePage() {
       exportToCsv('solishtirish-hududlar', headers, rows);
     } else {
       const headers = ['#', 'Korxona', 'STIR', 'Fiskal holat', 'Umumiy aylanma', 'Haftalik o‘zgarish'];
-      const rows = page.top10Companies.map((c, i) => [
+      const rows = page.allCompanies.map((c, i) => [
         i + 1,
         c.name,
         c.tin || '',
@@ -157,7 +157,7 @@ export default function AnalyticsComparePage() {
                     );
                   })
                 ) : (
-                  page.top10Companies.map((c, i) => {
+                  page.allCompanies.map((c, i) => {
                     const delta = fmtDeltaBadge(c.turnoverDeltaPct ?? c.weekDeltaPct);
                     return (
                       <tr key={c.companyId || i}>

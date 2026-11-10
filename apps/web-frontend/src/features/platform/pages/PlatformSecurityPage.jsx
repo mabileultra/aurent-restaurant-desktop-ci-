@@ -23,6 +23,7 @@ export default function PlatformSecurityPage() {
       <PlatformSecurityHeader
         onOpenCreateStaff={page.staffFlow.openCreate}
         onGoToRules={() => page.setActiveTab(SECURITY_TAB_KEYS.RULES)}
+        onOpen2fa={() => setIs2faModalOpen(true)}
       />
 
       <PlatformSecurityTabsNav
@@ -48,7 +49,10 @@ export default function PlatformSecurityPage() {
           <PlatformSecurityStaffTab flow={page.staffFlow} />
         )}
         {page.activeTab === SECURITY_TAB_KEYS.RULES && (
-          <PlatformSecurityRulesTab flow={page.rulesFlow} />
+          <PlatformSecurityRulesTab
+            flow={page.rulesFlow}
+            onOpenPersonal2fa={() => setIs2faModalOpen(true)}
+          />
         )}
       </div>
 
@@ -74,6 +78,7 @@ export default function PlatformSecurityPage() {
         isOpen={page.rulesFlow.isSudoModalOpen}
         onClose={() => page.rulesFlow.setIsSudoModalOpen(false)}
         onConfirm={page.rulesFlow.confirmSudoAndSave}
+        isSubmitting={page.rulesFlow.isSavingRules}
       />
 
       <PlatformSecurity2faModal

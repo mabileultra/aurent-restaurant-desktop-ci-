@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { platformModuleAccessApi } from '../../../../../api';
-import { rolesForBusinessType } from '../../../utils/rolesByBusinessType';
 import { getScopeForRole } from '../utils/roleDefaultModules';
 
 /**
- * Loads and reacts to module template counts across all business types and roles.
+ * Loads module template counts for all business types/roles in one backend request.
  */
 export function useAllRoleTemplateCounts({
   businessTypes = [],
@@ -23,40 +22,32 @@ export function useAllRoleTemplateCounts({
 
     try {
       const activeBTs = businessTypes.filter((b) => b.code !== 'ALL');
-      const fetchPromises = [];
-
-      for (const bt of activeBTs) {
-        const roles = rolesForBusinessType(bt.code);
-        for (const role of roles) {
-          fetchPromises.push(
-            platformModuleAccessApi
-              .getRoleTemplate(bt.code, role)
-              .then((res) => {
-                const data = res?.data;
-                if (!data) return null;
-                if (typeof qc?.setQueryData === 'function') {
-                  qc.setQueryData(['access-role-template', bt.code, role], data);
-                }
-                const scope = getScopeForRole(role, bt.code);
-                const count = data.modules
-                  ? Object.entries(data.modules).filter(([k, v]) => scope.has(k) && Boolean(v)).length
-                  : null;
-                return { key: `${bt.code}_${role}`, count };
-              })
-              .catch(() => null)
-          );
-        }
+      if (activeBTs.length === 0) {
+        setTemplateCounts({});
+        return;
       }
 
-      const results = await Promise.allSettled(fetchPromises);
+      const res = await platformModuleAccessApi.listRoleTemplates();
+      const rows = Array.isArray(res?.data) ? res.data : [];
       const nextCounts = {};
-      results.forEach((r) => {
-        if (r.status === 'fulfilled' && r.value && r.value.count !== null) {
-          nextCounts[r.value.key] = r.value.count;
+
+      rows.forEach((data) => {
+        if (!data?.businessType || !data?.role) return;
+        if (typeof qc?.setQueryData === 'function') {
+          qc.setQueryData(['access-role-template', data.businessType, data.role], data);
+        }
+        const scope = getScopeForRole(data.role, data.businessType);
+        const count = data.modules
+          ? Object.entries(data.modules).filter(([k, v]) => scope.has(k) && Boolean(v)).length
+          : null;
+        if (count !== null) {
+          nextCounts[`${data.businessType}_${data.role}`] = count;
         }
       });
 
       setTemplateCounts((prev) => ({ ...prev, ...nextCounts }));
+    } catch {
+      // Keep previous counts on failure; individual editors still use getRoleTemplate.
     } finally {
       isFetchingRef.current = false;
     }

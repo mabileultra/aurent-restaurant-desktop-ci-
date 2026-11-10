@@ -34,13 +34,14 @@ public class TaxAnalyticsCompanyController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "Firm list. sort=totalTurnover,desc is applied on the server. weekDeltaPct follows the selected period.")
+    @Operation(summary = "Firm list with businessType/legalName/address/phone. sort=totalTurnover,desc is applied on the server.")
     public ResponseEntity<TaxAnalyticsCompaniesResponse> list(
         @RequestParam(required = false, defaultValue = "30d") String period,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) String regionCode,
         @RequestParam(required = false) String districtCode,
+        @RequestParam(required = false) String businessType,
         @RequestParam(required = false) String connectionStatus,
         @RequestParam(required = false) String search,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -48,13 +49,13 @@ public class TaxAnalyticsCompanyController {
         @RequestParam(required = false, defaultValue = "totalTurnover,desc") String sort
     ) {
         return ResponseEntity.ok(taxAnalyticsCompanyService.list(
-            period, from, to, regionCode, districtCode, connectionStatus, search, page, size, sort
+            period, from, to, regionCode, districtCode, businessType, connectionStatus, search, page, size, sort
         ));
     }
 
     @GetMapping("/{companyId}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "Firm turnover for the period and the last 8 weeks")
+    @Operation(summary = "Firm detail: turnover, receipt counts, average check, fiscal terminal, first/last sale, daily receipt counts")
     public ResponseEntity<TaxAnalyticsCompanyDetailResponse> detail(
         @PathVariable int companyId,
         @RequestParam(required = false, defaultValue = "30d") String period,
@@ -66,7 +67,7 @@ public class TaxAnalyticsCompanyController {
 
     @GetMapping("/{companyId}/receipts")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','PLATFORM_ADMIN','PLATFORM_ANALYTICS')")
-    @Operation(summary = "Чеки фирмы за день или диапазон from/to. Границы суток — Asia/Tashkent, created_at в ответе — UTC (Z). Без дат — 400.")
+    @Operation(summary = "Чеки фирмы. date, либо from/to, либо без дат (тогда последние 30 дней Asia/Tashkent).")
     public ResponseEntity<TaxAnalyticsReceiptsResponse> receipts(
         @PathVariable int companyId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -8,9 +8,18 @@ import { AUDIENCE_MODES, ROLE_OPTIONS } from '../utils/emailConstants';
 import { formatNumberWithSpaces } from '../utils/emailFormatUtils';
 import { clearEmailDraft, loadEmailDraft, saveEmailDraft } from '../utils/emailDraftStorage';
 
+function createIdempotencyKey() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '');
+  }
+  return `${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`.slice(0, 32);
+}
+
 export function useEmailSendFlow() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
+  const idempotencyKeyRef = useRef(null);
+  const locale = i18n.language?.startsWith('ru') ? 'ru' : 'uz';
   const savedDraft = loadEmailDraft();
 
   const [mode, setMode] = useState('role');
@@ -106,9 +115,22 @@ export function useEmailSendFlow() {
       setMessageState('');
       setRoles({ ADMIN: false, CASHIER: false, WAITER: false, MANAGER: false, COOK: false });
       setIsConfirmOpen(false);
-      toast.success(t('platform.email.sentSummary', { sent: data.sent ?? recipientCount, skipped: data.skipped ?? 0 }));
+      idempotencyKeyRef.current = null;
+      toast.success(
+        t('platform.email.sentSummary', {
+          sent: data.sent ?? recipientCount,
+          skipped: data.skipped ?? 0,
+          failed: data.failed ?? 0,
+        })
+      );
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Xat yuborishda xatolik yuz berdi'),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: (body) => platformEmailApi.test(body).then((r) => r.data),
+    onSuccess: () => toast.success(t('platform.email.testSent', 'Test xat yuborildi')),
+    onError: (err) => toast.error(err?.response?.data?.message || 'Test xat yuborilmadi'),
   });
 
   const handleSend = () => {
@@ -124,17 +146,42 @@ export function useEmailSendFlow() {
       toast.error('Kamida bitta qabul qiluvchi tanlang');
       return;
     }
+    idempotencyKeyRef.current = createIdempotencyKey();
     setIsConfirmOpen(true);
   };
 
   const handleConfirmSend = () => {
     if (recipientCount === 0 || sendMutation.isPending) return;
+    const key = idempotencyKeyRef.current || createIdempotencyKey();
+    idempotencyKeyRef.current = key;
+    const base = {
+      subject: subject.trim(),
+      message: message.trim(),
+      locale,
+      idempotencyKey: key,
+    };
     if (mode === 'all') {
-      sendMutation.mutate({ subject: subject.trim(), message: message.trim(), selectAll: true });
-    } else {
-      const userIds = activeUsers.filter((u) => Boolean(roles[u.role?.toUpperCase()])).map((u) => u.id);
-      sendMutation.mutate({ subject: subject.trim(), message: message.trim(), selectAll: false, userIds });
+      sendMutation.mutate({ ...base, selectAll: true });
+      return;
     }
+    const selectedRoles = ROLE_OPTIONS.filter((r) => roles[r.id]).map((r) => r.id);
+    if (selectedRoles.length === 0) {
+      toast.error('Kamida bitta rol tanlang');
+      return;
+    }
+    sendMutation.mutate({ ...base, selectAll: false, roles: selectedRoles });
+  };
+
+  const handleTestEmail = () => {
+    if (!subject.trim() || !message.trim()) {
+      toast.error('Iltimos, maydonlarni to‘ldiring');
+      return;
+    }
+    testMutation.mutate({
+      subject: subject.trim(),
+      message: message.trim(),
+      locale,
+    });
   };
 
   const audienceLabel = useMemo(() => {
@@ -166,6 +213,7 @@ export function useEmailSendFlow() {
     device, setDevice,
     currentSample, isDemoSample: activeUsers.length === 0,
     handleSend,
+    handleTestEmail,
     isConfirmOpen,
     openConfirm: () => setIsConfirmOpen(true),
     closeConfirm: () => setIsConfirmOpen(false),
@@ -174,5 +222,6 @@ export function useEmailSendFlow() {
     previewHtml: previewData?.html || null,
     isPreviewLoading,
     isSending: sendMutation.isPending,
+    isTesting: testMutation.isPending,
   };
 }

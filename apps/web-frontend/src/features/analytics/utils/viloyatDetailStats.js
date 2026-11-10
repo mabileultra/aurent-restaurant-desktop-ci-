@@ -1,4 +1,5 @@
 import { formatPercent } from './viloyatDetailUtils';
+export { mapBackendProductList, mapBackendDailyBars } from './viloyatBackendMappers';
 
 export function resolveCompanyTypeCode(rawType) {
   if (!rawType) return 'O';
@@ -15,6 +16,17 @@ export function resolveCompanyTypeCode(rawType) {
   return 'O';
 }
 
+/** Map backend businessType (GROCERY/RESTAURANT/…) to viloyat tab codes F/R/P/O. */
+export function mapBusinessTypeTabCode(rawType) {
+  if (rawType == null || rawType === '') return 'O';
+  const key = String(rawType).trim().toUpperCase();
+  if (key === 'F' || key === 'G' || key === 'GROCERY' || key === 'FOOD' || key === 'RETAIL') return 'F';
+  if (key === 'R' || key === 'RESTAURANT' || key === 'CAFE' || key === 'CANTEEN') return 'R';
+  if (key === 'P' || key === 'PHARMACY' || key === 'APTEKA') return 'P';
+  if (key === 'O' || key === 'UNIVERSAL' || key === 'OTHER') return 'O';
+  return 'O';
+}
+
 /**
  * Normalizes backend company JSON or mock array to a uniform tuple:
  * [id, name, tin, districtCode, type, isConnected (0/1), storeCount, turnover, delta, fiscalTurnover]
@@ -28,7 +40,9 @@ export function normalizeBackendCompany(raw) {
   const tin = raw.tin || '_';
   const rawDist = String(raw.districtCode || '');
   const districtCode = rawDist.length > 2 ? rawDist.slice(-2) : rawDist.padStart(2, '0');
-  const type = resolveCompanyTypeCode(raw.businessType || raw.activitySubtype || raw.businessTypeCode);
+  const type = mapBusinessTypeTabCode(
+    raw.businessType || raw.business_type || raw.activitySubtype || raw.activity_subtype || raw.businessTypeCode
+  );
   const isConnected = raw.connected ? 1 : 0;
   const storeCount = raw.storeCount || 1;
   const turnover = Number(raw.totalTurnover || 0);
@@ -70,7 +84,9 @@ export function computeDistrictTurnover({ companies = [], activeType = 'A', isDi
   };
 }
 
-export function computeBusinessTypeTabs({ companies = [], isDistrictView = false, baseTypes = [] }) {
+export function computeBusinessTypeTabs(arg1 = {}, arg2 = [], arg3 = 0, arg4 = 'A') {
+  const isObj = !Array.isArray(arg1) && typeof arg1 === 'object';
+  const companies = isObj ? (arg1.companies || []) : (Array.isArray(arg1) ? arg1 : []);
   const allN = companies.length;
   const allC = companies.filter((c) => c[5] === 1).length;
   const byType = (tId) => {
@@ -135,6 +151,8 @@ export function mapProductList(rawProducts = []) {
     unitPrice: Math.round(p[3] / p[2]),
   }));
 }
+
+
 
 export function calculateCompaniesBreakdown(companies = [], typeNames = {}) {
   const sorted = [...companies].sort((a, b) => (Number(b[7] || 0) - Number(a[7] || 0)) || (b[5] - a[5]));

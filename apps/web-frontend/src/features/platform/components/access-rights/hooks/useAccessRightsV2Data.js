@@ -15,8 +15,7 @@ import {
 import { buildRoleSummaries } from '../utils/accessRightsRoleSummaryUtils';
 import { useAccessRightsCompanies, useAccessRightsCompaniesMap } from './useAccessRightsCompanies';
 import { useAccessRightsStats } from './useAccessRightsStats';
-
-const MAX_USERS_PAGE_SIZE = 250;
+import { fetchAllAccessUsers } from './fetchAllAccessUsers';
 
 export function useAccessRightsV2Data() {
   const { t, i18n } = useTranslation();
@@ -63,19 +62,14 @@ export function useAccessRightsV2Data() {
     queryKey: ['access-v2-users', effectiveBT, selectedCompanyId, debouncedSearch, accessFilter, selectedRole],
     queryFn: async () => {
       const queryBT = (isPlatformStaff || effectiveBT === 'ALL') ? undefined : effectiveBT;
-      const res = await platformModuleAccessApi.listUsers({
+      return fetchAllAccessUsers({
         businessType: queryBT,
         companyId: isPlatformStaff ? undefined : (selectedCompanyId || undefined),
         platformOnly: isPlatformStaff || undefined,
         search: debouncedSearch || undefined,
         role: selectedRole !== 'ALL' ? selectedRole : undefined,
         accessFilter: accessFilter !== 'all' ? accessFilter : undefined,
-        size: MAX_USERS_PAGE_SIZE,
       });
-      const raw = res.data;
-      const content = Array.isArray(raw) ? raw : (raw?.content || []);
-      const totalElements = Number(raw?.totalElements ?? raw?.total ?? content.length);
-      return { content, totalElements };
     },
     staleTime: 60_000,
   });
@@ -109,6 +103,29 @@ export function useAccessRightsV2Data() {
       setVisitedCounts((prev) => ({ ...prev, [selectedBT]: users.length }));
     }
   }, [selectedBT, users.length, isUnfilteredQuery]);
+
+  useEffect(() => {
+    const key = 'access-rights-false-exceptions-normalized';
+    if (typeof sessionStorage === 'undefined' || sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    platformModuleAccessApi
+      .normalizeFalseExceptions()
+      .then((res) => {
+        const affected = Number(res?.data?.affected ?? 0);
+        if (affected > 0) {
+          refetchStats();
+          refetchUsers();
+          toast.success(
+            currentLang === 'ru'
+              ? `Снято ложных исключений: ${affected}`
+              : `Soxta istisnolar olib tashlandi: ${affected}`
+          );
+        }
+      })
+      .catch(() => {
+        sessionStorage.removeItem(key);
+      });
+  }, [currentLang, refetchStats, refetchUsers]);
 
   const catalogMap = useMemo(() => buildCatalogMap(rawCatalog, t), [rawCatalog, t]);
   const gridBT = effectiveBT === 'ALL' ? selectedBT : effectiveBT;

@@ -91,6 +91,9 @@ public class ModuleAccessMutationSupport {
         if (row.getRevertedAt() != null) {
             throw new BadRequestException("Already reverted");
         }
+        if (row.getTargetUserId() == null || "TEMPLATE".equals(row.getAction())) {
+            throw new BadRequestException("Откат записи шаблона не поддерживается");
+        }
         User target = moduleAccessUserGate.requireConfigurable(row.getTargetUserId());
         boolean beforeCustom = target.isModuleAccessCustom();
         Map<String, Boolean> before = snapshotSupport.effectiveModules(target);
@@ -119,6 +122,10 @@ public class ModuleAccessMutationSupport {
     }
 
     private ModuleAccessHistoryItem toItem(ModuleAccessHistory row) {
+        boolean canRevert = row.getRevertedAt() == null
+            && !"REVERT".equals(row.getAction())
+            && !"TEMPLATE".equals(row.getAction())
+            && row.getTargetUserId() != null;
         return new ModuleAccessHistoryItem(
             row.getId(),
             row.getCreatedAt(),
@@ -128,13 +135,15 @@ public class ModuleAccessMutationSupport {
             row.getTargetUserId(),
             row.getTargetUsername(),
             row.getTargetFullName(),
+            row.getBusinessType(),
+            row.getRoleName(),
             row.getStrategy(),
             row.isBeforeCustom(),
             row.isAfterCustom(),
             ModuleAccessJson.fromJson(row.getBeforeModulesJson()),
             ModuleAccessJson.fromJson(row.getAfterModulesJson()),
             row.getRevertedAt(),
-            row.getRevertedAt() == null && !"REVERT".equals(row.getAction())
+            canRevert
         );
     }
 }

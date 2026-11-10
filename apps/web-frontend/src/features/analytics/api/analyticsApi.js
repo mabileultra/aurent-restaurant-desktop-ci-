@@ -2,6 +2,9 @@ import { api } from '../../../api/client';
 
 export const analyticsApi = {
   getOverview: (params) => api.get('/tax-analytics/overview', { params }),
+  /** Full republic daily series (not a top-N company sample). */
+  getDaily: (params) => api.get('/tax-analytics/results/daily', { params }),
+  getProducts: (params) => api.get('/tax-analytics/results/products', { params }),
   getResults: (params) => api.get('/tax-analytics/results', { params }),
   getResultsDaily: (params) =>
     api.get('/tax-analytics/results/daily', { params }).catch(() => ({ data: [] })),
@@ -12,6 +15,8 @@ export const analyticsApi = {
     api.get(`/tax-analytics/companies/${companyId}`, { params }),
   getCompanyDetail: (companyId, params) =>
     api.get(`/tax-analytics/companies/${companyId}`, { params }),
+  /** Republic-wide receipts (all firms) for period / day. */
+  getReceipts: (params) => api.get('/tax-analytics/receipts', { params }),
   getCompanyReceipts: (companyId, params) =>
     api.get(`/tax-analytics/companies/${companyId}/receipts`, { params }),
   getCompanyReceiptDetail: (companyId, saleId) =>

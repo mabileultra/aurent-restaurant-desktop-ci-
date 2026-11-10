@@ -63,6 +63,15 @@ public class PlatformModuleAccessController {
         return ResponseEntity.ok(moduleAccessService.stats(businessType));
     }
 
+    @GetMapping("/role-templates")
+    @Operation(summary = "Все шаблоны ролей", description = "Один ответ вместо N запросов на каждую пару businessType/role")
+    @ApiResponse(responseCode = "200", description = "Список шаблонов")
+    public ResponseEntity<List<RoleTemplateResponse>> listRoleTemplates(
+        @RequestParam(required = false) String businessType
+    ) {
+        return ResponseEntity.ok(moduleAccessService.listRoleTemplates(businessType));
+    }
+
     @GetMapping("/role-templates/{businessType}/{role}")
     @Operation(summary = "Шаблон модулей роли", description = "DEFAULT из enum или сохранённый TEMPLATE")
     @ApiResponse(responseCode = "200", description = "Шаблон")
@@ -82,6 +91,16 @@ public class PlatformModuleAccessController {
         @Valid @RequestBody UpdateRoleTemplateRequest request
     ) {
         return ResponseEntity.ok(moduleAccessService.updateRoleTemplate(businessType, role, request));
+    }
+
+    @PostMapping("/normalize-false-exceptions")
+    @Operation(
+        summary = "Снять ложные исключения",
+        description = "Сотрудники с moduleAccessCustom=true, но модулями как у шаблона, возвращаются к шаблону"
+    )
+    @ApiResponse(responseCode = "200", description = "Сколько сотрудников сброшено")
+    public ResponseEntity<ModuleAccessMutationResponse> normalizeFalseExceptions() {
+        return ResponseEntity.ok(moduleAccessService.normalizeFalseExceptions());
     }
 
     @GetMapping("/users")

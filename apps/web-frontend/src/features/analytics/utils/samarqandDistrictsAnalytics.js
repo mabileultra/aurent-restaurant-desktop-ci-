@@ -33,6 +33,7 @@ export function buildSamarqandDistricts(companies = SAMARQAND_COMPANIES, backend
   if (Array.isArray(backendResultsRows)) {
     backendResultsRows.forEach((r) => {
       const raw = String(r.code || '');
+      if (raw.toUpperCase() === 'UNASSIGNED') return;
       rowsMap.set(raw, r);
       if (raw.length >= 2) {
         rowsMap.set(raw.slice(-2), r);
@@ -122,7 +123,9 @@ export function filterAndSortDistricts(districts, filter = 'all', sort = 'turnov
 }
 
 export function buildSamarqandKpis(districts = [], period = '30d', backendKpi = null) {
-  if (backendKpi && (backendKpi.totalEnterprises > 0 || backendKpi.totalTurnover > 0)) {
+  const hint = PERIOD_LABELS[period]?.cmp || 'oldingi davrga nisbatan';
+
+  if (backendKpi) {
     const totalComps = Number(backendKpi.totalEnterprises || 0);
     const totalConn = Number(backendKpi.connected || 0);
     const notConn = Math.max(0, totalComps - totalConn);
@@ -135,7 +138,7 @@ export function buildSamarqandKpis(districts = [], period = '30d', backendKpi = 
         label: 'Umumiy aylanma',
         value: fmtMoney(Number(backendKpi.totalTurnover || 0)),
         delta: backendKpi.totalTurnoverDeltaPct != null ? Number(backendKpi.totalTurnoverDeltaPct) : null,
-        hint: PERIOD_LABELS[period]?.cmp || 'oldingi davrga nisbatan',
+        hint,
       },
       {
         label: 'Jami korxonalar',
@@ -157,36 +160,22 @@ export function buildSamarqandKpis(districts = [], period = '30d', backendKpi = 
     ];
   }
 
+  // No mock turnover while waiting for /results — zeros until summary arrives (avoids KPI flicker).
   const totalComps = districts.reduce((acc, d) => acc + (d.companies || 0), 0);
   const totalConn = districts.reduce((acc, d) => acc + (d.connected || 0), 0);
   const totalTurnover = districts.reduce((acc, d) => acc + (d.turnover || 0), 0);
   const notConnected = Math.max(0, totalComps - totalConn);
   const connPct = totalComps > 0 ? fmtPercent((totalConn / totalComps) * 100) : '0%';
-  const fallbackTurnover = Math.max(0, totalTurnover);
 
   return [
-    {
-      label: 'Umumiy aylanma',
-      value: fmtMoney(fallbackTurnover),
-      delta: null,
-      hint: PERIOD_LABELS[period]?.cmp || 'oldingi davrga nisbatan',
-    },
-    {
-      label: 'Jami korxonalar',
-      value: String(totalComps),
-      hint: '16 ta tuman va shahar bo‘yicha',
-    },
+    { label: 'Umumiy aylanma', value: fmtMoney(totalTurnover), delta: null, hint },
+    { label: 'Jami korxonalar', value: String(totalComps), hint: '16 ta tuman va shahar bo‘yicha' },
     {
       label: 'Ulangan korxonalar',
       value: String(totalConn),
       badgeText: connPct,
       hint: `${notConnected} ta korxona hali ulanmagan`,
     },
-    {
-      label: 'Yangi ulanishlar',
-      value: '0',
-      delta: null,
-      hint: 'Tanlangan davrda',
-    },
+    { label: 'Yangi ulanishlar', value: '0', delta: null, hint: 'Tanlangan davrda' },
   ];
 }

@@ -39,6 +39,7 @@ public class TokenRefreshServiceImpl implements TokenRefreshService {
             userSyncSupport.syncUpdate(user);
         }
 
-        return authResponseFactory.build(user, jwtService.generateToken(user), null);
+        java.util.UUID sessionId = jwtService.extractSessionId(token);
+        return authResponseFactory.build(user, jwtService.generateToken(user, sessionId), null);
     }
 }

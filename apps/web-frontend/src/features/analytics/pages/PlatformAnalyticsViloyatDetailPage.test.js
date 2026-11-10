@@ -17,6 +17,9 @@ vi.mock('../../../api/geo.api', () => ({
 vi.mock('../api/analyticsApi', () => ({
   analyticsApi: {
     getCompanies: vi.fn().mockResolvedValue({ data: [] }),
+    getResults: vi.fn().mockResolvedValue({ data: { rows: [] } }),
+    getDaily: vi.fn().mockResolvedValue({ data: { days: [] } }),
+    getProducts: vi.fn().mockResolvedValue({ data: { top: [], bottom: [] } }),
   },
 }));
 
@@ -54,12 +57,9 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Dorixonalar');
     expect(html).toContain('Boshqalar');
 
-    // 3. Turnover Section
+    // 3. Turnover Section (no mock flash — empty until API)
     expect(html).toContain('Umumiy aylanma');
-    expect(html).toContain('Butun davr');
-    expect(html).toContain('Fiskal');
-    expect(html).toContain('Nofiskal');
-    expect(html).toContain('Kunlik aylanma · 30 kun');
+    expect(html).toContain('Oxirgi 30 kun');
     expect(html).toContain('Oylik');
     expect(html).toContain('Haftalik');
     expect(html).toContain('Yillik');
@@ -75,12 +75,9 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Ulangan korxonalar');
     expect(html).toContain('Eng ko‘p sotilgan tovarlar');
     expect(html).toContain('Eng kam sotilgan tovarlar');
-    expect(html).toContain('Tumanlar bo‘yicha aylanma');
 
     // 5. Companies Table Section
     expect(html).toContain('Korxonalar');
-    expect(html).toContain('Farina Invest');
-    expect(html).toContain('303190578');
     expect(html).toContain('Oldingi');
     expect(html).toContain('Keyingi');
   });
@@ -117,6 +114,12 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
 
   it('renders district companies and excludes other districts when viewing Samarqand shahri', () => {
     const queryClient = new QueryClient();
+    queryClient.setQueryData(['analytics-companies-detail', '18', '1801'], {
+      rows: [
+        [1, 'Farina Invest', '303190578', '01', 'F', 1, 1, 2040531499, 10, 2040531499],
+        [2, 'Makon Mobile', '303190579', '01', 'F', 1, 1, 89279000, 5, 89279000],
+      ],
+    });
 
     const html = renderToStaticMarkup(
       React.createElement(

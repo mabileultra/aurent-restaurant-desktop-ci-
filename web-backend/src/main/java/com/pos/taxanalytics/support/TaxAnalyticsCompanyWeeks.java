@@ -56,7 +56,10 @@ public final class TaxAnalyticsCompanyWeeks {
         return weeks;
     }
 
-    public record DayTurnover(BigDecimal fiscal, BigDecimal nonFiscal) {
+    public record DayTurnover(BigDecimal fiscal, BigDecimal nonFiscal, long receiptCount) {
+        public DayTurnover(BigDecimal fiscal, BigDecimal nonFiscal) {
+            this(fiscal, nonFiscal, 0L);
+        }
     }
 
     private record WeekSum(LocalDate start, LocalDate end, BigDecimal fiscal, BigDecimal nonFiscal) {

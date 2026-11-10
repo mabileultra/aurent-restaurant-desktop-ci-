@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, RotateCcw, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { platformModuleAccessApi } from '../../../../../api';
+import { fetchAllAccessHistory } from '../hooks/fetchAllAccessUsers';
 import { trapFocus } from '../utils/focusTrapUtils';
 
 function formatWhen(iso) {
@@ -36,7 +37,7 @@ export default function ModuleAccessHistoryDrawer({ isOpen, onClose, currentLang
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['platform-module-access-history'],
-    queryFn: () => platformModuleAccessApi.history({ page: 0, size: 50 }).then((r) => r.data),
+    queryFn: () => fetchAllAccessHistory({ size: 50 }),
     enabled: isOpen,
   });
 

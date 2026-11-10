@@ -12,6 +12,8 @@ public interface TaxAnalyticsService {
         LocalDate from,
         LocalDate to,
         String regionCode,
+        String districtCode,
+        String businessType,
         String connectionStatus,
         String search
     );
@@ -22,6 +24,7 @@ public interface TaxAnalyticsService {
         LocalDate to,
         String regionCode,
         String districtCode,
+        String businessType,
         String connectionStatus,
         String search,
         String level,

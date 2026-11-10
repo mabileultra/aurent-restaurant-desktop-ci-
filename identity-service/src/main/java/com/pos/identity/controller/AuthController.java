@@ -5,6 +5,7 @@ import com.pos.identity.dto.auth.AuthResponse;
 import com.pos.identity.dto.auth.CashierPinAuthRequest;
 import com.pos.identity.dto.auth.PinRosterEntryResponse;
 import com.pos.identity.dto.auth.RegisterRequest;
+import com.pos.identity.dto.auth.TwoFactorVerifyRequest;
 import com.pos.identity.dto.auth.VerifyPasswordRequest;
 import com.pos.identity.dto.auth.VerifyPinRequest;
 import com.pos.identity.service.auth.AuthLoginService;
@@ -96,6 +97,21 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Токены обновлены")
     public ResponseEntity<AuthResponse> refresh(@RequestHeader("Authorization") String bearerToken) {
         return ResponseEntity.ok(tokenRefreshService.refresh(bearerToken.substring(7)));
+    }
+
+    @PostMapping("/2fa/verify")
+    @Operation(summary = "Подтверждение 2FA после логина")
+    @SecurityRequirements()
+    @ApiResponse(responseCode = "200", description = "2FA подтверждён, сессия выдана")
+    public ResponseEntity<AuthResponse> verifyTwoFactor(
+        @Valid @RequestBody TwoFactorVerifyRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity.ok(authLoginService.verifyTwoFactor(
+            request,
+            ClientIpResolver.resolve(httpRequest),
+            httpRequest.getHeader("User-Agent")
+        ));
     }
 
     @PostMapping("/verify-password")

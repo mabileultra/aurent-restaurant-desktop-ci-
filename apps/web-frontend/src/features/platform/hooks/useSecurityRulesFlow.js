@@ -1,29 +1,50 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { platformSecurityApi } from '../../../api';
 import { DEFAULT_SECURITY_RULES } from '../utils/securityConstants';
 import { evaluatePasswordStrength } from '../utils/securityFormatUtils';
 
+function cloneRules(source) {
+  return {
+    ...source,
+    tfa: { ...(source.tfa || {}) },
+    req: { ...(source.req || {}) },
+    ips: Array.isArray(source.ips) ? source.ips.map((ip) => ({ ...ip })) : [],
+  };
+}
+
 /**
  * Xavfsizlik "Kirish qoidalari" tabi mantiq hooki.
  */
 export function useSecurityRulesFlow() {
   const qc = useQueryClient();
-  const [rules, setRules] = useState(() => ({ ...DEFAULT_SECURITY_RULES }));
+  const [rules, setRules] = useState(() => cloneRules(DEFAULT_SECURITY_RULES));
+  const [baseline, setBaseline] = useState(() => cloneRules(DEFAULT_SECURITY_RULES));
   const [newIpAddr, setNewIpAddr] = useState('');
   const [cashierPw1, setCashierPw1] = useState('');
   const [cashierPw2, setCashierPw2] = useState('');
   const [showCashierPw, setShowCashierPw] = useState(false);
   const [isSudoModalOpen, setIsSudoModalOpen] = useState(false);
+  const [sudoToken, setSudoToken] = useState(null);
 
-  // Kassa server parolini backenddan olish
+  const { data: remoteRules } = useQuery({
+    queryKey: ['platform-security-login-rules'],
+    queryFn: () => platformSecurityApi.getLoginRules().then((r) => r.data),
+  });
+
+  useEffect(() => {
+    if (!remoteRules) return;
+    const next = cloneRules({ ...DEFAULT_SECURITY_RULES, ...remoteRules });
+    setRules(next);
+    setBaseline(cloneRules(next));
+  }, [remoteRules]);
+
   const { data: cashierStatus, isLoading: isCashierLoading } = useQuery({
     queryKey: ['platform-security-password'],
     queryFn: () => platformSecurityApi.getCashierServerPassword().then((r) => r.data),
   });
 
-  // Kassa server parolini yangilash mutatsiyasi
   const cashierMutation = useMutation({
     mutationFn: (pwd) => platformSecurityApi.updateCashierServerPassword(pwd).then((r) => r.data),
     onSuccess: () => {
@@ -33,6 +54,20 @@ export function useSecurityRulesFlow() {
       qc.invalidateQueries({ queryKey: ['platform-security-password'] });
     },
     onError: (e) => toast.error(e.response?.data?.message ?? 'Kassa parolini saqlashda xatolik yuz berdi'),
+  });
+
+  const saveRulesMutation = useMutation({
+    mutationFn: ({ payload, token }) => platformSecurityApi.saveLoginRules(payload, token).then((r) => r.data),
+    onSuccess: (data) => {
+      const next = cloneRules({ ...DEFAULT_SECURITY_RULES, ...data });
+      setRules(next);
+      setBaseline(cloneRules(next));
+      setIsSudoModalOpen(false);
+      setSudoToken(null);
+      toast.success('Kirish qoidalari saqlandi');
+      qc.invalidateQueries({ queryKey: ['platform-security-login-rules'] });
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? 'Qoidalarni saqlab bo‘lmadi'),
   });
 
   const cashierPwStrength = useMemo(() => evaluatePasswordStrength(cashierPw1), [cashierPw1]);
@@ -47,22 +82,21 @@ export function useSecurityRulesFlow() {
     cashierMutation.mutate(cashierPw1);
   };
 
-  // Qoidalar o'zgarishlarini hisoblash
   const dirtyCount = useMemo(() => {
     let count = 0;
-    const def = DEFAULT_SECURITY_RULES;
+    const def = baseline;
     ['method', 'minLen', 'expiry', 'idle', 'maxH', 'conc', 'notify', 'attempts', 'lockMin', 'ipOn'].forEach((k) => {
       if (rules[k] !== def[k]) count++;
     });
-    Object.keys(def.tfa).forEach((k) => {
-      if (Boolean(rules.tfa?.[k]) !== def.tfa[k]) count++;
+    Object.keys(def.tfa || {}).forEach((k) => {
+      if (Boolean(rules.tfa?.[k]) !== Boolean(def.tfa?.[k])) count++;
     });
-    Object.keys(def.req).forEach((k) => {
-      if (Boolean(rules.req?.[k]) !== def.req[k]) count++;
+    Object.keys(def.req || {}).forEach((k) => {
+      if (Boolean(rules.req?.[k]) !== Boolean(def.req?.[k])) count++;
     });
-    if (rules.ips.length !== def.ips.length) count++;
+    if ((rules.ips || []).length !== (def.ips || []).length) count++;
     return count;
-  }, [rules]);
+  }, [rules, baseline]);
 
   const toggleTfaRole = (roleKey) => {
     setRules((prev) => ({ ...prev, tfa: { ...prev.tfa, [roleKey]: !prev.tfa[roleKey] } }));
@@ -89,18 +123,24 @@ export function useSecurityRulesFlow() {
   };
 
   const resetRules = () => {
-    setRules({ ...DEFAULT_SECURITY_RULES });
-    toast.success('Qoidalar boshlang‘ich holatga qaytarildi');
+    setRules(cloneRules(baseline));
+    toast.success('O‘zgarishlar bekor qilindi');
   };
 
   const requestSaveRules = () => {
-    toast('Kirish qoidalarini serverda saqlash backend tayyor bo‘lgach ishga tushadi (Tez kunda)', {
-      icon: 'ℹ️',
-    });
+    if (dirtyCount === 0) return;
+    setIsSudoModalOpen(true);
   };
 
-  const confirmSudoAndSave = () => {
-    setIsSudoModalOpen(false);
+  const confirmSudoAndSave = async ({ password, totpCode }) => {
+    const reauth = await platformSecurityApi.reauth({ password, totpCode });
+    const token = reauth.data?.sudoToken;
+    if (!token) {
+      toast.error('Qayta tasdiqlash muvaffaqiyatsiz');
+      return;
+    }
+    setSudoToken(token);
+    saveRulesMutation.mutate({ payload: rules, token });
   };
 
   return {
@@ -123,6 +163,7 @@ export function useSecurityRulesFlow() {
     confirmSudoAndSave,
     isSudoModalOpen,
     setIsSudoModalOpen,
+    sudoToken,
     cashierStatus,
     isCashierLoading,
     cashierPw1,
@@ -136,5 +177,6 @@ export function useSecurityRulesFlow() {
     canSaveCashierPw,
     handleCashierPwSave,
     isCashierSaving: cashierMutation.isPending,
+    isSavingRules: saveRulesMutation.isPending,
   };
 }

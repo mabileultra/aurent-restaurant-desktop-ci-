@@ -28,6 +28,8 @@ public interface AuthMapper {
     @Mapping(target = "storeIds", source = "user.storeIds", qualifiedByName = "sortedStoreIds")
     @Mapping(target = "allowedModules", source = "allowedModules")
     @Mapping(target = "moduleAccessCustom", source = "moduleAccessCustom")
+    @Mapping(target = "requiresTwoFactor", constant = "false")
+    @Mapping(target = "challengeToken", ignore = true)
     AuthResponse toResponse(
         User user,
         String token,

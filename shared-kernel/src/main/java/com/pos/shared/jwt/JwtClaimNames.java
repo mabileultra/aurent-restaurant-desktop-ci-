@@ -13,6 +13,10 @@ public final class JwtClaimNames {
     public static final String CAN_PRINT_PICKUP_LABEL = "can_print_pickup_label";
     /** Integer bumped when module access changes; mismatch → reject token. */
     public static final String ACCESS_VERSION = "access_version";
+    /** Auth session UUID; revoked sessions reject the token. */
+    public static final String SESSION_ID = "sid";
+    /** Short-lived token purpose: 2fa_challenge | sudo. */
+    public static final String PURPOSE = "purpose";
 
     private JwtClaimNames() {
     }

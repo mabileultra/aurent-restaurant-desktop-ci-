@@ -1,11 +1,13 @@
 package com.pos.taxanalytics.support;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.temporal.TemporalAdjusters;
 
-/** Calendar week Monday–Sunday in Asia/Tashkent. Current week ends today. */
+/**
+ * Rolling 7-day windows in Asia/Tashkent.
+ * Current = today-6..today; previous = the 7 days before that.
+ * Avoids Monday comparing 1 partial day against a full prior calendar week.
+ */
 public record TaxAnalyticsWeekWindow(
     LocalDate weekFrom,
     LocalDate weekTo,
@@ -20,9 +22,10 @@ public record TaxAnalyticsWeekWindow(
     }
 
     public static TaxAnalyticsWeekWindow of(LocalDate today) {
-        LocalDate weekFrom = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekTo = today;
+        LocalDate weekFrom = today.minusDays(6);
         LocalDate prevWeekTo = weekFrom.minusDays(1);
-        LocalDate prevWeekFrom = prevWeekTo.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return new TaxAnalyticsWeekWindow(weekFrom, today, prevWeekFrom, prevWeekTo);
+        LocalDate prevWeekFrom = prevWeekTo.minusDays(6);
+        return new TaxAnalyticsWeekWindow(weekFrom, weekTo, prevWeekFrom, prevWeekTo);
     }
 }

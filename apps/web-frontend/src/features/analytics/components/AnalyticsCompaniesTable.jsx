@@ -3,6 +3,7 @@ import { ChevronRight, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fmtMoney, fmtPercent, sanitizeText } from '../utils/analyticsFormat';
 import { exportToCsv } from '../utils/analyticsExport';
+import AnalyticsTablePager from './AnalyticsTablePager';
 
 export default function AnalyticsCompaniesTable({
   rows = [],
@@ -15,7 +16,7 @@ export default function AnalyticsCompaniesTable({
   onExport,
 }) {
   const navigate = useNavigate();
-  const maxPages = Math.ceil(total / size) || 1;
+  const totalElements = total;
 
   const handleRowClick = (companyId) => {
     navigate(`/platform/analytics/companies/${companyId}`);
@@ -140,41 +141,12 @@ export default function AnalyticsCompaniesTable({
         </table>
       </div>
 
-      {/* Pagination controls */}
-      {maxPages > 1 && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '0.75rem 1rem',
-          borderTop: '1px solid #f1f5f9',
-          fontSize: '0.8rem',
-        }}>
-          <span style={{ color: '#64748b' }}>
-            Sahifa {page + 1} / {maxPages}
-          </span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              className="an-btn an-btn--outline"
-              disabled={page <= 0}
-              onClick={() => setPage && setPage((p) => Math.max(0, p - 1))}
-              style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}
-            >
-              Oldingi
-            </button>
-            <button
-              type="button"
-              className="an-btn an-btn--outline"
-              disabled={page >= maxPages - 1}
-              onClick={() => setPage && setPage((p) => Math.min(maxPages - 1, p + 1))}
-              style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}
-            >
-              Keyingi
-            </button>
-          </div>
-        </div>
-      )}
+      <AnalyticsTablePager
+        page={page}
+        pageSize={size}
+        totalElements={totalElements}
+        onPageChange={(next) => setPage?.(typeof next === 'number' ? next : 0)}
+      />
     </div>
   );
 }

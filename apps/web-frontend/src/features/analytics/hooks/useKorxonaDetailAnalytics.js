@@ -154,6 +154,15 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
 
   const dayIndex = Math.max(0, dayChips.findIndex((c) => c.date === queryDay));
 
+  const detailReceiptCount = Number(
+    apiDetail?.totalReceiptsCount
+      ?? ((apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0)
+        + (apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0))
+  );
+  const averageCheck = apiDetail?.avgReceiptAmount != null
+    ? Number(apiDetail.avgReceiptAmount)
+    : (apiDetail?.averageCheck != null ? Number(apiDetail.averageCheck) : null);
+
   return {
     companyInfo, cards, donuts, products, totalProductsCount, turnover,
     productPage, productFrom, productTo, productTotalPages,
@@ -174,7 +183,9 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     setReceiptPage,
     totalFiscal, totalNonFiscal, dayTotalCount, dayTotal,
     dayTotalFormatted: `${formatNumber(dayTotal)} so‘m`,
-    totalReceiptsCount: receiptsData?.totalElements || dayTotalCount,
+    // Prefer detail COUNT from backend — avoid waiting on /receipts list for header KPI.
+    totalReceiptsCount: detailReceiptCount || receiptsData?.totalElements || dayTotalCount,
+    averageCheck,
     selectedReceiptNo: activeReceiptRow ? activeReceiptRow[0] : '',
     onSelectReceipt: (no) => setSelectedReceiptNo(no),
     receiptDetail,
