@@ -5,6 +5,7 @@ import com.pos.restaurant.payment.dto.OrderPaymentResponse;
 import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import com.pos.restaurant.payment.dto.PartialRefundRequest;
 import com.pos.restaurant.payment.dto.PayOrderRequest;
+import com.pos.restaurant.payment.dto.PaymentFiscalPayload;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,4 +23,6 @@ public interface PaymentService {
     List<PaidOrderSummaryResponse> listRecentPaid(Integer storeId, boolean refunded, Integer limit);
 
     OrderPaymentResponse getPayment(UUID orderId);
+
+    OrderPaymentResponse attachFiscal(UUID orderId, PaymentFiscalPayload payload);
 }

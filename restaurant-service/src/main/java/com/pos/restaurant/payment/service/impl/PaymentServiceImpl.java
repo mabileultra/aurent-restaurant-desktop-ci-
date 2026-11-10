@@ -8,6 +8,7 @@ import com.pos.restaurant.payment.dto.OrderPaymentResponse;
 import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import com.pos.restaurant.payment.dto.PartialRefundRequest;
 import com.pos.restaurant.payment.dto.PayOrderRequest;
+import com.pos.restaurant.payment.dto.PaymentFiscalPayload;
 import com.pos.restaurant.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaidOrderPartialRefundHandler paidOrderPartialRefundHandler;
     private final ListRecentPaidOrdersHandler listRecentPaidOrdersHandler;
     private final GetOrderPaymentHandler getOrderPaymentHandler;
+    private final AttachPaymentFiscalHandler attachPaymentFiscalHandler;
     private final FloorRevisionBump floorRevision;
 
     private OrderResponse touchFloor(OrderResponse response) {
@@ -81,5 +83,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public OrderPaymentResponse getPayment(UUID orderId) {
         return getOrderPaymentHandler.handle(orderId);
+    }
+
+    @Override
+    @Transactional
+    public OrderPaymentResponse attachFiscal(UUID orderId, PaymentFiscalPayload payload) {
+        return attachPaymentFiscalHandler.handle(orderId, payload);
     }
 }

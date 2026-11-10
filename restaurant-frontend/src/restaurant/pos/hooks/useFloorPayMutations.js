@@ -71,8 +71,8 @@ export function useFloorPayMutations({
       invalidateRecentPaid();
       playPosSound('success');
       toast.success(t('rst.order.paid'));
-      // Always signal guest display THANKS via paidReceipt.sale.
-      // Modal print only when fiscal needed and ESC/POS is unavailable (cfdOnly skips pane).
+      // Guest display THANKS via paidReceipt.sale.
+      // Silent ESC/POS only for fiscalized; otherwise open modal (ordinary or fiscal browser print).
       if (result?.sale) {
         const needsFiscal = saleNeedsFiscalPrint(result.sale);
         const escpos = needsFiscal && isCashierEscposPrintAvailable();
@@ -94,7 +94,7 @@ export function useFloorPayMutations({
             );
           }
         }
-        const showPrintModal = needsFiscal && !escpos;
+        const showPrintModal = !escpos;
         setPaidReceipt({
           sale: result.sale,
           autoPrint: showPrintModal,

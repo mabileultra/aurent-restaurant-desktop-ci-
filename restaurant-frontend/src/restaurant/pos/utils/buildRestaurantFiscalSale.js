@@ -250,7 +250,8 @@ export function buildRestaurantFiscalSale({
     fiscalReceiptSeq: fiscal?.fiscalReceiptSeq || null,
     multikassaSaleId: fiscal?.multikassaSaleId || null,
     fiscalQrUrl: fiscal?.fiscalQrUrl || null,
-    fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? new Date().toISOString() : null,
+    fiscalizedAt: fiscal?.fiscalizedAt
+      || (fiscal?.fiscalStatus === 'FISCALIZED' ? new Date().toISOString() : null),
     fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     serviceAmount,
     printFiscalQr: fiscal?.fiscalStatus === 'FISCALIZED',

@@ -68,6 +68,7 @@
     <include file="db/changelog/v62-menu-category-unique-active-name.xml"/>
     <include file="db/changelog/v63-allow-foreign-table-orders.xml"/>
     <include file="db/changelog/v64-hall-presence.xml"/>
+    <include file="db/changelog/v65-payment-fiscal-proof.xml"/>
 
 </databaseChangeLog>
 
