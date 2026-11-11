@@ -11,4 +11,16 @@ function readInstallDefaults() {
   }
 }
 
-module.exports = { readInstallDefaults };
+/** Прод Aurent — на lab-сборке нельзя оставлять этот хост (там Multikassa). */
+function isProdAurentHost(host) {
+  const h = String(host || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .split('/')[0]
+    .split(':')[0];
+  if (!h) return true;
+  return h === 'aurent.uz' || h === 'www.aurent.uz' || h.endsWith('.aurent.uz');
+}
+
+module.exports = { readInstallDefaults, isProdAurentHost };

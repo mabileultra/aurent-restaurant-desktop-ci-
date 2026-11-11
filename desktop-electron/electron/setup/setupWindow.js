@@ -3,7 +3,7 @@ const path = require('path');
 const { PRODUCTION_ORIGIN } = require('../../config/publicUrl');
 const { parseServerUrl } = require('../core/serverUrl');
 const { saveServerConfig, userConfigPath } = require('../config/desktopConfig');
-const { readInstallDefaults } = require('../config/installDefaults');
+const { readInstallDefaults, isProdAurentHost } = require('../config/installDefaults');
 
 const DEFAULT_WEB_PORT = '443';
 const DEFAULT_API_PORT = '443';
@@ -38,6 +38,13 @@ function readExistingForForm(existing) {
       companyLoginCode: existing.companyLoginCode || '',
       appWorld: world,
     };
+  }
+
+  // Lab build: never keep prod aurent.uz (Multikassa) in the form.
+  if (labDefaults?.host && isProdAurentHost(parsed.host)) {
+    parsed.host = labDefaults.host;
+    parsed.webPort = labDefaults.webPort || '80';
+    parsed.apiPort = labDefaults.apiPort || '8080';
   }
 
   return parsed;

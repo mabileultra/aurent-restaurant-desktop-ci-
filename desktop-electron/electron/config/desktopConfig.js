@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 const { buildOrigin, buildHealthUrl, parseServerUrl } = require('../core/serverUrl');
-const { resolveDesktopUrls, PRODUCTION_RESTAURANT_ORIGIN } = require('../../config/desktopUrls');
+const {
+  resolveDesktopUrls,
+  PRODUCTION_RESTAURANT_ORIGIN,
+} = require('../../config/desktopUrls');
 const { resolveUiMode, UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./uiMode');
 const { resolveOfflineFirst } = require('./offlineFirst');
 const {
@@ -12,6 +15,7 @@ const {
   APP_WORLD_MAIN,
   APP_WORLD_RESTAURANT,
 } = require('./loginUrl');
+const { readInstallDefaults, isProdAurentHost } = require('./installDefaults');
 
 function userConfigPath() {
   return path.join(app.getPath('userData'), 'config.json');
@@ -85,9 +89,35 @@ function hasUserConfig() {
   }
 }
 
+function redirectLabAwayFromProd(user) {
+  const lab = readInstallDefaults();
+  if (!lab?.host) return user || {};
+  const current = user || {};
+  const webHost = parseServerUrl(current.cashierUrl || '').host;
+  const apiHost = parseServerUrl(current.backendOrigin || '').host;
+  const stuckOnProd =
+    isProdAurentHost(webHost) || isProdAurentHost(apiHost) || (!webHost && !apiHost);
+  if (!stuckOnProd) return current;
+
+  const cashierUrl = buildOrigin(lab.host, lab.webPort || '80');
+  const backendOrigin = buildOrigin(lab.host, lab.apiPort || '8080');
+  const patch = {
+    cashierUrl,
+    backendOrigin,
+    webPort: String(lab.webPort || '80'),
+    apiPort: String(lab.apiPort || '8080'),
+  };
+  try {
+    writeUserConfig(patch);
+  } catch {
+    /* keep in-memory redirect even if disk write fails */
+  }
+  return { ...current, ...patch };
+}
+
 function loadDesktopConfig({ isPackaged }) {
   const envUrls = resolveDesktopUrls({ isPackaged });
-  const user = readUserConfig() || {};
+  const user = redirectLabAwayFromProd(readUserConfig() || {});
   const envWeb = process.env.AURENT_WEB_URL || process.env.VITE_DEV_URL || '';
   const envApi = process.env.AURENT_API_URL || '';
 
