@@ -11,6 +11,19 @@ import {
 } from '../../../utils/sessionHandoff';
 import { mapAuthResponseToUser } from '../utils/mapAuthResponseToUser';
 
+const exchangePromises = new Map();
+
+function exchangeHandoffOnce(code) {
+  let promise = exchangePromises.get(code);
+  if (!promise) {
+    promise = authApi.exchangeHandoff(code).finally(() => {
+      setTimeout(() => exchangePromises.delete(code), 10_000);
+    });
+    exchangePromises.set(code, promise);
+  }
+  return promise;
+}
+
 /**
  * Exchanges one-time Identity handoff code (?code=) for a pharmacy session.
  * JWT never appears in the URL.
@@ -31,7 +44,7 @@ export default function AuthAcceptPage() {
         return;
       }
       try {
-        const { data } = await authApi.exchangeHandoff(code);
+        const { data } = await exchangeHandoffOnce(code);
         if (cancelled) return;
         setAuth(data.token, mapAuthResponseToUser(data));
         const next = safePharmacyNextPath(searchParams.get('next')) || PHARM_POS_PATH;

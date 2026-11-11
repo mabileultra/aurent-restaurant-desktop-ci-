@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,7 +23,7 @@ async function resolvePostLoginPath(role, businessPayload) {
   if (String(role || '').toUpperCase() === 'CASHIER') return path;
   if (isPharmacyAppSplitEnabled() && isPharmacyOnlyCompany(businessPayload)) {
     const target = path.startsWith('/cashier') ? '/dashboard' : path;
-    if (await redirectToPharmacyApp(target)) return target;
+    if (await redirectToPharmacyApp(target)) return null;
   }
   return path;
 }
@@ -40,13 +40,14 @@ export function useLoginPage() {
   const [loading, setLoading] = useState(false);
   const [twoFactorChallenge, setTwoFactorChallenge] = useState(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
+  const loginInFlightRef = useRef(false);
 
   const isDesktop = Boolean(window.desktopCashier?.isDesktop);
   const isAdminLogin = searchParams.get('admin') === '1';
   const shouldRedirectToCashierLogin = isDesktopCashier() && !isAdminLogin;
 
   useEffect(() => {
-    if (!hasHydrated || !token) return;
+    if (!hasHydrated || !token || loginInFlightRef.current) return;
     let cancelled = false;
     (async () => {
       const { access, businessPayload, fetchError } = await fetchMainAppAccess(user?.role);
@@ -56,7 +57,7 @@ export function useLoginPage() {
         return;
       }
       const path = await resolvePostLoginPath(user?.role, businessPayload);
-      if (cancelled) return;
+      if (cancelled || !path) return;
       prefetchAppHome(path);
       navigate(path, { replace: true });
     })();
@@ -79,18 +80,24 @@ export function useLoginPage() {
   });
 
   const finishLogin = async (accessToken, profile) => {
-    resetClientSessionState();
-    setAuth(accessToken, profile);
-    const { access, businessPayload, fetchError } = await fetchMainAppAccess(profile.role);
-    if (!access.ok && !fetchError) {
-      logoutAndResetSession();
-      toast.error(t('login.wrongAppUnknown'));
-      return;
+    loginInFlightRef.current = true;
+    try {
+      resetClientSessionState();
+      setAuth(accessToken, profile);
+      const { access, businessPayload, fetchError } = await fetchMainAppAccess(profile.role);
+      if (!access.ok && !fetchError) {
+        logoutAndResetSession();
+        toast.error(t('login.wrongAppUnknown'));
+        return;
+      }
+      toast.success(t('login.welcome', { name: profile.fullName }));
+      const path = await resolvePostLoginPath(profile.role, businessPayload);
+      if (!path) return;
+      prefetchAppHome(path);
+      navigate(path, { replace: true });
+    } finally {
+      loginInFlightRef.current = false;
     }
-    toast.success(t('login.welcome', { name: profile.fullName }));
-    const path = await resolvePostLoginPath(profile.role, businessPayload);
-    prefetchAppHome(path);
-    navigate(path, { replace: true });
   };
 
   const onSubmit = async (data) => {
