@@ -13,8 +13,8 @@ export default function PlatformSecurityHeader({ onOpenCreateStaff, onGoToRules,
         { label: t('platform.security.breadcrumbControl', 'Boshqaruv') },
         { label: t('platform.security.nav', 'Xavfsizlik') },
       ]}
-      title={t('platform.security.title', 'Xavfsizlik')}
-      meta={t('platform.security.subtitle', 'Kirishlar, xodimlar harakatlari va kirish qoidalari nazorati')}
+      title={t('platform.security.nav', 'Xavfsizlik')}
+      meta={t('platform.security.title', 'Platforma xavfsizligi')}
       actions={(
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <Button

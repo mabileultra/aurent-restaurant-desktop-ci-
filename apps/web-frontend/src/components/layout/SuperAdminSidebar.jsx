@@ -43,6 +43,7 @@ export default function SuperAdminSidebar({
   toggleGroup,
   location,
   onCloseMobileNav,
+  isMobile = false,
 }) {
   const { t } = useTranslation();
 
@@ -106,6 +107,7 @@ export default function SuperAdminSidebar({
                       location={location}
                       onCloseMobileNav={onCloseMobileNav}
                       NAV_ICONS={NAV_ICONS}
+                      isMobile={isMobile}
                     />
                   ))}
                 </div>

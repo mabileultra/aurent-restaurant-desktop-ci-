@@ -9,11 +9,19 @@ export default function PageLayout({
   children,
   className,
   spacing = 'space-y-6',
+  meta,
+  breadcrumbs,
 }) {
   return (
     <div className={clsx(spacing, className)}>
-      {(title || subtitle || actions) && (
-        <PageHeader title={title} subtitle={subtitle} actions={actions} />
+      {(title || subtitle || actions || meta) && (
+        <PageHeader
+          title={title}
+          subtitle={subtitle}
+          meta={meta}
+          breadcrumbs={breadcrumbs}
+          actions={actions}
+        />
       )}
       {filters}
       {children}
