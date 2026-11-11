@@ -1,6 +1,9 @@
 /* Aurent Admin — komponent uslublari (dizayn tizimidagi bundle.css, o‘zgaruvchilari --aa- prefiksi bilan).
    Har bir klass «aa-» bilan boshlanadi. Qiymatlar faqat aa-tokens.css dan. */
 /* ---------- Asos ---------- */
+html.app-area--platform {
+  font-size: 16px;
+}
 .aa-app {
   font-family: var(--aa-font-sans);
   font-size: 14px;
