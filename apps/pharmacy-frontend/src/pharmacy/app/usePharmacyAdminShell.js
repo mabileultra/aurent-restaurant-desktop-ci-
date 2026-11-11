@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+import { getMainAppUrl } from '../../config/env';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { logoutAndResetSession } from '../../utils/authSession';
@@ -23,7 +24,6 @@ import {
 export function usePharmacyAdminShell() {
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { hasModule } = useModuleAccess();
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
@@ -112,7 +112,7 @@ export function usePharmacyAdminShell() {
 
   const handleLogout = () => {
     logoutAndResetSession();
-    navigate('/login');
+    window.location.replace(`${getMainAppUrl()}/login`);
   };
   const navLabelsVisible = isDesktop ? sidebarNavExpanded : true;
   const toggleSidebar = () => {
