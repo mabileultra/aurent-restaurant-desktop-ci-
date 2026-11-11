@@ -2,7 +2,7 @@ import React from 'react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
-import { Spinner } from '../../../../components/ui';
+import TableLoadingOverlay from '../../../../components/shared/TableLoadingOverlay';
 import StoresTableRow from './StoresTableRow';
 import PlatformStoreMobileCard from './PlatformStoreMobileCard';
 
@@ -44,7 +44,7 @@ export default function StoresTable({
 
       {/* Anti-flicker delayed overlay spinner */}
       {showOverlay && (
-        <Spinner overlay size="sm" text={t('common.loading')} />
+        <TableLoadingOverlay text={t('common.loading')} />
       )}
 
       {/* Desktop Table View (>= md) */}

@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
   Store,
   Users,
-  LogOut,
   KeyRound,
   Activity,
   Mail,
@@ -38,114 +37,85 @@ const NAV_ICONS = {
 };
 
 export default function SuperAdminSidebar({
-  mobileNavOpen,
-  onCloseMobileNav,
-  groupedLinks,
-  openGroups,
+  className = '',
+  groupedLinks = [],
+  openGroups = {},
   toggleGroup,
   location,
-  user,
-  onLogout,
+  onCloseMobileNav,
+  isMobile = false,
 }) {
   const { t } = useTranslation();
-  const sidebarRef = useRef(null);
-
-  useEffect(() => {
-    if (!mobileNavOpen) return;
-    const onKey = (e) => e.key === 'Escape' && onCloseMobileNav();
-    window.addEventListener('keydown', onKey);
-    sidebarRef.current?.focus();
-    return () => window.removeEventListener('keydown', onKey);
-  }, [mobileNavOpen, onCloseMobileNav]);
 
   return (
-    <>
-      {/* Mobile Backdrop */}
-      {mobileNavOpen ? (
-        <button
-          type="button"
-          className="fixed inset-0 top-16 z-30 bg-slate-900/50 lg:hidden"
-          aria-label={t('nav.closeMenu')}
-          onClick={onCloseMobileNav}
+    <aside
+      className={`w-[248px] shrink-0 bg-aa-surface border-r border-aa-line flex flex-col h-full select-none ${className}`}
+      data-purpose="sidebar"
+    >
+      {/* 64px Header: Logo + Title */}
+      <div className="h-16 px-5 border-b border-aa-line flex items-center gap-3 shrink-0">
+        <img
+          src="/brand/logonew.png"
+          alt="Aurent"
+          className="h-8 w-auto shrink-0"
         />
-      ) : null}
-
-      {/* Sidebar Accordion Navigation */}
-      <aside
-        ref={sidebarRef}
-        tabIndex={mobileNavOpen ? -1 : undefined}
-        role={mobileNavOpen ? 'dialog' : undefined}
-        aria-modal={mobileNavOpen ? true : undefined}
-        aria-label={mobileNavOpen ? t('nav.menu', { defaultValue: 'Menyu' }) : undefined}
-        className={`admin-sidebar dark:!bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 select-none overflow-y-auto fixed top-16 bottom-0 left-0 z-40 w-72 max-w-[85vw] shadow-xl transition-transform duration-200 lg:static lg:top-auto lg:bottom-auto lg:z-auto lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none focus:outline-hidden ${
-          mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        data-purpose="sidebar"
-      >
-        {/* Navigation Accordion Groups */}
-        <nav className="p-4 space-y-4 overflow-y-auto flex-1" data-purpose="accordion-navigation">
-          {groupedLinks.map((group) => {
-            const isOpen = openGroups[group.id] ?? true;
-            return (
-              <div
-                key={group.id}
-                className="accordion-group border-b border-slate-100 dark:border-slate-800/80 pb-3 last:border-b-0"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  className="accordion-toggle w-full flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 py-2 px-2 rounded-lg transition cursor-pointer"
-                  aria-expanded={isOpen}
-                  aria-controls={`accordion-group-${group.id}`}
-                >
-                  <span>{t(group.key)}</span>
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform duration-200 text-slate-400 dark:text-slate-500 ${
-                      isOpen ? 'rotate-0' : '-rotate-90'
-                    }`}
-                  />
-                </button>
-
-                {isOpen ? (
-                  <div
-                    id={`accordion-group-${group.id}`}
-                    role="region"
-                    className="accordion-content mt-1 space-y-1 pl-2"
-                  >
-                    {group.items.map((item) => (
-                      <SuperAdminSidebarItem
-                        key={item.to}
-                        item={item}
-                        location={location}
-                        onCloseMobileNav={onCloseMobileNav}
-                        NAV_ICONS={NAV_ICONS}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Sidebar Footer / Logout */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
-          <div className="mb-2 px-3 text-xs text-slate-400 dark:text-slate-500 font-medium truncate">
-            {user?.fullName || 'Administrator Super'}
-          </div>
-          <button
-            type="button"
-            onClick={onLogout}
-            className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-medium text-sm transition cursor-pointer"
-          >
-            <span className="w-5 h-5 flex items-center justify-center shrink-0" aria-hidden="true">
-              <LogOut size={18} />
-            </span>
-            <span>{t('nav.logout')}</span>
-          </button>
+        <div className="flex flex-col min-w-0 leading-tight">
+          <span className="text-[14px] leading-[20px] font-semibold text-aa-ink truncate">
+            Aurent
+          </span>
+          <span className="text-[13px] leading-[18px] text-aa-ink-muted truncate">
+            Super-admin
+          </span>
         </div>
-      </aside>
-    </>
+      </div>
+
+      {/* Accordion Navigation */}
+      <nav
+        className="flex-1 overflow-y-auto px-3 py-2 space-y-2"
+        data-purpose="accordion-navigation"
+      >
+        {groupedLinks.map((group) => {
+          const isOpen = openGroups[group.id] ?? true;
+          return (
+            <div key={group.id} className="pb-1">
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.id)}
+                className="w-full flex items-center justify-between text-[12px] leading-[16px] font-semibold text-aa-ink-muted pt-4 px-3 pb-2 select-none hover:text-aa-ink transition cursor-pointer"
+                aria-expanded={isOpen}
+                aria-controls={`accordion-group-${group.id}`}
+              >
+                <span>{t(group.key)}</span>
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform duration-200 text-aa-ink-muted ${
+                    isOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {isOpen ? (
+                <div
+                  id={`accordion-group-${group.id}`}
+                  role="region"
+                  className="space-y-1 mt-1"
+                >
+                  {group.items.map((item) => (
+                    <SuperAdminSidebarItem
+                      key={item.to}
+                      item={item}
+                      location={location}
+                      onCloseMobileNav={onCloseMobileNav}
+                      NAV_ICONS={NAV_ICONS}
+                      isMobile={isMobile}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }

@@ -23,7 +23,7 @@ export default function UsersTableBulkBar({
 
   return (
     <div className="sticky bottom-6 flex justify-center z-30 pointer-events-none mt-4">
-      <div className="pointer-events-auto flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 dark:bg-slate-800/95 text-white shadow-2xl border border-slate-700/80 backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-full">
+      <div className="pointer-events-auto flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 dark:bg-slate-800/95 text-white shadow-2xl border border-slate-700/80 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-full">
         <div className="flex items-center gap-2 pr-2 border-r border-slate-700 text-xs font-semibold">
           <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
           <span>

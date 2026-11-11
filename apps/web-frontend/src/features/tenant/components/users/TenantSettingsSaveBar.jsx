@@ -21,7 +21,7 @@ export default function TenantSettingsSaveBar() {
   };
 
   return (
-    <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+    <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-slate-200 bg-white/95 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/95">
       <div className="flex flex-wrap items-center justify-end gap-2">
         {isDirty ? (
           <button

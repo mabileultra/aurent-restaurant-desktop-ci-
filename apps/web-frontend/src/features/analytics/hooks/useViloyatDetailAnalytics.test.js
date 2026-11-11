@@ -57,7 +57,6 @@ describe('useViloyatDetailAnalytics', () => {
     expect(captured.districtName).toBe('Ishtixon tumani');
     expect(captured.activeType).toBe('A');
     expect(captured.types).toHaveLength(5);
-    // No SAMARQAND mock while queries are still pending on first paint.
     expect(captured.dailyBars).toEqual([]);
     expect(captured.topProducts).toEqual([]);
     expect(captured.lowProducts).toEqual([]);
