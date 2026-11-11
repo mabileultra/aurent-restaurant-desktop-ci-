@@ -3,17 +3,19 @@ const path = require('path');
 const { PRODUCTION_ORIGIN } = require('../../config/publicUrl');
 const { parseServerUrl } = require('../core/serverUrl');
 const { saveServerConfig, userConfigPath } = require('../config/desktopConfig');
+const { readInstallDefaults } = require('../config/installDefaults');
 
 const DEFAULT_WEB_PORT = '443';
 const DEFAULT_API_PORT = '443';
 
 function readExistingForForm(existing) {
+  const labDefaults = readInstallDefaults();
   const defaults = parseServerUrl(PRODUCTION_ORIGIN);
   const world = existing?.appWorld === 'restaurant' ? 'restaurant' : 'main';
   let parsed = {
-    host: defaults.host,
-    webPort: defaults.port || DEFAULT_WEB_PORT,
-    apiPort: defaults.port || DEFAULT_API_PORT,
+    host: labDefaults?.host || defaults.host,
+    webPort: labDefaults?.webPort || defaults.port || DEFAULT_WEB_PORT,
+    apiPort: labDefaults?.apiPort || defaults.port || DEFAULT_API_PORT,
     companyLoginCode: '',
     appWorld: world,
   };

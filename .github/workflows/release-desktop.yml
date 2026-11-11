@@ -50,9 +50,18 @@ jobs:
 
       - name: Install & build (Windows)
         working-directory: desktop-electron
+        shell: bash
         env:
           UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
         run: |
+          set -euo pipefail
+          case "${UPDATE_BASE_URL}" in
+            *169.58.250.132*)
+              export AURENT_DEFAULT_HOST=169.58.250.132
+              export AURENT_DEFAULT_WEB_PORT=80
+              export AURENT_DEFAULT_API_PORT=8080
+              ;;
+          esac
           pnpm install
           pnpm run dist:win
 

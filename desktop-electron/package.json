@@ -1,6 +1,6 @@
 {
   "name": "aurent-cashier-desktop",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "private": true,
   "description": "Aurent POS Electron desktop cashier and admin",
   "main": "electron/main.js",
@@ -11,12 +11,13 @@
     "start": "electron .",
     "start:test": "bash scripts/start-cashier-desktop-test.sh",
     "serve-ui": "AURENT_KEEP_UI_SERVER=1 node scripts/serve-bundled-ui.cjs",
-    "pack": "pnpm run sync-icons && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder --dir",
-    "dist": "pnpm run sync-icons && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder",
-    "dist:win": "pnpm run sync-icons && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder --win",
-    "dist:mac": "pnpm run sync-icons && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder --mac",
+    "pack": "pnpm run sync-icons && pnpm run bake-defaults && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder --dir",
+    "dist": "pnpm run sync-icons && pnpm run bake-defaults && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder",
+    "dist:win": "pnpm run sync-icons && pnpm run bake-defaults && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder --win",
+    "dist:mac": "pnpm run sync-icons && pnpm run bake-defaults && pnpm run bundle-ui && pnpm run bundle-restaurant-ui && electron-builder --mac",
     "manifest": "node scripts/generate-manifest.js",
-    "test": "node --test test/*.test.cjs"
+    "test": "node --test test/*.test.cjs",
+    "bake-defaults": "node scripts/bake-install-defaults.js"
   },
   "build": {
     "appId": "com.aurent.cashier",
