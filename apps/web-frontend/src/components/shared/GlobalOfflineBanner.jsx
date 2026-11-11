@@ -76,7 +76,7 @@ export default function GlobalOfflineBanner({ networkStatusOverride } = {}) {
       tabIndex={-1}
       className="fixed top-2.5 sm:top-3 left-1/2 -translate-x-1/2 z-[99999] w-[95vw] max-w-xl transition-all duration-300 ease-out animate-in fade-in slide-in-from-top-4 focus:outline-none pointer-events-auto"
     >
-      <div className={`rounded-2xl px-4 py-3 shadow-xl backdrop-blur-md border flex items-center justify-between gap-3 text-white transition-colors duration-200 ${bannerBg}`}>
+      <div className={`rounded-2xl px-4 py-3 shadow-xl border flex items-center justify-between gap-3 text-white transition-colors duration-200 ${bannerBg}`}>
         <div className="flex items-center gap-3 min-w-0">
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
             {bannerIcon}

@@ -1,65 +1,126 @@
 import React from 'react';
-import BrandMark from '../shared/BrandMark';
 import { useTranslation } from 'react-i18next';
-import { Menu, LogOut } from 'lucide-react';
-import LanguageSwitcher from '../shared/LanguageSwitcher';
-import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
+import { Menu, LogOut, Keyboard } from 'lucide-react';
+import Segmented from '../aa/Segmented';
+import Button from '../aa/Button';
+import { showOnScreenKeyboard } from '../../utils/onScreenKeyboard';
 
-export default function SuperAdminTopHeader({ mobileNavOpen, onToggleMobileNav, user, onLogout }) {
-  const { t } = useTranslation();
+/**
+ * Aurent Admin — Super-admin tepa paneli (Header).
+ * 64px, bg-aa-surface, pastda aa-line, px-8 (mobilda px-4).
+ */
+export default function SuperAdminTopHeader({
+  mobileNavOpen,
+  onOpenMobileNav,
+  onToggleMobileNav,
+  menuButtonRef,
+  user,
+  onLogout,
+}) {
+  const { i18n } = useTranslation();
+  const handleMenuClick = onOpenMobileNav || onToggleMobileNav;
+
+  const handleKeyboardClick = async () => {
+    try {
+      await showOnScreenKeyboard();
+    } catch {
+      // noop
+    }
+  };
+
+  const currentLang = i18n?.language?.startsWith('ru') ? 'ru' : 'uz';
+  const handleLangChange = (val) => {
+    i18n?.changeLanguage?.(val);
+  };
+
+  const userInitial = (user?.fullName || 'A')[0].toUpperCase();
 
   return (
     <header
-      className="admin-topbar border-b border-slate-200 dark:border-slate-800 dark:!bg-slate-900 h-16 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 gap-2"
+      className="h-16 bg-aa-surface border-b border-aa-line px-4 aa-desktop:px-8 flex items-center justify-between shrink-0 select-none"
       data-purpose="top-header"
     >
-      {/* Top Left: Hamburger for mobile + Logo & Title */}
-      <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+      {/* Chap tomon: faqat mobilda (<760px) menyuni ochish tugmasi va logotip */}
+      <div className="flex items-center gap-2 aa-desktop:hidden">
         <button
+          ref={menuButtonRef}
           type="button"
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 lg:hidden transition shrink-0 cursor-pointer"
-          onClick={onToggleMobileNav}
+          onClick={handleMenuClick}
           aria-expanded={Boolean(mobileNavOpen)}
-          aria-label={t('nav.expandMenu')}
+          aria-label="Menyuni ochish"
+          className="w-11 h-11 flex items-center justify-center rounded-aa-md hover:bg-aa-surface-hover text-aa-ink transition cursor-pointer"
         >
-          <Menu size={20} />
+          <Menu size={16} />
         </button>
-
-        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-          <BrandMark variant="icon" size={26} className="shrink-0 sm:hidden" />
-          <BrandMark variant="full" height={28} className="shrink-0 hidden sm:block" />
-          <div className="min-w-0 truncate">
-            <h1 className="font-bold text-slate-900 dark:text-slate-100 leading-tight text-xs sm:text-base truncate">
-              {t('platform.title')}
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:block">
-              {t('platform.subtitle')}
-            </p>
-          </div>
-        </div>
+        <img
+          src="/brand/logonew.png"
+          alt="Aurent"
+          className="h-8 w-auto shrink-0"
+        />
       </div>
 
-      {/* Top Right: ABC keyboard, RU/UZ switcher, avatar, logout */}
-      <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
-        <div className="hidden sm:flex items-center">
-          <OnScreenKeyboardButton variant="header" />
-        </div>
-        <LanguageSwitcher />
-        <div
-          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white font-semibold flex items-center justify-center shadow-sm text-xs sm:text-sm shrink-0 select-none"
-          aria-hidden
-          title={user?.fullName || t('platform.title')}
+      {/* Desktopda chap bo'sh joy */}
+      <div className="hidden aa-desktop:block" />
+
+      {/* O‘ng tomon: ABC, UZ/RU, ajratgich, profil, Chiqish */}
+      <div className="flex items-center gap-2 aa-desktop:gap-3 shrink-0">
+        {/* 1. ABC tugmasi */}
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<Keyboard size={16} />}
+          onClick={handleKeyboardClick}
+          className="h-11 px-3 aa-desktop:h-8 aa-desktop:px-2.5 text-aa-ink"
         >
-          {user?.fullName?.[0]?.toUpperCase() ?? 'A'}
+          ABC
+        </Button>
+
+        {/* 2. UZ/RU segment tanlovi */}
+        <div>
+          <Segmented
+            options={[
+              { value: 'uz', label: 'UZ' },
+              { value: 'ru', label: 'RU' },
+            ]}
+            value={currentLang}
+            onChange={handleLangChange}
+            aria-label="Tilni tanlash"
+            className="aa-seg--header"
+          />
         </div>
+
+        {/* 3. 1x24px aa-line ajratgich (mobilda yashiriladi) */}
+        <div
+          className="w-px h-6 bg-aa-line hidden aa-desktop:block shrink-0"
+          aria-hidden="true"
+        />
+
+        {/* 4. Profil: 32px doira avatar + matn */}
+        <div className="flex items-center gap-2">
+          <div
+            className="w-11 h-11 text-sm aa-desktop:w-8 aa-desktop:h-8 aa-desktop:text-xs rounded-aa-full bg-aa-brand-soft text-aa-brand flex items-center justify-center font-semibold shrink-0 select-none"
+            aria-hidden="true"
+          >
+            {userInitial}
+          </div>
+          <div className="hidden aa-wide:flex flex-col text-left leading-tight">
+            <span className="text-[14px] leading-[20px] font-semibold text-aa-ink truncate">
+              {user?.fullName || 'Administrator Super'}
+            </span>
+            <span className="text-[13px] leading-[18px] text-aa-ink-muted truncate">
+              Super-admin
+            </span>
+          </div>
+        </div>
+
+        {/* 5. Chiqish tugmasi */}
         <button
           type="button"
           onClick={onLogout}
-          className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 flex items-center justify-center transition shrink-0"
-          aria-label={t('nav.logout')}
-          title={t('nav.logout')}
+          aria-label="Chiqish"
+          className="aa-btn aa-btn--ghost aa-btn--icon h-11 w-11 aa-desktop:h-10 aa-desktop:w-10 text-aa-ink hover:text-aa-danger cursor-pointer"
         >
-          <LogOut size={18} />
+          <LogOut size={16} />
         </button>
       </div>
     </header>

@@ -31,7 +31,7 @@ export default function PlatformEmailConfirmModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-send-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 animate-fadeIn"
     >
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">

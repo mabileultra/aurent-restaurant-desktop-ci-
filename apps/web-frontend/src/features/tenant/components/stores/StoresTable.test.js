@@ -108,7 +108,8 @@ describe('StoresTable', () => {
     const html = renderToStaticMarkup(
       React.createElement(StoresTable, { ...defaultProps, showOverlay: true })
     );
-    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('data-testid="table-loading-overlay"');
+    expect(html).toContain('aa-spinner');
     expect(html).toContain('404 Toys');
   });
 

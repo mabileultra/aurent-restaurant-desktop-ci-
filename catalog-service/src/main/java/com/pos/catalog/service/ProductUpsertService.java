@@ -9,6 +9,7 @@ import com.pos.catalog.exception.CatalogExceptions;
 import com.pos.catalog.mapper.ProductCardMapper;
 import com.pos.catalog.repository.CategoryRepository;
 import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.service.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.support.ProductBarcodeSync;
 import com.pos.catalog.service.support.ProductBarcodeUniqueness;
 import com.pos.shared.log.LogUtil;
@@ -29,6 +30,7 @@ public class ProductUpsertService {
     private final CategoryRepository categoryRepository;
     private final ProductBarcodeUniqueness barcodeUniqueness;
     private final ProductBarcodeSync barcodeSync;
+    private final InactiveBarcodeReleaser barcodeReleaser;
     private final ProductCardMapper mapper;
     private final CatalogOutboxWriter outboxWriter;
 
@@ -53,8 +55,11 @@ public class ProductUpsertService {
             throw CatalogExceptions.conflict("Товар принадлежит другой компании");
         }
 
-        apply(product, req, sku);
         List<String> extras = barcodeSync.normalize(req.additionalBarcodes());
+        barcodeReleaser.releaseAll(extras, companyId, req.barcode());
+        barcodeReleaser.releaseHeldPlu(companyId, req.plu());
+
+        apply(product, req, sku);
         barcodeSync.replaceExtras(product, extras, product.getBarcode());
         Product saved = productRepository.save(product);
         outboxWriter.enqueueProductSnapshot(saved);

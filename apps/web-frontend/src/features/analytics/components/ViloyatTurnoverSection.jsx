@@ -25,7 +25,7 @@ function PeriodMiniCard({ label, sub, amount, delta, emptyText }) {
           </span>
         ) : (isZero && emptyText) ? (
           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500">
-            {emptyText}
+            {amount == null ? "Ma'lumot kutilmoqda" : emptyText}
           </span>
         ) : null}
       </div>
@@ -70,6 +70,7 @@ export default function ViloyatTurnoverSection({
 
   return (
     <section aria-label="Pul aylanmasi" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {/* 1. Umumiy aylanma Card */}
       <div className="bg-white/85 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-xs">
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
@@ -140,37 +141,39 @@ export default function ViloyatTurnoverSection({
         )}
       </div>
 
+      {/* 2. 4 ta Davriy mini kartalar */}
       <div className="grid grid-cols-2 gap-3">
         <PeriodMiniCard
           label="Oylik"
-          sub={`Oxirgi 30 kun · ${rangeLabel}`}
+          sub="30 kunlik dinamika"
           amount={monthAmount}
-          delta={turnover.turnoverDeltaPct != null ? turnover.turnoverDeltaPct : null}
+          delta={turnover.turnoverDeltaPct}
           emptyText="Savdo yo‘q"
         />
         <PeriodMiniCard
           label="Haftalik"
           sub="Oxirgi 7 kun"
           amount={weekAmount}
-          delta={turnover.weekDeltaPct != null ? turnover.weekDeltaPct : null}
+          delta={turnover.weekDeltaPct}
           emptyText="Savdo yo‘q"
         />
         <PeriodMiniCard
           label="Yillik"
-          sub="2026-yil · Yil boshidan"
+          sub="365 kunlik jami savdo"
           amount={yearAmount}
           delta={null}
           emptyText="Savdo yo‘q"
         />
         <PeriodMiniCard
           label="Kunlik"
-          sub="Bugun"
+          sub="Bugungi tushum"
           amount={dayAmount}
           delta={null}
-          emptyText={hasSales ? 'Bugun hali savdo yo‘q' : 'Savdo yo‘q'}
+          emptyText="Bugun savdo yo‘q"
         />
       </div>
 
+      {/* 3. Moliyaviy tahlil rasmli karta */}
       <figure className="relative min-h-[220px] md:min-h-0 rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-slate-950 shadow-xs group flex flex-col justify-end">
         <img
           src="/analytics/turnover-analytics.webp"

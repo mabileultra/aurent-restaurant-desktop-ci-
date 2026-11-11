@@ -70,7 +70,7 @@ export default function PlatformCompanyQuickDrawer({
   const drawerContent = (
     <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
       <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+        className="absolute inset-0 bg-slate-950/60 transition-opacity animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />

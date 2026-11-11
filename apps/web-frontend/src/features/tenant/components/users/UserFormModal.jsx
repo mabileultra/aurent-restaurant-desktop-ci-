@@ -75,7 +75,7 @@ export default function UserFormModal(props) {
 
   if (p.open && p.isEdit && !p.user?.id) {
     return renderPortal(
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
         <div className="rounded-2xl bg-white p-6 text-sm font-medium text-slate-600 shadow-xl dark:bg-slate-900 dark:text-slate-300">
           {p.t('common.loading')}
         </div>
@@ -99,7 +99,7 @@ export default function UserFormModal(props) {
         >
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-950/65 transition-opacity"
             onClick={handleSafeClose}
             aria-hidden="true"
           />
@@ -112,7 +112,7 @@ export default function UserFormModal(props) {
             className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Sticky Header */}
-            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/95">
+            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/95">
               <div>
                 <h2 id="user-form-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                   {p.isEdit ? p.t('users.editUser') : p.t('users.newUser')}
