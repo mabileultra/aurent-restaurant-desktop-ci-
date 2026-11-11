@@ -74,7 +74,7 @@ export default function ModuleAccessHistoryDrawer({ isOpen, onClose, currentLang
   const node = (
     <div
       ref={drawerRef}
-      className="fixed inset-0 z-[110] flex justify-end bg-slate-950/60 backdrop-blur-xs"
+      className="fixed inset-0 z-[110] flex justify-end bg-slate-950/60"
       role="dialog"
       aria-modal="true"
       aria-labelledby="module-access-history-title"

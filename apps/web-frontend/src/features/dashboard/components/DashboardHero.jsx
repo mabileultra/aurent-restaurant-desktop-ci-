@@ -20,19 +20,19 @@ export default function DashboardHero({ t, periodLabel, isSingleDay, kpis }) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl bg-white/10 px-3 py-2.5 backdrop-blur-[2px]">
+          <div className="rounded-xl bg-white/15 px-3 py-2.5">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
               {t('dashboard.revenue')}
             </p>
             <p className="mt-0.5 text-sm font-semibold text-white sm:text-base">{kpis.revenue}</p>
           </div>
-          <div className="rounded-xl bg-white/10 px-3 py-2.5 backdrop-blur-[2px]">
+          <div className="rounded-xl bg-white/15 px-3 py-2.5">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
               {t('dashboard.avgCheck')}
             </p>
             <p className="mt-0.5 text-sm font-semibold text-white sm:text-base">{kpis.avgCheck}</p>
           </div>
-          <div className="col-span-2 rounded-xl bg-white/10 px-3 py-2.5 backdrop-blur-[2px] sm:col-span-1">
+          <div className="col-span-2 rounded-xl bg-white/15 px-3 py-2.5 sm:col-span-1">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/70">
               {t('dashboard.periodTransactions', { count: kpis.txCount })}
             </p>

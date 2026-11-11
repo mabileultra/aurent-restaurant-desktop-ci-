@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import TablePagination from '../../../components/shared/TablePagination';
 import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
-import { PlatformErrorState, Spinner } from '../../../components/ui';
+import { PlatformErrorState } from '../../../components/ui';
+import TableLoadingOverlay from '../../../components/shared/TableLoadingOverlay';
 import PlatformCompaniesTableHeader from './PlatformCompaniesTableHeader';
 import PlatformCompaniesTableRow from './PlatformCompaniesTableRow';
 import PlatformCompanyMobileCard from './PlatformCompanyMobileCard';
@@ -72,7 +73,7 @@ export default function PlatformCompaniesTable({
 
       {/* Anti-flicker delayed overlay spinner */}
       {showOverlay && (
-        <Spinner overlay size="sm" text={t('common.loading')} />
+        <TableLoadingOverlay text={t('common.loading')} />
       )}
 
       {/* Desktop Table View (>= md) */}

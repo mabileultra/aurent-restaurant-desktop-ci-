@@ -75,7 +75,7 @@ export default function BaseModal({
   const modalNode = (
     <div
       className={clsx(
-        'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto',
+        'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-4 overflow-y-auto',
         overlayClassName,
       )}
     >

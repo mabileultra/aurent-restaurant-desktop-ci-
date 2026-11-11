@@ -95,7 +95,7 @@ export default function RoleEmployeeEditDrawer({
   const drawerNode = (
     <div
       ref={drawerRef}
-      className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[110] flex justify-end bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[110] flex justify-end bg-slate-950/60 animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="employee-edit-title"

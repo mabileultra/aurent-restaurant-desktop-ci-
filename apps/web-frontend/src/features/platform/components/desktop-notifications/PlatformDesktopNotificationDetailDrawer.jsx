@@ -92,7 +92,7 @@ export default function PlatformDesktopNotificationDetailDrawer({ p }) {
 
   const drawerNode = (
     <div
-      className="fixed inset-0 z-[99999] flex justify-end bg-slate-950/45 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] flex justify-end bg-slate-950/60 animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="desktop-notif-drawer-title"

@@ -10,7 +10,6 @@ export { default as PageSearchField } from './PageSearchField';
 export { default as ErrorBanner } from './ErrorBanner';
 export { default as PlatformErrorState } from './PlatformErrorState';
 export { default as Spinner, AurentSpinner } from './Spinner';
-export { default as NeonCheckbox } from './NeonCheckbox';
 export { default as CircleToggleCheckbox } from './CircleToggleCheckbox';
 export { default as AnimatedCheckbox19, default as BaseCheckbox } from './AnimatedCheckbox19';
 export { inputCls, labelCls, fieldErrorCls } from './uiClasses';

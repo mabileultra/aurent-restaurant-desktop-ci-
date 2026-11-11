@@ -216,7 +216,8 @@ describe('UsersTable', () => {
       React.createElement(UsersTable, { ...defaultProps, showOverlay: true })
     );
 
-    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('data-testid="table-loading-overlay"');
+    expect(html).toContain('aa-spinner');
     expect(html).toContain('Ali Valiyev');
   });
 });

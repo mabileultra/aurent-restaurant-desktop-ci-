@@ -134,7 +134,8 @@ describe('PlatformCompaniesTable', () => {
       })
     );
 
-    expect(html).toContain('aur-sp-overlay');
+    expect(html).toContain('data-testid="table-loading-overlay"');
+    expect(html).toContain('aa-spinner');
     expect(html).toContain('Supermarket Avesta');
   });
 

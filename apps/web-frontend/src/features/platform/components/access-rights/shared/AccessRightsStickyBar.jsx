@@ -28,7 +28,7 @@ export default function AccessRightsStickyBar({
   const savingText = isRu ? 'Сохранение...' : 'Saqlanmoqda...';
 
   return (
-    <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 p-3.5 sm:px-5 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 transition-all">
+    <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 sm:px-5 shadow-lg dark:border-slate-800 dark:bg-slate-900 transition-all">
       <div className="flex items-center gap-2 text-xs sm:text-sm">
         {isDirty ? (
           <>
