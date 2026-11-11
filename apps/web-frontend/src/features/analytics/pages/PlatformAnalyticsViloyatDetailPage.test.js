@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import PlatformAnalyticsViloyatDetailPage from './PlatformAnalyticsViloyatDetailPage';
+import { SAMARQAND_COMPANIES } from '../data/samarqandMockData';
 
 vi.mock('../../../api/geo.api', () => ({
   geoApi: {
@@ -16,7 +17,7 @@ vi.mock('../../../api/geo.api', () => ({
 
 vi.mock('../api/analyticsApi', () => ({
   analyticsApi: {
-    getCompanies: vi.fn().mockResolvedValue({ data: [] }),
+    getCompanies: vi.fn().mockResolvedValue({ data: { rows: [] } }),
     getResults: vi.fn().mockResolvedValue({ data: { rows: [] } }),
     getDaily: vi.fn().mockResolvedValue({ data: { days: [] } }),
     getProducts: vi.fn().mockResolvedValue({ data: { top: [], bottom: [] } }),
@@ -115,10 +116,7 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
   it('renders district companies and excludes other districts when viewing Samarqand shahri', () => {
     const queryClient = new QueryClient();
     queryClient.setQueryData(['analytics-companies-detail', '18', '1801'], {
-      rows: [
-        [1, 'Farina Invest', '303190578', '01', 'F', 1, 1, 2040531499, 10, 2040531499],
-        [2, 'Makon Mobile', '303190579', '01', 'F', 1, 1, 89279000, 5, 89279000],
-      ],
+      rows: SAMARQAND_COMPANIES,
     });
 
     const html = renderToStaticMarkup(

@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       screens: {
+        'aa-desktop': '760px',
+        'aa-wide': '1100px',
         pos: '1024px',
         'pos-wide': '1280px',
         'pos-compact': { max: '799px' },
