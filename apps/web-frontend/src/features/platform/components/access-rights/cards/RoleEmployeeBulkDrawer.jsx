@@ -126,7 +126,7 @@ export default function RoleEmployeeBulkDrawer({
   const drawerNode = (
     <div
       ref={drawerRef}
-      className="fixed inset-0 z-[115] flex justify-end bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-[115] flex justify-end bg-slate-950/60 animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="bulk-edit-title"

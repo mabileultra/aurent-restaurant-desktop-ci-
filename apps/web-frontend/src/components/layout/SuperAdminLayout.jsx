@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ShellOutlet from '../shared/ShellOutlet';
 import { useAuthStore } from '../../store/authStore';
@@ -17,7 +17,7 @@ export default function SuperAdminLayout() {
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement;
     root.classList.add('app-area--platform');
     return () => {

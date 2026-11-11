@@ -112,7 +112,7 @@ export default function PlatformDesktopConfirmModal({ p }) {
 
   const modalNode = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/70 animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-broadcast-title"

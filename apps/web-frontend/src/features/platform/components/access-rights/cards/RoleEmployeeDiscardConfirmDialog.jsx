@@ -40,7 +40,7 @@ export default function RoleEmployeeDiscardConfirmDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby="discard-confirm-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4"
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 p-4"
     >
       <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
         <h4 id="discard-confirm-title" className="text-sm font-bold text-slate-900 dark:text-white">

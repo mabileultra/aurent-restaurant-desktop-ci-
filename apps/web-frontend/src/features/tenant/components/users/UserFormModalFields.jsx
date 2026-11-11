@@ -173,7 +173,7 @@ export default function UserFormModalFields({
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/95">
         <button
           type="button"
           onClick={onClose}

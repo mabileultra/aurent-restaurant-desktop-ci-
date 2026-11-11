@@ -15,7 +15,7 @@ export default function ReceiptPageHeader({
 }) {
   return (
     <div className={`sticky top-2 z-20 mx-auto mb-4 ${headerWidthCls} print:hidden`}>
-      <div className="rounded-2xl border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm shadow-slate-200/50 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85 dark:shadow-black/30">
+      <div className="rounded-2xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-sm shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/30">
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"

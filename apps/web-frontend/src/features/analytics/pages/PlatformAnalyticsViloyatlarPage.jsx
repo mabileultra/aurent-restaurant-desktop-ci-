@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, RefreshCw } from 'lucide-react';
+import ChromaGridContainer from '../components/ChromaGridContainer';
 import RubberSegment from '../../../components/ui/rubber-segment/RubberSegment';
 import { useViloyatlarAnalytics } from '../hooks/useViloyatlarAnalytics';
 import ViloyatlarKpiCards from '../components/ViloyatlarKpiCards';
@@ -34,7 +35,7 @@ export default function PlatformAnalyticsViloyatlarPage() {
   } = useViloyatlarAnalytics();
 
   return (
-    <div className="min-h-screen bg-aa-canvas text-slate-800 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="min-h-screen bg-[#F3F6F4] dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Top Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -103,23 +104,25 @@ export default function PlatformAnalyticsViloyatlarPage() {
         setSort={setSort}
       />
 
-      {/* Regions Grid */}
-      <section
-        aria-label="Tumanlar ro‘yxati"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-      >
-        {regions.map((region) => (
-          region.hasCompanies ? (
-            <ViloyatActiveCard key={region.code} region={region} />
-          ) : (
-            <ViloyatEmptyCard key={region.code} region={region} />
-          )
-        ))}
+      {/* Regions Grid with Chroma Spotlight */}
+      <ChromaGridContainer radius={300} softness={0.65} glow={0.6} borderGlow={1}>
+        <section
+          aria-label="Tumanlar ro‘yxati"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        >
+          {regions.map((region) => (
+            region.hasCompanies ? (
+              <ViloyatActiveCard key={region.code} region={region} />
+            ) : (
+              <ViloyatEmptyCard key={region.code} region={region} />
+            )
+          ))}
 
-        {filter !== 'empty' && unassigned.companies > 0 ? (
-          <ViloyatUnassignedCard unassigned={unassigned} />
-        ) : null}
-      </section>
+          {filter !== 'empty' && unassigned.companies > 0 ? (
+            <ViloyatUnassignedCard unassigned={unassigned} />
+          ) : null}
+        </section>
+      </ChromaGridContainer>
 
         {/* Footnote */}
         <footer className="pt-4 border-t border-slate-200 text-xs text-slate-400">
