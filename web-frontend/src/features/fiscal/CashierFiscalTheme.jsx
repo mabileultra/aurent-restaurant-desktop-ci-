@@ -1,12 +1,12 @@
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../hooks/useCashierStoreProfile';
-import CashierDesktopMenuMultikassa from '../cashier/components/desktop-menu/CashierDesktopMenuMultikassa';
+import CashierDesktopMenuFiscalDrive from '../cashier/components/desktop-menu/CashierDesktopMenuFiscalDrive';
 import { useFiscalCashierStatus } from './useFiscalCashierStatus';
 import './cashier-fiscal-theme.css';
 
 /**
- * FiscalDrive временно скрыт с кассы. Меню — только Multikassa. Рейл оплаты без выключателей.
+ * Lab-only: в меню кассы только FiscalDrive. Multikassa на эту сборку не показывается.
  */
 export default function CashierFiscalTheme({ variant = 'rail', t }) {
   const { storeId } = useCashierStore();
@@ -25,8 +25,8 @@ export default function CashierFiscalTheme({ variant = 'rail', t }) {
 
   if (variant === 'menu') {
     return (
-      <div className="cashier-fiscal-theme cashier-fiscal-theme--multikassa" data-fiscal-theme="MULTIKASSA">
-        <CashierDesktopMenuMultikassa t={t} />
+      <div className="cashier-fiscal-theme cashier-fiscal-theme--fiscal-drive" data-fiscal-theme="FISCAL_DRIVE">
+        <CashierDesktopMenuFiscalDrive t={t} />
       </div>
     );
   }
