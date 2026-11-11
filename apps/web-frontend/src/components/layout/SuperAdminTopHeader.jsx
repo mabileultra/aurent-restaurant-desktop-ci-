@@ -76,7 +76,7 @@ export default function SuperAdminTopHeader({
         </Button>
 
         {/* 2. UZ/RU segment tanlovi */}
-        <div className="[&_.aa-seg__btn]:h-11 [&_.aa-seg__btn]:px-3 aa-desktop:[&_.aa-seg__btn]:h-[30px]">
+        <div>
           <Segmented
             options={[
               { value: 'uz', label: 'UZ' },
@@ -85,6 +85,7 @@ export default function SuperAdminTopHeader({
             value={currentLang}
             onChange={handleLangChange}
             aria-label="Tilni tanlash"
+            className="aa-seg--header"
           />
         </div>
 
@@ -117,7 +118,7 @@ export default function SuperAdminTopHeader({
           type="button"
           onClick={onLogout}
           aria-label="Chiqish"
-          className="aa-btn aa-btn--ghost aa-btn--icon h-11 w-11 aa-desktop:h-8 aa-desktop:w-8 text-aa-ink hover:text-aa-danger cursor-pointer"
+          className="aa-btn aa-btn--ghost aa-btn--icon h-11 w-11 aa-desktop:h-10 aa-desktop:w-10 text-aa-ink hover:text-aa-danger cursor-pointer"
         >
           <LogOut size={16} />
         </button>

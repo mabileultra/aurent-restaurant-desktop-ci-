@@ -89,12 +89,13 @@ export default function SuperAdminMobileDrawer({
         className="fixed top-0 bottom-0 left-0 z-50 w-[248px] bg-aa-surface shadow-aa-modal flex flex-col outline-none"
       >
         <SuperAdminSidebar
-          className="w-full h-full border-r-0"
+          className="w-full h-full border-r-0 aa-nav--mobile"
           groupedLinks={groupedLinks}
           openGroups={openGroups}
           toggleGroup={toggleGroup}
           location={location}
           onCloseMobileNav={onClose}
+          isMobile
         />
       </div>
     </div>

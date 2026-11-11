@@ -44,8 +44,10 @@ describe('SuperAdminTopHeader', () => {
     // Mobile controls: Menu button and Logo
     expect(html).toContain('aria-label="Menyuni ochish"');
     expect(html).toContain('/brand/logonew.png');
-    // Logout button
+    // Logout button (40px desktop control-md, 44px mobile touch)
     expect(html).toContain('aria-label="Chiqish"');
+    expect(html).toContain('aa-desktop:h-10 aa-desktop:w-10');
+    expect(html).toContain('aa-seg--header');
     expect(html).toContain('aria-expanded="false"');
 
     const htmlOpen = renderToStaticMarkup(

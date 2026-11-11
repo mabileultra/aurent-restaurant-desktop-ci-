@@ -12,6 +12,7 @@ export default function SuperAdminSidebarItem({
   location,
   onCloseMobileNav,
   NAV_ICONS,
+  isMobile = false,
 }) {
   const { t } = useTranslation();
   const Icon = NAV_ICONS[item.to];
@@ -71,7 +72,7 @@ export default function SuperAdminSidebarItem({
               end={Boolean(child.end)}
               label={t(child.key)}
               onClick={onCloseMobileNav}
-              className="h-9 text-[13px]"
+              className={isMobile ? 'h-11 text-[13px]' : 'h-9 text-[13px]'}
             />
           ))}
         </div>
