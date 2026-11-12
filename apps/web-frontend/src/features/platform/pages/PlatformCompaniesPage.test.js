@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import PlatformCompaniesPage from './PlatformCompaniesPage';
 
 globalThis.React = React;
@@ -77,8 +78,15 @@ vi.mock('../../shared/geo/useGeoNameLookup', () => ({
   }),
 }));
 
-vi.mock('../../shared/geo/GeoFilterSelects', () => ({
-  default: () => React.createElement('div', { 'data-testid': 'mock-geo-selects' }),
+vi.mock('../../../api/geo.api', () => ({
+  geoApi: {
+    regions: vi.fn().mockResolvedValue({
+      data: [{ code: 'SAM', nameUz: 'Samarqand viloyati' }],
+    }),
+    districts: vi.fn().mockResolvedValue({
+      data: [{ code: 'SAM_SH', nameUz: 'Samarqand sh.' }],
+    }),
+  },
 }));
 
 vi.mock('react-router-dom', () => ({
@@ -95,23 +103,37 @@ vi.mock('react-hot-toast', () => ({
 }));
 
 describe('PlatformCompaniesPage', () => {
-  it('renders the modernized page with KPI cards, status tabs, and company list', () => {
-    mockHookData = {};
-    const html = renderToStaticMarkup(React.createElement(PlatformCompaniesPage));
+  const qc = new QueryClient();
 
-    // Page title with count
-    expect(html).toContain('Kompaniyalar (102)');
+  const renderPage = () =>
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: qc },
+        React.createElement(PlatformCompaniesPage)
+      )
+    );
+
+  it('renders the modernized page with PageHeader, KPI cards, and company list', () => {
+    mockHookData = {};
+    const html = renderPage();
+
+    // PageHeader
+    expect(html).toContain('Kompaniyalar');
+    expect(html).toContain('102 ta kompaniya · 148 ta filial');
+    expect(html).toContain('Kompaniya qo‘shish');
 
     // KPI cards
     expect(html).toContain('Jami kompaniyalar');
     expect(html).toContain('Faol kompaniyalar');
-    expect(html).toContain('Ulangan do‘konlar');
-    expect(html).toContain('Nofaollar');
+    expect(html).toContain('Ulangan filiallar');
+    expect(html).toContain('Nofaol kompaniyalar');
 
-    // Segmented tabs
+    // Segmented tabs & Toolbar
     expect(html).toContain('Barchasi');
     expect(html).toContain('Faol');
     expect(html).toContain('Nofaol');
+    expect(html).toContain('102 ta kompaniya');
 
     // Table rows
     expect(html).toContain('ANNODENT SS');
@@ -124,10 +146,13 @@ describe('PlatformCompaniesPage', () => {
         id: 127,
         name: 'Dori Darmon',
         active: true,
+        loginCode: 'DD-127',
+        storeCount: 1,
       },
     };
-    const html = renderToStaticMarkup(React.createElement(PlatformCompaniesPage));
+    const html = renderPage();
     expect(html).toContain('Dori Darmon');
-    expect(html).toContain('faolsizlantirish');
+    expect(html).toContain('Kompaniyani faolsizlantirish');
+    expect(html).toContain('Faolsizlantirish');
   });
 });
