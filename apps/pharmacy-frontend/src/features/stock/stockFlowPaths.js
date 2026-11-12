@@ -12,7 +12,7 @@ export const DEFAULT_STOCK_FLOW_PATHS = {
   receiptEdit: (id) => PHARM_STOCK_PATHS.receipt(id),
   balancesReport: '/reports/stock/balances',
   lowStockReport: '/reports/stock/low',
-  stockDashboard: '/reports/stock',
+  stockDashboard: '/reports',
   lifecycleReport: '/reports/stock/lifecycle',
   suppliers: '/stock/suppliers',
   transfersNew: '/stock/transfers/new',

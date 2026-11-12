@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next';
 import {
   cashierThemeClassName,
   clearCashierThemeDocument,
+  readCashierTheme,
   syncCashierThemeDocument,
   writeCashierTheme,
 } from '../../utils/cashierTheme';
 import { syncRootTheme } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
+import { getMainAppUrl } from '../../config/env';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { useCashierShiftModal } from '../../contexts/CashierShiftModalContext';
@@ -31,7 +33,7 @@ const CATALOG_KIND = PHARMACY_CATALOG_KIND;
  * Not a fork of grocery secondary routes / bottom-nav world.
  */
 export function usePharmacyPosShell() {
-  const [cashierTheme, setCashierTheme] = useState('light');
+  const [cashierTheme, setCashierTheme] = useState(readCashierTheme);
   const zoom = useCashierUiScale();
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -102,9 +104,15 @@ export function usePharmacyPosShell() {
     });
   };
 
+  const canOpenOffice = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+
   const handleLogout = () => {
     clearCashierScreenLocked(user?.id);
     logoutAndResetSession();
+    if (canOpenOffice && !isDesktopApp) {
+      window.location.replace(`${getMainAppUrl()}/login`);
+      return;
+    }
     navigate('/login', { replace: true });
   };
 
@@ -133,6 +141,7 @@ export function usePharmacyPosShell() {
     shiftIsOpen,
     cashierTheme,
     toggleCashierTheme,
+    canOpenOffice,
     handleLogout,
     shellClassName,
     isDesktopApp,

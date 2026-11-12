@@ -30,8 +30,8 @@ const SupportPage = lazy(() => import('../../features/support/pages/SupportPage'
 const ReturnsPage = lazy(() => import('../../features/sales/pages/ReturnsPage'));
 const SalesLedgerPage = lazy(() => import('../../features/sales/pages/SalesLedgerPage'));
 
-function Authed({ children }) {
-  return <PharmacyAuthGuard>{children}</PharmacyAuthGuard>;
+function Authed({ children, requireOffice = false }) {
+  return <PharmacyAuthGuard requireOffice={requireOffice}>{children}</PharmacyAuthGuard>;
 }
 
 /**
@@ -58,7 +58,7 @@ export function PharmacyRoutes() {
 
       <Route
         element={(
-          <Authed>
+          <Authed requireOffice>
             <PharmacyAdminShell />
           </Authed>
         )}

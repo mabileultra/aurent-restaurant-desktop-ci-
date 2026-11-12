@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { warehouseApi } from '../../../api';
+import { pharmacyWarehouseApi } from '../../../api';
 import { invalidateProductCaches } from '../../../utils/productCache';
 
 export function useStockReceiptsActions() {
@@ -9,11 +9,12 @@ export function useStockReceiptsActions() {
   const qc = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => warehouseApi.deleteReceipt(id),
+    mutationFn: (id) => pharmacyWarehouseApi.deleteDraft(id),
     onSuccess: () => {
       toast.success(t('stockReports.receiptDeleted'));
       invalidateProductCaches(qc);
       qc.invalidateQueries({ queryKey: ['stock-receipts-list'] });
+      qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
     },
     onError: (e) => {
       toast.error(e.response?.data?.message ?? t('stockReports.receiptDeleteFailed'));

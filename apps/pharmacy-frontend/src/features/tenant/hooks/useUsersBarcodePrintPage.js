@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { productApi, tasnifApi } from '../../../api';
+import { pharmacyWarehouseApi, tasnifApi } from '../../../api';
 import { useBarcodeScanner } from '../../../hooks/useBarcodeScanner';
 import {
   digitsOnly,
@@ -118,7 +118,7 @@ export function useUsersBarcodePrintPage() {
 
   const searchCatalog = useCallback(
     async (raw) => {
-      const { data } = await productApi.getAll({
+      const { data } = await pharmacyWarehouseApi.listProducts({
         search: raw,
         activeOnly: true,
         page: 0,
@@ -153,7 +153,7 @@ export function useUsersBarcodePrintPage() {
       setTasnifResults([]);
       try {
         try {
-          const { data } = await productApi.getByBarcode(raw);
+          const { data } = await pharmacyWarehouseApi.getByBarcode(raw);
           if (await applyCatalogProduct(data, raw)) {
             return;
           }

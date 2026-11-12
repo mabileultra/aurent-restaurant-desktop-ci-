@@ -100,7 +100,7 @@ export function usePharmacyAdminShell() {
 
   const filterByModule = (items) => items.filter((item) => !item.moduleId || hasModule(item.moduleId));
   const stockNav = filterByModule(PHARM_STOCK_CHILDREN);
-  const salesNav = PHARM_SALES_CHILDREN;
+  const salesNav = filterByModule(PHARM_SALES_CHILDREN);
   const financeNav = filterByModule(PHARM_FINANCE_CHILDREN);
   const registersNav = filterByModule(PHARM_REGISTER_CHILDREN);
   const reportsSalesNav = filterByModule(PHARM_REPORT_SALES_CHILDREN);

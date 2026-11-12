@@ -1,11 +1,11 @@
-import { productApi } from '../../../api';
+import { pharmacyWarehouseApi } from '../../../api';
 import { resolveLabelBarcodeFromProduct } from '../../../utils/labelBarcode';
 import { BARCODE_PRINT_CATALOG_SEARCH_SIZE } from '../constants';
 
 export async function loadCatalogProductDetails(data) {
   if (!data?.id) return data;
   try {
-    const { data: full } = await productApi.getById(data.id);
+    const { data: full } = await pharmacyWarehouseApi.getProduct(data.id);
     return full ?? data;
   } catch {
     return data;

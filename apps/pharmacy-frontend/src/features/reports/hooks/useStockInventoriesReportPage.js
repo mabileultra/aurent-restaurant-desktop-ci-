@@ -34,6 +34,27 @@ export function useStockInventoriesReportPage() {
     resetPage();
   };
 
+  const fetchExportBlob = async () => {
+    const data = await pharmacyWarehouseApi.listInventories({
+      ...exportParams,
+      page: 0,
+      size: 500,
+    }).then((r) => r.data);
+    const list = data?.content ?? [];
+    const header = ['inventoryNumber', 'createdAt', 'storeName', 'totalLines', 'totalDifference'];
+    const lines = [
+      header.join(','),
+      ...list.map((row) => [
+        JSON.stringify(row.inventoryNumber ?? ''),
+        JSON.stringify(row.createdAt ?? ''),
+        JSON.stringify(row.storeName ?? ''),
+        row.totalLines ?? 0,
+        row.totalDifference ?? 0,
+      ].join(',')),
+    ];
+    return { data: new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' }) };
+  };
+
   return {
     from,
     to,
@@ -42,6 +63,7 @@ export function useStockInventoriesReportPage() {
     storeId,
     stores,
     exportParams,
+    fetchExportBlob,
     page,
     setPage,
     pageSize,

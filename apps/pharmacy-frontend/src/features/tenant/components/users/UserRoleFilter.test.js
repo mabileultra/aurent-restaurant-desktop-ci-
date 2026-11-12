@@ -15,7 +15,7 @@ describe('UserRoleFilter', () => {
     return key;
   };
 
-  it('renders all filter roles including COOK and CASHIER', () => {
+  it('renders pharmacy filter roles and excludes restaurant/platform roles', () => {
     const html = renderToStaticMarkup(
       React.createElement(UserRoleFilter, {
         t: mockT,
@@ -24,9 +24,13 @@ describe('UserRoleFilter', () => {
       })
     );
 
-    expect(PLATFORM_FILTER_ROLES).toContain('COOK');
-    expect(PLATFORM_FILTER_ROLES).toContain('CASHIER');
     expect(PLATFORM_FILTER_ROLES).toContain('ADMIN');
+    expect(PLATFORM_FILTER_ROLES).toContain('MANAGER');
+    expect(PLATFORM_FILTER_ROLES).toContain('CASHIER');
+    expect(PLATFORM_FILTER_ROLES).toContain('ACCOUNTANT');
+    expect(PLATFORM_FILTER_ROLES).not.toContain('COOK');
+    expect(PLATFORM_FILTER_ROLES).not.toContain('WAITER');
+    expect(PLATFORM_FILTER_ROLES).not.toContain('COURIER');
     expect(html).toContain('users-filters__role');
   });
 

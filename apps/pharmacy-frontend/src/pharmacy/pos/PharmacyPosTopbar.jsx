@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { LogOut, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { LayoutDashboard, LogOut, MapPin } from 'lucide-react';
+import { PHARM_DASHBOARD_PATH } from '../app/pharmacyPaths';
 import PharmacyPosTabs from './PharmacyPosTabs';
 import './pharmacy-pos-shell.css';
 
@@ -13,6 +15,7 @@ export default function PharmacyPosTopbar({
   shift,
   shiftOpenBadge,
   cashierName,
+  canOpenOffice,
   openShift,
   onLogout,
 }) {
@@ -52,6 +55,12 @@ export default function PharmacyPosTopbar({
           {shiftOpenBadge ? <span className="pharmacy-pos-chrome__time">{shiftOpenBadge}</span> : null}
         </div>
         <div className="pharmacy-pos-chrome__user">
+          {canOpenOffice ? (
+            <Link to={PHARM_DASHBOARD_PATH} className="pharmacy-pos-chrome__logout">
+              <LayoutDashboard size={15} strokeWidth={2} aria-hidden />
+              В кабинет
+            </Link>
+          ) : null}
           <span className="pharmacy-pos-chrome__avatar" aria-hidden>{initial}</span>
           <span className="pharmacy-pos-chrome__user-name">{cashierName || '—'}</span>
           <button type="button" className="pharmacy-pos-chrome__logout" onClick={onLogout}>
