@@ -118,11 +118,13 @@
   color: #fff;
   font-size: 13px;
   font-weight: 650;
+  text-decoration: none;
   cursor: pointer;
 }
 
 .pharmacy-pos-chrome__logout:hover {
   background: rgb(255 255 255 / 0.12);
+  color: #fff;
 }
 
 .pharmacy-pos-tabs {

@@ -27,7 +27,7 @@ async function tryNativeVirtualKeyboard() {
   try {
     vk.overlaysContent = true;
     await vk.show();
-    return true;
+    return Boolean(vk.boundingRect && vk.boundingRect.height > 0);
   } catch {
     return false;
   }
@@ -44,23 +44,6 @@ async function tryDesktopKeyboard() {
   }
 }
 
-function tryProbeFocus(target) {
-  const probe = ensureProbeInput();
-  if (!probe) return false;
-
-  if (target && target !== probe) {
-    return focusKeyboardTarget(target);
-  }
-
-  probe.style.cssText =
-    'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0.01;border:0;padding:0;margin:0;';
-  probe.value = '';
-  probe.focus({ preventScroll: true });
-  probe.click?.();
-  return document.activeElement === probe || document.activeElement === target;
-}
-
-/** Показать экранную / сенсорную клавиатуру для текущего или следующего поля ввода. */
 export async function showOnScreenKeyboard(preferredTarget = null) {
   const target = preferredTarget || getActiveTextInput() || rememberKeyboardTarget();
 
@@ -69,13 +52,21 @@ export async function showOnScreenKeyboard(preferredTarget = null) {
     return;
   }
 
-  if (target && focusKeyboardTarget(target)) {
-    if (await tryNativeVirtualKeyboard()) return;
-    if (tryProbeFocus(target)) return;
+  if (target) {
+    focusKeyboardTarget(target);
+  } else {
+    const probe = ensureProbeInput();
+    if (probe) {
+      probe.style.cssText =
+        'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0.01;border:0;padding:0;margin:0;';
+      probe.value = '';
+      probe.focus({ preventScroll: true });
+      probe.click?.();
+    }
   }
 
-  if (tryProbeFocus(null)) {
-    if (await tryNativeVirtualKeyboard()) return;
+  if (await tryNativeVirtualKeyboard()) {
+    return;
   }
 
   useVirtualKeyboardStore.getState().show(target);

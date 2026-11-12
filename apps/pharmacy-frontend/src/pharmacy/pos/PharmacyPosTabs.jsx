@@ -10,28 +10,31 @@ import {
   Search,
   Settings,
 } from 'lucide-react';
+import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { useCartStore } from '../../store/cartStore';
 import { usePharmacyPosActions } from './pharmacyPosActions';
 
-const TABS = [
+export const PHARMACY_POS_TABS = [
   { id: 'checks', action: 'checks', icon: Receipt, label: 'Чеки' },
   { id: 'parked', action: 'parked', icon: Archive, label: 'Отложенные' },
   { id: 'shift', action: 'shift', icon: Clock, label: 'Смена' },
   { id: 'cash', action: 'cash', icon: Banknote, label: 'Денежные операции' },
   { id: 'branches', action: 'branches', icon: Search, label: 'Поиск по филиалам' },
-  { id: 'reports', to: '/reports', icon: BarChart3, label: 'Отчеты' },
+  { id: 'reports', to: '/reports', moduleId: 'reportsSalesDaily', icon: BarChart3, label: 'Отчеты' },
   { id: 'reject', action: 'reject', icon: Ban, label: 'Отказ' },
-  { id: 'move', to: '/stock/transfers/new', icon: ArrowLeftRight, label: 'Перемещение' },
+  { id: 'move', to: '/stock/transfers/new', moduleId: 'stockTransfers', icon: ArrowLeftRight, label: 'Перемещение' },
   { id: 'settings', action: 'settings', icon: Settings, label: 'Настройки' },
 ];
 
 export default function PharmacyPosTabs({ onOpenShift }) {
   const actions = usePharmacyPosActions();
+  const { hasModule } = useModuleAccess();
   const parkedCount = useCartStore((s) => s.parkedCarts?.length || 0);
+  const visibleTabs = PHARMACY_POS_TABS.filter((tab) => !tab.moduleId || hasModule(tab.moduleId));
 
   return (
     <nav className="pharmacy-pos-tabs" aria-label="Разделы кассы">
-      {TABS.map((tab) => {
+      {visibleTabs.map((tab) => {
         const Icon = tab.icon;
         if (tab.action === 'shift') {
           return (
