@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { BaseButton, BaseInput } from '../../../../components/ui';
 import { STAFF_ROLES_CONFIG } from '../../utils/securityConstants';
 import { evaluatePasswordStrength } from '../../utils/securityFormatUtils';
+import { useDrawerFocusTrap } from './useDrawerFocusTrap';
 
 export default function PlatformSecurityStaffDrawer({
   form,
@@ -17,6 +18,8 @@ export default function PlatformSecurityStaffDrawer({
   onCycleTempPassword,
 }) {
   const { t } = useTranslation();
+  const drawerRef = useDrawerFocusTrap(Boolean(form), onClose);
+
   if (!form) return null;
 
   const isCreate = form.mode === 'create';
@@ -35,18 +38,35 @@ export default function PlatformSecurityStaffDrawer({
   };
 
   const drawerNode = (
-    <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[100] flex justify-end bg-slate-950/60 animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 dark:border-slate-800 animate-in slide-in-from-right duration-200">
+    <div
+      className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[100] flex justify-end bg-slate-950/60 animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.();
+      }}
+    >
+      <div
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="staff-drawer-title"
+        tabIndex={-1}
+        className="w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 dark:border-slate-800 animate-in slide-in-from-right duration-200 outline-none"
+      >
         <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            <h3 id="staff-drawer-title" className="text-base font-bold text-slate-900 dark:text-slate-100">
               {isCreate ? t('platform.security.newStaffTitle', 'Yangi xodim') : t('platform.security.editStaffTitle', 'Xodimni tahrirlash')}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               {isCreate ? t('platform.security.newStaffDesc', 'Super-admin paneliga kirish beriladi') : `${form.firstName} ${form.lastName} · ${form.username}`}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.close', 'Yopish')}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
