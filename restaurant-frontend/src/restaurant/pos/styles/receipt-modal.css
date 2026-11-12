@@ -162,10 +162,24 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* Receipt paper stays light even under rst-theme / color-scheme:dark */
 .rst-receipt-modal__body {
   overflow: auto;
   padding: 1rem 1.15rem;
-  background: var(--rst-surface, #F8F2EC);
+  background: #fff;
+  color: #111;
+  color-scheme: light;
+}
+
+.rst-receipt-modal__paper {
+  background: #fff;
+  color: #000;
+  color-scheme: light;
+}
+
+.rst-receipt-modal__paper .receipt-print-root,
+.rst-receipt-modal__paper .receipt-print-root * {
+  color: #000;
 }
 
 @media print {

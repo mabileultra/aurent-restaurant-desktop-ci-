@@ -10,6 +10,7 @@ import {
 import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
 import { ThermalPrintSettingsPanel } from '../../../components/receipt';
 import RestaurantFiscalReceipt from './RestaurantFiscalReceipt';
+import RestaurantOrdinaryReceipt from './RestaurantOrdinaryReceipt';
 import { RECEIPT_PRINT_DOM } from '../../../config/receiptPrintConfig';
 import {
   printOrdinarySaleReceipt,
@@ -22,6 +23,12 @@ async function printSaleReceipt(sale, t) {
     return printFiscalReceipt({ sale, t, useModalShell: true });
   }
   return printOrdinarySaleReceipt({ sale, t });
+}
+
+function receiptModalTitle(sale, t) {
+  return saleNeedsFiscalPrint(sale)
+    ? t('rst.order.receiptTitle')
+    : t('rst.order.ordinaryReceipt');
 }
 
 export default function RestaurantReceiptModal({
@@ -115,7 +122,7 @@ export default function RestaurantReceiptModal({
       >
         <div className="rst-receipt-modal__toolbar print:hidden">
           <div className="rst-receipt-modal__title">
-            <strong>{t('rst.order.receiptTitle')}</strong>
+            <strong>{receiptModalTitle(sale, t)}</strong>
             <span>№{sale.receiptNumber}</span>
           </div>
           <div className="rst-receipt-modal__actions">
@@ -167,8 +174,12 @@ export default function RestaurantReceiptModal({
         ) : null}
 
         <div id={RECEIPT_PRINT_DOM.fiscalPrintShellId} className="rst-receipt-modal__body">
-          <div className="bg-white text-black">
-            <RestaurantFiscalReceipt sale={sale} />
+          <div className="rst-receipt-modal__paper">
+            {saleNeedsFiscalPrint(sale) ? (
+              <RestaurantFiscalReceipt sale={sale} />
+            ) : (
+              <RestaurantOrdinaryReceipt sale={sale} t={t} />
+            )}
           </div>
         </div>
 

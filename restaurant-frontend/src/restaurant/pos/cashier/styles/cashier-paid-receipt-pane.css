@@ -68,8 +68,14 @@
   margin: 0 auto;
   background: #fff;
   color: #111;
+  color-scheme: light;
   border-radius: 4px;
   padding: 8px;
+}
+
+.rst-paid-receipt-pane__paper .receipt-print-root,
+.rst-paid-receipt-pane__paper .receipt-print-root * {
+  color: #000;
 }
 
 .rst-paid-receipt-pane__placeholder {

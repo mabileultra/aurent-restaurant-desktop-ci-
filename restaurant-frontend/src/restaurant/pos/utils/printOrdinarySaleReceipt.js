@@ -36,7 +36,7 @@ function isFiscalizedSale(sale) {
 export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
   if (typeof window === 'undefined' || !sale) return { mode: 'skip' };
 
-  const title = t?.('rst.order.receiptTitle', { defaultValue: 'Чек' }) || 'Чек';
+  const title = t?.('rst.order.ordinaryReceipt', { defaultValue: 'Обычный чек' }) || 'Обычный чек';
   const qrValue = isFiscalizedSale(sale) ? resolveReceiptQrValue(sale) : '';
   const profile = await loadStorePrintProfile(sale.storeId);
   const slipType = 'GUEST_BILL';
