@@ -77,6 +77,12 @@ export default function LoginPage() {
             />
           )}
           <p className="login-card__secure">{t('login.securityBadge')}</p>
+          {loading ? (
+            <div className="login-card__busy" role="status">
+              <Loader size={22} className="animate-spin" aria-hidden />
+              <span>{t('common.signingIn')}</span>
+            </div>
+          ) : null}
         </div>
         <p className="login-page__back">
           <Link to="/">{t('publicSite.nav.home')}</Link>
