@@ -70,20 +70,10 @@ export function usePlatformCompaniesPage() {
   const isRefreshing = companiesQuery.isFetching && !firstLoad;
   const showRefreshingOverlay = useDelayedLoading(isRefreshing, { delay: 250, minDuration: 400 });
 
-  const statsParams = useMemo(
-    () => ({
-      search: filters.params.search,
-      businessType: filters.params.businessType,
-      regionCode: filters.params.regionCode,
-      districtCode: filters.params.districtCode,
-    }),
-    [filters.params.search, filters.params.businessType, filters.params.regionCode, filters.params.districtCode]
-  );
-
   const { data: companyStats } = useQuery({
-    queryKey: ['companies-stats', statsParams],
-    queryFn: () => companyApi.getStats(statsParams).then((r) => r.data),
-    staleTime: 30_000,
+    queryKey: ['companies-stats-global'],
+    queryFn: () => companyApi.getStats({}).then((r) => r.data),
+    staleTime: 60_000,
   });
 
   const { data: storeCountData } = useQuery({
@@ -92,7 +82,7 @@ export function usePlatformCompaniesPage() {
     staleTime: 60_000,
   });
 
-  const rawRows = data?.content ?? [];
+  const rawRows = data?.content ?? data?.data?.content ?? [];
   const rows = useMemo(
     () =>
       [...rawRows].sort((a, b) =>
@@ -101,20 +91,55 @@ export function usePlatformCompaniesPage() {
     [rawRows]
   );
 
-  const total = data?.totalElements ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-  const displayPage = typeof data?.number === 'number' ? data.number : filters.page;
+  const total = data?.totalElements ?? data?.data?.totalElements ?? 0;
+  const totalPages = data?.totalPages ?? data?.data?.totalPages ?? 0;
+  const pageNum = typeof data?.number === 'number' ? data.number : (typeof data?.data?.number === 'number' ? data.data.number : filters.page);
+  const displayPage = pageNum;
   const fromN = total === 0 ? 0 : displayPage * filters.pageSize + 1;
   const toN = Math.min((displayPage + 1) * filters.pageSize, total);
 
+  const statsTotal = companyStats?.total ?? companyStats?.data?.total;
+  const statsActive = companyStats?.active ?? companyStats?.data?.active;
+  const statsInactive = companyStats?.inactive ?? companyStats?.data?.inactive;
+
   const kpi = resolveCompanyKpi({
-    total: companyStats?.total ?? total,
+    total: statsTotal ?? (filters.isFiltered ? (companyStats ? statsTotal : total) : total),
     rawRows,
-    statusFilter: filters.statusFilter,
-    isFiltered: filters.isFiltered,
+    statusFilter: 'ALL',
+    isFiltered: false,
     storeCountData,
-    knownInactiveCount: companyStats?.inactive,
+    knownInactiveCount: statsInactive,
   });
+
+  // Segmented sonlari — qidiruv va filtrga moslashadi
+  const segmentedCounts = useMemo(() => {
+    if (!filters.isFiltered) {
+      return {
+        total: kpi.totalCompanies,
+        active: kpi.activeCompanies,
+        inactive: kpi.inactiveCompanies,
+      };
+    }
+    const rawActive = rawRows.filter((r) => r.active).length;
+    const rawInactive = rawRows.filter((r) => !r.active).length;
+    let segActive = rawActive;
+    let segInactive = rawInactive;
+    if (filters.statusFilter === 'ACTIVE') {
+      segActive = total;
+      segInactive = 0;
+    } else if (filters.statusFilter === 'INACTIVE') {
+      segActive = 0;
+      segInactive = total;
+    } else if (total > rawRows.length && rawRows.length > 0) {
+      segInactive = rawInactive;
+      segActive = Math.max(0, total - segInactive);
+    }
+    return {
+      total,
+      active: segActive,
+      inactive: segInactive,
+    };
+  }, [filters.isFiltered, filters.statusFilter, total, rawRows, kpi]);
 
   return {
     t,
@@ -140,6 +165,9 @@ export function usePlatformCompaniesPage() {
     setSelectedCompany,
     closeQuickDrawer,
     ...kpi,
+    segmentedTotalCompanies: segmentedCounts.total,
+    segmentedActiveCompanies: segmentedCounts.active,
+    segmentedInactiveCompanies: segmentedCounts.inactive,
     businessTypes: constructorTypes,
   };
 }

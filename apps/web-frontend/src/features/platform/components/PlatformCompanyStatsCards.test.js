@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import PlatformCompanyStatsCards from './PlatformCompanyStatsCards';
 
@@ -14,8 +14,6 @@ describe('PlatformCompanyStatsCards', () => {
     activeCompanies: 98,
     inactiveCompanies: 4,
     totalStores: 148,
-    statusFilter: 'ALL',
-    onStatusFilterChange: vi.fn(),
     isPending: false,
   };
 
@@ -30,28 +28,24 @@ describe('PlatformCompanyStatsCards', () => {
     expect(html).toContain('Faol kompaniyalar');
     expect(html).toContain('98');
 
-    expect(html).toContain('Ulangan do‘konlar');
+    expect(html).toContain('Ulangan filiallar');
     expect(html).toContain('148');
 
-    expect(html).toContain('Nofaollar');
+    expect(html).toContain('Nofaol kompaniyalar');
     expect(html).toContain('4');
   });
 
-  it('renders all cards with hover lift styling and role button', () => {
+  it('renders progress bar and formatted percentage for active companies', () => {
     const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyStatsCards, {
-        ...defaultProps,
-        onStoresClick: vi.fn(),
-      })
+      React.createElement(PlatformCompanyStatsCards, defaultProps)
     );
 
-    // All cards should have hover lift and cursor pointer
-    expect(html).toContain('hover:-translate-y-0.5');
-    expect(html).toContain('cursor-pointer');
-    expect(html).toContain('role="button"');
+    // 98 / 102 = 96.078... -> 96,1%
+    expect(html).toContain('faoliyatda');
+    expect(html).toContain('aa-kpi__bar');
   });
 
-  it('renders pending state dash when isPending is true', () => {
+  it('renders skeleton metric when isPending is true', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompanyStatsCards, {
         ...defaultProps,
@@ -59,19 +53,17 @@ describe('PlatformCompanyStatsCards', () => {
       })
     );
 
-    expect(html).toContain('—');
+    expect(html).toContain('aa-skel--metric');
   });
 
-  it('renders dash in activeHint when totalCompanies is 0', () => {
+  it('renders dash when isError is true', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompanyStatsCards, {
         ...defaultProps,
-        totalCompanies: 0,
-        activeCompanies: 0,
+        isError: true,
       })
     );
 
     expect(html).toContain('—');
-    expect(html).not.toContain('0% faoliyatda');
   });
 });

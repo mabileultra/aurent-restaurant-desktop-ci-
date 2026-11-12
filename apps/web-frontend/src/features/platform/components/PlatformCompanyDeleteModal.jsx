@@ -1,7 +1,15 @@
 import React from 'react';
-import { AlertTriangle, Power, Trash2 } from 'lucide-react';
-import { BaseButton, BaseModal } from '../../../components/ui';
+import { Trash2 } from 'lucide-react';
+import Alert from '../../../components/aa/Alert';
+import Button from '../../../components/aa/Button';
+import Modal from '../../../components/aa/Modal';
 
+/**
+ * PlatformCompanyDeleteModal — Kompaniyani o‘chirish modali.
+ * aa Modal (eni 480px).
+ * Filiali bo‘lsa: «Kompaniyani o‘chirib bo‘lmaydi» (Alert warning, Faolsizlantirish tugmasi).
+ * Filiali bo‘lmasa: «Kompaniyani o‘chirish» (Alert danger, O‘chirish tugmasi).
+ */
 export default function PlatformCompanyDeleteModal({
   open = false,
   company = null,
@@ -9,93 +17,76 @@ export default function PlatformCompanyDeleteModal({
   onConfirmDelete,
   onToggleActive,
   isDeleting = false,
-  t,
 }) {
   if (!open || !company) return null;
 
   const storeCount = company.storeCount ?? 0;
   const hasStores = storeCount > 0;
 
+  const title = hasStores
+    ? 'Kompaniyani o‘chirib bo‘lmaydi'
+    : 'Kompaniyani o‘chirish';
+
+  const handleDeactivate = () => {
+    onClose?.();
+    onToggleActive?.(company);
+  };
+
   return (
-    <BaseModal
+    <Modal
       open={open}
-      title={t('platform.deleteCompanyTitle', { defaultValue: 'Kompaniyani o‘chirish' })}
       onClose={onClose}
-      size="md"
-      closeLabel={t('common.close', { defaultValue: 'Yopish' })}
-      footer={(
-        <div className="flex flex-wrap items-center justify-end gap-2 w-full">
-          <BaseButton variant="secondary" onClick={onClose} disabled={isDeleting}>
-            {t('common.cancel', { defaultValue: 'Bekor qilish' })}
-          </BaseButton>
-
-          {/* Safe action: Deactivate / Activate */}
-          <BaseButton
-            variant="outline"
-            onClick={() => {
-              onClose?.();
-              onToggleActive?.(company);
-            }}
+      className="!w-full !max-w-[480px]"
+      title={title}
+      danger={!hasStores}
+      secondaryAction={{
+        label: 'Bekor qilish',
+        onClick: onClose,
+        disabled: isDeleting,
+      }}
+      primaryAction={
+        hasStores ? (
+          <Button
+            variant="danger"
+            onClick={handleDeactivate}
             disabled={isDeleting}
-            className={company.active ? 'text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300' : 'text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300'}
           >
-            <Power size={15} />
-            <span>
-              {company.active
-                ? t('platform.deactivate', { defaultValue: 'Faolsizlantirish' })
-                : t('platform.activate', { defaultValue: 'Faollashtirish' })}
-            </span>
-          </BaseButton>
-
-          {/* Destructive action: Delete */}
-          {!hasStores ? (
-            <BaseButton
-              variant="danger"
-              onClick={() => onConfirmDelete?.(company)}
-              loading={isDeleting}
-            >
-              <Trash2 size={15} />
-              <span>{t('common.delete', { defaultValue: 'O‘chirish' })}</span>
-            </BaseButton>
-          ) : null}
-        </div>
-      )}
+            Faolsizlantirish
+          </Button>
+        ) : (
+          <Button
+            variant="danger"
+            icon={<Trash2 size={16} aria-hidden="true" />}
+            onClick={() => onConfirmDelete?.(company)}
+            loading={isDeleting}
+          >
+            O‘chirish
+          </Button>
+        )
+      }
     >
       <div className="space-y-4">
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
-          <AlertTriangle size={20} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-          <div className="text-xs leading-relaxed">
-            <p className="font-bold text-sm text-slate-900 dark:text-white">
-              «{company.name}» (ID: #{company.id})
-            </p>
-            {!company.active ? (
-              hasStores ? (
-                <p className="mt-1 text-amber-800 dark:text-amber-300">
-                  Ushbu kompaniya <strong>allaqachon nofaol</strong> holatda. Kompaniyada <strong>{storeCount} ta savdo do‘koni (filial)</strong> biriktirilganligi sababli uni to‘g‘ridan-to‘g‘ri o‘chirish mumkin emas. Avval «Filiallar» bo‘limida filiallarni olib tashlang.
-                </p>
-              ) : (
-                <p className="mt-1 text-slate-600 dark:text-slate-300">
-                  Ushbu kompaniya <strong>allaqachon nofaol</strong> holatda. Kompaniyani butunlay o‘chirib yuborishingiz yoki yana qayta faollashtirishingiz mumkin.
-                </p>
-              )
-            ) : hasStores ? (
-              <p className="mt-1 text-amber-800 dark:text-amber-300">
-                Ushbu kompaniyaga <strong>{storeCount} ta savdo do‘koni (filial)</strong> biriktirilgan. Do‘konlar mavjud bo‘lganda kompaniyani to‘g‘ridan-to‘g‘ri o‘chirish mumkin emas. Kompaniyani o‘chirish o‘rniga uni <strong>faolsizlantirish</strong> (nofaol holatga o‘tkazish) tavsiya etiladi.
-              </p>
-            ) : (
-              <p className="mt-1 text-slate-600 dark:text-slate-300">
-                Kompaniyani o‘chirish qaytarib bo‘lmaydigan amaldir. Kompaniyani butunlay o‘chirish o‘rniga uni <strong>faolsizlantirishingiz</strong> mumkin.
-              </p>
-            )}
-          </div>
-        </div>
+        {/* Birinchi qator: kompaniya nomi va ID/kirish kodi */}
+        <p className="text-sm">
+          <strong className="font-semibold text-aa-ink">{company.name}</strong>
+          <span className="text-aa-ink-muted">
+            {' · '}
+            ID <span className="font-mono">{company.id}</span>
+            {' · '}
+            kirish kodi <span className="font-mono">{company.loginCode || '—'}</span>
+          </span>
+        </p>
 
-        {company.loginCode ? (
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            Kirish kodi: <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{company.loginCode}</span>
-          </div>
-        ) : null}
+        {hasStores ? (
+          <Alert tone="warning" title={`Kompaniyaga ${storeCount} ta filial biriktirilgan`}>
+            Filiali bor kompaniyani o‘chirib bo‘lmaydi. Uning o‘rniga kompaniyani faolsizlantiring — ma’lumotlari saqlanib qoladi.
+          </Alert>
+        ) : (
+          <Alert tone="danger" title="Bu amalni qaytarib bo‘lmaydi">
+            Kompaniya va uning sozlamalari butunlay o‘chiriladi.
+          </Alert>
+        )}
       </div>
-    </BaseModal>
+    </Modal>
   );
 }
