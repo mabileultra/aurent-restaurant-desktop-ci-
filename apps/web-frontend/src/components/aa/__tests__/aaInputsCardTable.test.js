@@ -84,7 +84,7 @@ describe('AA Components: Card, KpiCard, Field, Input, Select, SearchInput, Table
       })
     );
     expect(htmlSelect).toContain('aa-select');
-    expect(htmlSelect).toContain('value="sam"');
+    expect(htmlSelect).toContain('role="combobox"');
 
     const htmlSearch = renderToStaticMarkup(
       React.createElement(SearchInput, { placeholder: 'Qidirish...' })

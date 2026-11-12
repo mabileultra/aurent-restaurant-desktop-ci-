@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
+import Select from '../../../components/aa/Select';
 
 /**
  * PlatformCompanyPager — Kompaniyalar jadvali sahifalagichi.
@@ -49,18 +50,15 @@ export default function PlatformCompanyPager({
           <label htmlFor="company-pagesize-select" className="text-xs text-aa-ink-muted">
             Sahifada
           </label>
-          <select
+          <Select
             id="company-pagesize-select"
             value={pageSize}
-            onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-            className="aa-select !h-8 !py-0 !px-2 !text-xs !w-[80px] rounded-aa-sm"
-          >
-            {pageSizeOptions.map((sz) => (
-              <option key={sz} value={sz}>
-                {sz}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => onPageSizeChange?.(Number(val))}
+            options={pageSizeOptions.map((sz) => ({ value: sz, label: String(sz) }))}
+            size="sm"
+            searchable={false}
+            className="w-[80px]"
+          />
         </div>
       </div>
 

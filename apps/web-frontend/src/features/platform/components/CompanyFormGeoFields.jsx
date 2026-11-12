@@ -57,7 +57,7 @@ export default function CompanyFormGeoFields({
         id="company-field-region"
         label="Viloyat"
         value={regionCode || ''}
-        onChange={(e) => onRegionChange?.(e.target.value)}
+        onChange={(val) => onRegionChange?.(val)}
         options={regionOptions}
         error={regionError}
       />
@@ -66,7 +66,7 @@ export default function CompanyFormGeoFields({
         label="Tuman yoki shahar"
         value={districtCode || ''}
         disabled={!regionCode}
-        onChange={(e) => onDistrictChange?.(e.target.value)}
+        onChange={(val) => onDistrictChange?.(val)}
         options={districtOptions}
         error={districtError}
       />

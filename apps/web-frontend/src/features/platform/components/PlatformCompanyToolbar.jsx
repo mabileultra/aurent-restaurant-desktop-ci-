@@ -143,9 +143,9 @@ export default function PlatformCompanyToolbar({
           <Select
             id="company-business-type-select"
             value={businessType}
-            onChange={(e) => onBusinessTypeChange?.(e.target.value)}
+            onChange={(val) => onBusinessTypeChange?.(val)}
             options={businessTypeOptions}
-            className="w-full h-[44px] aa-desktop:h-10 text-sm"
+            className="w-full text-sm"
           />
         </div>
 
@@ -157,9 +157,9 @@ export default function PlatformCompanyToolbar({
           <Select
             id="company-region-select"
             value={regionCode}
-            onChange={(e) => onGeoChange?.({ regionCode: e.target.value, districtCode: '' })}
+            onChange={(val) => onGeoChange?.({ regionCode: val, districtCode: '' })}
             options={regionOptions}
-            className="w-full h-[44px] aa-desktop:h-10 text-sm"
+            className="w-full text-sm"
           />
         </div>
 
@@ -171,10 +171,10 @@ export default function PlatformCompanyToolbar({
           <Select
             id="company-district-select"
             value={districtCode}
-            onChange={(e) => onGeoChange?.({ regionCode, districtCode: e.target.value })}
+            onChange={(val) => onGeoChange?.({ regionCode, districtCode: val })}
             options={districtOptions}
             disabled={!regionCode}
-            className="w-full h-[44px] aa-desktop:h-10 text-sm"
+            className="w-full text-sm"
           />
         </div>
 
