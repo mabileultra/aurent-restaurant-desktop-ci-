@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useViloyatDetailQueries } from './useViloyatDetailQueries';
 import { SAMARQAND_TYPES, SAMARQAND_COMPANIES, SAMARQAND_DISTRICTS, BUSINESS_TYPE_NAMES } from '../data/samarqandMockData';
-import { calculateRingDash, calculateDistrictsBreakdown, filterAndPaginateCompanies, mapDistrictNames } from '../utils/viloyatDetailUtils';
+import {
+  calculateRingDash,
+  calculateDistrictsBreakdown,
+  filterAndPaginateCompanies,
+  formatCompanyRows,
+  mapDistrictNames,
+} from '../utils/viloyatDetailUtils';
 import {
   normalizeBackendCompany,
   computeDistrictTurnover,
@@ -116,14 +122,19 @@ export function useViloyatDetailAnalytics(regionCode) {
   const districtOptions = useMemo(() => buildDistrictOptions(districtNames), [districtNames]);
 
   const tableData = useMemo(() => {
-    return filterAndPaginateCompanies(districtScopedCompanies, {
+    const paginated = filterAndPaginateCompanies(districtScopedCompanies, {
       type: activeType,
       status: selectedStatus,
       search: searchQuery,
+      query: searchQuery,
       page: currentPage,
       pageSize: 10,
     });
-  }, [districtScopedCompanies, activeType, selectedStatus, searchQuery, currentPage]);
+    return {
+      ...paginated,
+      rows: formatCompanyRows(paginated, districtNames, BUSINESS_TYPE_NAMES),
+    };
+  }, [districtScopedCompanies, activeType, selectedStatus, searchQuery, currentPage, districtNames]);
 
   const hasSales = turnover.all > 0;
   const fShare = turnover.f30 != null ? turnover.f30 : 0;

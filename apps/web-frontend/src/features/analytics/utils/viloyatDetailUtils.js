@@ -109,22 +109,33 @@ export function mapDistrictNames(geoDistricts = [], fallback = {}) {
 }
 
 export function formatCompanyRows(paginationResult, districtNames = {}, typeNames = {}) {
-  const { rows = [], from = 0 } = paginationResult;
+  const { rows = [], from = 0 } = paginationResult || {};
   return rows.map((comp, idx) => {
-    const deltaObj = calculateDeltaBadge(comp[8]);
+    if (!comp) return null;
+    const isTuple = Array.isArray(comp);
+    const id = isTuple ? comp[0] : comp.id;
+    const name = isTuple ? comp[1] : comp.name;
+    const tin = isTuple ? comp[2] : comp.tin;
+    const rawDist = isTuple ? comp[3] : (comp.districtCode ?? comp.district);
+    const rawType = isTuple ? comp[4] : comp.type;
+    const isConnected = isTuple ? comp[5] === 1 : Boolean(comp.isConnected ?? comp.connected);
+    const turnover30d = isTuple ? Number(comp[7] || 0) : Number(comp.turnover30d ?? comp.totalTurnover ?? 0);
+    const delta = isTuple ? comp[8] : (comp.delta ?? comp.weekDeltaPct);
+    const deltaObj = calculateDeltaBadge(delta);
+
     return {
-      rowNumber: from + idx,
-      id: comp[0],
-      name: comp[1],
-      tin: comp[2] && comp[2] !== '_' ? comp[2] : '—',
-      district: districtNames[comp[3]] || comp[3] || '—',
-      type: typeNames[comp[4]] || comp[4],
-      isConnected: comp[5] === 1,
-      turnover30d: comp[7],
+      rowNumber: from ? from + idx : idx + 1,
+      id,
+      name: name || '—',
+      tin: tin && tin !== '_' ? tin : '—',
+      district: districtNames[rawDist] || rawDist || '—',
+      type: typeNames[rawType] || rawType || '—',
+      isConnected,
+      turnover30d,
       deltaText: deltaObj ? deltaObj.text : '—',
       isDeltaUp: deltaObj ? deltaObj.isUp : null,
     };
-  });
+  }).filter(Boolean);
 }
 
 export function filterAndPaginateCompanies(companies, {
@@ -132,10 +143,11 @@ export function filterAndPaginateCompanies(companies, {
   district = 'all',
   status = 'all',
   query = '',
+  search = '',
   page = 0,
   pageSize = 10,
-}) {
-  const cleanQ = String(query || '').trim().toLowerCase();
+} = {}) {
+  const cleanQ = String(query || search || '').trim().toLowerCase();
   const targetDist = district && district !== 'all' ? String(district).slice(-2) : null;
   const filtered = companies.filter((comp) => {
     const matchesType = type === 'A' || comp[4] === type;

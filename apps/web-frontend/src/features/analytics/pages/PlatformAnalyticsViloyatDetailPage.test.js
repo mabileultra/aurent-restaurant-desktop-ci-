@@ -143,7 +143,9 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Korxonalar bo‘yicha aylanma');
     expect(html).toContain('Farina Invest');
     expect(html).toContain('Makon Mobile');
-    // Crucial requirement: Urgut and Pastdarg'om must NOT be in Korxonalar bo'yicha aylanma
+    // Table rows must contain TIN and company names
+    expect(html).toContain('303190578');
+    // Crucial requirement: Urgut and Pastdarg'om must NOT be in Korxonalar bo‘yicha aylanma
     expect(html).not.toContain('Urgut tumani ·');
     expect(html).not.toContain('Pastdarg‘om tumani ·');
   });
