@@ -36,7 +36,7 @@ describe('buildMarkingValidationProducts', () => {
     expect(product.productCode).toBe('02208001001231004');
   });
 
-  it('Aurent JSON for списанный Чёрное золото — КИ без хвоста 93, full = скан', () => {
+  it('Aurent JSON for Чёрное золото — short 93… stays in KI and fullKm', () => {
     const scanned = '0104780131182498217?ыПдК793Тоы2';
     const [product] = buildMarkingValidationProducts([
       { ikpu: '02208001001231004', packageCode: '1803483', quantity: 1, productMarks: [scanned] },
@@ -45,7 +45,7 @@ describe('buildMarkingValidationProducts', () => {
       productCode: '02208001001231004',
       packageCode: '1803483',
       amount: 1,
-      kmIds: ['0104780131182498217?ыПдК7'],
+      kmIds: [scanned],
       fullKmIds: [scanned],
       commitentTin: null,
     });

@@ -20,7 +20,7 @@ import { toOfdMarkingLabel } from '../../services/fiscal/shared/ofdMarkingLabel'
 import { buildFiscalDriveItem } from '../../services/fiscal/providers/fiscalDrive/buildFiscalDriveItem';
 import { buildSaleOperationBody } from '../../services/multikassa/buildMultikassaOperations';
 import { expandMarkedFiscalItems } from '../../services/fiscal/shared/expandMarkedFiscalItems';
-import { assessQtyMarkingScan } from '../pharmacy-cashier/utils/pharmacyQtyMarkingScan';
+import { assessQtyMarkingScan } from './utils/pharmacyQtyMarkingScan';
 import {
   attachMarkToProduct,
   clearSoldMarks,
@@ -42,7 +42,7 @@ const NALEYKA = {
   barcode: '4780083110808',
   name: 'Водка: Naleyka, Крепость 40%, Стеклянная бутылка 0,25 л',
   ikpu: '02208001001926001',
-  ki: '0104780083110808217Ф*7щгЮ',
+  ki: '0104780083110808217Ф*7щгЮ93Вкф7',
 };
 
 const BLACK_GOLD = {
@@ -51,7 +51,7 @@ const BLACK_GOLD = {
   barcode: '4780131182498',
   name: 'Водка: Чёрное золото, крепость 40% металлическая банка 0,25 л',
   ikpu: '02208001001231004',
-  ki: '0104780131182498217?ыПдК7',
+  ki: '0104780131182498217?ыПдК793Тоы2',
 };
 
 const CATALOG = [
@@ -128,7 +128,7 @@ describe('реальные КМ: поиск на кассе и отправка 
   });
 
   it.each([NALEYKA, BLACK_GOLD])(
-    '$name: в чек полный КМ, в ОФД — КИ без 93',
+    '$name: в чек и в ОФД уходит КИ (короткий 93… — часть серии)',
     (item) => {
       const product = CATALOG.find((row) => row.barcode === item.barcode);
       const { attached, mk, fd } = sendToOfd(product, item.km);
@@ -138,8 +138,6 @@ describe('реальные КМ: поиск на кассе и отправка 
       expect(mk.product_mark).toBe(item.ki);
       expect(mk.product_label).toBe(item.ki);
       expect(fd.Labels).toEqual([item.ki]);
-      expect(mk.product_mark).not.toMatch(/93/);
-      expect(fd.Labels[0]).not.toMatch(/93/);
     },
   );
 

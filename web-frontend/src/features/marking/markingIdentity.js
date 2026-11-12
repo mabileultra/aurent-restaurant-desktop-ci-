@@ -5,8 +5,8 @@ import {
 } from './markingCode';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
-/** Как pharmacy-service PharmacyMarkIdentityKeys: серия до криптохвоста 91/92/93. */
-const GS1_SERIAL = /01(\d{14})21([\x21-\x7E]{4,30}?)(?:91|92|93|$)/;
+/** Серия AI 21; крипто 91/92/93 только с длинным хвостом (≥8), иначе «93» внутри серии. */
+const GS1_SERIAL = /01(\d{14})21([\x21-\x7E]{4,30}?)(?:(?:91|92|93).{8,}|$)/;
 
 function gs1Parts(code) {
   const match = String(code || '').match(GS1_SERIAL);
@@ -45,7 +45,7 @@ export function markingIdentityKey(raw) {
   return keys[0] || '';
 }
 
-const CRYPTO_TAIL = /(91|92|93).{1,64}$/;
+const CRYPTO_TAIL = /(?:91|92|93).{8,64}$/;
 
 /** Код идентификации без криптохвоста 91/92/93. */
 export function markingIdentificationCode(raw) {

@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
  */
 public final class AslMarkingCodeNormalizer {
 
-  private static final Pattern CRYPTO_TAIL = Pattern.compile("(91|92|93).{1,64}$");
+  /** Short 93XXXX is often serial; real crypto payload is usually ≥8 chars. */
+  private static final Pattern CRYPTO_TAIL = Pattern.compile("(?:91|92|93).{8,64}$");
   private static final int MIN_CODE_LENGTH = 20;
 
   private AslMarkingCodeNormalizer() {

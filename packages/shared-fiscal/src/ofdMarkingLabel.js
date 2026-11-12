@@ -1,4 +1,8 @@
-const CRYPTO_TAIL = /(91|92|93).{1,64}$/;
+/**
+ * Криптохвост 91/92/93 без GS. Короткий «93XXXX» часто бывает частью серии (пиво/водка),
+ * настоящий crypto обычно ≥8 символов после AI — иначе режем КИ и OFD/Multikassa без QR.
+ */
+const CRYPTO_TAIL = /(?:91|92|93).{8,64}$/;
 const MIN_CODE_LENGTH = 20;
 const OFD_LABEL_MAX = 63;
 

@@ -24,8 +24,14 @@ describe('@aurent/shared-fiscal ofdMarkingLabel', () => {
     expect(toOfdMarkingLabel(null)).toBe('');
   });
 
-  it('Чёрное золото: 93 в хвосте скана режется как крипто, не как серия', () => {
+  it('short 93… in serial is kept (not crypto) — Pulsar beer', () => {
+    const scanned = '0104780036190987217q)3@?f93DMWk';
+    expect(toOfdMarkingLabel(scanned)).toBe(scanned);
+    expect(toIdentificationMarkingCode(scanned)).toBe(scanned);
+  });
+
+  it('short 93… in serial is kept — Чёрное золото style scan', () => {
     const scanned = '0104780131182498217?ыПдК793Тоы2';
-    expect(toOfdMarkingLabel(scanned)).toBe('0104780131182498217?ыПдК7');
+    expect(toOfdMarkingLabel(scanned)).toBe(scanned);
   });
 });
