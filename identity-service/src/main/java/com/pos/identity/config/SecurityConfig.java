@@ -38,6 +38,14 @@ public class SecurityConfig {
                 .requestMatchers("/platform/account/**").hasAnyRole("PLATFORM_ADMIN", "PLATFORM_ANALYTICS")
                 .requestMatchers("/platform/module-access/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers("/platform/security/super-admins/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(
+                    "/platform/security/sessions",
+                    "/platform/security/sessions/**",
+                    "/platform/security/login-rules",
+                    "/platform/security/reauth",
+                    "/platform/security/2fa",
+                    "/platform/security/2fa/**"
+                ).hasRole("SUPER_ADMIN")
                 .anyRequest().denyAll()
             )
             .addFilterBefore(posInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
