@@ -73,9 +73,5 @@ export default function AuthAcceptPage() {
     );
   }
 
-  return (
-    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-      <p style={{ color: 'var(--pharm-muted)' }}>Вход в аптеку…</p>
-    </main>
-  );
+  return null;
 }

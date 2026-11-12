@@ -13,7 +13,7 @@ import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
 import { prefetchAppHome } from '../../../utils/prefetchAppHome';
-import { isPharmacyOnlyCompany } from '../../../utils/isPharmacyOnlyCompany';
+import { companyUsesPharmacyOffice } from '../../../utils/isPharmacyOnlyCompany';
 import { isPharmacyAppSplitEnabled } from '../../../config/pharmacyAppUrl';
 import { redirectToPharmacyApp } from '../../../utils/redirectToPharmacyApp';
 
@@ -21,9 +21,10 @@ async function resolvePostLoginPath(role, businessPayload) {
   const path = resolveAppHomePath(role, businessPayload?.defaultTypeCode);
   // Кассир аптеки на старом desktop остаётся на aurent (force-update).
   if (String(role || '').toUpperCase() === 'CASHIER') return path;
-  if (isPharmacyAppSplitEnabled() && isPharmacyOnlyCompany(businessPayload)) {
+  if (isPharmacyAppSplitEnabled() && companyUsesPharmacyOffice(businessPayload)) {
     const target = path.startsWith('/cashier') ? '/dashboard' : path;
     if (await redirectToPharmacyApp(target)) return null;
+    throw new Error('pharmacy-handoff');
   }
   return path;
 }
@@ -81,6 +82,7 @@ export function useLoginPage() {
 
   const finishLogin = async (accessToken, profile) => {
     loginInFlightRef.current = true;
+    let left = false;
     try {
       resetClientSessionState();
       setAuth(accessToken, profile);
@@ -88,20 +90,25 @@ export function useLoginPage() {
       if (!access.ok && !fetchError) {
         logoutAndResetSession();
         toast.error(t('login.wrongAppUnknown'));
-        return;
+        return false;
+      }
+      const path = await resolvePostLoginPath(profile.role, businessPayload);
+      if (!path) {
+        left = true;
+        return true;
       }
       toast.success(t('login.welcome', { name: profile.fullName }));
-      const path = await resolvePostLoginPath(profile.role, businessPayload);
-      if (!path) return;
       prefetchAppHome(path);
       navigate(path, { replace: true });
+      return false;
     } finally {
-      loginInFlightRef.current = false;
+      if (!left) loginInFlightRef.current = false;
     }
   };
 
   const onSubmit = async (data) => {
     setLoading(true);
+    let left = false;
     try {
       const res = await authApi.login({
         username: data.username,
@@ -118,7 +125,7 @@ export function useLoginPage() {
         toast.error(t('login.failed'));
         return;
       }
-      await finishLogin(accessToken, profile);
+      left = Boolean(await finishLogin(accessToken, profile));
     } catch (err) {
       const apiMsg = err.response?.data?.message;
       if (!err.response) {
@@ -129,7 +136,7 @@ export function useLoginPage() {
         toast.error(resolveAuthErrorMessage(err, t));
       }
     } finally {
-      setLoading(false);
+      if (!left) setLoading(false);
     }
   };
 
@@ -140,6 +147,7 @@ export function useLoginPage() {
       return;
     }
     setLoading(true);
+    let left = false;
     try {
       const res = await authApi.verifyTwoFactor({
         challengeToken: twoFactorChallenge,
@@ -151,11 +159,11 @@ export function useLoginPage() {
         return;
       }
       setTwoFactorChallenge(null);
-      await finishLogin(accessToken, profile);
+      left = Boolean(await finishLogin(accessToken, profile));
     } catch (err) {
       toast.error(resolveAuthErrorMessage(err, t));
     } finally {
-      setLoading(false);
+      if (!left) setLoading(false);
     }
   };
 
