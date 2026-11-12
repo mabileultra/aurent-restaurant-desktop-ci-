@@ -22,6 +22,7 @@ export function useSelectDropdown({
 
   const panelRef = useRef(null);
   const searchInputRef = useRef(null);
+  const prevIsOpenRef = useRef(false);
 
   // Qidiruv bo‘yicha filtrlangan variantlar
   const filteredOptions = useMemo(() => {
@@ -33,21 +34,30 @@ export function useSelectDropdown({
     return options.find((opt) => opt.value === value);
   }, [options, value]);
 
-  // Ochilganda tanlangan variantga activeIndex o‘rnatish
+  // 1. Faqat OCHILISH (false -> true) paytida query va activeIndex tiklanadi
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setSearchQuery('');
-      const selectedIdx = filteredOptions.findIndex((opt) => opt.value === value && !opt.disabled);
+      const selectedIdx = options.findIndex((opt) => opt.value === value && !opt.disabled);
       if (selectedIdx >= 0) {
         setActiveIndex(selectedIdx);
       } else {
-        const firstEnabled = filteredOptions.findIndex((opt) => !opt.disabled);
+        const firstEnabled = options.findIndex((opt) => !opt.disabled);
         setActiveIndex(firstEnabled);
       }
-    } else {
+    } else if (!isOpen && prevIsOpenRef.current) {
       setActiveIndex(-1);
     }
-  }, [isOpen, value, filteredOptions]);
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, value, options]);
+
+  // 2. Qidiruv matni o‘zgarganda
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+    const nextFiltered = isSearchable ? filterSelectOptions(options, query) : options;
+    const firstEnabled = nextFiltered.findIndex((opt) => !opt.disabled);
+    setActiveIndex(firstEnabled);
+  };
 
   // Tashqariga bosilganda yopish
   useEffect(() => {
@@ -101,7 +111,7 @@ export function useSelectDropdown({
       e.preventDefault();
       if (!isOpen) {
         setIsOpen(true);
-      } else if (activeIndex >= 0 && filteredOptions[activeIndex]) {
+      } else if (activeIndex >= 0 && filteredOptions[activeIndex] && !filteredOptions[activeIndex].disabled) {
         handleSelectOption(filteredOptions[activeIndex].value);
       }
       return;
@@ -127,18 +137,21 @@ export function useSelectDropdown({
   const handleListKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      e.stopPropagation();
       setActiveIndex((prev) => findNextEnabledIndex(filteredOptions, prev, 1));
       return;
     }
 
     if (e.key === 'ArrowUp') {
       e.preventDefault();
+      e.stopPropagation();
       setActiveIndex((prev) => findNextEnabledIndex(filteredOptions, prev, -1));
       return;
     }
 
     if (e.key === 'Home') {
       e.preventDefault();
+      e.stopPropagation();
       const firstEnabled = filteredOptions.findIndex((opt) => !opt.disabled);
       if (firstEnabled >= 0) setActiveIndex(firstEnabled);
       return;
@@ -146,6 +159,7 @@ export function useSelectDropdown({
 
     if (e.key === 'End') {
       e.preventDefault();
+      e.stopPropagation();
       for (let i = filteredOptions.length - 1; i >= 0; i -= 1) {
         if (!filteredOptions[i].disabled) {
           setActiveIndex(i);
@@ -157,6 +171,7 @@ export function useSelectDropdown({
 
     if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       if (activeIndex >= 0 && filteredOptions[activeIndex] && !filteredOptions[activeIndex].disabled) {
         handleSelectOption(filteredOptions[activeIndex].value);
       }
@@ -181,6 +196,7 @@ export function useSelectDropdown({
     setIsOpen,
     searchQuery,
     setSearchQuery,
+    handleSearchChange,
     activeIndex,
     panelRef,
     searchInputRef,

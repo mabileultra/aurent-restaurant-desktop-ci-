@@ -33,6 +33,7 @@ const Select = forwardRef(function Select(
   const generatedId = useId();
   const id = propId || `aa-select-${generatedId}`;
   const listboxId = `${id}-listbox`;
+  const labelId = label ? `${id}-label` : id;
 
   const internalTriggerRef = useRef(null);
   const triggerRef = forwardedRef || internalTriggerRef;
@@ -44,7 +45,7 @@ const Select = forwardRef(function Select(
   const {
     isOpen,
     searchQuery,
-    setSearchQuery,
+    handleSearchChange,
     activeIndex,
     panelRef,
     searchInputRef,
@@ -63,13 +64,17 @@ const Select = forwardRef(function Select(
     triggerRef,
   });
 
-  const position = useSelectPosition(triggerRef, isOpen);
+  const position = useSelectPosition(triggerRef, isOpen, isSearchable);
 
   const hasField = Boolean(label || help || error);
   const helpId = id && help ? `${id}-help` : undefined;
   const errorId = id && error ? `${id}-error` : undefined;
   const describedBy = errorId || helpId || undefined;
-  const activeDescendant = isOpen && activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined;
+
+  // Searchable rejimda fokus inputda bo‘ladi, shuning uchun triggerda activedescendant olib tashlanadi
+  const triggerActiveDescendant = !isSearchable && isOpen && activeIndex >= 0
+    ? `${id}-opt-${activeIndex}`
+    : undefined;
 
   const displayLabel = selectedOption ? selectedOption.label : placeholder;
   const isPlaceholder = !selectedOption;
@@ -85,7 +90,7 @@ const Select = forwardRef(function Select(
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-controls={listboxId}
-        aria-activedescendant={activeDescendant}
+        aria-activedescendant={triggerActiveDescendant}
         aria-invalid={Boolean(error) || undefined}
         aria-describedby={describedBy}
         onClick={handleTriggerClick}
@@ -116,15 +121,15 @@ const Select = forwardRef(function Select(
         position={position}
         searchable={isSearchable}
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
         onSearchKeyDown={handleListKeyDown}
         listboxId={listboxId}
+        labelId={labelId}
         id={id}
         filteredOptions={filteredOptions}
         activeIndex={activeIndex}
         selectedValue={value}
         onSelectOption={handleSelectOption}
-        onListKeyDown={handleListKeyDown}
       />
     </div>
   );

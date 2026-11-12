@@ -16,12 +16,12 @@ export default function SelectPanel({
   onSearchChange,
   onSearchKeyDown,
   listboxId,
+  labelId,
   id,
   filteredOptions = [],
   activeIndex = -1,
   selectedValue,
   onSelectOption,
-  onListKeyDown,
 }) {
   const listRef = useRef(null);
 
@@ -54,12 +54,15 @@ export default function SelectPanel({
     width: `${position.width}px`,
   };
 
+  const activeOptionId = activeIndex >= 0 && filteredOptions[activeIndex]
+    ? `${id}-opt-${activeIndex}`
+    : undefined;
+
   const content = (
     <div
       ref={panelRef}
       style={style}
       className="aa-select__panel"
-      onKeyDown={onListKeyDown}
     >
       {searchable && (
         <div className="aa-select__search">
@@ -67,6 +70,11 @@ export default function SelectPanel({
           <input
             ref={searchInputRef}
             type="text"
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-controls={listboxId}
+            aria-autocomplete="list"
+            aria-activedescendant={activeOptionId}
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
             onKeyDown={onSearchKeyDown}
@@ -81,6 +89,7 @@ export default function SelectPanel({
         ref={listRef}
         id={listboxId}
         role="listbox"
+        aria-labelledby={labelId || id}
         className="aa-select__list"
         style={{ maxHeight: `${position.maxHeight}px` }}
         tabIndex={-1}
@@ -114,7 +123,7 @@ export default function SelectPanel({
                   }
                 }}
               >
-                <span className="truncate">{opt.label}</span>
+                <span className="aa-select__option-label">{opt.label}</span>
                 {isSelected && (
                   <Check className="aa-select__option-check" size={16} aria-hidden="true" />
                 )}

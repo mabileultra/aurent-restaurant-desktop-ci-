@@ -7,6 +7,8 @@ import { cleanGeoName } from '../../shared/geo/geoNameUtils';
 
 /**
  * CompanyFormGeoFields — Kompaniya formasidagi Viloyat va Tuman tanlash maydonlari.
+ * Majburiy forma maydoni bo‘lgani sababli bo‘sh «…tanlang» varianti ro‘yxatga qo‘shilmaydi,
+ * faqat triggerda placeholder sifatida ko‘rinadi.
  */
 export default function CompanyFormGeoFields({
   regionCode = '',
@@ -35,21 +37,15 @@ export default function CompanyFormGeoFields({
   const safeRegions = Array.isArray(regions) ? regions : Array.isArray(regions?.data) ? regions.data : [];
   const safeDistricts = Array.isArray(districts) ? districts : Array.isArray(districts?.data) ? districts.data : [];
 
-  const regionOptions = [
-    { value: '', label: 'Viloyatni tanlang' },
-    ...safeRegions.map((r) => {
-      const raw = lang?.startsWith('uz') ? (r.nameUz || r.nameRu) : (r.nameRu || r.nameUz);
-      return { value: r.code, label: cleanGeoName(raw) };
-    }),
-  ];
+  const regionOptions = safeRegions.map((r) => {
+    const raw = lang?.startsWith('uz') ? (r.nameUz || r.nameRu) : (r.nameRu || r.nameUz);
+    return { value: r.code, label: cleanGeoName(raw) };
+  });
 
-  const districtOptions = [
-    { value: '', label: regionCode ? 'Tuman yoki shaharni tanlang' : 'Avval viloyatni tanlang' },
-    ...safeDistricts.map((d) => {
-      const raw = lang?.startsWith('uz') ? (d.nameUz || d.nameRu) : (d.nameRu || d.nameUz);
-      return { value: d.code, label: cleanGeoName(raw) };
-    }),
-  ];
+  const districtOptions = safeDistricts.map((d) => {
+    const raw = lang?.startsWith('uz') ? (d.nameUz || d.nameRu) : (d.nameRu || d.nameUz);
+    return { value: d.code, label: cleanGeoName(raw) };
+  });
 
   return (
     <>
@@ -57,6 +53,7 @@ export default function CompanyFormGeoFields({
         id="company-field-region"
         label="Viloyat"
         value={regionCode || ''}
+        placeholder="Viloyatni tanlang"
         onChange={(val) => onRegionChange?.(val)}
         options={regionOptions}
         error={regionError}
@@ -65,6 +62,7 @@ export default function CompanyFormGeoFields({
         id="company-field-district"
         label="Tuman yoki shahar"
         value={districtCode || ''}
+        placeholder={regionCode ? 'Tuman yoki shaharni tanlang' : 'Avval viloyatni tanlang'}
         disabled={!regionCode}
         onChange={(val) => onDistrictChange?.(val)}
         options={districtOptions}

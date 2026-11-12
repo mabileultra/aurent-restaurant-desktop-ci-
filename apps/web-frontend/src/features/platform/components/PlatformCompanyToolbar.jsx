@@ -122,7 +122,7 @@ export default function PlatformCompanyToolbar({
       {/* 2-qator: Qidiruv va tanlovlar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Qidiruv */}
-        <div className="flex-[1_1_280px] min-w-[280px] w-full aa-desktop:w-auto">
+        <div className="flex-[1_1_240px] min-w-[240px] w-full aa-desktop:w-auto">
           <label htmlFor="company-search-input" className="sr-only">
             Qidirish
           </label>
@@ -131,7 +131,7 @@ export default function PlatformCompanyToolbar({
             value={search}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Nomi, kirish kodi, STIR yoki telefon"
-            className="w-full h-[44px] aa-desktop:h-10 text-sm"
+            className="w-full text-sm"
           />
         </div>
 
@@ -178,12 +178,12 @@ export default function PlatformCompanyToolbar({
           />
         </div>
 
-        {/* Tozalash tugmasi: shrink-0 */}
+        {/* Tozalash tugmasi */}
         <Button
           variant="ghost"
           icon={<RefreshCw size={16} aria-hidden="true" />}
           onClick={onReset}
-          className="w-full aa-desktop:w-auto shrink-0 h-[44px] aa-desktop:h-10"
+          className="w-full aa-desktop:w-auto shrink-0"
         >
           Tozalash
         </Button>

@@ -15,13 +15,14 @@ export default function Field({
   className,
   ...props
 }) {
+  const labelId = id ? `${id}-label` : undefined;
   const helpId = id && help ? `${id}-help` : undefined;
   const errorId = id && error ? `${id}-error` : undefined;
 
   return (
     <div className={clsx('aa-field', className)} {...props}>
       {label ? (
-        <label htmlFor={id} className="aa-label">
+        <label id={labelId} htmlFor={id} className="aa-label">
           {label}
           {optional ? <span className="aa-label__opt"> (ixtiyoriy)</span> : null}
         </label>
