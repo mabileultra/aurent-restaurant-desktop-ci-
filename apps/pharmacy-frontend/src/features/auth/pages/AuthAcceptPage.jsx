@@ -46,8 +46,14 @@ export default function AuthAcceptPage() {
       try {
         const { data } = await exchangeHandoffOnce(code);
         if (cancelled) return;
-        setAuth(data.token, mapAuthResponseToUser(data));
-        const next = safePharmacyNextPath(searchParams.get('next')) || PHARM_POS_PATH;
+        const user = mapAuthResponseToUser(data);
+        setAuth(data.token, user);
+        const requested = safePharmacyNextPath(searchParams.get('next'));
+        const role = String(user?.role || '').toUpperCase();
+        const office = role === 'ADMIN' || role === 'MANAGER' || role === 'ACCOUNTANT';
+        const next = office
+          ? (requested && !requested.startsWith('/pos') ? requested : '/dashboard')
+          : (requested || PHARM_POS_PATH);
         navigate(next, { replace: true });
       } catch {
         if (!cancelled) {
