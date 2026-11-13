@@ -511,6 +511,13 @@ html.app-area--platform {
   flex-wrap: wrap;
 }
 
+.platform-filter-bar--aa .platform-filter-bar__geo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--aa-space-2);
+  flex-wrap: wrap;
+}
+
 .platform-filter-bar--aa .platform-filter-bar__search {
   height: var(--aa-control-md);
   padding: 0 var(--aa-space-3);
@@ -558,6 +565,8 @@ html.app-area--platform {
 }
 
 .platform-filter-bar--aa .base-select__trigger,
+.platform-filter-bar--aa .platform-filter-bar__geo .base-select__trigger,
+.platform-filter-bar--aa .stores-filters__company .base-select__trigger,
 .platform-filter-bar--aa .platform-filter-bar__filter,
 .platform-filter-bar--aa .platform-filter-menu__btn,
 .platform-filter-bar__filter--aa {
@@ -572,6 +581,8 @@ html.app-area--platform {
 }
 
 .platform-filter-bar--aa .base-select__trigger:hover,
+.platform-filter-bar--aa .platform-filter-bar__geo .base-select__trigger:hover,
+.platform-filter-bar--aa .stores-filters__company .base-select__trigger:hover,
 .platform-filter-bar--aa .platform-filter-bar__filter:hover,
 .platform-filter-bar--aa .platform-filter-menu__btn:hover,
 .platform-filter-bar__filter--aa:hover {
@@ -603,6 +614,8 @@ html.app-area--platform {
     height: var(--aa-control-lg);
   }
   .platform-filter-bar--aa .base-select__trigger,
+  .platform-filter-bar--aa .platform-filter-bar__geo .base-select__trigger,
+  .platform-filter-bar--aa .stores-filters__company .base-select__trigger,
   .platform-filter-bar--aa .platform-filter-bar__filter,
   .platform-filter-bar--aa .platform-filter-menu__btn,
   .platform-filter-bar__filter--aa {
@@ -685,8 +698,9 @@ html.app-area--platform {
   color: var(--aa-ink-muted);
   font-variant-numeric: tabular-nums;
 }
-.admin-table-shell--aa .admin-table-col-id,
-.admin-table-shell--aa .admin-table-col-id--cell {
+.admin-table-shell--aa td.admin-table-col-id,
+.admin-table-shell--aa .admin-table-col-id--cell,
+.admin-table-shell--aa td .admin-table-col-id {
   color: var(--aa-ink-muted);
   font-family: var(--aa-font-mono);
   font-size: 13px;
@@ -695,6 +709,8 @@ html.app-area--platform {
 .admin-table-shell--aa thead th,
 .admin-table-shell--aa th.admin-table-col-no,
 .admin-table-shell--aa th.admin-table-col-id {
+  font-family: var(--aa-font-sans);
+  font-size: 12px;
   font-weight: 600;
   color: var(--aa-ink-muted);
 }

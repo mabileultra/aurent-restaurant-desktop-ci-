@@ -18,6 +18,8 @@ export default function GeoFilterSelects({
   onChange,
   className = 'platform-filter-bar__geo',
   selectClassName = '',
+  variant = 'default',
+  size = 'sm',
 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
@@ -51,7 +53,8 @@ export default function GeoFilterSelects({
   return (
     <div className={className}>
       <BaseSelect
-        size="sm"
+        size={size}
+        variant={variant}
         searchable
         disabled={regionsLoading}
         className={clsx('geo-filter-select', selectClassName, regionCode && 'base-select--active-filter')}
@@ -62,7 +65,8 @@ export default function GeoFilterSelects({
         options={regionOptions}
       />
       <BaseSelect
-        size="sm"
+        size={size}
+        variant={variant}
         searchable
         disabled={!regionCode || districtsLoading}
         className={clsx('geo-filter-select', selectClassName, districtCode && 'base-select--active-filter')}

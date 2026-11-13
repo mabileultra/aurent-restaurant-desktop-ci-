@@ -40,12 +40,16 @@ export default function StoresFiltersBar({
       extra={(
         <>
           <GeoFilterSelects
+            variant="aa"
+            size="md"
             regionCode={regionCode}
             districtCode={districtCode}
             onChange={onGeoChange}
           />
           {showCompanySelect ? (
             <StoresCompanyFilter
+              variant="aa"
+              size="md"
               t={t}
               companies={companies}
               companyId={companyId}
