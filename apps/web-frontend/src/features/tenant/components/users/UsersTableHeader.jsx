@@ -45,6 +45,7 @@ export default function UsersTableHeader({
         {/* Checkbox select */}
         <th className="w-12 px-3 py-3.5 text-center">
           <BaseCheckbox
+            variant="aa"
             checked={allSelected}
             ref={(input) => {
               if (input) input.indeterminate = someSelected;

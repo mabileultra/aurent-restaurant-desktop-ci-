@@ -24,10 +24,10 @@ export default function LastUpdatedBadge({ timestamp, className = '' }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 ${className}`}
+      className={`inline-flex items-center gap-1 text-xs font-medium text-aa-ink-muted ${className}`}
       title={t('common.lastUpdated', { defaultValue: 'Oxirgi yangilanish' })}
     >
-      <Clock size={12} className="shrink-0 text-slate-400 dark:text-slate-500" />
+      <Clock size={12} className="shrink-0 text-aa-ink-muted" />
       <span>{t('common.lastUpdatedPrefix', { defaultValue: 'Oxirgi yangilanish:' })} {timeStr}</span>
     </span>
   );

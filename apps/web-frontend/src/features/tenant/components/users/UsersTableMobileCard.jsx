@@ -62,6 +62,7 @@ export default function UsersTableMobileCard({
         <div className="flex items-start gap-2.5 min-w-0" onClick={(e) => e.stopPropagation()}>
           <div className="mt-0.5">
             <BaseCheckbox
+              variant="aa"
               checked={isSelected}
               onChange={() => onToggleSelect?.(user.id)}
               ariaLabel={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}

@@ -55,6 +55,7 @@ export default function UsersTableRow({
     >
       <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
         <BaseCheckbox
+          variant="aa"
           checked={isSelected}
           onChange={() => onToggleSelect?.(user.id)}
           ariaLabel={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}

@@ -82,7 +82,7 @@ export default function UserFormModalFields({
         {/* Existing User Platform Credentials Summary (Edit mode) */}
         {isPlatform && isEdit ? (
           <div className="rounded-aa-md border border-aa-line bg-aa-surface-sunken px-4 py-3.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-aa-ink-muted">
+            <p className="text-[13px] font-semibold text-aa-ink-muted">
               {t('users.currentCredentialsTitle', { defaultValue: 'Joriy hisob xulosasi' })}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">

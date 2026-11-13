@@ -747,6 +747,22 @@ html.app-area--platform .platform-filter-bar--aa .base-select__trigger,
   font-weight: 600;
   color: var(--aa-ink-muted);
 }
+.admin-table-shell--aa thead tr,
+.admin-table-shell--aa thead th,
+.admin-table-shell--aa tbody tr,
+.admin-table-shell--aa tbody td {
+  border-color: var(--aa-line-strong);
+}
+.admin-table-shell--aa .checkbox-wrapper-19 {
+  --cb-border: var(--aa-line-strong);
+}
+html.app-theme--admin .admin-table-shell--aa thead .admin-table-sticky-end,
+html.app-theme--admin .admin-table-shell--aa th.admin-table-sticky-end,
+.admin-table-shell--aa thead .admin-table-sticky-end,
+.admin-table-shell--aa th.admin-table-sticky-end {
+  background-color: var(--aa-surface-sunken);
+  background: var(--aa-surface-sunken);
+}
 .admin-table-shell--aa tbody tr {
   height: 52px;
 }
@@ -772,6 +788,11 @@ html.app-area--platform .platform-filter-bar--aa .base-select__trigger,
   border: 1px solid var(--aa-line-strong);
   border-radius: var(--aa-radius-md);
   box-shadow: none;
+}
+.base-select--aa .base-select__value,
+.base-select--aa:not(.base-select--searchable) .base-select__trigger,
+.base-select--aa .base-select__value-text {
+  color: var(--aa-ink);
 }
 .base-select--aa .base-select__trigger:hover:not(:disabled) {
   border-color: var(--aa-ink-muted);

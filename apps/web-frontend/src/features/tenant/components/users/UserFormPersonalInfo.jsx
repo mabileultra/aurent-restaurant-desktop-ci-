@@ -14,7 +14,7 @@ export default function UserFormPersonalInfo({
 }) {
   return (
     <div className="space-y-4 pt-2 border-t border-aa-line">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-aa-ink-muted">
+      <h3 className="text-[13px] font-semibold text-aa-ink-muted">
         {t('users.sectionPersonalInfo', { defaultValue: 'Shaxsiy ma\'lumotlar' })}
       </h3>
 

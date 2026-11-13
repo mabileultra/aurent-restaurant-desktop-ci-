@@ -82,7 +82,7 @@ export default function PlatformUserQuickDrawerDetails({ user, t, locationText }
 
       {/* Profile & Contact Details */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-aa-ink-muted mb-3">
+        <h3 className="text-[13px] font-semibold text-aa-ink-muted mb-3">
           {t('users.personalDetails', { defaultValue: 'Shaxsiy ma\'lumotlar' })}
         </h3>
         <div className="space-y-3">
@@ -124,7 +124,7 @@ export default function PlatformUserQuickDrawerDetails({ user, t, locationText }
 
       {/* Workplace Info */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-aa-ink-muted mb-3">
+        <h3 className="text-[13px] font-semibold text-aa-ink-muted mb-3">
           {t('users.workplaceDetails', { defaultValue: 'Kompaniya va filiallar' })}
         </h3>
         <div className="space-y-3">

@@ -16,7 +16,7 @@ export default function UserFormSecurityFields(props) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-aa-ink-muted">
+      <h3 className="text-[13px] font-semibold text-aa-ink-muted">
         {t('users.sectionSecurity', { defaultValue: 'Kirish ma\'lumotlari' })}
       </h3>
 
