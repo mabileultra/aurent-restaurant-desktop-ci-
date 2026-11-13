@@ -27,6 +27,7 @@ export default function StoreFormModalFields({
         <>
           <input type="hidden" {...register('companyId')} />
           <BaseSelect
+            className="aa-size-input-md"
             label={t('stores.colCompany')}
             required
             disabled={!isCreate}
@@ -50,6 +51,7 @@ export default function StoreFormModalFields({
       ) : null}
 
       <BaseInput
+        className="aa-size-input-md"
         label={t('stores.colName')}
         required
         {...register('name')}
@@ -60,6 +62,7 @@ export default function StoreFormModalFields({
       <div>
         <input type="hidden" {...register('businessTypeId')} />
         <BaseSelect
+          className="aa-size-input-md"
           label={t('stores.colBusinessType')}
           required
           disabled={typesLoading || needsCompany}
@@ -80,7 +83,7 @@ export default function StoreFormModalFields({
             disabled: !bt.value,
           }))}
         />
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('stores.businessTypeHint')}</p>
+        <p className="mt-1 text-xs text-aa-ink-muted">{t('stores.businessTypeHint')}</p>
       </div>
 
       <input type="hidden" {...register('regionCode')} />
@@ -99,6 +102,7 @@ export default function StoreFormModalFields({
 
       <BaseInput
         as="textarea"
+        className="aa-size-textarea"
         label={t('stores.colAddress')}
         rows={2}
         {...register('address')}
@@ -107,6 +111,7 @@ export default function StoreFormModalFields({
       />
 
       <BaseInput
+        className="aa-size-input-md"
         label={t('stores.colPhone')}
         required={isCreate}
         type="tel"
@@ -123,7 +128,7 @@ export default function StoreFormModalFields({
         placeholder="+998 (90) 123-45-67"
       />
 
-      <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+      <label className="flex items-center gap-2 text-sm text-aa-ink cursor-pointer">
         <BaseCheckbox {...register('active')} size={18} />
         <span>
           {showCompanySelect

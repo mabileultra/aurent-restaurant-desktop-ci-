@@ -34,7 +34,7 @@ export default function StoresTable({
   const { regionName, districtName, empty } = useGeoNameLookup(regionCodes);
 
   return (
-    <div className="admin-table-shell relative">
+    <div className="admin-table-shell relative border border-aa-line rounded-aa-lg bg-aa-surface overflow-hidden shadow-none">
       {/* Indeterminate emerald progress line during background refetching */}
       {isRefreshing && (
         <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
@@ -51,25 +51,25 @@ export default function StoresTable({
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+            <tr className="border-b border-aa-line bg-aa-surface-sunken text-left text-[12px] font-semibold text-aa-ink-muted h-[52px]">
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3 font-medium">
+              <th className="px-4 py-3 font-semibold">
                 {showCompany ? t('platform.colBranchName', { defaultValue: 'Filial nomi' }) : t('stores.colName')}
               </th>
               {showCompany && (
-                <th className="px-4 py-3 font-medium">{t('stores.colCompany')}</th>
+                <th className="px-4 py-3 font-semibold">{t('stores.colCompany')}</th>
               )}
-              <th className="px-4 py-3 font-medium">{t('platform.colHudud', { defaultValue: 'Hudud' })}</th>
-              <th className="px-4 py-3 font-medium">
+              <th className="px-4 py-3 font-semibold">{t('platform.colHudud', { defaultValue: 'Hudud' })}</th>
+              <th className="px-4 py-3 font-semibold">
                 {showCompany ? t('platform.colBranchType', { defaultValue: 'Filial turi' }) : t('stores.colBusinessType')}
               </th>
-              <th className="px-4 py-3 font-medium">{t('stores.colAddress')}</th>
-              <th className="px-4 py-3 font-medium">{t('stores.colPhone')}</th>
-              <th className="px-4 py-3 font-medium">{t('platform.colStatus', { defaultValue: 'Holat' })}</th>
+              <th className="px-4 py-3 font-semibold">{t('stores.colAddress')}</th>
+              <th className="px-4 py-3 font-semibold">{t('stores.colPhone')}</th>
+              <th className="px-4 py-3 font-semibold">{t('platform.colStatus', { defaultValue: 'Holat' })}</th>
               <th className="px-4 py-3 w-12" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+          <tbody className="divide-y divide-aa-line">
             {isPending ? (
               Array.from({ length: Math.min(pageSize || 10, 10) }).map((_, idx) => (
                 <tr key={`store-skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
@@ -110,7 +110,7 @@ export default function StoresTable({
               ))
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={colSpan} className="px-4 py-8 text-center text-aa-ink-muted">
                   {t('stores.empty')}
                 </td>
               </tr>

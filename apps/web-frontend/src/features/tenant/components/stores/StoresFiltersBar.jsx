@@ -20,6 +20,7 @@ export default function StoresFiltersBar({
 }) {
   return (
     <PlatformCompactFilterBar
+      className="aa-filter-bar"
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t(

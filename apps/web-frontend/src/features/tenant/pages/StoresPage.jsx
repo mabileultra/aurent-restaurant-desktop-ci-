@@ -21,7 +21,7 @@ export default function StoresPage({
     <PageLayout
       title={title || (showCompanySelect ? p.t('platform.storesTitle', { defaultValue: 'Filiallar' }) : p.t('stores.title'))}
       actions={(
-        <BaseButton variant="secondary" onClick={() => p.openCreate()}>
+        <BaseButton variant="primary" onClick={() => p.openCreate()} className="aa-btn aa-btn--primary">
           <Plus size={16} />
           {showCompanySelect ? p.t('platform.addBranch', { defaultValue: 'Filial qo‘shish' }) : p.t('stores.add')}
         </BaseButton>

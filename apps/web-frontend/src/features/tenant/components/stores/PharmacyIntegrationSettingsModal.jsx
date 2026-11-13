@@ -17,38 +17,38 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
 
   const modalNode = (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/60" aria-label="Close" onClick={onClose} />
+      <button type="button" className="absolute inset-0 bg-black/60 bg-aa-scrim" aria-label="Close" onClick={onClose} />
       <div
-        className="pharm-int-settings relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="pharm-int-settings relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-aa-lg border border-aa-line bg-aa-surface shadow-aa-modal"
         role="dialog"
         aria-labelledby="pharm-int-settings-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+        <div className="flex items-center justify-between border-b border-aa-line px-4 py-3 bg-aa-surface-sunken">
           <div>
-            <h2 id="pharm-int-settings-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 id="pharm-int-settings-title" className="text-lg font-semibold text-aa-ink">
               {p.t('stores.pharmacyIntegration.title')}
             </h2>
-            <p className="text-sm text-slate-500">{store.name}</p>
+            <p className="text-sm text-aa-ink-muted">{store.name}</p>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="aa-btn aa-btn--ghost aa-btn--icon text-aa-ink-muted hover:text-aa-ink cursor-pointer">
+            <X size={16} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 bg-aa-surface">
             {p.isLoading ? (
-              <p className="text-sm text-slate-500">{p.t('common.loading')}</p>
+              <p className="text-sm text-aa-ink-muted">{p.t('common.loading')}</p>
             ) : (
               <>
-                <p className="pharm-int-settings__lead">
+                <p className="text-xs leading-relaxed text-aa-ink-muted">
                   {p.t('stores.pharmacyIntegration.leadPharmacy')}
                 </p>
 
                 {pharmacyStore ? (
-                  <section className="pharm-int-settings__section">
-                    <h3 className="pharm-int-settings__section-title">{p.t('stores.pharmacyIntegration.dmedTitle')}</h3>
-                    <label className="pharm-int-settings__check flex items-center gap-2 cursor-pointer">
+                  <section className="space-y-3 pt-3 border-t border-aa-line">
+                    <h3 className="text-sm font-bold text-aa-ink">{p.t('stores.pharmacyIntegration.dmedTitle')}</h3>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-aa-ink">
                       <BaseCheckbox
                         checked={p.form.dmedEnabled}
                         onChange={(e) => p.updateField('dmedEnabled', e.target.checked)}
@@ -56,25 +56,25 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
                       />
                       <span>{p.t('stores.pharmacyIntegration.dmedEnabled')}</span>
                     </label>
-                    <label className="pharm-int-settings__label">{p.t('stores.pharmacyIntegration.dmedExternalId')}</label>
+                    <label className="block text-xs font-semibold text-aa-ink-muted">{p.t('stores.pharmacyIntegration.dmedExternalId')}</label>
                     <input
-                      className="pharm-int-settings__input"
+                      className="w-full aa-size-input-md border border-aa-line-strong rounded-aa-md bg-aa-surface text-aa-ink focus:outline-hidden focus:border-aa-brand focus:ring-1 focus:ring-aa-brand"
                       value={p.form.dmedExternalId}
                       onChange={(e) => p.updateField('dmedExternalId', e.target.value)}
                       placeholder={p.t('stores.pharmacyIntegration.dmedExternalIdPh')}
                     />
-                    <p className="pharm-int-settings__hint">{p.t('stores.pharmacyIntegration.dmedHint')}</p>
+                    <p className="text-xs text-aa-ink-subtle">{p.t('stores.pharmacyIntegration.dmedHint')}</p>
                   </section>
                 ) : null}
               </>
             )}
           </div>
 
-          <div className="flex gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
-            <button type="button" onClick={onClose} className="pharm-int-settings__btn pharm-int-settings__btn--ghost">
+          <div className="flex gap-2 border-t border-aa-line p-4 justify-end bg-aa-surface">
+            <button type="button" onClick={onClose} className="aa-btn aa-btn--secondary aa-size-md">
               {p.t('common.cancel')}
             </button>
-            <button type="submit" disabled={p.isLoading || p.saving} className="pharm-int-settings__btn pharm-int-settings__btn--primary">
+            <button type="submit" disabled={p.isLoading || p.saving} className="aa-btn aa-btn--primary aa-size-md">
               {p.t('common.save')}
             </button>
           </div>
