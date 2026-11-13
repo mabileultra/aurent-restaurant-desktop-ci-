@@ -6,6 +6,7 @@ import com.pos.pharmacy.catalog.registry.entity.DrugRegistryImport;
 import com.pos.pharmacy.catalog.registry.repository.DrugRegistryEntryRepository;
 import com.pos.pharmacy.catalog.registry.repository.DrugRegistryImportRepository;
 import com.pos.pharmacy.catalog.registry.support.DrugRegistryNameKey;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryNameMatch;
 import com.pos.pharmacy.catalog.registry.support.DrugRegistryUnanimous;
 import com.pos.shared.api.FilterText;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,15 @@ public class DrugRegistryLookupService {
         if (key.isBlank() || importId == null) {
             return Optional.empty();
         }
-        return DrugRegistryUnanimous.one(entries.findByImportIdAndNameKey(importId, key));
+        List<DrugRegistryEntry> exact = entries.findByImportIdAndNameKey(importId, key);
+        if (!exact.isEmpty()) {
+            return DrugRegistryUnanimous.one(exact);
+        }
+        List<DrugRegistryEntry> soft = DrugRegistryNameMatch.bestGroup(
+            key,
+            entries.findMatchCandidates(importId, key)
+        );
+        return DrugRegistryUnanimous.one(soft);
     }
 
     private Optional<UUID> latestId() {

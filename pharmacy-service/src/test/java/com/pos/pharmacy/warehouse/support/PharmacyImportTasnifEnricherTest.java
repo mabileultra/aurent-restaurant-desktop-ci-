@@ -39,7 +39,7 @@ class PharmacyImportTasnifEnricherTest {
     void usesTasnifLabelAndSinglePackage() {
         PharmacyImportTasnifLookup lookup = mock(PharmacyImportTasnifLookup.class);
         when(lookup.byMxik("03004409005052001")).thenReturn(
-            new PharmacyImportTasnifHit(true, true, "1546940", "Кюпен рецептсиз")
+            new PharmacyImportTasnifHit(true, true, "1546940", "Кюпен рецептсиз", null)
         );
         PharmacyImportTasnifEnricher enricher = new PharmacyImportTasnifEnricher(lookup);
         PharmacyImportCatalogHints hints = enricher.apply("03004409005052001", false, null);
@@ -53,7 +53,7 @@ class PharmacyImportTasnifEnricherTest {
     void invoiceRxWinsOverTasnif() {
         PharmacyImportTasnifLookup lookup = mock(PharmacyImportTasnifLookup.class);
         when(lookup.byMxik("03004409005052001")).thenReturn(
-            new PharmacyImportTasnifHit(true, false, "1546940", "рецептсиз")
+            new PharmacyImportTasnifHit(true, false, "1546940", "рецептсиз", null)
         );
         PharmacyImportTasnifEnricher enricher = new PharmacyImportTasnifEnricher(lookup);
         PharmacyImportCatalogHints hints = enricher.apply("03004409005052001", true, Boolean.TRUE);

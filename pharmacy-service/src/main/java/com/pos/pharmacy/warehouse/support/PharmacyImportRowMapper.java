@@ -51,6 +51,13 @@ public class PharmacyImportRowMapper {
         String ikpu = PharmacyImportIkpu.code(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.IKPU)
         );
+        PharmacyImportTasnifHit tasnifHit = null;
+        if (!StringUtils.hasText(ikpu)) {
+            tasnifHit = drugRegistry.resolveTasnif(barcode, null, name);
+            if (tasnifHit != null && tasnifHit.found() && StringUtils.hasText(tasnifHit.mxik())) {
+                ikpu = PharmacyImportIkpu.code(tasnifHit.mxik());
+            }
+        }
         String batch = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.BATCH);
         LocalDate expiry = PharmacyImportValueParser.date(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.EXPIRY)

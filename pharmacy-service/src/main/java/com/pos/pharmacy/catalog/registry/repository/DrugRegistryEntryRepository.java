@@ -13,6 +13,28 @@ public interface DrugRegistryEntryRepository extends JpaRepository<DrugRegistryE
 
     List<DrugRegistryEntry> findByImportIdAndNameKey(UUID importId, String nameKey);
 
+    /** Кандидаты: точный name_key (без ®) или торговое имя — префикс названия товара. */
+    @Query(value = """
+        SELECT * FROM drug_registry_entries e
+        WHERE e.import_id = CAST(:importId AS uuid)
+          AND (
+            regexp_replace(e.name_key, '[®™©]', '', 'g') = :productKey
+            OR (
+              char_length(regexp_replace(e.name_key, '[®™©]', '', 'g')) >= 4
+              AND (
+                :productKey LIKE regexp_replace(e.name_key, '[®™©]', '', 'g') || ' %'
+                OR :productKey LIKE regexp_replace(e.name_key, '[®™©]', '', 'g') || '/%'
+                OR :productKey LIKE regexp_replace(e.name_key, '[®™©]', '', 'g') || '-%'
+                OR :productKey LIKE regexp_replace(e.name_key, '[®™©]', '', 'g') || '(%'
+              )
+            )
+          )
+        """, nativeQuery = true)
+    List<DrugRegistryEntry> findMatchCandidates(
+        @Param("importId") UUID importId,
+        @Param("productKey") String productKey
+    );
+
     @Query("""
         SELECT e FROM DrugRegistryEntry e
         WHERE e.importId = :importId

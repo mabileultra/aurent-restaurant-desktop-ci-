@@ -14,6 +14,9 @@ public final class DrugRegistryNameKey {
         return raw.toLowerCase(Locale.ROOT)
             .replace('ё', 'е')
             .replace('\u00a0', ' ')
+            .replace("®", "")
+            .replace("™", "")
+            .replace("©", "")
             .replaceAll("[\"'«»]", "")
             .replaceAll("\\s+", " ")
             .trim();
