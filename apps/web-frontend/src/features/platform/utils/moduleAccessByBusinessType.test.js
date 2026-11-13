@@ -15,6 +15,7 @@ describe('isModuleVisibleForBusinessType', () => {
     expect(isModuleVisibleForBusinessType('cashierSales', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('cashierPos', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('reportsPriceRegistry', 'PHARMACY')).toBe(true);
+    expect(isModuleVisibleForBusinessType('reportsDrugRegistry', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('financeDashboard', 'PHARMACY')).toBe(true);
   });
 

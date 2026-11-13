@@ -61,6 +61,7 @@ const PHARMACY_VISIBLE = new Set([
   'reportsStockInventories',
   'reportsStockTransfers',
   'reportsPriceRegistry',
+  'reportsDrugRegistry',
   'financeDashboard',
   'financeDebts',
   'financeIncomes',
