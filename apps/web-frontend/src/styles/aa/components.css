@@ -509,11 +509,15 @@ html.app-area--platform {
 /* ==========================================================================
    C. Platform Filter Bar — aa varianti (opt-in: .platform-filter-bar--aa)
    ========================================================================== */
+html.app-theme--admin .platform-filter-bar.platform-filter-bar--aa,
+html.app-area--platform .platform-filter-bar.platform-filter-bar--aa,
+.platform-filter-bar.platform-filter-bar--aa,
 .platform-filter-bar--aa {
   display: flex;
   align-items: center;
   gap: var(--aa-space-3);
   flex-wrap: wrap;
+  border: 1px solid var(--aa-line, #e3e8e6);
   border-color: var(--aa-line, #e3e8e6);
 }
 
@@ -754,15 +758,36 @@ html.app-theme--admin .platform-filter-bar--aa .platform-filter-bar__search inpu
 .base-select--aa .base-select__trigger:hover:not(:disabled) {
   border-color: var(--aa-ink-muted);
 }
+html.app-theme--admin:not(.dark) .base-select--aa.base-select--disabled .base-select__trigger,
+html.app-theme--admin:not(.dark) .base-select--aa .base-select__trigger:disabled,
+html.app-theme--admin:not(.dark) .platform-filter-bar--aa .base-select--disabled .base-select__trigger,
+html.app-theme--admin:not(.dark) .platform-filter-bar--aa .base-select__trigger:disabled,
+html.app-theme--admin .base-select--aa.base-select--disabled .base-select__trigger,
+html.app-theme--admin .base-select--aa .base-select__trigger:disabled,
+html.app-theme--admin .platform-filter-bar--aa .base-select--disabled .base-select__trigger,
+html.app-theme--admin .platform-filter-bar--aa .base-select__trigger:disabled,
+html.app-area--platform .base-select--aa.base-select--disabled .base-select__trigger,
+html.app-area--platform .base-select--aa .base-select__trigger:disabled,
+html.app-area--platform .platform-filter-bar--aa .base-select--disabled .base-select__trigger,
+html.app-area--platform .platform-filter-bar--aa .base-select__trigger:disabled,
 .base-select--aa .base-select__trigger:disabled,
 .base-select--aa.base-select--disabled .base-select__trigger,
 .platform-filter-bar--aa .base-select--disabled .base-select__trigger,
 .platform-filter-bar--aa .base-select__trigger:disabled {
   background: var(--aa-surface-sunken, #f8faf9);
+  background-color: var(--aa-surface-sunken, #f8faf9);
   color: var(--aa-ink-subtle, #68736e);
   border-color: var(--aa-line, #e3e8e6);
   cursor: not-allowed;
 }
+html.app-theme--admin:not(.dark) .base-select--aa.base-select--disabled .base-select__value,
+html.app-theme--admin:not(.dark) .base-select--aa.base-select--disabled .base-select__chevron,
+html.app-theme--admin:not(.dark) .platform-filter-bar--aa .base-select--disabled .base-select__value,
+html.app-theme--admin:not(.dark) .platform-filter-bar--aa .base-select--disabled .base-select__chevron,
+html.app-theme--admin .base-select--aa.base-select--disabled .base-select__value,
+html.app-theme--admin .base-select--aa.base-select--disabled .base-select__chevron,
+html.app-theme--admin .platform-filter-bar--aa .base-select--disabled .base-select__value,
+html.app-theme--admin .platform-filter-bar--aa .base-select--disabled .base-select__chevron,
 .base-select--aa .base-select__trigger:disabled .base-select__value,
 .base-select--aa .base-select__trigger:disabled .base-select__chevron,
 .base-select--aa.base-select--disabled .base-select__value,
