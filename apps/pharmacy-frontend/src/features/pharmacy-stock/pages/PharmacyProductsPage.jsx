@@ -24,7 +24,7 @@ import {
   PHARM_DEFAULT_PAGE_SIZE,
   PHARM_PAGE_SIZES,
 } from '../utils/pharmacyTablePage';
-import { downloadPharmacyProductsCsv } from '../utils/pharmacyProductsExportCsv';
+import { exportAllPharmacyProductsCsv } from '../utils/exportAllPharmacyProductsCsv';
 import { productReceiptOrigin } from '../utils/productReceiptOrigin';
 
 export default function PharmacyProductsPage() {
@@ -183,13 +183,19 @@ export default function PharmacyProductsPage() {
         onCreate={() => setCreating(true)}
         onImport={() => setImportOpen(true)}
         importLabel={t('pharmacyStock.importOpening')}
-        onExport={() => {
-          if (!rows.length) {
-            toast.error(t('pharmacyStock.exportEmpty'));
-            return;
+        onExport={async () => {
+          try {
+            const count = await exportAllPharmacyProductsCsv({
+              t, search, scope, supplierId, receiptId,
+            });
+            if (!count) {
+              toast.error(t('pharmacyStock.exportEmpty'));
+              return;
+            }
+            toast.success(t('pharmacyStock.exportDone', { count }));
+          } catch (e) {
+            toast.error(resolvePharmacyApiError(e, t));
           }
-          downloadPharmacyProductsCsv(rows);
-          toast.success(t('pharmacyStock.exportDone', { count: rows.length }));
         }}
         onRefresh={() => {
           listQuery.refetch();
