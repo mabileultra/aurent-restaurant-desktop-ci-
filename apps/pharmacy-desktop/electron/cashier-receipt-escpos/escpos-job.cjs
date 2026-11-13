@@ -2,8 +2,9 @@
  * Общий раннер ESC/POS задания (чек, отчёт, этикетка).
  */
 const { ESCPOS_ERROR_CODES, EscposPrintError } = require('./escpos-errors.cjs');
-const { createJobId, logStep, logError, logWarn } = require('./escpos-log.cjs');
+const { createJobId, logStep, logError } = require('./escpos-log.cjs');
 const { checkConnected, executePrint } = require('./escpos-printer-service.cjs');
+const { clearSystemPrintersCache } = require('../printers/resolve.cjs');
 
 /**
  * @param {object} opts
@@ -75,25 +76,24 @@ async function runEscposPrintJob(opts) {
 
   try {
     logStep(jobId, 'is_connected');
-    // Kitchen/guest plain tickets: skip slow Windows probe — RAW path already has no probe.
-    const skipProbe = jobType === 'plain_ticket';
-    const connected = skipProbe ? true : await checkConnected(printer);
+    const platform = opts.platform || process.platform;
+    const skipProbe = jobType === 'plain_ticket' || platform === 'win32';
+    const probeConnected = opts.checkConnected || checkConnected;
+    const connected = skipProbe ? true : await probeConnected(printer);
     if (!connected) {
-      if (process.platform === 'win32') {
-        logWarn(jobId, 'is_connected_false_win_try_anyway', { deviceName });
-      } else {
-        throw new EscposPrintError(
-          ESCPOS_ERROR_CODES.NOT_CONNECTED,
-          `Принтер «${deviceName}» недоступен.`,
-          { step: 'is_connected' },
-        );
-      }
+      throw new EscposPrintError(
+        ESCPOS_ERROR_CODES.NOT_CONNECTED,
+        `Принтер «${deviceName}» недоступен.`,
+        { step: 'is_connected' },
+      );
     }
     logStep(jobId, 'execute');
-    await executePrint(printer);
+    const runPrint = opts.executePrint || executePrint;
+    await runPrint(printer);
     logStep(jobId, 'done', { deviceName, jobType });
     return { ok: true, jobId, deviceName, mode: 'escpos', jobType };
   } catch (err) {
+    clearSystemPrintersCache();
     logError(jobId, 'execute', err);
     if (err instanceof EscposPrintError) throw err;
     throw new EscposPrintError(

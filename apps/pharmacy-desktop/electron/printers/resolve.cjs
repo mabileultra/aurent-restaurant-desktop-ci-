@@ -9,87 +9,135 @@ const PRINTER_KIND = {
   label: { field: 'labelPrinterName', pickerKind: 'label' },
 };
 
-const LIST_TTL_MS = 10_000;
-let listCache = { at: 0, printers: null, pending: null };
+const LIST_TTL_MS = 120_000;
+const EMPTY_LIST_TTL_MS = 5_000;
 
-async function listSystemPrinters() {
-  const now = Date.now();
-  if (listCache.printers && now - listCache.at < LIST_TTL_MS) {
-    return listCache.printers;
-  }
-  if (listCache.pending) return listCache.pending;
-  listCache.pending = (async () => {
-    const mainWindow = getMainWindow();
-    const wc = mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents : null;
-    if (!wc) {
-      listCache = { at: Date.now(), printers: [], pending: null };
-      return [];
-    }
-    try {
-      const printers = await wc.getPrintersAsync();
-      const next = Array.isArray(printers) ? printers : [];
-      listCache = { at: Date.now(), printers: next, pending: null };
-      return next;
-    } catch {
-      listCache = { at: Date.now(), printers: [], pending: null };
-      return [];
-    }
-  })();
-  return listCache.pending;
-}
+function createPrinterResolver(deps = {}) {
+  const getSettings = deps.readPrinterSettings || readPrinterSettings;
+  const saveSettings = deps.writePrinterSettings || writePrinterSettings;
+  const openPicker = deps.showPrinterPickerWindow || showPrinterPickerWindow;
+  const findMainWindow = deps.getMainWindow || getMainWindow;
+  const showDialog = deps.showDialog || ((opts) => dialog.showMessageBoxSync(opts));
+  const nowFn = deps.now || Date.now;
 
-async function resolvePrinterByKind(kind, { promptIfMissing = true } = {}) {
-  const meta = PRINTER_KIND[kind] || PRINTER_KIND.receipt;
-  const saved = readPrinterSettings()[meta.field];
-  const printers = await listSystemPrinters();
+  let listCache = { at: 0, printers: null, pending: null };
 
-  const matched = matchPrinterName(saved, printers);
-  if (matched) {
-    if (matched !== saved) {
-      writePrinterSettings({ [meta.field]: matched });
-    }
-    return matched;
+  function clearCache() {
+    listCache = { at: 0, printers: null, pending: null };
   }
 
-  if (saved && printers.length > 0) {
-    writePrinterSettings({ [meta.field]: '' });
+  async function listSystemPrinters({ forceRefresh = false, fallbackWebContents = null } = {}) {
+    const now = nowFn();
+    const ttl = listCache.printers?.length ? LIST_TTL_MS : EMPTY_LIST_TTL_MS;
+    if (!forceRefresh && listCache.printers && now - listCache.at < ttl) {
+      return listCache.printers;
+    }
+    if (!forceRefresh && listCache.pending) return listCache.pending;
+
+    const pendingPromise = (async () => {
+      const mainWindow = findMainWindow();
+      const wc =
+        mainWindow && !mainWindow.isDestroyed()
+          ? mainWindow.webContents
+          : fallbackWebContents && !fallbackWebContents.isDestroyed()
+            ? fallbackWebContents
+            : null;
+      if (!wc) {
+        listCache = { at: nowFn(), printers: [], pending: null };
+        return [];
+      }
+      try {
+        const printers = await wc.getPrintersAsync();
+        const next = Array.isArray(printers) ? printers : [];
+        listCache = { at: nowFn(), printers: next, pending: null };
+        return next;
+      } catch {
+        listCache = { at: nowFn(), printers: [], pending: null };
+        return [];
+      }
+    })();
+
+    listCache = { ...listCache, pending: pendingPromise };
+    return pendingPromise;
   }
 
-  if (!promptIfMissing) {
-    if (kind === 'label') {
-      const labelLike = printers.find((p) =>
-        /label|zebra|tsc|barcode|этикет|штрих|godex|argox|xprinter.*365|xp-365/i.test(p.name),
+  async function resolvePrinterByKind(kind, { promptIfMissing = true } = {}) {
+    const meta = PRINTER_KIND[kind] || PRINTER_KIND.receipt;
+    const saved = String(getSettings()[meta.field] || '').trim();
+    if (!promptIfMissing && saved) {
+      return saved;
+    }
+
+    const printers = await listSystemPrinters();
+
+    const matched = matchPrinterName(saved, printers);
+    if (matched) {
+      if (matched !== saved) {
+        saveSettings({ [meta.field]: matched });
+      }
+      return matched;
+    }
+
+    if (saved && printers.length > 0) {
+      saveSettings({ [meta.field]: '' });
+    }
+
+    if (!promptIfMissing) {
+      if (kind === 'label') {
+        const labelLike = printers.find((p) =>
+          /label|zebra|tsc|barcode|этикет|штрих|godex|argox|xprinter.*365|xp-365/i.test(p.name),
+        );
+        if (labelLike?.name) return labelLike.name;
+        return '';
+      }
+      const thermal = printers.find((p) =>
+        /pos-80|pos80|xprinter|termo|receipt|thermal|чек/i.test(p.name),
       );
-      if (labelLike?.name) return labelLike.name;
+      if (thermal?.name) return thermal.name;
+      const def = printers.find((p) => p.isDefault);
+      if (def?.name) return def.name;
+      return saved || '';
+    }
+
+    if (!printers.length) {
+      showDialog({
+        type: 'warning',
+        title: 'Aurent — печать',
+        message: 'В Windows не найден ни один принтер.',
+        detail:
+          'Подключите термопринтер, установите драйвер, затем: меню Aurent → «Принтер чека».',
+        buttons: ['OK'],
+      });
       return '';
     }
-    const thermal = printers.find((p) =>
-      /pos-80|pos80|xprinter|termo|receipt|thermal|чек/i.test(p.name),
-    );
-    if (thermal?.name) return thermal.name;
-    const def = printers.find((p) => p.isDefault);
-    if (def?.name) return def.name;
-    return saved || '';
+
+    await openPicker(findMainWindow(), { kind: meta.pickerKind });
+    const chosen = getSettings()[meta.field] || '';
+    if (!chosen) {
+      throw new Error('Принтер не выбран. Меню Aurent → «Принтер чека».');
+    }
+    return chosen;
   }
 
-  if (!printers.length) {
-    dialog.showMessageBoxSync({
-      type: 'warning',
-      title: 'Aurent — печать',
-      message: 'В Windows не найден ни один принтер.',
-      detail:
-        'Подключите термопринтер, установите драйвер, затем: меню Aurent → «Принтер чека».',
-      buttons: ['OK'],
-    });
-    return '';
-  }
+  return {
+    listSystemPrinters,
+    resolvePrinterByKind,
+    clearSystemPrintersCache: clearCache,
+  };
+}
 
-  await showPrinterPickerWindow(getMainWindow(), { kind: meta.pickerKind });
-  const chosen = readPrinterSettings()[meta.field] || '';
-  if (!chosen) {
-    throw new Error('Принтер не выбран. Меню Aurent → «Принтер чека».');
-  }
-  return chosen;
+const defaultResolver = createPrinterResolver();
+
+function listSystemPrinters(options) {
+  return defaultResolver.listSystemPrinters(options);
+}
+
+function resolvePrinterByKind(kind, options) {
+  return defaultResolver.resolvePrinterByKind(kind, options);
+}
+
+function clearSystemPrintersCache() {
+  return defaultResolver.clearSystemPrintersCache();
 }
 
 function resolveReceiptPrinterName(options) {
@@ -101,6 +149,10 @@ function resolveLabelPrinterName(options) {
 }
 
 module.exports = {
+  LIST_TTL_MS,
+  EMPTY_LIST_TTL_MS,
+  createPrinterResolver,
+  clearSystemPrintersCache,
   listSystemPrinters,
   resolvePrinterByKind,
   resolveReceiptPrinterName,
