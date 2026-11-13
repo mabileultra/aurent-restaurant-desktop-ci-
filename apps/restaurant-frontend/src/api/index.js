@@ -10,7 +10,6 @@ export { companyBusinessTypeApi } from './companyBusinessType.api';
 export { companyApi } from './company.api';
 export { tenantBillingApi } from './billing.api';
 export { multikassaApi } from './multikassa.api';
-export { pharmacyIntegrationApi } from './pharmacyIntegration.api';
 export { cashRegisterApi } from './cashRegister.api';
 export { categoryApi } from './category.api';
 export { warehouseApi } from './warehouse.api';

@@ -1482,7 +1482,7 @@
       "registersLoadFailed": "Could not load branch cash registers",
       "registerOption": "Register #{{number}} · {{model}}",
       "selectRegister": "Branch cash register",
-      "subtitle": "ASL Belgisi (marking) and Multikassa / OFD tax module — same scheme as retail stores",
+      "subtitle": "Multikassa / OFD tax module",
       "taxLead": "Fiscalize restaurant sales and print OFD QR on receipts — same flow as grocery POS.",
       "taxReceiptHint": "Table payment already goes through Multikassa: fiscal sign and QR print like retail checks.",
       "taxTitle": "Tax integration (Multikassa / OFD)",

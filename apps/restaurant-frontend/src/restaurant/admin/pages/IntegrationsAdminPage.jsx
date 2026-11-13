@@ -1,5 +1,4 @@
 import AdminWorkspaceGate from '../components/AdminWorkspaceGate';
-import RestaurantAslSettingsPanel from '../components/RestaurantAslSettingsPanel';
 import RestaurantTaxSettingsPanel from '../components/RestaurantTaxSettingsPanel';
 import { useIntegrationsAdminPage } from '../hooks/useIntegrationsAdminPage';
 import '../../shared/styles/rst-blocks.css';
@@ -26,16 +25,6 @@ export default function IntegrationsAdminPage() {
         </div>
 
         <div className="rst-integrations__grid">
-          {p.aslSupported ? (
-            <RestaurantAslSettingsPanel
-              storeId={p.workspace.storeId}
-              storeName={p.store?.name || p.workspace.storeName}
-              t={p.t}
-            />
-          ) : (
-            <div className="rst-notice">{p.t('rst.integrations.aslUnsupported')}</div>
-          )}
-
           <RestaurantTaxSettingsPanel
             cashRegisterId={p.cashRegisterId}
             registers={p.registers}

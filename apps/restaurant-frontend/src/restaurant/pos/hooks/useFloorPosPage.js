@@ -11,7 +11,6 @@ import {
 import { ALL_HALLS_ID } from '../utils/floorStatusFilters';
 import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { useFloorPosMutations } from './useFloorPosMutations';
-import { useRestaurantAslMarking } from './useRestaurantAslMarking';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
 import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
@@ -73,8 +72,6 @@ export function useFloorPosPage() {
     menuItems, modifierGroups, counterOrders,
   } = q;
 
-  const { aslMarkingEnabled, aslReady, resolveEnabled } = useRestaurantAslMarking(storeId);
-
   const m = useFloorPosMutations({
     t, storeId, storeName: workspace.storeName, channel, guestForm, openTable, counterForm,
     openingCash, closingCash, shift, activeOrderId, order, servicePreview, waiterNameById,
@@ -132,9 +129,6 @@ export function useFloorPosPage() {
     updateItemMutation: m.updateItemMutation,
     removeItemMutation: m.removeItemMutation,
     paintOptimisticAdd: draft.paintOptimisticAdd,
-    aslMarkingEnabled,
-    aslReady,
-    resolveEnabled,
     compose,
   });
 
