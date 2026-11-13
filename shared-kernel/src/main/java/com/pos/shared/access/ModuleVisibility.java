@@ -87,6 +87,7 @@ public final class ModuleVisibility {
         "reportsStockInventories",
         "reportsStockTransfers",
         "reportsPriceRegistry",
+        "reportsDrugRegistry",
         "financeDashboard",
         "financeDebts",
         "financeIncomes",

@@ -88,6 +88,7 @@ class ModuleAccessScopeResolverTest {
         assertTrue(resolver.keysFor(admin).contains("cashierPos"));
         assertTrue(resolver.keysFor(admin).contains("stockProducts"));
         assertTrue(resolver.keysFor(admin).contains("reportsPriceRegistry"));
+        assertTrue(resolver.keysFor(admin).contains("reportsDrugRegistry"));
         assertFalse(resolver.keysFor(admin).contains("products"));
         assertFalse(resolver.keysFor(admin).contains("categories"));
         assertFalse(resolver.keysFor(admin).contains("restaurantPos"));

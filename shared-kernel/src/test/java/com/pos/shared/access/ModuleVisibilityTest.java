@@ -31,6 +31,7 @@ class ModuleVisibilityTest {
         assertTrue(ModuleVisibility.visible("cashierPos", "pharmacy"));
         assertTrue(ModuleVisibility.visible("cashierSales", "PHARMACY"));
         assertTrue(ModuleVisibility.visible("reportsPriceRegistry", "PHARMACY"));
+        assertTrue(ModuleVisibility.visible("reportsDrugRegistry", "PHARMACY"));
         assertTrue(ModuleVisibility.visible("financeDashboard", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("categories", "PHARMACY"));
         assertFalse(ModuleVisibility.visible("products", "PHARMACY"));

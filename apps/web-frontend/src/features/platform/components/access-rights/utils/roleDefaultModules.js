@@ -83,6 +83,7 @@ const MODULE_SPECS = [
   { id: 'reportsStockInventories', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockTransfers', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsPriceRegistry', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
+  { id: 'reportsDrugRegistry', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'stores', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersList', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersPrinterSettings', group: 'settings', roles: ['ADMIN'] },
