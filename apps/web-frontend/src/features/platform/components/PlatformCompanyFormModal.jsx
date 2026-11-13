@@ -62,21 +62,22 @@ export default function PlatformCompanyFormModal({
       title={isEditing ? t('platform.editCompany') : t('platform.addCompany')}
       onClose={onClose}
       size="lg"
+      className="companies-form-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       closeLabel={t('common.close', { defaultValue: 'Yopish' })}
       footer={(
-        <>
-          <BaseButton variant="secondary" onClick={onClose} className="admin-btn-secondary">
+        <div className="flex gap-2 justify-end w-full">
+          <BaseButton variant="secondary" onClick={onClose} className="aa-btn aa-btn--secondary border-aa-line-strong aa-size-md">
             {t('common.cancel')}
           </BaseButton>
           <BaseButton
             requiresOnline
             disabled={isSaving}
             onClick={handleSaveClick}
-            className="admin-btn-primary"
+            className="aa-btn aa-btn--primary aa-size-md"
           >
             {isSaving ? t('common.saving', { defaultValue: 'Saqlanmoqda…' }) : t('common.save')}
           </BaseButton>
-        </>
+        </div>
       )}
     >
       {!isEditing && isDraftRestored ? (
@@ -84,16 +85,16 @@ export default function PlatformCompanyFormModal({
       ) : null}
 
       {!isEditing ? (
-        <p className="admin-soft-panel mb-4 px-3 py-2 text-xs">
+        <p className="admin-soft-panel mb-4 px-3 py-2 text-xs border border-aa-line bg-aa-surface-sunken text-aa-ink-muted rounded-aa-md">
           {t('platform.field_loginCodeAutoHint')}
         </p>
       ) : (
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/50">
-          <p className="text-xs text-slate-500">{t('platform.field_loginCode')}</p>
-          <p className="mt-1 font-mono text-lg font-semibold tracking-wider text-slate-900 dark:text-white">
+        <div className="mb-4 rounded-aa-md border border-aa-line bg-aa-surface-sunken px-3 py-2">
+          <p className="text-xs text-aa-ink-muted">{t('platform.field_loginCode')}</p>
+          <p className="mt-1 font-mono text-lg font-semibold tracking-wider text-aa-ink">
             {editing.loginCode || '—'}
           </p>
-          <p className="mt-1 text-xs text-slate-500">{t('platform.field_loginCodeReadonly')}</p>
+          <p className="mt-1 text-xs text-aa-ink-muted">{t('platform.field_loginCodeReadonly')}</p>
         </div>
       )}
 
@@ -101,6 +102,7 @@ export default function PlatformCompanyFormModal({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <BaseInput
           id="company-field-name"
+          className="aa-input border-aa-line-strong"
           label={t('platform.field_name')}
           value={form.name}
           onChange={(e) => {
@@ -114,6 +116,7 @@ export default function PlatformCompanyFormModal({
         />
         <BaseInput
           id="company-field-legalName"
+          className="aa-input border-aa-line-strong"
           label={t('platform.field_legalName')}
           value={form.legalName}
           onChange={(e) => onFieldChange('legalName', e.target.value)}
@@ -125,6 +128,7 @@ export default function PlatformCompanyFormModal({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <BaseInput
           id="company-field-tin"
+          className="aa-input border-aa-line-strong font-mono"
           label={t('platform.field_tin')}
           value={form.tin}
           onChange={handleTinChange}
@@ -137,6 +141,7 @@ export default function PlatformCompanyFormModal({
         />
         <BaseInput
           id="company-field-phone"
+          className="aa-input border-aa-line-strong aa-num"
           label={t('platform.field_phone')}
           value={form.phone}
           onChange={handlePhoneChange}
@@ -149,6 +154,7 @@ export default function PlatformCompanyFormModal({
 
       {/* Row 3: Viloyat + Tuman */}
       <RegionDistrictFields
+        variant="aa"
         regionCode={form.regionCode}
         districtCode={form.districtCode}
         required={!isEditing}
@@ -167,7 +173,7 @@ export default function PlatformCompanyFormModal({
         as="textarea"
         id="company-field-address"
         rows={2}
-        className="mb-3"
+        className="aa-input border-aa-line-strong aa-size-textarea min-h-[64px] h-auto mb-3"
         label={t('platform.field_address')}
         value={form.address}
         onChange={(e) => onFieldChange('address', e.target.value)}

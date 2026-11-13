@@ -16,11 +16,11 @@ export default function CompanyBusinessTypeSelector({
 
   return (
     <div className="mb-1">
-      <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+      <p className="mb-2 text-sm font-semibold text-aa-ink">
         {t('platform.field_businessTypes')} *
       </p>
-      <div className={`max-h-48 space-y-2 overflow-y-auto rounded-lg border p-3 bg-slate-50/50 dark:bg-slate-900/50 ${
-        error ? 'border-rose-400 dark:border-rose-600' : 'border-slate-200 dark:border-slate-700'
+      <div className={`max-h-48 space-y-2 overflow-y-auto rounded-aa-md border p-3 bg-aa-surface-sunken ${
+        error ? 'border-aa-danger' : 'border-aa-line'
       }`}>
         {businessTypes.map((bt) => {
           const checked = form.businessTypeIds.includes(bt.id);
@@ -29,28 +29,28 @@ export default function CompanyBusinessTypeSelector({
           return (
             <label
               key={bt.id}
-              className={`flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2 border transition-colors ${
+              className={`flex cursor-pointer items-center justify-between gap-3 rounded-aa-md px-3 py-2 border transition-colors ${
                 checked
-                  ? 'border-emerald-300 bg-emerald-50/60 dark:border-emerald-800/80 dark:bg-emerald-950/20'
-                  : 'border-transparent hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
+                  ? 'border-aa-brand/40 bg-aa-brand-soft text-aa-ink'
+                  : 'border-transparent hover:bg-aa-surface-hover text-aa-ink'
               }`}
             >
-              <span className="flex items-center gap-2 text-sm text-slate-800 dark:text-slate-200">
+              <span className="flex items-center gap-2 text-sm text-aa-ink">
                 <BaseCheckbox
                   checked={checked}
                   onChange={() => onToggleBusinessType(bt.id)}
                   size={18}
                 />
-                <span className="font-medium">{displayName}</span>
-                <span className="font-mono text-xs text-slate-400">({bt.code})</span>
+                <span className="font-medium text-aa-ink">{displayName}</span>
+                <span className="font-mono text-xs text-aa-ink-muted">({bt.code})</span>
               </span>
               {checked ? (
                 <button
                   type="button"
-                  className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+                  className={`rounded-aa-sm px-2 py-0.5 text-xs font-semibold transition-colors cursor-pointer ${
                     isDefault
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                      : 'text-slate-500 hover:bg-slate-200/80 dark:hover:bg-slate-800'
+                      ? 'bg-aa-brand-soft text-aa-brand border border-aa-brand/40'
+                      : 'text-aa-ink-muted hover:bg-aa-surface-hover'
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
@@ -65,13 +65,13 @@ export default function CompanyBusinessTypeSelector({
         })}
       </div>
       {error ? (
-        <p className="mt-1 text-xs font-medium text-rose-500">{error}</p>
+        <p className="mt-1 text-xs font-medium text-aa-danger">{error}</p>
       ) : (
-        <p className="mt-1 text-xs text-slate-500">{t('platform.field_businessTypesHint')}</p>
+        <p className="mt-1 text-xs text-aa-ink-muted">{t('platform.field_businessTypesHint')}</p>
       )}
       {form.defaultBusinessTypeId ? (
-        <div className="mt-2 flex items-start gap-2 rounded-md bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300">
-          <Info size={14} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <div className="mt-2 flex items-start gap-2 rounded-aa-md bg-aa-surface-sunken border border-aa-line px-2.5 py-1.5 text-xs text-aa-ink-muted">
+          <Info size={14} className="mt-0.5 shrink-0 text-aa-brand" />
           <span>{t('platform.businessTypeDefaultHint', { code: defaultTypeName })}</span>
         </div>
       ) : null}

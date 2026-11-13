@@ -18,14 +18,14 @@ export default function PlatformCompanyQuickDrawerDetails({
   const formattedPhone = company.phone ? formatUzPhone(company.phone) : null;
 
   return (
-    <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+    <div className="space-y-4 pt-2 border-t border-aa-line">
       {/* Kirish kodi */}
-      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between p-3 rounded-aa-md bg-aa-surface-sunken border border-aa-line">
         <div>
-          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="text-xs font-medium text-aa-ink-muted">
             {t('platform.colLoginCode')}
           </div>
-          <div className="font-mono text-sm font-bold text-slate-900 dark:text-white mt-0.5">
+          <div className="font-mono text-sm font-bold text-aa-ink mt-0.5">
             {company.loginCode || '—'}
           </div>
         </div>
@@ -33,33 +33,33 @@ export default function PlatformCompanyQuickDrawerDetails({
           <button
             type="button"
             onClick={onCopyCode}
-            className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+            className="aa-size-icon-sm rounded-aa-md hover:bg-aa-surface-hover text-aa-ink-muted hover:text-aa-ink transition flex items-center justify-center cursor-pointer"
             title={t('common.copy')}
           >
-            {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+            {copied ? <Check size={16} className="text-aa-success" /> : <Copy size={16} />}
           </button>
         ) : null}
       </div>
 
       {/* STIR & Telefon */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+        <div className="p-3 rounded-aa-md bg-aa-surface-sunken border border-aa-line">
+          <div className="text-xs font-medium text-aa-ink-muted">
             {t('platform.field_tin')}
           </div>
-          <div className="font-mono text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
+          <div className="font-mono text-sm font-semibold text-aa-ink mt-0.5">
             {cleanTin || '—'}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+        <div className="p-3 rounded-aa-md bg-aa-surface-sunken border border-aa-line">
+          <div className="text-xs font-medium text-aa-ink-muted">
             {t('platform.field_phone')}
           </div>
-          <div className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5 truncate">
+          <div className="text-sm font-semibold text-aa-ink mt-0.5 truncate">
             {formattedPhone ? (
-              <a href={`tel:${company.phone}`} className="hover:underline flex items-center gap-1">
-                <Phone size={12} className="text-slate-400 shrink-0" />
+              <a href={`tel:${company.phone}`} className="hover:underline flex items-center gap-1 text-aa-ink">
+                <Phone size={12} className="text-aa-ink-muted shrink-0" />
                 <span className="truncate">{formattedPhone}</span>
               </a>
             ) : (
@@ -70,18 +70,18 @@ export default function PlatformCompanyQuickDrawerDetails({
       </div>
 
       {/* Biznes turlari (All assigned types) */}
-      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-2">
-        <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+      <div className="p-3 rounded-aa-md bg-aa-surface-sunken border border-aa-line space-y-2">
+        <div className="text-xs font-medium text-aa-ink-muted">
           {t('platform.colBusinessType')}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border ${badgeClass}`}>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-aa-line bg-aa-surface text-aa-ink">
             {t(`productTemplates.businessTypes.${company.businessType ?? 'UNIVERSAL'}`, { defaultValue: company.businessType })} (Asosiy)
           </span>
           {assignedTypes
             .filter((bt) => bt.code !== company.businessType)
             .map((bt) => (
-              <span key={bt.id} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <span key={bt.id} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-aa-surface text-aa-ink-muted border border-aa-line">
                 {bt.name || bt.code}
               </span>
             ))}
@@ -89,16 +89,16 @@ export default function PlatformCompanyQuickDrawerDetails({
       </div>
 
       {/* Manzil */}
-      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-          <MapPin size={13} className="text-slate-400" />
+      <div className="p-3 rounded-aa-md bg-aa-surface-sunken border border-aa-line">
+        <div className="text-xs font-medium text-aa-ink-muted flex items-center gap-1.5">
+          <MapPin size={13} className="text-aa-ink-muted" />
           <span>{t('platform.colLocation')}</span>
         </div>
-        <div className="text-sm font-medium text-slate-900 dark:text-slate-100 mt-1">
+        <div className="text-sm font-medium text-aa-ink mt-1">
           {regionLabel || '—'}
         </div>
         {company.address ? (
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <div className="text-xs text-aa-ink-muted mt-1">
             {company.address}
           </div>
         ) : null}
@@ -107,15 +107,15 @@ export default function PlatformCompanyQuickDrawerDetails({
       {/* Filiallarga to'g'ridan-to'g'ri havola */}
       <Link
         to={`/platform/stores?companyId=${company.id}&focusCompany=${company.id}#company-${company.id}`}
-        className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group"
+        className="flex items-center justify-between p-3 rounded-aa-md border border-aa-line hover:border-aa-brand/40 hover:bg-aa-surface-hover transition group bg-aa-surface"
       >
         <div className="flex items-center gap-2">
-          <BranchIcon size={16} className="text-emerald-600 dark:text-emerald-400" />
-          <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+          <BranchIcon size={16} className="text-aa-brand" />
+          <span className="text-xs font-semibold text-aa-ink">
             {branchMeta.label} ro‘yxatini ko‘rish ({company.storeCount ?? 0})
           </span>
         </div>
-        <ExternalLink size={14} className="text-slate-400 group-hover:text-emerald-600 transition" />
+        <ExternalLink size={14} className="text-aa-ink-muted group-hover:text-aa-brand transition" />
       </Link>
     </div>
   );

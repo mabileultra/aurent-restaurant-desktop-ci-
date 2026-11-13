@@ -68,30 +68,30 @@ export default function PlatformCompanyQuickDrawer({
   const regionLabel = [district, region].filter(Boolean).join(', ') || company.regionCode || '—';
 
   const drawerContent = (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[100] overflow-hidden" role="dialog" aria-modal="true">
       <div
-        className="absolute inset-0 bg-slate-950/60 transition-opacity animate-fade-in"
+        className="fixed inset-0 bg-aa-scrim transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 pointer-events-auto">
-        <div className="w-screen max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 animate-slide-in-right">
+        <div className="w-screen max-w-md bg-aa-surface shadow-aa-modal flex flex-col border-l border-aa-line animate-in slide-in-from-right duration-200">
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="px-6 py-5 border-b border-aa-line flex items-center justify-between gap-4 bg-aa-surface-sunken">
             <div className="flex items-center gap-2">
-              <Building2 size={18} className="text-emerald-600 dark:text-emerald-400" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <Building2 size={18} className="text-aa-brand shrink-0" />
+              <h2 className="text-base font-bold text-aa-ink">
                 {t('platform.quickView', { defaultValue: 'Tezkor ko‘rish' })}
               </h2>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="aa-size-icon-sm rounded-aa-md text-aa-ink-muted hover:text-aa-ink hover:bg-aa-surface-hover transition-colors cursor-pointer"
               aria-label={t('common.close', { defaultValue: 'Yopish' })}
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
@@ -99,24 +99,24 @@ export default function PlatformCompanyQuickDrawer({
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
             <div className="flex items-center gap-3">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 border shadow-xs ${palette}`}
+                className="w-12 h-12 rounded-aa-md bg-aa-surface-sunken text-aa-ink border border-aa-line flex items-center justify-center font-bold text-base font-mono shrink-0"
                 aria-hidden
               >
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base truncate">
+                  <h3 className="font-bold text-aa-ink text-base truncate">
                     {company.name}
                   </h3>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${company.active ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${company.active ? 'border-transparent bg-aa-success-soft text-aa-success' : 'border-aa-line bg-aa-surface text-aa-ink-muted'}`}>
                     {company.active ? t('common.active') : t('common.inactive')}
                   </span>
                 </div>
                 {company.legalName ? (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{company.legalName}</p>
+                  <p className="text-xs text-aa-ink-muted mt-0.5 truncate">{company.legalName}</p>
                 ) : null}
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-mono mt-1">ID: #{company.id}</p>
+                <p className="text-xs text-aa-ink-muted font-mono mt-1">ID: #{company.id}</p>
               </div>
             </div>
 
@@ -125,7 +125,7 @@ export default function PlatformCompanyQuickDrawer({
               <button
                 type="button"
                 onClick={() => { onClose?.(); onEdit?.(company); }}
-                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition"
+                className="aa-btn aa-btn--secondary aa-size-md inline-flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Pencil size={14} />
                 <span>{t('common.edit')}</span>
@@ -134,13 +134,9 @@ export default function PlatformCompanyQuickDrawer({
               <button
                 type="button"
                 onClick={() => onToggleActive?.(company)}
-                className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition ${
-                  company.active
-                    ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                }`}
+                className="aa-btn aa-btn--secondary aa-size-md inline-flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Power size={14} />
+                <Power size={14} className={company.active ? 'text-aa-warning' : 'text-aa-success'} />
                 <span>{company.active ? t('platform.deactivate', { defaultValue: 'Faolsizlantirish' }) : t('platform.activate', { defaultValue: 'Faollashtirish' })}</span>
               </button>
             </div>

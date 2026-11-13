@@ -790,25 +790,59 @@ html.app-area--platform {
 }
 
 /* ==========================================================================
-   Filiallar formasi modali
+   Filiallar va Kompaniyalar modallari
    ========================================================================== */
-.stores-form-modal {
+html.app-theme--admin .fixed.inset-0 .stores-form-modal,
+html.app-theme--admin .fixed.inset-0 .companies-form-modal,
+html.app-theme--admin .fixed.inset-0 .companies-delete-modal,
+html.app-theme--admin .fixed.inset-0 .companies-toggle-modal,
+.stores-form-modal,
+.companies-form-modal,
+.companies-delete-modal,
+.companies-toggle-modal {
   border-radius: var(--aa-radius-lg, 12px);
   border: 1px solid var(--aa-line, #e3e8e6);
   background: var(--aa-surface, #ffffff);
   box-shadow: var(--aa-shadow-modal);
 }
+html.app-theme--admin .fixed.inset-0 .stores-form-modal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+html.app-theme--admin .fixed.inset-0 .stores-form-modal textarea,
+html.app-theme--admin .fixed.inset-0 .companies-form-modal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+html.app-theme--admin .fixed.inset-0 .companies-form-modal textarea,
+html.app-theme--admin:not(.dark) .fixed.inset-0 .stores-form-modal input,
+html.app-theme--admin:not(.dark) .fixed.inset-0 .stores-form-modal textarea,
+html.app-theme--admin:not(.dark) .fixed.inset-0 .companies-form-modal input,
+html.app-theme--admin:not(.dark) .fixed.inset-0 .companies-form-modal textarea,
 .stores-form-modal input:not([type="checkbox"]):not([type="radio"]),
-.stores-form-modal textarea {
+.stores-form-modal textarea,
+.companies-form-modal input:not([type="checkbox"]):not([type="radio"]),
+.companies-form-modal textarea {
   border-color: var(--aa-line-strong, #86918c);
 }
+html.app-theme--admin .fixed.inset-0 .stores-form-modal .aa-btn--secondary,
+html.app-theme--admin .fixed.inset-0 .stores-form-modal button.border-slate-300,
+html.app-theme--admin .fixed.inset-0 .companies-form-modal .aa-btn--secondary,
+html.app-theme--admin .fixed.inset-0 .companies-delete-modal .aa-btn--secondary,
+html.app-theme--admin .fixed.inset-0 .companies-toggle-modal .aa-btn--secondary,
 .stores-form-modal .aa-btn--secondary,
-.stores-form-modal button.border-slate-300 {
+.stores-form-modal button.border-slate-300,
+.companies-form-modal .aa-btn--secondary,
+.companies-delete-modal .aa-btn--secondary,
+.companies-toggle-modal .aa-btn--secondary {
   border-color: var(--aa-line-strong, #86918c);
 }
 .stores-form-modal [aria-label="Yopish"],
 .stores-form-modal [aria-label="Close"],
-.stores-form-modal button:has(svg.lucide-x) {
+.stores-form-modal button:has(svg.lucide-x),
+.companies-form-modal [aria-label="Yopish"],
+.companies-form-modal [aria-label="Close"],
+.companies-form-modal button:has(svg.lucide-x),
+.companies-delete-modal [aria-label="Yopish"],
+.companies-delete-modal [aria-label="Close"],
+.companies-delete-modal button:has(svg.lucide-x),
+.companies-toggle-modal [aria-label="Yopish"],
+.companies-toggle-modal [aria-label="Close"],
+.companies-toggle-modal button:has(svg.lucide-x) {
   width: var(--aa-control-sm, 32px);
   height: var(--aa-control-sm, 32px);
   min-width: var(--aa-control-sm, 32px);
@@ -824,13 +858,31 @@ html.app-area--platform {
 }
 .stores-form-modal [aria-label="Yopish"]:hover,
 .stores-form-modal [aria-label="Close"]:hover,
-.stores-form-modal button:has(svg.lucide-x):hover {
+.stores-form-modal button:has(svg.lucide-x):hover,
+.companies-form-modal [aria-label="Yopish"]:hover,
+.companies-form-modal [aria-label="Close"]:hover,
+.companies-form-modal button:has(svg.lucide-x):hover,
+.companies-delete-modal [aria-label="Yopish"]:hover,
+.companies-delete-modal [aria-label="Close"]:hover,
+.companies-delete-modal button:has(svg.lucide-x):hover,
+.companies-toggle-modal [aria-label="Yopish"]:hover,
+.companies-toggle-modal [aria-label="Close"]:hover,
+.companies-toggle-modal button:has(svg.lucide-x):hover {
   background: var(--aa-surface-hover, #f1f5f3);
   color: var(--aa-ink, #14201b);
 }
 .stores-form-modal [aria-label="Yopish"] svg,
 .stores-form-modal [aria-label="Close"] svg,
-.stores-form-modal button:has(svg.lucide-x) svg {
+.stores-form-modal button:has(svg.lucide-x) svg,
+.companies-form-modal [aria-label="Yopish"] svg,
+.companies-form-modal [aria-label="Close"] svg,
+.companies-form-modal button:has(svg.lucide-x) svg,
+.companies-delete-modal [aria-label="Yopish"] svg,
+.companies-delete-modal [aria-label="Close"] svg,
+.companies-delete-modal button:has(svg.lucide-x) svg,
+.companies-toggle-modal [aria-label="Yopish"] svg,
+.companies-toggle-modal [aria-label="Close"] svg,
+.companies-toggle-modal button:has(svg.lucide-x) svg {
   width: 16px;
   height: 16px;
 }

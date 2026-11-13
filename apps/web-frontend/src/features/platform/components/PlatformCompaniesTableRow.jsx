@@ -44,7 +44,7 @@ export default function PlatformCompaniesTableRow({
   return (
     <tr
       onClick={() => onSelectCompany?.(row)}
-      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors group"
+      className="h-[52px] border-b border-aa-line hover:bg-aa-surface-hover cursor-pointer transition-colors group"
     >
       <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
 
@@ -52,17 +52,17 @@ export default function PlatformCompaniesTableRow({
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border shadow-2xs ${palette}`}
+            className="w-9 h-9 rounded-aa-md bg-aa-surface-sunken text-aa-ink border border-aa-line flex items-center justify-center font-bold text-xs shrink-0 shadow-none font-mono"
             aria-hidden
           >
             {initials}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors truncate">
+            <div className="font-semibold text-aa-ink group-hover:text-aa-brand transition-colors truncate">
               {row.name}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5 truncate">
-              {cleanTin ? <span className="font-mono">STIR: {cleanTin}</span> : null}
+            <div className="text-xs text-aa-ink-muted flex items-center gap-2 mt-0.5 truncate">
+              {cleanTin ? <span className="font-mono aa-num">STIR: {cleanTin}</span> : null}
               {cleanTin && formattedPhone ? <span>·</span> : null}
               {formattedPhone ? <span>{formattedPhone}</span> : null}
               {!cleanTin && !formattedPhone && row.legalName ? (
@@ -77,17 +77,17 @@ export default function PlatformCompaniesTableRow({
       <td className="px-4 py-3">
         {hasLocation ? (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100 truncate">
+            <div className="font-medium text-aa-ink truncate">
               {district || region}
             </div>
             {district && region && district !== region ? (
-              <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              <div className="text-xs text-aa-ink-muted truncate">
                 {region}
               </div>
             ) : null}
           </div>
         ) : (
-          <span className="text-slate-400">—</span>
+          <span className="text-aa-ink-subtle font-medium">—</span>
         )}
       </td>
 
@@ -97,18 +97,18 @@ export default function PlatformCompaniesTableRow({
           <button
             type="button"
             onClick={(e) => onCopyLoginCode(e, row.loginCode, row.id)}
-            className="group/btn inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors font-mono text-xs font-semibold text-slate-700 dark:text-slate-300"
+            className="group/btn inline-flex items-center gap-1.5 px-2 py-0.5 rounded-aa-sm bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line transition-colors font-mono text-xs font-semibold text-aa-ink"
             title={t('common.copy', { defaultValue: 'Nusxalash' })}
           >
             <span>{row.loginCode}</span>
             {copiedId === row.id ? (
-              <Check size={12} className="text-emerald-500" />
+              <Check size={12} className="text-aa-brand" />
             ) : (
-              <Copy size={12} className="text-slate-400 group-hover/btn:text-slate-600 dark:group-hover/btn:text-slate-200 transition-colors" />
+              <Copy size={12} className="text-aa-ink-subtle group-hover/btn:text-aa-ink transition-colors" />
             )}
           </button>
         ) : (
-          <span className="text-slate-400">—</span>
+          <span className="text-aa-ink-subtle font-medium">—</span>
         )}
       </td>
 
@@ -117,17 +117,17 @@ export default function PlatformCompaniesTableRow({
         <Link
           to={`/platform/stores?focusCompany=${row.id}#company-${row.id}`}
           onClick={(e) => e.stopPropagation()}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${branchMeta.badgeClass} transition-colors`}
+          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-aa-line bg-aa-surface-sunken text-aa-ink-muted hover:bg-aa-surface-hover hover:text-aa-ink transition-colors"
           title={branchMeta.tooltip}
         >
           <BranchIcon size={12} />
-          <span>{row.storeCount ?? 0}</span>
+          <span className="aa-num">{row.storeCount ?? 0}</span>
         </Link>
       </td>
 
       {/* Business type */}
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${badgeClass}`}>
+        <span className="inline-flex items-center px-2 py-0.5 rounded-aa-sm text-xs font-medium border border-aa-line bg-aa-surface-sunken text-aa-ink-muted bg-slate-100">
           {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`, { defaultValue: row.businessType })}
         </span>
       </td>
@@ -137,11 +137,11 @@ export default function PlatformCompaniesTableRow({
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
             row.active
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+              ? 'border-aa-success/30 bg-aa-success-soft text-aa-success bg-emerald-50'
+              : 'border-aa-line bg-aa-surface-sunken text-aa-ink-muted bg-slate-100'
           }`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${row.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+          <span className={`h-1.5 w-1.5 rounded-full ${row.active ? 'bg-aa-success bg-emerald-500' : 'bg-aa-ink-subtle'}`} />
           {row.active ? t('common.active') : t('common.inactive')}
         </span>
       </td>
@@ -149,6 +149,7 @@ export default function PlatformCompaniesTableRow({
       {/* Actions */}
       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
         <TableRowActionsMenu
+          variant="aa"
           open={menuId === row.id}
           onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
           actions={[

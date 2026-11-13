@@ -63,7 +63,7 @@ export default function PlatformCompaniesTable({
   };
 
   return (
-    <div className="admin-table-shell relative">
+    <div className="admin-table-shell admin-table-shell--aa relative">
       {/* Indeterminate emerald progress line during background refetching */}
       {isRefreshing && (
         <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
@@ -80,7 +80,7 @@ export default function PlatformCompaniesTable({
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <PlatformCompaniesTableHeader t={t} />
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+          <tbody className="divide-y divide-aa-line">
             {isPending ? (
               Array.from({ length: Math.min(pageSize || 14, 14) }).map((_, idx) => (
                 <tr key={`skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
@@ -185,6 +185,7 @@ export default function PlatformCompaniesTable({
       </div>
 
       <TablePagination
+        variant="aa"
         page={page}
         displayPage={effectivePage}
         pageSize={pageSize}

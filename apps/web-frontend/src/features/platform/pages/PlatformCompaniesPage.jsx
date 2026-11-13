@@ -21,7 +21,7 @@ export default function PlatformCompaniesPage() {
       spacing="space-y-4"
       title={`${p.t('platform.companiesTitle')}${typeof p.total === 'number' && p.total > 0 ? ` (${p.total})` : ''}`}
       actions={(
-        <BaseButton onClick={p.openCreate} className="admin-btn-primary">
+        <BaseButton onClick={p.openCreate} className="aa-btn aa-btn--primary">
           <Plus size={16} />
           {p.t('platform.addCompany')}
         </BaseButton>
@@ -44,46 +44,46 @@ export default function PlatformCompaniesPage() {
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Segmented Status Tabs */}
-          <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+          <div className="aa-size-seg flex items-center rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-x-auto overflow-y-hidden shadow-none">
             <button
               type="button"
               onClick={() => p.setStatusFilter('ALL')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
                 p.statusFilter === 'ALL'
-                  ? 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-aa-surface text-aa-ink shadow-xs'
+                  : 'text-aa-ink-muted hover:text-aa-ink'
               }`}
             >
-              {p.t('platform.tabAll', { defaultValue: 'Barchasi' })}
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+              <span>{p.t('platform.tabAll', { defaultValue: 'Barchasi' })}</span>
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[12px] leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
                 {p.totalCompanies}
               </span>
             </button>
             <button
               type="button"
               onClick={() => p.setStatusFilter('ACTIVE')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
                 p.statusFilter === 'ACTIVE'
-                  ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
+                  ? 'bg-aa-surface text-aa-ink shadow-xs'
+                  : 'text-aa-ink-muted hover:text-aa-ink'
               }`}
             >
-              {p.t('platform.tabActive', { defaultValue: 'Faol' })}
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-mono">
+              <span>{p.t('platform.tabActive', { defaultValue: 'Faol' })}</span>
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[12px] leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
                 {p.activeCompanies}
               </span>
             </button>
             <button
               type="button"
               onClick={() => p.setStatusFilter('INACTIVE')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
                 p.statusFilter === 'INACTIVE'
-                  ? (p.inactiveCompanies > 0 ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs' : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs')
-                  : (p.inactiveCompanies > 0 ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white')
+                  ? 'bg-aa-surface text-aa-ink shadow-xs'
+                  : 'text-aa-ink-muted hover:text-aa-ink'
               }`}
             >
-              {p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}
-              <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${p.inactiveCompanies > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
+              <span>{p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}</span>
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[12px] leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
                 {p.inactiveCompanies}
               </span>
             </button>
@@ -91,6 +91,7 @@ export default function PlatformCompaniesPage() {
         </div>
 
         <PlatformCompactFilterBar
+          className="platform-filter-bar--aa"
           search={p.search}
           onSearchChange={p.handleSearchChange}
           searchPlaceholder={p.t('platform.companySearch')}
@@ -107,6 +108,8 @@ export default function PlatformCompaniesPage() {
           resetLabel={p.t('common.reset', { defaultValue: 'Сбросить' })}
           extra={(
             <GeoFilterSelects
+              variant="aa"
+              size="md"
               regionCode={p.regionCode}
               districtCode={p.districtCode}
               onChange={p.handleGeoChange}
