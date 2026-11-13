@@ -29,20 +29,20 @@ export default function StoresGroupedBranchRow({
   return (
     <tr
       onClick={() => onSelectStore?.(store)}
-      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+      className="border-b border-aa-line hover:bg-aa-surface-hover transition-colors cursor-pointer group"
     >
-      <td className="px-5 py-3 font-medium text-slate-900 dark:text-white">
+      <td className="px-5 py-3 font-medium text-aa-ink">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-700 dark:group-hover:bg-emerald-950/60 dark:group-hover:text-emerald-300 transition-colors">
+          <div className="w-6 h-6 rounded-aa-sm bg-aa-surface-sunken text-aa-ink-muted border border-aa-line flex items-center justify-center shrink-0 group-hover:text-aa-brand transition-colors">
             <TypeIcon size={13} />
           </div>
-          <span className="font-semibold text-slate-900 dark:text-white truncate max-w-xs" title={store.name}>
+          <span className="font-semibold text-aa-ink truncate max-w-xs group-hover:text-aa-brand transition-colors" title={store.name}>
             {store.name}
           </span>
         </div>
       </td>
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium border ${badgeClass}`}>
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border border-aa-line bg-aa-surface-sunken text-aa-ink-muted">
           {t(`productTemplates.businessTypes.${store.businessType ?? 'UNIVERSAL'}`, {
             defaultValue: store.businessType || 'Universal',
           })}
@@ -56,27 +56,28 @@ export default function StoresGroupedBranchRow({
           empty={empty}
         />
       </td>
-      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
+      <td className="px-4 py-3 font-mono text-xs text-aa-ink-muted whitespace-nowrap">
         {store.phone ? (
           formatUzPhone(store.phone)
         ) : (
-          <span className="text-slate-400 dark:text-slate-600 font-medium font-sans">—</span>
+          <span className="text-aa-ink-subtle font-medium font-sans">—</span>
         )}
       </td>
       <td className="px-4 py-3 whitespace-nowrap">
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
             store.active
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+              ? 'border-transparent bg-aa-success-soft text-aa-success bg-emerald-50'
+              : 'border-aa-line bg-aa-surface text-aa-ink-muted'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${store.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${store.active ? 'bg-aa-success bg-emerald-500' : 'bg-aa-ink-subtle'}`} />
           {store.active ? t('common.active', { defaultValue: 'Faol' }) : t('common.inactive', { defaultValue: 'Nofaol' })}
         </span>
       </td>
       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
         <TableRowActionsMenu
+          variant="aa"
           open={menuId === store.id}
           onOpenChange={(next) => onMenuOpenChange?.(next ? store.id : null)}
           actions={[

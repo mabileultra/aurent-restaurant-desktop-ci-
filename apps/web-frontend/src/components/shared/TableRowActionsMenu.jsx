@@ -8,12 +8,13 @@ const GAP = 4;
 
 /**
  * Row kebab menu rendered in a portal so it is not clipped by table overflow.
- * @param {{ open: boolean, onOpenChange: (open: boolean) => void, actions: { label: string, onClick: () => void, danger?: boolean, disabled?: boolean, disabledReason?: string }[] }} props
+ * @param {{ open: boolean, onOpenChange: (open: boolean) => void, actions: { label: string, onClick: () => void, danger?: boolean, disabled?: boolean, disabledReason?: string }[], variant?: 'default' | 'aa' }} props
  */
-export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
+export default function TableRowActionsMenu({ open, onOpenChange, actions, variant = 'default' }) {
   const anchorRef = useRef(null);
   const menuRef = useRef(null);
   const positionRef = useRef({ top: 0, left: 0 });
+  const isAa = variant === 'aa';
 
   useLayoutEffect(() => {
     if (!open || !anchorRef.current) return;
@@ -61,7 +62,11 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
         width: MENU_WIDTH,
         zIndex: 9999,
       }}
-      className="rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl dark:!border-slate-700 dark:!bg-slate-900 animate-in fade-in zoom-in-95 duration-100"
+      className={
+        isAa
+          ? 'rounded-aa-md border border-aa-line bg-aa-surface py-1 shadow-aa-pop animate-in fade-in zoom-in-95 duration-100'
+          : 'rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl dark:!border-slate-700 dark:!bg-slate-900 animate-in fade-in zoom-in-95 duration-100'
+      }
     >
       {actions.map((action) => {
         const isDisabled = Boolean(action.disabled);
@@ -78,17 +83,27 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
               action.onClick();
               onOpenChange(false);
             }}
-            className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
-              isDisabled
-                ? 'cursor-not-allowed opacity-50 text-slate-400 dark:text-slate-500 hover:bg-transparent'
-                : action.danger
-                  ? 'text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:!bg-slate-800'
-                  : 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:!bg-slate-800'
-            }`}
+            className={
+              isAa
+                ? `block w-full px-3 py-2 text-left text-sm transition-colors ${
+                    isDisabled
+                      ? 'cursor-not-allowed opacity-50 text-aa-ink-subtle hover:bg-transparent'
+                      : action.danger
+                        ? 'text-aa-danger hover:bg-aa-danger-soft'
+                        : 'text-aa-ink hover:bg-aa-surface-hover'
+                  }`
+                : `block w-full px-3.5 py-2 text-left text-sm transition-colors ${
+                    isDisabled
+                      ? 'cursor-not-allowed opacity-50 text-slate-400 dark:text-slate-500 hover:bg-transparent'
+                      : action.danger
+                        ? 'text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:!bg-slate-800'
+                        : 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:!bg-slate-800'
+                  }`
+            }
           >
             <div className="font-medium leading-snug">{action.label}</div>
             {isDisabled && action.disabledReason ? (
-              <div className="text-[11px] text-slate-400 dark:text-slate-500 font-normal leading-tight mt-0.5">
+              <div className={isAa ? 'text-xs text-aa-ink-subtle font-normal leading-tight mt-0.5' : 'text-[11px] text-slate-400 dark:text-slate-500 font-normal leading-tight mt-0.5'}>
                 {action.disabledReason}
               </div>
             ) : null}
@@ -107,7 +122,11 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => onOpenChange(!open)}
-        className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+        className={
+          isAa
+            ? 'aa-btn aa-btn--ghost aa-btn--icon aa-btn--sm text-aa-ink-muted hover:text-aa-ink cursor-pointer'
+            : 'rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition-colors'
+        }
       >
         <MoreVertical size={16} />
       </button>

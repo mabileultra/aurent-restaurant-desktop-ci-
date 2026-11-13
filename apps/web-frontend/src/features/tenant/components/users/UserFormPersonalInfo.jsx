@@ -13,15 +13,15 @@ export default function UserFormPersonalInfo({
   fieldOn,
 }) {
   return (
-    <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+    <div className="space-y-4 pt-2 border-t border-aa-line">
+      <h3 className="text-[13px] font-semibold text-aa-ink-muted">
         {t('users.sectionPersonalInfo', { defaultValue: 'Shaxsiy ma\'lumotlar' })}
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="user-first-name" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-            {t('users.firstName')} <span className="text-red-500">*</span>
+          <label htmlFor="user-first-name" className="mb-1 block text-xs font-medium text-aa-ink">
+            {t('users.firstName')} <span className="text-aa-danger">*</span>
           </label>
           <input
             id="user-first-name"
@@ -31,12 +31,12 @@ export default function UserFormPersonalInfo({
             aria-describedby={errors.firstName ? 'user-first-name-error' : undefined}
             placeholder="Ism"
           />
-          {errors.firstName && <p id="user-first-name-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+          {errors.firstName && <p id="user-first-name-error" className="mt-1 text-xs text-aa-danger">{t('validation.required')}</p>}
         </div>
 
         <div>
-          <label htmlFor="user-last-name" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-            {t('users.lastName')} <span className="text-red-500">*</span>
+          <label htmlFor="user-last-name" className="mb-1 block text-xs font-medium text-aa-ink">
+            {t('users.lastName')} <span className="text-aa-danger">*</span>
           </label>
           <input
             id="user-last-name"
@@ -46,15 +46,15 @@ export default function UserFormPersonalInfo({
             aria-describedby={errors.lastName ? 'user-last-name-error' : undefined}
             placeholder="Familiya"
           />
-          {errors.lastName && <p id="user-last-name-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+          {errors.lastName && <p id="user-last-name-error" className="mt-1 text-xs text-aa-danger">{t('validation.required')}</p>}
         </div>
       </div>
 
       {fieldOn('patronymic') && (
         <div>
-          <label htmlFor="user-patronymic" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+          <label htmlFor="user-patronymic" className="mb-1 block text-xs font-medium text-aa-ink">
             {t('users.patronymic')}{' '}
-            <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+            <span className="text-xs font-normal text-aa-ink-muted">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
           </label>
           <input
             id="user-patronymic"

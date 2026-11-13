@@ -99,8 +99,9 @@ export default function PlatformStoresGroupedView(props) {
       </div>
 
       {ui.total > 0 && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-aa-lg border border-aa-line bg-aa-surface shadow-2xs overflow-hidden">
           <TablePagination
+            variant="aa"
             page={ui.safePage}
             pageSize={ui.pageSize}
             total={ui.total}

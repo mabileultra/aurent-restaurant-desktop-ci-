@@ -36,6 +36,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     className,
     menuClassName,
     size = 'md',
+    variant = 'default',
     emptyValue = '',
     searchable = true,
     onSearchQueryChange,
@@ -171,13 +172,15 @@ const BaseSelect = forwardRef(function BaseSelect(
     setOpen(true);
   };
 
+  const isAa = variant === 'aa';
+
   const menu = open
     ? createPortal(
         <div
           ref={menuRef}
           id={listId}
           role="listbox"
-          className={clsx('base-select__menu', menuClassName)}
+          className={clsx('base-select__menu', isAa && 'base-select__menu--aa', menuClassName)}
           style={{
             position: 'fixed',
             top: menuStyle.top,
@@ -276,6 +279,7 @@ const BaseSelect = forwardRef(function BaseSelect(
       style={style}
       className={clsx(
         'base-select',
+        isAa && 'base-select--aa',
         size === 'sm' && 'base-select--sm',
         open && 'base-select--open',
         disabled && 'base-select--disabled',

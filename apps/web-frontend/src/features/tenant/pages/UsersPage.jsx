@@ -24,7 +24,7 @@ export default function UsersPage({ mode = 'tenant' }) {
       actions={(
         <div className="flex items-center gap-3">
           <LastUpdatedBadge timestamp={p.dataUpdatedAt} className="hidden md:inline-flex" />
-          <BaseButton requiresOnline onClick={p.openCreate} className="admin-btn-primary">
+          <BaseButton requiresOnline onClick={p.openCreate} className="aa-btn aa-btn--primary">
             <Plus size={16} />
             {p.t('users.add')}
           </BaseButton>
@@ -33,14 +33,14 @@ export default function UsersPage({ mode = 'tenant' }) {
     >
       {/* Network Error Card with Retry */}
       {p.isError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 flex items-center justify-between gap-4">
+        <div className="rounded-aa-lg border border-aa-danger/30 bg-aa-danger-soft p-4 text-aa-ink flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <AlertCircle size={20} className="text-red-500 shrink-0" />
+            <AlertCircle size={20} className="text-aa-danger shrink-0" />
             <div>
               <p className="text-sm font-semibold">
                 {p.t('users.loadErrorTitle', { defaultValue: 'Foydalanuvchilar ro‘yxatini yuklab bo‘lmadi' })}
               </p>
-              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+              <p className="text-xs text-aa-ink-muted mt-0.5">
                 {p.error?.message || p.t('common.networkErrorHint', { defaultValue: 'Tarmoq yoki server bilan aloqani tekshiring' })}
               </p>
             </div>
@@ -48,7 +48,7 @@ export default function UsersPage({ mode = 'tenant' }) {
           <button
             type="button"
             onClick={() => p.refetch()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/60 dark:hover:bg-red-900 dark:text-red-200 text-xs font-semibold transition-colors shrink-0"
+            className="aa-btn aa-btn--secondary aa-size-sm inline-flex items-center gap-1.5 shrink-0 cursor-pointer"
           >
             <RefreshCw size={13} />
             <span>{p.t('common.retry', { defaultValue: 'Qayta urinish' })}</span>

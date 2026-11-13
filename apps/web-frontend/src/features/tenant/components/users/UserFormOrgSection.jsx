@@ -37,7 +37,7 @@ export default function UserFormOrgSection({
 }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <h3 className="text-[13px] font-semibold text-aa-ink-muted">
         {t('users.sectionOrganization', { defaultValue: 'Tashkilot va Rol' })}
       </h3>
 
@@ -46,6 +46,8 @@ export default function UserFormOrgSection({
           <div>
             <BaseSelect
               id="user-form-company"
+              variant="aa"
+              size="md"
               label={t('users.colCompany')}
               required
               value={companyId}
@@ -61,9 +63,9 @@ export default function UserFormOrgSection({
               options={buildCompanySelectOptions(companies)}
             />
             {!isEdit && companyLoginCode ? (
-              <p className="mt-1.5 text-xs text-slate-500 flex items-center gap-1">
+              <p className="mt-1.5 text-xs text-aa-ink-muted flex items-center gap-1">
                 <span>{t('users.platformCompanyCode')}:</span>
-                <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">#{companyLoginCode}</span>
+                <span className="font-mono font-semibold px-1.5 py-0.5 rounded-aa-sm bg-aa-surface-sunken border border-aa-line text-aa-ink-muted">#{companyLoginCode}</span>
               </p>
             ) : null}
           </div>
@@ -74,6 +76,8 @@ export default function UserFormOrgSection({
             <input type="hidden" {...register('role')} />
             <BaseSelect
               id="user-form-role"
+              variant="aa"
+              size="md"
               label={t('users.colRole')}
               required
               disabled={isRoleDisabled}

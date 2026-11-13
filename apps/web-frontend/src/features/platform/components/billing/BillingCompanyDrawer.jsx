@@ -67,7 +67,7 @@ export default function BillingCompanyDrawer({ p }) {
         onClick={p.closeDrawer}
       />
 
-      <div className="relative w-full max-w-3xl bg-white dark:!bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:!border-slate-800 flex flex-col max-h-[88vh] overflow-hidden transform transition-all duration-200 z-10 select-text">
+      <div className="relative w-full max-w-3xl bg-aa-surface rounded-aa-lg shadow-aa-modal border border-aa-line flex flex-col max-h-[88vh] overflow-hidden transform transition-all duration-200 z-10 select-text">
         <BillingCompanyDrawerHeader
           p={p}
           row={row}

@@ -1,18 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Pencil, Power, X } from 'lucide-react';
-import Badge from '../../../components/aa/Badge';
-import Button from '../../../components/aa/Button';
-import PlatformCompanyQuickDrawerDetails from './PlatformCompanyQuickDrawerDetails';
-import { getCompanyInitials } from '../utils/companyAvatarUtils';
+import { Building2, Pencil, Power, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import {
+  getBusinessTypeBadgeClass,
+  getCompanyBranchMeta,
+  getCompanyInitials,
+  getCompanyPalette,
+} from '../utils/companyAvatarUtils';
 import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
+import PlatformCompanyQuickDrawerDetails from './PlatformCompanyQuickDrawerDetails';
 
-/**
- * PlatformCompanyQuickDrawer — Tezkor ko‘rish o‘ng paneli.
- * Eni: 440px (mobilda 100%), fon aa-surface, shadow-modal, aa-scrim ortida.
- */
 export default function PlatformCompanyQuickDrawer({
   open = false,
   company = null,
@@ -23,55 +23,15 @@ export default function PlatformCompanyQuickDrawer({
   regionName: propRegionName,
   districtName: propDistrictName,
 }) {
-  const drawerRef = useRef(null);
-  const prevActiveElementRef = useRef(null);
+  const [copied, setCopied] = useState(false);
 
-  // Focus trap va Esc listener
   useEffect(() => {
     if (!open) return undefined;
-
-    prevActiveElementRef.current = document.activeElement;
-
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose?.();
-        return;
-      }
-
-      if (e.key === 'Tab' && drawerRef.current) {
-        const focusableElements = drawerRef.current.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements.length === 0) return;
-
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey && document.activeElement === firstElement) {
-          e.preventDefault();
-          lastElement.focus();
-        } else if (!e.shiftKey && document.activeElement === lastElement) {
-          e.preventDefault();
-          firstElement.focus();
-        }
-      }
+      if (e.key === 'Escape') onClose?.();
     };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    const timer = setTimeout(() => {
-      const closeBtn = drawerRef.current?.querySelector('button[aria-label="Yopish"]');
-      closeBtn?.focus();
-    }, 10);
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('keydown', handleKeyDown);
-      if (prevActiveElementRef.current?.focus) {
-        prevActiveElementRef.current.focus();
-      }
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
   const regionCodes = company?.regionCode ? [company.regionCode] : [];
@@ -88,101 +48,110 @@ export default function PlatformCompanyQuickDrawer({
 
   if (!open || !company) return null;
 
+  const handleCopyCode = () => {
+    if (!company.loginCode) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(company.loginCode);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success(t('platform.loginCodeCopied', { defaultValue: 'Kirish kodi nusxalandi' }));
+  };
+
   const initials = getCompanyInitials(company.name);
+  const palette = getCompanyPalette(company.name, company.id);
+  const badgeClass = getBusinessTypeBadgeClass(company.businessType);
+  const branchMeta = getCompanyBranchMeta(company.businessType, t);
+
   const region = regionName ? regionName(company.regionCode) : '';
   const district = districtName ? districtName(company.districtCode) : '';
   const regionLabel = [district, region].filter(Boolean).join(', ') || company.regionCode || '—';
 
   const drawerContent = (
-    <div
-      className="fixed inset-0 z-50 bg-[var(--aa-scrim)] flex justify-end"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose?.();
-      }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="quick-drawer-title"
-    >
+    <div className="fixed inset-0 z-[100] overflow-hidden" role="dialog" aria-modal="true">
       <div
-        ref={drawerRef}
-        tabIndex={-1}
-        className="w-full sm:w-[440px] h-full bg-aa-surface shadow-modal border-l border-aa-line flex flex-col animate-slide-in-right overflow-hidden fixed top-0 right-0 bottom-0"
-      >
-        {/* Tepasi 64px: «Tezkor ko‘rish» va Yopish */}
-        <div className="h-16 px-5 border-b border-aa-line flex items-center justify-between shrink-0">
-          <h2 id="quick-drawer-title" className="text-[15px] leading-[22px] font-semibold text-aa-ink">
-            Tezkor ko‘rish
-          </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            iconOnly
-            icon={<X size={16} aria-hidden="true" />}
-            aria-label="Yopish"
-            onClick={onClose}
-            className="h-8 w-8 !p-0"
-          />
-        </div>
+        className="fixed inset-0 bg-aa-scrim transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        {/* Ichi: padding 20, bloklar orasi 20 */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
-          {/* Kompaniya bosh qismi */}
-          <div className="flex items-start gap-3.5">
-            <div
-              className="w-12 h-12 rounded-aa-full bg-aa-surface-sunken border border-aa-line text-aa-ink-muted text-sm font-semibold flex items-center justify-center shrink-0 select-none"
-              aria-hidden="true"
-            >
-              {initials}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 pointer-events-auto">
+        <div className="w-screen max-w-md bg-aa-surface shadow-aa-modal flex flex-col border-l border-aa-line animate-in slide-in-from-right duration-200">
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-aa-line flex items-center justify-between gap-4 bg-aa-surface-sunken">
+            <div className="flex items-center gap-2">
+              <Building2 size={18} className="text-aa-brand shrink-0" />
+              <h2 className="text-base font-bold text-aa-ink">
+                {t('platform.quickView', { defaultValue: 'Tezkor ko‘rish' })}
+              </h2>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="aa-size-icon-sm rounded-aa-md text-aa-ink-muted hover:text-aa-ink hover:bg-aa-surface-hover transition-colors cursor-pointer"
+              aria-label={t('common.close', { defaultValue: 'Yopish' })}
+            >
+              <X size={16} />
+            </button>
+          </div>
 
-            <div className="min-w-0 flex-1">
-              <h3 className="text-lg leading-[26px] font-semibold text-aa-ink truncate">
-                {company.name}
-              </h3>
-              <p className="text-[13px] text-aa-ink-muted truncate mt-0.5">
-                {company.legalName || 'Yuridik nomi ko‘rsatilmagan'}
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <span
-                  className="font-mono font-normal text-[13px] text-aa-ink-muted"
-                  style={{ fontFamily: 'var(--aa-font-mono)', fontWeight: 400 }}
-                >
-                  ID #{company.id}
-                </span>
-                <Badge tone={company.active ? 'success' : 'neutral'} dot>
-                  {company.active ? 'Faol' : 'Nofaol'}
-                </Badge>
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-12 h-12 rounded-aa-md bg-aa-surface-sunken text-aa-ink border border-aa-line flex items-center justify-center font-bold text-base font-mono shrink-0"
+                aria-hidden
+              >
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-aa-ink text-base truncate">
+                    {company.name}
+                  </h3>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${company.active ? 'border-transparent bg-aa-success-soft text-aa-success' : 'border-aa-line bg-aa-surface text-aa-ink-muted'}`}>
+                    {company.active ? t('common.active') : t('common.inactive')}
+                  </span>
+                </div>
+                {company.legalName ? (
+                  <p className="text-xs text-aa-ink-muted mt-0.5 truncate">{company.legalName}</p>
+                ) : null}
+                <p className="text-xs text-aa-ink-muted font-mono mt-1">ID: #{company.id}</p>
               </div>
             </div>
-          </div>
 
-          {/* Teng enli ikkita secondary tugma: Tahrirlash va Faolsizlantirish/Faollashtirish */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <Button
-              variant="secondary"
-              icon={<Pencil size={16} aria-hidden="true" />}
-              onClick={() => onEdit?.(company)}
-              className="w-full"
-            >
-              Tahrirlash
-            </Button>
-            <Button
-              variant="secondary"
-              icon={<Power size={16} aria-hidden="true" />}
-              onClick={() => onToggleActive?.(company)}
-              className="w-full"
-            >
-              {company.active ? 'Faolsizlantirish' : 'Faollashtirish'}
-            </Button>
-          </div>
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => { onClose?.(); onEdit?.(company); }}
+                className="aa-btn aa-btn--secondary aa-size-md inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Pencil size={14} />
+                <span>{t('common.edit')}</span>
+              </button>
 
-          {/* Ma’lumotlar ro‘yxati (dl) va havola-qator */}
-          <PlatformCompanyQuickDrawerDetails
-            company={company}
-            regionLabel={regionLabel}
-            assignedTypes={assignedData?.businessTypes || []}
-            t={t}
-          />
+              <button
+                type="button"
+                onClick={() => onToggleActive?.(company)}
+                className="aa-btn aa-btn--secondary aa-size-md inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Power size={14} className={company.active ? 'text-aa-warning' : 'text-aa-success'} />
+                <span>{company.active ? t('platform.deactivate', { defaultValue: 'Faolsizlantirish' }) : t('platform.activate', { defaultValue: 'Faollashtirish' })}</span>
+              </button>
+            </div>
+
+            <PlatformCompanyQuickDrawerDetails
+              company={company}
+              copied={copied}
+              onCopyCode={handleCopyCode}
+              regionLabel={regionLabel}
+              branchMeta={branchMeta}
+              badgeClass={badgeClass}
+              assignedTypes={assignedData?.businessTypes || []}
+              t={t}
+            />
+          </div>
         </div>
       </div>
     </div>

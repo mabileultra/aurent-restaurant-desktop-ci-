@@ -121,38 +121,34 @@ export default function PlatformUserQuickDrawer({
         <div
           ref={drawerRef}
           tabIndex={-1}
-          className="w-screen max-w-md bg-white dark:!bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col animate-in slide-in-from-right duration-200 outline-none"
+          className="w-screen max-w-md bg-aa-surface shadow-2xl border-l border-aa-line flex flex-col animate-in slide-in-from-right duration-200 outline-none"
         >
           {/* Header */}
-          <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-4 bg-slate-50/50 dark:bg-slate-850">
+          <div className="px-6 py-5 border-b border-aa-line flex items-start justify-between gap-4 bg-aa-surface-sunken">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 flex items-center justify-center shrink-0 text-base font-bold font-mono shadow-xs">
+              <div className="w-12 h-12 rounded-aa-md bg-aa-surface-sunken text-aa-ink border border-aa-line flex items-center justify-center shrink-0 text-base font-bold font-mono">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
-                <h2 id="user-drawer-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white break-words line-clamp-2 leading-snug">
+                <h2 id="user-drawer-title" className="text-base sm:text-lg font-bold text-aa-ink break-words line-clamp-2 leading-snug">
                   {displayName}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                       user.active
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                        ? 'border-aa-line bg-aa-success-soft text-aa-success'
+                        : 'border-aa-line bg-aa-surface-sunken text-aa-ink-muted'
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        user.active ? 'bg-emerald-500' : 'bg-slate-400'
+                        user.active ? 'bg-aa-success' : 'bg-aa-ink-subtle'
                       }`}
                     />
                     {user.active ? t('users.activeStatus', { defaultValue: 'Faol' }) : t('users.inactiveStatus', { defaultValue: 'Nofaol' })}
                   </span>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                      USER_ROLE_BADGE[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                    }`}
-                  >
+                  <span className="inline-flex items-center rounded-aa-sm px-2 py-0.5 text-xs font-semibold bg-aa-surface-sunken text-aa-ink-muted border border-aa-line">
                     {t(`roles.${user.role}`, user.role)}
                   </span>
                 </div>
@@ -161,10 +157,10 @@ export default function PlatformUserQuickDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+              className="aa-size-icon-sm rounded-aa-md text-aa-ink-muted hover:text-aa-ink hover:bg-aa-surface-hover transition-colors cursor-pointer"
               aria-label={t('common.close', { defaultValue: 'Yopish' })}
             >
-              <X size={20} />
+              <X size={16} />
             </button>
           </div>
 

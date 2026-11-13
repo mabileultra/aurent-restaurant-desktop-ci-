@@ -52,7 +52,7 @@ export default function UserFormModalFields({
 
   const getInputCls = (hasError) =>
     hasError
-      ? `${userFormInputCls} !border-red-500 focus:!ring-red-500 !text-slate-900 dark:!border-red-500`
+      ? `${userFormInputCls} !border-aa-danger focus:!ring-aa-danger !text-aa-ink`
       : userFormInputCls;
 
   const handleGeneratePassword = () => {
@@ -81,25 +81,25 @@ export default function UserFormModalFields({
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Existing User Platform Credentials Summary (Edit mode) */}
         {isPlatform && isEdit ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-800/40">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="rounded-aa-md border border-aa-line bg-aa-surface-sunken px-4 py-3.5">
+            <p className="text-[13px] font-semibold text-aa-ink-muted">
               {t('users.currentCredentialsTitle', { defaultValue: 'Joriy hisob xulosasi' })}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
               {companyLoginCode ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500">{t('users.platformCompanyCode')}:</span>
-                  <span className="font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                  <span className="text-aa-ink-muted">{t('users.platformCompanyCode')}:</span>
+                  <span className="font-mono font-semibold px-1.5 py-0.5 rounded-aa-sm bg-aa-surface border border-aa-line text-aa-ink text-xs">
                     #{companyLoginCode}
                   </span>
                 </div>
               ) : null}
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500">{t('users.credentialsLogin')}:</span>
-                <span className="font-mono font-semibold text-slate-900 dark:text-white">{user?.username}</span>
+                <span className="text-aa-ink-muted">{t('users.credentialsLogin')}:</span>
+                <span className="font-mono font-semibold text-aa-ink">{user?.username}</span>
               </div>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-aa-ink-muted">
               {isPinRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function UserFormModalFields({
         />
 
         {/* 3. KIRISH VA XAVFSIZLIK (Credentials & Security) */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-2 border-t border-aa-line">
           <UserFormSecurityFields
             t={t}
             register={register}
@@ -173,11 +173,11 @@ export default function UserFormModalFields({
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-aa-line bg-aa-surface-sunken px-6 py-4">
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+          className="aa-btn aa-btn--secondary aa-size-md cursor-pointer"
         >
           {t('common.cancel')}
         </button>
@@ -185,7 +185,7 @@ export default function UserFormModalFields({
           type="submit"
           disabled={isPending || isActionBlocked}
           title={isActionBlocked ? blockReason : undefined}
-          className="admin-btn-primary px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+          className="aa-btn aa-btn--primary aa-size-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending && <Loader size={15} className="mr-2 inline animate-spin" />}
           {isEdit ? t('common.save') : t('users.createUser')}

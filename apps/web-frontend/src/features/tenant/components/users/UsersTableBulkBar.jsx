@@ -25,7 +25,7 @@ export default function UsersTableBulkBar({
     <div className="sticky bottom-6 flex justify-center z-30 pointer-events-none mt-4">
       <div className="pointer-events-auto flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 dark:bg-slate-800/95 text-white shadow-2xl border border-slate-700/80 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-full">
         <div className="flex items-center gap-2 pr-2 border-r border-slate-700 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span>
             {t('users.selectedCount', { count: selectedCount, defaultValue: `${selectedCount} ta tanlandi` })}
           </span>
@@ -34,12 +34,12 @@ export default function UsersTableBulkBar({
               <button
                 type="button"
                 onClick={onSelectAllMatching}
-                className="ml-1 text-[11px] text-purple-300 hover:text-purple-200 underline underline-offset-2 transition-colors cursor-pointer"
+                className="ml-1 text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2 transition-colors cursor-pointer"
               >
                 {t('users.selectAllMatching', { total: totalMatching, defaultValue: `Barcha ${totalMatching} tasini tanlash` })}
               </button>
             ) : (
-              <span className="ml-1 text-[11px] text-emerald-400 font-medium">
+              <span className="ml-1 text-xs text-emerald-400 font-medium">
                 {t('users.allMatchingSelected', { total: totalMatching, defaultValue: `Barcha ${totalMatching} ta tanlangan` })}
               </span>
             )
@@ -73,7 +73,7 @@ export default function UsersTableBulkBar({
           onClick={onExportSelectedCsv}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 hover:border-slate-500 transition-colors cursor-pointer"
         >
-          <Download size={14} className="text-purple-400" />
+          <Download size={14} className="text-slate-300" />
           <span>{t('common.exportCsv', { defaultValue: 'Eksport (CSV)' })}</span>
         </button>
 

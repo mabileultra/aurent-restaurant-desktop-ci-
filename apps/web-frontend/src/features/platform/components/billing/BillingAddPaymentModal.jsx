@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { BaseModal } from '../../../../components/ui';
-import PlatformSelect from '../PlatformSelect';
+import { BaseModal, BaseSelect } from '../../../../components/ui';
 import {
   formatMoneyInputDigits,
   parseMoneyInput,
@@ -40,19 +39,21 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
     <BaseModal
       title={k('addPaymentTitle')}
       onClose={onClose}
+      className="billing-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       footer={(
-        <div className="flex justify-end gap-2">
-          <button type="button" className="bc-btn bc-btn--outline" onClick={onClose}>{t('common.cancel')}</button>
-          <button type="submit" form="bc-add-payment" className="bc-btn bc-btn--primary" disabled={!valid || busy}>
+        <div className="flex justify-end gap-2 w-full">
+          <button type="button" className="aa-btn aa-btn--secondary aa-size-md cursor-pointer" onClick={onClose}>{t('common.cancel')}</button>
+          <button type="submit" form="bc-add-payment" className="aa-btn aa-btn--primary aa-size-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled={!valid || busy}>
             {k('savePayment')}
           </button>
         </div>
       )}
     >
-      <form id="bc-add-payment" className="bc-form" onSubmit={submit}>
-        <label className="bc-form__field">
-          <span>{k('colCompany')} *</span>
-          <PlatformSelect
+      <form id="bc-add-payment" className="bc-form space-y-4" onSubmit={submit}>
+        <label className="bc-form__field flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-aa-ink-muted">{k('colCompany')} *</span>
+          <BaseSelect
+            variant="aa"
             size="md"
             value={companyId}
             onChange={(e) => setCompanyId(e.target.value)}
@@ -65,11 +66,11 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
             required
           />
         </label>
-        <div className="bc-form__row">
-          <label className="bc-form__field">
-            <span>{k('amount')} *</span>
+        <div className="bc-form__row grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label className="bc-form__field flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-aa-ink-muted">{k('amount')} *</span>
             <input
-              className="bc-control"
+              className="bc-control h-10 sm:h-10 h-11 px-3 rounded-aa-md border border-aa-line-strong bg-aa-surface text-aa-ink text-sm focus:border-aa-brand focus:ring-1 focus:ring-aa-brand focus:outline-none transition-all w-full"
               type="text"
               inputMode="numeric"
               autoComplete="off"
@@ -81,19 +82,20 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
               data-autofocus={Boolean(companyId)}
             />
             {isZero && (
-              <p className="text-xs text-rose-500 mt-1 font-medium">
+              <p className="text-xs text-aa-danger mt-1 font-medium">
                 {t('platform.billing.amountMustBePositive', { defaultValue: 'To‘lov summasi 0 dan katta bo‘lishi kerak' })}
               </p>
             )}
             {isTooLarge && (
-              <p className="text-xs text-rose-500 mt-1 font-medium">
+              <p className="text-xs text-aa-danger mt-1 font-medium">
                 {t('platform.billing.amountTooLarge', { defaultValue: 'Maksimal to‘lov summasi 1 000 000 000 so‘m' })}
               </p>
             )}
           </label>
-          <label className="bc-form__field">
-            <span>{k('colMethod')} *</span>
-            <PlatformSelect
+          <label className="bc-form__field flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-aa-ink-muted">{k('colMethod')} *</span>
+            <BaseSelect
+              variant="aa"
               size="md"
               value={method}
               onChange={(e) => setMethod(e.target.value)}
@@ -105,15 +107,24 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
             />
           </label>
         </div>
-        <label className="bc-form__field">
-          <span>{k('transactionId')}</span>
-          <input className="bc-control" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} />
+        <label className="bc-form__field flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-aa-ink-muted">{k('transactionId')}</span>
+          <input
+            className="bc-control h-10 sm:h-10 h-11 px-3 rounded-aa-md border border-aa-line-strong bg-aa-surface text-aa-ink text-sm focus:border-aa-brand focus:ring-1 focus:ring-aa-brand focus:outline-none transition-all w-full"
+            value={transactionId}
+            onChange={(e) => setTransactionId(e.target.value)}
+          />
         </label>
-        <label className="bc-form__field">
-          <span>{t('platform.billing.note')}</span>
-          <textarea className="bc-control" rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
+        <label className="bc-form__field flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-aa-ink-muted">{t('platform.billing.note')}</span>
+          <textarea
+            className="bc-control px-3 py-2 rounded-aa-md border border-aa-line-strong bg-aa-surface text-aa-ink text-sm focus:border-aa-brand focus:ring-1 focus:ring-aa-brand focus:outline-none transition-all w-full"
+            rows={2}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
         </label>
-        <p className="bc-sub">{k('addPaymentHint')}</p>
+        <p className="bc-sub text-xs text-aa-ink-muted">{k('addPaymentHint')}</p>
       </form>
     </BaseModal>
   );

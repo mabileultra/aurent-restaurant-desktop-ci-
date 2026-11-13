@@ -52,16 +52,17 @@ export default function UsersTableMobileCard({
     <div
       id={`user-card-${user.id}`}
       onClick={() => onRowClick?.(user)}
-      className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+      className={`p-3.5 rounded-aa-lg border transition-all cursor-pointer ${
         isSelected
-          ? 'border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20'
-          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700'
+          ? 'border-aa-brand bg-aa-surface-selected'
+          : 'border-aa-line bg-aa-surface hover:border-aa-line-strong'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0" onClick={(e) => e.stopPropagation()}>
           <div className="mt-0.5">
             <BaseCheckbox
+              variant="aa"
               checked={isSelected}
               onChange={() => onToggleSelect?.(user.id)}
               ariaLabel={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
@@ -69,14 +70,15 @@ export default function UsersTableMobileCard({
             />
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-slate-900 dark:text-white truncate text-sm">{displayName}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
+            <p className="font-semibold text-aa-ink truncate text-sm">{displayName}</p>
+            <p className="text-xs text-aa-ink-muted font-mono mt-0.5 truncate">
               {user.username} {user.phone ? `· ${user.phone}` : ''}
             </p>
           </div>
         </div>
         <div onClick={(e) => e.stopPropagation()} className="shrink-0">
           <TableRowActionsMenu
+            variant="aa"
             open={menuOpen}
             onOpenChange={onMenuOpenChange}
             actions={actions}
@@ -85,33 +87,37 @@ export default function UsersTableMobileCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-        <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-semibold ${USER_ROLE_BADGE[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
+        <span className="inline-flex items-center rounded-aa-sm px-2 py-0.5 text-xs font-semibold bg-aa-surface-sunken text-aa-ink-muted border border-aa-line">
           {t(`roles.${user.role}`, user.role)}
         </span>
-        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${user.active ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+          user.active
+            ? 'bg-aa-success-soft text-aa-success border-aa-line'
+            : 'bg-aa-surface-sunken text-aa-ink-muted border-aa-line'
+        }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-aa-success' : 'bg-aa-ink-subtle'}`} />
           {user.active ? t('users.activeStatus', { defaultValue: 'Faol' }) : t('users.inactiveStatus', { defaultValue: 'Nofaol' })}
         </span>
         {isPlatformStaff ? (
-          <span className="text-purple-600 dark:text-purple-400 font-medium">
+          <span className="text-aa-brand font-medium">
             {t('users.platformAdminTitle', { defaultValue: 'Platforma administratori' })}
           </span>
         ) : (
           <span
-            className={`text-xs font-medium truncate max-w-[140px] ${compName ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500 italic'}`}
+            className={`text-xs font-medium truncate max-w-36 ${compName ? 'text-aa-ink' : 'text-aa-ink-subtle italic'}`}
             title={compName || t('users.orphanCompany', { defaultValue: 'Kompaniyasiz (o‘chirilgan)' })}
           >
             {compName || t('users.orphanCompany', { defaultValue: 'Kompaniyasiz (o‘chirilgan)' })}
           </span>
         )}
         {!isPlatformStaff && loginCode ? (
-          <span className="font-mono text-[10px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-200/60 dark:border-purple-800 shrink-0">
+          <span className="font-mono text-xs font-medium text-aa-ink-muted bg-aa-surface-sunken px-1.5 py-0.5 rounded-aa-sm border border-aa-line shrink-0">
             #{loginCode}
           </span>
         ) : null}
         {!isPlatformStaff && userLocation ? (
-          <span className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 text-[11px] truncate max-w-full">
-            <MapPin size={11} className="shrink-0 text-slate-400" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1 text-aa-ink-subtle text-xs truncate max-w-full">
+            <MapPin size={12} className="shrink-0 text-aa-ink-subtle" aria-hidden="true" />
             <span className="truncate">{userLocation}</span>
           </span>
         ) : null}

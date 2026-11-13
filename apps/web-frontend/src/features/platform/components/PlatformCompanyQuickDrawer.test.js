@@ -70,6 +70,6 @@ describe('PlatformCompanyQuickDrawer', () => {
     expect(html).toContain('+998 (90) 111-22-33');
     expect(html).toContain('Chirchiq sh., Toshkent viloyati');
     expect(html).toContain('Faolsizlantirish');
-    expect(html).toContain('href="/platform/stores?focusCompany=88#company-88"');
+    expect(html).toContain('href="/platform/stores?companyId=88&amp;focusCompany=88#company-88"');
   });
 });

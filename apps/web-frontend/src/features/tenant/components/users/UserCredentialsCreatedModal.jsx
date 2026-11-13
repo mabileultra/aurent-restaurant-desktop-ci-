@@ -30,36 +30,36 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
 
   const modalNode = (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-2xl border bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('users.credentialsCreatedTitle')}</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t('users.credentialsCreatedHint')}</p>
-        <div className="admin-soft-panel mt-4 space-y-2 p-3 text-sm">
+      <div className="w-full max-w-md rounded-aa-lg border border-aa-line bg-aa-surface p-5 shadow-aa-modal">
+        <h2 className="text-lg font-bold text-aa-ink">{t('users.credentialsCreatedTitle')}</h2>
+        <p className="mt-2 text-sm text-aa-ink-muted">{t('users.credentialsCreatedHint')}</p>
+        <div className="mt-4 space-y-2 rounded-aa-md bg-aa-surface-sunken border border-aa-line p-3 text-sm text-aa-ink">
           {credentials.companyLoginCode ? (
             <p>
-              <span className="text-slate-500">{t('users.platformCompanyCode')}:</span>{' '}
-              <span className="font-mono font-semibold">{credentials.companyLoginCode}</span>
+              <span className="text-aa-ink-muted">{t('users.platformCompanyCode')}:</span>{' '}
+              <span className="font-mono font-semibold text-aa-ink">{credentials.companyLoginCode}</span>
             </p>
           ) : null}
           <p>
-            <span className="text-slate-500">{t('users.credentialsLogin')}:</span>{' '}
-            <span className="font-mono font-semibold">{credentials.username}</span>
+            <span className="text-aa-ink-muted">{t('users.credentialsLogin')}:</span>{' '}
+            <span className="font-mono font-semibold text-aa-ink">{credentials.username}</span>
           </p>
           {credentials.role === 'CASHIER' || credentials.role === 'WAITER' || credentials.role === 'COOK' ? (
             <p>
-              <span className="text-slate-500">{t('users.pin')}:</span>{' '}
-              <span className="font-mono font-semibold">{credentials.pin}</span>
+              <span className="text-aa-ink-muted">{t('users.pin')}:</span>{' '}
+              <span className="font-mono font-semibold text-aa-ink">{credentials.pin}</span>
             </p>
           ) : (
             <p>
-              <span className="text-slate-500">{t('users.password')}:</span>{' '}
-              <span className="font-mono font-semibold">{credentials.password}</span>
+              <span className="text-aa-ink-muted">{t('users.password')}:</span>{' '}
+              <span className="font-mono font-semibold text-aa-ink">{credentials.password}</span>
             </p>
           )}
         </div>
         <div className="mt-4 flex gap-3">
           <button
             type="button"
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border py-2.5"
+            className="aa-btn aa-btn--secondary aa-size-md inline-flex flex-1 items-center justify-center gap-2 cursor-pointer"
             onClick={copyCredentials}
           >
             <Copy size={16} />
@@ -67,7 +67,7 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
           </button>
           <button
             type="button"
-            className="admin-btn-primary flex-1 py-2.5 text-sm"
+            className="aa-btn aa-btn--primary aa-size-md inline-flex flex-1 items-center justify-center cursor-pointer"
             onClick={onClose}
           >
             {t('common.close')}

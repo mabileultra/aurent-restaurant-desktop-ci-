@@ -1,83 +1,109 @@
 import React from 'react';
-import { Building2, CheckCircle2 as CircleCheck, PauseCircle as CirclePause, Store } from 'lucide-react';
-import KpiCard from '../../../components/aa/KpiCard';
+import { AlertCircle, Building2, CheckCircle2, Store } from 'lucide-react';
 
-/**
- * PlatformCompanyStatsCards — Kompaniyalar bo‘limining 4 ta KPI ko‘rsatkich kartasi.
- * aa KpiCard komponentidan foydalanadi.
- */
 export default function PlatformCompanyStatsCards({
   t,
   totalCompanies = 0,
   activeCompanies = 0,
   inactiveCompanies = 0,
   totalStores = 0,
+  statusFilter = 'ALL',
+  onStatusFilterChange,
+  onStoresClick,
   isPending = false,
-  isError = false,
 }) {
-  const pct = totalCompanies > 0 ? (activeCompanies / totalCompanies) * 100 : 0;
-  const pctFormatted = pct % 1 === 0 ? `${pct.toFixed(0)}%` : `${pct.toFixed(1).replace('.', ',')}%`;
+  const activeHint = isPending || totalCompanies === 0
+    ? '—'
+    : `${Math.round((activeCompanies / totalCompanies) * 100)}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`;
 
-  const formatValue = (val) => {
-    if (isPending) return undefined;
-    if (isError || val == null) return '—';
-    return Number(val).toLocaleString('uz-UZ');
-  };
+  const cards = [
+    {
+      id: 'ALL',
+      title: t('platform.statsAll', { defaultValue: 'Jami kompaniyalar' }),
+      value: totalCompanies,
+      hint: t('platform.statsAllDesc', { defaultValue: 'Platformaga ulangan' }),
+      icon: Building2,
+      activeRing: 'border-aa-brand ring-1 ring-aa-brand aa-kpi-active-ring',
+    },
+    {
+      id: 'ACTIVE',
+      title: t('platform.statsActive', { defaultValue: 'Faol kompaniyalar' }),
+      value: activeCompanies,
+      hint: activeHint,
+      icon: CheckCircle2,
+      activeRing: 'border-aa-brand ring-1 ring-aa-brand aa-kpi-active-ring',
+    },
+    {
+      id: 'STORES',
+      title: t('platform.statsStores', { defaultValue: 'Ulangan do‘konlar' }),
+      value: totalStores,
+      hint: t('platform.statsStoresDesc', { defaultValue: 'Barcha savdo nuqtalari' }),
+      icon: Store,
+      activeRing: '',
+      isFilterable: false,
+    },
+    {
+      id: 'INACTIVE',
+      title: t('platform.statsInactive', { defaultValue: 'Nofaollar' }),
+      value: inactiveCompanies,
+      hint: t('platform.statsInactiveDesc', { defaultValue: 'E’tibor talab / to‘xtatilgan' }),
+      icon: AlertCircle,
+      activeRing: 'border-aa-brand ring-1 ring-aa-brand aa-kpi-active-ring',
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 aa-desktop:grid-cols-2 aa-wide:grid-cols-4 gap-4">
-      {/* 1. Jami kompaniyalar */}
-      <KpiCard
-        label={(
-          <span className="inline-flex items-center gap-1.5">
-            <Building2 size={16} className="text-aa-ink-muted" aria-hidden="true" />
-            <span>{t ? t('platform.statsAll', { defaultValue: 'Jami kompaniyalar' }) : 'Jami kompaniyalar'}</span>
-          </span>
-        )}
-        value={formatValue(totalCompanies)}
-        meta={t ? t('platform.statsAllDesc', { defaultValue: 'Platformaga ulangan' }) : 'Platformaga ulangan'}
-        loading={isPending}
-      />
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {cards.map((card) => {
+        const Icon = card.icon;
+        const isFilterActive = card.isFilterable !== false && statusFilter === card.id;
+        const isClickable = card.id === 'STORES' ? true : Boolean(onStatusFilterChange);
 
-      {/* 2. Faol kompaniyalar */}
-      <KpiCard
-        label={(
-          <span className="inline-flex items-center gap-1.5">
-            <CircleCheck size={16} className="text-aa-ink-muted" aria-hidden="true" />
-            <span>{t ? t('platform.statsActive', { defaultValue: 'Faol kompaniyalar' }) : 'Faol kompaniyalar'}</span>
-          </span>
-        )}
-        value={formatValue(activeCompanies)}
-        split={totalCompanies > 0 && !isPending && !isError ? [{ value: pct, tone: 'success' }] : undefined}
-        meta={!isPending && !isError ? `${pctFormatted} faoliyatda` : undefined}
-        loading={isPending}
-      />
+        const handleClick = () => {
+          if (card.id === 'STORES') {
+            onStoresClick?.();
+          } else if (onStatusFilterChange) {
+            onStatusFilterChange(card.id);
+          }
+        };
 
-      {/* 3. Ulangan filiallar */}
-      <KpiCard
-        label={(
-          <span className="inline-flex items-center gap-1.5">
-            <Store size={16} className="text-aa-ink-muted" aria-hidden="true" />
-            <span>{t ? t('platform.statsStores', { defaultValue: 'Ulangan filiallar' }) : 'Ulangan filiallar'}</span>
-          </span>
-        )}
-        value={formatValue(totalStores)}
-        meta={t ? t('platform.statsStoresDesc', { defaultValue: 'Barcha savdo va xizmat nuqtalari' }) : 'Barcha savdo va xizmat nuqtalari'}
-        loading={isPending}
-      />
+        return (
+          <div
+            key={card.id}
+            role="button"
+            tabIndex={0}
+            onClick={handleClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
+            }}
+            className={`relative p-3.5 sm:p-4 rounded-aa-lg bg-aa-surface border transition-all duration-200 shadow-none ${
+              isFilterActive
+                ? card.activeRing
+                : 'border-aa-line hover:border-aa-line-strong'
+            } cursor-pointer hover:bg-aa-surface-hover hover:-translate-y-0.5`}
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Icon size={16} className="text-aa-ink-muted shrink-0" aria-hidden="true" />
+              <span className="aa-kpi__label truncate">
+                {card.title}
+              </span>
+            </div>
 
-      {/* 4. Nofaol kompaniyalar */}
-      <KpiCard
-        label={(
-          <span className="inline-flex items-center gap-1.5">
-            <CirclePause size={16} className="text-aa-ink-muted" aria-hidden="true" />
-            <span>{t ? t('platform.companiesInactiveLabel', { defaultValue: 'Nofaol kompaniyalar' }) : 'Nofaol kompaniyalar'}</span>
-          </span>
-        )}
-        value={formatValue(inactiveCompanies)}
-        meta={t ? t('platform.companiesInactiveDesc', { defaultValue: 'Faolsizlantirilgan, kassalari to‘xtatilgan' }) : 'Faolsizlantirilgan, kassalari to‘xtatilgan'}
-        loading={isPending}
-      />
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="aa-kpi__value aa-num">
+                {isPending || card.value == null ? '—' : Number(card.value).toLocaleString('uz-UZ')}
+              </span>
+            </div>
+
+            <p className="aa-kpi__meta truncate">
+              {card.hint}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }

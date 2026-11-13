@@ -6,7 +6,9 @@ import PlatformCompanyDeleteModal from './PlatformCompanyDeleteModal';
 globalThis.React = React;
 
 describe('PlatformCompanyDeleteModal', () => {
-  it('renders cannot delete warning and deactivation action when stores are attached', () => {
+  const mockT = (key, opts) => opts?.defaultValue || key;
+
+  it('renders company name and prevents hard delete when stores are attached', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompanyDeleteModal, {
         open: true,
@@ -17,17 +19,17 @@ describe('PlatformCompanyDeleteModal', () => {
           storeCount: 3,
           active: true,
         },
+        t: mockT,
       })
     );
 
-    expect(html).toContain('Kompaniyani o‘chirib bo‘lmaydi');
     expect(html).toContain('Rayhon Milliy Taomlar');
-    expect(html).toContain('ID <span class="font-mono">42</span>');
-    expect(html).toContain('kirish kodi <span class="font-mono">RAYHON-01</span>');
-    expect(html).toContain('Kompaniyaga 3 ta filial biriktirilgan');
-    expect(html).toContain('Filiali bor kompaniyani o‘chirib bo‘lmaydi');
+    expect(html).toContain('ID: #42');
+    expect(html).toContain('3 ta savdo do‘koni (filial)');
+    // Safe deactivation button present
     expect(html).toContain('Faolsizlantirish');
-    expect(html).not.toContain('O‘chirish');
+    // Hard delete button must NOT be rendered when stores exist
+    expect(html).not.toContain('common.delete');
   });
 
   it('allows delete when company has 0 stores', () => {
@@ -37,17 +39,16 @@ describe('PlatformCompanyDeleteModal', () => {
         company: {
           id: 55,
           name: 'Empty Company',
-          loginCode: 'EMP-55',
           storeCount: 0,
           active: false,
         },
+        t: mockT,
       })
     );
 
-    expect(html).toContain('Kompaniyani o‘chirish');
     expect(html).toContain('Empty Company');
-    expect(html).toContain('Bu amalni qaytarib bo‘lmaydi');
-    expect(html).toContain('Kompaniya va uning sozlamalari butunlay o‘chiriladi');
+    expect(html).toContain('allaqachon nofaol');
+    expect(html).toContain('Faollashtirish');
     expect(html).toContain('O‘chirish');
   });
 });

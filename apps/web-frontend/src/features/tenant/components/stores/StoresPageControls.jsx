@@ -14,87 +14,77 @@ export default function StoresPageControls({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       {/* Segmented Status Tabs */}
-      <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+      <div className="aa-size-seg flex items-center rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-x-auto overflow-y-hidden shadow-none">
         <button
           type="button"
           onClick={() => onStatusFilterChange('ALL')}
-          className={`px-3 py-1.5 rounded-lg transition-all ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
             statusFilter === 'ALL'
-              ? 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-aa-surface text-aa-ink shadow-xs'
+              : 'text-aa-ink-muted hover:text-aa-ink'
           }`}
         >
-          {t('platform.tabAll', { defaultValue: 'Barchasi' })}
-          <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+          <span>{t('platform.tabAll', { defaultValue: 'Barchasi' })}</span>
+          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
             {totalStores}
           </span>
         </button>
         <button
           type="button"
           onClick={() => onStatusFilterChange('ACTIVE')}
-          className={`px-3 py-1.5 rounded-lg transition-all ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
             statusFilter === 'ACTIVE'
-              ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
+              ? 'bg-aa-surface text-aa-ink shadow-xs'
+              : 'text-aa-ink-muted hover:text-aa-ink'
           }`}
         >
-          {t('platform.tabActive', { defaultValue: 'Faol' })}
-          <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-mono">
+          <span>{t('platform.tabActive', { defaultValue: 'Faol' })}</span>
+          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
             {activeStores}
           </span>
         </button>
         <button
           type="button"
           onClick={() => onStatusFilterChange('INACTIVE')}
-          className={`px-3 py-1.5 rounded-lg transition-all ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
             statusFilter === 'INACTIVE'
-              ? inactiveStores > 0
-                ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-              : inactiveStores > 0
-                ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-aa-surface text-aa-ink shadow-xs'
+              : 'text-aa-ink-muted hover:text-aa-ink'
           }`}
         >
-          {t('platform.tabInactive', { defaultValue: 'Nofaol' })}
-          <span
-            className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              inactiveStores > 0
-                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-            }`}
-          >
+          <span>{t('platform.tabInactive', { defaultValue: 'Nofaol' })}</span>
+          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
             {inactiveStores}
           </span>
         </button>
       </div>
 
       {/* View Switcher: Grouped by Company vs Flat Table */}
-      <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+      <div className="aa-size-seg flex items-center rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-y-hidden shadow-none">
         <button
           type="button"
           onClick={() => onViewModeChange('grouped')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center gap-1.5 font-semibold cursor-pointer ${
             viewMode === 'grouped'
-              ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-aa-surface text-aa-ink shadow-xs'
+              : 'text-aa-ink-muted hover:text-aa-ink'
           }`}
           title={t('platform.viewGrouped', { defaultValue: 'Kompaniyalar bo‘yicha' })}
         >
-          <Layers size={14} />
+          <Layers size={16} className="text-aa-ink-muted shrink-0" />
           <span>{t('platform.viewGrouped', { defaultValue: 'Kompaniyalar bo‘yicha' })}</span>
         </button>
         <button
           type="button"
           onClick={() => onViewModeChange('table')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center gap-1.5 font-semibold cursor-pointer ${
             viewMode === 'table'
-              ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-aa-surface text-aa-ink shadow-xs'
+              : 'text-aa-ink-muted hover:text-aa-ink'
           }`}
           title={t('platform.viewTable', { defaultValue: 'Yagona jadval' })}
         >
-          <List size={14} />
+          <List size={16} className="text-aa-ink-muted shrink-0" />
           <span>{t('platform.viewTable', { defaultValue: 'Yagona jadval' })}</span>
         </button>
       </div>

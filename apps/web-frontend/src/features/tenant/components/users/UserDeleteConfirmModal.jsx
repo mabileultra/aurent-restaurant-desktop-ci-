@@ -15,11 +15,12 @@ export default function UserDeleteConfirmModal({ user, t, isPending, onClose, on
   const footer = (
     <div className="flex justify-end gap-2 w-full">
       <BaseButton
-        variant="outline"
+        variant="secondary"
         size="md"
         onClick={onClose}
         disabled={isPending}
         data-autofocus
+        className="aa-btn aa-btn--secondary aa-size-md"
       >
         {t('common.cancel')}
       </BaseButton>
@@ -28,7 +29,7 @@ export default function UserDeleteConfirmModal({ user, t, isPending, onClose, on
         size="md"
         disabled={isPending}
         onClick={onConfirm}
-        className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+        className="aa-btn aa-btn--danger aa-size-md cursor-pointer"
       >
         {isPending ? t('common.saving', { defaultValue: 'O‘chirilmoqda...' }) : t('common.delete')}
       </BaseButton>
@@ -41,9 +42,10 @@ export default function UserDeleteConfirmModal({ user, t, isPending, onClose, on
       title={t('users.deleteTitle')}
       onClose={onClose}
       size="sm"
+      className="users-delete-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       footer={footer}
     >
-      <div className="text-sm text-slate-700 dark:text-slate-200">
+      <div className="text-sm text-aa-ink">
         {t('users.deleteHint', { name: displayName })}
       </div>
     </BaseModal>

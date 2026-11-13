@@ -1,11 +1,19 @@
 import { BaseSelect } from '../../../../components/ui';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 
-export default function StoresCompanyFilter({ t, companies = [], companyId, onChange }) {
+export default function StoresCompanyFilter({
+  t,
+  companies = [],
+  companyId,
+  onChange,
+  variant = 'default',
+  size = 'sm',
+}) {
   return (
     <BaseSelect
       className="stores-filters__company"
-      size="sm"
+      variant={variant}
+      size={size}
       label={t('stores.colCompany')}
       value={companyId}
       onChange={(e) => onChange(e.target.value)}

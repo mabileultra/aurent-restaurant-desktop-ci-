@@ -1,21 +1,20 @@
-import React from 'react';
-import { RefreshCw, SearchX } from 'lucide-react';
-import Alert from '../../../components/aa/Alert';
-import Button from '../../../components/aa/Button';
-import EmptyState from '../../../components/aa/EmptyState';
-import Skeleton from '../../../components/aa/Skeleton';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import TablePagination from '../../../components/shared/TablePagination';
+import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
+import { PlatformErrorState } from '../../../components/ui';
+import TableLoadingOverlay from '../../../components/shared/TableLoadingOverlay';
 import PlatformCompaniesTableHeader from './PlatformCompaniesTableHeader';
 import PlatformCompaniesTableRow from './PlatformCompaniesTableRow';
-import PlatformCompanyPager from './PlatformCompanyPager';
-import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
+import PlatformCompanyMobileCard from './PlatformCompanyMobileCard';
 
-/**
- * PlatformCompaniesTable — Kompaniyalar bo‘limining aa jadvali.
- * Yuklanish, xato, bo‘sh holat va sahifalash boshqariladi.
- */
 export default function PlatformCompaniesTable({
-  isPending = false,
+  t,
+  isPending,
+  isRefreshing = false,
+  showOverlay = false,
   isError = false,
+  error = null,
   onRetry,
   rows = [],
   page = 0,
@@ -32,116 +31,96 @@ export default function PlatformCompaniesTable({
   onToggleActive,
   onSelectCompany,
   statusFilter = 'ALL',
-  hasOtherFilters = false,
-  onResetFilters,
 }) {
+  const [copiedId, setCopiedId] = useState(null);
   const effectivePage = typeof displayPage === 'number' ? displayPage : page;
+  const safeTotalPages = Math.max(
+    totalPages || 0,
+    pageSize > 0 && total > 0 ? Math.ceil(total / pageSize) : 1
+  );
   const regionCodes = rows.map((r) => r.regionCode).filter(Boolean);
   const { regionName, districtName } = useGeoNameLookup(regionCodes);
 
-  // Xato holati
-  if (isError && !isPending) {
-    return (
-      <div className="p-5">
-        <Alert
-          tone="danger"
-          title="Kompaniyalar ro‘yxatini yuklab bo‘lmadi"
-          action={
-            onRetry ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={<RefreshCw size={16} aria-hidden="true" />}
-                onClick={onRetry}
-              >
-                Qayta urinish
-              </Button>
-            ) : null
-          }
-        >
-          Internet aloqasini tekshirib, qayta urinib ko‘ring.
-        </Alert>
-      </div>
-    );
-  }
-
-  // Bo‘sh holat (yuklanish bo‘lmaganda va qatorlar 0 bo‘lganda)
-  if (!isPending && rows.length === 0) {
-    const isOnlyInactiveFilter = statusFilter === 'INACTIVE' && !hasOtherFilters;
-
-    if (isOnlyInactiveFilter) {
-      return (
-        <EmptyState
-          icon={<SearchX size={20} className="text-aa-ink-muted" aria-hidden="true" />}
-          title="Nofaol kompaniya yo‘q"
-          text="Hamma kompaniyalar faol. Faolsizlantirilgan kompaniyalar shu yerda ko‘rinadi."
-        />
-      );
+  const handleCopyLoginCode = (e, code, id) => {
+    e.stopPropagation();
+    if (!code) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(code);
     }
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+    toast.success(t('platform.loginCodeCopied', { defaultValue: 'Kirish kodi nusxalandi' }));
+  };
 
-    return (
-      <EmptyState
-        icon={<SearchX size={20} className="text-aa-ink-muted" aria-hidden="true" />}
-        title="Kompaniya topilmadi"
-        text="Qidiruv va filtrlarga mos kompaniya yo‘q. So‘zni o‘zgartiring yoki filtrlarni tozalang."
-        actions={
-          onResetFilters ? (
-            <Button variant="secondary" onClick={onResetFilters}>
-              Filtrlarni tozalash
-            </Button>
-          ) : null
-        }
-      />
-    );
-  }
+  const getEmptyMessage = () => {
+    if (statusFilter === 'INACTIVE') {
+      return t('platform.noInactiveCompanies', { defaultValue: 'Nofaol kompaniyalar mavjud emas' });
+    }
+    if (statusFilter === 'ACTIVE') {
+      return t('platform.noActiveCompanies', { defaultValue: 'Faol kompaniyalar mavjud emas' });
+    }
+    return t('platform.noCompanies', { defaultValue: 'Kompaniyalar topilmadi' });
+  };
 
   return (
-    <div className="w-full max-w-full overflow-hidden">
-      <div className="aa-table-scroll relative w-full max-w-full overflow-x-auto">
-        <table className="aa-table" aria-busy={isPending ? 'true' : undefined}>
-          <PlatformCompaniesTableHeader />
-          <tbody>
+    <div className="admin-table-shell admin-table-shell--aa relative">
+      {/* Indeterminate emerald progress line during background refetching */}
+      {isRefreshing && (
+        <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
+          <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
+        </div>
+      )}
+
+      {/* Anti-flicker delayed overlay spinner */}
+      {showOverlay && (
+        <TableLoadingOverlay text={t('common.loading')} />
+      )}
+
+      {/* Desktop Table View (>= md) */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-sm">
+          <PlatformCompaniesTableHeader t={t} />
+          <tbody className="divide-y divide-aa-line">
             {isPending ? (
-              Array.from({ length: 8 }).map((_, rIdx) => (
-                <tr key={`skel-${rIdx}`} className="h-[52px]">
-                  <td className="w-12 text-center">
-                    <Skeleton variant="text" width="20px" className="mx-auto" />
+              Array.from({ length: Math.min(pageSize || 14, 14) }).map((_, idx) => (
+                <tr key={`skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
+                  <td className="w-12 px-3 py-3 text-center">
+                    <div className="h-4 w-5 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
                   </td>
-                  <td className="w-16">
-                    <Skeleton variant="text" width="32px" />
-                  </td>
-                  <td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <Skeleton variant="avatar" className="w-8 h-8 rounded-aa-full shrink-0" />
-                      <div className="space-y-1.5 flex-1">
-                        <Skeleton variant="text" width="140px" />
-                        <Skeleton variant="text" width="90px" />
+                      <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700/60 shrink-0" />
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+                        <div className="h-3 w-20 rounded bg-slate-100 dark:bg-slate-800" />
                       </div>
                     </div>
                   </td>
-                  <td>
-                    <div className="space-y-1.5">
-                      <Skeleton variant="text" width="100px" />
-                      <Skeleton variant="text" width="70px" />
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                      <div className="h-3 w-16 rounded bg-slate-100 dark:bg-slate-800" />
                     </div>
                   </td>
-                  <td>
-                    <Skeleton variant="text" width="60px" />
-                  </td>
-                  <td className="text-right">
-                    <Skeleton variant="text" width="30px" className="ml-auto" />
-                  </td>
-                  <td>
-                    <Skeleton variant="badge" width="80px" />
-                  </td>
-                  <td>
-                    <Skeleton variant="badge" width="60px" />
-                  </td>
-                  <td className="w-12 text-right">
-                    <Skeleton variant="text" width="24px" className="ml-auto" />
-                  </td>
+                  <td className="px-4 py-3"><div className="h-5 w-16 rounded bg-slate-200 dark:bg-slate-700/60" /></td>
+                  <td className="px-4 py-3"><div className="h-5 w-12 rounded-full bg-slate-200 dark:bg-slate-700/60" /></td>
+                  <td className="px-4 py-3"><div className="h-5 w-20 rounded-md bg-slate-200 dark:bg-slate-700/60" /></td>
+                  <td className="px-4 py-3"><div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-slate-700/60" /></td>
+                  <td className="w-12 px-4 py-3 text-center"><div className="h-6 w-6 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" /></td>
                 </tr>
               ))
+            ) : isError ? (
+              <tr>
+                <td colSpan={9} className="px-4 py-8">
+                  <PlatformErrorState size="sm" error={error} onRetry={onRetry} retryLoading={isPending} />
+                </td>
+              </tr>
+            ) : rows.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="px-4 py-10 text-center text-slate-500">
+                  {getEmptyMessage()}
+                </td>
+              </tr>
             ) : (
               rows.map((row, index) => (
                 <PlatformCompaniesTableRow
@@ -150,6 +129,8 @@ export default function PlatformCompaniesTable({
                   index={index}
                   effectivePage={effectivePage}
                   pageSize={pageSize}
+                  copiedId={copiedId}
+                  onCopyLoginCode={handleCopyLoginCode}
                   districtName={districtName}
                   regionName={regionName}
                   menuId={menuId}
@@ -158,6 +139,7 @@ export default function PlatformCompaniesTable({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onToggleActive={onToggleActive}
+                  t={t}
                 />
               ))
             )}
@@ -165,17 +147,53 @@ export default function PlatformCompaniesTable({
         </table>
       </div>
 
-      {/* Pager: yuklanishda yashiriladi */}
-      {!isPending && rows.length > 0 && (
-        <PlatformCompanyPager
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
-      )}
+      {/* Mobile Card View (< md) */}
+      <div className="md:hidden">
+        {isPending ? (
+          <div className="space-y-3 p-3">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="h-36 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="p-4">
+            <PlatformErrorState size="sm" error={error} onRetry={onRetry} retryLoading={isPending} />
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-sm">
+            {getEmptyMessage()}
+          </div>
+        ) : (
+          <div className="space-y-3 p-3">
+            {rows.map((row) => (
+              <PlatformCompanyMobileCard
+                key={row.id}
+                row={row}
+                copiedId={copiedId}
+                onCopyLoginCode={handleCopyLoginCode}
+                districtName={districtName}
+                regionName={regionName}
+                onSelectCompany={onSelectCompany}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleActive={onToggleActive}
+                t={t}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <TablePagination
+        variant="aa"
+        page={page}
+        displayPage={effectivePage}
+        pageSize={pageSize}
+        total={total}
+        totalPages={safeTotalPages}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   );
 }

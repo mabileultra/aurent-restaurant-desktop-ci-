@@ -41,17 +41,17 @@ export default function StoresTableRow({
   return (
     <tr
       onClick={() => onSelectStore?.(row)}
-      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+      className="border-b border-aa-line hover:bg-aa-surface-hover transition-colors cursor-pointer group"
     >
       <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
 
       {/* Filial nomi + Avatar badge */}
-      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
+      <td className="px-4 py-3 font-medium text-aa-ink">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center shrink-0 text-xs font-bold font-mono">
+          <div className="w-7 h-7 rounded-aa-md bg-aa-surface-sunken text-aa-ink border border-aa-line flex items-center justify-center shrink-0 text-xs font-bold font-mono">
             {getCompanyInitials(row.name)}
           </div>
-          <span className="font-semibold text-slate-900 dark:text-white truncate max-w-xs group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors" title={row.name}>
+          <span className="font-semibold text-aa-ink truncate max-w-xs group-hover:text-aa-brand transition-colors" title={row.name}>
             {row.name}
           </span>
         </div>
@@ -59,11 +59,11 @@ export default function StoresTableRow({
 
       {/* Kompaniya */}
       {showCompany && (
-        <td className="px-4 py-3 text-slate-700 dark:text-slate-300 font-medium truncate max-w-xs" title={row.companyName || ''}>
+        <td className="px-4 py-3 text-aa-ink-muted font-medium truncate max-w-xs" title={row.companyName || ''}>
           {row.companyName ? (
             row.companyName
           ) : (
-            <span className="text-slate-400 dark:text-slate-600 font-medium">—</span>
+            <span className="text-aa-ink-subtle font-medium">—</span>
           )}
         </td>
       )}
@@ -72,24 +72,24 @@ export default function StoresTableRow({
       <td className="px-4 py-3">
         {hasLocation ? (
           <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100 truncate">
+            <div className="font-medium text-aa-ink truncate">
               {validDistrict || validRegion}
             </div>
             {validDistrict && validRegion && validDistrict !== validRegion ? (
-              <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              <div className="text-xs text-aa-ink-muted truncate">
                 {validRegion}
               </div>
             ) : null}
           </div>
         ) : (
-          <span className="text-slate-400 dark:text-slate-600 font-medium">—</span>
+          <span className="text-aa-ink-subtle font-medium">—</span>
         )}
       </td>
 
       {/* Filial / Biznes turi */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium border ${badgeClass}`}>
-          <TypeIcon size={12} className="shrink-0 text-slate-500 dark:text-slate-400" />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border border-aa-line bg-aa-surface-sunken text-aa-ink-muted">
+          <TypeIcon size={12} className="shrink-0 text-aa-ink-muted" />
           <span>
             {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`, {
               defaultValue: row.businessType || 'Universal',
@@ -99,29 +99,29 @@ export default function StoresTableRow({
       </td>
 
       {/* Manzil */}
-      <td className="max-w-xs truncate px-4 py-3 text-slate-600 dark:text-slate-400" title={row.address || ''}>
-        {row.address || <span className="text-slate-400 dark:text-slate-600 font-medium">—</span>}
+      <td className="max-w-xs truncate px-4 py-3 text-aa-ink-muted" title={row.address || ''}>
+        {row.address || <span className="text-aa-ink-subtle font-medium">—</span>}
       </td>
 
       {/* Telefon */}
-      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap">
+      <td className="px-4 py-3 text-aa-ink-muted font-mono text-xs whitespace-nowrap">
         {row.phone ? (
           formatUzPhone(row.phone)
         ) : (
-          <span className="text-slate-400 dark:text-slate-600 font-sans font-medium">—</span>
+          <span className="text-aa-ink-subtle font-sans font-medium">—</span>
         )}
       </td>
 
       {/* Holat (Faol / Nofaol) */}
       <td className="px-4 py-3 whitespace-nowrap">
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
             row.active
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+              ? 'border-transparent bg-aa-success-soft text-aa-success bg-emerald-50'
+              : 'border-aa-line bg-aa-surface text-aa-ink-muted'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${row.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${row.active ? 'bg-aa-success bg-emerald-500' : 'bg-aa-ink-subtle'}`} />
           {row.active ? t('common.active', { defaultValue: 'Faol' }) : t('common.inactive', { defaultValue: 'Nofaol' })}
         </span>
       </td>
@@ -129,6 +129,7 @@ export default function StoresTableRow({
       {/* Harakatlar (Actions) */}
       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
         <TableRowActionsMenu
+          variant="aa"
           open={menuId === row.id}
           onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
           actions={[

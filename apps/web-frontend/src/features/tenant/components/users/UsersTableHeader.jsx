@@ -18,12 +18,12 @@ export default function UsersTableHeader({
 }) {
   const renderSortIcon = (field) => {
     if (sortField !== field) {
-      return <ArrowUpDown size={13} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" />;
+      return <ArrowUpDown size={13} className="text-aa-ink-subtle group-hover:text-aa-ink" />;
     }
     return sortDirection === 'asc' ? (
-      <ArrowUp size={13} className="text-purple-600 dark:text-purple-400" />
+      <ArrowUp size={13} className="text-aa-ink" />
     ) : (
-      <ArrowDown size={13} className="text-purple-600 dark:text-purple-400" />
+      <ArrowDown size={13} className="text-aa-ink" />
     );
   };
 
@@ -41,10 +41,11 @@ export default function UsersTableHeader({
 
   return (
     <thead>
-      <tr className="border-b border-slate-200 bg-slate-50/90 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-400 sticky top-0 z-10">
+      <tr className="border-b border-aa-line bg-aa-surface-sunken text-xs font-semibold text-aa-ink-muted sticky top-0 z-10">
         {/* Checkbox select */}
         <th className="w-12 px-3 py-3.5 text-center">
           <BaseCheckbox
+            variant="aa"
             checked={allSelected}
             ref={(input) => {
               if (input) input.indeterminate = someSelected;
@@ -62,7 +63,7 @@ export default function UsersTableHeader({
           aria-sort={getSortAria('fullName')}
           onClick={() => onSort?.('fullName')}
           onKeyDown={(e) => handleKeySort(e, 'fullName')}
-          className="w-[34%] min-w-[220px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+          className="w-[34%] min-w-[220px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-aa-surface-hover"
         >
           <div className="flex items-center gap-1.5 font-semibold">
             <span>{t('users.colUser')}</span>
@@ -77,7 +78,7 @@ export default function UsersTableHeader({
           aria-sort={getSortAria('role')}
           onClick={() => onSort?.('role')}
           onKeyDown={(e) => handleKeySort(e, 'role')}
-          className="w-[18%] min-w-[120px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+          className="w-[18%] min-w-[120px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-aa-surface-hover"
         >
           <div className="flex items-center gap-1.5 font-semibold">
             <span>{t('users.colRole')}</span>
@@ -92,7 +93,7 @@ export default function UsersTableHeader({
           aria-sort={getSortAria('company')}
           onClick={() => onSort?.('company')}
           onKeyDown={(e) => handleKeySort(e, 'company')}
-          className="w-[32%] min-w-[200px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+          className="w-[32%] min-w-[200px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-aa-surface-hover"
         >
           <div className="flex items-center gap-1.5 font-semibold">
             <span>{isPlatform ? t('users.colCompany') : t('users.colStores', { defaultValue: 'Filiallar' })}</span>
@@ -107,10 +108,10 @@ export default function UsersTableHeader({
           aria-sort={getSortAria('status')}
           onClick={() => onSort?.('status')}
           onKeyDown={(e) => handleKeySort(e, 'status')}
-          className="w-[16%] min-w-[100px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+          className="w-[16%] min-w-[100px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-aa-surface-hover"
         >
           <div className="flex items-center gap-1.5 font-semibold">
-            <span>{t('platform.colStatus', { defaultValue: 'HOLAT' })}</span>
+            <span>{t('platform.colStatus', { defaultValue: 'Holat' })}</span>
             {renderSortIcon('status')}
           </div>
         </th>

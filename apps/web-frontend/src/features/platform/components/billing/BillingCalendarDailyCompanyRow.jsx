@@ -43,7 +43,7 @@ export default function BillingCalendarDailyCompanyRow({
         onKeyDown={(e) => e.key === 'Enter' && onOpenCompany(item.companyId, company)}
       >
         {/* Avatar */}
-        <div className={`bc-cal-company-avatar bc-avatar--${stateTone}`}>
+        <div className="w-8 h-8 rounded-aa-sm bg-aa-surface-sunken text-aa-ink-muted border border-aa-line inline-flex items-center justify-center text-xs font-semibold shrink-0">
           {initials(name)}
         </div>
 
@@ -53,7 +53,7 @@ export default function BillingCalendarDailyCompanyRow({
             <span className="bc-cal-company-name" title={name}>
               {name}
             </span>
-            <span className={`bc-badge bc-badge--${stateTone} text-[10px]`}>
+            <span className={`bc-badge bc-badge--${stateTone} text-xs`}>
               {badgeLabel}
             </span>
           </div>
@@ -86,14 +86,14 @@ export default function BillingCalendarDailyCompanyRow({
           <div className="bc-cal-company-amount font-bold">
             {money(item.amount)} {currency}
           </div>
-          <div className={`bc-cal-company-balance ${item.balance < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
+          <div className={`bc-cal-company-balance ${item.balance < 0 ? 'text-aa-danger' : 'text-aa-ink-muted'}`}>
             {k('balanceLabel', {
               amount: money(item.balance),
               currency,
               defaultValue: `Balans: ${money(item.balance)} ${currency}`,
             })}
           </div>
-          <div className="bc-cal-company-arrow">
+          <div className="w-8 h-8 rounded-aa-sm border border-transparent inline-flex items-center justify-center text-aa-ink-muted group-hover:text-aa-ink transition-colors">
             <ChevronRight size={15} />
           </div>
         </div>

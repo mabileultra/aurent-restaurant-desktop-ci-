@@ -13,6 +13,7 @@ const BaseCheckbox = forwardRef(function BaseCheckbox(
     onBlur,
     disabled = false,
     size = 18,
+    variant = 'default',
     className = '',
     id,
     name,
@@ -55,9 +56,11 @@ const BaseCheckbox = forwardRef(function BaseCheckbox(
     inputProps.defaultChecked = defaultChecked;
   }
 
+  const variantClass = variant === 'aa' ? 'checkbox-wrapper-19--aa' : '';
+
   const checkboxBox = (
     <span
-      className={`checkbox-wrapper-19 shrink-0 ${disabled ? 'checkbox-wrapper-19--disabled' : ''} ${className}`}
+      className={`checkbox-wrapper-19 shrink-0 ${variantClass} ${disabled ? 'checkbox-wrapper-19--disabled' : ''} ${className}`}
       style={{ '--checkbox-height': `${size}px` }}
       title={title}
     >

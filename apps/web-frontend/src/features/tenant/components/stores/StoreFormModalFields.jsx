@@ -28,6 +28,7 @@ export default function StoreFormModalFields({
           <input type="hidden" {...register('companyId')} />
           <BaseSelect
             label={t('stores.colCompany')}
+            variant="aa"
             required
             disabled={!isCreate}
             value={watchedCompanyId ?? ''}
@@ -50,6 +51,7 @@ export default function StoreFormModalFields({
       ) : null}
 
       <BaseInput
+        className="aa-input border-aa-line-strong"
         label={t('stores.colName')}
         required
         {...register('name')}
@@ -61,6 +63,7 @@ export default function StoreFormModalFields({
         <input type="hidden" {...register('businessTypeId')} />
         <BaseSelect
           label={t('stores.colBusinessType')}
+          variant="aa"
           required
           disabled={typesLoading || needsCompany}
           value={watchedBusinessType ?? ''}
@@ -80,12 +83,13 @@ export default function StoreFormModalFields({
             disabled: !bt.value,
           }))}
         />
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('stores.businessTypeHint')}</p>
+        <p className="mt-1 text-xs text-aa-ink-muted">{t('stores.businessTypeHint')}</p>
       </div>
 
       <input type="hidden" {...register('regionCode')} />
       <input type="hidden" {...register('districtCode')} />
       <RegionDistrictFields
+        variant="aa"
         regionCode={watchedRegionCode}
         districtCode={watchedDistrictCode}
         required={isCreate}
@@ -99,6 +103,7 @@ export default function StoreFormModalFields({
 
       <BaseInput
         as="textarea"
+        className="aa-input border-aa-line-strong aa-size-textarea h-auto"
         label={t('stores.colAddress')}
         rows={2}
         {...register('address')}
@@ -107,6 +112,7 @@ export default function StoreFormModalFields({
       />
 
       <BaseInput
+        className="aa-input border-aa-line-strong"
         label={t('stores.colPhone')}
         required={isCreate}
         type="tel"
@@ -123,7 +129,7 @@ export default function StoreFormModalFields({
         placeholder="+998 (90) 123-45-67"
       />
 
-      <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+      <label className="flex items-center gap-2 text-sm text-aa-ink cursor-pointer">
         <BaseCheckbox {...register('active')} size={18} />
         <span>
           {showCompanySelect

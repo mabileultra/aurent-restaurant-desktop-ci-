@@ -73,14 +73,15 @@ export default function BillingCompanyManageConfirmModal({
       title={title}
       onClose={isBusy ? () => {} : onClose}
       size="sm"
+      className="billing-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       footer={(
-        <div className="flex justify-end gap-2">
-          <button type="button" className="bc-btn bc-btn--outline" onClick={onClose} disabled={isBusy}>
+        <div className="flex justify-end gap-2 w-full">
+          <button type="button" className="aa-btn aa-btn--secondary aa-size-md cursor-pointer" onClick={onClose} disabled={isBusy}>
             {t('common.cancel', { defaultValue: 'Bekor qilish' })}
           </button>
           <button
             type="button"
-            className={confirmBtnClass}
+            className={`aa-btn aa-size-md cursor-pointer ${isDebit || isBlock ? 'aa-btn--danger' : 'aa-btn--primary'} ${confirmBtnClass}`}
             disabled={isBusy}
             onClick={handleConfirm}
           >
@@ -89,7 +90,7 @@ export default function BillingCompanyManageConfirmModal({
         </div>
       )}
     >
-      <div className="py-2 text-sm text-slate-700 dark:text-slate-300">
+      <div className="py-2 text-sm text-aa-ink">
         <p className="leading-relaxed">{message}</p>
       </div>
     </BaseModal>

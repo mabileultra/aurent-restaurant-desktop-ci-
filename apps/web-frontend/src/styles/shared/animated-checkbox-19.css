@@ -16,6 +16,10 @@
   --cb-border: #475569;
 }
 
+.checkbox-wrapper-19--aa {
+  --cb-border: var(--aa-line-strong, #cbd5e1);
+}
+
 .checkbox-wrapper-19 input[type="checkbox"] {
   display: none;
   visibility: hidden;

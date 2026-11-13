@@ -74,34 +74,40 @@ export default function BillingActionableLedger({ t, money, p }) {
   };
 
   return (
-    <div className="bc-card bc-ledger-card">
-      <div className="bc-ledger-card__head">
+    <div className="admin-table-shell admin-table-shell--aa bc-card bc-ledger-card rounded-aa-lg bg-aa-surface border border-aa-line p-4 sm:p-5">
+      <div className="bc-ledger-card__head flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="bc-report-kpi-card__icon bc-kpi--info">
-              <CalendarClock size={16} aria-hidden />
-            </span>
-            <h3 className="bc-chart-card__title">
+            <CalendarClock size={16} className="text-aa-ink-muted" aria-hidden />
+            <h3 className="bc-chart-card__title text-sm font-semibold text-aa-ink">
               {t('platform.billing.collections.reports.ledgerTitle', { defaultValue: 'Yaqin kunlarda to‘lashi kerak bo‘lganlar va qarzdorlar' })}
             </h3>
           </div>
-          <p className="bc-chart-card__sub">
+          <p className="bc-chart-card__sub text-xs text-aa-ink-muted mt-1">
             {t('platform.billing.collections.reports.ledgerSub', { defaultValue: 'Muddati o‘tgan yoki yaqin 30 kun ichida to‘lov kutilayotgan kompaniyalar ro‘yxati' })}
           </p>
         </div>
 
         <div className="bc-ledger-card__actions flex flex-wrap items-center gap-2">
-          <div className="bc-ledger-tabs">
+          <div className="bc-ledger-tabs aa-seg inline-flex items-center p-0.5 rounded-aa-md bg-aa-surface-sunken border border-aa-line">
             <button
               type="button"
-              className={`bc-ledger-tab ${filter === 'ALL' ? 'is-active' : ''}`}
+              className={`bc-ledger-tab aa-seg-btn px-2.5 py-1 text-xs font-medium rounded-aa-sm transition-colors ${
+                filter === 'ALL'
+                  ? 'is-active bg-aa-surface text-aa-ink font-semibold shadow-xs'
+                  : 'text-aa-ink-muted hover:text-aa-ink'
+              }`}
               onClick={() => setFilter('ALL')}
             >
               {t('common.all', { defaultValue: 'Barchasi' })} ({counts.all})
             </button>
             <button
               type="button"
-              className={`bc-ledger-tab bc-ledger-tab--danger ${filter === 'OVERDUE' ? 'is-active' : ''}`}
+              className={`bc-ledger-tab bc-ledger-tab--danger aa-seg-btn px-2.5 py-1 text-xs font-medium rounded-aa-sm inline-flex items-center gap-1 transition-colors ${
+                filter === 'OVERDUE'
+                  ? 'is-active bg-aa-surface text-aa-danger font-semibold shadow-xs'
+                  : 'text-aa-ink-muted hover:text-aa-danger'
+              }`}
               onClick={() => setFilter('OVERDUE')}
             >
               <AlertCircle size={13} aria-hidden />
@@ -109,7 +115,11 @@ export default function BillingActionableLedger({ t, money, p }) {
             </button>
             <button
               type="button"
-              className={`bc-ledger-tab bc-ledger-tab--warning ${filter === 'DUE_SOON' ? 'is-active' : ''}`}
+              className={`bc-ledger-tab bc-ledger-tab--warning aa-seg-btn px-2.5 py-1 text-xs font-medium rounded-aa-sm inline-flex items-center gap-1 transition-colors ${
+                filter === 'DUE_SOON'
+                  ? 'is-active bg-aa-surface text-aa-warning font-semibold shadow-xs'
+                  : 'text-aa-ink-muted hover:text-aa-warning'
+              }`}
               onClick={() => setFilter('DUE_SOON')}
             >
               <CalendarClock size={13} aria-hidden />
@@ -117,18 +127,19 @@ export default function BillingActionableLedger({ t, money, p }) {
             </button>
           </div>
 
-          <div className="bc-ledger-search">
-            <Search size={14} aria-hidden />
+          <div className="bc-ledger-search relative inline-flex items-center">
+            <Search size={14} className="absolute left-3 text-aa-ink-muted pointer-events-none" aria-hidden />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('common.search', { defaultValue: 'Qidiruv…' })}
+              className="h-9 sm:h-9 h-10 pl-9 pr-3 text-xs sm:text-xs text-sm rounded-aa-md border border-aa-line-strong bg-aa-surface text-aa-ink placeholder:text-aa-ink-subtle focus:outline-none focus:ring-1 focus:ring-aa-primary"
             />
           </div>
 
           <button
             type="button"
-            className="bc-btn bc-btn--outline bc-btn--sm"
+            className="aa-btn aa-btn--secondary aa-size-sm inline-flex items-center gap-1.5"
             onClick={handleExport}
             disabled={isExporting}
             title="Excel eksport"
@@ -139,25 +150,25 @@ export default function BillingActionableLedger({ t, money, p }) {
         </div>
       </div>
 
-      <div className="bc-table-wrap">
-        <table className="bc-table">
+      <div className="bc-table-wrap overflow-x-auto -mx-4 sm:-mx-5">
+        <table className="bc-table w-full text-left border-collapse">
           <thead>
-            <tr>
-              <th>{t('platform.billing.collections.colCompany', { defaultValue: 'Kompaniya' })}</th>
-              <th>{t('platform.billing.collections.colPlan', { defaultValue: 'Tarif' })}</th>
-              <th className="bc-num">{t('platform.billing.collections.colMonthly', { defaultValue: 'Oylik to‘lov' })}</th>
-              <th className="bc-num">{t('platform.billing.collections.colBalance', { defaultValue: 'Balans' })}</th>
-              <th>{t('platform.billing.collections.colNext', { defaultValue: 'To‘lov muddati' })}</th>
-              <th>{t('platform.billing.collections.colStatus', { defaultValue: 'Holati' })}</th>
-              <th className="text-right">{t('common.actions', { defaultValue: 'Amallar' })}</th>
+            <tr className="border-b border-aa-line bg-aa-surface-sunken">
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted">{t('platform.billing.collections.colCompany', { defaultValue: 'Kompaniya' })}</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted">{t('platform.billing.collections.colPlan', { defaultValue: 'Tarif' })}</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted text-right">{t('platform.billing.collections.colMonthly', { defaultValue: 'Oylik to‘lov' })}</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted text-right">{t('platform.billing.collections.colBalance', { defaultValue: 'Balans' })}</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted">{t('platform.billing.collections.colNext', { defaultValue: 'To‘lov muddati' })}</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted">{t('platform.billing.collections.colStatus', { defaultValue: 'Holati' })}</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-aa-ink-muted text-right">{t('common.actions', { defaultValue: 'Amallar' })}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-aa-line">
             {listQ.isLoading ? (
-              <tr><td colSpan={7} className="bc-table__empty">{t('common.loading')}</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-xs text-aa-ink-muted">{t('common.loading')}</td></tr>
             ) : filteredRows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="bc-table__empty py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-xs text-aa-ink-muted">
                   {t('platform.billing.collections.reports.noDueCompanies', { defaultValue: 'Qarzdor yoki yaqin kunda to‘lov kutilayotgan kompaniyalar mavjud emas' })}
                 </td>
               </tr>

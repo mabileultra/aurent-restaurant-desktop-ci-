@@ -20,6 +20,7 @@ export default function StoresFiltersBar({
 }) {
   return (
     <PlatformCompactFilterBar
+      className="platform-filter-bar--aa"
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t(
@@ -39,12 +40,16 @@ export default function StoresFiltersBar({
       extra={(
         <>
           <GeoFilterSelects
+            variant="aa"
+            size="md"
             regionCode={regionCode}
             districtCode={districtCode}
             onChange={onGeoChange}
           />
           {showCompanySelect ? (
             <StoresCompanyFilter
+              variant="aa"
+              size="md"
               t={t}
               companies={companies}
               companyId={companyId}

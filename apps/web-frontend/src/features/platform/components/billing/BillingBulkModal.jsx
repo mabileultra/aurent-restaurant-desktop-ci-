@@ -41,10 +41,11 @@ export default function BillingBulkModal({ p }) {
       title={isPlan ? k('changePlan') : k('changeDate')}
       onClose={a.closeBulk}
       size="md"
+      className="billing-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       footer={(
-        <div className="flex justify-end gap-2">
-          <button type="button" className="bc-btn bc-btn--outline" onClick={a.closeBulk}>{t('common.cancel')}</button>
-          <button type="button" className="bc-btn bc-btn--primary" disabled={!valid || a.bulkBusy} onClick={submit}>
+        <div className="flex justify-end gap-2 w-full">
+          <button type="button" className="aa-btn aa-btn--secondary aa-size-md cursor-pointer" onClick={a.closeBulk}>{t('common.cancel')}</button>
+          <button type="button" className="aa-btn aa-btn--primary aa-size-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled={!valid || a.bulkBusy} onClick={submit}>
             {k('confirm', { count: targets.length })}
           </button>
         </div>
@@ -52,9 +53,10 @@ export default function BillingBulkModal({ p }) {
     >
       <div className="bc-form space-y-4">
         {isPlan ? (
-          <label className="bc-form__field">
-            <span>{t('platform.billing.collections.colPlan')} *</span>
+          <label className="bc-form__field flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-aa-ink-muted">{t('platform.billing.collections.colPlan')} *</span>
             <PlatformSelect
+              variant="aa"
               size="md"
               value={planId}
               onChange={(e) => setPlanId(e.target.value)}
@@ -67,9 +69,11 @@ export default function BillingBulkModal({ p }) {
             />
           </label>
         ) : (
-          <label className="bc-form__field">
-            <span>{t('platform.billing.collections.colNext')} *</span>
+          <label className="bc-form__field flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-aa-ink-muted">{t('platform.billing.collections.colNext')} *</span>
             <PlatformDatePicker
+              variant="aa"
+              size="md"
               min={today}
               value={date}
               onChange={setDate}
@@ -80,13 +84,13 @@ export default function BillingBulkModal({ p }) {
         )}
 
         {/* Company Preview Section */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-3">
+        <div className="rounded-aa-md border border-aa-line bg-aa-surface-sunken p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-semibold text-aa-ink">
               {t('platform.billing.collections.bulk.selected', { count: targets.length })}
             </span>
             {hasDebt && (
-              <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+              <span className="text-xs font-bold text-aa-danger">
                 {indebtedTargets.length} ta qarzdor
               </span>
             )}
@@ -98,17 +102,17 @@ export default function BillingBulkModal({ p }) {
               return (
                 <div
                   key={b.companyId}
-                  className="flex items-center justify-between p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/60"
+                  className="flex items-center justify-between p-1.5 rounded-aa-sm bg-aa-surface border border-aa-line"
                 >
-                  <span className="truncate max-w-[200px] font-medium text-slate-800 dark:text-slate-200">
+                  <span className="truncate max-w-[200px] font-medium text-aa-ink">
                     {b.companyName || `#${b.companyId}`}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[11px] ${isOverdue ? 'text-rose-600 font-bold' : 'text-slate-500'}`}>
+                    <span className={`text-xs ${isOverdue ? 'text-aa-danger font-bold' : 'text-aa-ink-muted'}`}>
                       {money(b.balance)} {currency}
                     </span>
                     {isOverdue && (
-                      <span className="bc-badge bc-badge--danger text-[9px] px-1.5 py-0.2">
+                      <span className="px-1.5 py-0.5 rounded-full text-xs font-semibold bg-aa-danger-soft text-aa-danger border border-aa-line">
                         {t('platform.billing.collections.states.OVERDUE', { defaultValue: 'Qarz' })}
                       </span>
                     )}
@@ -121,28 +125,29 @@ export default function BillingBulkModal({ p }) {
 
         {/* Debt warning if indebted companies are in selection */}
         {hasDebt && !isPlan && (
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
+          <div className="p-3 rounded-aa-md bg-aa-warning-soft border border-aa-line text-xs text-aa-warning">
             <div className="flex items-center gap-2 font-bold mb-1">
               <AlertTriangle size={15} />
               <span>Qarzdor kompaniyalar mavjud</span>
             </div>
-            <p>
+            <p className="text-aa-ink">
               Tanlangan kompaniyalar orasida {indebtedTargets.length} ta qarzi bor kompaniya bor.
               Sana o‘zgartirilsa, avtomatik yechish kechiktirilishi mumkin.
             </p>
           </div>
         )}
 
-        <p className="bc-warn text-xs">
+        <p className="bc-warn text-xs text-aa-warning flex items-center gap-1.5">
           <AlertTriangle size={15} aria-hidden />
           <span>{isPlan ? k('planWarning') : k('dateWarning')}</span>
         </p>
 
-        {a.bulkSkipped ? <p className="bc-sub text-xs">{k('skipped', { count: a.bulkSkipped })}</p> : null}
+        {a.bulkSkipped ? <p className="bc-sub text-xs text-aa-ink-muted">{k('skipped', { count: a.bulkSkipped })}</p> : null}
 
         {/* Explicit confirmation checkbox */}
-        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer pt-1">
+        <label className="flex items-center gap-2 text-xs font-medium text-aa-ink cursor-pointer pt-1">
           <BaseCheckbox
+            variant="aa"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
             size={18}

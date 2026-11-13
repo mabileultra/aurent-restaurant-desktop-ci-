@@ -1,5 +1,4 @@
-export const userFormInputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-  focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
+export const userFormInputCls = `aa-input w-full rounded-aa-md border border-aa-line-strong bg-aa-surface px-3 py-2 text-sm text-aa-ink h-10`;
 
 export function toStoreIdSet(ids) {
   if (ids instanceof Set) return ids;
