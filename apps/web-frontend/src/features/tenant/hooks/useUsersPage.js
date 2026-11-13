@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { companyApi, platformBusinessTypeApi } from '../../../api';
@@ -61,6 +61,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const filters = useUsersPageFilters();
   const modals = useUsersPageModals({ t });
+  const [menuId, setMenuId] = useState(null);
 
   const {
     page: usersPage,
@@ -157,6 +158,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     currentUsername,
     ...filters,
     ...modals,
+    menuId,
+    setMenuId,
     isLoading,
     firstLoad,
     isRefreshing,
