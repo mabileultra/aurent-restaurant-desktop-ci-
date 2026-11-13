@@ -11,6 +11,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
+import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { usePharmacyPosActions } from './pharmacyPosActions';
 
@@ -29,8 +30,11 @@ export const PHARMACY_POS_TABS = [
 export default function PharmacyPosTabs({ onOpenShift }) {
   const actions = usePharmacyPosActions();
   const { hasModule } = useModuleAccess();
+  const isCashier = useAuthStore((s) => s.user?.role === 'CASHIER');
   const parkedCount = useCartStore((s) => s.parkedCarts?.length || 0);
-  const visibleTabs = PHARMACY_POS_TABS.filter((tab) => !tab.moduleId || hasModule(tab.moduleId));
+  const visibleTabs = PHARMACY_POS_TABS.filter(
+    (tab) => (!tab.to || !isCashier) && (!tab.moduleId || hasModule(tab.moduleId)),
+  );
 
   return (
     <nav className="pharmacy-pos-tabs" aria-label="Разделы кассы">

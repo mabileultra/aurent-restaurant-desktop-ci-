@@ -81,7 +81,7 @@ export const PHARM_STOCK_CHILDREN = [
 ];
 
 export const PHARM_SALES_CHILDREN = [
-  { to: PHARM_SALES_PATH, key: 'sales', icon: Receipt, moduleId: 'cashierSales' },
+  { to: PHARM_SALES_PATH, key: 'sales', icon: Receipt, anyModules: ['cashierSales', 'reportsSales', 'reportsSalesDaily'] },
   { to: PHARM_RETURNS_PATH, key: 'returns', icon: RotateCcw, moduleId: 'reportsReturns' },
 ];
 
