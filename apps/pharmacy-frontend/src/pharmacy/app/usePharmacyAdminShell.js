@@ -9,6 +9,7 @@ import { logoutAndResetSession } from '../../utils/authSession';
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import { syncRootTheme } from '../../store/themeStore';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
+import { canAccessBilling } from './pharmacyRouteAccess';
 import {
   PHARM_FINANCE_CHILDREN,
   PHARM_REGISTER_CHILDREN,
@@ -98,7 +99,12 @@ export function usePharmacyAdminShell() {
     if (pathStarts(path, '/users')) setUsersOpen(true);
   }, [path]);
 
-  const filterByModule = (items) => items.filter((item) => !item.moduleId || hasModule(item.moduleId));
+  const filterByModule = (items) => items.filter((item) => {
+    if (Array.isArray(item.anyModules) && item.anyModules.length > 0) {
+      return item.anyModules.some((id) => hasModule(id));
+    }
+    return !item.moduleId || hasModule(item.moduleId);
+  });
   const stockNav = filterByModule(PHARM_STOCK_CHILDREN);
   const salesNav = filterByModule(PHARM_SALES_CHILDREN);
   const financeNav = filterByModule(PHARM_FINANCE_CHILDREN);
@@ -107,7 +113,7 @@ export function usePharmacyAdminShell() {
   const reportsStockNav = filterByModule(PHARM_REPORT_STOCK_CHILDREN);
   const usersNav = filterByModule(PHARM_USER_CHILDREN);
   const visibleRest = filterByModule(PHARM_REST_NAV).filter(
-    (item) => item.to !== '/billing' || user?.role === 'ADMIN'
+    (item) => item.to !== '/billing' || canAccessBilling(user?.role)
   );
 
   const handleLogout = () => {

@@ -1,5 +1,6 @@
 import { lazy } from 'react';
-import { Route } from 'react-router-dom';
+import { renderGuardedRoutes } from './PharmacyRouteGuard';
+import { BILLING_ALLOWED_ROLES } from './pharmacyRouteAccess';
 
 const FinanceDashboardPage = lazy(() => import('../../features/finance/pages/FinanceDashboardPage'));
 const FinanceAccountsPage = lazy(() => import('../../features/finance/pages/FinanceAccountsPage'));
@@ -25,36 +26,33 @@ const UsersBarcodePrintPage = lazy(() => import('../../features/tenant/pages/Use
 
 const TenantBillingPage = lazy(() => import('../../features/billing/pages/TenantBillingPage'));
 
+export const OFFICE_ROUTES = [
+  { path: '/finance/dashboard', module: 'financeDashboard', Component: FinanceDashboardPage },
+  { path: '/finance/accounts', module: 'financeAccounts', Component: FinanceAccountsPage },
+  { path: '/finance/incomes', module: 'financeIncomes', Component: FinanceIncomesPage },
+  { path: '/finance/expenses', module: 'financeExpenses', Component: FinanceExpensesPage },
+  { path: '/finance/reports', module: 'financeReports', Component: FinanceReportsPage },
+  { path: '/finance/categories', module: 'financeCategories', Component: FinanceCategoriesPage },
+  { path: '/finance/debts', module: 'financeDebts', Component: FinanceDebtsPage },
+  { path: '/finance/transfers', module: 'financeTransfers', Component: FinanceTransfersPage },
+  { path: '/finance/audit', module: 'financeAudit', Component: FinanceAuditPage },
+  { path: '/finance/sync', module: 'financeSync', Component: FinanceSyncPage },
+  { path: '/finance', module: 'financeDashboard', Component: FinanceDashboardPage },
+  { path: '/cash-registers/list', module: 'registersList', Component: CashRegistersListPage },
+  { path: '/cash-registers/z-reports', module: 'registersZReports', Component: ZReportsPage },
+  { path: '/cash-registers/transfer', module: 'registersTransfer', Component: CashRegisterTransferPage },
+  { path: '/cash-registers/config', module: 'registersConfig', Component: CashRegisterConfigPage },
+  { path: '/cash-registers', module: 'registersList', Component: CashRegistersListPage },
+  { path: '/stores', module: 'stores', Component: StoresPage },
+  { path: '/users/list', module: 'usersList', Component: UsersPage },
+  { path: '/users/printer-settings', module: 'usersPrinterSettings', Component: UsersPrinterSettingsPage },
+  { path: '/users/branding-settings', module: 'usersBrandingSettings', Component: UsersBrandingSettingsPage },
+  { path: '/users/barcode-print', module: 'usersBarcodePrint', Component: UsersBarcodePrintPage },
+  { path: '/users', module: 'usersList', Component: UsersPage },
+  { path: '/billing', roles: BILLING_ALLOWED_ROLES, Component: TenantBillingPage },
+];
+
 /** Back-office routes that used to live on aurent for pharmacy. */
 export function pharmacyOfficeRoutes() {
-  return (
-    <>
-      <Route path="/finance/dashboard" element={<FinanceDashboardPage />} />
-      <Route path="/finance/accounts" element={<FinanceAccountsPage />} />
-      <Route path="/finance/incomes" element={<FinanceIncomesPage />} />
-      <Route path="/finance/expenses" element={<FinanceExpensesPage />} />
-      <Route path="/finance/reports" element={<FinanceReportsPage />} />
-      <Route path="/finance/categories" element={<FinanceCategoriesPage />} />
-      <Route path="/finance/debts" element={<FinanceDebtsPage />} />
-      <Route path="/finance/transfers" element={<FinanceTransfersPage />} />
-      <Route path="/finance/audit" element={<FinanceAuditPage />} />
-      <Route path="/finance/sync" element={<FinanceSyncPage />} />
-      <Route path="/finance" element={<FinanceDashboardPage />} />
-
-      <Route path="/cash-registers/list" element={<CashRegistersListPage />} />
-      <Route path="/cash-registers/z-reports" element={<ZReportsPage />} />
-      <Route path="/cash-registers/transfer" element={<CashRegisterTransferPage />} />
-      <Route path="/cash-registers/config" element={<CashRegisterConfigPage />} />
-      <Route path="/cash-registers" element={<CashRegistersListPage />} />
-
-      <Route path="/stores" element={<StoresPage />} />
-      <Route path="/users/list" element={<UsersPage />} />
-      <Route path="/users/printer-settings" element={<UsersPrinterSettingsPage />} />
-      <Route path="/users/branding-settings" element={<UsersBrandingSettingsPage />} />
-      <Route path="/users/barcode-print" element={<UsersBarcodePrintPage />} />
-      <Route path="/users" element={<UsersPage />} />
-
-      <Route path="/billing" element={<TenantBillingPage />} />
-    </>
-  );
+  return <>{renderGuardedRoutes(OFFICE_ROUTES)}</>;
 }

@@ -1,5 +1,6 @@
 import { lazy } from 'react';
-import { Route } from 'react-router-dom';
+import { renderGuardedRoutes } from './PharmacyRouteGuard';
+import { PHARMACY_REPORT_MODULES } from './pharmacyRouteAccess';
 
 const ReportsHubPage = lazy(() => import('../../features/reports/pages/ReportsHubPage'));
 const ProductSalesReportPage = lazy(() => import('../../features/reports/pages/ProductSalesReportPage'));
@@ -14,22 +15,22 @@ const StockTransfersReportPage = lazy(() => import('../../features/reports/pages
 const PriceRegistryJournalPage = lazy(() => import('../../features/reports/pages/PriceRegistryJournalPage'));
 const ReturnsPage = lazy(() => import('../../features/sales/pages/ReturnsPage'));
 
+export const REPORT_ROUTES = [
+  { path: '/reports', anyModules: PHARMACY_REPORT_MODULES, Component: ReportsHubPage },
+  { path: '/reports/sales/by-products', module: 'reportsSalesByProducts', Component: ProductSalesReportPage },
+  { path: '/reports/sales/by-stores', module: 'reportsSalesByStores', Component: StoreSalesReportPage },
+  { path: '/reports/sales/daily', module: 'reportsSalesDaily', Component: DailySummaryReportPage },
+  { path: '/reports/sales/cashiers', module: 'reportsCashierPerformance', Component: CashierPerformanceReportPage },
+  { path: '/reports/returns', module: 'reportsReturns', Component: ReturnsPage },
+  { path: '/reports/stock/low', module: 'reportsStockLow', Component: LowStockReportPage },
+  { path: '/reports/stock/receipts', module: 'reportsStockReceipts', Component: StockReceiptsReportPage },
+  { path: '/reports/stock/balances', module: 'reportsStockBalances', Component: StockBalancesReportPage },
+  { path: '/reports/stock/inventories', module: 'reportsStockInventories', Component: StockInventoriesReportPage },
+  { path: '/reports/stock/transfers', module: 'reportsStockTransfers', Component: StockTransfersReportPage },
+  { path: '/reports/stock/price-registry', module: 'reportsPriceRegistry', Component: PriceRegistryJournalPage },
+];
+
 /** Pharmacy reports only: sales + stock read-only core. */
 export function pharmacyReportRoutes() {
-  return (
-    <>
-      <Route path="/reports" element={<ReportsHubPage />} />
-      <Route path="/reports/sales/by-products" element={<ProductSalesReportPage />} />
-      <Route path="/reports/sales/by-stores" element={<StoreSalesReportPage />} />
-      <Route path="/reports/sales/daily" element={<DailySummaryReportPage />} />
-      <Route path="/reports/sales/cashiers" element={<CashierPerformanceReportPage />} />
-      <Route path="/reports/returns" element={<ReturnsPage />} />
-      <Route path="/reports/stock/low" element={<LowStockReportPage />} />
-      <Route path="/reports/stock/receipts" element={<StockReceiptsReportPage />} />
-      <Route path="/reports/stock/balances" element={<StockBalancesReportPage />} />
-      <Route path="/reports/stock/inventories" element={<StockInventoriesReportPage />} />
-      <Route path="/reports/stock/transfers" element={<StockTransfersReportPage />} />
-      <Route path="/reports/stock/price-registry" element={<PriceRegistryJournalPage />} />
-    </>
-  );
+  return <>{renderGuardedRoutes(REPORT_ROUTES)}</>;
 }

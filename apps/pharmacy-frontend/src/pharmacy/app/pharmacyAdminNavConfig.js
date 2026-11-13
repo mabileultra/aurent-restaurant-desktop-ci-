@@ -81,8 +81,8 @@ export const PHARM_STOCK_CHILDREN = [
 ];
 
 export const PHARM_SALES_CHILDREN = [
-  { to: PHARM_SALES_PATH, key: 'sales', icon: Receipt },
-  { to: PHARM_RETURNS_PATH, key: 'returns', icon: RotateCcw },
+  { to: PHARM_SALES_PATH, key: 'sales', icon: Receipt, anyModules: ['reportsSales', 'reportsSalesDaily'] },
+  { to: PHARM_RETURNS_PATH, key: 'returns', icon: RotateCcw, moduleId: 'reportsReturns' },
 ];
 
 /** Pharmacy-facing reports only (no grocery analytics / sync / dead / movements). */
