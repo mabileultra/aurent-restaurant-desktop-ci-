@@ -40,6 +40,25 @@ class DrugRegistrySourceFileTest {
     }
 
     @Test
+    void plainXlsxIsNotUnwrappedAsZipArchive() throws Exception {
+        Path xlsx = Files.createTempFile("drug-reg-", ".xlsx");
+        // OOXML starts with PK — same magic as ZIP, but must stay a workbook
+        Files.write(xlsx, new byte[] {
+            0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00, 0x08, 0x00
+        });
+        DrugRegistrySourceFile source = new DrugRegistrySourceFile("", "", "");
+        DrugRegistrySourceFile.Opened opened = source.openLocal(
+            xlsx,
+            "Дополнение №30.xlsx",
+            "upload:Дополнение №30.xlsx",
+            false
+        );
+        assertEquals(xlsx, opened.path());
+        opened.close();
+        Files.deleteIfExists(xlsx);
+    }
+
+    @Test
     void unpacksZipWithCyrillicEntryNamesViaCp866() throws Exception {
         Path zip = Files.createTempFile("drug-reg-", ".zip");
         Path xlsx = Files.createTempFile("lek-", ".xlsx");
