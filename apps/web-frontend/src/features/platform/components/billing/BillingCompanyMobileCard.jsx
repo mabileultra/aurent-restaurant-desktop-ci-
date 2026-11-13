@@ -13,7 +13,7 @@ function getMobileStatusBadge(state, label) {
   if (state === 'ACTIVE') {
     cls = 'bg-aa-success-soft text-aa-success border-aa-line';
   } else if (state === 'NOT_BILLED') {
-    cls = 'bg-aa-brand-soft text-aa-brand border-aa-line';
+    cls = 'bg-[#eaf1fe] text-[#1d4ed8] border-transparent dark:bg-[#1d4ed8]/20 dark:text-[#93c5fd]';
   }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${cls}`}>

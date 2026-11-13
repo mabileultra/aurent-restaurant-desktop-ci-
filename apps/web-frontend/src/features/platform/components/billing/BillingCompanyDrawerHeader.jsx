@@ -11,7 +11,7 @@ export function badgeClass(state) {
     case 'ACTIVE':
       return 'bg-aa-success-soft text-aa-success border-aa-line';
     case 'NOT_BILLED':
-      return 'bg-aa-brand-soft text-aa-brand border-aa-line';
+      return 'bg-[#eaf1fe] text-[#1d4ed8] border-transparent dark:bg-[#1d4ed8]/20 dark:text-[#93c5fd]';
     default:
       return 'bg-aa-surface-sunken text-aa-ink-muted border-aa-line';
   }

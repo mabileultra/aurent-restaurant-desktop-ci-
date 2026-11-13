@@ -1,6 +1,6 @@
 import React from 'react';
 import { Wallet } from 'lucide-react';
-import PlatformSelect from '../PlatformSelect';
+import { BaseSelect } from '../../../../components/ui';
 
 const METHOD_TONE = { CLICK: 'info', PAYME: 'success', BANK_TRANSFER: 'warning', CASH: 'neutral', OTHER: 'neutral' };
 const PERIODS = ['DAY', 'WEEK', 'MONTH', 'YEAR'];
@@ -29,7 +29,7 @@ export default function BillingMethodsBreakdown({ t, methods = [], period, onPer
           </div>
         </div>
         <div style={{ width: '8.5rem' }}>
-          <PlatformSelect
+          <BaseSelect
             size="sm"
             variant="aa"
             value={period}

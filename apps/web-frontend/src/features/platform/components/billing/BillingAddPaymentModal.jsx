@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { BaseModal } from '../../../../components/ui';
-import PlatformSelect from '../PlatformSelect';
+import { BaseModal, BaseSelect } from '../../../../components/ui';
 import {
   formatMoneyInputDigits,
   parseMoneyInput,
@@ -53,7 +52,7 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
       <form id="bc-add-payment" className="bc-form space-y-4" onSubmit={submit}>
         <label className="bc-form__field flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-aa-ink-muted">{k('colCompany')} *</span>
-          <PlatformSelect
+          <BaseSelect
             variant="aa"
             size="md"
             value={companyId}
@@ -95,7 +94,7 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
           </label>
           <label className="bc-form__field flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-aa-ink-muted">{k('colMethod')} *</span>
-            <PlatformSelect
+            <BaseSelect
               variant="aa"
               size="md"
               value={method}

@@ -12,7 +12,7 @@ function getPaymentStatusBadge(state, label) {
   if (state === 'ACTIVE') {
     cls = 'bg-aa-success-soft text-aa-success border-aa-line';
   } else if (state === 'NOT_BILLED') {
-    cls = 'bg-aa-brand-soft text-aa-brand border-aa-line';
+    cls = 'bg-[#eaf1fe] text-[#1d4ed8] border-transparent dark:bg-[#1d4ed8]/20 dark:text-[#93c5fd]';
   }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${cls}`}>
@@ -70,7 +70,7 @@ export default function BillingCompaniesTable({ p }) {
 
       {/* Desktop view (>= 768px): Traditional high-density table */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="bc-table w-full text-left text-sm table-fixed border-collapse min-w-[900px]">
+        <table className="bc-table w-full text-left text-sm border-collapse min-w-[900px]">
           <thead>
             <tr className="border-b border-aa-line bg-aa-surface-sunken text-xs font-semibold text-aa-ink-muted">
               <th className="bc-table__check w-12 px-3 py-3.5 text-center">
@@ -126,12 +126,12 @@ export default function BillingCompaniesTable({ p }) {
                       />
                     </td>
                     <td className="px-3 py-3 align-middle">
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-[13rem]">
                         <span className="w-8 h-8 rounded-aa-sm bg-aa-surface-sunken text-aa-ink-muted border border-aa-line font-semibold text-xs flex items-center justify-center shrink-0">
                           {initials(b.companyName)}
                         </span>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-aa-ink truncate">{b.companyName || `#${b.companyId}`}</span>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-aa-ink">{b.companyName || `#${b.companyId}`}</span>
                           <span className="text-xs text-aa-ink-muted flex items-center gap-1.5 mt-0.5">
                             ID: <span className="font-mono">{b.companyId}</span>
                             {row.newCompany ? (

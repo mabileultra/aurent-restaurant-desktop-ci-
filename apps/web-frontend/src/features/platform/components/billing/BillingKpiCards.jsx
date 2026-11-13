@@ -5,7 +5,10 @@ function percent(part, total) {
   return Math.round((part / total) * 100);
 }
 
-function getHintColor(tone) {
+function getHintColor(tone, cardKey) {
+  if (cardKey === 'ALL' || cardKey === 'NEW' || cardKey === 'SUSPENDED') {
+    return 'text-aa-ink-muted';
+  }
   switch (tone) {
     case 'danger':
       return 'text-aa-danger';
@@ -18,22 +21,22 @@ function getHintColor(tone) {
   }
 }
 
-function KpiCard({ icon: Icon, tone, label, value, share, hint, active, onClick }) {
+function KpiCard({ icon: Icon, tone, label, value, share, hint, active, onClick, cardKey }) {
   return (
     <button
       type="button"
       role="tab"
       aria-selected={active}
-      className={`aa-kpi bc-kpi bc-kpi--${tone} relative p-3.5 sm:p-4 rounded-aa-lg bg-aa-surface border transition-all duration-200 text-left w-full ${
+      className={`aa-kpi bc-kpi relative p-3.5 sm:p-4 rounded-aa-lg bg-aa-surface border transition-all duration-200 text-left w-full ${
         active
-          ? 'border-aa-brand ring-1 ring-aa-brand aa-kpi-active-ring bc-kpi--active'
+          ? 'border-aa-brand ring-1 ring-aa-brand aa-kpi-active-ring bc-kpi--active bg-aa-surface'
           : 'border-aa-line hover:border-aa-line-strong'
       } cursor-pointer hover:bg-aa-surface-hover hover:-translate-y-0.5`}
       onClick={onClick}
     >
       <div className="flex items-center gap-1.5 min-w-0">
         <Icon size={16} className="text-aa-ink-muted shrink-0" aria-hidden="true" />
-        <span className="aa-kpi__label bc-kpi__label truncate">
+        <span className="aa-kpi__label bc-kpi__label">
           {label}
         </span>
       </div>
@@ -46,7 +49,7 @@ function KpiCard({ icon: Icon, tone, label, value, share, hint, active, onClick 
       </div>
 
       {hint ? (
-        <p className={`aa-kpi__meta bc-kpi__hint truncate ${getHintColor(tone)}`}>
+        <p className={`aa-kpi__meta bc-kpi__hint ${getHintColor(tone, cardKey)}`}>
           {hint}
         </p>
       ) : null}
@@ -118,6 +121,7 @@ export default function BillingKpiCards({ t, money, overview, tab, onTab }) {
       {cards.map(({ key, ...cardProps }) => (
         <KpiCard
           key={key}
+          cardKey={key}
           {...cardProps}
           label={k(`kpi.${key}`)}
           active={tab === key}

@@ -842,6 +842,16 @@ html.app-theme--admin .platform-filter-bar--aa .base-select--disabled .base-sele
   box-shadow: 0 0 0 1px var(--aa-brand);
   outline: none;
 }
+.base-select--aa.base-select--active-filter .base-select__trigger {
+  border-color: var(--aa-brand);
+  background: var(--aa-brand-soft);
+  color: var(--aa-brand);
+  font-weight: 600;
+}
+.base-select--aa.base-select--active-filter .base-select__value,
+.base-select--aa.base-select--active-filter .base-select__chevron {
+  color: var(--aa-brand);
+}
 .base-select--aa.base-select--sm .base-select__trigger {
   height: var(--aa-control-sm);
   min-height: var(--aa-control-sm);
@@ -1049,7 +1059,6 @@ html.app-theme--admin .fixed.inset-0 .companies-toggle-modal .aa-btn--secondary,
   padding-top: var(--aa-space-3, 0.75rem);
 }
 
-.billing-modal .aa-btn--secondary,
 .billing-modal [aria-label="Yopish"],
 .billing-modal [aria-label="Close"],
 .billing-modal button:has(svg.lucide-x) {
