@@ -10,9 +10,13 @@ import org.springframework.util.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
-/** Дописывает пустые официальные поля. Цену, остаток и штрихкод не трогает. */
+/**
+ * Пишет официальные поля из госреестра при однозначном совпадении.
+ * Цена, остаток и штрихкод не трогает. Страну/производителя/форму и т.п. перезаписывает.
+ */
 @Component
 @RequiredArgsConstructor
 public class DrugRegistryCardFill {
@@ -32,9 +36,9 @@ public class DrugRegistryCardFill {
             return new Official(blank(manufacturer), blank(country), prescription);
         }
         return new Official(
-            first(manufacturer, hit.getManufacturer()),
-            first(country, hit.getCountry()),
-            prescription != null ? prescription : hit.getPrescriptionRequired()
+            prefer(hit.getManufacturer(), manufacturer),
+            prefer(hit.getCountry(), country),
+            hit.getPrescriptionRequired() != null ? hit.getPrescriptionRequired() : prescription
         );
     }
 
@@ -48,8 +52,7 @@ public class DrugRegistryCardFill {
         put(attrs, PharmacyReceiptSupport.ATTR_DOSAGE_FORM, hit.getDosageForm());
         put(attrs, ATTR_ATC, hit.getAtcCode());
         put(attrs, ATTR_REGISTRATION, hit.getRegistrationNumber());
-        if (!StringUtils.hasText(attrs.get(PharmacyReceiptSupport.ATTR_PRESCRIPTION_REQUIRED))
-            && hit.getPrescriptionRequired() != null) {
+        if (hit.getPrescriptionRequired() != null) {
             attrs.put(
                 PharmacyReceiptSupport.ATTR_PRESCRIPTION_REQUIRED,
                 Boolean.TRUE.equals(hit.getPrescriptionRequired()) ? "true" : "false"
@@ -66,7 +69,7 @@ public class DrugRegistryCardFill {
         putMissing(next, name);
         boolean changed = false;
         for (Map.Entry<String, String> entry : next.entrySet()) {
-            if (entry.getValue() != null && !entry.getValue().equals(before.get(entry.getKey()))) {
+            if (entry.getValue() != null && !Objects.equals(entry.getValue(), before.get(entry.getKey()))) {
                 attributes.upsertAttribute(productId, entry.getKey(), entry.getValue());
                 changed = true;
             }
@@ -75,16 +78,17 @@ public class DrugRegistryCardFill {
     }
 
     private static void put(Map<String, String> attrs, String key, String value) {
-        if (!StringUtils.hasText(attrs.get(key)) && StringUtils.hasText(value)) {
+        if (StringUtils.hasText(value)) {
             attrs.put(key, value.trim());
         }
     }
 
-    private static String first(String current, String registry) {
-        if (StringUtils.hasText(current)) {
-            return current.trim();
+    /** Реестр побеждает, если значение есть; иначе оставляем текущее. */
+    private static String prefer(String registry, String current) {
+        if (StringUtils.hasText(registry)) {
+            return registry.trim();
         }
-        return blank(registry);
+        return blank(current);
     }
 
     private static String blank(String value) {

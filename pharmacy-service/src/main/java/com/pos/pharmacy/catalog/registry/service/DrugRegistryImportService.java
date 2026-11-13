@@ -110,7 +110,13 @@ public class DrugRegistryImportService {
     private DrugRegistrySyncResult importOpened(DrugRegistrySourceFile.Opened opened) {
         String checksum = sha256(opened.path());
         if (imports.existsByChecksumAndStatus(checksum, DrugRegistryImport.STATUS_READY)) {
-            return new DrugRegistrySyncResult(null, 0, true, 0);
+            int filled = backfill.fillExisting();
+            LogUtil.info(
+                DrugRegistryImportService.class,
+                "Drug registry unchanged checksum; refreshed products filled={}",
+                filled
+            );
+            return new DrugRegistrySyncResult(null, 0, true, filled);
         }
         List<DrugRegistryParsedRow> rows = parser.parse(opened.path());
         UUID importId = UUID.randomUUID();
