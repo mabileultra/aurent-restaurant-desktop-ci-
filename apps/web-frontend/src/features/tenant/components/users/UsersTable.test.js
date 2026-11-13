@@ -202,12 +202,12 @@ describe('UsersTable', () => {
     expect(html).not.toContain('Ali Valiyev');
   });
 
-  it('renders purple top progress line when isRefreshing is true while keeping user rows visible', () => {
+  it('renders top progress line when isRefreshing is true while keeping user rows visible', () => {
     const html = renderToStaticMarkup(
       React.createElement(UsersTable, { ...defaultProps, isRefreshing: true })
     );
 
-    expect(html).toContain('bg-purple-600 animate-pulse');
+    expect(html).toContain('bg-emerald-500 animate-pulse');
     expect(html).toContain('Ali Valiyev');
   });
 

@@ -15,7 +15,7 @@ export const PLATFORM_FILTER_ROLES = [
   'PLATFORM_ANALYTICS',
 ];
 
-export default function UserRoleFilter({ t, role = '', onChange }) {
+export default function UserRoleFilter({ t, role = '', onChange, variant = 'default', size = 'sm' }) {
   const options = [
     { value: '', label: t('users.allRoles', { defaultValue: 'Barcha rollar' }) },
     { value: 'MANAGEMENT', label: t('users.filterManagement', { defaultValue: 'Administrator va menejerlar' }) },
@@ -28,8 +28,9 @@ export default function UserRoleFilter({ t, role = '', onChange }) {
 
   return (
     <BaseSelect
-      className="users-filters__role min-w-[140px] sm:min-w-[170px]"
-      size="sm"
+      className={`users-filters__role ${variant === 'aa' ? '' : 'min-w-[140px] sm:min-w-[170px]'}`.trim()}
+      variant={variant}
+      size={size}
       label={t('users.filterRole', { defaultValue: 'Rol' })}
       value={role}
       onChange={(e) => onChange(e.target.value)}

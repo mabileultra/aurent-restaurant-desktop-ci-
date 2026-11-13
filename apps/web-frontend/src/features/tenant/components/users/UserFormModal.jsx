@@ -109,15 +109,15 @@ export default function UserFormModal(props) {
             ref={modalContainerRef}
             inert={showDiscardConfirm ? '' : undefined}
             aria-hidden={showDiscardConfirm ? 'true' : undefined}
-            className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-aa-lg border border-aa-line bg-aa-surface shadow-aa-modal overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Sticky Header */}
-            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/95">
+            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-aa-line bg-aa-surface-sunken px-6 py-4">
               <div>
-                <h2 id="user-form-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                <h2 id="user-form-modal-title" className="text-base sm:text-lg font-bold text-aa-ink">
                   {p.isEdit ? p.t('users.editUser') : p.t('users.newUser')}
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-aa-ink-muted mt-0.5">
                   {p.isEdit
                     ? p.t('users.editUserDesc', { defaultValue: 'Foydalanuvchi ma\'lumotlari va huquqlarini yangilash' })
                     : p.t('users.newUserDesc', { defaultValue: 'Kassa yoki boshqaruv uchun yangi xodim qo\'shish' })}
@@ -126,10 +126,10 @@ export default function UserFormModal(props) {
               <button
                 type="button"
                 onClick={handleSafeClose}
-                className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+                className="aa-size-icon-sm rounded-aa-md text-aa-ink-muted hover:text-aa-ink hover:bg-aa-surface-hover transition-colors cursor-pointer"
                 aria-label={p.t('common.close')}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             </div>
 

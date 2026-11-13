@@ -42,10 +42,10 @@ export default function UsersTable(props) {
 
   return (
     <div className="relative">
-      <div className="admin-table-shell overflow-hidden rounded-2xl bg-white shadow-2xs dark:bg-slate-900 relative">
+      <div className="admin-table-shell admin-table-shell--aa users-table-shell overflow-hidden rounded-aa-lg bg-aa-surface border border-aa-line shadow-none relative">
         {isRefreshing && (
-          <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-purple-100 dark:bg-purple-950 overflow-hidden rounded-t-2xl">
-            <div className="h-full bg-purple-600 animate-pulse w-full motion-reduce:animate-none" />
+          <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden rounded-t-aa-lg">
+            <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
           </div>
         )}
         {showOverlay && <TableLoadingOverlay text={t('common.loading')} />}
@@ -63,23 +63,23 @@ export default function UsersTable(props) {
               sortDirection={sortDirection}
               onSort={onSort}
             />
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-aa-line">
               {isLoading ? (
                 Array.from({ length: Math.min(pageSize || 10, 10) }).map((_, idx) => (
                   <tr key={`user-skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
-                    <td className="w-12 px-3 py-3.5 text-center"><div className="h-4 w-4 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" /></td>
-                    <td className="px-4 py-3.5"><div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" /></td>
-                    <td className="px-4 py-3.5"><div className="h-5 w-20 rounded-full bg-slate-200 dark:bg-slate-700/60" /></td>
-                    <td className="px-4 py-3.5"><div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700/60" /></td>
-                    <td className="px-4 py-3.5"><div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-slate-700/60" /></td>
+                    <td className="w-12 px-3 py-3.5 text-center"><div className="h-4 w-4 mx-auto rounded bg-aa-surface-sunken" /></td>
+                    <td className="px-4 py-3.5"><div className="h-4 w-32 rounded bg-aa-surface-sunken" /></td>
+                    <td className="px-4 py-3.5"><div className="h-5 w-20 rounded-full bg-aa-surface-sunken" /></td>
+                    <td className="px-4 py-3.5"><div className="h-4 w-28 rounded bg-aa-surface-sunken" /></td>
+                    <td className="px-4 py-3.5"><div className="h-5 w-14 rounded-full bg-aa-surface-sunken" /></td>
                     <td className="w-12 px-3 py-3.5" />
                   </tr>
                 ))
               ) : pageRows.length === 0 ? (
                 <tr>
-                  <td colSpan={colSpan} className="px-4 py-12 text-center text-slate-500">
-                    <p className="font-medium text-slate-700 dark:text-slate-300">{t('platform.noSearchResults')}</p>
-                    <p className="text-xs text-slate-400 mt-1">{t('users.emptyFilterHint', { defaultValue: 'Qidiruv so\'rovi yoki filtrlarni o\'zgartirib ko\'ring' })}</p>
+                  <td colSpan={colSpan} className="px-4 py-12 text-center text-aa-ink-muted">
+                    <p className="font-medium text-aa-ink">{t('platform.noSearchResults')}</p>
+                    <p className="text-xs text-aa-ink-muted mt-1">{t('users.emptyFilterHint', { defaultValue: 'Qidiruv so\'rovi yoki filtrlarni o\'zgartirib ko\'ring' })}</p>
                   </td>
                 </tr>
               ) : (
@@ -113,12 +113,12 @@ export default function UsersTable(props) {
         <div className="sm:hidden p-3 space-y-3">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, idx) => (
-              <div key={`user-card-skeleton-${idx}`} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 animate-pulse">
-                <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+              <div key={`user-card-skeleton-${idx}`} className="p-3.5 rounded-aa-lg border border-aa-line bg-aa-surface animate-pulse">
+                <div className="h-4 w-32 rounded bg-aa-surface-sunken" />
               </div>
             ))
           ) : pageRows.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">{t('platform.noSearchResults')}</div>
+            <div className="p-8 text-center text-sm text-aa-ink-muted">{t('platform.noSearchResults')}</div>
           ) : (
             pageRows.map((user) => (
               <UsersTableMobileCard
@@ -145,6 +145,7 @@ export default function UsersTable(props) {
         </div>
 
         <TablePagination
+          variant="aa"
           page={page}
           displayPage={effectivePage}
           pageSize={pageSize}

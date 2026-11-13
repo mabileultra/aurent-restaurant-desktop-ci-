@@ -36,6 +36,8 @@ export default function UserFormStoreSelect({
       <div>
         <BaseSelect
           id="user-form-store"
+          variant="aa"
+          size="md"
           label={t('users.colStoreSingle', { defaultValue: 'Filial' })}
           required
           value={selectedStoreId}
@@ -63,14 +65,14 @@ export default function UserFormStoreSelect({
             keywords: [s.name, s.code].filter(Boolean).join(' '),
           }))}
         />
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-xs text-aa-ink-muted">
           {t('users.cashierStoreHint', { defaultValue: 'Kassir va ofitsiantlar faqat bitta filialga biriktiriladi' })}
         </p>
         {storesError ? (
-          <p className="mt-1 text-xs text-red-500">{t('users.storesLoadFailed')}</p>
+          <p className="mt-1 text-xs text-aa-danger">{t('users.storesLoadFailed')}</p>
         ) : null}
         {!isRoleDisabled && !storesLoading && !storesError && storeOptions.length === 0 ? (
-          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+          <p className="mt-1 text-xs text-aa-warning">
             {isPlatform
               ? t('users.noStoresForSelectedCompany', { defaultValue: 'Tanlangan kompaniyada filiallar mavjud emas. Avval filial yarating.' })
               : t('users.noStoresForYourCompany', {
@@ -84,7 +86,7 @@ export default function UserFormStoreSelect({
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+      <label className="mb-1.5 block text-xs font-medium text-aa-ink">
         {t('platform.stores', { defaultValue: 'Filiallar' })}
       </label>
       {storeOptions.length > 8 ? (
@@ -96,15 +98,15 @@ export default function UserFormStoreSelect({
           className={`${userFormInputCls} mb-2`}
         />
       ) : null}
-      <div className="max-h-36 space-y-2 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/50 dark:bg-slate-900/40">
+      <div className="max-h-36 space-y-2 overflow-y-auto rounded-aa-md border border-aa-line p-3 bg-aa-surface-sunken">
         {isRoleDisabled ? (
-          <p className="text-xs text-slate-400">{t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })}</p>
+          <p className="text-xs text-aa-ink-muted">{t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })}</p>
         ) : storesLoading ? (
-          <p className="text-xs text-slate-500">{t('common.loading')}</p>
+          <p className="text-xs text-aa-ink-muted">{t('common.loading')}</p>
         ) : storeOptions.length === 0 ? (
-          <p className="text-xs text-slate-500">{t('users.noStoresAvailable', { defaultValue: 'Filiallar mavjud emas' })}</p>
+          <p className="text-xs text-aa-ink-muted">{t('users.noStoresAvailable', { defaultValue: 'Filiallar mavjud emas' })}</p>
         ) : filteredStoreOptions.length === 0 ? (
-          <p className="text-xs text-slate-500">{t('platform.noSearchResults')}</p>
+          <p className="text-xs text-aa-ink-muted">{t('platform.noSearchResults')}</p>
         ) : (
           filteredStoreOptions.map((s) => (
             <label key={s.id} className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
@@ -113,7 +115,7 @@ export default function UserFormStoreSelect({
                 onChange={() => toggleStore(s.id)}
                 size={18}
               />
-              <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200'}>
+              <span className={s.active === false ? 'text-aa-warning' : 'text-aa-ink'}>
                 {s.name}
                 {s.active === false ? ` (${t('users.storeInactive', { defaultValue: 'Faol emas' })})` : ''}
               </span>

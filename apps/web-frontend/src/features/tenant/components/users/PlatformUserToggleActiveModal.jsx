@@ -38,11 +38,12 @@ export default function PlatformUserToggleActiveModal({
   const footer = (
     <div className="flex justify-end gap-2 w-full">
       <BaseButton
-        variant="outline"
+        variant="secondary"
         size="md"
         onClick={onClose}
         disabled={isPending}
         data-autofocus
+        className="aa-btn aa-btn--secondary aa-size-md"
       >
         {t('common.cancel', { defaultValue: 'Bekor qilish' })}
       </BaseButton>
@@ -51,11 +52,7 @@ export default function PlatformUserToggleActiveModal({
         size="md"
         disabled={isPending || (isDeactivating && isSelf)}
         onClick={() => onConfirm?.(user)}
-        className={
-          isDeactivating
-            ? 'bg-rose-600 hover:bg-rose-700 text-white font-semibold'
-            : 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold'
-        }
+        className={`aa-size-md cursor-pointer ${isDeactivating ? 'aa-btn--danger' : 'aa-btn--primary'}`}
       >
         {confirmLabel}
       </BaseButton>
@@ -68,17 +65,18 @@ export default function PlatformUserToggleActiveModal({
       title={title}
       onClose={onClose}
       size="sm"
+      className="users-toggle-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       footer={footer}
     >
-      <div className="space-y-3 text-sm text-slate-700 dark:text-slate-200">
+      <div className="space-y-3 text-sm text-aa-ink">
         {isDeactivating && isSelf ? (
-          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200">
-            <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-600" aria-hidden />
+          <div className="flex items-start gap-2.5 p-3 rounded-aa-md bg-aa-warning-soft border border-aa-warning/30 text-aa-ink">
+            <AlertTriangle size={18} className="shrink-0 mt-0.5 text-aa-warning" aria-hidden />
             <div>
               <p className="font-semibold">
                 {t('users.selfDeactivateBlockedTitle', { defaultValue: 'O‘z hisobingizni faolsizlantira olmaysiz' })}
               </p>
-              <p className="mt-1 text-xs">
+              <p className="mt-1 text-xs text-aa-ink-muted">
                 {t('users.selfDeactivateBlockedDesc', {
                   defaultValue: 'Platformaga kirish imkoniyatingiz saqlanishi uchun joriy hisobingizni nofaol qilish taqiqlangan.',
                 })}
@@ -87,7 +85,7 @@ export default function PlatformUserToggleActiveModal({
           </div>
         ) : isDeactivating ? (
           <div className="flex items-start gap-2.5">
-            <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 shrink-0">
+            <div className="p-2 rounded-aa-md bg-aa-danger-soft text-aa-danger shrink-0">
               <Power size={18} aria-hidden />
             </div>
             <div>
@@ -97,7 +95,7 @@ export default function PlatformUserToggleActiveModal({
                   defaultValue: `Haqiqatan ham «${displayName}» foydalanuvchisini faolsizlantirmoqchimisiz?`,
                 })}
               </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-aa-ink-muted">
                 {t('users.deactivateWarning', {
                   defaultValue: 'Ushbu xodim tizimga kira olmay qoladi. Istalgan vaqtda qayta faollashtirish mumkin.',
                 })}
@@ -106,7 +104,7 @@ export default function PlatformUserToggleActiveModal({
           </div>
         ) : (
           <div className="flex items-start gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 shrink-0">
+            <div className="p-2 rounded-aa-md bg-aa-success-soft text-aa-success shrink-0">
               <Power size={18} aria-hidden />
             </div>
             <div>
@@ -116,7 +114,7 @@ export default function PlatformUserToggleActiveModal({
                   defaultValue: `«${displayName}» foydalanuvchisini faollashtirmoqchimisiz?`,
                 })}
               </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-aa-ink-muted">
                 {t('users.activateSuccessHint', {
                   defaultValue: 'Xodim yana tizimga kirish va amallarni bajarish imkoniyatiga ega bo‘ladi.',
                 })}

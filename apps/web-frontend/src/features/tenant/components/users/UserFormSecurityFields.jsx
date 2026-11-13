@@ -16,14 +16,14 @@ export default function UserFormSecurityFields(props) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-aa-ink-muted">
         {t('users.sectionSecurity', { defaultValue: 'Kirish ma\'lumotlari' })}
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="user-username" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-            {t('users.colUsername')} <span className="text-red-500">*</span>
+          <label htmlFor="user-username" className="mb-1 block text-xs font-medium text-aa-ink">
+            {t('users.colUsername')} <span className="text-aa-danger">*</span>
           </label>
           <input
             id="user-username"
@@ -34,16 +34,16 @@ export default function UserFormSecurityFields(props) {
             placeholder="login_nomi"
           />
           {errors.username && (
-            <p id="user-username-error" className="mt-1 text-xs text-red-500">
+            <p id="user-username-error" className="mt-1 text-xs text-aa-danger">
               {errors.username.message || t('validation.required', { defaultValue: 'Majburiy maydon' })}
             </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="user-phone" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+          <label htmlFor="user-phone" className="mb-1 block text-xs font-medium text-aa-ink">
             {t('users.phone', { defaultValue: 'Telefon raqam' })}{' '}
-            <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+            <span className="text-xs font-normal text-aa-ink-muted">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
           </label>
           <input
             id="user-phone"
@@ -57,14 +57,14 @@ export default function UserFormSecurityFields(props) {
             })}
             className={getInputCls(errors.phone)}
           />
-          {errors.phone && <p id="user-phone-error" className="mt-1 text-xs text-red-500">{errors.phone.message}</p>}
+          {errors.phone && <p id="user-phone-error" className="mt-1 text-xs text-aa-danger">{errors.phone.message}</p>}
         </div>
       </div>
 
       {fieldOn('email') && (
         <div>
-          <label htmlFor="user-email" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-            {t('users.email')} <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+          <label htmlFor="user-email" className="mb-1 block text-xs font-medium text-aa-ink">
+            {t('users.email')} <span className="text-xs font-normal text-aa-ink-muted">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
           </label>
           <input
             id="user-email"
@@ -75,7 +75,7 @@ export default function UserFormSecurityFields(props) {
             aria-invalid={Boolean(errors.email)}
           />
           {errors.email && (
-            <p id="user-email-error" className="mt-1 text-xs text-red-500">
+            <p id="user-email-error" className="mt-1 text-xs text-aa-danger">
               {errors.email.message || t('validation.invalidEmail', { defaultValue: 'Email noto‘g‘ri' })}
             </p>
           )}
@@ -85,9 +85,9 @@ export default function UserFormSecurityFields(props) {
       {/* PIN field for cashier/cook/waiter */}
       {isPinRole ? (
         <div>
-          <label htmlFor="user-pin" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+          <label htmlFor="user-pin" className="mb-1 block text-xs font-medium text-aa-ink">
             {pinFieldLabel || t('users.pin', { defaultValue: 'PIN-kod' })}
-            {pinRequired ? <span className="text-red-500"> *</span> : null}
+            {pinRequired ? <span className="text-aa-danger"> *</span> : null}
           </label>
           <div className="relative">
             <input
@@ -111,7 +111,7 @@ export default function UserFormSecurityFields(props) {
             <button
               type="button"
               tabIndex={-1}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-aa-ink-muted hover:text-aa-ink"
               onClick={() => setPinVisible((v) => !v)}
               aria-label={pinVisible ? t('users.hidePin', { defaultValue: 'PIN-kodni yashirish' }) : t('users.showPin', { defaultValue: 'PIN-kodni ko\'rsatish' })}
             >
@@ -119,11 +119,11 @@ export default function UserFormSecurityFields(props) {
             </button>
           </div>
           {errors.pin ? (
-            <p id="user-pin-error" className="mt-1 text-xs text-red-500">
+            <p id="user-pin-error" className="mt-1 text-xs text-aa-danger">
               {errors.pin.message || t('validation.required', { defaultValue: 'Majburiy maydon' })}
             </p>
           ) : (
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-aa-ink-muted">
               {pinRequired
                 ? t('users.pinHint', { defaultValue: '4–6 xonali raqam. Kassa ekraniga tezkor kirish uchun ishlatiladi.' })
                 : t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' })}
@@ -136,13 +136,13 @@ export default function UserFormSecurityFields(props) {
       {showPasswordField ? (
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="user-password" className="block text-xs font-medium text-slate-600 dark:text-slate-300">
-              {t('users.password')}{!isEdit ? <span className="text-red-500"> *</span> : null}
+            <label htmlFor="user-password" className="block text-xs font-medium text-aa-ink">
+              {t('users.password')}{!isEdit ? <span className="text-aa-danger"> *</span> : null}
             </label>
             <button
               type="button"
               onClick={handleGeneratePassword}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400"
+              className="inline-flex items-center gap-1 text-xs font-medium text-aa-brand hover:underline cursor-pointer"
             >
               <Sparkles size={12} />
               {t('users.generatePassword', { defaultValue: 'Parol generatsiya qilish' })}
@@ -161,7 +161,7 @@ export default function UserFormSecurityFields(props) {
             <button
               type="button"
               tabIndex={-1}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-aa-ink-muted hover:text-aa-ink"
               onClick={() => setPasswordVisible((v) => !v)}
               aria-label={passwordVisible ? t('users.hidePassword', { defaultValue: 'Parolni yashirish' }) : t('users.showPassword', { defaultValue: 'Parolni ko\'rsatish' })}
             >
@@ -169,10 +169,10 @@ export default function UserFormSecurityFields(props) {
             </button>
           </div>
           {isEdit && (
-            <p className="mt-1 text-xs text-slate-400">{isPlatform ? t('users.passwordHiddenHint') : t('users.passwordEditHint')}</p>
+            <p className="mt-1 text-xs text-aa-ink-muted">{isPlatform ? t('users.passwordHiddenHint') : t('users.passwordEditHint')}</p>
           )}
           {errors.password && (
-            <p id="user-password-error" className="mt-1 text-xs text-red-500">
+            <p id="user-password-error" className="mt-1 text-xs text-aa-danger">
               {errors.password.message || (errors.password.type === 'required'
                 ? t('validation.required', { defaultValue: 'Majburiy maydon' })
                 : t('users.passwordMinLength', { defaultValue: 'Parol kamida 8 belgidan iborat bo‘lishi kerak' }))}
