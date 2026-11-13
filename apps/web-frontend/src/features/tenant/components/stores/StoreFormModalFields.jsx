@@ -50,7 +50,7 @@ export default function StoreFormModalFields({
       ) : null}
 
       <BaseInput
-        className="aa-input"
+        className="aa-input !border-aa-line-strong"
         label={t('stores.colName')}
         required
         {...register('name')}
@@ -100,7 +100,7 @@ export default function StoreFormModalFields({
 
       <BaseInput
         as="textarea"
-        className="aa-input aa-size-textarea min-h-[64px] h-auto"
+        className="aa-input !border-aa-line-strong aa-size-textarea min-h-[64px] h-auto"
         label={t('stores.colAddress')}
         rows={2}
         {...register('address')}
@@ -109,7 +109,7 @@ export default function StoreFormModalFields({
       />
 
       <BaseInput
-        className="aa-input"
+        className="aa-input !border-aa-line-strong"
         label={t('stores.colPhone')}
         required={isCreate}
         type="tel"

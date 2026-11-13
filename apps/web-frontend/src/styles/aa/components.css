@@ -476,6 +476,8 @@ html.app-area--platform {
 /* Segmented size helpers */
 .aa-size-seg {
   height: var(--aa-control-md);
+  box-sizing: border-box;
+  overflow-y: hidden;
 }
 @media (max-width: 759px) {
   .aa-size-seg {
@@ -488,6 +490,7 @@ html.app-area--platform {
   padding: 0 var(--aa-space-3);
   font-size: 13px;
   line-height: 18px;
+  border-radius: var(--aa-radius-sm, 6px);
 }
 @media (max-width: 759px) {
   .aa-size-seg-btn {
@@ -613,6 +616,42 @@ html.app-area--platform {
   background: var(--aa-surface, #ffffff) !important;
   box-shadow: var(--aa-shadow-modal) !important;
 }
+.stores-form-modal input:not([type="checkbox"]):not([type="radio"]),
+.stores-form-modal textarea {
+  border-color: var(--aa-line-strong, #86918c) !important;
+}
+.stores-form-modal .aa-btn--secondary,
+.stores-form-modal button.border-slate-300 {
+  border-color: var(--aa-line-strong, #86918c) !important;
+}
+.stores-form-modal [aria-label="Yopish"],
+.stores-form-modal [aria-label="Close"],
+.stores-form-modal button:has(svg.lucide-x) {
+  width: var(--aa-control-sm, 32px) !important;
+  height: var(--aa-control-sm, 32px) !important;
+  min-width: var(--aa-control-sm, 32px) !important;
+  min-height: var(--aa-control-sm, 32px) !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--aa-radius-md, 8px) !important;
+  color: var(--aa-ink-muted, #56615c) !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+.stores-form-modal [aria-label="Yopish"]:hover,
+.stores-form-modal [aria-label="Close"]:hover,
+.stores-form-modal button:has(svg.lucide-x):hover {
+  background: var(--aa-surface-hover, #f1f5f3) !important;
+  color: var(--aa-ink, #14201b) !important;
+}
+.stores-form-modal [aria-label="Yopish"] svg,
+.stores-form-modal [aria-label="Close"] svg,
+.stores-form-modal button:has(svg.lucide-x) svg {
+  width: 16px !important;
+  height: 16px !important;
+}
 .stores-form-modal .base-select {
   height: auto;
   width: 100%;
@@ -640,4 +679,12 @@ html.app-area--platform {
     height: var(--aa-control-lg, 44px) !important;
     min-height: var(--aa-control-lg, 44px) !important;
   }
+}
+
+/* Filiallar jadval sarlavhasi — font-weight: 600 */
+.admin-table-shell thead th,
+.admin-table-shell th.admin-table-col-no,
+.admin-table-shell th.admin-table-col-id {
+  font-weight: 600 !important;
+  color: var(--aa-ink-muted) !important;
 }
