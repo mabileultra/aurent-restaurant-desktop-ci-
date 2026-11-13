@@ -93,8 +93,8 @@ export default function UsersTable(props) {
                     currentUserId={currentUserId}
                     currentUsername={currentUsername}
                     company={companyById?.get?.(String(user.companyId ?? ''))}
-                    menuOpen={menuId === user.id}
-                    onMenuOpenChange={(next) => onMenuOpenChange?.(next ? user.id : null)}
+                    menuOpen={menuId === `row-${user.id}`}
+                    onMenuOpenChange={(next) => onMenuOpenChange?.(next ? `row-${user.id}` : null)}
                     onRowClick={onRowClick}
                     onToggleSelect={onToggleSelectUser}
                     onEdit={onEdit}
@@ -129,8 +129,8 @@ export default function UsersTable(props) {
                 actorRole={actorRole}
                 currentUserId={currentUserId}
                 currentUsername={currentUsername}
-                menuOpen={menuId === user.id}
-                onMenuOpenChange={(next) => onMenuOpenChange?.(next ? user.id : null)}
+                menuOpen={menuId === `card-${user.id}`}
+                onMenuOpenChange={(next) => onMenuOpenChange?.(next ? `card-${user.id}` : null)}
                 onRowClick={onRowClick}
                 onToggleSelect={onToggleSelectUser}
                 onEdit={onEdit}
