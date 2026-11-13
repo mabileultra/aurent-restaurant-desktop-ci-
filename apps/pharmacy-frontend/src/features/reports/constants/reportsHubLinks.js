@@ -9,6 +9,7 @@ import {
   Truck,
   TrendingUp,
   Tags,
+  BookOpen,
 } from 'lucide-react';
 
 /** Slim pharmacy reports hub — keep in sync with PHARM_REPORT_*_CHILDREN. */
@@ -27,4 +28,5 @@ export const REPORTS_HUB_STOCK_LINKS = [
   { to: '/reports/stock/inventories', key: 'reportsStockInventories', icon: ClipboardList, moduleId: 'reportsStockInventories' },
   { to: '/reports/stock/transfers', key: 'reportsStockTransfers', icon: Truck, moduleId: 'reportsStockTransfers' },
   { to: '/reports/stock/price-registry', key: 'reportsPriceRegistry', icon: Tags, moduleId: 'reportsPriceRegistry' },
+  { to: '/reports/stock/drug-registry', key: 'reportsDrugRegistry', icon: BookOpen, moduleId: 'reportsDrugRegistry' },
 ];

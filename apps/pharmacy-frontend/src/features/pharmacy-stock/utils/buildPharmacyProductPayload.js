@@ -43,6 +43,7 @@ export function buildPharmacyProductCreatePayload(form, { storeId, prices } = {}
     units_in_pack: String(unitsInPack),
     prescription_required: form.prescriptionRequired ? 'true' : undefined,
     atc_code: String(form.atcCode || '').trim() || undefined,
+    registration_number: String(form.registrationNumber || '').trim() || undefined,
     sell_by_piece: packSale ? String(sellByPiece) : undefined,
     piece_step: pieceStep ? String(pieceStep) : undefined,
   };
@@ -146,6 +147,7 @@ export function emptyPharmacyProductForm() {
     sellingPrice: '',
     costPrice: '',
     atcCode: '',
+    registrationNumber: '',
     active: true,
   };
 }
@@ -178,6 +180,7 @@ export function formFromPharmacyProduct(product) {
     sellingPrice: product.sellingPrice != null ? String(product.sellingPrice) : '',
     costPrice: product.costPrice != null ? String(product.costPrice) : '',
     atcCode: productAttr(product, 'atc_code', 'atc', 'атх', 'atcCode'),
+    registrationNumber: productAttr(product, 'registration_number', 'registrationNumber'),
     active: product.active !== false,
   };
 }
