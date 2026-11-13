@@ -12,12 +12,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 
 /** Локальный файл или URL. ZIP раскрывается до Excel лекарств. */
 @Component
@@ -162,7 +165,7 @@ public class DrugRegistrySourceFile {
     }
 
     private Opened unwrap(Path source, String name, String sourceLabel, boolean deleteSource) {
-        if (!name.toLowerCase(Locale.ROOT).endsWith(".zip")) {
+        if (!isZip(source, name)) {
             return new Opened(source, name, sourceLabel, deleteSource);
         }
         Path extracted = extractMedicines(source);
@@ -177,29 +180,52 @@ public class DrugRegistrySourceFile {
     }
 
     private Path extractMedicines(Path zip) {
+        Charset[] charsets = {
+            StandardCharsets.UTF_8,
+            Charset.forName("CP866"),
+            Charset.forName("windows-1251"),
+            Charset.forName("IBM437")
+        };
+        Exception last = null;
+        for (Charset charset : charsets) {
+            try {
+                Path chosen = extractWithCharset(zip, charset);
+                if (chosen != null) {
+                    return chosen;
+                }
+            } catch (Exception e) {
+                last = e;
+            }
+        }
+        String detail = last != null && last.getMessage() != null ? last.getMessage() : "неизвестная ошибка";
+        throw PharmacyErrors.of(
+            PharmacyDrugRegistryErrors.PHARM_DRUG_REGISTRY_PARSE_FAILED,
+            "Не удалось распаковать ZIP (" + detail + ")"
+        );
+    }
+
+    private Path extractWithCharset(Path zip, Charset charset) throws IOException {
         Path chosen = null;
         String chosenName = null;
-        try (ZipInputStream in = new ZipInputStream(Files.newInputStream(zip))) {
-            ZipEntry entry;
-            while ((entry = in.getNextEntry()) != null) {
+        try (ZipFile archive = new ZipFile(zip.toFile(), charset)) {
+            Enumeration<? extends ZipEntry> entries = archive.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
                 String entryName = entry.getName();
-                if (entry.isDirectory() || !entryName.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+                if (entry.isDirectory() || !isExcelName(entryName)) {
                     continue;
                 }
                 if (chosen == null || prefers(entryName, chosenName)) {
                     if (chosen != null) {
                         Files.deleteIfExists(chosen);
                     }
-                    chosen = Files.createTempFile("drug-registry-", ".xlsx");
-                    Files.copy(in, chosen, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    chosen = Files.createTempFile("drug-registry-", excelSuffix(entryName));
+                    try (InputStream in = archive.getInputStream(entry)) {
+                        Files.copy(in, chosen, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    }
                     chosenName = entryName;
                 }
             }
-        } catch (IOException e) {
-            throw PharmacyErrors.of(
-                PharmacyDrugRegistryErrors.PHARM_DRUG_REGISTRY_FETCH_FAILED,
-                "Не удалось распаковать ZIP"
-            );
         }
         if (chosen == null) {
             throw PharmacyErrors.of(
@@ -208,6 +234,33 @@ public class DrugRegistrySourceFile {
             );
         }
         return chosen;
+    }
+
+    private static boolean isZip(Path path, String name) {
+        String lower = name == null ? "" : name.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".zip")) {
+            return true;
+        }
+        try (InputStream in = Files.newInputStream(path)) {
+            byte[] head = in.readNBytes(4);
+            return head.length >= 4
+                && head[0] == 'P'
+                && head[1] == 'K'
+                && (head[2] == 3 || head[2] == 5 || head[2] == 7)
+                && (head[3] == 4 || head[3] == 6 || head[3] == 8);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private static boolean isExcelName(String entryName) {
+        String lower = entryName == null ? "" : entryName.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".xlsx") || lower.endsWith(".xls");
+    }
+
+    private static String excelSuffix(String entryName) {
+        String lower = entryName == null ? "" : entryName.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".xls") && !lower.endsWith(".xlsx") ? ".xls" : ".xlsx";
     }
 
     static boolean prefers(String candidate, String current) {
