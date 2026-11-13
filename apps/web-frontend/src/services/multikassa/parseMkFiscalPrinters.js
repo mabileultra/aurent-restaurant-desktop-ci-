@@ -104,23 +104,9 @@ export function pickMkFiscalPrinterToSelect(parsed) {
   if (silent) return silent;
 
   const labels = parsed?.labels || [];
-  const selected = parsed?.selected || '';
-  if (selected && !isDummyMkPrinterName(selected)) return selected;
-
-  const thermal = labels.find(
-    (name) => !isDummyMkPrinterName(name) && /xp-?\d|pos-?\d|thermal|receipt|чеков/i.test(name),
-  );
-  if (thermal) return thermal;
-
-  const pdf = labels.find((name) => /print to pdf/i.test(name));
+  // PDF — без бумаги. Реальный XP/thermal не выбираем: иначе MK + Aurent = два чека.
+  const pdf = labels.find((name) => /print to pdf|microsoft print/i.test(name));
   if (pdf) return pdf;
 
-  const online = (parsed?.printers || []).find((item) => {
-    const name = printerLabel(item);
-    if (!name || isDummyMkPrinterName(name)) return false;
-    return item?.IsOnline === true || item?.isOnline === true;
-  });
-  if (online) return printerLabel(online);
-
-  return labels.find((name) => !isDummyMkPrinterName(name)) || '';
+  return '';
 }

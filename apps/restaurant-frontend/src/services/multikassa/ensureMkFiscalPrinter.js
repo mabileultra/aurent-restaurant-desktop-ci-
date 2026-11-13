@@ -13,8 +13,8 @@ function selectBody(name, paperWidth) {
 }
 
 /**
- * MK Fiscal должен фискализировать без своей бумаги: выбран «(не печатать)».
- * Печатает Aurent. Если silent-принтера нет — оставляем любой, чтобы операция не падала.
+ * MK Fiscal должен фискализировать без своей бумаги: «(не печатать)» или PDF.
+ * Печатает Aurent ESC/POS. Реальный XP/thermal в MK не выбираем — иначе два чека.
  */
 export async function ensureMkFiscalPrinter(baseUrl, deps = {}) {
   const getList = deps.getPrintersWithFallback || getPrintersWithFallback;
