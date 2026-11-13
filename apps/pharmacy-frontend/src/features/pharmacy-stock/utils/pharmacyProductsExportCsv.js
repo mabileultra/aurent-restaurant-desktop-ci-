@@ -1,3 +1,4 @@
+import * as XLSX from 'xlsx';
 import { productAttr } from '../../pharmacy-cashier/utils/pharmacyProductMeta';
 import { productReceiptOrigin } from './productReceiptOrigin';
 import { formatProductUpdatedAt } from './formatPharmacyProductUpdated';
@@ -12,19 +13,15 @@ function productAtc(product) {
   return productAttr(product, 'atc_code', 'atc', 'атх', 'atcCode');
 }
 
-/** Excel (RU/UZ) ждёт `;` как разделитель колонок — с `,` всё падает в столбец A. */
-const SEP = ';';
-
-function csvEscape(value) {
-  const s = value == null || value === '' ? '' : String(value);
-  if (s === '—') return '';
-  if (/["\n\r;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
+function cellOrEmpty(value) {
+  if (value == null || value === '' || value === '—') return '';
+  return value;
 }
 
-function cellOrEmpty(value) {
-  if (value == null || value === '') return '';
-  return value;
+/** Текст для штрихкода/ИКПУ — иначе Excel сжимает в 3E+15. */
+function asCodeText(value) {
+  if (value == null || value === '' || value === '—') return '';
+  return String(value);
 }
 
 /** Заголовки как в таблице склада. */
@@ -48,6 +45,9 @@ export function pharmacyProductsExportHeaders(t) {
   ];
 }
 
+const BARCODE_COL = 10;
+const IKPU_COL = 11;
+
 function rowCells(p, index) {
   const origin = productReceiptOrigin(p);
   return [
@@ -61,27 +61,44 @@ function rowCells(p, index) {
     cellOrEmpty(productManufacturer(p)),
     cellOrEmpty(productDosageForm(p)),
     cellOrEmpty(productAtc(p)),
-    cellOrEmpty(p.barcode),
-    cellOrEmpty(p.ikpu),
+    asCodeText(p.barcode),
+    asCodeText(p.ikpu),
     productUnitsInPack(p) || 1,
     cellOrEmpty(productCountry(p)),
     formatProductUpdatedAt(p.updatedAt || p.createdAt) || '',
-  ].map(csvEscape).join(SEP);
+  ];
 }
 
-/** Текст CSV (без BOM) — для тестов и скачивания. */
-export function buildPharmacyProductsCsv(rows, t) {
-  const header = pharmacyProductsExportHeaders(t).join(SEP);
-  return [`sep=${SEP}`, header, ...(rows || []).map((row, i) => rowCells(row, i))].join('\r\n');
+/** Строки листа: заголовок + товары. */
+export function buildPharmacyProductsSheetRows(rows, t) {
+  return [
+    pharmacyProductsExportHeaders(t),
+    ...(rows || []).map((row, i) => rowCells(row, i)),
+  ];
 }
 
-/** Скачать CSV по списку товаров. */
+function forceCodeColumnsAsText(ws, rowCount) {
+  for (let r = 1; r < rowCount; r += 1) {
+    for (const c of [BARCODE_COL, IKPU_COL]) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      const cell = ws[addr];
+      if (!cell || cell.v == null || cell.v === '') continue;
+      cell.t = 's';
+      cell.v = String(cell.v);
+      cell.z = '@';
+    }
+  }
+}
+
+/** Скачать .xlsx — UTF-8 и длинные коды не ломаются в Excel. */
 export function downloadPharmacyProductsCsv(rows, t, filename) {
-  const blob = new Blob([`\uFEFF${buildPharmacyProductsCsv(rows, t)}`], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename || `pharmacy-products_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const data = buildPharmacyProductsSheetRows(rows, t);
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  forceCodeColumnsAsText(ws, data.length);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Products');
+  XLSX.writeFile(
+    wb,
+    filename || `pharmacy-products_${new Date().toISOString().slice(0, 10)}.xlsx`,
+  );
 }
