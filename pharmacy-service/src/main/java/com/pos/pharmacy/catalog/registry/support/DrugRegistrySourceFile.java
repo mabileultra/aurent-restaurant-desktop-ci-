@@ -238,6 +238,10 @@ public class DrugRegistrySourceFile {
 
     private static boolean isZip(Path path, String name) {
         String lower = name == null ? "" : name.toLowerCase(Locale.ROOT);
+        // .xlsx/.xls — OOXML/OLE ZIP-контейнеры; не распаковывать как архив реестра
+        if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
+            return false;
+        }
         if (lower.endsWith(".zip")) {
             return true;
         }
