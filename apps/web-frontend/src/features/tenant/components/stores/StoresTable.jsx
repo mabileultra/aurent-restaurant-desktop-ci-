@@ -51,22 +51,22 @@ export default function StoresTable({
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-aa-line bg-aa-surface-sunken text-left text-[12px] font-semibold text-aa-ink-muted h-[52px]">
+            <tr className="border-b border-aa-line bg-aa-surface-sunken text-left text-xs font-semibold text-aa-ink-muted">
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3 font-semibold">
+              <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">
                 {showCompany ? t('platform.colBranchName', { defaultValue: 'Filial nomi' }) : t('stores.colName')}
               </th>
               {showCompany && (
-                <th className="px-4 py-3 font-semibold">{t('stores.colCompany')}</th>
+                <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('stores.colCompany')}</th>
               )}
-              <th className="px-4 py-3 font-semibold">{t('platform.colHudud', { defaultValue: 'Hudud' })}</th>
-              <th className="px-4 py-3 font-semibold">
+              <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('platform.colHudud', { defaultValue: 'Hudud' })}</th>
+              <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">
                 {showCompany ? t('platform.colBranchType', { defaultValue: 'Filial turi' }) : t('stores.colBusinessType')}
               </th>
-              <th className="px-4 py-3 font-semibold">{t('stores.colAddress')}</th>
-              <th className="px-4 py-3 font-semibold">{t('stores.colPhone')}</th>
-              <th className="px-4 py-3 font-semibold">{t('platform.colStatus', { defaultValue: 'Holat' })}</th>
-              <th className="px-4 py-3 w-12" />
+              <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('stores.colAddress')}</th>
+              <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('stores.colPhone')}</th>
+              <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('platform.colStatus', { defaultValue: 'Holat' })}</th>
+              <th className="px-3 py-2.5 w-12" />
             </tr>
           </thead>
           <tbody className="divide-y divide-aa-line">

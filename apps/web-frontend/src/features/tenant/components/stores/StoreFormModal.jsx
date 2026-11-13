@@ -142,6 +142,7 @@ export default function StoreFormModal({
       title={modalTitle}
       onClose={onClose}
       size="md"
+      className="stores-form-modal !rounded-aa-lg !border-aa-line !bg-aa-surface !shadow-aa-modal"
       closeLabel={t('common.close', { defaultValue: 'Yopish' })}
       footer={(
         <div className="flex gap-2 justify-end w-full">

@@ -14,11 +14,11 @@ export default function StoresPageControls({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       {/* Segmented Status Tabs */}
-      <div className="aa-size-seg inline-flex items-center p-1 rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold self-start sm:self-auto shadow-none">
+      <div className="aa-size-seg flex items-center p-1 rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-x-auto shadow-none">
         <button
           type="button"
           onClick={() => onStatusFilterChange('ALL')}
-          className={`aa-size-seg-btn rounded-[6px] transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-[6px] transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
             statusFilter === 'ALL'
               ? 'bg-aa-surface text-aa-ink shadow-xs'
               : 'text-aa-ink-muted hover:text-aa-ink'
@@ -32,7 +32,7 @@ export default function StoresPageControls({
         <button
           type="button"
           onClick={() => onStatusFilterChange('ACTIVE')}
-          className={`aa-size-seg-btn rounded-[6px] transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-[6px] transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
             statusFilter === 'ACTIVE'
               ? 'bg-aa-surface text-aa-ink shadow-xs'
               : 'text-aa-ink-muted hover:text-aa-ink'
@@ -46,7 +46,7 @@ export default function StoresPageControls({
         <button
           type="button"
           onClick={() => onStatusFilterChange('INACTIVE')}
-          className={`aa-size-seg-btn rounded-[6px] transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-[6px] transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
             statusFilter === 'INACTIVE'
               ? 'bg-aa-surface text-aa-ink shadow-xs'
               : 'text-aa-ink-muted hover:text-aa-ink'
@@ -60,11 +60,11 @@ export default function StoresPageControls({
       </div>
 
       {/* View Switcher: Grouped by Company vs Flat Table */}
-      <div className="aa-size-seg inline-flex items-center p-1 rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold self-start sm:self-auto shadow-none">
+      <div className="aa-size-seg flex items-center p-1 rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto shadow-none">
         <button
           type="button"
           onClick={() => onViewModeChange('grouped')}
-          className={`aa-size-seg-btn rounded-[6px] transition-all inline-flex items-center gap-1.5 font-semibold cursor-pointer ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-[6px] transition-all inline-flex items-center justify-center gap-1.5 font-semibold cursor-pointer ${
             viewMode === 'grouped'
               ? 'bg-aa-surface text-aa-ink shadow-xs'
               : 'text-aa-ink-muted hover:text-aa-ink'
@@ -77,7 +77,7 @@ export default function StoresPageControls({
         <button
           type="button"
           onClick={() => onViewModeChange('table')}
-          className={`aa-size-seg-btn rounded-[6px] transition-all inline-flex items-center gap-1.5 font-semibold cursor-pointer ${
+          className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-[6px] transition-all inline-flex items-center justify-center gap-1.5 font-semibold cursor-pointer ${
             viewMode === 'table'
               ? 'bg-aa-surface text-aa-ink shadow-xs'
               : 'text-aa-ink-muted hover:text-aa-ink'

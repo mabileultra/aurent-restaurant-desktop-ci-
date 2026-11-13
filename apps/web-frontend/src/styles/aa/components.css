@@ -479,7 +479,7 @@ html.app-area--platform {
 }
 @media (max-width: 759px) {
   .aa-size-seg {
-    height: var(--aa-control-lg);
+    height: 52px;
   }
 }
 
@@ -491,8 +491,9 @@ html.app-area--platform {
 }
 @media (max-width: 759px) {
   .aa-size-seg-btn {
-    height: 36px;
+    height: var(--aa-control-lg, 44px) !important;
     font-size: 14px;
+    padding: 0 var(--aa-space-3);
   }
 }
 
@@ -505,36 +506,53 @@ html.app-area--platform {
 }
 
 .aa-filter-bar .platform-filter-bar__search {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.aa-filter-bar .platform-filter-bar__search input {
   height: var(--aa-control-md);
-  padding: 0 var(--aa-space-3) 0 36px;
+  padding: 0 var(--aa-space-3);
   border: 1px solid var(--aa-line-strong);
   border-radius: var(--aa-radius-md);
   background: var(--aa-surface);
-  color: var(--aa-ink);
-  font: 400 14px/20px var(--aa-font-sans);
-  transition: border-color 0.12s;
+  color: var(--aa-ink-muted);
+  box-shadow: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  display: flex;
+  align-items: center;
+  gap: var(--aa-space-2);
 }
 
-.aa-filter-bar .platform-filter-bar__search input:hover {
+.aa-filter-bar .platform-filter-bar__search:hover {
   border-color: var(--aa-ink-muted);
 }
 
-.aa-filter-bar .platform-filter-bar__search input:focus {
-  outline: none;
-  border-color: var(--aa-focus);
+.aa-filter-bar .platform-filter-bar__search:focus-within {
+  border-color: var(--aa-brand);
+  box-shadow: 0 0 0 1px var(--aa-brand);
+  color: var(--aa-brand);
+}
+
+.aa-filter-bar .platform-filter-bar__search input {
+  height: 100% !important;
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  font: 400 14px/20px var(--aa-font-sans) !important;
+  color: var(--aa-ink) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.aa-filter-bar .platform-filter-bar__search input::placeholder {
+  color: var(--aa-ink-subtle);
 }
 
 .aa-filter-bar .platform-filter-bar__search svg {
   color: var(--aa-ink-muted);
+  flex-shrink: 0;
 }
 
 .aa-filter-bar .base-select__trigger,
+.aa-filter-bar .platform-filter-bar__filter,
 .aa-filter-bar .platform-filter-menu__btn {
   height: var(--aa-control-md) !important;
   min-height: var(--aa-control-md) !important;
@@ -547,6 +565,7 @@ html.app-area--platform {
 }
 
 .aa-filter-bar .base-select__trigger:hover,
+.aa-filter-bar .platform-filter-bar__filter:hover,
 .aa-filter-bar .platform-filter-menu__btn:hover {
   border-color: var(--aa-ink-muted) !important;
 }
@@ -572,8 +591,11 @@ html.app-area--platform {
 }
 
 @media (max-width: 759px) {
-  .aa-filter-bar .platform-filter-bar__search input,
+  .aa-filter-bar .platform-filter-bar__search {
+    height: var(--aa-control-lg);
+  }
   .aa-filter-bar .base-select__trigger,
+  .aa-filter-bar .platform-filter-bar__filter,
   .aa-filter-bar .platform-filter-menu__btn {
     height: var(--aa-control-lg) !important;
     min-height: var(--aa-control-lg) !important;
@@ -581,5 +603,41 @@ html.app-area--platform {
   .aa-filter-bar .platform-filter-bar__reset {
     height: var(--aa-control-lg);
     width: var(--aa-control-lg);
+  }
+}
+
+/* Filiallar formasi modali va select triggerlari */
+.stores-form-modal {
+  border-radius: var(--aa-radius-lg, 12px) !important;
+  border: 1px solid var(--aa-line, #e3e8e6) !important;
+  background: var(--aa-surface, #ffffff) !important;
+  box-shadow: var(--aa-shadow-modal) !important;
+}
+.stores-form-modal .base-select {
+  height: auto;
+  width: 100%;
+}
+.stores-form-modal .base-select__trigger {
+  height: var(--aa-control-md, 40px) !important;
+  min-height: var(--aa-control-md, 40px) !important;
+  padding: 0 var(--aa-space-3, 12px) !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  border-radius: var(--aa-radius-md, 8px) !important;
+  border: 1px solid var(--aa-line-strong, #86918c) !important;
+  background: var(--aa-surface, #ffffff) !important;
+  color: var(--aa-ink, #14201b) !important;
+}
+.stores-form-modal .base-select__trigger:hover {
+  border-color: var(--aa-ink-muted, #56615c) !important;
+}
+.stores-form-modal .base-select__trigger:focus-within {
+  border-color: var(--aa-brand, #006847) !important;
+  box-shadow: 0 0 0 1px var(--aa-brand, #006847) !important;
+}
+@media (max-width: 759px) {
+  .stores-form-modal .base-select__trigger {
+    height: var(--aa-control-lg, 44px) !important;
+    min-height: var(--aa-control-lg, 44px) !important;
   }
 }

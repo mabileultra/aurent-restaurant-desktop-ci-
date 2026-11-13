@@ -65,7 +65,7 @@ export default function StoresGroupedCompanyCard({
                 {group.company.name}
               </h3>
               {group.company.businessType && (
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-aa-surface-sunken text-aa-ink-muted border border-aa-line">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-aa-surface-sunken text-aa-ink-muted border border-aa-line">
                   {t(`productTemplates.businessTypes.${group.company.businessType}`, {
                     defaultValue: group.company.businessType,
                   })}
@@ -137,13 +137,13 @@ export default function StoresGroupedCompanyCard({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-aa-line text-left text-[12px] font-semibold text-aa-ink-muted bg-aa-surface-sunken h-[52px]">
-                    <th className="px-5 py-2.5 font-semibold">{t('platform.colBranchName', { defaultValue: 'Filial nomi' })}</th>
-                    <th className="px-4 py-2.5 font-semibold">{t('platform.colBranchType', { defaultValue: 'Filial turi' })}</th>
-                    <th className="px-4 py-2.5 font-semibold">{t('stores.colAddress', { defaultValue: 'Manzil va joylashuv' })}</th>
-                    <th className="px-4 py-2.5 font-semibold">{t('stores.colPhone', { defaultValue: 'Telefon' })}</th>
-                    <th className="px-4 py-2.5 font-semibold">{t('stores.colActive', { defaultValue: 'Holat' })}</th>
-                    <th className="px-4 py-2.5 w-12 text-right" />
+                  <tr className="border-b border-aa-line text-left text-xs font-semibold text-aa-ink-muted bg-aa-surface-sunken">
+                    <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('platform.colBranchName', { defaultValue: 'Filial nomi' })}</th>
+                    <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('platform.colBranchType', { defaultValue: 'Filial turi' })}</th>
+                    <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('stores.colAddress', { defaultValue: 'Manzil va joylashuv' })}</th>
+                    <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('stores.colPhone', { defaultValue: 'Telefon' })}</th>
+                    <th className="px-3 py-2.5 font-semibold text-xs text-aa-ink-muted">{t('stores.colActive', { defaultValue: 'Holat' })}</th>
+                    <th className="px-3 py-2.5 w-12 text-right" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-aa-line">
