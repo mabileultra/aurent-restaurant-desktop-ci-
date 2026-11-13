@@ -1,14 +1,18 @@
 package com.pos.pharmacy.catalog.registry.support;
 
 import com.pos.pharmacy.catalog.registry.dto.DrugRegistryParsedRow;
+import com.pos.pharmacy.warehouse.support.PharmacyMassExecutor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DrugRegistryExcelParserTest {
 
@@ -33,7 +37,10 @@ class DrugRegistryExcelParserTest {
                 wb.write(out);
             }
         }
-        List<DrugRegistryParsedRow> rows = new DrugRegistryExcelParser().parse(file);
+        PharmacyMassExecutor mass = mock(PharmacyMassExecutor.class);
+        Executor sync = Runnable::run;
+        when(mass.executor()).thenReturn(sync);
+        List<DrugRegistryParsedRow> rows = new DrugRegistryExcelParser(mass).parse(file);
         assertEquals(1, rows.size());
         assertEquals("Парацетамол", rows.get(0).tradeName());
         assertEquals("Узбекистан", rows.get(0).country());
