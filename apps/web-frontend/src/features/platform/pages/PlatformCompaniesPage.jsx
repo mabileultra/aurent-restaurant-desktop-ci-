@@ -1,160 +1,176 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import PageHeader from '../../../components/aa/PageHeader';
-import Button from '../../../components/aa/Button';
-import PlatformCompanyStatsCards from '../components/PlatformCompanyStatsCards';
-import PlatformCompanyToolbar from '../components/PlatformCompanyToolbar';
-import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
+import { BaseButton, PageLayout } from '../../../components/ui';
+import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
+import { buildBusinessTypeFilterOptions } from '../utils/businessTypeFilterOptions';
 import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
+import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
+import PlatformCompanyStatsCards from '../components/PlatformCompanyStatsCards';
 import PlatformCompanyQuickDrawer from '../components/PlatformCompanyQuickDrawer';
 import PlatformCompanyDeleteModal from '../components/PlatformCompanyDeleteModal';
 import PlatformCompanyToggleActiveModal from '../components/PlatformCompanyToggleActiveModal';
 import { usePlatformCompaniesPage } from '../hooks/usePlatformCompaniesPage';
+import GeoFilterSelects from '../../shared/geo/GeoFilterSelects';
 
-/**
- * PlatformCompaniesPage — Super-admin Kompaniyalar bo‘limi asosiy sahifasi.
- * aa dizayn tizimiga to‘liq moslashtirilgan.
- */
 export default function PlatformCompaniesPage() {
   const p = usePlatformCompaniesPage();
-
-  const handleResetFilters = () => {
-    p.handleSearchChange('');
-    p.handleBusinessTypeChange('');
-    p.handleGeoChange({ regionCode: '', districtCode: '' });
-    p.setStatusFilter('ALL');
-  };
-
-  const hasOtherFilters = Boolean(
-    p.search ||
-    p.businessType ||
-    p.regionCode ||
-    p.districtCode
-  );
-
-  const hasLoadedMeta = p.totalCompanies != null && p.totalStores != null && !p.isPending;
-  const metaDisplay = hasLoadedMeta ? (
-    `${p.totalCompanies} ta kompaniya · ${p.totalStores} ta filial`
-  ) : (
-    <span className="aa-skel aa-skel--text inline-block w-40 h-4" aria-label="Yuklanmoqda">
-      —
-    </span>
-  );
+  const navigate = useNavigate();
 
   return (
-    <div className="space-y-6">
-      {/* 1. PageHeader */}
-      <PageHeader
-        breadcrumbs={[
-          { label: 'Asosiy', to: '/platform/overview' },
-          { label: 'Kompaniyalar' },
-        ]}
-        title="Kompaniyalar"
-        meta={metaDisplay}
-        actions={(
-          <div className="w-full sm:w-auto">
-            <Button
-              variant="primary"
-              size="lg"
-              icon={<Plus size={16} aria-hidden="true" />}
-              onClick={p.openCreate}
-              className="w-full sm:w-auto h-[44px] aa-desktop:h-10"
-            >
-              Kompaniya qo‘shish
-            </Button>
-          </div>
-        )}
-      />
-
-      {/* 2. KPI kartalar */}
+    <PageLayout
+      spacing="space-y-4"
+      title={`${p.t('platform.companiesTitle')}${typeof p.total === 'number' && p.total > 0 ? ` (${p.total})` : ''}`}
+      actions={(
+        <BaseButton onClick={p.openCreate} className="admin-btn-primary">
+          <Plus size={16} />
+          {p.t('platform.addCompany')}
+        </BaseButton>
+      )}
+    >
+      {/* 1. Executive Summary KPI Cards */}
       <PlatformCompanyStatsCards
         t={p.t}
         totalCompanies={p.totalCompanies}
         activeCompanies={p.activeCompanies}
         inactiveCompanies={p.inactiveCompanies}
         totalStores={p.totalStores}
+        statusFilter={p.statusFilter}
+        onStatusFilterChange={p.setStatusFilter}
+        onStoresClick={() => navigate('/platform/stores')}
         isPending={p.isPending}
-        isError={p.isError}
       />
 
-      {/* 3. Ro‘yxat kartasi: fon surface, 1px line, radius 12 */}
-      <div className="bg-aa-surface border border-aa-line rounded-aa-lg overflow-hidden">
-        {/* Asboblar paneli (Toolbar) */}
-        <PlatformCompanyToolbar
-          statusFilter={p.statusFilter}
-          onStatusFilterChange={p.setStatusFilter}
-          totalCompanies={p.segmentedTotalCompanies ?? p.totalCompanies ?? 0}
-          activeCompanies={p.segmentedActiveCompanies ?? p.activeCompanies ?? 0}
-          inactiveCompanies={p.segmentedInactiveCompanies ?? p.inactiveCompanies ?? 0}
-          totalResults={p.total}
-          isPending={p.isPending}
+      {/* 2. Status Segmented Tabs + Filters Toolbar */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Segmented Status Tabs */}
+          <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+            <button
+              type="button"
+              onClick={() => p.setStatusFilter('ALL')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                p.statusFilter === 'ALL'
+                  ? 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {p.t('platform.tabAll', { defaultValue: 'Barchasi' })}
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+                {p.totalCompanies}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => p.setStatusFilter('ACTIVE')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                p.statusFilter === 'ACTIVE'
+                  ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
+              }`}
+            >
+              {p.t('platform.tabActive', { defaultValue: 'Faol' })}
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-mono">
+                {p.activeCompanies}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => p.setStatusFilter('INACTIVE')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                p.statusFilter === 'INACTIVE'
+                  ? (p.inactiveCompanies > 0 ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs' : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs')
+                  : (p.inactiveCompanies > 0 ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white')
+              }`}
+            >
+              {p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}
+              <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${p.inactiveCompanies > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
+                {p.inactiveCompanies}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <PlatformCompactFilterBar
           search={p.search}
           onSearchChange={p.handleSearchChange}
-          businessType={p.businessType}
-          onBusinessTypeChange={p.handleBusinessTypeChange}
-          businessTypes={p.businessTypes}
-          regionCode={p.regionCode}
-          districtCode={p.districtCode}
-          onGeoChange={p.handleGeoChange}
-          onReset={handleResetFilters}
-        />
-
-        {/* Jadval va holatlar */}
-        <PlatformCompaniesTable
-          isPending={p.isPending}
-          isError={p.isError}
-          onRetry={p.refetch}
-          rows={p.rows}
-          page={p.page}
-          displayPage={p.displayPage}
-          pageSize={p.pageSize}
-          total={p.total}
-          totalPages={p.totalPages}
-          onPageChange={p.setPage}
-          onPageSizeChange={p.setPageSize}
-          menuId={p.menuId}
-          onMenuOpenChange={p.setMenuId}
-          onEdit={p.openEdit}
-          onDelete={p.tryDelete}
-          onToggleActive={p.tryToggleActive}
-          onSelectCompany={p.setSelectedCompany}
-          statusFilter={p.statusFilter}
-          hasOtherFilters={hasOtherFilters}
-          onResetFilters={handleResetFilters}
+          searchPlaceholder={p.t('platform.companySearch')}
+          filterLabel={p.t('platform.filterBusinessType')}
+          filterOptions={buildBusinessTypeFilterOptions(p.t, p.businessTypes)}
+          filterValue={p.businessType}
+          onFilterChange={p.handleBusinessTypeChange}
+          onReset={() => {
+            p.handleSearchChange('');
+            p.handleBusinessTypeChange('');
+            p.handleGeoChange({ regionCode: '', districtCode: '' });
+            p.setStatusFilter('ALL');
+          }}
+          resetLabel={p.t('common.reset', { defaultValue: 'Сбросить' })}
+          extra={(
+            <GeoFilterSelects
+              regionCode={p.regionCode}
+              districtCode={p.districtCode}
+              onChange={p.handleGeoChange}
+            />
+          )}
         />
       </div>
 
-      {/* 4. Qo‘shish va tahrirlash formasi (Modal 720px) */}
+      {/* 3. Modernized Companies Table */}
+      <PlatformCompaniesTable
+        t={p.t}
+        isPending={p.isPending}
+        isRefreshing={p.isRefreshing}
+        showOverlay={p.showRefreshingOverlay}
+        isError={p.isError}
+        error={p.error}
+        onRetry={p.refetch}
+        rows={p.rows}
+        page={p.page}
+        displayPage={p.displayPage}
+        pageSize={p.pageSize}
+        total={p.total}
+        totalPages={p.totalPages}
+        onPageChange={p.setPage}
+        onPageSizeChange={p.setPageSize}
+        menuId={p.menuId}
+        onMenuOpenChange={p.setMenuId}
+        onEdit={p.openEdit}
+        onDelete={p.tryDelete}
+        onToggleActive={p.tryToggleActive}
+        onSelectCompany={p.setSelectedCompany}
+        statusFilter={p.statusFilter}
+      />
+
+      {/* 4. Edit / Create Modal */}
       <PlatformCompanyFormModal
         open={p.modalOpen}
         editing={p.editing}
         form={p.form}
-        isSaving={p.saveMutation?.isPending}
+        isSaving={p.saveMutation.isPending}
         businessTypes={p.businessTypes}
         onClose={p.closeModal}
         onFieldChange={p.updateField}
         onToggleBusinessType={p.toggleBusinessType}
         onSetDefaultBusinessType={p.setDefaultBusinessType}
-        onSave={() => p.saveMutation?.mutate()}
+        onSave={() => p.saveMutation.mutate()}
+        isDraftRestored={p.isDraftRestored}
+        onClearDraft={p.handleClearDraft}
       />
 
-      {/* 5. Tezkor ko‘rish o‘ng paneli (Quick Drawer 440px) */}
-      {p.selectedCompany && (
+      {/* 5. Quick Peek Slide-Over Drawer */}
+      {p.selectedCompany ? (
         <PlatformCompanyQuickDrawer
           open={Boolean(p.selectedCompany)}
           company={p.selectedCompany}
           onClose={p.closeQuickDrawer}
-          onEdit={(comp) => {
-            p.closeQuickDrawer();
-            p.openEdit(comp);
-          }}
+          onEdit={(comp) => { p.closeQuickDrawer(); p.openEdit(comp); }}
           onToggleActive={p.tryToggleActive}
           t={p.t}
         />
-      )}
+      ) : null}
 
-      {/* 6. O‘chirish tasdiqlash modali (Modal 480px) */}
-      {p.companyToDelete && (
+      {/* 6. Safe Delete / Deactivate Modal */}
+      {p.companyToDelete ? (
         <PlatformCompanyDeleteModal
           open={Boolean(p.companyToDelete)}
           company={p.companyToDelete}
@@ -162,19 +178,21 @@ export default function PlatformCompaniesPage() {
           onConfirmDelete={p.handleConfirmDelete}
           onToggleActive={p.tryToggleActive}
           isDeleting={p.isDeleting}
+          t={p.t}
         />
-      )}
+      ) : null}
 
-      {/* 7. Faolsizlantirish / Faollashtirish tasdiqlash modali (Modal 480px) */}
-      {p.companyToToggleActive && (
+      {/* 7. Safe Toggle Active Confirmation Modal */}
+      {p.companyToToggleActive ? (
         <PlatformCompanyToggleActiveModal
           open={Boolean(p.companyToToggleActive)}
           company={p.companyToToggleActive}
           onClose={() => p.setCompanyToToggleActive(null)}
           onConfirm={p.handleConfirmToggleActive}
           isToggling={p.isTogglingActive}
+          t={p.t}
         />
-      )}
-    </div>
+      ) : null}
+    </PageLayout>
   );
 }

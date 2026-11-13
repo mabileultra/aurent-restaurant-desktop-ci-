@@ -12,10 +12,9 @@ vi.mock('../../shared/geo/useGeoNameLookup', () => ({
   }),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key, opts) => opts?.defaultValue || key,
-  }),
+vi.mock('react-router-dom', () => ({
+  Link: ({ children, to, className, title }) =>
+    React.createElement('a', { href: to, className, title }, children),
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -26,9 +25,13 @@ vi.mock('react-hot-toast', () => ({
 }));
 
 describe('PlatformCompaniesTable', () => {
+  const mockT = (key, opts) => opts?.defaultValue || key;
+
   const defaultProps = {
+    t: mockT,
     isPending: false,
     isError: false,
+    error: null,
     onRetry: vi.fn(),
     rows: [
       {
@@ -79,19 +82,27 @@ describe('PlatformCompaniesTable', () => {
 
     // Login code and copy button
     expect(html).toContain('AVESTA-01');
-    expect(html).toContain('Supermarket Avesta: kirish kodini nusxalash');
+    expect(html).toContain('Nusxalash');
 
-    // Store count
-    expect(html).toContain('3');
-    expect(html).toContain('0');
+    // Store/branch link with focusCompany query parameter and hash for auto-scroll/expand
+    expect(html).toContain('href="/platform/stores?focusCompany=comp-1#company-comp-1"');
+    expect(html).toContain('href="/platform/stores?focusCompany=comp-2#company-comp-2"');
+    expect(html).toContain('Filiallar');
+    expect(html).toContain('Restoran filiallarini ko‘rish');
+    expect(html).toContain('Filiallarni ko‘rish');
+    expect(html).toContain('bg-emerald-50');
 
-    // Badges
-    expect(html).toContain('Faol');
-    expect(html).toContain('Nofaol');
-    expect(html).toContain('aa-badge--success');
+    // Business type badge (neutral slate styling)
+    expect(html).toContain('RETAIL');
+    expect(html).toContain('RESTAURANT');
+    expect(html).toContain('bg-slate-100');
+
+    // Status badges (active vs inactive)
+    expect(html).toContain('common.active');
+    expect(html).toContain('common.inactive');
   });
 
-  it('renders 8 skeleton rows and aria-busy when isPending is true', () => {
+  it('renders skeleton rows when isPending is true to prevent layout shift', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompaniesTable, {
         ...defaultProps,
@@ -99,13 +110,36 @@ describe('PlatformCompaniesTable', () => {
       })
     );
 
-    expect(html).toContain('aria-busy="true"');
-    expect(html).toContain('aa-skel');
-    // Pager yashirilgan bo'lishi kerak
-    expect(html).not.toContain('Sahifada');
+    expect(html).toContain('animate-pulse');
+    expect(html).not.toContain('Supermarket Avesta');
   });
 
-  it('renders empty state when rows is empty', () => {
+  it('renders top progress line when isRefreshing is true while keeping rows visible', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompaniesTable, {
+        ...defaultProps,
+        isRefreshing: true,
+      })
+    );
+
+    expect(html).toContain('bg-emerald-500 animate-pulse');
+    expect(html).toContain('Supermarket Avesta');
+  });
+
+  it('renders overlay spinner when showOverlay is true without unmounting rows', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformCompaniesTable, {
+        ...defaultProps,
+        showOverlay: true,
+      })
+    );
+
+    expect(html).toContain('data-testid="table-loading-overlay"');
+    expect(html).toContain('aa-spinner');
+    expect(html).toContain('Supermarket Avesta');
+  });
+
+  it('renders empty state when rows is empty and not pending', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompaniesTable, {
         ...defaultProps,
@@ -114,36 +148,26 @@ describe('PlatformCompaniesTable', () => {
       })
     );
 
-    expect(html).toContain('Kompaniya topilmadi');
-    expect(html).toContain('Qidiruv va filtrlarga mos kompaniya yo‘q');
+    expect(html).toContain('Kompaniyalar topilmadi');
   });
 
-  it('renders inactive-specific empty state when inactive tab is empty without other filters', () => {
+  it('numbers rows and range by displayPage during page transition when previous data is visible', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformCompaniesTable, {
         ...defaultProps,
-        rows: [],
-        total: 0,
-        statusFilter: 'INACTIVE',
-        hasOtherFilters: false,
+        page: 1, // Target page requested
+        displayPage: 0, // Currently visible data is still page 0
+        pageSize: 14,
+        total: 28,
+        totalPages: 2,
+        isRefreshing: true,
       })
     );
 
-    expect(html).toContain('Nofaol kompaniya yo‘q');
-    expect(html).toContain('Hamma kompaniyalar faol');
-    expect(html).not.toContain('Filtrlarni tozalash');
-  });
-
-  it('renders alert danger when isError is true', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompaniesTable, {
-        ...defaultProps,
-        isError: true,
-      })
-    );
-
-    expect(html).toContain('aa-alert--danger');
-    expect(html).toContain('Kompaniyalar ro‘yxatini yuklab bo‘lmadi');
-    expect(html).toContain('Qayta urinish');
+    // Row numbers must be 1 and 2 (from displayPage 0), NOT 15 and 16
+    expect(html).toContain('>1</td>');
+    expect(html).toContain('>2</td>');
+    expect(html).not.toContain('>15</td>');
+    expect(html).not.toContain('>16</td>');
   });
 });
