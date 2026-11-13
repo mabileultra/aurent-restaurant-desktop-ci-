@@ -149,10 +149,10 @@ describe('PlatformModuleAccessPage (PDF Design Implementation)', () => {
     expect(html).toContain('Rol shablonlari');
     expect(html).toContain('Xodimlar va istisnolar');
     expect(html).toContain('O‘zgarishlar tarixi');
-    expect(html).toContain('Jami xodim');
-    expect(html).toContain('Faqat shablon bo‘yicha ishlaydi');
-    expect(html).toContain('Istisnosi bor xodim');
-    expect(html).toContain('Faoliyat turi');
+    expect(html).toContain('Tur xodimlari');
+    expect(html).toContain('Faqat shablon bo‘yicha');
+    expect(html).toContain('Istisnosi bor');
+    expect(html).toContain('Tur rollari');
   });
 
   it('renders staff tab with master-detail list and detail panel', () => {

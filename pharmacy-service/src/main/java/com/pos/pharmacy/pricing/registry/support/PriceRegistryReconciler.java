@@ -3,7 +3,6 @@ package com.pos.pharmacy.pricing.registry.support;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.pricing.registry.domain.PriceChangeJournalStatus;
-import com.pos.pharmacy.pricing.registry.domain.PriceRegistryMatchBy;
 import com.pos.pharmacy.pricing.registry.dto.RegistryParsedRow;
 import com.pos.pharmacy.pricing.registry.entity.PriceChangeJournalEntry;
 import com.pos.pharmacy.pricing.registry.entity.PriceRegistryRow;
@@ -18,10 +17,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-/** Сохраняет строки реестра и строит журнал «было / предел / станет». */
+/**
+ * Сохраняет строки актуального снимка и в журнал — только превышения предела (PENDING).
+ * SKIPPED/UNMATCHED в БД не пишем.
+ */
 @Component
 @RequiredArgsConstructor
 public class PriceRegistryReconciler {
@@ -57,7 +60,7 @@ public class PriceRegistryReconciler {
         List<PriceRegistryRow> stored
     ) {
         Instant now = Instant.now();
-        List<PriceChangeJournalEntry> journal = new ArrayList<>();
+        List<PriceChangeJournalEntry> toSave = new ArrayList<>();
         Set<UUID> seenProducts = new HashSet<>();
         int pending = 0;
         int skipped = 0;
@@ -69,14 +72,6 @@ public class PriceRegistryReconciler {
             PriceRegistryProductMatcher.MatchResult match = matcher.match(companyId, p);
             if (match.product() == null) {
                 unmatched++;
-                journal.add(baseEntry(snapshotId, companyId, regRow, p, now)
-                    .productId(null)
-                    .productName(p.tradeName())
-                    .matchedBy(PriceRegistryMatchBy.NONE.name())
-                    .oldSellingPrice(null)
-                    .newSellingPrice(null)
-                    .status(PriceChangeJournalStatus.UNMATCHED.name())
-                    .build());
                 continue;
             }
             Product product = match.product();
@@ -92,47 +87,56 @@ public class PriceRegistryReconciler {
                 productRepository.save(product);
             }
             boolean over = limit != null && our.compareTo(limit) > 0;
-            if (over) {
-                pending++;
-                journal.add(baseEntry(snapshotId, companyId, regRow, p, now)
-                    .productId(product.getId())
-                    .productName(product.getName())
-                    .matchedBy(match.matchedBy().name())
-                    .oldSellingPrice(our)
-                    .newSellingPrice(limit)
-                    .status(PriceChangeJournalStatus.PENDING.name())
-                    .build());
-            } else {
+            if (!over) {
                 skipped++;
-                journal.add(baseEntry(snapshotId, companyId, regRow, p, now)
-                    .productId(product.getId())
-                    .productName(product.getName())
-                    .matchedBy(match.matchedBy().name())
-                    .oldSellingPrice(our)
-                    .newSellingPrice(our)
-                    .status(PriceChangeJournalStatus.SKIPPED_OK.name())
-                    .build());
+                journalRepository.deleteByCompanyIdAndProductIdAndStatus(
+                    companyId,
+                    product.getId(),
+                    PriceChangeJournalStatus.PENDING.name()
+                );
+                continue;
             }
+            pending++;
+            Optional<PriceChangeJournalEntry> existing = journalRepository
+                .findFirstByCompanyIdAndProductIdAndStatus(
+                    companyId,
+                    product.getId(),
+                    PriceChangeJournalStatus.PENDING.name()
+                );
+            if (existing.isPresent()) {
+                PriceChangeJournalEntry entry = existing.get();
+                entry.setSnapshotId(snapshotId);
+                entry.setRegistryRowId(regRow.getId());
+                entry.setBarcode(p.barcode());
+                entry.setPharmId(p.pharmId());
+                entry.setMatchedBy(match.matchedBy().name());
+                entry.setProductName(product.getName());
+                entry.setOldSellingPrice(our);
+                entry.setLimitPrice(limit);
+                entry.setNewSellingPrice(limit);
+                toSave.add(entry);
+                continue;
+            }
+            toSave.add(PriceChangeJournalEntry.builder()
+                .id(UUID.randomUUID())
+                .companyId(companyId)
+                .snapshotId(snapshotId)
+                .registryRowId(regRow.getId())
+                .productId(product.getId())
+                .productName(product.getName())
+                .barcode(p.barcode())
+                .pharmId(p.pharmId())
+                .matchedBy(match.matchedBy().name())
+                .oldSellingPrice(our)
+                .limitPrice(limit)
+                .newSellingPrice(limit)
+                .status(PriceChangeJournalStatus.PENDING.name())
+                .createdAt(now)
+                .build());
         }
-        journalRepository.saveAll(journal);
+        if (!toSave.isEmpty()) {
+            journalRepository.saveAll(toSave);
+        }
         return new Counts(pending, skipped, unmatched);
-    }
-
-    private static PriceChangeJournalEntry.PriceChangeJournalEntryBuilder baseEntry(
-        UUID snapshotId,
-        Integer companyId,
-        PriceRegistryRow regRow,
-        RegistryParsedRow p,
-        Instant now
-    ) {
-        return PriceChangeJournalEntry.builder()
-            .id(UUID.randomUUID())
-            .companyId(companyId)
-            .snapshotId(snapshotId)
-            .registryRowId(regRow.getId())
-            .barcode(p.barcode())
-            .pharmId(p.pharmId())
-            .limitPrice(p.limitPriceVat())
-            .createdAt(now);
     }
 }

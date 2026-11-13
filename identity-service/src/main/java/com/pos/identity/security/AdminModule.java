@@ -117,6 +117,11 @@ public enum AdminModule {
             .toList();
     }
 
+    /** Повар: только кухня, без зала/доставки/POS-флагов. */
+    public static List<AdminModule> cookScope() {
+        return List.of(RESTAURANT_KITCHEN);
+    }
+
     public static List<AdminModule> financeScope() {
         return Arrays.stream(values())
             .filter(m -> "finance".equals(m.group))

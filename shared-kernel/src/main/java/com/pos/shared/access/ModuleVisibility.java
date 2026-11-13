@@ -30,22 +30,17 @@ public final class ModuleVisibility {
     );
 
     /**
-     * Allowlist for restaurant SPA admin / POS — mirrors restaurant-frontend moduleHandbook.
-     * Retail grocery POS, registers, finance, sales-reports stay out.
+     * Allowlist for restaurant SPA — only keys from restaurant-frontend moduleHandbook
+     * (ADMIN_MODULE_IDS + CASHIER_MODULE_IDS). No dead retail toggles (dashboard/stores/users…).
      */
     private static final Set<String> RESTAURANT_ADMIN_VISIBLE = Set.of(
-        "dashboard",
         "products",
         "categories",
         "stockProducts",
         "stockSuppliers",
         "stockReceipts",
         "stockInventories",
-        "stockTransfers",
         "reportsStockLow",
-        "stores",
-        "usersList",
-        "usersPrinterSettings",
         "restaurantFloor",
         "restaurantBooking",
         "restaurantDelivery",

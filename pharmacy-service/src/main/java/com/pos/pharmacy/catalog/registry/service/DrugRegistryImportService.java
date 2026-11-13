@@ -3,12 +3,11 @@ package com.pos.pharmacy.catalog.registry.service;
 import com.pos.pharmacy.catalog.registry.dto.DrugRegistryLatestResponse;
 import com.pos.pharmacy.catalog.registry.dto.DrugRegistryParsedRow;
 import com.pos.pharmacy.catalog.registry.dto.DrugRegistrySyncResult;
-import com.pos.pharmacy.catalog.registry.entity.DrugRegistryEntry;
 import com.pos.pharmacy.catalog.registry.entity.DrugRegistryImport;
-import com.pos.pharmacy.catalog.registry.repository.DrugRegistryEntryRepository;
 import com.pos.pharmacy.catalog.registry.repository.DrugRegistryImportRepository;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryEntryBatchWriter;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryEntryPersister;
 import com.pos.pharmacy.catalog.registry.support.DrugRegistryExcelParser;
-import com.pos.pharmacy.catalog.registry.support.DrugRegistryNameKey;
 import com.pos.pharmacy.catalog.registry.support.DrugRegistrySourceFile;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyDrugRegistryErrors;
@@ -22,8 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
@@ -33,12 +30,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DrugRegistryImportService {
 
-    private static final int BATCH = 400;
-
     private final DrugRegistrySourceFile sourceFile;
     private final DrugRegistryExcelParser parser;
     private final DrugRegistryImportRepository imports;
-    private final DrugRegistryEntryRepository entries;
+    private final DrugRegistryEntryPersister persister;
+    private final DrugRegistryEntryBatchWriter entryWriter;
     private final DrugRegistryBackfillService backfill;
 
     @Transactional(readOnly = true)
@@ -54,7 +50,6 @@ public class DrugRegistryImportService {
             .orElse(null);
     }
 
-    @Transactional
     public DrugRegistrySyncResult sync() {
         if (!sourceFile.configured()) {
             LogUtil.info(DrugRegistryImportService.class, "Drug registry source is not configured");
@@ -71,7 +66,6 @@ public class DrugRegistryImportService {
         }
     }
 
-    @Transactional
     public DrugRegistrySyncResult upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw PharmacyErrors.of(
@@ -120,16 +114,14 @@ public class DrugRegistryImportService {
         }
         List<DrugRegistryParsedRow> rows = parser.parse(opened.path());
         UUID importId = UUID.randomUUID();
-        imports.save(DrugRegistryImport.builder()
-            .id(importId)
-            .source(clip(opened.source(), 1000))
-            .fileName(clip(opened.fileName(), 255))
-            .checksum(checksum)
-            .rowCount(rows.size())
-            .status(DrugRegistryImport.STATUS_READY)
-            .createdAt(Instant.now())
-            .build());
-        saveRows(importId, rows);
+        persister.saveImport(
+            importId,
+            clip(opened.source(), 1000),
+            clip(opened.fileName(), 255),
+            checksum,
+            rows.size()
+        );
+        entryWriter.saveAll(importId, rows);
         int filled = backfill.fillExisting();
         LogUtil.info(
             DrugRegistryImportService.class,
@@ -138,36 +130,6 @@ public class DrugRegistryImportService {
             filled
         );
         return new DrugRegistrySyncResult(importId, rows.size(), false, filled);
-    }
-
-    private void saveRows(UUID importId, List<DrugRegistryParsedRow> rows) {
-        List<DrugRegistryEntry> batch = new ArrayList<>(BATCH);
-        for (DrugRegistryParsedRow row : rows) {
-            String name = clip(row.tradeName(), 500);
-            if (name == null) {
-                continue;
-            }
-            batch.add(DrugRegistryEntry.builder()
-                .id(UUID.randomUUID())
-                .importId(importId)
-                .tradeName(name)
-                .nameKey(clip(DrugRegistryNameKey.of(name), 500))
-                .registrationNumber(clip(row.registrationNumber(), 128))
-                .inn(clip(row.inn(), 500))
-                .dosageForm(clip(row.dosageForm(), 255))
-                .manufacturer(clip(row.manufacturer(), 500))
-                .country(clip(row.country(), 255))
-                .atcCode(clip(row.atcCode(), 32))
-                .prescriptionRequired(row.prescriptionRequired())
-                .build());
-            if (batch.size() >= BATCH) {
-                entries.saveAll(batch);
-                batch.clear();
-            }
-        }
-        if (!batch.isEmpty()) {
-            entries.saveAll(batch);
-        }
     }
 
     private static String suffix(String name) {

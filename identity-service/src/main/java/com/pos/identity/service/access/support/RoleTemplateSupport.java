@@ -151,7 +151,9 @@ public class RoleTemplateSupport {
             return PlatformAdminModule.grantable().stream().map(PlatformAdminModule::key).sorted().toList();
         }
         List<AdminModule> scope;
-        if ("CASHIER".equals(roleName) || "WAITER".equals(roleName) || "COOK".equals(roleName)) {
+        if ("COOK".equals(roleName)) {
+            scope = AdminModule.cookScope();
+        } else if ("CASHIER".equals(roleName) || "WAITER".equals(roleName)) {
             scope = AdminModule.cashierScope();
         } else if ("ACCOUNTANT".equals(roleName)) {
             scope = AdminModule.financeScope();

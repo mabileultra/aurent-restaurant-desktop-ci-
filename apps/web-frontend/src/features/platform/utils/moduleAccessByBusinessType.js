@@ -17,20 +17,15 @@ const RESTAURANT_MODULE_IDS = new Set([
   'restaurantQuickSale',
 ]);
 
-/** Mirrors shared-kernel ModuleVisibility.RESTAURANT_ADMIN_VISIBLE */
+/** Mirrors shared-kernel ModuleVisibility.RESTAURANT_ADMIN_VISIBLE (= restaurant handbook). */
 const RESTAURANT_ADMIN_VISIBLE = new Set([
-  'dashboard',
   'products',
   'categories',
   'stockProducts',
   'stockSuppliers',
   'stockReceipts',
   'stockInventories',
-  'stockTransfers',
   'reportsStockLow',
-  'stores',
-  'usersList',
-  'usersPrinterSettings',
   ...RESTAURANT_MODULE_IDS,
 ]);
 

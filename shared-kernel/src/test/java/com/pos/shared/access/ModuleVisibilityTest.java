@@ -63,9 +63,11 @@ class ModuleVisibilityTest {
         assertTrue(ModuleVisibility.visible("categories", businessType));
         assertTrue(ModuleVisibility.visible("products", businessType));
         assertTrue(ModuleVisibility.visible("stockProducts", businessType));
-        assertTrue(ModuleVisibility.visible("stockTransfers", businessType));
-        assertTrue(ModuleVisibility.visible("dashboard", businessType));
-        assertTrue(ModuleVisibility.visible("usersList", businessType));
+        assertTrue(ModuleVisibility.visible("reportsStockLow", businessType));
+        assertFalse(ModuleVisibility.visible("stockTransfers", businessType));
+        assertFalse(ModuleVisibility.visible("dashboard", businessType));
+        assertFalse(ModuleVisibility.visible("usersList", businessType));
+        assertFalse(ModuleVisibility.visible("stores", businessType));
         assertFalse(ModuleVisibility.visible("scalesPlu", businessType));
         assertFalse(ModuleVisibility.visible("cashierPos", businessType));
         assertFalse(ModuleVisibility.visible("cashierSales", businessType));
