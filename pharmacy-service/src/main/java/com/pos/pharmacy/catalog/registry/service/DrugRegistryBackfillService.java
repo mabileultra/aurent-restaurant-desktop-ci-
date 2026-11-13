@@ -53,7 +53,7 @@ public class DrugRegistryBackfillService {
     private int applyOne(Product product, Integer companyId, UUID userId, String role) {
         PharmacyTenantContext.set(companyId, userId, role);
         try {
-            return cardFill.applyMissing(product.getId(), product.getName()) ? 1 : 0;
+            return cardFill.applyMissing(product) ? 1 : 0;
         } finally {
             PharmacyTenantContext.clear();
         }

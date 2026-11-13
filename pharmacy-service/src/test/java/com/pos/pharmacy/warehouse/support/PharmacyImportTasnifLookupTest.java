@@ -30,7 +30,7 @@ class PharmacyImportTasnifLookupTest {
     @Test
     void cachesFoundHit() {
         PharmacyImportTasnifClient client = mock(PharmacyImportTasnifClient.class);
-        PharmacyImportTasnifHit hit = new PharmacyImportTasnifHit(true, true, "1546940", "Кюпен");
+        PharmacyImportTasnifHit hit = new PharmacyImportTasnifHit(true, true, "1546940", "Кюпен", null);
         when(client.fetch("03004409005052001")).thenReturn(hit);
         PharmacyTasnifProperties properties = new PharmacyTasnifProperties();
         PharmacyImportTasnifLookup lookup = new PharmacyImportTasnifLookup(client, properties);
