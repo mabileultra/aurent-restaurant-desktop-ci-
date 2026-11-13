@@ -97,7 +97,7 @@ export default function BillingCalendarDailyPanel({
           <div className="flex items-center gap-1">
             <button
               type="button"
-              className="bc-icon-btn bc-icon-btn--circle"
+              className="w-8 h-8 inline-flex items-center justify-center rounded-aa-sm border border-aa-line text-aa-ink-muted hover:text-aa-ink hover:bg-aa-surface-sunken transition-colors"
               onClick={() => setPicked(shiftDay(picked, -1))}
               title={t('common.prev', { defaultValue: 'Oldingi kun' })}
             >
@@ -105,7 +105,7 @@ export default function BillingCalendarDailyPanel({
             </button>
             <button
               type="button"
-              className="bc-icon-btn bc-icon-btn--circle"
+              className="w-8 h-8 inline-flex items-center justify-center rounded-aa-sm border border-aa-line text-aa-ink-muted hover:text-aa-ink hover:bg-aa-surface-sunken transition-colors"
               onClick={() => setPicked(shiftDay(picked, 1))}
               title={t('common.next', { defaultValue: 'Keyingi kun' })}
             >
@@ -140,7 +140,7 @@ export default function BillingCalendarDailyPanel({
       <div className="bc-cal-side-panel__body">
         {filteredItems.length === 0 ? (
           <div className="bc-cal-side-panel__empty">
-            <p className="text-xs text-slate-400 py-8 text-center">
+            <p className="text-xs text-aa-ink-muted py-8 text-center">
               {enrichedItems.length === 0
                 ? k('noPayments', { defaultValue: 'Bu kunda yechish kutilmaydi' })
                 : t('platform.billing.emptyCompanies', { defaultValue: 'Bu filtr bo‘yicha kompaniyalar topilmadi' })}

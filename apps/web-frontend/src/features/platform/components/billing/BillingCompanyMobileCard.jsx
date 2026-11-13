@@ -2,12 +2,25 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { BaseCheckbox } from '../../../../components/ui';
 import {
-  STATE_TONE,
   activeDeferralDay,
   balanceTone,
   dueHint,
   initials,
 } from './billingCollectionsUi';
+
+function getMobileStatusBadge(state, label) {
+  let cls = 'bg-aa-surface-sunken text-aa-ink-muted border-aa-line';
+  if (state === 'ACTIVE') {
+    cls = 'bg-aa-success-soft text-aa-success border-aa-line';
+  } else if (state === 'NOT_BILLED') {
+    cls = 'bg-aa-brand-soft text-aa-brand border-aa-line';
+  }
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${cls}`}>
+      {label}
+    </span>
+  );
+}
 
 export default function BillingCompanyMobileCard({
   row,
@@ -27,10 +40,10 @@ export default function BillingCompanyMobileCard({
 
   return (
     <div
-      className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none bg-white dark:!bg-slate-900 ${
+      className={`p-3.5 rounded-aa-lg border transition-all cursor-pointer select-none bg-aa-surface ${
         isSelected
-          ? 'border-emerald-500 shadow-sm bg-emerald-50/20 dark:bg-emerald-950/20'
-          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+          ? 'border-aa-brand ring-1 ring-aa-brand bg-aa-surface-selected shadow-none'
+          : 'border-aa-line hover:border-aa-line-strong'
       }`}
       onClick={() => p.selectCompany(row)}
       role="button"
@@ -46,11 +59,12 @@ export default function BillingCompanyMobileCard({
       <div className="flex items-start justify-between gap-2.5 mb-2.5">
         <div className="flex items-start space-x-2.5 min-w-0">
           <div
-            className="pt-0.5"
+            className="pt-0.5 min-h-[44px] flex items-center"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
             <BaseCheckbox
+              variant="aa"
               checked={c.selectedIds.has(b.companyId)}
               onChange={() => c.toggleSelect(b.companyId)}
               ariaLabel={b.companyName}
@@ -59,18 +73,18 @@ export default function BillingCompanyMobileCard({
           </div>
           <div className="flex items-center space-x-2 min-w-0">
             <span
-              className={`bc-avatar bc-avatar--${STATE_TONE[paymentState]} shrink-0 w-8 h-8 rounded-lg text-xs font-bold flex items-center justify-center`}
+              className="shrink-0 w-8 h-8 rounded-aa-sm bg-aa-surface-sunken text-aa-ink-muted border border-aa-line text-xs font-semibold flex items-center justify-center"
             >
               {initials(b.companyName)}
             </span>
             <div className="min-w-0">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">
+              <h4 className="text-sm font-semibold text-aa-ink truncate leading-tight">
                 {b.companyName || `#${b.companyId}`}
               </h4>
-              <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                ID: {b.companyId}
+              <p className="text-xs text-aa-ink-muted mt-0.5 truncate">
+                ID: <span className="font-mono">{b.companyId}</span>
                 {row.newCompany ? (
-                  <span className="bc-new ml-1.5 px-1.5 py-0.2 rounded text-[10px] font-semibold">
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-aa-sm text-xs font-semibold bg-aa-brand-soft text-aa-brand border border-aa-line">
                     {k('newBadge')}
                   </span>
                 ) : null}
@@ -80,45 +94,55 @@ export default function BillingCompanyMobileCard({
         </div>
 
         <div className="shrink-0 flex items-center space-x-1">
-          <span className={`bc-badge bc-badge--${STATE_TONE[paymentState]} text-[11px]`}>
-            {k(`states.${paymentState}`)}
-          </span>
-          <ChevronRight size={16} className="text-slate-400" aria-hidden />
+          {getMobileStatusBadge(paymentState, k(`states.${paymentState}`))}
+          <div className="w-8 h-8 flex items-center justify-center rounded-aa-sm text-aa-ink-muted">
+            <ChevronRight size={16} aria-hidden />
+          </div>
         </div>
       </div>
 
       {/* Financials & Status Grid */}
-      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-aa-line text-xs">
         <div>
-          <span className="text-[10px] text-slate-400 uppercase font-medium">{k('currentBalance')}</span>
-          <p className={`font-bold tabular-nums text-sm bc-text--${balanceTone(b.balance)}`}>
+          <span className="text-xs text-aa-ink-muted font-medium">{k('currentBalance')}</span>
+          <p className={`font-bold tabular-nums text-sm ${balanceTone(b.balance) === 'danger' ? 'text-aa-danger' : balanceTone(b.balance) === 'warning' ? 'text-aa-warning' : 'text-aa-ink'}`}>
             {money(b.balance)} {currency}
           </p>
         </div>
         <div>
-          <span className="text-[10px] text-slate-400 uppercase font-medium">{k('colMonthly')}</span>
-          <p className="font-semibold tabular-nums text-sm text-slate-800 dark:text-slate-200">
+          <span className="text-xs text-aa-ink-muted font-medium">{k('colMonthly')}</span>
+          <p className="font-semibold tabular-nums text-sm text-aa-ink">
             {money(b.monthlyTotal)} {currency}
           </p>
         </div>
         <div>
-          <span className="text-[10px] text-slate-400 uppercase font-medium">{k('colPlan')}</span>
-          <p className="font-medium text-slate-700 dark:text-slate-300 truncate">
+          <span className="text-xs text-aa-ink-muted font-medium">{k('colPlan')}</span>
+          <p className="font-medium text-aa-ink truncate mt-0.5">
             {b.planName || (Number(b.monthlyTotal) > 0 ? k('customPlan') : '—')}
           </p>
         </div>
         <div>
-          <span className="text-[10px] text-slate-400 uppercase font-medium">{k('colNext')}</span>
-          <p className="font-medium text-slate-700 dark:text-slate-300">
+          <span className="text-xs text-aa-ink-muted font-medium">{k('colNext')}</span>
+          <p className="font-medium text-aa-ink mt-0.5">
             {formatDate(b.nextChargeAt)}
           </p>
-          {hint ? <span className={`text-[10px] bc-text--${hint.tone}`}>{hint.text}</span> : null}
+          {hint ? (
+            <span className={`block text-xs mt-0.5 font-medium ${hint.tone === 'danger' ? 'text-aa-danger' : hint.tone === 'warning' ? 'text-aa-warning' : 'text-aa-ink-muted'}`}>
+              {hint.text}
+            </span>
+          ) : null}
         </div>
       </div>
 
       {deferral ? (
-        <div className="mt-2 text-[11px] text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 px-2 py-1 rounded">
+        <div className="mt-2 text-xs text-aa-brand bg-aa-brand-soft border border-aa-line px-2 py-1 rounded-aa-sm font-medium">
           {k('deferral.until', { date: formatDate(deferral) })}
+        </div>
+      ) : null}
+
+      {(regionName(row.regionCode) || districtName(row.districtCode)) ? (
+        <div className="pt-2 mt-2 border-t border-aa-line text-xs text-aa-ink-muted flex items-center gap-1.5 truncate">
+          <span>{[regionName(row.regionCode), districtName(row.districtCode)].filter(Boolean).join(', ')}</span>
         </div>
       ) : null}
     </div>

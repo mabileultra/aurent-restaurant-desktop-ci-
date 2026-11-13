@@ -1072,11 +1072,11 @@ textarea.bc-control { height: auto; padding-block: 0.5rem; }
 .bc-cal-weekday {
   text-align: center;
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--color-muted, #64748b);
+  font-weight: 600;
+  color: var(--aa-ink-muted, #56615c);
   padding: 0.25rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .bc-cal-grid {

@@ -30,18 +30,22 @@ export default function PlatformBillingPage() {
       title={p.t('platform.billing.title')}
       subtitle={p.t('platform.billing.subtitle')}
       actions={(
-        <button type="button" className="bc-btn bc-btn--primary" onClick={() => p.openPaymentModal()}>
+        <button
+          type="button"
+          className="aa-btn aa-btn--primary aa-size-md inline-flex items-center gap-1.5 cursor-pointer"
+          onClick={() => p.openPaymentModal()}
+        >
           <Plus size={16} aria-hidden />
-          {p.t('platform.billing.collections.addPayment')}
+          <span>{p.t('platform.billing.collections.addPayment')}</span>
         </button>
       )}
     >
-      <nav className="bc-views" aria-label={p.t('platform.billing.title')}>
+      <nav className="aa-tabs" aria-label={p.t('platform.billing.title')}>
         {VIEWS.map((key) => (
           <button
             key={key}
             type="button"
-            className={view === key ? 'bc-views__btn bc-views__btn--active' : 'bc-views__btn'}
+            className={view === key ? 'aa-tabs__tab aa-tabs__tab--active' : 'aa-tabs__tab'}
             onClick={() => setView(key)}
           >
             {p.t(`platform.billing.collections.views.${key}`)}
@@ -53,7 +57,7 @@ export default function PlatformBillingPage() {
         <>
           <BillingKpiCards t={p.t} money={p.money} overview={c.overview} tab={c.tab} onTab={c.setTab} />
 
-          <div className="bc-card bc-toolbar">
+          <div className="platform-filter-bar platform-filter-bar--aa bg-aa-surface border border-aa-line rounded-aa-lg p-3 sm:p-4 shadow-none">
             <BillingFiltersBar t={p.t} c={c} plans={p.plans} />
           </div>
 

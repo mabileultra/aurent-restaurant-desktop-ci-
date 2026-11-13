@@ -56,15 +56,15 @@ export default function BillingCalendarListView({
   };
 
   return (
-    <div className="bc-card bc-ledger-card bc-calendar-list-view">
-      <header className="bc-ledger-card__head">
+    <div className="admin-table-shell admin-table-shell--aa bc-card bc-ledger-card bc-calendar-list-view rounded-aa-lg bg-aa-surface border border-aa-line overflow-hidden shadow-none">
+      <header className="bc-ledger-card__head flex items-center justify-between p-3.5 sm:p-4 border-b border-aa-line">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="bc-chart-card__title">
+            <h3 className="bc-chart-card__title text-sm font-semibold text-aa-ink">
               {t('platform.billing.collections.calendar.monthListTitle', { defaultValue: 'Oylik to‘lovlar va yechishlar jadvali' })}
             </h3>
             {selectedDate && (
-              <span className="bc-cal-list-day-chip">
+              <span className="bc-cal-list-day-chip inline-flex items-center gap-1.5 px-2 py-0.5 rounded-aa-sm bg-aa-brand-soft text-aa-brand border border-aa-line text-xs font-semibold">
                 <Calendar size={13} aria-hidden />
                 <span>{formatDayTitle(selectedDate, lang)}</span>
                 {onClearDateFilter && (
@@ -81,7 +81,7 @@ export default function BillingCalendarListView({
               </span>
             )}
           </div>
-          <p className="bc-chart-card__sub">
+          <p className="bc-chart-card__sub text-xs text-aa-ink-muted mt-0.5">
             {selectedDate
               ? t('platform.billing.collections.calendar.dayListSub', {
                   defaultValue: 'Tanlangan kun uchun to‘lovlar ro‘yxati',
@@ -95,7 +95,7 @@ export default function BillingCalendarListView({
         <div className="bc-ledger-card__actions flex flex-wrap items-center gap-2">
           <button
             type="button"
-            className="bc-btn bc-btn--outline bc-btn--sm"
+            className="aa-btn aa-btn--secondary aa-size-sm inline-flex items-center gap-1.5 cursor-pointer"
             onClick={handleExport}
             disabled={isExporting}
           >
@@ -106,24 +106,24 @@ export default function BillingCalendarListView({
       </header>
 
       {/* Table */}
-      <div className="bc-table-wrap">
-        <table className="bc-table">
+      <div className="bc-table-wrap overflow-x-auto">
+        <table className="bc-table w-full text-left text-sm table-fixed border-collapse min-w-[800px]">
           <thead>
-            <tr>
-              <th>{t('platform.billing.collections.calendar.colDate', { defaultValue: 'Yechish sanasi' })}</th>
-              <th>{t('platform.billing.collections.colCompany', { defaultValue: 'Kompaniya' })}</th>
-              <th>{t('geo.region', { defaultValue: 'Viloyat' })}</th>
-              <th>{t('platform.billing.collections.colPlan', { defaultValue: 'Tarif' })}</th>
-              <th className="bc-num">{t('platform.billing.collections.colMonthly', { defaultValue: 'Yechish summasi' })}</th>
-              <th className="bc-num">{t('platform.billing.collections.colBalance', { defaultValue: 'Balans' })}</th>
-              <th>{t('platform.billing.collections.colStatus', { defaultValue: 'Holati' })}</th>
-              <th className="text-right">{t('platform.billing.collections.colActions', { defaultValue: 'Amallar' })}</th>
+            <tr className="border-b border-aa-line bg-aa-surface-sunken text-xs font-semibold text-aa-ink-muted">
+              <th className="px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.calendar.colDate', { defaultValue: 'Yechish sanasi' })}</th>
+              <th className="px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.colCompany', { defaultValue: 'Kompaniya' })}</th>
+              <th className="px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('geo.region', { defaultValue: 'Viloyat' })}</th>
+              <th className="px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.colPlan', { defaultValue: 'Tarif' })}</th>
+              <th className="bc-num px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.colMonthly', { defaultValue: 'Yechish summasi' })}</th>
+              <th className="bc-num px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.colBalance', { defaultValue: 'Balans' })}</th>
+              <th className="px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.colStatus', { defaultValue: 'Holati' })}</th>
+              <th className="text-right px-3 py-3.5 font-semibold text-xs text-aa-ink-muted">{t('platform.billing.collections.colActions', { defaultValue: 'Amallar' })}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-aa-line">
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan={8} className="bc-table__empty text-xs text-slate-400 text-center py-10">
+                <td colSpan={8} className="bc-table__empty text-xs text-aa-ink-muted text-center py-10">
                   {t('platform.billing.emptyCompanies', { defaultValue: 'Kompaniyalar topilmadi' })}
                 </td>
               </tr>

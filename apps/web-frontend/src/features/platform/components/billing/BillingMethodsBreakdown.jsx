@@ -20,9 +20,7 @@ export default function BillingMethodsBreakdown({ t, methods = [], period, onPer
     <div className="bc-chart-card">
       <div className="bc-chart-card__head flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="bc-report-kpi-card__icon bc-kpi--warning">
-            <Wallet size={16} aria-hidden />
-          </span>
+          <Wallet size={16} className="text-aa-ink-muted" aria-hidden />
           <div>
             <h3 className="bc-chart-card__title">{k('methods')}</h3>
             <p className="bc-chart-card__sub">
@@ -33,6 +31,7 @@ export default function BillingMethodsBreakdown({ t, methods = [], period, onPer
         <div style={{ width: '8.5rem' }}>
           <PlatformSelect
             size="sm"
+            variant="aa"
             value={period}
             onChange={(e) => onPeriodChange(e.target.value)}
             options={PERIODS.map((pKey) => ({
@@ -62,7 +61,7 @@ export default function BillingMethodsBreakdown({ t, methods = [], period, onPer
         </ul>
 
         {totalAmount === 0 && (
-          <p className="bc-methods-empty text-xs text-center text-slate-400 mt-4">
+          <p className="bc-methods-empty text-xs text-center text-aa-ink-muted mt-4">
             {t('platform.billing.collections.reports.noMethodPayments', { defaultValue: 'Ushbu davrda hali to‘lovlar qayd etilmagan' })}
           </p>
         )}

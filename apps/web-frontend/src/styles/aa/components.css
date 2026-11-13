@@ -987,3 +987,94 @@ html.app-theme--admin .fixed.inset-0 .companies-toggle-modal .aa-btn--secondary,
   width: 16px;
   height: 16px;
 }
+
+/* ==========================================================================
+   Tablar (aa-tabs) — tagi chiziqli tab (40px, 14px, faol tab brand rang va 2px chiziq)
+   ========================================================================== */
+.aa-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--aa-space-6, 1.5rem);
+  border-bottom: 1px solid var(--aa-line, #e3e8e6);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+.aa-tabs__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 var(--aa-space-1, 0.25rem);
+  font: 500 14px/20px var(--aa-font-sans);
+  color: var(--aa-ink-muted, #56615c);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+.aa-tabs__tab:hover {
+  color: var(--aa-ink, #14201b);
+}
+.aa-tabs__tab--active,
+.aa-tabs__tab.is-active {
+  color: var(--aa-brand, #006847);
+  font-weight: 600;
+  border-bottom: 2px solid var(--aa-brand, #006847);
+}
+@media (max-width: 640px) {
+  .aa-tabs {
+    gap: var(--aa-space-4, 1rem);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .aa-tabs__tab {
+    height: 44px;
+    font-size: 14px;
+  }
+}
+
+.platform-filter-bar--aa .bc-filters {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  gap: var(--aa-space-3, 0.75rem);
+}
+.platform-filter-bar--aa .bc-filters__row--secondary {
+  border-top: 1px dashed var(--aa-line, #e3e8e6);
+  padding-top: var(--aa-space-3, 0.75rem);
+}
+
+.billing-modal .aa-btn--secondary,
+.billing-modal [aria-label="Yopish"],
+.billing-modal [aria-label="Close"],
+.billing-modal button:has(svg.lucide-x) {
+  width: var(--aa-control-sm, 32px);
+  height: var(--aa-control-sm, 32px);
+  min-width: var(--aa-control-sm, 32px);
+  min-height: var(--aa-control-sm, 32px);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--aa-radius-md, 8px);
+  color: var(--aa-ink-muted, #56615c);
+  background: transparent;
+  border: 0;
+}
+.billing-modal [aria-label="Yopish"]:hover,
+.billing-modal [aria-label="Close"]:hover,
+.billing-modal button:has(svg.lucide-x):hover {
+  background: var(--aa-surface-hover, #f1f5f3);
+  color: var(--aa-ink, #14201b);
+}
+.billing-modal [aria-label="Yopish"] svg,
+.billing-modal [aria-label="Close"] svg,
+.billing-modal button:has(svg.lucide-x) svg {
+  width: 16px;
+  height: 16px;
+}

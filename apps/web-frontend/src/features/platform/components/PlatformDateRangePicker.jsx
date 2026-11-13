@@ -32,6 +32,7 @@ export default function PlatformDateRangePicker({
   minDate = '',
   maxDate = '',
   theme = 'emerald',
+  variant = 'default',
   t: propT,
 }) {
   const isBlue = theme === 'blue';
@@ -289,9 +290,11 @@ export default function PlatformDateRangePicker({
             toggleOpen();
           }
         }}
-        className={`group h-[2.375rem] px-3 inline-flex items-center justify-between gap-2.5 rounded-[0.6rem] border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 ${
-          isBlue ? 'focus-within:ring-blue-500/20 focus-within:border-blue-500' : 'focus-within:ring-emerald-500/20 focus-within:border-emerald-500'
-        } transition-all shadow-sm select-none ${
+        className={`group ${
+          variant === 'aa'
+            ? 'h-10 sm:h-10 h-11 rounded-aa-md border border-aa-line-strong bg-aa-surface text-aa-ink text-sm font-normal'
+            : 'h-[2.375rem] rounded-[0.6rem] border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium'
+        } px-3 inline-flex items-center justify-between gap-2.5 hover:border-aa-ink-muted focus-within:ring-1 focus-within:ring-aa-brand focus-within:border-aa-brand transition-all shadow-none select-none ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         } ${isFullWidth ? 'w-full' : ''} ${className}`}
       >
