@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPharmacyProductsCsv } from './pharmacyProductsExportCsv';
+import { buildPharmacyProductsSheetRows } from './pharmacyProductsExportCsv';
 
 const t = (key) => ({
   'pharmacyStock.colName': 'Наименование',
@@ -18,15 +18,15 @@ const t = (key) => ({
   'pharmacyStock.colUpdated': 'Обновлён',
 }[key] || key);
 
-describe('buildPharmacyProductsCsv', () => {
-  it('matches table columns with localized headers and semicolon sep', () => {
-    const text = buildPharmacyProductsCsv([
+describe('buildPharmacyProductsSheetRows', () => {
+  it('matches table columns with localized headers and keeps codes as text', () => {
+    const rows = buildPharmacyProductsSheetRows([
       {
         name: 'АЦЦ 200мг',
         stockQuantity: 2,
         sellingPrice: 25000,
-        barcode: '460',
-        ikpu: '123',
+        barcode: '300420000000001',
+        ikpu: '01799001001000000',
         attributes: {
           manufacturer: 'Sandoz',
           dosage_form: 'пор.',
@@ -35,10 +35,28 @@ describe('buildPharmacyProductsCsv', () => {
         },
       },
     ], t);
-    expect(text.startsWith('sep=;')).toBe(true);
-    expect(text).toContain('№;Наименование;Поставщик;Документ №;Дата;Кол-во;Розничная цена');
-    expect(text).toContain('Производитель;Форма;АТХ;Штрихкоды;ИКПУ;В упаковке;Страна;Обновлён');
-    expect(text).not.toContain('sku;');
-    expect(text).toMatch(/1;АЦЦ 200мг/);
+
+    expect(rows[0]).toEqual([
+      '№',
+      'Наименование',
+      'Поставщик',
+      'Документ №',
+      'Дата',
+      'Кол-во',
+      'Розничная цена',
+      'Производитель',
+      'Форма',
+      'АТХ',
+      'Штрихкоды',
+      'ИКПУ',
+      'В упаковке',
+      'Страна',
+      'Обновлён',
+    ]);
+    expect(rows[1][0]).toBe(1);
+    expect(rows[1][1]).toBe('АЦЦ 200мг');
+    expect(rows[1][10]).toBe('300420000000001');
+    expect(rows[1][11]).toBe('01799001001000000');
+    expect(rows[1][7]).toBe('Sandoz');
   });
 });
