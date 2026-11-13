@@ -47,7 +47,7 @@ public class TenantBillingController {
     private final BillingPaymentService paymentService;
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Баланс и тариф текущей компании")
     public ResponseEntity<CompanyBillingResponse> me() {
         return ResponseEntity.ok(billingService.tenantSnapshot());
@@ -64,13 +64,13 @@ public class TenantBillingController {
     }
 
     @GetMapping("/plans")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     public ResponseEntity<List<BillingPlanResponse>> plans() {
         return ResponseEntity.ok(billingService.listPlans(true));
     }
 
     @GetMapping("/me/ledger")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     public ResponseEntity<PageResponse<BillingLedgerResponse>> ledger(
         @RequestParam(required = false) BillingLedgerType type,
         @PageableDefault(size = 20) Pageable pageable
@@ -79,14 +79,14 @@ public class TenantBillingController {
     }
 
     @GetMapping("/me/ledger/{entryId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Детали записи истории")
     public ResponseEntity<BillingLedgerResponse> ledgerEntry(@PathVariable UUID entryId) {
         return ResponseEntity.ok(billingService.tenantLedgerEntry(entryId));
     }
 
     @DeleteMapping("/me/ledger/{entryId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Удалить одну запись истории. Баланс не меняется.")
     public ResponseEntity<Void> deleteLedgerEntry(@PathVariable UUID entryId) {
         billingService.tenantDeleteLedgerEntry(entryId);
@@ -94,7 +94,7 @@ public class TenantBillingController {
     }
 
     @PostMapping("/me/ledger/bulk-delete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Удалить выбранные записи истории. Баланс не меняется.")
     public ResponseEntity<Void> deleteLedgerEntries(@Valid @RequestBody DeleteBillingLedgerRequest request) {
         billingService.tenantDeleteLedgerEntries(request.ids());
@@ -102,7 +102,7 @@ public class TenantBillingController {
     }
 
     @DeleteMapping("/me/ledger")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Удалить всю историю операций. Баланс не меняется.")
     public ResponseEntity<Void> deleteAllLedger() {
         billingService.tenantDeleteAllLedger();
@@ -110,7 +110,7 @@ public class TenantBillingController {
     }
 
     @GetMapping("/me/top-ups")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     public ResponseEntity<PageResponse<BillingTopUpResponse>> topUps(
         @PageableDefault(size = 20) Pageable pageable
     ) {
@@ -118,7 +118,7 @@ public class TenantBillingController {
     }
 
     @PostMapping(value = "/me/top-ups", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     public ResponseEntity<BillingTopUpResponse> submitTopUp(
         @RequestParam("amount") BigDecimal amount,
         @RequestParam(value = "comment", required = false) String comment,
@@ -128,7 +128,7 @@ public class TenantBillingController {
     }
 
     @PostMapping("/me/payments")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Оплата Click/Payme — баланс зачислится сразу после успешной оплаты")
     public ResponseEntity<BillingPaymentCreateResponse> createPayment(
         @Valid @RequestBody CreateBillingPaymentRequest request
@@ -137,7 +137,7 @@ public class TenantBillingController {
     }
 
     @GetMapping("/me/payments")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     @Operation(summary = "Онлайн-платежи текущей компании")
     public ResponseEntity<PageResponse<BillingPaymentIntentResponse>> payments(
         @PageableDefault(size = 20) Pageable pageable
@@ -146,7 +146,7 @@ public class TenantBillingController {
     }
 
     @GetMapping("/me/payments/{intentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ACCOUNTANT')")
     public ResponseEntity<BillingPaymentIntentResponse> payment(
         @PathVariable UUID intentId
     ) {

@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/public/site/**").permitAll()
                 .requestMatchers("/public/billing/**").permitAll()
                 .requestMatchers("/billing/me/access").authenticated()
-                .requestMatchers("/billing/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/billing/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "ACCOUNTANT")
                 .requestMatchers("/platform/security/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/platform/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers("/admin/finance-sync/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
