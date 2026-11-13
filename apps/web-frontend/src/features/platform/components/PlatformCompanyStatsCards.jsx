@@ -87,18 +87,18 @@ export default function PlatformCompanyStatsCards({
           >
             <div className="flex items-center gap-1.5 min-w-0">
               <Icon size={16} className="text-aa-ink-muted shrink-0" aria-hidden="true" />
-              <span className="text-[12px] font-semibold leading-4 text-aa-ink-muted truncate">
+              <span className="aa-kpi__label truncate">
                 {card.title}
               </span>
             </div>
 
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-[22px] font-bold leading-7 text-aa-ink aa-num">
+              <span className="aa-kpi__value aa-num">
                 {isPending || card.value == null ? '—' : Number(card.value).toLocaleString('uz-UZ')}
               </span>
             </div>
 
-            <p className="mt-1 text-[13px] leading-[18px] text-aa-ink-muted truncate">
+            <p className="aa-kpi__meta truncate">
               {card.hint}
             </p>
           </div>

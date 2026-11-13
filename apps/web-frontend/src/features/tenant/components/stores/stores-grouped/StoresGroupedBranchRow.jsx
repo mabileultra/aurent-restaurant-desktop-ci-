@@ -29,7 +29,7 @@ export default function StoresGroupedBranchRow({
   return (
     <tr
       onClick={() => onSelectStore?.(store)}
-      className="h-[52px] border-b border-aa-line hover:bg-aa-surface-hover transition-colors cursor-pointer group"
+      className="border-b border-aa-line hover:bg-aa-surface-hover transition-colors cursor-pointer group"
     >
       <td className="px-5 py-3 font-medium text-aa-ink">
         <div className="flex items-center gap-2.5">

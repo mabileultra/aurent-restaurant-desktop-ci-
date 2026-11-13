@@ -109,7 +109,7 @@ export default function PlatformCompanyQuickDrawer({
                   <h3 className="font-bold text-aa-ink text-base truncate">
                     {company.name}
                   </h3>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${company.active ? 'border-transparent bg-aa-success-soft text-aa-success' : 'border-aa-line bg-aa-surface text-aa-ink-muted'}`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${company.active ? 'border-transparent bg-aa-success-soft text-aa-success' : 'border-aa-line bg-aa-surface text-aa-ink-muted'}`}>
                     {company.active ? t('common.active') : t('common.inactive')}
                   </span>
                 </div>

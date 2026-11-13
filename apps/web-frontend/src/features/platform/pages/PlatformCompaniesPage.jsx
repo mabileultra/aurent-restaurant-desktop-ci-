@@ -55,7 +55,7 @@ export default function PlatformCompaniesPage() {
               }`}
             >
               <span>{p.t('platform.tabAll', { defaultValue: 'Barchasi' })}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[12px] leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
                 {p.totalCompanies}
               </span>
             </button>
@@ -69,7 +69,7 @@ export default function PlatformCompaniesPage() {
               }`}
             >
               <span>{p.t('platform.tabActive', { defaultValue: 'Faol' })}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[12px] leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
                 {p.activeCompanies}
               </span>
             </button>
@@ -83,7 +83,7 @@ export default function PlatformCompaniesPage() {
               }`}
             >
               <span>{p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[12px] leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
                 {p.inactiveCompanies}
               </span>
             </button>

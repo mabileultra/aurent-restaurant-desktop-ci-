@@ -103,7 +103,7 @@ export default function StoreFormModalFields({
 
       <BaseInput
         as="textarea"
-        className="aa-input border-aa-line-strong aa-size-textarea min-h-[64px] h-auto"
+        className="aa-input border-aa-line-strong aa-size-textarea h-auto"
         label={t('stores.colAddress')}
         rows={2}
         {...register('address')}

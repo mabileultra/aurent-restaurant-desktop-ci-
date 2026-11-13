@@ -41,7 +41,7 @@ export default function StoresTableRow({
   return (
     <tr
       onClick={() => onSelectStore?.(row)}
-      className="h-[52px] border-b border-aa-line hover:bg-aa-surface-hover transition-colors cursor-pointer group"
+      className="border-b border-aa-line hover:bg-aa-surface-hover transition-colors cursor-pointer group"
     >
       <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
 

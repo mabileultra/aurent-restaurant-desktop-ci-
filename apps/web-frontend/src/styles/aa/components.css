@@ -461,10 +461,15 @@ html.app-area--platform {
   justify-content: center;
 }
 
+.aa-size-control-lg {
+  min-height: var(--aa-control-lg);
+}
+
 .aa-size-textarea {
   font-size: 14px;
   line-height: 20px;
   padding: var(--aa-space-2) var(--aa-space-3);
+  min-height: 64px;
 }
 
 /* KPI active state helper: 1px border + 1px inner ring in brand */
@@ -509,6 +514,7 @@ html.app-area--platform {
   align-items: center;
   gap: var(--aa-space-3);
   flex-wrap: wrap;
+  border-color: var(--aa-line, #e3e8e6);
 }
 
 .platform-filter-bar--aa .platform-filter-bar__geo {
@@ -553,6 +559,15 @@ html.app-area--platform {
   color: var(--aa-ink);
   box-shadow: none;
   outline: none;
+}
+
+html.app-theme--admin .platform-filter-bar--aa .platform-filter-bar__search input:focus,
+.platform-filter-bar--aa .platform-filter-bar__search input:focus {
+  outline: none;
+  box-shadow: none;
+  border: 0;
+  border-color: transparent;
+  background: transparent;
 }
 
 .platform-filter-bar--aa .platform-filter-bar__search input::placeholder {
@@ -714,6 +729,9 @@ html.app-area--platform {
   font-weight: 600;
   color: var(--aa-ink-muted);
 }
+.admin-table-shell--aa tbody tr {
+  height: 52px;
+}
 
 /* ==========================================================================
    E. Eski select (BaseSelect) — aa varianti (opt-in)
@@ -735,6 +753,25 @@ html.app-area--platform {
 }
 .base-select--aa .base-select__trigger:hover:not(:disabled) {
   border-color: var(--aa-ink-muted);
+}
+.base-select--aa .base-select__trigger:disabled,
+.base-select--aa.base-select--disabled .base-select__trigger,
+.platform-filter-bar--aa .base-select--disabled .base-select__trigger,
+.platform-filter-bar--aa .base-select__trigger:disabled {
+  background: var(--aa-surface-sunken, #f8faf9);
+  color: var(--aa-ink-subtle, #68736e);
+  border-color: var(--aa-line, #e3e8e6);
+  cursor: not-allowed;
+}
+.base-select--aa .base-select__trigger:disabled .base-select__value,
+.base-select--aa .base-select__trigger:disabled .base-select__chevron,
+.base-select--aa.base-select--disabled .base-select__value,
+.base-select--aa.base-select--disabled .base-select__chevron,
+.platform-filter-bar--aa .base-select--disabled .base-select__value,
+.platform-filter-bar--aa .base-select--disabled .base-select__chevron,
+.platform-filter-bar--aa .base-select__trigger:disabled .base-select__value,
+.platform-filter-bar--aa .base-select__trigger:disabled .base-select__chevron {
+  color: var(--aa-ink-subtle, #68736e);
 }
 .base-select--aa .base-select__trigger:focus-within {
   border-color: var(--aa-brand);

@@ -76,7 +76,7 @@ export default function PlatformCompanyMobileCard({
           <button
             type="button"
             onClick={(e) => onCopyLoginCode(e, row.loginCode, row.id)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-aa-sm bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line font-mono font-bold text-aa-ink min-h-[32px]"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-aa-sm bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line font-mono font-bold text-aa-ink aa-size-sm"
             title={t('common.copy')}
           >
             <span>{row.loginCode}</span>
@@ -121,7 +121,7 @@ export default function PlatformCompanyMobileCard({
         ) : null}
 
         {cleanTin ? (
-          <div className="font-mono text-[11px] text-aa-ink-muted aa-num">
+          <div className="font-mono text-xs text-aa-ink-muted aa-num">
             STIR: {cleanTin}
           </div>
         ) : null}
@@ -135,7 +135,7 @@ export default function PlatformCompanyMobileCard({
         <button
           type="button"
           onClick={() => onSelectCompany?.(row)}
-          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line text-aa-ink text-[11px] font-semibold gap-1 transition min-h-[44px] cursor-pointer"
+          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line text-aa-ink text-xs font-semibold gap-1 transition aa-size-control-lg cursor-pointer"
         >
           <Eye size={15} />
           <span>Ko‘rish</span>
@@ -144,7 +144,7 @@ export default function PlatformCompanyMobileCard({
         <button
           type="button"
           onClick={() => onEdit?.(row)}
-          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line text-aa-ink text-[11px] font-semibold gap-1 transition min-h-[44px] cursor-pointer"
+          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line text-aa-ink text-xs font-semibold gap-1 transition aa-size-control-lg cursor-pointer"
         >
           <Pencil size={15} />
           <span>Tahrir</span>
@@ -153,7 +153,7 @@ export default function PlatformCompanyMobileCard({
         <button
           type="button"
           onClick={() => onToggleActive?.(row)}
-          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line text-aa-ink text-[11px] font-semibold gap-1 transition min-h-[44px] cursor-pointer"
+          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line text-aa-ink text-xs font-semibold gap-1 transition aa-size-control-lg cursor-pointer"
         >
           <Power size={15} className={row.active ? 'text-aa-warning' : 'text-aa-brand'} />
           <span>{row.active ? 'Faolsiz' : 'Faol'}</span>
@@ -162,7 +162,7 @@ export default function PlatformCompanyMobileCard({
         <button
           type="button"
           onClick={() => onDelete?.(row)}
-          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-danger-soft border border-aa-line text-aa-danger text-[11px] font-semibold gap-1 transition min-h-[44px] cursor-pointer"
+          className="flex flex-col items-center justify-center p-2 rounded-aa-md bg-aa-surface-sunken hover:bg-aa-danger-soft border border-aa-line text-aa-danger text-xs font-semibold gap-1 transition aa-size-control-lg cursor-pointer"
         >
           <Trash2 size={15} />
           <span>O‘chirish</span>

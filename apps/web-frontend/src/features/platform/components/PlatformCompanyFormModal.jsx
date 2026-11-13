@@ -173,7 +173,7 @@ export default function PlatformCompanyFormModal({
         as="textarea"
         id="company-field-address"
         rows={2}
-        className="aa-input border-aa-line-strong aa-size-textarea min-h-[64px] h-auto mb-3"
+        className="aa-input border-aa-line-strong aa-size-textarea h-auto mb-3"
         label={t('platform.field_address')}
         value={form.address}
         onChange={(e) => onFieldChange('address', e.target.value)}

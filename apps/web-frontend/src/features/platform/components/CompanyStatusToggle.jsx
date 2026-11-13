@@ -8,7 +8,7 @@ export default function CompanyStatusToggle({ t, active, onToggle }) {
         <div className="text-xs font-semibold text-aa-ink">
           {t('common.status')}: {active ? t('common.active') : t('common.inactive')}
         </div>
-        <div className="text-[11px] text-aa-ink-muted">
+        <div className="text-xs text-aa-ink-muted">
           {active ? 'Kompaniya faol, savdo do‘konlari ishlaydi' : 'Kompaniya faolsizlantirilgan (nofaol)'}
         </div>
       </div>

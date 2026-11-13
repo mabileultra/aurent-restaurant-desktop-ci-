@@ -44,7 +44,7 @@ export default function PlatformCompaniesTableRow({
   return (
     <tr
       onClick={() => onSelectCompany?.(row)}
-      className="h-[52px] border-b border-aa-line hover:bg-aa-surface-hover cursor-pointer transition-colors group"
+      className="border-b border-aa-line hover:bg-aa-surface-hover cursor-pointer transition-colors group"
     >
       <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
 
@@ -94,19 +94,24 @@ export default function PlatformCompaniesTableRow({
       {/* Login code */}
       <td className="px-4 py-3">
         {row.loginCode ? (
-          <button
-            type="button"
-            onClick={(e) => onCopyLoginCode(e, row.loginCode, row.id)}
-            className="group/btn inline-flex items-center gap-1.5 px-2 py-0.5 rounded-aa-sm bg-aa-surface-sunken hover:bg-aa-surface-hover border border-aa-line transition-colors font-mono text-xs font-semibold text-aa-ink"
-            title={t('common.copy', { defaultValue: 'Nusxalash' })}
-          >
+          <div className="inline-flex items-center gap-1.5 pl-2.5 pr-0.5 rounded-aa-sm bg-aa-surface-sunken border border-aa-line font-mono text-xs font-semibold text-aa-ink h-8">
             <span>{row.loginCode}</span>
-            {copiedId === row.id ? (
-              <Check size={12} className="text-aa-brand" />
-            ) : (
-              <Copy size={12} className="text-aa-ink-subtle group-hover/btn:text-aa-ink transition-colors" />
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopyLoginCode(e, row.loginCode, row.id);
+              }}
+              className="aa-btn aa-btn--ghost aa-btn--icon aa-btn--sm rounded-aa-sm text-aa-ink-muted hover:text-aa-ink cursor-pointer"
+              title={t('common.copy', { defaultValue: 'Nusxalash' })}
+            >
+              {copiedId === row.id ? (
+                <Check size={16} className="text-aa-brand" />
+              ) : (
+                <Copy size={16} />
+              )}
+            </button>
+          </div>
         ) : (
           <span className="text-aa-ink-subtle font-medium">—</span>
         )}
