@@ -77,6 +77,7 @@ export default function StoresGroupedBranchRow({
       </td>
       <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
         <TableRowActionsMenu
+          variant="aa"
           open={menuId === store.id}
           onOpenChange={(next) => onMenuOpenChange?.(next ? store.id : null)}
           actions={[

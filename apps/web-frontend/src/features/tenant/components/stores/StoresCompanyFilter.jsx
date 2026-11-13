@@ -5,6 +5,7 @@ export default function StoresCompanyFilter({ t, companies = [], companyId, onCh
   return (
     <BaseSelect
       className="stores-filters__company"
+      variant="aa"
       size="sm"
       label={t('stores.colCompany')}
       value={companyId}

@@ -469,13 +469,14 @@ html.app-area--platform {
 
 /* KPI active state helper: 1px border + 1px inner ring in brand */
 .aa-kpi-active-ring {
-  border-color: var(--aa-brand) !important;
-  box-shadow: 0 0 0 1px var(--aa-brand) !important;
+  border-color: var(--aa-brand);
+  box-shadow: 0 0 0 1px var(--aa-brand);
 }
 
 /* Segmented size helpers */
 .aa-size-seg {
   height: var(--aa-control-md);
+  padding: 3px;
   box-sizing: border-box;
   overflow-y: hidden;
 }
@@ -494,21 +495,23 @@ html.app-area--platform {
 }
 @media (max-width: 759px) {
   .aa-size-seg-btn {
-    height: var(--aa-control-lg, 44px) !important;
+    height: var(--aa-control-lg, 44px);
     font-size: 14px;
     padding: 0 var(--aa-space-3);
   }
 }
 
-/* Platform Filter Bar - 40px desktop / 44px mobile, aa tokens */
-.aa-filter-bar {
+/* ==========================================================================
+   C. Platform Filter Bar — aa varianti (opt-in: .platform-filter-bar--aa)
+   ========================================================================== */
+.platform-filter-bar--aa {
   display: flex;
   align-items: center;
   gap: var(--aa-space-3);
   flex-wrap: wrap;
 }
 
-.aa-filter-bar .platform-filter-bar__search {
+.platform-filter-bar--aa .platform-filter-bar__search {
   height: var(--aa-control-md);
   padding: 0 var(--aa-space-3);
   border: 1px solid var(--aa-line-strong);
@@ -522,58 +525,60 @@ html.app-area--platform {
   gap: var(--aa-space-2);
 }
 
-.aa-filter-bar .platform-filter-bar__search:hover {
+.platform-filter-bar--aa .platform-filter-bar__search:hover {
   border-color: var(--aa-ink-muted);
 }
 
-.aa-filter-bar .platform-filter-bar__search:focus-within {
+.platform-filter-bar--aa .platform-filter-bar__search:focus-within {
   border-color: var(--aa-brand);
   box-shadow: 0 0 0 1px var(--aa-brand);
   color: var(--aa-brand);
 }
 
-.aa-filter-bar .platform-filter-bar__search input {
-  height: 100% !important;
-  width: 100% !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  padding: 0 !important;
-  font: 400 14px/20px var(--aa-font-sans) !important;
-  color: var(--aa-ink) !important;
-  box-shadow: none !important;
-  outline: none !important;
+.platform-filter-bar--aa .platform-filter-bar__search input {
+  height: 100%;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  font: 400 14px/20px var(--aa-font-sans);
+  color: var(--aa-ink);
+  box-shadow: none;
+  outline: none;
 }
 
-.aa-filter-bar .platform-filter-bar__search input::placeholder {
+.platform-filter-bar--aa .platform-filter-bar__search input::placeholder {
   color: var(--aa-ink-subtle);
 }
 
-.aa-filter-bar .platform-filter-bar__search svg {
+.platform-filter-bar--aa .platform-filter-bar__search svg {
   color: var(--aa-ink-muted);
   flex-shrink: 0;
 }
 
-.aa-filter-bar .base-select__trigger,
-.aa-filter-bar .platform-filter-bar__filter,
-.aa-filter-bar .platform-filter-menu__btn {
-  height: var(--aa-control-md) !important;
-  min-height: var(--aa-control-md) !important;
-  padding: 0 var(--aa-space-3) !important;
-  border: 1px solid var(--aa-line-strong) !important;
-  border-radius: var(--aa-radius-md) !important;
-  background: var(--aa-surface) !important;
-  color: var(--aa-ink) !important;
-  font: 400 14px/20px var(--aa-font-sans) !important;
+.platform-filter-bar--aa .base-select__trigger,
+.platform-filter-bar--aa .platform-filter-bar__filter,
+.platform-filter-bar--aa .platform-filter-menu__btn,
+.platform-filter-bar__filter--aa {
+  height: var(--aa-control-md);
+  min-height: var(--aa-control-md);
+  padding: 0 var(--aa-space-3);
+  border: 1px solid var(--aa-line-strong);
+  border-radius: var(--aa-radius-md);
+  background: var(--aa-surface);
+  color: var(--aa-ink);
+  font: 400 14px/20px var(--aa-font-sans);
 }
 
-.aa-filter-bar .base-select__trigger:hover,
-.aa-filter-bar .platform-filter-bar__filter:hover,
-.aa-filter-bar .platform-filter-menu__btn:hover {
-  border-color: var(--aa-ink-muted) !important;
+.platform-filter-bar--aa .base-select__trigger:hover,
+.platform-filter-bar--aa .platform-filter-bar__filter:hover,
+.platform-filter-bar--aa .platform-filter-menu__btn:hover,
+.platform-filter-bar__filter--aa:hover {
+  border-color: var(--aa-ink-muted);
 }
 
-.aa-filter-bar .platform-filter-bar__reset {
+.platform-filter-bar--aa .platform-filter-bar__reset {
   height: var(--aa-control-md);
   width: var(--aa-control-md);
   padding: 0;
@@ -588,103 +593,228 @@ html.app-area--platform {
   transition: background-color 0.12s, color 0.12s;
 }
 
-.aa-filter-bar .platform-filter-bar__reset:hover {
+.platform-filter-bar--aa .platform-filter-bar__reset:hover {
   background: var(--aa-surface-hover);
   color: var(--aa-ink);
 }
 
 @media (max-width: 759px) {
-  .aa-filter-bar .platform-filter-bar__search {
+  .platform-filter-bar--aa .platform-filter-bar__search {
     height: var(--aa-control-lg);
   }
-  .aa-filter-bar .base-select__trigger,
-  .aa-filter-bar .platform-filter-bar__filter,
-  .aa-filter-bar .platform-filter-menu__btn {
-    height: var(--aa-control-lg) !important;
-    min-height: var(--aa-control-lg) !important;
+  .platform-filter-bar--aa .base-select__trigger,
+  .platform-filter-bar--aa .platform-filter-bar__filter,
+  .platform-filter-bar--aa .platform-filter-menu__btn,
+  .platform-filter-bar__filter--aa {
+    height: var(--aa-control-lg);
+    min-height: var(--aa-control-lg);
   }
-  .aa-filter-bar .platform-filter-bar__reset {
+  .platform-filter-bar--aa .platform-filter-bar__reset {
     height: var(--aa-control-lg);
     width: var(--aa-control-lg);
   }
 }
 
-/* Filiallar formasi modali va select triggerlari */
+/* ==========================================================================
+   A. Sahifalash (TablePagination) — aa varianti (opt-in)
+   ========================================================================== */
+.table-pagination--aa {
+  border-top: 1px solid var(--aa-line);
+  background: var(--aa-surface);
+  color: var(--aa-ink-muted);
+}
+.table-pagination--aa .table-pagination__range {
+  font: 400 13px/18px var(--aa-font-sans);
+  color: var(--aa-ink-muted);
+}
+.table-pagination--aa .table-pagination__page-size-label {
+  font: 400 13px/18px var(--aa-font-sans);
+  color: var(--aa-ink-muted);
+}
+.table-pagination--aa .table-pagination__nav-btn {
+  height: var(--aa-control-sm);
+  padding: 0 var(--aa-space-3);
+  border-radius: var(--aa-radius-md);
+  border: 1px solid var(--aa-line);
+  font: 600 13px/18px var(--aa-font-sans);
+  color: var(--aa-ink);
+  background: var(--aa-surface);
+}
+.table-pagination--aa .table-pagination__nav-btn:hover:not(:disabled) {
+  background: var(--aa-surface-hover);
+  color: var(--aa-ink);
+}
+.table-pagination--aa .table-pagination__nav-btn:disabled {
+  color: var(--aa-ink-subtle);
+  border-color: var(--aa-line);
+  background: transparent;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.table-pagination--aa .table-pagination__page-btn {
+  min-width: var(--aa-control-sm);
+  height: var(--aa-control-sm);
+  padding: 0 var(--aa-space-2);
+  border-radius: var(--aa-radius-md);
+  border: 1px solid var(--aa-line);
+  font: 600 13px/18px var(--aa-font-sans);
+  color: var(--aa-ink);
+  background: var(--aa-surface);
+  font-variant-numeric: tabular-nums;
+}
+.table-pagination--aa .table-pagination__page-btn:hover:not(:disabled) {
+  background: var(--aa-surface-hover);
+  color: var(--aa-ink);
+}
+.table-pagination--aa .table-pagination__page-btn--active {
+  background: var(--aa-brand-soft);
+  color: var(--aa-brand);
+  border-color: transparent;
+  font-weight: 700;
+}
+.table-pagination--aa .table-pagination__ellipsis {
+  color: var(--aa-ink-subtle);
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   D. № va ID ustunlari — aa varianti (opt-in)
+   ========================================================================== */
+.admin-table-shell--aa .admin-table-col-no,
+.admin-table-shell--aa .admin-table-col-no--cell {
+  color: var(--aa-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.admin-table-shell--aa .admin-table-col-id,
+.admin-table-shell--aa .admin-table-col-id--cell {
+  color: var(--aa-ink-muted);
+  font-family: var(--aa-font-mono);
+  font-size: 13px;
+  line-height: 18px;
+}
+.admin-table-shell--aa thead th,
+.admin-table-shell--aa th.admin-table-col-no,
+.admin-table-shell--aa th.admin-table-col-id {
+  font-weight: 600;
+  color: var(--aa-ink-muted);
+}
+
+/* ==========================================================================
+   E. Eski select (BaseSelect) — aa varianti (opt-in)
+   ========================================================================== */
+.base-select--aa {
+  height: auto;
+  width: 100%;
+}
+.base-select--aa .base-select__trigger {
+  height: var(--aa-control-md);
+  min-height: var(--aa-control-md);
+  padding: 0 var(--aa-space-3);
+  font: 400 14px/20px var(--aa-font-sans);
+  color: var(--aa-ink);
+  background: var(--aa-surface);
+  border: 1px solid var(--aa-line-strong);
+  border-radius: var(--aa-radius-md);
+  box-shadow: none;
+}
+.base-select--aa .base-select__trigger:hover:not(:disabled) {
+  border-color: var(--aa-ink-muted);
+}
+.base-select--aa .base-select__trigger:focus-within {
+  border-color: var(--aa-brand);
+  box-shadow: 0 0 0 1px var(--aa-brand);
+  outline: none;
+}
+.base-select--aa.base-select--sm .base-select__trigger {
+  height: var(--aa-control-sm);
+  min-height: var(--aa-control-sm);
+  padding: 0 var(--aa-space-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+@media (max-width: 759px) {
+  .base-select--aa:not(.base-select--sm) .base-select__trigger {
+    height: var(--aa-control-lg);
+    min-height: var(--aa-control-lg);
+  }
+}
+
+.base-select__menu--aa {
+  background: var(--aa-surface);
+  border: 1px solid var(--aa-line);
+  border-radius: var(--aa-radius-md);
+  box-shadow: var(--aa-shadow-pop);
+  padding: var(--aa-space-1);
+}
+.base-select__menu--aa .base-select__search-wrap {
+  border-bottom: 1px solid var(--aa-line);
+}
+.base-select__menu--aa .base-select__search {
+  font: 400 14px/20px var(--aa-font-sans);
+  color: var(--aa-ink);
+}
+.base-select__menu--aa .base-select__option {
+  font: 400 14px/20px var(--aa-font-sans);
+  color: var(--aa-ink);
+  border-radius: var(--aa-radius-sm);
+  padding: var(--aa-space-2) var(--aa-space-3);
+}
+.base-select__menu--aa .base-select__option:hover,
+.base-select__menu--aa .base-select__option--highlight {
+  background: var(--aa-surface-hover);
+  color: var(--aa-ink);
+}
+.base-select__menu--aa .base-select__option--selected {
+  background: var(--aa-brand-soft);
+  color: var(--aa-brand);
+  font-weight: 600;
+}
+.base-select__menu--aa .base-select__option--selected .base-select__check {
+  color: var(--aa-brand);
+}
+
+/* ==========================================================================
+   Filiallar formasi modali
+   ========================================================================== */
 .stores-form-modal {
-  border-radius: var(--aa-radius-lg, 12px) !important;
-  border: 1px solid var(--aa-line, #e3e8e6) !important;
-  background: var(--aa-surface, #ffffff) !important;
-  box-shadow: var(--aa-shadow-modal) !important;
+  border-radius: var(--aa-radius-lg, 12px);
+  border: 1px solid var(--aa-line, #e3e8e6);
+  background: var(--aa-surface, #ffffff);
+  box-shadow: var(--aa-shadow-modal);
 }
 .stores-form-modal input:not([type="checkbox"]):not([type="radio"]),
 .stores-form-modal textarea {
-  border-color: var(--aa-line-strong, #86918c) !important;
+  border-color: var(--aa-line-strong, #86918c);
 }
 .stores-form-modal .aa-btn--secondary,
 .stores-form-modal button.border-slate-300 {
-  border-color: var(--aa-line-strong, #86918c) !important;
+  border-color: var(--aa-line-strong, #86918c);
 }
 .stores-form-modal [aria-label="Yopish"],
 .stores-form-modal [aria-label="Close"],
 .stores-form-modal button:has(svg.lucide-x) {
-  width: var(--aa-control-sm, 32px) !important;
-  height: var(--aa-control-sm, 32px) !important;
-  min-width: var(--aa-control-sm, 32px) !important;
-  min-height: var(--aa-control-sm, 32px) !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: var(--aa-radius-md, 8px) !important;
-  color: var(--aa-ink-muted, #56615c) !important;
-  background: transparent !important;
-  border: 0 !important;
+  width: var(--aa-control-sm, 32px);
+  height: var(--aa-control-sm, 32px);
+  min-width: var(--aa-control-sm, 32px);
+  min-height: var(--aa-control-sm, 32px);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--aa-radius-md, 8px);
+  color: var(--aa-ink-muted, #56615c);
+  background: transparent;
+  border: 0;
 }
 .stores-form-modal [aria-label="Yopish"]:hover,
 .stores-form-modal [aria-label="Close"]:hover,
 .stores-form-modal button:has(svg.lucide-x):hover {
-  background: var(--aa-surface-hover, #f1f5f3) !important;
-  color: var(--aa-ink, #14201b) !important;
+  background: var(--aa-surface-hover, #f1f5f3);
+  color: var(--aa-ink, #14201b);
 }
 .stores-form-modal [aria-label="Yopish"] svg,
 .stores-form-modal [aria-label="Close"] svg,
 .stores-form-modal button:has(svg.lucide-x) svg {
-  width: 16px !important;
-  height: 16px !important;
-}
-.stores-form-modal .base-select {
-  height: auto;
-  width: 100%;
-}
-.stores-form-modal .base-select__trigger {
-  height: var(--aa-control-md, 40px) !important;
-  min-height: var(--aa-control-md, 40px) !important;
-  padding: 0 var(--aa-space-3, 12px) !important;
-  font-size: 14px !important;
-  line-height: 20px !important;
-  border-radius: var(--aa-radius-md, 8px) !important;
-  border: 1px solid var(--aa-line-strong, #86918c) !important;
-  background: var(--aa-surface, #ffffff) !important;
-  color: var(--aa-ink, #14201b) !important;
-}
-.stores-form-modal .base-select__trigger:hover {
-  border-color: var(--aa-ink-muted, #56615c) !important;
-}
-.stores-form-modal .base-select__trigger:focus-within {
-  border-color: var(--aa-brand, #006847) !important;
-  box-shadow: 0 0 0 1px var(--aa-brand, #006847) !important;
-}
-@media (max-width: 759px) {
-  .stores-form-modal .base-select__trigger {
-    height: var(--aa-control-lg, 44px) !important;
-    min-height: var(--aa-control-lg, 44px) !important;
-  }
-}
-
-/* Filiallar jadval sarlavhasi — font-weight: 600 */
-.admin-table-shell thead th,
-.admin-table-shell th.admin-table-col-no,
-.admin-table-shell th.admin-table-col-id {
-  font-weight: 600 !important;
-  color: var(--aa-ink-muted) !important;
+  width: 16px;
+  height: 16px;
 }

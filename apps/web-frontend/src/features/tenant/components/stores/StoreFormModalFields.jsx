@@ -28,6 +28,7 @@ export default function StoreFormModalFields({
           <input type="hidden" {...register('companyId')} />
           <BaseSelect
             label={t('stores.colCompany')}
+            variant="aa"
             required
             disabled={!isCreate}
             value={watchedCompanyId ?? ''}
@@ -50,7 +51,7 @@ export default function StoreFormModalFields({
       ) : null}
 
       <BaseInput
-        className="aa-input !border-aa-line-strong"
+        className="aa-input border-aa-line-strong"
         label={t('stores.colName')}
         required
         {...register('name')}
@@ -62,6 +63,7 @@ export default function StoreFormModalFields({
         <input type="hidden" {...register('businessTypeId')} />
         <BaseSelect
           label={t('stores.colBusinessType')}
+          variant="aa"
           required
           disabled={typesLoading || needsCompany}
           value={watchedBusinessType ?? ''}
@@ -87,6 +89,7 @@ export default function StoreFormModalFields({
       <input type="hidden" {...register('regionCode')} />
       <input type="hidden" {...register('districtCode')} />
       <RegionDistrictFields
+        variant="aa"
         regionCode={watchedRegionCode}
         districtCode={watchedDistrictCode}
         required={isCreate}
@@ -100,7 +103,7 @@ export default function StoreFormModalFields({
 
       <BaseInput
         as="textarea"
-        className="aa-input !border-aa-line-strong aa-size-textarea min-h-[64px] h-auto"
+        className="aa-input border-aa-line-strong aa-size-textarea min-h-[64px] h-auto"
         label={t('stores.colAddress')}
         rows={2}
         {...register('address')}
@@ -109,7 +112,7 @@ export default function StoreFormModalFields({
       />
 
       <BaseInput
-        className="aa-input !border-aa-line-strong"
+        className="aa-input border-aa-line-strong"
         label={t('stores.colPhone')}
         required={isCreate}
         type="tel"

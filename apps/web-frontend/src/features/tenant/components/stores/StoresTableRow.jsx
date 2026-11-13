@@ -129,6 +129,7 @@ export default function StoresTableRow({
       {/* Harakatlar (Actions) */}
       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
         <TableRowActionsMenu
+          variant="aa"
           open={menuId === row.id}
           onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
           actions={[

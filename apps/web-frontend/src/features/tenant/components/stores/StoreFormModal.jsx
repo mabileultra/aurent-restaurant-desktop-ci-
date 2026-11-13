@@ -142,11 +142,11 @@ export default function StoreFormModal({
       title={modalTitle}
       onClose={onClose}
       size="md"
-      className="stores-form-modal !rounded-aa-lg !border-aa-line !bg-aa-surface !shadow-aa-modal"
+      className="stores-form-modal rounded-aa-lg border-aa-line bg-aa-surface shadow-aa-modal"
       closeLabel={t('common.close', { defaultValue: 'Yopish' })}
       footer={(
         <div className="flex gap-2 justify-end w-full">
-          <BaseButton variant="secondary" onClick={onClose} disabled={isPending} className="aa-btn aa-btn--secondary !border-aa-line-strong aa-size-md">
+          <BaseButton variant="secondary" onClick={onClose} disabled={isPending} className="aa-btn aa-btn--secondary border-aa-line-strong aa-size-md">
             {t('common.cancel')}
           </BaseButton>
           <BaseButton

@@ -34,7 +34,7 @@ export default function StoresTable({
   const { regionName, districtName, empty } = useGeoNameLookup(regionCodes);
 
   return (
-    <div className="admin-table-shell relative border border-aa-line rounded-aa-lg bg-aa-surface overflow-hidden shadow-none">
+    <div className="admin-table-shell admin-table-shell--aa relative border border-aa-line rounded-aa-lg bg-aa-surface overflow-hidden shadow-none">
       {/* Indeterminate emerald progress line during background refetching */}
       {isRefreshing && (
         <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
@@ -178,6 +178,7 @@ export default function StoresTable({
       </div>
 
       <TablePagination
+        variant="aa"
         page={page}
         displayPage={effectivePage}
         pageSize={pageSize}

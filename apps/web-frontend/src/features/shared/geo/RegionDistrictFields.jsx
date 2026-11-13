@@ -22,6 +22,7 @@ export default function RegionDistrictFields({
   className = 'mb-3',
   regionError,
   districtError,
+  variant = 'default',
 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
@@ -45,6 +46,7 @@ export default function RegionDistrictFields({
         id="geo-region-select"
         label={t('geo.region')}
         required={required}
+        variant={variant}
         value={regionCode || ''}
         disabled={regionsLoading}
         error={regionError}
@@ -59,6 +61,7 @@ export default function RegionDistrictFields({
         id="geo-district-select"
         label={t('geo.district')}
         required={required}
+        variant={variant}
         value={districtCode || ''}
         disabled={!regionCode || districtsLoading}
         error={districtError}

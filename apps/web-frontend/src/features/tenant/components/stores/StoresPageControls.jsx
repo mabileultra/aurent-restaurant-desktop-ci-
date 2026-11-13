@@ -14,7 +14,7 @@ export default function StoresPageControls({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       {/* Segmented Status Tabs */}
-      <div className="aa-size-seg flex items-center p-[3px] rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-x-auto overflow-y-hidden shadow-none">
+      <div className="aa-size-seg flex items-center rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-x-auto overflow-y-hidden shadow-none">
         <button
           type="button"
           onClick={() => onStatusFilterChange('ALL')}
@@ -60,7 +60,7 @@ export default function StoresPageControls({
       </div>
 
       {/* View Switcher: Grouped by Company vs Flat Table */}
-      <div className="aa-size-seg flex items-center p-[3px] rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-y-hidden shadow-none">
+      <div className="aa-size-seg flex items-center rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-y-hidden shadow-none">
         <button
           type="button"
           onClick={() => onViewModeChange('grouped')}
