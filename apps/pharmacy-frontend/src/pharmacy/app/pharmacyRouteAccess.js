@@ -20,6 +20,7 @@ export const PHARMACY_REPORT_MODULES = [
   'reportsStockInventories',
   'reportsStockTransfers',
   'reportsPriceRegistry',
+  'reportsDrugRegistry',
 ];
 
 const HOME_CANDIDATES = [
@@ -39,7 +40,7 @@ const HOME_CANDIDATES = [
   { to: '/stock/inventories/new', module: 'stockInventories' },
   { to: '/stock/transfers/new', module: 'stockTransfers' },
   { to: '/stock/suppliers', module: 'stockSuppliers' },
-  { to: PHARM_SALES_PATH, anyModules: ['reportsSales', 'reportsSalesDaily'] },
+  { to: PHARM_SALES_PATH, anyModules: ['cashierSales', 'reportsSales', 'reportsSalesDaily'] },
   { to: PHARM_RETURNS_PATH, module: 'reportsReturns' },
   { to: '/cash-registers/list', module: 'registersList' },
   { to: '/cash-registers/z-reports', module: 'registersZReports' },

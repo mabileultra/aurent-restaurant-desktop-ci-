@@ -10,8 +10,8 @@ import {
 } from '../../utils/cashierTheme';
 import { syncRootTheme } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
-import { getMainAppUrl } from '../../config/env';
 import { logoutAndResetSession } from '../../utils/authSession';
+import { leaveToMainLogin } from '../../utils/leaveToMainLogin';
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { useCashierShiftModal } from '../../contexts/CashierShiftModalContext';
 import { clearCashierScreenLocked } from '../../utils/cashierLock';
@@ -108,11 +108,11 @@ export function usePharmacyPosShell() {
 
   const handleLogout = () => {
     clearCashierScreenLocked(user?.id);
-    logoutAndResetSession();
     if (canOpenOffice && !isDesktopApp) {
-      window.location.replace(`${getMainAppUrl()}/login`);
+      leaveToMainLogin();
       return;
     }
+    logoutAndResetSession();
     navigate('/login', { replace: true });
   };
 

@@ -39,16 +39,21 @@ export function useGeoNameLookup(regionCodesPresent = []) {
     })),
   });
 
+  const regionList = useMemo(() => (
+    Array.isArray(regions) ? regions : Array.isArray(regions?.data) ? regions.data : []
+  ), [regions]);
+
   const regionByCode = useMemo(() => {
     const map = new Map();
-    regions.forEach((r) => map.set(String(r.code), r));
+    regionList.forEach((r) => map.set(String(r.code), r));
     return map;
-  }, [regions]);
+  }, [regionList]);
 
   const districtByCode = useMemo(() => {
     const map = new Map();
     districtQueries.forEach((q) => {
-      (q.data || []).forEach((d) => map.set(String(d.code), d));
+      const list = Array.isArray(q.data) ? q.data : Array.isArray(q.data?.data) ? q.data.data : [];
+      list.forEach((d) => map.set(String(d.code), d));
     });
     return map;
   }, [districtQueries]);

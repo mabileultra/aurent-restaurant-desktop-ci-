@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import PlatformAnalyticsViloyatDetailPage from './PlatformAnalyticsViloyatDetailPage';
+import { SAMARQAND_COMPANIES } from '../data/samarqandMockData';
 
 vi.mock('../../../api/geo.api', () => ({
   geoApi: {
@@ -114,6 +115,9 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
 
   it('renders district companies and excludes other districts when viewing Samarqand shahri', () => {
     const queryClient = new QueryClient();
+    queryClient.setQueryData(['analytics-companies-detail', '18', '1801'], {
+      rows: SAMARQAND_COMPANIES,
+    });
 
     const html = renderToStaticMarkup(
       React.createElement(
@@ -139,7 +143,9 @@ describe('PlatformAnalyticsViloyatDetailPage', () => {
     expect(html).toContain('Korxonalar bo‘yicha aylanma');
     expect(html).toContain('Farina Invest');
     expect(html).toContain('Makon Mobile');
-    // Crucial requirement: Urgut and Pastdarg'om must NOT be in Korxonalar bo'yicha aylanma
+    // Table rows must contain TIN and company names
+    expect(html).toContain('303190578');
+    // Crucial requirement: Urgut and Pastdarg'om must NOT be in Korxonalar bo‘yicha aylanma
     expect(html).not.toContain('Urgut tumani ·');
     expect(html).not.toContain('Pastdarg‘om tumani ·');
   });

@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
-import { getMainAppUrl } from '../../config/env';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
-import { logoutAndResetSession } from '../../utils/authSession';
+import { leaveToMainLogin } from '../../utils/leaveToMainLogin';
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import { syncRootTheme } from '../../store/themeStore';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
@@ -117,8 +116,7 @@ export function usePharmacyAdminShell() {
   );
 
   const handleLogout = () => {
-    logoutAndResetSession();
-    window.location.replace(`${getMainAppUrl()}/login`);
+    leaveToMainLogin();
   };
   const navLabelsVisible = isDesktop ? sidebarNavExpanded : true;
   const toggleSidebar = () => {

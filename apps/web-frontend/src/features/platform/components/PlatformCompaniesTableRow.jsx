@@ -1,23 +1,22 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Check, Copy, Eye, Pencil, Power, Trash2 } from 'lucide-react';
-import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
-import { AdminTableNoIdCells } from '../../../components/shared/AdminTableNoIdColumns';
-import {
-  getBusinessTypeBadgeClass,
-  getCompanyBranchMeta,
-  getCompanyInitials,
-  getCompanyPalette,
-} from '../utils/companyAvatarUtils';
+import React, { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import Badge from '../../../components/aa/Badge';
+import Button from '../../../components/aa/Button';
+import CompanyRowActionsMenu from './CompanyRowActionsMenu';
+import { getCompanyInitials } from '../utils/companyAvatarUtils';
 import { formatUzPhone } from '../../../utils/phoneUz';
 
+/**
+ * PlatformCompaniesTableRow — Jadvaldagi bitta kompaniya qatori.
+ * aa dizayn tizimiga mos, qator balandligi kamida 52px.
+ */
 export default function PlatformCompaniesTableRow({
   row,
   index,
-  effectivePage,
-  pageSize,
-  copiedId,
-  onCopyLoginCode,
+  effectivePage = 0,
+  pageSize = 14,
   districtName,
   regionName,
   menuId,
@@ -26,156 +25,149 @@ export default function PlatformCompaniesTableRow({
   onEdit,
   onDelete,
   onToggleActive,
-  t,
 }) {
-  const initials = getCompanyInitials(row.name);
-  const palette = getCompanyPalette(row.name, row.id);
-  const badgeClass = getBusinessTypeBadgeClass(row.businessType);
-  const branchMeta = getCompanyBranchMeta(row.businessType, t);
-  const BranchIcon = branchMeta.icon;
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
 
+  const rowNumber = effectivePage * pageSize + index + 1;
+  const initials = getCompanyInitials(row.name);
   const district = districtName ? districtName(row.districtCode) : '';
   const region = regionName ? regionName(row.regionCode) : '';
-  const hasLocation = Boolean(district || region);
 
   const cleanTin = row.tin && /^\d+$/.test(String(row.tin).trim()) ? String(row.tin).trim() : null;
   const formattedPhone = row.phone ? formatUzPhone(row.phone) : null;
 
-  return (
-    <tr
-      onClick={() => onSelectCompany?.(row)}
-      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors group"
-    >
-      <AdminTableNoIdCells page={effectivePage} pageSize={pageSize} index={index} id={row.id} />
+  const handleCopyLoginCode = (e) => {
+    e.stopPropagation();
+    if (!row.loginCode) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(row.loginCode);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success('Kirish kodi nusxalandi');
+  };
 
-      {/* Company Identity */}
-      <td className="px-4 py-3">
+  const businessTypeLabel = t(
+    `productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`,
+    { defaultValue: row.businessType || 'Universal' }
+  );
+
+  return (
+    <tr className="h-[52px]">
+      {/* 1. № */}
+      <td className="w-12 text-center text-aa-ink-muted tabular-nums text-xs">
+        {rowNumber}
+      </td>
+
+      {/* 2. ID */}
+      <td className="w-16 font-mono text-xs text-aa-ink-muted">
+        {row.id}
+      </td>
+
+      {/* 3. Kompaniya */}
+      <td>
         <div className="flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border shadow-2xs ${palette}`}
-            aria-hidden
+            className="w-8 h-8 rounded-aa-full bg-aa-surface-sunken border border-aa-line text-aa-ink-muted text-xs font-semibold flex items-center justify-center shrink-0 select-none"
+            aria-hidden="true"
           >
             {initials}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors truncate">
+            <button
+              type="button"
+              onClick={() => onSelectCompany?.(row)}
+              className="text-left font-semibold text-sm leading-5 text-aa-ink hover:text-aa-brand transition-colors truncate max-w-[240px] block cursor-pointer"
+            >
               {row.name}
-            </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5 truncate">
-              {cleanTin ? <span className="font-mono">STIR: {cleanTin}</span> : null}
-              {cleanTin && formattedPhone ? <span>·</span> : null}
-              {formattedPhone ? <span>{formattedPhone}</span> : null}
-              {!cleanTin && !formattedPhone && row.legalName ? (
-                <span className="truncate">{row.legalName}</span>
+            </button>
+            <div className="text-[13px] text-aa-ink-muted flex items-center gap-1.5 mt-0.5 truncate">
+              <span
+                className="font-mono font-normal text-[12px]"
+                style={{ fontFamily: 'var(--aa-font-mono)', fontWeight: 400 }}
+              >
+                STIR {cleanTin || '—'}
+              </span>
+              {formattedPhone ? (
+                <>
+                  <span>·</span>
+                  <span>{formattedPhone}</span>
+                </>
               ) : null}
             </div>
           </div>
         </div>
       </td>
 
-      {/* Location */}
-      <td className="px-4 py-3">
-        {hasLocation ? (
-          <div>
-            <div className="font-medium text-slate-900 dark:text-slate-100 truncate">
-              {district || region}
+      {/* 4. Manzil */}
+      <td>
+        <div>
+          <div className="text-sm font-medium text-aa-ink truncate max-w-[180px]">
+            {district || region || '—'}
+          </div>
+          {district && region && district !== region ? (
+            <div className="text-[13px] text-aa-ink-muted truncate max-w-[180px]">
+              {region}
             </div>
-            {district && region && district !== region ? (
-              <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                {region}
-              </div>
-            ) : null}
+          ) : null}
+        </div>
+      </td>
+
+      {/* 5. Kirish kodi */}
+      <td>
+        {row.loginCode ? (
+          <div className="inline-flex items-center gap-1.5">
+            <span
+              className="font-mono font-normal text-[13px] text-aa-ink"
+              style={{ fontFamily: 'var(--aa-font-mono)', fontWeight: 400 }}
+            >
+              {row.loginCode}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              iconOnly
+              icon={copied ? <Check size={14} className="text-aa-success" /> : <Copy size={14} />}
+              aria-label={`${row.name}: kirish kodini nusxalash`}
+              onClick={handleCopyLoginCode}
+              className="h-8 w-8 !p-0"
+            />
           </div>
         ) : (
-          <span className="text-slate-400">—</span>
+          <span className="text-aa-ink-muted">—</span>
         )}
       </td>
 
-      {/* Login code */}
-      <td className="px-4 py-3">
-        {row.loginCode ? (
-          <button
-            type="button"
-            onClick={(e) => onCopyLoginCode(e, row.loginCode, row.id)}
-            className="group/btn inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors font-mono text-xs font-semibold text-slate-700 dark:text-slate-300"
-            title={t('common.copy', { defaultValue: 'Nusxalash' })}
-          >
-            <span>{row.loginCode}</span>
-            {copiedId === row.id ? (
-              <Check size={12} className="text-emerald-500" />
-            ) : (
-              <Copy size={12} className="text-slate-400 group-hover/btn:text-slate-600 dark:group-hover/btn:text-slate-200 transition-colors" />
-            )}
-          </button>
-        ) : (
-          <span className="text-slate-400">—</span>
-        )}
+      {/* 6. Filiallar */}
+      <td className="text-right tabular-nums text-sm font-medium text-aa-ink">
+        {row.storeCount != null ? row.storeCount : '—'}
       </td>
 
-      {/* Branches */}
-      <td className="px-4 py-3">
-        <Link
-          to={`/platform/stores?focusCompany=${row.id}#company-${row.id}`}
-          onClick={(e) => e.stopPropagation()}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${branchMeta.badgeClass} transition-colors`}
-          title={branchMeta.tooltip}
-        >
-          <BranchIcon size={12} />
-          <span>{row.storeCount ?? 0}</span>
-        </Link>
+      {/* 7. Faoliyat turi */}
+      <td>
+        <Badge tone="neutral">
+          {businessTypeLabel}
+        </Badge>
       </td>
 
-      {/* Business type */}
-      <td className="px-4 py-3">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${badgeClass}`}>
-          {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`, { defaultValue: row.businessType })}
-        </span>
+      {/* 8. Holati */}
+      <td>
+        <Badge tone={row.active ? 'success' : 'neutral'} dot>
+          {row.active ? 'Faol' : 'Nofaol'}
+        </Badge>
       </td>
 
-      {/* Status */}
-      <td className="px-4 py-3">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-            row.active
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-          }`}
-        >
-          <span className={`h-1.5 w-1.5 rounded-full ${row.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-          {row.active ? t('common.active') : t('common.inactive')}
-        </span>
-      </td>
-
-      {/* Actions */}
-      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-        <TableRowActionsMenu
+      {/* 9. Amallar */}
+      <td className="text-right">
+        <CompanyRowActionsMenu
+          company={row}
           open={menuId === row.id}
-          onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
-          actions={[
-            {
-              label: t('platform.quickView', { defaultValue: 'Tezkor ko‘rish' }),
-              icon: Eye,
-              onClick: () => onSelectCompany?.(row),
-            },
-            {
-              label: t('common.edit'),
-              icon: Pencil,
-              onClick: () => onEdit(row),
-            },
-            {
-              label: row.active
-                ? t('platform.deactivate', { defaultValue: 'Faolsizlantirish' })
-                : t('platform.activate', { defaultValue: 'Faollashtirish' }),
-              icon: Power,
-              onClick: () => onToggleActive?.(row),
-            },
-            {
-              label: t('common.delete'),
-              icon: Trash2,
-              danger: true,
-              onClick: () => onDelete(row),
-            },
-          ]}
+          onOpenChange={(nextOpen) => onMenuOpenChange?.(nextOpen ? row.id : null)}
+          onSelectCompany={onSelectCompany}
+          onEdit={onEdit}
+          onToggleActive={onToggleActive}
+          onDelete={onDelete}
         />
       </td>
     </tr>

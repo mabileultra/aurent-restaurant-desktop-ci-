@@ -112,7 +112,7 @@ export default function PlatformUserQuickDrawer({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 dark:bg-black/75 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />

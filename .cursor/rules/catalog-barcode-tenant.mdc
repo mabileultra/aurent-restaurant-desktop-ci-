@@ -9,3 +9,5 @@ globs: catalog-service/**/*
 - Same barcode across different `company_id` values is allowed (matches grocery `pos_db`).
 - Do **not** reintroduce global `UNIQUE(barcode)` or `existsByBarcode(code)` without company scope.
 - Use `ProductBarcodeUniqueness.assertAvailable(companyId, barcode, excludeProductId)`.
+- Soft-deactivate **must** clear primary barcode, PLU, and extra barcodes (`InactiveBarcodeReleaser`) — same as grocery web-backend — so reuse after deactivate works.
+- Before upsert uniqueness checks, release barcodes/PLU held only by inactive cards (`releaseAll` / `releaseHeldPlu`).

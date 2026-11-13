@@ -48,7 +48,9 @@ public class PlatformCompanySyncServiceImpl implements PlatformCompanySyncServic
         company.setPhone(request.phone());
         company.setBusinessType(businessType);
         company.setActive(request.active());
-        companyRepository.save(company);
+        // Plain companyId on the type row is not a JPA association, so the company
+        // insert must hit the database before company_business_types.
+        companyRepository.saveAndFlush(company);
         companyBusinessTypeAssignmentService.syncFromLegacyType(request.id(), businessType);
         bumpCompanySequence(request.id());
         LogUtil.info(PlatformCompanySyncServiceImpl.class, "Company synced from platform: id={}", request.id());

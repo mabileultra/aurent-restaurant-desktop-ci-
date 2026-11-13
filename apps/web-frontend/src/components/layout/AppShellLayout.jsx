@@ -33,7 +33,6 @@ import { syncAuthSession } from '../../utils/syncAuthSession';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
 import PharmacyLegacyDesktopForceGate from '../../features/desktop/components/PharmacyLegacyDesktopForceGate';
-import PharmacyOfficeRedirect from '../../router/guards/PharmacyOfficeRedirect';
 import '../../styles/cashier/modals/index.css';
 
 export default function AppShellLayout() {
@@ -231,9 +230,7 @@ export default function AppShellLayout() {
         />
         <main className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 print:!bg-white print:p-4">
           <BillingAccessGuard>
-            <PharmacyOfficeRedirect>
-              <ShellOutlet />
-            </PharmacyOfficeRedirect>
+            <ShellOutlet />
           </BillingAccessGuard>
         </main>
       </div>

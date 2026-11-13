@@ -53,7 +53,7 @@ export default function PlatformStoreQuickDrawer({
   const drawerContent = (
     <div className="fixed inset-0 z-[100] overflow-hidden" role="dialog" aria-modal="true">
       <div
-        className="fixed inset-0 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 dark:bg-black/75 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />

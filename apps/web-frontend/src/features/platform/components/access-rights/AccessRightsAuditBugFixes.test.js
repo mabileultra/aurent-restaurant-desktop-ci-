@@ -24,14 +24,15 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('Access Rights Audit Bug Fixes', () => {
-  it('COOK scope is synchronized with backend (10 modules for RESTAURANT, 13 for UNIVERSAL)', () => {
+  it('COOK scope is kitchen-only (synced with backend cookScope)', () => {
     const restaurantCookScope = getScopeForRole('COOK', 'RESTAURANT');
-    expect(restaurantCookScope.size).toBe(10);
+    expect(restaurantCookScope.size).toBe(1);
     expect(restaurantCookScope.has('restaurantKitchen')).toBe(true);
     expect(restaurantCookScope.has('stockProducts')).toBe(false);
 
     const universalCookScope = getScopeForRole('COOK', 'UNIVERSAL');
-    expect(universalCookScope.size).toBe(13);
+    expect(universalCookScope.size).toBe(1);
+    expect(universalCookScope.has('restaurantKitchen')).toBe(true);
     expect(universalCookScope.has('stockProducts')).toBe(false);
   });
 

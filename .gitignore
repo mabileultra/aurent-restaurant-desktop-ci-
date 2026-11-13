@@ -128,4 +128,6 @@ desktop-electron/ui/*
 GEMINI.md
 .gemini/
 graphify-out/
+.session_handoff.md
+
 

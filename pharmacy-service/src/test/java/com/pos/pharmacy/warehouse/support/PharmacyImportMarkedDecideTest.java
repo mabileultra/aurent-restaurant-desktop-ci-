@@ -13,7 +13,7 @@ class PharmacyImportMarkedDecideTest {
         assertTrue(PharmacyImportMarkedDecide.apply(true, PharmacyImportTasnifHit.miss()));
         assertTrue(PharmacyImportMarkedDecide.apply(
             true,
-            new PharmacyImportTasnifHit(true, false, "1546940", "name")
+            new PharmacyImportTasnifHit(true, false, "1546940", "name", null)
         ));
     }
 
@@ -31,11 +31,11 @@ class PharmacyImportMarkedDecideTest {
     void usesTasnifLabel() {
         assertTrue(PharmacyImportMarkedDecide.apply(
             false,
-            new PharmacyImportTasnifHit(true, true, "1546940", "name")
+            new PharmacyImportTasnifHit(true, true, "1546940", "name", null)
         ));
         assertFalse(PharmacyImportMarkedDecide.apply(
             false,
-            new PharmacyImportTasnifHit(true, false, "1546940", "name")
+            new PharmacyImportTasnifHit(true, false, "1546940", "name", null)
         ));
     }
 }

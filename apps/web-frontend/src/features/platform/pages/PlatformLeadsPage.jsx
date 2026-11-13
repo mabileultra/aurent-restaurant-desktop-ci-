@@ -66,8 +66,8 @@ export default function PlatformLeadsPage() {
   return (
     <PageLayout
       spacing="space-y-4"
-      title={p.t('platform.leads.title')}
-      subtitle={p.t('platform.leads.subtitle')}
+      title={p.t('platform.leads.nav', 'Arizalar')}
+      subtitle={p.t('platform.leads.title', 'Saytdan arizalar')}
     >
       {/* 0. One-time credentials display modal */}
       {p.createdCredentials && (

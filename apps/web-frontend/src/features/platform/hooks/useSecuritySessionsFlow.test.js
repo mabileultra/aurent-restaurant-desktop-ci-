@@ -1,9 +1,22 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useSecuritySessionsFlow } from './useSecuritySessionsFlow';
 
 globalThis.React = React;
+
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: [],
+      isLoading: false,
+    }),
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 
 describe('useSecuritySessionsFlow', () => {
   it('initializes with empty sessions and attempts', () => {

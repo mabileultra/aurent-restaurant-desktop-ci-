@@ -15,6 +15,7 @@ describe('isModuleVisibleForBusinessType', () => {
     expect(isModuleVisibleForBusinessType('cashierSales', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('cashierPos', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('reportsPriceRegistry', 'PHARMACY')).toBe(true);
+    expect(isModuleVisibleForBusinessType('reportsDrugRegistry', 'PHARMACY')).toBe(true);
     expect(isModuleVisibleForBusinessType('financeDashboard', 'PHARMACY')).toBe(true);
   });
 
@@ -27,7 +28,9 @@ describe('isModuleVisibleForBusinessType', () => {
     expect(isModuleVisibleForBusinessType('restaurantQuickSale', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('products', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('stockProducts', 'RESTAURANT')).toBe(true);
-    expect(isModuleVisibleForBusinessType('stockTransfers', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('stockTransfers', 'RESTAURANT')).toBe(false);
+    expect(isModuleVisibleForBusinessType('dashboard', 'RESTAURANT')).toBe(false);
+    expect(isModuleVisibleForBusinessType('stores', 'RESTAURANT')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantPickupLabel', 'PHARMACY')).toBe(false);
     expect(isModuleVisibleForBusinessType('restaurantCustomerDisplay', 'PHARMACY')).toBe(false);

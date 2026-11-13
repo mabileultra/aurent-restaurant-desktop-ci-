@@ -60,9 +60,15 @@ app:
       retry-ms: ${PHARMACY_MARK_WITHDRAW_RETRY_MS:30000}
     price-registry:
       enabled: ${PHARMACY_PRICE_REGISTRY_ENABLED:true}
-      page-url: ${PHARMACY_PRICE_REGISTRY_PAGE_URL:https://pharm.gov.uz}
+      page-url: ${PHARMACY_PRICE_REGISTRY_PAGE_URL:https://api.mpa.uz/drug-catalog-api/v2/referent-price/excel}
       cron: ${PHARMACY_PRICE_REGISTRY_CRON:0 0 3 * * *}
       auto-apply: ${PHARMACY_PRICE_REGISTRY_AUTO_APPLY:false}
+    drug-registry:
+      enabled: ${PHARMACY_DRUG_REGISTRY_ENABLED:true}
+      url: ${PHARMACY_DRUG_REGISTRY_URL:}
+      file: ${PHARMACY_DRUG_REGISTRY_FILE:}
+      page-url: ${PHARMACY_DRUG_REGISTRY_PAGE_URL:https://old.uzpharm-control.uz/ru/pages/state-register-of-medicines-and-medical-products}
+      cron: ${PHARMACY_DRUG_REGISTRY_CRON:0 0 4 */3 * *}
     tasnif:
       enabled: ${PHARMACY_TASNIF_ENABLED:true}
       base-url: ${PHARMACY_TASNIF_BASE_URL:https://tasnif.soliq.uz/api/cl-api}

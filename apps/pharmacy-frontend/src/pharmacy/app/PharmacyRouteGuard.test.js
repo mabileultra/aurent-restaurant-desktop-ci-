@@ -207,7 +207,7 @@ describe('Pharmacy routes and navigation config integrity', () => {
   });
 
   it('PHARM_SALES_CHILDREN привязан к модулям продаж и возвратов, а биллинг открыт только ADMIN и ACCOUNTANT', () => {
-    expect(PHARM_SALES_CHILDREN[0].anyModules).toEqual(['reportsSales', 'reportsSalesDaily']);
+    expect(PHARM_SALES_CHILDREN[0].anyModules).toEqual(['cashierSales', 'reportsSales', 'reportsSalesDaily']);
     expect(PHARM_SALES_CHILDREN[1].moduleId).toBe('reportsReturns');
     expect(canAccessBilling('ADMIN')).toBe(true);
     expect(canAccessBilling('ACCOUNTANT')).toBe(true);

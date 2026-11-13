@@ -13,6 +13,7 @@ const StockBalancesReportPage = lazy(() => import('../../features/reports/pages/
 const StockInventoriesReportPage = lazy(() => import('../../features/reports/pages/StockInventoriesReportPage'));
 const StockTransfersReportPage = lazy(() => import('../../features/reports/pages/StockTransfersReportPage'));
 const PriceRegistryJournalPage = lazy(() => import('../../features/reports/pages/PriceRegistryJournalPage'));
+const DrugRegistryPage = lazy(() => import('../../features/reports/pages/DrugRegistryPage'));
 const ReturnsPage = lazy(() => import('../../features/sales/pages/ReturnsPage'));
 
 export const REPORT_ROUTES = [
@@ -28,6 +29,7 @@ export const REPORT_ROUTES = [
   { path: '/reports/stock/inventories', module: 'reportsStockInventories', Component: StockInventoriesReportPage },
   { path: '/reports/stock/transfers', module: 'reportsStockTransfers', Component: StockTransfersReportPage },
   { path: '/reports/stock/price-registry', module: 'reportsPriceRegistry', Component: PriceRegistryJournalPage },
+  { path: '/reports/stock/drug-registry', module: 'reportsDrugRegistry', Component: DrugRegistryPage },
 ];
 
 /** Pharmacy reports only: sales + stock read-only core. */

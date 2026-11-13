@@ -6,39 +6,41 @@ export default function AccessRightsTemplatesKPIs({
   totalEmployees = 0,
   standardEmployees = 0,
   exceptionEmployees = 0,
-  businessTypesCount = 0,
+  rolesCount = 0,
+  scopeLabel = '',
 }) {
   const { i18n } = useTranslation();
   const isRu = i18n.language === 'ru';
+  const scope = scopeLabel || (isRu ? 'Выбранный тип' : 'Tanlangan tur');
 
   const cards = [
     {
-      title: isRu ? 'Всего сотрудников' : 'Jami xodim',
+      title: isRu ? 'Сотрудники типа' : 'Tur xodimlari',
       value: totalEmployees,
       icon: Users,
       color: 'text-slate-900 dark:text-slate-100',
-      badge: isRu ? 'Вся сеть' : 'Barcha tarmoq',
+      badge: scope,
     },
     {
-      title: isRu ? 'Только по шаблону' : 'Faqat shablon bo‘yicha ishlaydi',
+      title: isRu ? 'Только по шаблону' : 'Faqat shablon bo‘yicha',
       value: standardEmployees,
       icon: ShieldCheck,
       color: 'text-emerald-700 dark:text-emerald-400',
-      badge: isRu ? 'Стандарт' : 'Standart huquq',
+      badge: isRu ? 'Стандарт' : 'Standart',
     },
     {
-      title: isRu ? 'С исключениями' : 'Istisnosi bor xodim',
+      title: isRu ? 'С исключениями' : 'Istisnosi bor',
       value: exceptionEmployees,
       icon: AlertCircle,
       color: 'text-amber-600 dark:text-amber-400',
-      badge: isRu ? 'Персональные' : 'Alohida ruxsat/taqiq',
+      badge: isRu ? 'Персональные' : 'Istisno',
     },
     {
-      title: isRu ? 'Направлений бизнеса' : 'Faoliyat turi',
-      value: businessTypesCount,
+      title: isRu ? 'Ролей в типе' : 'Tur rollari',
+      value: rolesCount,
       icon: Briefcase,
       color: 'text-slate-900 dark:text-slate-100',
-      badge: isRu ? 'Отрасли' : 'Yo‘nalishlar',
+      badge: scope,
     },
   ];
 
@@ -59,7 +61,7 @@ export default function AccessRightsTemplatesKPIs({
               <span className={`text-2xl font-bold tracking-tight ${c.color}`}>
                 {c.value}
               </span>
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate max-w-[50%] text-right">
                 {c.badge}
               </span>
             </div>

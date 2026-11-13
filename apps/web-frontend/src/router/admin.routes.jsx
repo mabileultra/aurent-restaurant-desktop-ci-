@@ -3,6 +3,7 @@ import { Navigate, Route } from 'react-router-dom';
 import ProtectedRoute from './guards/ProtectedRoute';
 import CheckoutRedirect from './guards/CheckoutRedirect';
 import AppShellLayout from '../components/layout/AppShellLayout';
+import PharmacyOfficeRedirect from './guards/PharmacyOfficeRedirect';
 import {
   DashboardPage,
   AiAssistantPage,
@@ -67,7 +68,9 @@ export const adminRoutes = (
   <Route
     element={(
       <ProtectedRoute>
-        <AppShellLayout />
+        <PharmacyOfficeRedirect>
+          <AppShellLayout />
+        </PharmacyOfficeRedirect>
       </ProtectedRoute>
     )}
   >

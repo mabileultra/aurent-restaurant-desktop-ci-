@@ -81,7 +81,7 @@ export const PHARM_STOCK_CHILDREN = [
 ];
 
 export const PHARM_SALES_CHILDREN = [
-  { to: PHARM_SALES_PATH, key: 'sales', icon: Receipt, anyModules: ['reportsSales', 'reportsSalesDaily'] },
+  { to: PHARM_SALES_PATH, key: 'sales', icon: Receipt, anyModules: ['cashierSales', 'reportsSales', 'reportsSalesDaily'] },
   { to: PHARM_RETURNS_PATH, key: 'returns', icon: RotateCcw, moduleId: 'reportsReturns' },
 ];
 
@@ -101,6 +101,7 @@ export const PHARM_REPORT_STOCK_CHILDREN = [
   { to: '/reports/stock/inventories', key: 'reportsStockInventories', icon: ClipboardList, moduleId: 'reportsStockInventories' },
   { to: '/reports/stock/transfers', key: 'reportsStockTransfers', icon: TrendingDown, moduleId: 'reportsStockTransfers' },
   { to: '/reports/stock/price-registry', key: 'reportsPriceRegistry', icon: Tags, moduleId: 'reportsPriceRegistry' },
+  { to: '/reports/stock/drug-registry', key: 'reportsDrugRegistry', icon: BookOpen, moduleId: 'reportsDrugRegistry' },
 ];
 
 export const PHARM_FINANCE_CHILDREN = [

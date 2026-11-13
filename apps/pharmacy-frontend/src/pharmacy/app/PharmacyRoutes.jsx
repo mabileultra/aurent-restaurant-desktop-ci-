@@ -152,7 +152,7 @@ export function PharmacyRoutes() {
         <Route
           path={PHARM_SALES_PATH}
           element={(
-            <PharmacyRouteGuard anyModules={['reportsSales', 'reportsSalesDaily']}>
+            <PharmacyRouteGuard anyModules={['cashierSales', 'reportsSales', 'reportsSalesDaily']}>
               <SalesLedgerPage />
             </PharmacyRouteGuard>
           )}

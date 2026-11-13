@@ -4,9 +4,6 @@ import com.pos.pharmacy.exception.BusinessException;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyPriceRegistryErrors;
 import com.pos.shared.log.LogUtil;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,26 +17,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
-import java.util.Locale;
 
-/** Jsoup: найти ссылку на .xlsx на pharm.gov.uz и скачать во временный файл. */
+/** Скачивает публичный Excel реестра предельных розничных цен. */
 @Component
 public class PriceRegistryExcelFetcher {
 
-    private final String pageUrl;
+    private static final String USER_AGENT =
+        "Mozilla/5.0 (compatible; AurentPharmacyPriceRegistry/1.0)";
+
+    private final String excelUrl;
     private final HttpClient http = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(30))
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build();
 
     public PriceRegistryExcelFetcher(
-        @Value("${app.pharmacy.price-registry.page-url:https://pharm.gov.uz}") String pageUrl
+        @Value("${app.pharmacy.price-registry.page-url:https://api.mpa.uz/drug-catalog-api/v2/referent-price/excel}")
+        String excelUrl
     ) {
-        this.pageUrl = pageUrl;
+        this.excelUrl = excelUrl;
     }
 
     public FetchedExcel fetchLatest() {
-        String excelUrl = resolveExcelUrl();
         Path temp;
         try {
             temp = Files.createTempFile("pharm-price-registry-", ".xlsx");
@@ -53,7 +52,8 @@ public class PriceRegistryExcelFetcher {
             HttpRequest request = HttpRequest.newBuilder(URI.create(excelUrl))
                 .timeout(Duration.ofMinutes(3))
                 .GET()
-                .header("User-Agent", "AurentPharmacyPriceRegistry/1.0")
+                .header("User-Agent", USER_AGENT)
+                .header("Accept", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*")
                 .build();
             HttpResponse<InputStream> response = http.send(request, HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -66,8 +66,12 @@ public class PriceRegistryExcelFetcher {
             try (InputStream in = response.body()) {
                 Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
             }
-            LogUtil.info(PriceRegistryExcelFetcher.class, "Downloaded registry excel from {}", excelUrl);
-            return new FetchedExcel(excelUrl, temp.getFileName().toString(), temp);
+            String fileName = fileName(
+                response.headers().firstValue("content-disposition").orElse(""),
+                excelUrl
+            );
+            LogUtil.info(PriceRegistryExcelFetcher.class, "Downloaded registry excel {} from {}", fileName, excelUrl);
+            return new FetchedExcel(excelUrl, fileName, temp);
         } catch (BusinessException ex) {
             safeDelete(temp);
             throw ex;
@@ -81,51 +85,31 @@ public class PriceRegistryExcelFetcher {
         }
     }
 
-    private String resolveExcelUrl() {
-        try {
-            Document doc = Jsoup.connect(pageUrl)
-                .userAgent("AurentPharmacyPriceRegistry/1.0")
-                .timeout(30_000)
-                .get();
-            for (Element link : doc.select("a[href]")) {
-                String href = link.attr("abs:href");
-                if (href == null || href.isBlank()) {
-                    continue;
-                }
-                String lower = href.toLowerCase(Locale.ROOT);
-                if (!(lower.contains(".xlsx") || lower.contains(".xls"))) {
-                    continue;
-                }
-                String text = (link.text() + " " + href).toLowerCase(Locale.ROOT);
-                if (text.contains("референт")
-                    || text.contains("предел")
-                    || text.contains("рознич")
-                    || text.contains("реестр")
-                    || text.contains("narx")
-                    || text.contains("price")
-                    || lower.endsWith(".xlsx")
-                    || lower.endsWith(".xls")) {
-                    return href;
-                }
-            }
-            for (Element link : doc.select("a[href]")) {
-                String href = link.attr("abs:href");
-                if (href == null) {
-                    continue;
-                }
-                String lower = href.toLowerCase(Locale.ROOT);
-                if (lower.endsWith(".xlsx") || lower.contains(".xlsx?")) {
-                    return href;
-                }
-            }
-        } catch (IOException e) {
-            LogUtil.error(PriceRegistryExcelFetcher.class, "Page fetch failed: {}", e.toString());
-            throw PharmacyErrors.of(
-                PharmacyPriceRegistryErrors.PHARM_PRICE_REGISTRY_FETCH_FAILED,
-                e.getMessage() != null ? e.getMessage() : "network"
-            );
+    static String fileName(String disposition, String excelUrl) {
+        String quoted = between(disposition, "filename=\"", "\"");
+        if (quoted != null && !quoted.isBlank()) {
+            return quoted.trim();
         }
-        throw PharmacyErrors.of(PharmacyPriceRegistryErrors.PHARM_PRICE_REGISTRY_LINK_NOT_FOUND);
+        int slash = excelUrl.lastIndexOf('/');
+        String tail = slash >= 0 ? excelUrl.substring(slash + 1) : excelUrl;
+        int query = tail.indexOf('?');
+        if (query >= 0) {
+            tail = tail.substring(0, query);
+        }
+        return tail.isBlank() ? "referent-prices.xlsx" : tail;
+    }
+
+    private static String between(String value, String open, String close) {
+        int start = value.indexOf(open);
+        if (start < 0) {
+            return null;
+        }
+        start += open.length();
+        int end = value.indexOf(close, start);
+        if (end < 0) {
+            return null;
+        }
+        return value.substring(start, end);
     }
 
     private static void safeDelete(Path temp) {

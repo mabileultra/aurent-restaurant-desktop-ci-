@@ -1,5 +1,5 @@
 ---
-description: Pharmacy state max retail price registry (pharm.gov.uz) — journal before apply
+description: Pharmacy state max retail price registry (api.mpa.uz Excel) — journal before apply
 globs:
   - pharmacy-service/**/pricing/registry/**
   - apps/pharmacy-frontend/src/features/reports/**/PriceRegistry*
@@ -10,7 +10,7 @@ alwaysApply: false
 
 ## Flow
 
-1. Sync (cron 03:00 or `POST /pharmacy/price-registry/sync`) downloads Excel → snapshot + rows.
+1. Sync (cron 03:00 or `POST /pharmacy/price-registry/sync`) downloads `https://api.mpa.uz/drug-catalog-api/v2/referent-price/excel` → snapshot + rows. Limit column is «Розничная цена UZS (с НДС)», not the earlier «Предельная цена». The file has Pharm ID and no barcode.
 2. Journal rows show **old → limit → new** with status `PENDING|APPLIED|SKIPPED_OK|UNMATCHED`.
 3. Price drop only after `POST /pharmacy/price-registry/apply` (or `auto-apply=true`).
 4. POS checkout calls `PriceLimitSaleValidator.checkPriceBeforeSale` → `PriceLimitExceededException` if above limit.

@@ -48,7 +48,7 @@ export default function PlatformAnalyticsViloyatlarPage() {
               ) : null}
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              16 ta tuman va shahar · {totalCompanies} korxona. Batafsil ko‘rish uchun tumanni tanlang.
+              16 ta tuman va shahar · {totalCompanies} korxona{unassigned.companies > 0 ? ` (${totalCompanies - unassigned.companies} tasi tumanlarga taqsimlangan)` : ''}. Batafsil ko‘rish uchun tumanni tanlang.
             </p>
           </div>
 

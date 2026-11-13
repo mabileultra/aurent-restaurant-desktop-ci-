@@ -1,10 +1,16 @@
 /**
- * Normalizes Uzbek geographic names by cleaning escaped double apostrophes.
+ * Normalizes Uzbek geographic names by cleaning escaped double apostrophes
+ * and standardizing o'/g' characters to typographic inverted comma ‘ (U+2018).
  * E.g. "Qoraqalpog''iston" -> "Qoraqalpog‘iston"
  *      "Bulung''ur" -> "Bulung‘ur"
  *      "Farg''ona" -> "Farg‘ona"
+ *      "Farg'ona" -> "Farg‘ona"
+ *      "G'uzor" -> "G‘uzor"
  */
 export function cleanGeoName(text) {
   if (!text) return '';
-  return String(text).replace(/''/g, '‘').replace(/`/g, '‘');
+  return String(text)
+    .replace(/''/g, '‘')
+    .replace(/`/g, '‘')
+    .replace(/([oOgG])['’]/g, '$1‘');
 }

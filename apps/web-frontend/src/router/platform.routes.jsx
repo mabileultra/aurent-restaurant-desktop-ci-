@@ -31,6 +31,10 @@ import {
   PlatformAnalyticsReportsPage,
 } from './lazyPages';
 
+const PlatformUiKitPage = import.meta.env.DEV
+  ? React.lazy(() => import('../pages/platform/PlatformUiKitPage'))
+  : null;
+
 function guarded(page, sectionName) {
   return (
     <PlatformPageGuard>
@@ -76,5 +80,15 @@ export const platformRoutes = (
     <Route path="analytics/compare" element={guarded(<PlatformAnalyticsComparePage />, 'platform-analytics-compare')} />
     <Route path="analytics/receipts" element={guarded(<PlatformAnalyticsReceiptsPage />, 'platform-analytics-receipts')} />
     <Route path="analytics/reports" element={guarded(<PlatformAnalyticsReportsPage />, 'platform-analytics-reports')} />
+    {import.meta.env.DEV ? (
+      <Route
+        path="ui-kit"
+        element={(
+          <React.Suspense fallback={<div className="p-8">Yuklanmoqda...</div>}>
+            <PlatformUiKitPage />
+          </React.Suspense>
+        )}
+      />
+    ) : null}
   </Route>
 );

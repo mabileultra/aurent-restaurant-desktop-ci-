@@ -67,8 +67,9 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
   const dayChips = useMemo(() => {
     const rawDays = apiDetail?.days;
     if (Array.isArray(rawDays)) {
-      return rawDays
+      return [...rawDays]
         .filter((d) => Number(d.totalTurnover || 0) > 0)
+        .sort((a, b) => a.date.localeCompare(b.date))
         .map((d) => {
           const tot = Number(d.totalTurnover || 0);
           const { short, long } = parseDayLabels(d.date);
@@ -163,7 +164,7 @@ export function useKorxonaDetailAnalytics(companyId, regionCode = '18') {
     : (apiDetail?.averageCheck != null ? Number(apiDetail.averageCheck) : null);
 
   return {
-    companyInfo, cards, donuts, products, totalProductsCount,
+    companyInfo, cards, donuts, products, totalProductsCount, turnover,
     productPage, productFrom, productTo, productTotalPages,
     onPrevProductPage: () => setProductPage((p) => Math.max(0, p - 1)),
     onNextProductPage: () => setProductPage((p) => Math.min(productTotalPages - 1, p + 1)),
