@@ -39,7 +39,9 @@ public class ModuleAccessScopeResolver {
     public List<AdminModule> tenantModules(User user) {
         String role = user.getRole().getName();
         List<AdminModule> scope;
-        if ("CASHIER".equals(role) || "WAITER".equals(role) || "COOK".equals(role)) {
+        if ("COOK".equals(role)) {
+            scope = AdminModule.cookScope();
+        } else if ("CASHIER".equals(role) || "WAITER".equals(role)) {
             scope = AdminModule.cashierScope();
         } else if ("ACCOUNTANT".equals(role)) {
             scope = AdminModule.financeScope();

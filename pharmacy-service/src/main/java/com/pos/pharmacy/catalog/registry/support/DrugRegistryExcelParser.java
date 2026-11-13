@@ -3,6 +3,9 @@ package com.pos.pharmacy.catalog.registry.support;
 import com.pos.pharmacy.catalog.registry.dto.DrugRegistryParsedRow;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyDrugRegistryErrors;
+import com.pos.pharmacy.support.PharmacyParallelTasks;
+import com.pos.pharmacy.warehouse.support.PharmacyMassExecutor;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -16,10 +19,16 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 @Component
+@RequiredArgsConstructor
 public class DrugRegistryExcelParser {
 
+    private static final int MAP_CHUNK = 500;
+
+    private final PharmacyMassExecutor massExecutor;
     private final DataFormatter formatter = new DataFormatter(Locale.ROOT);
 
     public List<DrugRegistryParsedRow> parse(Path xlsx) {
@@ -32,34 +41,14 @@ public class DrugRegistryExcelParser {
                     "Не найден столбец торгового названия"
                 );
             }
-            List<DrugRegistryParsedRow> rows = new ArrayList<>();
-            for (int r = header.row + 1; r <= sheet.getLastRowNum(); r++) {
-                Row line = sheet.getRow(r);
-                if (line == null) {
-                    continue;
-                }
-                String name = cell(line, header.name);
-                if (name == null || name.isBlank()) {
-                    continue;
-                }
-                rows.add(new DrugRegistryParsedRow(
-                    name.trim(),
-                    text(line, header.registration),
-                    text(line, header.inn),
-                    text(line, header.form),
-                    text(line, header.manufacturer),
-                    text(line, header.country),
-                    text(line, header.atc),
-                    DrugRegistryPrescription.parse(cell(line, header.prescription))
-                ));
-            }
-            if (rows.isEmpty()) {
+            List<RawLine> raw = extract(sheet, header);
+            if (raw.isEmpty()) {
                 throw PharmacyErrors.of(
                     PharmacyDrugRegistryErrors.PHARM_DRUG_REGISTRY_PARSE_FAILED,
                     "В Excel нет строк лекарств"
                 );
             }
-            return rows;
+            return mapParallel(raw);
         } catch (com.pos.pharmacy.exception.BusinessException ex) {
             throw ex;
         } catch (Exception e) {
@@ -68,6 +57,70 @@ public class DrugRegistryExcelParser {
                 e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
             );
         }
+    }
+
+    private List<RawLine> extract(Sheet sheet, Header header) {
+        List<RawLine> raw = new ArrayList<>();
+        for (int r = header.row + 1; r <= sheet.getLastRowNum(); r++) {
+            Row line = sheet.getRow(r);
+            if (line == null) {
+                continue;
+            }
+            String name = cell(line, header.name);
+            if (name == null || name.isBlank()) {
+                continue;
+            }
+            raw.add(new RawLine(
+                name.trim(),
+                text(line, header.registration),
+                text(line, header.inn),
+                text(line, header.form),
+                text(line, header.manufacturer),
+                text(line, header.country),
+                text(line, header.atc),
+                cell(line, header.prescription)
+            ));
+        }
+        return raw;
+    }
+
+    private List<DrugRegistryParsedRow> mapParallel(List<RawLine> raw) {
+        List<List<RawLine>> chunks = split(raw, MAP_CHUNK);
+        List<Supplier<List<DrugRegistryParsedRow>>> tasks = new ArrayList<>(chunks.size());
+        for (List<RawLine> chunk : chunks) {
+            tasks.add(() -> mapChunk(chunk));
+        }
+        List<List<DrugRegistryParsedRow>> parts = PharmacyParallelTasks.supplyAll(tasks, massExecutor.executor());
+        List<DrugRegistryParsedRow> rows = new ArrayList<>(raw.size());
+        for (List<DrugRegistryParsedRow> part : parts) {
+            rows.addAll(part);
+        }
+        return rows;
+    }
+
+    private static List<DrugRegistryParsedRow> mapChunk(List<RawLine> chunk) {
+        List<DrugRegistryParsedRow> rows = new ArrayList<>(chunk.size());
+        for (RawLine line : chunk) {
+            rows.add(new DrugRegistryParsedRow(
+                line.name(),
+                line.registration(),
+                line.inn(),
+                line.form(),
+                line.manufacturer(),
+                line.country(),
+                line.atc(),
+                DrugRegistryPrescription.parse(line.prescription())
+            ));
+        }
+        return rows;
+    }
+
+    private static List<List<RawLine>> split(List<RawLine> raw, int size) {
+        List<List<RawLine>> out = new ArrayList<>();
+        for (int i = 0; i < raw.size(); i += size) {
+            out.add(raw.subList(i, Math.min(i + size, raw.size())));
+        }
+        return out;
     }
 
     private Sheet sheetWithName(Workbook wb) {
@@ -148,6 +201,21 @@ public class DrugRegistryExcelParser {
             return "";
         }
         return raw.toLowerCase(Locale.ROOT).replace('\u00a0', ' ').trim();
+    }
+
+    private record RawLine(
+        String name,
+        String registration,
+        String inn,
+        String form,
+        String manufacturer,
+        String country,
+        String atc,
+        String prescription
+    ) {
+        RawLine {
+            Objects.requireNonNull(name);
+        }
     }
 
     private static final class Header {

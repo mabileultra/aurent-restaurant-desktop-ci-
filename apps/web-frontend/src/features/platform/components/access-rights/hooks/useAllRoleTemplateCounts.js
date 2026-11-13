@@ -59,8 +59,9 @@ export function useAllRoleTemplateCounts({
 
   const getEnabledCount = useCallback(
     (btCode, roleCode, defaultCount = 0) => {
+      const scope = getScopeForRole(roleCode, btCode);
       if (btCode === selectedBT && roleCode === currentRole) {
-        return Object.values(currentToggles).filter(Boolean).length;
+        return Object.entries(currentToggles).filter(([k, v]) => scope.has(k) && Boolean(v)).length;
       }
       const key = `${btCode}_${roleCode}`;
       if (templateCounts[key] !== undefined) {
@@ -70,7 +71,6 @@ export function useAllRoleTemplateCounts({
         ? qc.getQueryData(['access-role-template', btCode, roleCode])
         : null;
       if (cached?.modules) {
-        const scope = getScopeForRole(roleCode, btCode);
         return Object.entries(cached.modules).filter(([k, v]) => scope.has(k) && Boolean(v)).length;
       }
       return defaultCount;
