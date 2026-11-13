@@ -2,6 +2,7 @@
  * Persist a receipt logo data URL as a crisp PNG for thermal printImage.
  * Size follows logoMaxHeightMm; light threshold to B&W without fattening strokes.
  */
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -20,6 +21,35 @@ const DOTS_PER_MM = 8;
  * Mid threshold keeps thin lines; high values (180+) + dilate made logos fat/blurry.
  */
 const INK_THRESHOLD = 140;
+const LOGO_CACHE_MAX = 16;
+const logoPngCache = new Map();
+
+function buildCacheKey(raw, maxHeightMm) {
+  const hash = crypto.createHash('sha1').update(raw).digest('hex');
+  return `${maxHeightMm}:${hash}`;
+}
+
+function getCachedLogoBuffer(key) {
+  if (!logoPngCache.has(key)) return null;
+  const buf = logoPngCache.get(key);
+  logoPngCache.delete(key);
+  logoPngCache.set(key, buf);
+  return buf;
+}
+
+function setCachedLogoBuffer(key, buf) {
+  if (logoPngCache.has(key)) {
+    logoPngCache.delete(key);
+  } else if (logoPngCache.size >= LOGO_CACHE_MAX) {
+    const oldestKey = logoPngCache.keys().next().value;
+    if (oldestKey !== undefined) logoPngCache.delete(oldestKey);
+  }
+  logoPngCache.set(key, buf);
+}
+
+function clearLogoPngCache() {
+  logoPngCache.clear();
+}
 
 /**
  * @param {string} dataUrl
@@ -31,41 +61,49 @@ function writeLogoPngTempFile(dataUrl, fileStem, opts = {}) {
   const raw = String(dataUrl || '').trim();
   if (!raw.startsWith('data:image/')) return null;
 
-  if (!nativeImage) {
-    const m = raw.match(/^data:image\/[\w+.-]+;base64,(.+)$/i);
-    if (!m) return null;
-    const filePath = path.join(os.tmpdir(), `${fileStem}.png`);
-    fs.writeFileSync(filePath, Buffer.from(m[1], 'base64'));
+  const maxHeightMm = clamp(Number(opts.maxHeightMm) || 20, 8, 48);
+  const cacheKey = buildCacheKey(raw, maxHeightMm);
+  const filePath = path.join(os.tmpdir(), `${fileStem}.png`);
+  const cached = getCachedLogoBuffer(cacheKey);
+  if (cached) {
+    fs.writeFileSync(filePath, cached);
     return filePath;
   }
 
-  let img = nativeImage.createFromDataURL(raw);
-  if (!img || img.isEmpty()) {
+  let pngBuffer = null;
+  if (!nativeImage) {
     const m = raw.match(/^data:image\/[\w+.-]+;base64,(.+)$/i);
     if (!m) return null;
-    img = nativeImage.createFromBuffer(Buffer.from(m[1], 'base64'));
+    pngBuffer = Buffer.from(m[1], 'base64');
+  } else {
+    let img = nativeImage.createFromDataURL(raw);
+    if (!img || img.isEmpty()) {
+      const m = raw.match(/^data:image\/[\w+.-]+;base64,(.+)$/i);
+      if (!m) return null;
+      img = nativeImage.createFromBuffer(Buffer.from(m[1], 'base64'));
+    }
+    if (!img || img.isEmpty()) return null;
+
+    const maxH = Math.round(maxHeightMm * DOTS_PER_MM);
+    const maxW = PAPER_WIDTH_PX;
+
+    const size = img.getSize();
+    let width = size.width || 1;
+    let height = size.height || 1;
+    // Never upscale — stretching softens edges on thermal. Only shrink to fit.
+    const scale = Math.min(1, maxW / width, maxH / height);
+    if (scale < 1) {
+      width = Math.max(1, Math.round(width * scale));
+      height = Math.max(1, Math.round(height * scale));
+      img = img.resize({ width, height, quality: 'better' });
+    }
+
+    img = toCrispThermalBitmap(img);
+    pngBuffer = img.toPNG();
   }
-  if (!img || img.isEmpty()) return null;
 
-  const maxHeightMm = clamp(Number(opts.maxHeightMm) || 20, 8, 48);
-  const maxH = Math.round(maxHeightMm * DOTS_PER_MM);
-  const maxW = PAPER_WIDTH_PX;
-
-  const size = img.getSize();
-  let width = size.width || 1;
-  let height = size.height || 1;
-  // Never upscale — stretching softens edges on thermal. Only shrink to fit.
-  const scale = Math.min(1, maxW / width, maxH / height);
-  if (scale < 1) {
-    width = Math.max(1, Math.round(width * scale));
-    height = Math.max(1, Math.round(height * scale));
-    img = img.resize({ width, height, quality: 'better' });
-  }
-
-  img = toCrispThermalBitmap(img);
-
-  const filePath = path.join(os.tmpdir(), `${fileStem}.png`);
-  fs.writeFileSync(filePath, img.toPNG());
+  setCachedLogoBuffer(cacheKey, pngBuffer);
+  fs.writeFileSync(filePath, pngBuffer);
   return filePath;
 }
 
@@ -107,4 +145,4 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
-module.exports = { writeLogoPngTempFile };
+module.exports = { writeLogoPngTempFile, clearLogoPngCache };
