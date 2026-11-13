@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { KeyRound, RotateCcw, Users, Layers, History, Loader2 } from 'lucide-react';
+import { RotateCcw, Users, Layers, History, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import AaPageHeader from '../../../../components/aa/PageHeader';
+import Button from '../../../../components/aa/Button';
 
 export default function AccessRightsHeader({
   activeTab = 'templates',
@@ -14,8 +16,6 @@ export default function AccessRightsHeader({
   const navRef = useRef(null);
   const activeTabRef = useRef(null);
 
-  // Faqat activeTab o'zgarganda va faqat nav konteynerining gorizontal scrollini to'g'rilaymiz.
-  // Window yoki butun sahifaning vertikal scrolliga mutlaqo tegmaymiz (sahifa sakrashining oldini oladi).
   useEffect(() => {
     const nav = navRef.current;
     const activeEl = activeTabRef.current;
@@ -57,48 +57,41 @@ export default function AccessRightsHeader({
   };
 
   return (
-    <header className="space-y-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-            <span>{isRu ? 'Управление' : 'Boshqaruv'}</span>
-            <span>›</span>
-            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
-              {isRu ? 'Права доступа' : 'Kirish huquqlari'}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <KeyRound className="w-6 h-6 text-emerald-700 dark:text-emerald-400" />
-              <span>{isRu ? 'Права доступа' : 'Kirish huquqlari'}</span>
-            </h1>
+    <header className="space-y-4 pb-2 border-b border-aa-line">
+      <AaPageHeader
+        breadcrumbs={[
+          { label: isRu ? 'Управление' : 'Boshqaruv' },
+          { label: isRu ? 'Права доступа' : 'Kirish huquqlari' },
+        ]}
+        title={isRu ? 'Права доступа' : 'Kirish huquqlari'}
+        meta={(
+          <div className="flex items-center gap-2">
+            <span>{subtitles[activeTab] || subtitles.templates}</span>
             {isLoading && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                <Loader2 size={13} className="animate-spin text-emerald-600" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-aa-full text-xs font-medium bg-aa-surface-sunken text-aa-ink-muted">
+                <Loader2 size={12} className="animate-spin text-aa-brand" />
                 <span>{isRu ? 'Загрузка...' : 'Yuklanmoqda...'}</span>
               </span>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-3xl">
-            {subtitles[activeTab] || subtitles.templates}
-          </p>
-        </div>
-
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={onRefresh}
-            className="self-start sm:self-center inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
-          >
-            <RotateCcw size={13} />
-            <span>{isRu ? 'Обновить' : 'Yangilash'}</span>
-          </button>
         )}
-      </div>
+        actions={
+          onRefresh ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<RotateCcw size={16} />}
+              onClick={onRefresh}
+            >
+              {isRu ? 'Обновить' : 'Yangilash'}
+            </Button>
+          ) : null
+        }
+      />
 
       <nav
         ref={navRef}
-        className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 -mb-[17px] overflow-x-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="flex items-center gap-1 border-b border-aa-line -mb-[17px] overflow-x-auto no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -109,10 +102,10 @@ export default function AccessRightsHeader({
               type="button"
               ref={isActive ? activeTabRef : null}
               onClick={() => onTabChange(tab.id)}
-              className={`flex items-center gap-2 py-3 px-3.5 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 rounded-t-lg transition-all ${
+              className={`flex items-center gap-2 py-3 px-3.5 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-aa-focus focus-visible:ring-offset-1 rounded-t-aa-md transition-all cursor-pointer ${
                 isActive
-                  ? 'border-emerald-700 text-emerald-700 dark:border-emerald-400 dark:text-emerald-300'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                  ? 'border-aa-brand text-aa-brand'
+                  : 'border-transparent text-aa-ink-muted hover:text-aa-ink'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -120,10 +113,10 @@ export default function AccessRightsHeader({
               {tab.badge != null && (
                 <span
                   title={tab.id === 'staff' ? (isRu ? `Всего исключений по сети: ${exceptionsCount}` : `Tarmoq bo‘yicha jami istisnolar: ${exceptionsCount}`) : undefined}
-                  className={`text-xs font-bold px-1.5 py-0.2 rounded-full ${
+                  className={`text-xs font-bold px-1.5 py-0.5 rounded-aa-full ${
                     isActive
-                      ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'
-                      : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+                      ? 'bg-aa-brand-soft text-aa-brand'
+                      : 'bg-aa-surface-sunken text-aa-ink-muted'
                   }`}
                 >
                   {tab.badge}

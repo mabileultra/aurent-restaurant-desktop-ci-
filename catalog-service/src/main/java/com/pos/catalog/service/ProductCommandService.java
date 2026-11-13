@@ -10,6 +10,7 @@ import com.pos.catalog.exception.CatalogExceptions;
 import com.pos.catalog.mapper.ProductCardMapper;
 import com.pos.catalog.repository.CategoryRepository;
 import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.service.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.support.ProductBarcodeSync;
 import com.pos.catalog.service.support.ProductBarcodeUniqueness;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class ProductCommandService {
     private final CategoryRepository categoryRepository;
     private final ProductBarcodeUniqueness barcodeUniqueness;
     private final ProductBarcodeSync barcodeSync;
+    private final InactiveBarcodeReleaser barcodeReleaser;
     private final ProductCardMapper mapper;
     private final CatalogOutboxWriter outboxWriter;
 
@@ -39,6 +41,9 @@ public class ProductCommandService {
             throw CatalogExceptions.conflict("SKU уже существует: " + sku);
         }
         String barcode = blankToNull(req.barcode());
+        List<String> extras = barcodeSync.normalize(req.additionalBarcodes());
+        barcodeReleaser.releaseAll(extras, companyId, barcode);
+        barcodeReleaser.releaseHeldPlu(companyId, req.plu());
         barcodeUniqueness.assertAvailable(companyId, barcode, null);
 
         Category category = resolveCategory(req.categoryId(), companyId);
@@ -71,7 +76,6 @@ public class ProductCommandService {
             .active(true)
             .build();
 
-        List<String> extras = barcodeSync.normalize(req.additionalBarcodes());
         barcodeSync.replaceExtras(product, extras, barcode);
         Product saved = productRepository.save(product);
         outboxWriter.enqueueProductSnapshot(saved);
@@ -135,12 +139,17 @@ public class ProductCommandService {
         if (req.barcode() != null) {
             String barcode = blankToNull(req.barcode());
             if (barcode != null && !barcode.equals(product.getBarcode())) {
+                barcodeReleaser.releaseHeldByInactive(companyId, barcode);
                 barcodeUniqueness.assertAvailable(companyId, barcode, id);
             }
             product.setBarcode(barcode);
         }
         if (req.plu() != null) {
-            product.setPlu(blankToNull(req.plu()));
+            String plu = blankToNull(req.plu());
+            if (plu != null && !plu.equals(product.getPlu())) {
+                barcodeReleaser.releaseHeldPlu(companyId, plu);
+            }
+            product.setPlu(plu);
         }
         if (req.imageUrl() != null) {
             product.setImageUrl(blankToNull(req.imageUrl()));

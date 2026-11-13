@@ -48,4 +48,32 @@ class PriceRegistryExcelParserTest {
         assertEquals("Аспирин", first.tradeName());
         assertEquals(new BigDecimal("12500.50"), first.limitPriceVat());
     }
+
+    @Test
+    void prefersRetailVatColumnAndStripsPharmIdDecimal() throws Exception {
+        Path file = temp.resolve("mpa.xlsx");
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet();
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Pharm ID");
+            header.createCell(1).setCellValue("Торговая марка");
+            header.createCell(2).setCellValue("Предельная цена  (*для отечественных производителей НДС включен в предельную цену)");
+            header.createCell(3).setCellValue("Оптовая цена (с НДС)");
+            header.createCell(4).setCellValue("Розничная цена UZS (с НДС)");
+            Row row = sheet.createRow(1);
+            row.createCell(0).setCellValue("1010002.0");
+            row.createCell(1).setCellValue("ЗОЛАН");
+            row.createCell(2).setCellValue("14 560");
+            row.createCell(3).setCellValue("16 744");
+            row.createCell(4).setCellValue("23 956.80");
+            try (var out = Files.newOutputStream(file)) {
+                wb.write(out);
+            }
+        }
+
+        RegistryParsedRow first = new PriceRegistryExcelParser().parse(file).get(0);
+        assertEquals("1010002", first.pharmId());
+        assertEquals("ЗОЛАН", first.tradeName());
+        assertEquals(new BigDecimal("23956.80"), first.limitPriceVat());
+    }
 }

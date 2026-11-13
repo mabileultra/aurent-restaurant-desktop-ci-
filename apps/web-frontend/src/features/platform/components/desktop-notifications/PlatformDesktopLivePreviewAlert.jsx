@@ -11,7 +11,7 @@ export default function PlatformDesktopLivePreviewAlert({
 }) {
   return (
     <>
-      <div className="absolute inset-0 pt-9 bg-slate-950/60 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 pt-9 bg-slate-950/60" />
       <div className="relative z-10 m-auto w-full max-w-[270px] sm:max-w-[290px] rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-center space-y-3 animate-in zoom-in-95 duration-200">
         <div className="flex justify-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/70 dark:text-amber-400">

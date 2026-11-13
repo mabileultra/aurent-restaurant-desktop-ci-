@@ -41,7 +41,7 @@ export default function UsersTableHeader({
 
   return (
     <thead>
-      <tr className="border-b border-slate-200 bg-slate-50/90 backdrop-blur-xs text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-400 sticky top-0 z-10">
+      <tr className="border-b border-slate-200 bg-slate-50/90 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-400 sticky top-0 z-10">
         {/* Checkbox select */}
         <th className="w-12 px-3 py-3.5 text-center">
           <BaseCheckbox

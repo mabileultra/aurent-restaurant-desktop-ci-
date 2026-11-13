@@ -43,6 +43,7 @@ public enum AdminModule {
     REPORTS_STOCK_INVENTORIES("reportsStockInventories", "reportsStock", Set.of("ADMIN", "MANAGER")),
     REPORTS_STOCK_TRANSFERS("reportsStockTransfers", "reportsStock", Set.of("ADMIN", "MANAGER")),
     REPORTS_PRICE_REGISTRY("reportsPriceRegistry", "reportsStock", Set.of("ADMIN", "MANAGER")),
+    REPORTS_DRUG_REGISTRY("reportsDrugRegistry", "reportsStock", Set.of("ADMIN", "MANAGER")),
     STOCK_INVENTORIES("stockInventories", "stock", Set.of("ADMIN", "MANAGER")),
     STOCK_TRANSFERS("stockTransfers", "stock", Set.of("ADMIN", "MANAGER")),
     STORES("stores", "settings", Set.of("ADMIN")),
@@ -114,6 +115,11 @@ public enum AdminModule {
         return Arrays.stream(values())
             .filter(m -> "cashier".equals(m.group) || "restaurant".equals(m.group))
             .toList();
+    }
+
+    /** Повар: только кухня, без зала/доставки/POS-флагов. */
+    public static List<AdminModule> cookScope() {
+        return List.of(RESTAURANT_KITCHEN);
     }
 
     public static List<AdminModule> financeScope() {

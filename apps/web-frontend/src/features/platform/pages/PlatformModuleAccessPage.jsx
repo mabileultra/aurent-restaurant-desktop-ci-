@@ -83,10 +83,6 @@ export default function PlatformModuleAccessPage() {
           businessTypes={businessTypes}
           rawCatalog={rawCatalog}
           statsByCode={statsByCode}
-          totalEmployees={totalEmployees}
-          standardEmployees={standardEmployees}
-          exceptionEmployees={exceptionEmployees}
-          businessTypesCount={businessTypesCount}
           selectedBT={selectedBT}
           initialRole={selectedTemplateRole}
           onSelectRole={setSelectedTemplateRole}

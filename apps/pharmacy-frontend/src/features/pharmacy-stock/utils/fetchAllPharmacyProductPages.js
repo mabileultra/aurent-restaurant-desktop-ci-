@@ -10,15 +10,17 @@ export async function fetchAllPharmacyProductPages({
   listProducts,
   pageSize = PHARMACY_CATALOG_OPTIONS_PAGE_SIZE,
   concurrency = PHARMACY_CATALOG_OPTIONS_CONCURRENCY,
+  params = {},
 }) {
-  const first = await listProducts({ page: 0, size: pageSize, activeOnly: false });
+  const base = { activeOnly: false, ...params, page: 0, size: pageSize };
+  const first = await listProducts(base);
   const totalPages = Math.max(1, Number(first?.totalPages) || 1);
   const byPage = new Map([[0, first]]);
 
   if (totalPages > 1) {
     const rest = Array.from({ length: totalPages - 1 }, (_, i) => i + 1);
     await runLimited(rest, concurrency, async (page) => {
-      const data = await listProducts({ page, size: pageSize, activeOnly: false });
+      const data = await listProducts({ ...base, page, size: pageSize });
       byPage.set(page, data);
     });
   }

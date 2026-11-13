@@ -13,3 +13,14 @@ export function isPharmacyOnlyCompany(businessPayload) {
   }
   return isPharmacyBusinessType(def);
 }
+
+/** Офис аптеки на p-aurent: дефолт PHARMACY или в компании только аптека. */
+export function companyUsesPharmacyOffice(businessPayload) {
+  if (!businessPayload) return false;
+  const def = normalizeBusinessTypeCode(businessPayload.defaultTypeCode);
+  const codes = (businessPayload.types || [])
+    .map((item) => normalizeBusinessTypeCode(item?.code))
+    .filter(Boolean);
+  if (isPharmacyBusinessType(def)) return true;
+  return codes.length === 1 && isPharmacyBusinessType(codes[0]);
+}

@@ -53,5 +53,21 @@ describe('SuperAdminSidebarItem', () => {
     expect(html).toContain('role="group"');
     expect(html).toContain('href="/platform/analytics"');
     expect(html).toContain('href="/platform/analytics/viloyatlar"');
+    expect(html).toContain('h-9');
+
+    const htmlMobile = renderToStaticMarkup(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/platform/analytics'] },
+        React.createElement(SuperAdminSidebarItem, {
+          item,
+          location: { pathname: '/platform/analytics' },
+          onCloseMobileNav: () => {},
+          NAV_ICONS: mockIcons,
+          isMobile: true,
+        })
+      )
+    );
+    expect(htmlMobile).toContain('h-11');
   });
 });

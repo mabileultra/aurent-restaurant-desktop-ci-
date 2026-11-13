@@ -58,8 +58,6 @@ export default function PriceRegistryJournalPage() {
             { value: '', label: t('priceRegistry.filterAll') },
             { value: 'PENDING', label: t('priceRegistry.statusPending') },
             { value: 'APPLIED', label: t('priceRegistry.statusApplied') },
-            { value: 'SKIPPED_OK', label: t('priceRegistry.statusSkipped') },
-            { value: 'UNMATCHED', label: t('priceRegistry.statusUnmatched') },
           ]}
         />
       </div>

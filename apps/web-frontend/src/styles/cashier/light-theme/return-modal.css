@@ -224,7 +224,6 @@ html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__status 
 }
 
 html.cashier-theme--light .pos-pay-overlay {
-  background: rgb(30 58 95 / 0.35);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
 }
 

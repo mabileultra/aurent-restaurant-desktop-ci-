@@ -6,6 +6,10 @@ export const analyticsApi = {
   getDaily: (params) => api.get('/tax-analytics/results/daily', { params }),
   getProducts: (params) => api.get('/tax-analytics/results/products', { params }),
   getResults: (params) => api.get('/tax-analytics/results', { params }),
+  getResultsDaily: (params) =>
+    api.get('/tax-analytics/results/daily', { params }).catch(() => ({ data: [] })),
+  getResultsProducts: (params) =>
+    api.get('/tax-analytics/results/products', { params }).catch(() => ({ data: { topProducts: [], lowProducts: [] } })),
   getCompanies: (params) => api.get('/tax-analytics/companies', { params }),
   getCompany: (companyId, params) =>
     api.get(`/tax-analytics/companies/${companyId}`, { params }),

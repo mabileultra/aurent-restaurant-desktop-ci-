@@ -19,6 +19,7 @@ import com.pos.pharmacy.pricing.registry.support.PriceRegistryApplySupport;
 import com.pos.pharmacy.pricing.registry.support.PriceRegistryExcelFetcher;
 import com.pos.pharmacy.pricing.registry.support.PriceRegistryExcelParser;
 import com.pos.pharmacy.pricing.registry.support.PriceRegistryReconciler;
+import com.pos.pharmacy.pricing.registry.support.PriceRegistryRetention;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ public class PharmacyPriceRegistryService {
     private final PriceRegistryReconciler reconciler;
     private final PriceRegistryApplySupport applySupport;
     private final PriceLimitSaleValidator saleValidator;
+    private final PriceRegistryRetention retention;
     private final PriceRegistrySnapshotRepository snapshotRepository;
     private final PriceChangeJournalRepository journalRepository;
 
@@ -125,6 +127,7 @@ public class PharmacyPriceRegistryService {
                 applied += applySupport.applyPending(companyId, snapshotId, "SYSTEM");
             }
         }
+        retention.keepOnlyLatestSnapshot(snapshotId);
         LogUtil.info(
             PharmacyPriceRegistryService.class,
             "Price registry snapshot {} rows={} pending={} skipped={} unmatched={} applied={}",

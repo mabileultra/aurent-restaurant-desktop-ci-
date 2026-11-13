@@ -14,6 +14,19 @@ public interface ProductBarcodeRepository extends JpaRepository<ProductBarcode, 
 
     boolean existsByCompanyIdAndBarcodeAndProductIdNot(Integer companyId, String barcode, UUID productId);
 
+    void deleteByProduct_Id(UUID productId);
+
+    @Query("""
+        SELECT b FROM ProductBarcode b
+        JOIN FETCH b.product p
+        WHERE b.barcode = :barcode
+          AND b.companyId = :companyId
+        """)
+    Optional<ProductBarcode> findByCompanyIdAndBarcode(
+        @Param("companyId") Integer companyId,
+        @Param("barcode") String barcode
+    );
+
     @Query("""
         SELECT b FROM ProductBarcode b
         JOIN FETCH b.product p

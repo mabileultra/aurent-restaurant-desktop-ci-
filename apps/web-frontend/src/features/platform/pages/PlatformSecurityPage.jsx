@@ -10,6 +10,7 @@ import PlatformSecurityRulesTab from '../components/security/PlatformSecurityRul
 import PlatformSecurityCloseSessionModal from '../components/security/PlatformSecurityCloseSessionModal';
 import PlatformSecuritySudoModal from '../components/security/PlatformSecuritySudoModal';
 import PlatformSecurity2faModal from '../components/security/PlatformSecurity2faModal';
+import PlatformSecurityStaffDrawer from '../components/security/PlatformSecurityStaffDrawer';
 import { usePlatformSecurityPage } from '../hooks/usePlatformSecurityPage';
 import { SECURITY_TAB_KEYS } from '../utils/securityConstants';
 import '../../../styles/platform/security.css';
@@ -21,7 +22,10 @@ export default function PlatformSecurityPage() {
   return (
     <PageLayout className="platform-security-page space-y-5" spacing="space-y-5">
       <PlatformSecurityHeader
-        onOpenCreateStaff={page.staffFlow.openCreate}
+        onOpenCreateStaff={() => {
+          page.setActiveTab(SECURITY_TAB_KEYS.STAFF);
+          page.staffFlow.openCreate();
+        }}
         onGoToRules={() => page.setActiveTab(SECURITY_TAB_KEYS.RULES)}
         onOpen2fa={() => setIs2faModalOpen(true)}
       />
@@ -57,6 +61,16 @@ export default function PlatformSecurityPage() {
       </div>
 
       {/* Modallar */}
+      <PlatformSecurityStaffDrawer
+        form={page.staffFlow.form}
+        onClose={page.staffFlow.closeForm}
+        onUpdateField={page.staffFlow.updateField}
+        onSubmit={page.staffFlow.handleSubmit}
+        isSaving={page.staffFlow.isSaving}
+        tempPassword={page.staffFlow.currentTempPassword}
+        onCycleTempPassword={page.staffFlow.cycleTempPassword}
+      />
+
       <PlatformSecurityCloseSessionModal
         isOpen={Boolean(page.sessionsFlow.pendingCloseSession || page.sessionsFlow.isCloseAllPending)}
         session={page.sessionsFlow.pendingCloseSession}

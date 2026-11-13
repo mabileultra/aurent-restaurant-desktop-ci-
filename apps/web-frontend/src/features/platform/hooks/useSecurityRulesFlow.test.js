@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useSecurityRulesFlow } from './useSecurityRulesFlow';
+import { platformSecurityApi } from '../../../api';
 
 globalThis.React = React;
 
@@ -18,8 +19,18 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
   };
 });
 
+vi.mock('../../../api', () => ({
+  platformSecurityApi: {
+    reauth: vi.fn().mockResolvedValue({ data: { sudoToken: 'test' } }),
+    getLoginRules: vi.fn(),
+    getCashierServerPassword: vi.fn(),
+    updateCashierServerPassword: vi.fn(),
+    saveLoginRules: vi.fn(),
+  },
+}));
+
 describe('useSecurityRulesFlow', () => {
-  it('manages security rules form, dirty count, and cashier password state', () => {
+  it('manages security rules form, dirty count, and cashier password state', async () => {
     let state;
     function TestComponent() {
       state = useSecurityRulesFlow();
@@ -36,6 +47,11 @@ describe('useSecurityRulesFlow', () => {
     state.addIp();
     state.resetRules();
     state.requestSaveRules();
-    state.confirmSudoAndSave();
+    await state.confirmSudoAndSave({ password: 'x', totpCode: '123456' });
+
+    expect(platformSecurityApi.reauth).toHaveBeenCalledWith({
+      password: 'x',
+      totpCode: '123456',
+    });
   });
 });

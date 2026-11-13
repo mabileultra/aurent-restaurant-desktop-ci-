@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { isLeavingToMainLogin } from '../../utils/leaveToMainLogin';
 import { PHARM_POS_PATH } from './pharmacyPaths';
 
 export default function PharmacyAuthGuard({ children, requireOffice = false }) {
@@ -17,6 +18,7 @@ export default function PharmacyAuthGuard({ children, requireOffice = false }) {
   }
 
   if (!token) {
+    if (isLeavingToMainLogin()) return null;
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 

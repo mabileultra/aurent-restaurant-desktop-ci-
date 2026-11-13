@@ -1,4 +1,20 @@
 import { formatPercent } from './viloyatDetailUtils';
+export { mapBackendProductList, mapBackendDailyBars } from './viloyatBackendMappers';
+
+export function resolveCompanyTypeCode(rawType) {
+  if (!rawType) return 'O';
+  const code = String(rawType).trim().toUpperCase();
+  if (code === 'F' || code === 'G' || code === 'UNIVERSAL' || code === 'RETAIL' || code === 'GROCERY' || code === 'FOOD') {
+    return 'F';
+  }
+  if (code === 'R' || code === 'RESTAURANT' || code === 'CAFE') {
+    return 'R';
+  }
+  if (code === 'P' || code === 'PHARMACY' || code === 'APTEKA') {
+    return 'P';
+  }
+  return 'O';
+}
 
 /** Map backend businessType (GROCERY/RESTAURANT/…) to viloyat tab codes F/R/P/O. */
 export function mapBusinessTypeTabCode(rawType) {
@@ -6,7 +22,7 @@ export function mapBusinessTypeTabCode(rawType) {
   const key = String(rawType).trim().toUpperCase();
   if (key === 'F' || key === 'G' || key === 'GROCERY' || key === 'FOOD' || key === 'RETAIL') return 'F';
   if (key === 'R' || key === 'RESTAURANT' || key === 'CAFE' || key === 'CANTEEN') return 'R';
-  if (key === 'P' || key === 'PHARMACY') return 'P';
+  if (key === 'P' || key === 'PHARMACY' || key === 'APTEKA') return 'P';
   if (key === 'O' || key === 'UNIVERSAL' || key === 'OTHER') return 'O';
   return 'O';
 }
@@ -25,7 +41,7 @@ export function normalizeBackendCompany(raw) {
   const rawDist = String(raw.districtCode || '');
   const districtCode = rawDist.length > 2 ? rawDist.slice(-2) : rawDist.padStart(2, '0');
   const type = mapBusinessTypeTabCode(
-    raw.businessType || raw.business_type || raw.activitySubtype || raw.activity_subtype
+    raw.businessType || raw.business_type || raw.activitySubtype || raw.activity_subtype || raw.businessTypeCode
   );
   const isConnected = raw.connected ? 1 : 0;
   const storeCount = raw.storeCount || 1;
@@ -50,10 +66,10 @@ export function computeDistrictTurnover({ companies = [], activeType = 'A', isDi
 
   const inType = companies.filter((c) => activeType === 'A' || c[4] === activeType);
   const total = inType.reduce((sum, c) => sum + Number(c[7] || 0), 0);
-  const fiscal = inType.reduce((sum, c) => sum + Number(c[9] || (c[7] ? c[7] * 0.95 : 0)), 0);
+  const fiscal = inType.reduce((sum, c) => sum + Number(c[9] || 0), 0);
   const nonFiscal = Math.max(0, total - fiscal);
   const fShare = total > 0 ? (fiscal / total) * 100 : null;
-  const d7 = total > 0 ? Math.round(total * 0.25) : 0;
+  const d7 = null;
 
   return {
     all: total,
@@ -68,7 +84,9 @@ export function computeDistrictTurnover({ companies = [], activeType = 'A', isDi
   };
 }
 
-export function computeBusinessTypeTabs({ companies = [], isDistrictView = false, baseTypes = [] }) {
+export function computeBusinessTypeTabs(arg1 = {}, arg2 = [], arg3 = 0, arg4 = 'A') {
+  const isObj = !Array.isArray(arg1) && typeof arg1 === 'object';
+  const companies = isObj ? (arg1.companies || []) : (Array.isArray(arg1) ? arg1 : []);
   const allN = companies.length;
   const allC = companies.filter((c) => c[5] === 1).length;
   const byType = (tId) => {
@@ -134,48 +152,7 @@ export function mapProductList(rawProducts = []) {
   }));
 }
 
-export function mapBackendProductList(rawProducts = []) {
-  if (!Array.isArray(rawProducts) || rawProducts.length === 0) return [];
-    const topMax = Math.max(...rawProducts.map((p) => Number(p.totalAmount ?? p.amount ?? 0)), 1);
-  return rawProducts.map((p, idx) => {
-    const qty = Number(p.quantity ?? p.qty ?? 0);
-    const amount = Number(p.totalAmount ?? p.amount ?? 0);
-    const unitPrice = p.unitPrice != null ? Number(p.unitPrice) : (qty > 0 ? amount / qty : 0);
-    return {
-      rank: p.rank || idx + 1,
-      name: p.name || p.productName || '—',
-      company: p.companyName || p.company || '—',
-      qty,
-      amount,
-      barPercent: Math.max(3, (amount / topMax) * 100),
-      isSuspiciousPrice: qty > 0 && amount / qty < 100,
-      unitPrice: Math.round(unitPrice),
-    };
-  });
-}
 
-export function mapBackendDailyBars(days = []) {
-  if (!Array.isArray(days) || days.length === 0) return [];
-  const maxDay = Math.max(...days.map((d) => Number(d.totalTurnover || 0)), 1);
-  const monthNames = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'];
-  return days.map((d) => {
-    const val = Number(d.totalTurnover || 0);
-    const date = String(d.date || '').slice(0, 10);
-    const parts = date.split('-');
-    const dayNum = Number(parts[2] || 0);
-    const monthIdx = Math.max(0, Number(parts[1] || 1) - 1);
-    const dayLabel = `${dayNum}-${monthNames[monthIdx] || ''}`;
-    const tip = val
-      ? `${dayLabel}: ${val.toLocaleString('ru-RU')} so‘m · ${Number(d.receiptsCount || 0)} chek`
-      : `${dayLabel}: savdo yo‘q`;
-    return {
-      tip,
-      heightPercent: val ? Math.max(6, (val / maxDay) * 100) : 4,
-      val,
-      date,
-    };
-  });
-}
 
 export function calculateCompaniesBreakdown(companies = [], typeNames = {}) {
   const sorted = [...companies].sort((a, b) => (Number(b[7] || 0) - Number(a[7] || 0)) || (b[5] - a[5]));

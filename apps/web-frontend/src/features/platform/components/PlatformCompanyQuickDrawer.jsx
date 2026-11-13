@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Building2, Pencil, Power, X } from 'lucide-react';
-import toast from 'react-hot-toast';
-import {
-  getBusinessTypeBadgeClass,
-  getCompanyBranchMeta,
-  getCompanyInitials,
-  getCompanyPalette,
-} from '../utils/companyAvatarUtils';
+import { Pencil, Power, X } from 'lucide-react';
+import Badge from '../../../components/aa/Badge';
+import Button from '../../../components/aa/Button';
+import PlatformCompanyQuickDrawerDetails from './PlatformCompanyQuickDrawerDetails';
+import { getCompanyInitials } from '../utils/companyAvatarUtils';
 import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
 import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
-import PlatformCompanyQuickDrawerDetails from './PlatformCompanyQuickDrawerDetails';
 
+/**
+ * PlatformCompanyQuickDrawer — Tezkor ko‘rish o‘ng paneli.
+ * Eni: 440px (mobilda 100%), fon aa-surface, shadow-modal, aa-scrim ortida.
+ */
 export default function PlatformCompanyQuickDrawer({
   open = false,
   company = null,
@@ -23,15 +23,55 @@ export default function PlatformCompanyQuickDrawer({
   regionName: propRegionName,
   districtName: propDistrictName,
 }) {
-  const [copied, setCopied] = useState(false);
+  const drawerRef = useRef(null);
+  const prevActiveElementRef = useRef(null);
 
+  // Focus trap va Esc listener
   useEffect(() => {
     if (!open) return undefined;
+
+    prevActiveElementRef.current = document.activeElement;
+
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose?.();
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose?.();
+        return;
+      }
+
+      if (e.key === 'Tab' && drawerRef.current) {
+        const focusableElements = drawerRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    const timer = setTimeout(() => {
+      const closeBtn = drawerRef.current?.querySelector('button[aria-label="Yopish"]');
+      closeBtn?.focus();
+    }, 10);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('keydown', handleKeyDown);
+      if (prevActiveElementRef.current?.focus) {
+        prevActiveElementRef.current.focus();
+      }
+    };
   }, [open, onClose]);
 
   const regionCodes = company?.regionCode ? [company.regionCode] : [];
@@ -48,114 +88,101 @@ export default function PlatformCompanyQuickDrawer({
 
   if (!open || !company) return null;
 
-  const handleCopyCode = () => {
-    if (!company.loginCode) return;
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(company.loginCode);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success(t('platform.loginCodeCopied', { defaultValue: 'Kirish kodi nusxalandi' }));
-  };
-
   const initials = getCompanyInitials(company.name);
-  const palette = getCompanyPalette(company.name, company.id);
-  const badgeClass = getBusinessTypeBadgeClass(company.businessType);
-  const branchMeta = getCompanyBranchMeta(company.businessType, t);
-
   const region = regionName ? regionName(company.regionCode) : '';
   const district = districtName ? districtName(company.districtCode) : '';
   const regionLabel = [district, region].filter(Boolean).join(', ') || company.regionCode || '—';
 
   const drawerContent = (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 bg-[var(--aa-scrim)] flex justify-end"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="quick-drawer-title"
+    >
       <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+        ref={drawerRef}
+        tabIndex={-1}
+        className="w-full sm:w-[440px] h-full bg-aa-surface shadow-modal border-l border-aa-line flex flex-col animate-slide-in-right overflow-hidden fixed top-0 right-0 bottom-0"
+      >
+        {/* Tepasi 64px: «Tezkor ko‘rish» va Yopish */}
+        <div className="h-16 px-5 border-b border-aa-line flex items-center justify-between shrink-0">
+          <h2 id="quick-drawer-title" className="text-[15px] leading-[22px] font-semibold text-aa-ink">
+            Tezkor ko‘rish
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            icon={<X size={16} aria-hidden="true" />}
+            aria-label="Yopish"
+            onClick={onClose}
+            className="h-8 w-8 !p-0"
+          />
+        </div>
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 pointer-events-auto">
-        <div className="w-screen max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 animate-slide-in-right">
-          {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 size={18} className="text-emerald-600 dark:text-emerald-400" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                {t('platform.quickView', { defaultValue: 'Tezkor ko‘rish' })}
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              aria-label={t('common.close', { defaultValue: 'Yopish' })}
+        {/* Ichi: padding 20, bloklar orasi 20 */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Kompaniya bosh qismi */}
+          <div className="flex items-start gap-3.5">
+            <div
+              className="w-12 h-12 rounded-aa-full bg-aa-surface-sunken border border-aa-line text-aa-ink-muted text-sm font-semibold flex items-center justify-center shrink-0 select-none"
+              aria-hidden="true"
             >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 border shadow-xs ${palette}`}
-                aria-hidden
-              >
-                {initials}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base truncate">
-                    {company.name}
-                  </h3>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${company.active ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
-                    {company.active ? t('common.active') : t('common.inactive')}
-                  </span>
-                </div>
-                {company.legalName ? (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{company.legalName}</p>
-                ) : null}
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-mono mt-1">ID: #{company.id}</p>
-              </div>
+              {initials}
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => { onClose?.(); onEdit?.(company); }}
-                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition"
-              >
-                <Pencil size={14} />
-                <span>{t('common.edit')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onToggleActive?.(company)}
-                className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition ${
-                  company.active
-                    ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                }`}
-              >
-                <Power size={14} />
-                <span>{company.active ? t('platform.deactivate', { defaultValue: 'Faolsizlantirish' }) : t('platform.activate', { defaultValue: 'Faollashtirish' })}</span>
-              </button>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg leading-[26px] font-semibold text-aa-ink truncate">
+                {company.name}
+              </h3>
+              <p className="text-[13px] text-aa-ink-muted truncate mt-0.5">
+                {company.legalName || 'Yuridik nomi ko‘rsatilmagan'}
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <span
+                  className="font-mono font-normal text-[13px] text-aa-ink-muted"
+                  style={{ fontFamily: 'var(--aa-font-mono)', fontWeight: 400 }}
+                >
+                  ID #{company.id}
+                </span>
+                <Badge tone={company.active ? 'success' : 'neutral'} dot>
+                  {company.active ? 'Faol' : 'Nofaol'}
+                </Badge>
+              </div>
             </div>
-
-            <PlatformCompanyQuickDrawerDetails
-              company={company}
-              copied={copied}
-              onCopyCode={handleCopyCode}
-              regionLabel={regionLabel}
-              branchMeta={branchMeta}
-              badgeClass={badgeClass}
-              assignedTypes={assignedData?.businessTypes || []}
-              t={t}
-            />
           </div>
+
+          {/* Teng enli ikkita secondary tugma: Tahrirlash va Faolsizlantirish/Faollashtirish */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <Button
+              variant="secondary"
+              icon={<Pencil size={16} aria-hidden="true" />}
+              onClick={() => onEdit?.(company)}
+              className="w-full"
+            >
+              Tahrirlash
+            </Button>
+            <Button
+              variant="secondary"
+              icon={<Power size={16} aria-hidden="true" />}
+              onClick={() => onToggleActive?.(company)}
+              className="w-full"
+            >
+              {company.active ? 'Faolsizlantirish' : 'Faollashtirish'}
+            </Button>
+          </div>
+
+          {/* Ma’lumotlar ro‘yxati (dl) va havola-qator */}
+          <PlatformCompanyQuickDrawerDetails
+            company={company}
+            regionLabel={regionLabel}
+            assignedTypes={assignedData?.businessTypes || []}
+            t={t}
+          />
         </div>
       </div>
     </div>

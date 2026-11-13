@@ -1,6 +1,5 @@
 import {
   MAKON_MOBILE_INFO,
-  MAKON_MOBILE_CARDS,
   MAKON_MOBILE_PRODUCTS,
   MAKON_MOBILE_RECEIPTS,
 } from '../data/makonMobileMockData';
@@ -9,9 +8,8 @@ import {
   SAMARQAND_PRODUCTS,
   BUSINESS_TYPE_NAMES,
 } from '../data/samarqandMockData';
-import { formatNumber, formatPercent, calculateDonutArc } from './korxonaDetailUtils';
 import { mapBusinessTypeTabCode } from './viloyatDetailStats';
-import { resolveRollingCardWindows } from './korxonaCardWindows';
+export { resolveCompanyCards, resolveCompanyDonuts } from './korxonaMetricsResolver';
 
 const BUSINESS_TYPE_LABELS = {
   F: 'Oziq-ovqat',
@@ -40,7 +38,7 @@ function resolveBusinessTypeLabel(rawType, mockCode) {
 
 function createMonogram(name = '') {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'K';
+  if (!parts.length) return 'KM';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
@@ -59,22 +57,22 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
     realCompany?.businessType || apiDetail?.businessType || apiDetail?.businessTypeName,
     mock?.[4]
   ) || (numId === 103 ? 'Oziq-ovqat' : 'Boshqa');
-  const fiscalReceiptCount = Number(
-    apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0
-  );
-  const nonFiscalReceiptCount = Number(
-    apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0
-  );
-  const totalChecks30d = Number(
-    apiDetail?.totalReceiptsCount ?? (fiscalReceiptCount + nonFiscalReceiptCount)
-  );
+
+  const fiscalReceiptCount = Number(apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0);
+  const nonFiscalReceiptCount = Number(apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0);
+  const totalChecks30d = apiDetail?.totalReceiptsCount != null
+    ? Number(apiDetail.totalReceiptsCount)
+    : (apiDetail?.totalChecks30d != null
+      ? Number(apiDetail.totalChecks30d)
+      : (fiscalReceiptCount + nonFiscalReceiptCount > 0 ? fiscalReceiptCount + nonFiscalReceiptCount : null));
+
   const avgCheck = apiDetail?.avgReceiptAmount != null
     ? Number(apiDetail.avgReceiptAmount)
-    : (apiDetail?.averageCheck != null
-      ? Number(apiDetail.averageCheck)
-      : (totalChecks30d > 0 && apiDetail?.totalTurnover != null
-        ? Number(apiDetail.totalTurnover) / totalChecks30d
-        : null));
+    : (apiDetail?.avgCheck != null
+      ? Number(apiDetail.avgCheck)
+      : (apiDetail?.averageCheck != null
+        ? Number(apiDetail.averageCheck)
+        : (totalChecks30d && apiDetail?.totalTurnover != null ? Number(apiDetail.totalTurnover) / totalChecks30d : null)));
 
   return {
     id: numId,
@@ -93,99 +91,9 @@ export function resolveCompanyInfo({ numId, apiDetail, realCompany, regionCode =
     phone: realCompany?.phone || apiDetail?.phone || (numId === 103 ? '+998 88 934 44 44' : '—'),
     address: realCompany?.address || apiDetail?.address || (numId === 103 ? 'Samarqand sh., Makon Mall' : `${districtName}, O‘zbekiston`),
     fiscalModule: '—',
-    avgCheck,
     totalChecks30d: totalChecks30d || null,
+    avgCheck,
   };
-}
-
-export function resolveCompanyCards({ numId, turnover, delta, apiDetail }) {
-  if (numId === 103 && !apiDetail) {
-    return MAKON_MOBILE_CARDS;
-  }
-
-  const t = Number(turnover || apiDetail?.totalTurnover || 0);
-  const win = resolveRollingCardWindows(apiDetail?.days);
-  const weekVal = apiDetail?.days ? win.weekVal : Math.round(t * 0.15);
-  const weekDelta = apiDetail?.days ? win.weekDelta : delta;
-  const weekSub = win.weekFrom && win.weekTo
-    ? `${win.weekFrom} – ${win.weekTo}`
-    : 'Oxirgi 7 kun';
-  const dayVal = apiDetail?.days ? win.dayVal : 0;
-  const dayDate = win.dayDate;
-
-  return [
-    { label: 'Umumiy aylanma', sub: 'Butun davr', v: t, badge: 'Birinchi savdo: 20-oktabr', badgeType: 'mute' },
-    { label: '1 oylik aylanma', sub: 'Oxirgi 30 kun · 10-okt – 8-noy', v: t, badge: '30 kunlik', badgeType: 'info' },
-    {
-      label: 'Haftalik',
-      sub: weekSub,
-      v: weekVal,
-      badge: weekDelta != null ? `${weekDelta >= 0 ? '▲' : '▼'} ${Math.abs(weekDelta)}%` : '7 kunlik',
-      badgeType: weekDelta != null && weekDelta < 0 ? 'down' : 'up',
-    },
-    {
-      label: 'Kunlik',
-      sub: dayDate || 'Bugun',
-      v: dayVal,
-      badge: dayDate || 'Savdo yo‘q',
-      badgeType: 'mute',
-    },
-  ];
-}
-
-export function resolveCompanyDonuts({ numId, turnover, fiscalTurnover, nonFiscalTurnover, apiDetail }) {
-  if (numId === 103 && !apiDetail) {
-    return [
-      {
-        label: 'Fiskal bilan urilgan',
-        color: '#0E7C4F',
-        pct: formatPercent(99.2),
-        amount: `${formatNumber(508339000)} so‘m`,
-        hint: '41 ta chek · QR-kod bilan',
-        dash: calculateDonutArc(99.2),
-        aria: 'Fiskal bilan urilgan: 99,2%, 508 339 000 so‘m',
-      },
-      {
-        label: 'Fiskalsiz',
-        color: '#EF4444',
-        pct: formatPercent(0.8),
-        amount: `${formatNumber(4100000)} so‘m`,
-        hint: '2 ta chek · soliqqa yuborilmagan',
-        dash: calculateDonutArc(0.8),
-        aria: 'Fiskalsiz: 0,8%, 4 100 000 so‘m',
-      },
-    ];
-  }
-
-  const t = Number(turnover || apiDetail?.totalTurnover || 0);
-  const f = fiscalTurnover != null ? Number(fiscalTurnover) : Number(apiDetail?.fiscalTurnover || 0);
-  const nf = nonFiscalTurnover != null ? Number(nonFiscalTurnover) : Number(apiDetail?.nonFiscalTurnover || Math.max(0, t - f));
-  const total = f + nf > 0 ? f + nf : t;
-  const fPct = total > 0 ? (f / total) * 100 : 0;
-  const nfPct = Math.max(0, 100 - fPct);
-  const fiscalReceipts = Number(apiDetail?.fiscalReceiptsCount ?? apiDetail?.fiscalReceiptCount ?? 0);
-  const nonFiscalReceipts = Number(apiDetail?.nonFiscalReceiptsCount ?? apiDetail?.nonFiscalReceiptCount ?? 0);
-
-  return [
-    {
-      label: 'Fiskal bilan urilgan',
-      color: '#0E7C4F',
-      pct: formatPercent(fPct),
-      amount: `${formatNumber(f)} so‘m`,
-      hint: fiscalReceipts > 0 ? `${fiscalReceipts} ta chek · QR-kod bilan` : 'QR-kod bilan',
-      dash: calculateDonutArc(fPct),
-      aria: `Fiskal bilan urilgan: ${formatPercent(fPct)}, ${formatNumber(f)} so‘m`,
-    },
-    {
-      label: 'Fiskalsiz',
-      color: '#EF4444',
-      pct: formatPercent(nfPct),
-      amount: `${formatNumber(nf)} so‘m`,
-      hint: nonFiscalReceipts > 0 ? `${nonFiscalReceipts} ta chek · soliqqa yuborilmagan` : 'Soliqqa yuborilmagan',
-      dash: calculateDonutArc(nfPct),
-      aria: `Fiskalsiz: ${formatPercent(nfPct)}, ${formatNumber(nf)} so‘m`,
-    },
-  ];
 }
 
 export function resolveCompanyProducts({ numId, companyName, apiDetail }) {
@@ -199,6 +107,11 @@ export function resolveCompanyProducts({ numId, companyName, apiDetail }) {
 
   if (numId === 103 && !apiDetail) {
     return MAKON_MOBILE_PRODUCTS;
+  }
+
+  if (numId === 29 || companyName?.includes('Aminjon')) {
+    const aminjon = SAMARQAND_PRODUCTS['Aminjon Samarqand XK'];
+    if (aminjon) return aminjon;
   }
 
   const all = [...(SAMARQAND_PRODUCTS.A?.top || []), ...(SAMARQAND_PRODUCTS.O?.top || [])];

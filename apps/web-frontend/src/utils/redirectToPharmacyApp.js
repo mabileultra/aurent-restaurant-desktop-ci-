@@ -1,8 +1,6 @@
 import { HANDOFF_AUDIENCE, buildHandoffAcceptUrl } from '@aurent/shared-auth';
 import { authApi } from '../api/auth.api';
 import { getPharmacyAppUrl, isPharmacyAppSplitEnabled } from '../config/pharmacyAppUrl';
-import { logoutAndResetSession } from './authSession';
-
 let inFlightRedirectPromise = null;
 
 /**
@@ -24,7 +22,11 @@ export async function redirectToPharmacyApp(nextPath = '/dashboard') {
       const href = buildHandoffAcceptUrl(base, { code, next: nextPath });
       if (!href) return false;
 
-      logoutAndResetSession();
+      try {
+        localStorage.removeItem('pos-auth');
+      } catch {
+        /* page is leaving */
+      }
       window.location.replace(href);
       return true;
     } catch {

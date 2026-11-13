@@ -3,22 +3,14 @@ import { UserPlus, Edit2, Users } from 'lucide-react';
 import { BaseButton } from '../../../../components/ui';
 import { STAFF_ROLES_CONFIG } from '../../utils/securityConstants';
 import PlatformSecurityStaffMatrixCard from './PlatformSecurityStaffMatrixCard';
-import PlatformSecurityStaffDrawer from './PlatformSecurityStaffDrawer';
 
 export default function PlatformSecurityStaffTab({ flow }) {
   const {
     staffList,
     isLoading,
     permissionsMatrix,
-    form,
     openCreate,
     openEdit,
-    closeForm,
-    updateField,
-    handleSubmit,
-    isSaving,
-    currentTempPassword,
-    cycleTempPassword,
   } = flow;
 
   return (
@@ -150,16 +142,6 @@ export default function PlatformSecurityStaffTab({ flow }) {
       </div>
 
       <PlatformSecurityStaffMatrixCard permissionsMatrix={permissionsMatrix} />
-
-      <PlatformSecurityStaffDrawer
-        form={form}
-        onClose={closeForm}
-        onUpdateField={updateField}
-        onSubmit={handleSubmit}
-        isSaving={isSaving}
-        tempPassword={currentTempPassword}
-        onCycleTempPassword={cycleTempPassword}
-      />
     </div>
   );
 }

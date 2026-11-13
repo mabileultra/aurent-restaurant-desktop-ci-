@@ -14,7 +14,7 @@ export default function UserFormDiscardModal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-slate-950/70 animate-in fade-in duration-150"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="discard-confirm-title"

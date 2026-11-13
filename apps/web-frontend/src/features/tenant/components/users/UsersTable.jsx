@@ -1,7 +1,7 @@
 import React from 'react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
-import { Spinner } from '../../../../components/ui';
+import TableLoadingOverlay from '../../../../components/shared/TableLoadingOverlay';
 import UsersTableHeader from './UsersTableHeader';
 import UsersTableRow from './UsersTableRow';
 import UsersTableMobileCard from './UsersTableMobileCard';
@@ -48,7 +48,7 @@ export default function UsersTable(props) {
             <div className="h-full bg-purple-600 animate-pulse w-full motion-reduce:animate-none" />
           </div>
         )}
-        {showOverlay && <Spinner overlay size="sm" text={t('common.loading')} />}
+        {showOverlay && <TableLoadingOverlay text={t('common.loading')} />}
 
         {/* Desktop Table View */}
         <div className="hidden sm:block overflow-x-auto">

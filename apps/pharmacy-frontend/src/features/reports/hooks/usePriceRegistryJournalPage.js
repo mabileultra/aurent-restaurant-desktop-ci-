@@ -9,7 +9,7 @@ import { useReportPagination } from './useReportPagination';
 export function usePriceRegistryJournalPage(t) {
   const qc = useQueryClient();
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_DEFAULT);
-  const [status, setStatus] = useState('PENDING');
+  const [status, setStatus] = useState('');
 
   const params = useMemo(
     () => ({

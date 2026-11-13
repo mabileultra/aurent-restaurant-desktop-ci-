@@ -57,7 +57,7 @@ export default function PlatformLeadDeleteConfirmModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="delete-lead-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
     >
       <div
         ref={modalBoxRef}

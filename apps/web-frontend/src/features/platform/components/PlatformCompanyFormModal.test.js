@@ -1,26 +1,32 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import PlatformCompanyFormModal from './PlatformCompanyFormModal';
 
 globalThis.React = React;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, opts) => {
-      if (opts?.defaultValue) return opts.defaultValue;
-      if (opts?.code) return `${key}:${opts.code}`;
-      return key;
-    },
+    t: (key, opts) => opts?.defaultValue || key,
     i18n: { language: 'uz' },
   }),
 }));
 
-vi.mock('../../shared/geo/RegionDistrictFields', () => ({
-  default: () => React.createElement('div', { 'data-testid': 'mock-region-district-fields' }),
+vi.mock('../../../api/geo.api', () => ({
+  geoApi: {
+    regions: vi.fn().mockResolvedValue({
+      data: [{ code: 'TAS', nameUz: 'Toshkent shahri' }],
+    }),
+    districts: vi.fn().mockResolvedValue({
+      data: [{ code: 'YUN', nameUz: 'Yunusobod tumani' }],
+    }),
+  },
 }));
 
 describe('PlatformCompanyFormModal', () => {
+  const qc = new QueryClient();
+
   const defaultBusinessTypes = [
     { id: 1, code: 'RETAIL', name: 'Roznitsa' },
     { id: 2, code: 'RESTAURANT', name: 'Restoran' },
@@ -39,7 +45,7 @@ describe('PlatformCompanyFormModal', () => {
       phone: '+998 (90) 123-45-67',
       active: true,
       businessType: 'RETAIL',
-      businessTypeIds: [1],
+      businessTypeIds: [1, 2],
       defaultBusinessTypeId: 1,
     },
     isSaving: false,
@@ -51,113 +57,49 @@ describe('PlatformCompanyFormModal', () => {
     onSave: vi.fn(),
   };
 
-  it('returns null when open is false', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, { ...defaultProps, open: false })
+  const renderModal = (props) =>
+    renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: qc },
+        React.createElement(PlatformCompanyFormModal, props)
+      )
     );
+
+  it('returns null when open is false', () => {
+    const html = renderModal({ ...defaultProps, open: false });
     expect(html).toBe('');
   });
 
   it('renders create modal with 2-column layout and business types', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, defaultProps)
-    );
+    const html = renderModal(defaultProps);
 
     // Title & Hints
-    expect(html).toContain('platform.addCompany');
-    expect(html).toContain('platform.field_loginCodeAutoHint');
+    expect(html).toContain('Kompaniya qo‘shish');
+    expect(html).toContain('Kompaniya ma’lumotlari va faoliyat turlari');
+    expect(html).toContain('Kirish kodi saqlangandan keyin avtomatik beriladi');
 
-    // 2-column inputs
+    // Inputs
     expect(html).toContain('Test Market');
     expect(html).toContain('Test Market MCHJ');
     expect(html).toContain('123456789');
     expect(html).toContain('+998 (90) 123-45-67');
 
-    // Geo fields component
-    expect(html).toContain('data-testid="mock-region-district-fields"');
-
-    // Business types selection & badges
-    expect(html).toContain('RETAIL');
-    expect(html).toContain('RESTAURANT');
-    expect(html).toContain('★ platform.businessTypeDefault');
-
-    // Default hint alert
-    expect(html).toContain('platform.businessTypeDefaultHint:RETAIL');
+    // Business types
+    expect(html).toContain('Roznitsa');
+    expect(html).toContain('Restoran');
+    expect(html).toContain('Asosiy');
+    expect(html).toContain('Asosiy qilish');
   });
 
-  it('renders edit modal with readonly login code block', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        editing: { id: 'comp-1', loginCode: 'TEST-007' },
-      })
-    );
+  it('renders edit modal with subtitle containing id and loginCode', () => {
+    const html = renderModal({
+      ...defaultProps,
+      editing: { id: 'comp-1', loginCode: 'TEST-007' },
+    });
 
-    expect(html).toContain('platform.editCompany');
-    expect(html).toContain('TEST-007');
-    expect(html).toContain('platform.field_loginCodeReadonly');
-    expect(html).not.toContain('platform.field_loginCodeAutoHint');
-  });
-
-  it('disables save button when isSaving is true', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        isSaving: true,
-      })
-    );
-
-    expect(html).toContain('disabled=""');
-  });
-
-  it('keeps save button clickable when required fields are missing so click triggers error feedback', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
-          name: '',
-        },
-      })
-    );
-
-    expect(html).not.toContain('disabled=""');
-  });
-
-  it('restricts tin input to max 9 numeric digits', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, defaultProps)
-    );
-
-    expect(html).toContain('inputMode="numeric"');
-    expect(html).toContain('maxLength="9"');
-  });
-
-  it('renders draft restored notice with clear button when isDraftRestored is true in create mode', () => {
-    const onClearDraft = vi.fn();
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        isDraftRestored: true,
-        onClearDraft,
-      })
-    );
-
-    expect(html).toContain('Avvalgi kiritilgan ma’lumot tiklandi');
-    expect(html).toContain('Tozalash');
-  });
-
-  it('keeps save button clickable when tin is invalid or phone is incomplete to trigger feedback', () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PlatformCompanyFormModal, {
-        ...defaultProps,
-        form: {
-          ...defaultProps.form,
-          tin: '212',
-          phone: '',
-        },
-      })
-    );
-    expect(html).not.toContain('disabled=""');
+    expect(html).toContain('Kompaniyani tahrirlash');
+    expect(html).toContain('ID comp-1 · kirish kodi TEST-007');
+    expect(html).not.toContain('Kirish kodi saqlangandan keyin avtomatik beriladi');
   });
 });

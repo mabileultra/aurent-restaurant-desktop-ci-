@@ -23,19 +23,21 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
     expect(BUSINESS_TYPE_NAMES_UZ.OTHER).toBe('Boshqa');
   });
 
-  it('matches restaurant admin allowlist scope/default sizes for RESTAURANT', () => {
+  it('matches restaurant handbook allowlist scope/default sizes for RESTAURANT', () => {
     const adminScope = getScopeForRole('ADMIN', 'RESTAURANT');
     const adminDefaults = getDefaultModulesForRole('ADMIN', 'RESTAURANT');
-    expect(adminScope.size).toBe(22);
-    expect(adminDefaults.size).toBe(18);
+    expect(adminScope.size).toBe(17);
+    expect(adminDefaults.size).toBe(13);
     expect(adminScope.has('financeDashboard')).toBe(false);
     expect(adminScope.has('cashierSales')).toBe(false);
+    expect(adminScope.has('dashboard')).toBe(false);
+    expect(adminScope.has('stores')).toBe(false);
     expect(adminScope.has('restaurantFloor')).toBe(true);
 
     const managerScope = getScopeForRole('MANAGER', 'RESTAURANT');
     const managerDefaults = getDefaultModulesForRole('MANAGER', 'RESTAURANT');
-    expect(managerScope.size).toBe(22);
-    expect(managerDefaults.size).toBe(15);
+    expect(managerScope.size).toBe(17);
+    expect(managerDefaults.size).toBe(13);
 
     const cashierScope = getScopeForRole('CASHIER', 'RESTAURANT');
     const cashierDefaults = getDefaultModulesForRole('CASHIER', 'RESTAURANT');
@@ -46,6 +48,12 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
     const waiterDefaults = getDefaultModulesForRole('WAITER', 'RESTAURANT');
     expect(waiterScope.size).toBe(10);
     expect(waiterDefaults.size).toBe(4);
+
+    const cookScope = getScopeForRole('COOK', 'RESTAURANT');
+    const cookDefaults = getDefaultModulesForRole('COOK', 'RESTAURANT');
+    expect(cookScope.size).toBe(1);
+    expect(cookScope.has('restaurantKitchen')).toBe(true);
+    expect(cookDefaults.size).toBe(1);
   });
 
   it('excludes super-admin platform modules from tenant role defaults', () => {
@@ -62,17 +70,19 @@ describe('roleDefaultModules & accessRightsCatalogUtils', () => {
     expect(resolveModuleName('financeDashboard')).toBe('Moliya — boshqaruv paneli');
   });
 
-  it('filters out platform modules from catalog groups for restaurant', () => {
+  it('filters out platform and non-handbook modules from catalog groups for restaurant', () => {
     const mockCatalog = [
       { id: 'dashboard', group: 'main' },
       { id: 'platformCompanies', group: 'platform' },
       { id: 'restaurantFloor', group: 'restaurant' },
+      { id: 'products', group: 'goods' },
     ];
     const groups = buildCatalogGroups(mockCatalog, 'RESTAURANT');
     const allModuleIds = groups.flatMap((g) => g.modules.map((m) => m.id));
 
-    expect(allModuleIds).toContain('dashboard');
+    expect(allModuleIds).not.toContain('dashboard');
     expect(allModuleIds).toContain('restaurantFloor');
+    expect(allModuleIds).toContain('products');
     expect(allModuleIds).not.toContain('platformCompanies');
   });
 

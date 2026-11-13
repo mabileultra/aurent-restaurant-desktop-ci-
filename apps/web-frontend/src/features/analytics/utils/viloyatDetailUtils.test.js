@@ -6,6 +6,7 @@ import {
   calculateDeltaBadge,
   calculateDistrictsBreakdown,
   filterAndPaginateCompanies,
+  formatCompanyRows,
 } from './viloyatDetailUtils';
 
 describe('viloyatDetailUtils', () => {
@@ -87,5 +88,49 @@ describe('viloyatDetailUtils', () => {
     const qRes = filterAndPaginateCompanies(mockCompanies, { query: '309121333' });
     expect(qRes.total).toBe(1);
     expect(qRes.rows[0][1]).toBe('Makon Mobile');
+
+    // Filter by search alias
+    const sRes = filterAndPaginateCompanies(mockCompanies, { search: 'Farina' });
+    expect(sRes.total).toBe(1);
+    expect(sRes.rows[0][1]).toBe('Farina Invest');
+  });
+
+  it('formats company rows with correct labels, indices, delta and status', () => {
+    const mockCompanies = [
+      [1, 'Farina Invest', '303190578', '01', 'G', 1, 1, 2040566499, -84.6],
+      [2, 'Makon Mobile', '309121333', '01', 'O', 0, 1, 0, null],
+    ];
+    const paginated = filterAndPaginateCompanies(mockCompanies, { page: 0, pageSize: 10 });
+    const districtNames = { '01': 'Samarqand shahri' };
+    const typeNames = { G: 'Oziq-ovqat', O: 'Boshqalar' };
+
+    const formatted = formatCompanyRows(paginated, districtNames, typeNames);
+    expect(formatted).toHaveLength(2);
+
+    expect(formatted[0]).toEqual({
+      rowNumber: 1,
+      id: 1,
+      name: 'Farina Invest',
+      tin: '303190578',
+      district: 'Samarqand shahri',
+      type: 'Oziq-ovqat',
+      isConnected: true,
+      turnover30d: 2040566499,
+      deltaText: '▼ 84,6%',
+      isDeltaUp: false,
+    });
+
+    expect(formatted[1]).toEqual({
+      rowNumber: 2,
+      id: 2,
+      name: 'Makon Mobile',
+      tin: '309121333',
+      district: 'Samarqand shahri',
+      type: 'Boshqalar',
+      isConnected: false,
+      turnover30d: 0,
+      deltaText: '—',
+      isDeltaUp: null,
+    });
   });
 });
