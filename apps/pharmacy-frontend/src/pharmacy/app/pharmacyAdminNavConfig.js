@@ -101,6 +101,7 @@ export const PHARM_REPORT_STOCK_CHILDREN = [
   { to: '/reports/stock/inventories', key: 'reportsStockInventories', icon: ClipboardList, moduleId: 'reportsStockInventories' },
   { to: '/reports/stock/transfers', key: 'reportsStockTransfers', icon: TrendingDown, moduleId: 'reportsStockTransfers' },
   { to: '/reports/stock/price-registry', key: 'reportsPriceRegistry', icon: Tags, moduleId: 'reportsPriceRegistry' },
+  { to: '/reports/stock/drug-registry', key: 'reportsDrugRegistry', icon: BookOpen, moduleId: 'reportsDrugRegistry' },
 ];
 
 export const PHARM_FINANCE_CHILDREN = [

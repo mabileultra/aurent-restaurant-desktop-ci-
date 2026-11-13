@@ -2,6 +2,7 @@ package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductStorePriceRequest;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryCardFill;
 import com.pos.pharmacy.domain.ProductType;
 import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
@@ -21,9 +22,14 @@ import java.util.Map;
 public class PharmacyImportProductFactory {
 
     private final PharmacyImportCatalogMatcher catalogMatcher;
+    private final DrugRegistryCardFill drugRegistry;
 
-    public PharmacyImportProductFactory(PharmacyImportCatalogMatcher catalogMatcher) {
+    public PharmacyImportProductFactory(
+        PharmacyImportCatalogMatcher catalogMatcher,
+        DrugRegistryCardFill drugRegistry
+    ) {
         this.catalogMatcher = catalogMatcher;
+        this.drugRegistry = drugRegistry;
     }
 
     public String sku(String invoiceId, PharmacyImportConfirmItem item) {
@@ -61,6 +67,7 @@ public class PharmacyImportProductFactory {
         if (Boolean.TRUE.equals(item.prescriptionRequired())) {
             attrs.put(PharmacyReceiptSupport.ATTR_PRESCRIPTION_REQUIRED, "true");
         }
+        drugRegistry.putMissing(attrs, name);
         return new CreateProductRequest(
             sku(invoiceId, item),
             name,

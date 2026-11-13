@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryCardFill;
 import com.pos.pharmacy.importing.spreadsheet.parser.ExcelBarcodeText;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchItem;
@@ -26,6 +27,7 @@ public class PharmacyImportRowMapper {
 
     private final PharmacyImportTasnifEnricher tasnifEnricher;
     private final PharmacyImportCatalogMatcher catalogMatcher;
+    private final DrugRegistryCardFill drugRegistry;
 
     public PharmacyImportMatchItem map(
         int rowIndex,
@@ -105,6 +107,12 @@ public class PharmacyImportRowMapper {
         );
         boolean invoiceMarked = PharmacyImportInvoiceMarkLook.of(row);
         PharmacyImportCatalogHints hints = tasnifEnricher.apply(ikpu, invoiceMarked, prescription);
+        DrugRegistryCardFill.Official official = drugRegistry.blanks(
+            name,
+            manufacturer,
+            country,
+            hints.prescriptionRequired()
+        );
 
         UUIDFields catalog = rowDuplicate
             ? UUIDFields.empty()
@@ -113,8 +121,8 @@ public class PharmacyImportRowMapper {
         return new PharmacyImportMatchItem(
             rowIndex,
             name,
-            blankToNull(manufacturer),
-            blankToNull(country),
+            official.manufacturer(),
+            official.country(),
             catalog.status(rowDuplicate),
             catalog.message(rowDuplicate, invoiceId),
             catalog.productId(),
@@ -130,7 +138,7 @@ public class PharmacyImportRowMapper {
             units,
             markCodes,
             hints.markedProduct(),
-            hints.prescriptionRequired(),
+            official.prescription(),
             hints.packageCode(),
             hints.ikpuStatus()
         );

@@ -1,5 +1,6 @@
 package com.pos.pharmacy.warehouse.support;
 
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryCardFill;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class PharmacyImportProductFactoryTest {
     private static PharmacyImportProductFactory factory() {
         PharmacyImportCatalogMatcher matcher = mock(PharmacyImportCatalogMatcher.class);
         when(matcher.barcodeTaken(anyInt(), any())).thenReturn(false);
-        return new PharmacyImportProductFactory(matcher);
+        return new PharmacyImportProductFactory(matcher, mock(DrugRegistryCardFill.class));
     }
 
     @Test
