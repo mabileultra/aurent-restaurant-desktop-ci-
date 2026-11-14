@@ -68,7 +68,7 @@ describe('buildCashierEscposPayload QR', () => {
     expect(isOfdCheckUrl(payload.qrValue)).toBe(true);
     expect(payload.receiptFields.qrCode).toBe(true);
     expect(payload.receiptFields.footer).toBe(true);
-    expect(payload.labels.footer).toBe('fiscalReceipt.footer');
+    expect(payload.labels.footer).toBe('Xaridingiz uchun rahmat. Chekni saqlang.');
     expect(payload.sale.printFiscalQr).toBe(true);
     expect(payload.branding.fmNumber).toBe('TERM1');
     expect(payload.paperWmm).toBe(80);
@@ -133,12 +133,20 @@ describe('buildCashierEscposPayload shift label', () => {
 });
 
 describe('buildCashierEscposPayload plastic label', () => {
-  it('appends card type to plastic payment row', () => {
+  it('appends card type to plastic payment row in Uzbek', () => {
     const plain = buildCashierEscposPayload(FISCAL_SALE, t);
-    expect(plain.labels.plastic).toBe('fiscalReceipt.plastic');
+    expect(plain.labels.plastic).toBe('Plastik');
 
     const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
-    expect(corporate.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardCorporate');
+    expect(corporate.labels.plastic).toContain('Plastik');
+    expect(corporate.labels.plastic).toContain('Korporativ');
+  });
+
+  it('forces locale to uz and translates labels in Uzbek', () => {
+    const payload = buildCashierEscposPayload(FISCAL_SALE, t);
+    expect(payload.locale).toBe('uz');
+    expect(payload.labels.cash).toBe('Naqd');
+    expect(payload.labels.grandTotal).toBe('Jami');
   });
 });
 
