@@ -113,11 +113,19 @@ export function usePosPaymentFlow({
     };
   };
 
-  const submitCard = (type) => {
+  const submitCard = (type, cardDetails = null) => {
+    const details = cardDetails
+      ? {
+          cardCategory: cardDetails.cardCategory,
+          rrn: cardDetails.rrn,
+          socialCardNumber: cardDetails.socialCardNumber,
+        }
+      : {};
     onConfirm(withAdvancePayment({
       paymentMethod: 'CARD',
       receiptType,
       cardType: type,
+      ...details,
       amountTendered: effectiveToPay,
       printReceipt: printReceiptEnabled,
     }));

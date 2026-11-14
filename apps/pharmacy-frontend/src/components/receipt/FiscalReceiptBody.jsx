@@ -8,8 +8,9 @@ import {
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
+import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
 import {
   resolveFiscalReceiptMeta,
@@ -95,7 +96,11 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const method = pay.method;
   const total = Number(sale.totalAmount) || 0;
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
+  const cardDetails = extractCardReceiptDetails(sale);
+  const cardProviderText = !normalizeCardCategory(sale.cardType)
+    ? cardTypeLabel(sale.cardType, t)
+    : null;
+  const cardCategoryText = cardCategoryLabel(cardDetails.cardCategory, t);
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
@@ -153,7 +158,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
       {showMeta ? (
         <section className="receipt-section mt-2 space-y-0.5">
           {isOn('dateTime') ? (
-            <div className="receipt-row">
+            <div className="receipt-row receipt-row--datetime">
               <span>
                 <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
                 {time}
@@ -269,9 +274,18 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             <Row label={t('fiscalReceipt.paymentForm')} value={fmtMoneyCompact(paidTotal || total)} />
             <Row label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
             <Row
-              label={cardTypeText ? `${t('fiscalReceipt.plastic')} · ${cardTypeText}` : t('fiscalReceipt.plastic')}
+              label={cardProviderText ? `${t('fiscalReceipt.plastic')} · ${cardProviderText}` : t('fiscalReceipt.plastic')}
               value={fmtMoneyCompact(cardAmt)}
             />
+            {cardCategoryText ? (
+              <Row label={t('fiscalReceipt.cardType')} value={cardCategoryText} />
+            ) : null}
+            {cardDetails.socialCardNumber ? (
+              <Row label={t('fiscalReceipt.socialCardNumber')} value={cardDetails.socialCardNumber} />
+            ) : null}
+            {cardDetails.rrn ? (
+              <Row label={t('fiscalReceipt.cardRrn')} value={cardDetails.rrn} />
+            ) : null}
             {method !== 'CASH' && method !== 'MIXED' && method !== 'CARD' && method !== 'CASHLESS' && method !== 'MPESA' ? (
               <Row label={payLabel(method)} value={fmtMoneyCompact(total)} />
             ) : null}
@@ -302,7 +316,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             ) : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
-              <span className="receipt-fiscal-sign receipt-row__value">
+              <span className={fiscalSign ? 'receipt-fiscal-sign receipt-row__value' : 'receipt-row__value'}>
                 {fiscalSign || '—'}
               </span>
             </div>

@@ -133,12 +133,35 @@ describe('buildCashierEscposPayload shift label', () => {
 });
 
 describe('buildCashierEscposPayload plastic label', () => {
-  it('appends card type to plastic payment row', () => {
+  it('appends provider to plastic payment row and exports separate card category, social card, and RRN', () => {
     const plain = buildCashierEscposPayload(FISCAL_SALE, t);
     expect(plain.labels.plastic).toBe('fiscalReceipt.plastic');
 
-    const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
-    expect(corporate.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardCorporate');
+    const humo = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'HUMO' }, t);
+    expect(humo.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardHumo');
+
+    const social = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'CARD',
+        cardType: 'HUMO',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(social.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardHumo');
+    expect(social.labels.cardType).toBe('fiscalReceipt.cardType');
+    expect(social.labels.socialCardNumber).toBe('fiscalReceipt.socialCardNumber');
+    expect(social.labels.cardRrn).toBe('fiscalReceipt.cardRrn');
+    expect(social.sale.cardCategoryDisplay).toBe('pos.cardSocial');
+    expect(social.sale.socialCardNumber).toBe('9860********8031');
+    expect(social.sale.rrn).toBe('631810177451');
+
+    const legacyCorporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
+    expect(legacyCorporate.labels.plastic).toBe('fiscalReceipt.plastic');
+    expect(legacyCorporate.sale.cardCategoryDisplay).toBe('pos.cardCorporate');
   });
 });
 

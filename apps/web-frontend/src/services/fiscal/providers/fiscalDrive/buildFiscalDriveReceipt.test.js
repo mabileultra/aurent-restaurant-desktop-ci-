@@ -166,6 +166,23 @@ describe('buildFiscalDriveReceipt', () => {
     expect(receipt.Operation).toBe(FD_OPERATION.SALE);
     expect(receipt.RefundInfo).toBeUndefined();
   });
+
+  it('includes CardType, PPTID, and CardNumber for card payments', () => {
+    const receipt = buildFiscalDriveReceipt({
+      cartItems: [line({ unitPrice: 5000, quantity: 1 })],
+      payment: {
+        paymentMethod: 'CARD',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '986003******8031',
+        rrn: '631810177451',
+      },
+      total: 5000,
+      now: NOW,
+    });
+    expect(receipt.CardType).toBe(3);
+    expect(receipt.PPTID).toBe('631810177451');
+    expect(receipt.CardNumber).toBe('9860********8031');
+  });
 });
 
 describe('validateFiscalDriveReceipt', () => {

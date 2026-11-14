@@ -5,10 +5,11 @@ import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
+import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
 import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -77,6 +78,9 @@ export function buildEscposLabels(t) {
     paymentForm: t('fiscalReceipt.paymentForm'),
     cash: t('fiscalReceipt.cash'),
     plastic: t('fiscalReceipt.plastic'),
+    cardType: t('fiscalReceipt.cardType'),
+    cardRrn: t('fiscalReceipt.cardRrn'),
+    socialCardNumber: t('fiscalReceipt.socialCardNumber'),
     change: t('receipt.change'),
     fiscalSection: t('fiscalReceipt.fiscalSection'),
     virtualRegister: t('fiscalReceipt.virtualRegister'),
@@ -137,14 +141,22 @@ export function buildCashierEscposPayload(sale, t) {
 
   const printSettings = usePrintSettingsStore.getState();
   const labels = buildEscposLabels(t);
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
-  if (cardTypeText) {
-    labels.plastic = `${labels.plastic} · ${cardTypeText}`;
+  const cardDetails = extractCardReceiptDetails(sale);
+  const cardProviderText = !normalizeCardCategory(sale.cardType)
+    ? cardTypeLabel(sale.cardType, t)
+    : null;
+  if (cardProviderText) {
+    labels.plastic = `${labels.plastic} · ${cardProviderText}`;
   }
+  const cardCategoryDisplay = cardCategoryLabel(cardDetails.cardCategory, t) || null;
 
   return {
     sale: {
       ...sale,
+      cardCategory: cardDetails.cardCategory,
+      cardCategoryDisplay,
+      socialCardNumber: cardDetails.socialCardNumber,
+      rrn: cardDetails.rrn,
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,

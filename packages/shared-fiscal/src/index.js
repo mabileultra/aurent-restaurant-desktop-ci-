@@ -10,3 +10,14 @@ export {
   toFiscalRefundDateTime,
 } from './fiscalMoney.js';
 export { resolveLinePackageCode } from './resolveLinePackageCode.js';
+export {
+  normalizeCardCategory,
+  toOfdCardTypeCode,
+  normalizeRrn,
+  maskSocialCardNumber,
+  isValidSocialCardInput,
+  extractCardReceiptDetails,
+  withCardReceiptDetails,
+  buildMultikassaCardFields,
+  buildFiscalDriveCardFields,
+} from './cardDetails.js';

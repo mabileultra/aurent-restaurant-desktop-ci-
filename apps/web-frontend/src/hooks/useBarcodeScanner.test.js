@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveScanCode } from './useBarcodeScanner';
+import { isScannerBlockedByModal } from './barcodeScannerUtils';
 
 describe('resolveScanCode', () => {
   it('берёт весь код из поля, если буфер оборвался на хвосте', () => {
@@ -16,5 +17,20 @@ describe('resolveScanCode', () => {
 
   it('имя в поиске не превращает в штрихкод', () => {
     expect(resolveScanCode('ко', 'молоко')).toBe('ко');
+  });
+});
+
+describe('isScannerBlockedByModal', () => {
+  it('блокирует перехват ввода в модалках оплаты (RRN / номер карты)', () => {
+    const searchInput = { id: 'search' };
+    const dialog = { contains: (el) => el !== searchInput };
+    const rrnInput = { closest: () => dialog };
+    expect(isScannerBlockedByModal(rrnInput, searchInput, { querySelector: () => dialog })).toBe(true);
+  });
+
+  it('разрешает сканирование на основном экране без открытых модалок', () => {
+    const searchInput = { id: 'search' };
+    const target = { closest: () => null };
+    expect(isScannerBlockedByModal(target, searchInput, { querySelector: () => null })).toBe(false);
   });
 });
