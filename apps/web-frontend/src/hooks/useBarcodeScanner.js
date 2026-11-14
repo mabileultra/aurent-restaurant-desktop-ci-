@@ -9,6 +9,7 @@ import {
   isTypingTarget,
   clearInputElement,
   isRefTarget,
+  isScannerBlockedByModal,
 } from './barcodeScannerUtils';
 
 export { resolveScanCode } from './barcodeScannerUtils';
@@ -75,8 +76,12 @@ export function useBarcodeScanner({
         return;
       }
 
-      const onDedicatedBarcode =
-        barcodeInputRef?.current && target === barcodeInputRef.current;
+      const dedicatedInput = barcodeInputRef?.current || null;
+      const onDedicatedBarcode = Boolean(dedicatedInput && target === dedicatedInput);
+      if (isScannerBlockedByModal(target, dedicatedInput)) {
+        clearBuffer();
+        return;
+      }
       const onOtherTypingField =
         alwaysCapture && isTypingTarget(target) && !onDedicatedBarcode;
 

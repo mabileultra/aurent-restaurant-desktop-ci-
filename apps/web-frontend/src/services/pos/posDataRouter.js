@@ -27,6 +27,7 @@ import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/cashier/utils/buildPharmacySaleExtras';
 import { assertCartMarksNotPunched } from '../../features/marking';
+import { withCardReceiptDetails } from '@aurent/shared-fiscal';
 import { buildShiftPrintReport } from '../../features/cashier/utils/buildShiftPrintReport';
 import { assertReceiptPrinterReady } from '../cashierEscpos';
 
@@ -518,10 +519,13 @@ export async function posCreateSale({
       printFiscalQr: capabilities?.printFiscalQr !== false,
     };
     const saleClient = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
-    return await saleClient.create(
+    const res = await saleClient.create(
       salePayload,
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
+    return res && res.data
+      ? { ...res, data: withCardReceiptDetails(res.data, payment) }
+      : res;
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {
       return processOfflineCheckout({

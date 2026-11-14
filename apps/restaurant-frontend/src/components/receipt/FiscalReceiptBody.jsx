@@ -7,7 +7,8 @@ import {
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 import {
   resolveFiscalReceiptMeta,
   resolveReceiptPaymentAmounts,
@@ -74,7 +75,11 @@ export default function FiscalReceiptBody({
   const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
 
   const pay = resolveReceiptPaymentAmounts(sale);
-  const cardTypeText = cardTypeLabel(sale.cardType, tReceipt);
+  const cardDetails = extractCardReceiptDetails(sale);
+  const cardTypeText = !normalizeCardCategory(sale.cardType)
+    ? cardTypeLabel(sale.cardType, tReceipt)
+    : null;
+  const cardCategoryText = cardCategoryLabel(cardDetails.cardCategory, tReceipt);
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
@@ -157,6 +162,9 @@ export default function FiscalReceiptBody({
         cashAmt={pay.cashAmt}
         cardAmt={pay.cardAmt}
         cardTypeText={cardTypeText}
+        cardCategoryText={cardCategoryText}
+        socialCardNumber={cardDetails.socialCardNumber}
+        rrn={cardDetails.rrn}
         method={pay.method}
         change={pay.change}
       />

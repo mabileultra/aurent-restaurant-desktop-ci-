@@ -1,3 +1,10 @@
+import { CARD_CATEGORY } from '@aurent/shared-types';
+import {
+  isValidSocialCardInput,
+  maskSocialCardNumber,
+  normalizeCardCategory,
+  normalizeRrn,
+} from '@aurent/shared-fiscal';
 import { round2 } from '../../../utils/taxAmounts';
 
 function parseMoney(raw) {
@@ -6,12 +13,39 @@ function parseMoney(raw) {
   return Number.isFinite(n) ? round2(n) : 0;
 }
 
+function validateCardDetails({ cardCategory, rrn, socialCardInput }) {
+  const category = normalizeCardCategory(cardCategory) || CARD_CATEGORY.PERSONAL;
+  const normalizedRrn = normalizeRrn(rrn);
+  if (!normalizedRrn || normalizedRrn.length < 6) {
+    return { valid: false, hintKey: 'pos.cardRrnRequired', details: null };
+  }
+  let maskedSocial = null;
+  if (category === CARD_CATEGORY.SOCIAL) {
+    if (!isValidSocialCardInput(socialCardInput)) {
+      return { valid: false, hintKey: 'pos.socialCardRequired', details: null };
+    }
+    maskedSocial = maskSocialCardNumber(socialCardInput);
+  }
+  return {
+    valid: true,
+    hintKey: null,
+    details: {
+      cardCategory: category,
+      rrn: normalizedRrn,
+      socialCardNumber: maskedSocial,
+    },
+  };
+}
+
 /** Derive cash/card/change amounts for restaurant pay dialog. */
 export function deriveRestaurantPay(totalDue, {
   method,
   tendered,
   cashPart,
   cardType,
+  cardCategory = CARD_CATEGORY.PERSONAL,
+  rrn = '',
+  socialCardInput = '',
   debtPhone = '',
 }) {
   const due = round2(totalDue);
@@ -19,16 +53,26 @@ export function deriveRestaurantPay(totalDue, {
   const cashPartNum = parseMoney(cashPart);
   const needsCardType = method === 'CARD' || method === 'MIXED';
   const cardOk = !needsCardType || Boolean(cardType);
+  const cardCheck = needsCardType && cardOk
+    ? validateCardDetails({ cardCategory, rrn, socialCardInput })
+    : { valid: true, hintKey: null, details: null };
 
   if (method === 'CARD' || method === 'CASHLESS') {
+    const canSubmit = due > 0 && (method === 'CASHLESS' || (cardOk && cardCheck.valid));
+    const hintKey = method === 'CASHLESS'
+      ? null
+      : !cardOk
+        ? 'pos.cardTypeRequired'
+        : cardCheck.hintKey;
     return {
       due,
       cashAmount: 0,
       cardAmount: due,
       amountTendered: due,
       changeGiven: 0,
-      canSubmit: due > 0 && (method === 'CASHLESS' || cardOk),
-      hintKey: method === 'CASHLESS' || cardOk ? null : 'pos.cardTypeRequired',
+      cardDetails: method === 'CARD' ? cardCheck.details : null,
+      canSubmit,
+      hintKey,
       infoKey: method === 'CASHLESS' ? 'rst.order.payCashlessHint' : null,
     };
   }
@@ -60,21 +104,24 @@ export function deriveRestaurantPay(totalDue, {
   if (method === 'MIXED') {
     const cash = cashPartNum > 0 ? cashPartNum : 0;
     const card = round2(Math.max(0, due - cash));
-    const valid = cash > 0 && cash < due && round2(cash + card) === due && cardOk;
+    const valid = cash > 0 && cash < due && round2(cash + card) === due && cardOk && cardCheck.valid;
     return {
       due,
       cashAmount: cash,
       cardAmount: card,
       amountTendered: cash,
       changeGiven: 0,
+      cardDetails: cardCheck.details,
       canSubmit: valid,
       hintKey: !cardOk
         ? 'pos.cardTypeRequired'
-        : cash <= 0
-          ? 'pos.mixedCashRequired'
-          : cash >= due
-            ? 'pos.mixedCashExceeds'
-            : null,
+        : cardCheck.hintKey
+          ? cardCheck.hintKey
+          : cash <= 0
+            ? 'pos.mixedCashRequired'
+            : cash >= due
+              ? 'pos.mixedCashExceeds'
+              : null,
       infoKey: null,
     };
   }
@@ -104,6 +151,13 @@ export function buildRestaurantPayPayload(derived, method, cardType = null, debt
   };
   if ((method === 'CARD' || method === 'MIXED') && cardType) {
     payload.cardType = cardType;
+    if (derived.cardDetails) {
+      payload.cardCategory = derived.cardDetails.cardCategory;
+      payload.rrn = derived.cardDetails.rrn;
+      if (derived.cardDetails.socialCardNumber) {
+        payload.socialCardNumber = derived.cardDetails.socialCardNumber;
+      }
+    }
   }
   if (isNonFiscalPayMethod(method)) {
     payload.debtPhone = String(debt?.phone || '').trim();

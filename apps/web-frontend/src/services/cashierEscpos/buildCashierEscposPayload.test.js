@@ -133,13 +133,37 @@ describe('buildCashierEscposPayload shift label', () => {
 });
 
 describe('buildCashierEscposPayload plastic label', () => {
-  it('appends card type to plastic payment row in Uzbek', () => {
+  it('appends provider to plastic payment row and exports separate card category, social card, and RRN in Uzbek', () => {
     const plain = buildCashierEscposPayload(FISCAL_SALE, t);
     expect(plain.labels.plastic).toBe('Plastik');
 
-    const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
-    expect(corporate.labels.plastic).toContain('Plastik');
-    expect(corporate.labels.plastic).toContain('Korporativ');
+    const humo = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'HUMO' }, t);
+    expect(humo.labels.plastic).toContain('Plastik');
+    expect(humo.labels.plastic).toContain('Humo');
+
+    const social = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'CARD',
+        cardType: 'HUMO',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(social.labels.plastic).toContain('Plastik');
+    expect(social.labels.plastic).toContain('Humo');
+    expect(social.labels.cardType).toBeTruthy();
+    expect(social.labels.socialCardNumber).toBeTruthy();
+    expect(social.labels.cardRrn).toBeTruthy();
+    expect(social.sale.cardCategoryDisplay).toBeTruthy();
+    expect(social.sale.socialCardNumber).toBe('9860********8031');
+    expect(social.sale.rrn).toBe('631810177451');
+
+    const legacyCorporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
+    expect(legacyCorporate.labels.plastic).toBe('Plastik');
+    expect(legacyCorporate.sale.cardCategoryDisplay).toBeTruthy();
   });
 
   it('forces locale to uz and translates labels in Uzbek', () => {

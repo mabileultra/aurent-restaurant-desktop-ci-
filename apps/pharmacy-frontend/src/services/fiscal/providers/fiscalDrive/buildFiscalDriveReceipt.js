@@ -1,3 +1,4 @@
+import { buildFiscalDriveCardFields } from '@aurent/shared-fiscal';
 import { lineSubtotal } from '../../../../store/cartStore';
 import { formatFiscalDateTime, toFiscalRefundDateTime, toTiyin } from '../../shared/fiscalMoney';
 import { resolveReceivedCashCard } from '../../shared/resolveReceivedCashCard';
@@ -91,6 +92,7 @@ export function buildFiscalDriveReceipt({
     Operation: refund ? FD_OPERATION.REFUND : FD_OPERATION.SALE,
     PaymentType: resolvePaymentType(receivedCash, receivedCard),
     Location: resolveLocation(capabilities),
+    ...buildFiscalDriveCardFields(payment, card),
     Items: lines.map((line, i) => buildFiscalDriveItem(line, { extraDiscountTiyin: discounts[i] })),
   };
 

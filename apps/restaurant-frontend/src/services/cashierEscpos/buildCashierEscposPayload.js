@@ -1,6 +1,7 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
+import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
@@ -9,7 +10,7 @@ import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
 import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -87,6 +88,9 @@ export function buildEscposLabels(t) {
     paymentForm: tr('fiscalReceipt.paymentForm'),
     cash: tr('fiscalReceipt.cash'),
     plastic: tr('fiscalReceipt.plastic'),
+    cardType: tr('fiscalReceipt.cardType'),
+    cardRrn: tr('fiscalReceipt.cardRrn'),
+    socialCardNumber: tr('fiscalReceipt.socialCardNumber'),
     change: tr('receipt.change'),
     fiscalSection: tr('fiscalReceipt.fiscalSection'),
     virtualRegister: tr('fiscalReceipt.virtualRegister'),
@@ -147,14 +151,21 @@ export function buildCashierEscposPayload(sale, t) {
   const printSettings = usePrintSettingsStore.getState();
   const tReceipt = getReceiptTranslator(t);
   const labels = buildEscposLabels(tReceipt);
-  const cardTypeText = cardTypeLabel(sale.cardType, tReceipt);
-  if (cardTypeText) {
-    labels.plastic = `${labels.plastic} · ${cardTypeText}`;
+  const cardDetails = extractCardReceiptDetails(sale);
+  const cardProviderText = !normalizeCardCategory(sale.cardType)
+    ? cardTypeLabel(sale.cardType, tReceipt)
+    : null;
+  if (cardProviderText) {
+    labels.plastic = `${labels.plastic} · ${cardProviderText}`;
   }
+  const cardCategoryDisplay = cardCategoryLabel(cardDetails.cardCategory, tReceipt);
 
   return {
     sale: {
       ...sale,
+      cardCategoryDisplay,
+      socialCardNumber: cardDetails.socialCardNumber,
+      rrn: cardDetails.rrn,
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,
