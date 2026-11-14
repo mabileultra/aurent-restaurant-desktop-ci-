@@ -3,6 +3,7 @@
  */
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
+import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
@@ -136,8 +137,9 @@ export function buildCashierEscposPayload(sale, t) {
   }
 
   const printSettings = usePrintSettingsStore.getState();
-  const labels = buildEscposLabels(t);
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
+  const translator = getReceiptTranslator();
+  const labels = buildEscposLabels(translator);
+  const cardTypeText = cardTypeLabel(sale.cardType, translator);
   if (cardTypeText) {
     labels.plastic = `${labels.plastic} · ${cardTypeText}`;
   }
@@ -150,13 +152,13 @@ export function buildCashierEscposPayload(sale, t) {
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,
       fiscalTerminalId: sale.fiscalTerminalId || fiscalMeta.fmNumber || null,
       fiscalSign: sale.fiscalSign || fiscalMeta.fiscalSign || null,
-      receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, t),
+      receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, translator),
     },
     branding,
     receiptFields,
     qrValue,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
-    locale: String(i18n.language || 'ru').split('-')[0],
+    locale: RECEIPT_LOCALE,
   };
 }

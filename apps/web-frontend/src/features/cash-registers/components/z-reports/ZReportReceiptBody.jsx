@@ -1,5 +1,6 @@
+import React from 'react';
 import { format, parseISO } from 'date-fns';
-import { useTranslation } from 'react-i18next';
+import { getReceiptTranslator } from '../../../../utils/receiptI18n';
 import { fmtMoney } from '../../../../utils/formatMoney';
 import { useTenantDisplayStore } from '../../../../store/tenantDisplayStore';
 
@@ -33,7 +34,7 @@ function MoneyRow({ label, amount, currency, bold = false, always = false }) {
 }
 
 export default function ZReportReceiptBody({ z }) {
-  const { t } = useTranslation();
+  const t = getReceiptTranslator();
   const committed = useTenantDisplayStore((s) => s.committed);
   const isReceiptFieldOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
 
