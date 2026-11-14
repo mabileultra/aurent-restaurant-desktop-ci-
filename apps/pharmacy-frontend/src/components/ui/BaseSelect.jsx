@@ -153,9 +153,8 @@ const BaseSelect = forwardRef(function BaseSelect(
     blur() {
       triggerRef.current?.blur?.();
     },
-    get type() {
-      return 'select-one';
-    },
+    // Не select-one: у кастомного селекта нет HTMLOptionsCollection,
+    // и react-hook-form падает на [...ref.options] при register().
     get name() {
       return name;
     },
