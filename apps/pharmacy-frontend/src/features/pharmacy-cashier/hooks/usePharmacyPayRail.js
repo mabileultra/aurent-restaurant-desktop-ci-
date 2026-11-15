@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { useCartStore } from '../../../store/cartStore';
 import { round2 } from '../../../utils/taxAmounts';
 import {
   isPosReceiptPrintEnabled,
@@ -9,6 +10,7 @@ import {
 import { amountStr, parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
 import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../cashier/constants/paymentCardProviders';
 import { appendKeypadDigit } from '../../cashier/components/NumericKeypad';
+import { assertCartMarkedKmReady } from '../utils/pharmacyCartMarkGuard';
 
 export const PHARMACY_PAY_METHODS = ['cash', 'card', 'mixed', 'cashless', 'insurance'];
 
@@ -85,6 +87,11 @@ export function usePharmacyPayRail({
     if (checkoutDisabled || isPending) return false;
     if (toPay <= 0) {
       toast.error(t('pos.cartEmpty'));
+      return false;
+    }
+    const marks = assertCartMarkedKmReady(useCartStore.getState().items);
+    if (!marks.ok) {
+      toast.error(t('pos.markingRequiredBeforePay'));
       return false;
     }
     return true;

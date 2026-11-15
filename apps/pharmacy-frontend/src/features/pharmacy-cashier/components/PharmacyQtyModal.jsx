@@ -58,7 +58,7 @@ function packsAlreadyInCart(items, productId, unitsInPack) {
 
 /**
  * Модалка «Добавить товар в чек» — раскладка как в Осон, наш визуал.
- * КМ по-прежнему со скана в поиске кассы; чекбокс маркировки — статус товара.
+ * Маркированный товар сюда не пускаем (только скан КМ); чекбокс — read-only статус.
  */
 export default function PharmacyQtyModal({
   open,
@@ -74,7 +74,6 @@ export default function PharmacyQtyModal({
   const [lotKey, setLotKey] = useState('');
   const [batchText, setBatchText] = useState('');
   const [packOnly, setPackOnly] = useState(false);
-  const [markingOn, setMarkingOn] = useState(false);
   const [error, setError] = useState('');
   const [packPriceText, setPackPriceText] = useState('0');
   const [piecePriceText, setPiecePriceText] = useState('0');
@@ -126,7 +125,6 @@ export default function PharmacyQtyModal({
     setPiecesText('0');
     setError('');
     setPackOnly(!productAllowsPiece);
-    setMarkingOn(markedProduct);
     const initialPack = Number(product?.packUnitPrice ?? product?.sellingPrice ?? 0);
     const initialUnits = catalogUnits;
     setUnitsText(String(initialUnits));
@@ -229,6 +227,10 @@ export default function PharmacyQtyModal({
       setError(err);
       return;
     }
+    if (markedProduct) {
+      setError(t('pos.markingScanRequired'));
+      return;
+    }
     onConfirm?.({
       packs: normalized.packs,
       pieces: sellByPiece ? normalized.pieces : 0,
@@ -237,7 +239,7 @@ export default function PharmacyQtyModal({
         ? { ...selectedLot, batchNumber: batchText.trim() || selectedLot.batchNumber }
         : (batchText.trim() ? { batchNumber: batchText.trim(), expiryDate: expiryValue || null } : null),
       productMarks: [],
-      markingOn,
+      markingOn: markedProduct,
       packPrice,
       piecePrice: showPackUi ? piecePrice : packPrice,
       unitsInPack,
@@ -430,9 +432,10 @@ export default function PharmacyQtyModal({
           <label className="pharmacy-qty-modal__marking">
             <input
               type="checkbox"
-              checked={markingOn}
-              disabled={!markedProduct}
-              onChange={(e) => setMarkingOn(e.target.checked)}
+              checked={markedProduct}
+              disabled
+              readOnly
+              aria-readonly="true"
             />
             <span>{t('pharmacyCashier.marking')}</span>
           </label>

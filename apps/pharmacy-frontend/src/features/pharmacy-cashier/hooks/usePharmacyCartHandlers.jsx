@@ -14,7 +14,7 @@ import {
 import { getUnitConfig } from '../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
 import { addPharmacyPieceItem } from '../utils/pharmacyCartActions';
-import { applyMarkingScan, isMarkCountedLine, isMarkingCode } from '../../marking';
+import { applyMarkingScan, isMarkCountedLine, isMarkingCode, isMarkingOnlyProduct } from '../../marking';
 import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
 import { toCartQuantity } from '../utils/pharmacyPackQty';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
@@ -170,6 +170,12 @@ export function usePharmacyCartHandlers({
   const addProductToCart = useCallback(
     (product) => {
       if (!guardProduct(product)) return;
+      // Маркированный — только скан КМ (как grocery isMarkingOnlyProduct).
+      if (isMarkingOnlyProduct(product) && !(product.productMark || product.markCode)) {
+        toast.error(t('pos.markingScanRequired'));
+        focusPharmacyScanField({ kmInputRef, searchInputRef, preferKm: true });
+        return;
+      }
       const payload = cartProductPayload(product);
       if (isMeasuredProduct(product)) {
         setWeightEditLineId(null);
@@ -178,7 +184,7 @@ export function usePharmacyCartHandlers({
       }
       setQtyModalProduct(payload);
     },
-    [cartProductPayload, guardProduct],
+    [cartProductPayload, guardProduct, kmInputRef, searchInputRef, t],
   );
 
   const handleQtyConfirm = useCallback(
@@ -194,6 +200,13 @@ export function usePharmacyCartHandlers({
     } = {}) => {
       const product = qtyModalProduct;
       if (!product) return;
+      const marks = Array.isArray(productMarks) ? productMarks.filter(Boolean) : [];
+      if (isMarkingOnlyProduct(product) && marks.length === 0) {
+        toast.error(t('pos.markingScanRequired'));
+        setQtyModalProduct(null);
+        focusPharmacyScanField({ kmInputRef, searchInputRef, preferKm: true });
+        return;
+      }
       const unitsInPack = Number(unitsFromModal) > 0
         ? Number(unitsFromModal)
         : (productUnitsInPack(product) || Number(product.unitsInPack) || 1);
@@ -201,7 +214,6 @@ export function usePharmacyCartHandlers({
       const piecePrice = Number(piecePriceFromModal);
       const hasPackPrice = Number.isFinite(packPrice) && packPrice >= 0;
       const hasPiecePrice = Number.isFinite(piecePrice) && piecePrice >= 0;
-      const marks = Array.isArray(productMarks) ? productMarks.filter(Boolean) : [];
       const sellByPiece = marks.length > 0
         ? false
         : (typeof sellByPieceFromModal === 'boolean'
@@ -283,7 +295,7 @@ export function usePharmacyCartHandlers({
       setSearch('');
       focusPharmacyScanField({ kmInputRef, searchInputRef });
     },
-    [qtyModalProduct, kmInputRef, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast],
+    [qtyModalProduct, kmInputRef, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast, t],
   );
 
   const closeQtyModal = useCallback(() => {
