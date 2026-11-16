@@ -3,6 +3,7 @@
  */
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
+import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
@@ -60,45 +61,46 @@ function readBranding() {
  * @returns {Record<string, string>}
  */
 export function buildEscposLabels(t) {
+  const tr = getReceiptTranslator(t);
   const vatRateToken = '{{rate}}';
   return {
-    phoneLabel: t('fiscalReceipt.phoneLabel'),
-    stir: t('fiscalReceipt.stir'),
-    date: t('fiscalReceipt.date'),
-    time: t('fiscalReceipt.time'),
-    receiptNoShort: t('fiscalReceipt.receiptNoShort'),
-    employee: t('fiscalReceipt.employee'),
-    shift: t('fiscalReceipt.shift'),
-    item: t('receipt.item'),
-    qtyShort: t('receipt.qtyShort'),
-    lineTotalShort: t('receipt.lineTotalShort'),
-    ikpuLine: t('receipt.ikpuLine'),
-    vatLineShort: t('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
-    currency: t('fiscalReceipt.currency'),
-    serviceLine: t('rst.order.serviceLine', { percent: '{{percent}}' }),
-    serviceShort: t('rst.order.serviceShort', { defaultValue: 'Обслуживание' }),
-    lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),
-    orderDiscountSum: t('fiscalReceipt.orderDiscountSum'),
-    discountsSum: t('fiscalReceipt.discountsSum'),
-    grandTotal: t('fiscalReceipt.grandTotal'),
-    vatTotalLine: t('fiscalReceipt.vatTotalLine', { rate: vatRateToken }),
-    paymentForm: t('fiscalReceipt.paymentForm'),
-    cash: t('fiscalReceipt.cash'),
-    plastic: t('fiscalReceipt.plastic'),
-    change: t('receipt.change'),
-    fiscalSection: t('fiscalReceipt.fiscalSection'),
-    virtualRegister: t('fiscalReceipt.virtualRegister'),
-    fmNumber: t('fiscalReceipt.fmNumber'),
-    fiscalReceiptNo: t('fiscalReceipt.fiscalReceiptNo'),
-    fiscalSign: t('fiscalReceipt.fiscalSign'),
+    phoneLabel: tr('fiscalReceipt.phoneLabel'),
+    stir: tr('fiscalReceipt.stir'),
+    date: tr('fiscalReceipt.date'),
+    time: tr('fiscalReceipt.time'),
+    receiptNoShort: tr('fiscalReceipt.receiptNoShort'),
+    employee: tr('fiscalReceipt.employee'),
+    shift: tr('fiscalReceipt.shift'),
+    item: tr('receipt.item'),
+    qtyShort: tr('receipt.qtyShort'),
+    lineTotalShort: tr('receipt.lineTotalShort'),
+    ikpuLine: tr('receipt.ikpuLine'),
+    vatLineShort: tr('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
+    currency: tr('fiscalReceipt.currency'),
+    serviceLine: tr('rst.order.serviceLine', { percent: '{{percent}}' }),
+    serviceShort: tr('rst.order.serviceShort', { defaultValue: 'Xizmat' }),
+    lineDiscountsSum: tr('fiscalReceipt.lineDiscountsSum'),
+    orderDiscountSum: tr('fiscalReceipt.orderDiscountSum'),
+    discountsSum: tr('fiscalReceipt.discountsSum'),
+    grandTotal: tr('fiscalReceipt.grandTotal'),
+    vatTotalLine: tr('fiscalReceipt.vatTotalLine', { rate: vatRateToken }),
+    paymentForm: tr('fiscalReceipt.paymentForm'),
+    cash: tr('fiscalReceipt.cash'),
+    plastic: tr('fiscalReceipt.plastic'),
+    change: tr('receipt.change'),
+    fiscalSection: tr('fiscalReceipt.fiscalSection'),
+    virtualRegister: tr('fiscalReceipt.virtualRegister'),
+    fmNumber: tr('fiscalReceipt.fmNumber'),
+    fiscalReceiptNo: tr('fiscalReceipt.fiscalReceiptNo'),
+    fiscalSign: tr('fiscalReceipt.fiscalSign'),
     footer: '',
     qrHint: '',
-    receiptType: t('fiscalReceipt.receiptType'),
-    receiptTypeSale: t('fiscalReceipt.receiptTypeSale'),
-    receiptTypeReturn: t('fiscalReceipt.receiptTypeReturn'),
-    receiptTypeAdvance: t('pos.receiptType.ADVANCE'),
-    receiptTypeCredit: t('pos.receiptType.CREDIT'),
-    originalReceiptNo: t('fiscalReceipt.originalReceiptNo'),
+    receiptType: tr('fiscalReceipt.receiptType'),
+    receiptTypeSale: tr('fiscalReceipt.receiptTypeSale'),
+    receiptTypeReturn: tr('fiscalReceipt.receiptTypeReturn'),
+    receiptTypeAdvance: tr('pos.receiptType.ADVANCE'),
+    receiptTypeCredit: tr('pos.receiptType.CREDIT'),
+    originalReceiptNo: tr('fiscalReceipt.originalReceiptNo'),
   };
 }
 
@@ -143,8 +145,9 @@ export function buildCashierEscposPayload(sale, t) {
   }
 
   const printSettings = usePrintSettingsStore.getState();
-  const labels = buildEscposLabels(t);
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
+  const tReceipt = getReceiptTranslator(t);
+  const labels = buildEscposLabels(tReceipt);
+  const cardTypeText = cardTypeLabel(sale.cardType, tReceipt);
   if (cardTypeText) {
     labels.plastic = `${labels.plastic} · ${cardTypeText}`;
   }
@@ -157,7 +160,7 @@ export function buildCashierEscposPayload(sale, t) {
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,
       fiscalTerminalId: sale.fiscalTerminalId || fiscalMeta.fmNumber || null,
       fiscalSign: sale.fiscalSign || fiscalMeta.fiscalSign || null,
-      receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, t),
+      receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, tReceipt),
     },
     branding,
     receiptFields,
@@ -165,6 +168,6 @@ export function buildCashierEscposPayload(sale, t) {
     qrValue,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
-    locale: String(i18n.language || 'ru').split('-')[0],
+    locale: RECEIPT_LOCALE,
   };
 }

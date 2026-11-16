@@ -10,11 +10,11 @@ export function cardTypeLabel(cardType, t) {
     case 'CLICK':
       return t('pos.cardClick');
     case 'PERSONAL':
-      return t('pos.cardPersonal', { defaultValue: 'Личная' });
+      return t('pos.cardPersonal', { defaultValue: 'Shaxsiy' });
     case 'CORPORATE':
-      return t('pos.cardCorporate', { defaultValue: 'Корп.' });
+      return t('pos.cardCorporate', { defaultValue: 'Korporativ' });
     case 'SOCIAL':
-      return t('pos.cardSocial', { defaultValue: 'Социальная' });
+      return t('pos.cardSocial', { defaultValue: 'Ijtimoiy' });
     default:
       return cardType;
   }

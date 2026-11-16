@@ -1,5 +1,6 @@
-import { useTranslation } from 'react-i18next';
+import React from 'react';
 import { APP_NAME } from '../../config/brand';
+import { getReceiptTranslator } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import ReceiptQrCode from './ReceiptQrCode';
 import {
@@ -60,7 +61,7 @@ function ReceiptDivider() {
 }
 
 export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-area', className = '' }) {
-  const { t } = useTranslation();
+  const t = getReceiptTranslator();
   const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
   const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
   const customCompanyName = useTenantDisplayStore((s) => s.committed.receiptCompanyName);

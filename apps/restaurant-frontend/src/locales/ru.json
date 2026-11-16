@@ -178,7 +178,9 @@
     "time": "Время",
     "vatLineShort": "НДС {{rate}}%",
     "vatTotalLine": "НДС {{rate}}%",
-    "virtualRegister": "Вирт. касса S/R"
+    "virtualRegister": "Вирт. касса S/R",
+    "cashier": "Кассир",
+    "change": "Сдача"
   },
   "login": {
     "badCompanyCode": "Неверный код компании",
@@ -1904,7 +1906,9 @@
       "nothingToSend": "Нет новых позиций для кухни",
       "modMin": "В «{{group}}» выберите минимум {{min}} (сейчас {{count}})",
       "modMax": "В «{{group}}» максимум {{max}} (сейчас {{count}})",
-      "cashShort": "Сумма меньше к оплате"
+      "cashShort": "Сумма меньше к оплате",
+      "billFooter": "Спасибо за визит!",
+      "billTitle": "Счёт"
     },
     "pos": {
       "bookings": "Бронирования",

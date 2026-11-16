@@ -72,7 +72,6 @@
     "edgeBootstrapDone": "Mahalliy xodimlar va katalog tayyor",
     "edgeBootstrapPartial": "Bulut yo‘q — mahalliy nusxa bilan ishlaymiz",
     "adminCard": "Admin",
-
     "adminBadge": "Login / parol",
     "adminTitle": "Admin",
     "adminHint": "Login va parol",
@@ -179,7 +178,9 @@
     "time": "Vaqt",
     "vatLineShort": "QQS {{rate}}%",
     "vatTotalLine": "QQS {{rate}}%",
-    "virtualRegister": "Virtual kassa S/R"
+    "virtualRegister": "Virtual kassa S/R",
+    "cashier": "Kassir",
+    "change": "Qaytim"
   },
   "login": {
     "badCompanyCode": "Kompaniya kodi noto‘g‘ri",
@@ -1791,7 +1792,7 @@
       "refund": "Chekni qaytarish",
       "refundFailed": "To‘langan buyurtmani qaytarib bo‘lmadi",
       "refunded": "To‘lov qaytarildi, tushum kamaydi",
-      "requestBill": "Hisob qo‘yish",
+      "requestBill": "Hisob",
       "searchEsc": "ESC tozalash",
       "searchMenuPh": "Nom, kod yoki shtrixkod bo‘yicha qidirish…",
       "searchMenuShortPh": "Qidiruv…",
@@ -1862,7 +1863,9 @@
       "nothingToSend": "Oshxonaga yangi pozitsiyalar yo‘q",
       "modMin": "«{{group}}» bo‘yicha kamida {{min}} tanlang (hozir {{count}})",
       "modMax": "«{{group}}» bo‘yicha ko‘pi {{max}} (hozir {{count}})",
-      "cashShort": "Summa to‘lovdan kam"
+      "cashShort": "Summa to‘lovdan kam",
+      "billFooter": "Tashrifingiz uchun rahmat!",
+      "billTitle": "Hisob"
     },
     "pos": {
       "bookings": "Bronlar",
