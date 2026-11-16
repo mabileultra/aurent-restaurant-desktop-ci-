@@ -161,7 +161,8 @@
     "stockPharmacyReceipts": "Аптечный приход",
     "stockPharmacyAslMarks": "ASL выбытие",
     "stockPharmacyAslRequests": "ASL запросы",
-    "pickLinesTitle": "Строки прихода"
+    "pickLinesTitle": "Строки прихода",
+    "office": "В кабинет"
   },
   "login": {
     "title": "Вход в систему",
@@ -1581,7 +1582,6 @@
     "addToReceiptTitle": "Добавить товар в чек",
     "addLine": "В чек",
     "addProduct": "Добавить",
-    "colManufacturer": "Производитель",
     "colBarcode": "Штрих-код",
     "colIkpuMxik": "ИКПУ/МХИК",
     "colExpiryFull": "Срок годности",
@@ -3981,7 +3981,9 @@
     "salesTotalCount": "Всего: {{count}}",
     "shiftOpenLabel": "Смена открыта",
     "shiftSalesList": "Продажи смены",
-    "editHint": "Двойной клик — изменить цену, кол-во или сумму"
+    "editHint": "Двойной клик — изменить цену, кол-во или сумму",
+    "registerNumber": "Касса №{{no}}",
+    "register": "Касса"
   },
   "support": {
     "title": "Поддержка",
