@@ -227,6 +227,15 @@ function appendPayment(printer, payload) {
   appendDivider(printer);
 }
 
+/** Номер электронного рецепта — отдельной строкой, независимо от настроек полей чека. */
+function appendPrescription(printer, payload) {
+  const { sale, labels } = payload;
+  const prescriptionNumber = String(sale?.prescriptionNumber || '').trim();
+  if (!prescriptionNumber) return;
+  appendRow(printer, (labels || {}).prescriptionNumber || 'Elektron retsept', prescriptionNumber, true);
+  appendDivider(printer);
+}
+
 function appendFiscalBlock(printer, payload) {
   const { sale, receiptFields, labels, branding, receiptFieldStyles: styles } = payload;
   const fields = receiptFields || {};
@@ -277,6 +286,7 @@ module.exports = {
   appendItems,
   appendTotals,
   appendPayment,
+  appendPrescription,
   appendFiscalBlock,
   appendProfileFooter,
 };

@@ -9,7 +9,11 @@ import {
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import {
+  extractCardReceiptDetails,
+  normalizeCardCategory,
+  resolveSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
 import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
@@ -98,6 +102,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const total = Number(sale.totalAmount) || 0;
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const cardDetails = extractCardReceiptDetails(sale);
+  const prescriptionNumber = resolveSalePrescriptionNumber(sale);
   const hasCardPayment =
     Number(cardAmt) > 0 || method === 'CARD' || method === 'MIXED';
   const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
@@ -298,6 +303,12 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             ) : null}
           </section>
         </>
+      ) : null}
+
+      {prescriptionNumber ? (
+        <section className="receipt-section mt-1">
+          <Row label={t('fiscalReceipt.prescriptionNumber')} value={prescriptionNumber} bold />
+        </section>
       ) : null}
 
       {isOn('receiptType') ? (

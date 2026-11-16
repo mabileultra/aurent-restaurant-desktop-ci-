@@ -15,6 +15,7 @@ const {
   appendItems,
   appendTotals,
   appendPayment,
+  appendPrescription,
   appendFiscalBlock,
   appendProfileFooter,
 } = require('./escpos-sale-body.cjs');
@@ -150,6 +151,7 @@ async function buildReceiptOnPrinter(printer, payload, jobId) {
   appendItems(printer, safePayload);
   appendTotals(printer, safePayload);
   appendPayment(printer, safePayload);
+  appendPrescription(printer, safePayload);
   appendReceiptType(printer, safePayload);
   appendFiscalBlock(printer, safePayload);
   await appendQrAndFooter(printer, safePayload, jobId);
@@ -175,6 +177,7 @@ module.exports = {
   appendItems,
   appendTotals,
   appendPayment,
+  appendPrescription,
   appendFiscalBlock,
   appendQrAndFooter,
   buildReceiptOnPrinter,

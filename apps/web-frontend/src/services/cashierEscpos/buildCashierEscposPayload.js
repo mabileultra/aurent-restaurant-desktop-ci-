@@ -1,7 +1,11 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import {
+  extractCardReceiptDetails,
+  normalizeCardCategory,
+  resolveSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
@@ -85,6 +89,7 @@ export function buildEscposLabels(t) {
     cardType: t('fiscalReceipt.cardType'),
     cardRrn: t('fiscalReceipt.cardRrn'),
     socialCardNumber: t('fiscalReceipt.socialCardNumber'),
+    prescriptionNumber: t('fiscalReceipt.prescriptionNumber'),
     change: t('receipt.change'),
     fiscalSection: t('fiscalReceipt.fiscalSection'),
     virtualRegister: t('fiscalReceipt.virtualRegister'),
@@ -169,6 +174,7 @@ export function buildCashierEscposPayload(sale, t) {
       cardCategoryDisplay,
       socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
       rrn: hasCardPayment ? cardDetails.rrn : null,
+      prescriptionNumber: resolveSalePrescriptionNumber(sale),
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,

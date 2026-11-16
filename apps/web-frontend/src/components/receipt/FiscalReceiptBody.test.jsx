@@ -122,4 +122,28 @@ describe('FiscalReceiptBody', () => {
     expect(html).toContain('RRN');
     expect(html).toContain('631810177451');
   });
+
+  it('renders electronic prescription number as a separate Uzbek row', async () => {
+    await i18n.changeLanguage('ru');
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, { sale: { ...MOCK_SALE, prescriptionNumber: 'RX-2026-0042' } })
+    );
+    expect(html).toContain('Elektron retsept');
+    expect(html).toContain('RX-2026-0042');
+    expect(html).not.toContain('Электронный рецепт');
+  });
+
+  it('does NOT take the prescription number from sale notes', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, { sale: { ...MOCK_SALE, notes: 'PAY:cash | RX:RX-2026-0042' } })
+    );
+    expect(html).not.toContain('Elektron retsept');
+  });
+
+  it('does NOT render prescription row for a sale without prescription number', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, { sale: MOCK_SALE })
+    );
+    expect(html).not.toContain('Elektron retsept');
+  });
 });

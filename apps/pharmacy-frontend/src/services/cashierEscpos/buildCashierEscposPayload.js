@@ -4,7 +4,11 @@
 import { APP_NAME } from '../../config/brand';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import {
+  extractCardReceiptDetails,
+  normalizeCardCategory,
+  resolveSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
 import {
   resolveFiscalReceiptMeta,
@@ -85,6 +89,7 @@ export function buildEscposLabels(t) {
     cardType: tr('fiscalReceipt.cardType'),
     cardRrn: tr('fiscalReceipt.cardRrn'),
     socialCardNumber: tr('fiscalReceipt.socialCardNumber'),
+    prescriptionNumber: tr('fiscalReceipt.prescriptionNumber'),
     change: tr('receipt.change'),
     fiscalSection: tr('fiscalReceipt.fiscalSection'),
     virtualRegister: tr('fiscalReceipt.virtualRegister'),
@@ -169,6 +174,7 @@ export function buildCashierEscposPayload(sale, t) {
       cardCategoryDisplay,
       socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
       rrn: hasCardPayment ? cardDetails.rrn : null,
+      prescriptionNumber: resolveSalePrescriptionNumber(sale),
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,

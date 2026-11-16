@@ -186,6 +186,19 @@ describe('buildCashierEscposPayload plastic label', () => {
   });
 });
 
+describe('buildCashierEscposPayload: electronic prescription number', () => {
+  it('passes the number and its label to the printer payload', () => {
+    const payload = buildCashierEscposPayload({ ...FISCAL_SALE, prescriptionNumber: 'RX-2026-0042' }, t);
+    expect(payload.sale.prescriptionNumber).toBe('RX-2026-0042');
+    expect(payload.labels.prescriptionNumber).toBe('Elektron retsept');
+  });
+
+  it('prints no prescription row for a plain sale and ignores notes', () => {
+    const payload = buildCashierEscposPayload({ ...FISCAL_SALE, notes: 'RX:RX-7777' }, t);
+    expect(payload.sale.prescriptionNumber).toBeNull();
+  });
+});
+
 describe('buildEscposLabels VAT rate', () => {
   it('keeps {{rate}} placeholder for electron per-line interpolation', () => {
     const labels = buildEscposLabels(t);
