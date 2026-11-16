@@ -153,7 +153,8 @@
     "stockPharmacyReceipts": "Dorixona kirimi",
     "stockPharmacyAslMarks": "ASL chiqarish",
     "stockPharmacyAslRequests": "ASL so‘rovlar",
-    "pickLinesTitle": "Kirim qatorlari"
+    "pickLinesTitle": "Kirim qatorlari",
+    "office": "Kabinetga"
   },
   "login": {
     "title": "Tizimga kirish",
@@ -1455,7 +1456,6 @@
     "addToReceiptTitle": "Mahsulotni chekka qo‘shish",
     "addLine": "Chekka",
     "addProduct": "Qo‘shish",
-    "colManufacturer": "Ishlab chiqaruvchi",
     "colBarcode": "Shtrix-kod",
     "colIkpuMxik": "IKPU/MXIK",
     "colExpiryFull": "Yaroqlilik muddati",
@@ -3756,7 +3756,9 @@
     "salesTotalCount": "Jami: {{count}}",
     "shiftOpenLabel": "Smena ochilgan",
     "shiftSalesList": "Smena savdolari",
-    "editHint": "Ikki marta bosing — narx, miqdor yoki summa"
+    "editHint": "Ikki marta bosing — narx, miqdor yoki summa",
+    "registerNumber": "Kassa №{{no}}",
+    "register": "Kassa"
   },
   "support": {
     "title": "Qo'llab-quvvatlash",
