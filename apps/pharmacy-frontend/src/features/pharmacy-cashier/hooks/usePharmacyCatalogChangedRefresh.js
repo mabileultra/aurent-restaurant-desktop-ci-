@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { subscribePharmacyCatalogChanged } from '../../pharmacy-stock/utils/pharmacyCatalogChangedNotify';
-import { refreshCatalogBootstrap } from '../../../services/offline/offlineSyncService';
-import { isDesktopOfflineBridge } from '../../../services/offline/desktopOfflineBridge';
+import { refreshPharmacyCashierCatalog } from '../utils/refreshPharmacyCashierCatalog';
 
 /**
- * После проведения прихода в другой вкладке/окне — сбросить кэш кассы
- * и принудительно обновить desktop SQLite (иначе «товара нет»).
+ * После проведения прихода/инвентаризации в другой вкладке/окне —
+ * сбросить кэш кассы и принудительно обновить desktop SQLite.
  */
 export function usePharmacyCatalogChangedRefresh(storeId) {
   const qc = useQueryClient();
@@ -25,18 +24,7 @@ export function usePharmacyCatalogChangedRefresh(storeId) {
       if (busyRef.current) return;
       busyRef.current = true;
       try {
-        qc.invalidateQueries({ queryKey: ['pos-products'] });
-        qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
-        qc.invalidateQueries({ queryKey: ['pharmacy-lots'] });
-        if (isDesktopOfflineBridge()) {
-          await refreshCatalogBootstrap(storeId, {
-            force: true,
-            catalogKind: 'pharmacy',
-          });
-          qc.invalidateQueries({ queryKey: ['pos-products'] });
-        }
-      } catch {
-        /* сеть/офлайн — список всё равно инвалидирован */
+        await refreshPharmacyCashierCatalog(qc, storeId, { syncDesktop: true });
       } finally {
         busyRef.current = false;
       }

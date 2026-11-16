@@ -35,7 +35,7 @@ export default function PharmacyProductAboutFields({
         <div className="pharm-product-modal__inline">
           <input
             className="pharm-product-modal__input"
-            value={mxikQuery || form.ikpu}
+            value={mxikQuery}
             onChange={(e) => {
               setMxikQuery(e.target.value);
               patch('ikpu', e.target.value);

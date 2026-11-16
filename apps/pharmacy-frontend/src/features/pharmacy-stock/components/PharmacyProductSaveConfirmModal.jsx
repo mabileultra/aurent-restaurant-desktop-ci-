@@ -15,7 +15,7 @@ export default function PharmacyProductSaveConfirmModal({
       onClose={onClose}
       title={t('pharmacyStock.saveProductTitle')}
       size="sm"
-      overlayClassName="!z-[80]"
+      overlayClassName="!z-[120]"
       footer={(
         <>
           <BaseButton variant="secondary" onClick={onClose} disabled={saving}>

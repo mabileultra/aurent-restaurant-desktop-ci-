@@ -21,6 +21,7 @@ import { usePharmacyHotkeys } from './usePharmacyHotkeys';
 import { usePharmacyFefoEnrichment } from './usePharmacyFefoEnrichment';
 import { usePharmacyBarcodeCacheWarm } from './usePharmacyBarcodeCacheWarm';
 import { usePharmacyCatalogChangedRefresh } from './usePharmacyCatalogChangedRefresh';
+import { refreshPharmacyCashierCatalog } from '../utils/refreshPharmacyCashierCatalog';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -261,11 +262,11 @@ export function usePharmacyPosPage() {
     onNotice: setMarkingNotice,
   });
 
-  const refreshCatalog = useCallback(() => {
-    qc.invalidateQueries({ queryKey: ['pos-products'] });
-    qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
-    qc.invalidateQueries({ queryKey: ['pharmacy-lots'] });
-  }, [qc]);
+  const refreshCatalog = useCallback((opts) => (
+    refreshPharmacyCashierCatalog(qc, storeId, {
+      syncDesktop: opts?.syncDesktop !== false,
+    })
+  ), [qc, storeId]);
 
   onMarkingScanRef.current = markingScan.tryHandleMarkingScan;
 
