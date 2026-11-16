@@ -22,7 +22,11 @@ import { processOfflineCheckout } from './offlineCheckout';
 import { buildOfflineShiftSoldItems } from '../offline/buildOfflineShiftSoldItems';
 import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
-import { withCardReceiptDetails } from '@aurent/shared-fiscal';
+import {
+  assertSalePrescriptionNumber,
+  withCardReceiptDetails,
+  withSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
@@ -438,6 +442,8 @@ export async function posCreateSale({
       ? crypto.randomUUID()
       : `sale-${Date.now()}`;
 
+  // До фискализации и до любого запроса: онлайн и офлайн, любой способ оплаты.
+  assertSalePrescriptionNumber(cartItems, payment);
   await assertCartMarksNotPunched(storeId, cartItems);
 
   let fiscalPayload = null;
@@ -523,7 +529,7 @@ export async function posCreateSale({
     );
     return {
       ...res,
-      data: withCardReceiptDetails(res?.data, payment),
+      data: withSalePrescriptionNumber(withCardReceiptDetails(res?.data, payment), payment),
     };
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {

@@ -1,4 +1,4 @@
-import { withCardReceiptDetails } from '@aurent/shared-fiscal';
+import { withCardReceiptDetails, withSalePrescriptionNumber } from '@aurent/shared-fiscal';
 import { extractVatFromInclusive, round2 } from '../../utils/taxAmounts';
 import {
   lineDiscountAmount,
@@ -81,7 +81,7 @@ export function buildOfflineSaleResponse({
   const pay = resolvePayAmounts(payment, totalAmount);
   const createdAt = new Date().toISOString();
 
-  return withCardReceiptDetails({
+  return withSalePrescriptionNumber(withCardReceiptDetails({
     id: clientSaleId,
     clientSaleId,
     receiptNumber,
@@ -121,7 +121,7 @@ export function buildOfflineSaleResponse({
     fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? createdAt : null,
     printFiscalQr: printFiscalQr !== false,
-  }, payment);
+  }, payment), payment);
 }
 
 export function buildOfflineCheckoutPayload({

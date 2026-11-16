@@ -21,6 +21,8 @@ import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptTog
 import PharmacyPayQuickCash from './PharmacyPayQuickCash';
 import PharmacyMixedPayModal from './PharmacyMixedPayModal';
 import PharmacyCardDetailsModal from './PharmacyCardDetailsModal';
+import PharmacyPrescriptionModal from './PharmacyPrescriptionModal';
+import { usePrescriptionCheckoutGate } from '../../cashier/hooks/pos/usePrescriptionCheckoutGate';
 import { usePharmacyPosActions } from '../../../pharmacy/pos/pharmacyPosActions';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
@@ -51,6 +53,9 @@ export default function PharmacyPayStack({
   const actions = usePharmacyPosActions();
   const [mixedOpen, setMixedOpen] = useState(false);
   const [pendingCardType, setPendingCardType] = useState(null);
+  // Номер рецепта спрашиваем до реквизитов карты; финальная проверка — в usePosCheckout.
+  const prescriptionGate = usePrescriptionCheckoutGate();
+  const { ensurePrescriptionReady } = prescriptionGate;
   const rail = usePharmacyPayRail({
     total,
     checkoutDisabled,
@@ -59,9 +64,10 @@ export default function PharmacyPayStack({
   });
 
   const openMixed = useCallback(() => {
+    if (!ensurePrescriptionReady(() => openMixed())) return;
     rail.setMethod('mixed');
     setMixedOpen(true);
-  }, [rail.setMethod]);
+  }, [ensurePrescriptionReady, rail.setMethod]);
 
   const closeMixed = useCallback(() => {
     setMixedOpen(false);
@@ -72,13 +78,22 @@ export default function PharmacyPayStack({
   const openCardModal = useCallback(
     (cardType) => {
       if (checkoutDisabled || isPending) return;
+      if (rail.toPay > 0 && !ensurePrescriptionReady(() => openCardModal(cardType))) return;
       if (rail.toPay <= 0 || (rail.cardPayBlocked && rail.method !== 'mixed')) {
         rail.submitCard(cardType);
         return;
       }
       setPendingCardType(cardType);
     },
-    [checkoutDisabled, isPending, rail.cardPayBlocked, rail.method, rail.submitCard, rail.toPay],
+    [
+      checkoutDisabled,
+      ensurePrescriptionReady,
+      isPending,
+      rail.cardPayBlocked,
+      rail.method,
+      rail.submitCard,
+      rail.toPay,
+    ],
   );
 
   const handleConfirmCardModal = useCallback(
@@ -90,6 +105,7 @@ export default function PharmacyPayStack({
   );
 
   const handleSubmitSale = useCallback(() => {
+    if (rail.toPay > 0 && !ensurePrescriptionReady(() => handleSubmitSale())) return;
     const action = resolvePharmacySaleSubmitAction({
       method: rail.method,
       hasPartialCash: rail.hasPartialCash,
@@ -100,10 +116,18 @@ export default function PharmacyPayStack({
       return;
     }
     rail.submitSale();
-  }, [openCardModal, rail.cardType, rail.hasPartialCash, rail.method, rail.submitSale]);
+  }, [
+    ensurePrescriptionReady,
+    openCardModal,
+    rail.cardType,
+    rail.hasPartialCash,
+    rail.method,
+    rail.submitSale,
+    rail.toPay,
+  ]);
 
   usePharmacyPayKeyboard({
-    enabled: !checkoutDisabled && !mixedOpen && !pendingCardType,
+    enabled: !checkoutDisabled && !mixedOpen && !pendingCardType && !prescriptionGate.isOpen,
     method: rail.method,
     setMethod: rail.setMethod,
     setExactAmount: rail.setExactAmount,
@@ -243,6 +267,18 @@ export default function PharmacyPayStack({
         </div>
       ) : null}
 
+      {prescriptionGate.hasPrescriptionItems ? (
+        <button
+          type="button"
+          className={`pharmacy-pay-stack__prescription pharmacy-pay-stack__aside${prescriptionGate.prescriptionNumber ? '' : ' is-missing'}`}
+          disabled={busy}
+          onClick={prescriptionGate.openEditor}
+        >
+          <span>{t('fiscalReceipt.prescriptionNumber')}</span>
+          <strong>{prescriptionGate.prescriptionNumber || t('pos.prescriptionMissing')}</strong>
+        </button>
+      ) : null}
+
       <PrintReceiptToggle
         checked={rail.printReceiptEnabled}
         onChange={rail.handlePrintReceiptChange}
@@ -331,6 +367,15 @@ export default function PharmacyPayStack({
         busy={busy}
         onClose={() => setPendingCardType(null)}
         onConfirm={handleConfirmCardModal}
+        t={t}
+      />
+
+      <PharmacyPrescriptionModal
+        open={prescriptionGate.isOpen}
+        initialValue={prescriptionGate.prescriptionNumber}
+        busy={isPending}
+        onClose={prescriptionGate.close}
+        onConfirm={prescriptionGate.confirm}
         t={t}
       />
     </aside>

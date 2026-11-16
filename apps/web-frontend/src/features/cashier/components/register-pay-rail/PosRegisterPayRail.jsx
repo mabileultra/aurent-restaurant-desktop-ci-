@@ -6,6 +6,7 @@ import PosRegisterPayMethods from './PosRegisterPayMethods';
 import PosRegisterCardProviders from './PosRegisterCardProviders';
 import PosRegisterPayFooter from './PosRegisterPayFooter';
 import PosCardDetailsModal from '../payment/PosCardDetailsModal';
+import PrescriptionNumberIndicator from '../payment/PrescriptionNumberIndicator';
 import { usePosRegisterPayRail } from '../../hooks/usePosRegisterPayRail';
 
 export default function PosRegisterPayRail({
@@ -113,6 +114,8 @@ export default function PosRegisterPayRail({
           )}
         </div>
       ) : null}
+
+      <PrescriptionNumberIndicator disabled={isPending} />
 
       <PosRegisterPayFooter
         disabled={rail.saleDisabled}

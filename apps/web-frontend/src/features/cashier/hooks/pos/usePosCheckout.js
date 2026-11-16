@@ -23,6 +23,8 @@ import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
 import { FISCAL_STATUS } from '../../../../services/fiscal';
 import { collectMarksFromCartItems, rememberSoldMarks } from '../../../marking';
+import { PRESCRIPTION_NUMBER_REQUIRED_CODE } from '@aurent/shared-fiscal';
+import { usePrescriptionCheckoutGate } from './usePrescriptionCheckoutGate';
 
 export function usePosCheckout({
   storeId,
@@ -44,6 +46,7 @@ export function usePosCheckout({
   const getCheckoutLineItems = getCheckoutLineItemsOverride ?? defaultGetCheckoutLineItems;
   const getCheckoutOrderDiscountAmount = useCartStore((s) => s.getCheckoutOrderDiscountAmount);
   const getCheckoutOrderDiscountPercent = useCartStore((s) => s.getCheckoutOrderDiscountPercent);
+  const prescriptionGate = usePrescriptionCheckoutGate();
 
   const checkoutMutation = useMutation({
     mutationFn: async (payment) => {
@@ -110,6 +113,10 @@ export function usePosCheckout({
       }
     },
     onError: (e) => {
+      if (e?.code === PRESCRIPTION_NUMBER_REQUIRED_CODE) {
+        toast.error(t('pos.prescriptionRequiredBeforePay'));
+        return;
+      }
       if (e?.code === 'MARK_ALREADY_SOLD') {
         toast.error(t('pos.markingSoldLocal'));
         return;
@@ -157,16 +164,21 @@ export function usePosCheckout({
     },
   });
 
-  const handleConfirmPayment = (payment) => {
+  const handleConfirmPayment = (rawPayment) => {
     if (checkoutMutation.isPending) return;
-    if ((payment.receiptType === 'CREDIT' || payment.receiptType === 'ADVANCE') && !payment.customerId) {
+    if ((rawPayment.receiptType === 'CREDIT' || rawPayment.receiptType === 'ADVANCE') && !rawPayment.customerId) {
       toast.error(
-        payment.receiptType === 'ADVANCE'
+        rawPayment.receiptType === 'ADVANCE'
           ? t('pos.advanceCustomerRequired')
           : t('pos.creditCustomerRequired'),
       );
       return;
     }
+    // Единая точка всех оплат (нал, карта, смешанная, долг, аванс, горячие клавиши).
+    if (!prescriptionGate.ensurePrescriptionReady(() => handleConfirmPayment(rawPayment), rawPayment)) {
+      return;
+    }
+    const payment = prescriptionGate.attachToPayment(rawPayment);
     const payTotal = round2(total);
     if (payment.paymentMethod === 'MIXED' && payment.cashAmount != null) {
       const cash = clampPayAmount(payment.cashAmount, payTotal);
@@ -182,5 +194,5 @@ export function usePosCheckout({
     checkoutMutation.mutate(payment);
   };
 
-  return { checkoutMutation, handleConfirmPayment };
+  return { checkoutMutation, handleConfirmPayment, prescriptionGate };
 }
