@@ -144,6 +144,19 @@ describe('restaurantPayForm — drawer methods unchanged', () => {
     expect(noRrn.canSubmit).toBe(false);
     expect(noRrn.hintKey).toBe('pos.cardRrnRequired');
 
+    // RRN validation: 11, 13 digits and mixed letters must fail
+    const rrn11 = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO', rrn: '12345678901' });
+    expect(rrn11.canSubmit).toBe(false);
+    expect(rrn11.hintKey).toBe('pos.cardRrnRequired');
+
+    const rrn13 = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO', rrn: '1234567890123' });
+    expect(rrn13.canSubmit).toBe(false);
+    expect(rrn13.hintKey).toBe('pos.cardRrnRequired');
+
+    const rrnAlpha = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO', rrn: '63181017745A' });
+    expect(rrnAlpha.canSubmit).toBe(false);
+    expect(rrnAlpha.hintKey).toBe('pos.cardRrnRequired');
+
     const okPersonal = deriveRestaurantPay(DUE, {
       method: 'CARD',
       cardType: 'HUMO',

@@ -3604,7 +3604,7 @@
     "cardRrnLabel": "RRN (terminal tranzaksiya kodi)",
     "cardRrnPlaceholder": "Masalan, 631810177451",
     "cardRrnHint": "Terminal chekidagi 12 xonali RRN raqami",
-    "cardRrnRequired": "RRN kodini kiriting (kamida 6 ta belgi)",
+    "cardRrnRequired": "RRN kodi kiritilishi shart (aynan 12 ta raqam)",
     "socialCardLabel": "Ijtimoiy karta raqami",
     "socialCardPlaceholder": "16 ta raqam yoki chekdagi ko‘rinishi (986003******8031)",
     "socialCardPreview": "Chekda: {{masked}}",

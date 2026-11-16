@@ -268,7 +268,7 @@
     "cardRrnHint": "Terminal slip-chekidagi 12 xonali RRN raqami",
     "cardRrnLabel": "RRN (terminal slip-chek kodi)",
     "cardRrnPlaceholder": "Masalan, 631810177451",
-    "cardRrnRequired": "RRN kodini kiriting (kamida 6 ta belgi)",
+    "cardRrnRequired": "RRN kodi kiritilishi shart (aynan 12 ta raqam)",
     "cardSocial": "Ijtimoiy",
     "cardUzcard": "Uzcard",
     "cardTypeLead": "To‘lov usulini tanlang",

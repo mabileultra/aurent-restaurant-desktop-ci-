@@ -123,7 +123,7 @@ describe('buildCashierEscposPayload shift label', () => {
 });
 
 describe('buildCashierEscposPayload card details', () => {
-  it('exports provider on plastic label and separate cardType, socialCardNumber, and RRN', () => {
+  it('exports provider on plastic label and separate cardType, socialCardNumber, and RRN in Uzbek', () => {
     const payload = buildCashierEscposPayload(
       {
         ...FISCAL_SALE,
@@ -135,12 +135,39 @@ describe('buildCashierEscposPayload card details', () => {
       },
       t,
     );
-    expect(payload.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardUzcard');
-    expect(payload.labels.cardType).toBe('fiscalReceipt.cardType');
-    expect(payload.labels.socialCardNumber).toBe('fiscalReceipt.socialCardNumber');
-    expect(payload.labels.cardRrn).toBe('fiscalReceipt.cardRrn');
-    expect(payload.sale.cardCategoryDisplay).toBe('pos.cardSocial');
+    expect(payload.labels.plastic).toBe('Plastik · Uzcard');
+    expect(payload.labels.cardType).toBe('Karta turi');
+    expect(payload.labels.socialCardNumber).toBe('Ijtimoiy karta');
+    expect(payload.labels.cardRrn).toBe('RRN');
+    expect(payload.sale.cardCategoryDisplay).toBe('Ijtimoiy');
     expect(payload.sale.socialCardNumber).toBe('9860********8031');
     expect(payload.sale.rrn).toBe('631810177451');
+  });
+
+  it('leaves card details null for pure cash payment and populates for mixed payment', () => {
+    const cashPayload = buildCashierEscposPayload(
+      { ...FISCAL_SALE, paymentMethod: 'CASH', cardAmount: 0, cashAmount: 50000 },
+      t,
+    );
+    expect(cashPayload.sale.cardCategoryDisplay).toBeNull();
+    expect(cashPayload.sale.socialCardNumber).toBeNull();
+    expect(cashPayload.sale.rrn).toBeNull();
+
+    const mixedPayload = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'MIXED',
+        cashAmount: 20000,
+        cardAmount: 30000,
+        cardType: 'UZCARD',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(mixedPayload.sale.cardCategoryDisplay).toBe('Ijtimoiy');
+    expect(mixedPayload.sale.socialCardNumber).toBe('9860********8031');
+    expect(mixedPayload.sale.rrn).toBe('631810177451');
   });
 });

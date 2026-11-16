@@ -1,5 +1,6 @@
 import { CARD_CATEGORY } from '@aurent/shared-types';
 import {
+  isValidRrn,
   isValidSocialCardInput,
   maskSocialCardNumber,
   normalizeCardCategory,
@@ -16,7 +17,7 @@ function parseMoney(raw) {
 function validateCardDetails({ cardCategory, rrn, socialCardInput }) {
   const category = normalizeCardCategory(cardCategory) || CARD_CATEGORY.PERSONAL;
   const normalizedRrn = normalizeRrn(rrn);
-  if (!normalizedRrn || normalizedRrn.length < 6) {
+  if (!isValidRrn(normalizedRrn)) {
     return { valid: false, hintKey: 'pos.cardRrnRequired', details: null };
   }
   let maskedSocial = null;

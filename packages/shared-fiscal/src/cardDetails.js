@@ -43,7 +43,7 @@ export function toOfdCardTypeCode(value) {
 }
 
 /**
- * Очищает RRN (Reference Retrieval Number): убирает пробелы/дефисы, оставляет A-Z и 0-9.
+ * Очищает RRN (Reference Retrieval Number): убирает пробелы и дефисы.
  * @param {unknown} value
  * @returns {string | null}
  */
@@ -51,10 +51,20 @@ export function normalizeRrn(value) {
   if (value == null) return null;
   const cleaned = String(value)
     .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '')
-    .slice(0, 24);
+    .replace(/[\s-]+/g, '');
   return cleaned || null;
+}
+
+/**
+ * Проверяет, состоит ли RRN ровно из 12 цифр (после очистки пробелов и дефисов).
+ * Значения с буквами, спецсимволами или длиной != 12 отклоняются.
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isValidRrn(value) {
+  if (value == null) return false;
+  const cleaned = normalizeRrn(value);
+  return cleaned !== null && /^\d{12}$/.test(cleaned);
 }
 
 function stripTerminalPanSuffix(raw) {

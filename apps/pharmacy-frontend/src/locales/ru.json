@@ -3836,7 +3836,7 @@
     "cardRrnLabel": "RRN (код транзакции с терминала)",
     "cardRrnPlaceholder": "Например, 631810177451",
     "cardRrnHint": "12-значный номер RRN со слип-чека терминала",
-    "cardRrnRequired": "Введите код RRN (минимум 6 символов)",
+    "cardRrnRequired": "Введите код RRN (ровно 12 цифр)",
     "socialCardLabel": "Номер социальной карты",
     "socialCardPlaceholder": "16 цифр или номер с чека (напр. 986003******8031)",
     "socialCardPreview": "В чеке: {{masked}}",
