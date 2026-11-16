@@ -14,6 +14,7 @@ export {
   normalizeCardCategory,
   toOfdCardTypeCode,
   normalizeRrn,
+  isValidRrn,
   maskSocialCardNumber,
   isValidSocialCardInput,
   extractCardReceiptDetails,

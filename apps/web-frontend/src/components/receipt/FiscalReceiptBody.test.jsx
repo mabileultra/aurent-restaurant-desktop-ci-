@@ -42,4 +42,84 @@ describe('FiscalReceiptBody', () => {
     expect(html).not.toContain('Итого');
     expect(html).not.toContain('Наличные');
   });
+
+  it('does NOT render card rows (Karta turi, Ijtimoiy karta, RRN) for pure cash payment', async () => {
+    await i18n.changeLanguage('ru');
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, {
+        sale: {
+          ...MOCK_SALE,
+          paymentMethod: 'CASH',
+          paidCash: 50000,
+          paidCard: 0,
+        },
+      })
+    );
+
+    expect(html).toContain('Naqd');
+    expect(html).not.toContain('Karta turi');
+    expect(html).not.toContain('Ijtimoiy karta');
+    expect(html).not.toContain('RRN');
+  });
+
+  it('renders 3 card rows in Uzbek for card payment even when UI language is Russian', async () => {
+    await i18n.changeLanguage('ru');
+    const cardSale = {
+      ...MOCK_SALE,
+      paymentMethod: 'CARD',
+      cardType: 'HUMO',
+      cardCategory: 'SOCIAL',
+      socialCardNumber: '9860031122338031',
+      rrn: '631810177451',
+      paidCash: 0,
+      paidCard: 50000,
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, { sale: cardSale })
+    );
+
+    // Karta qatorlari majburiy o'zbekcha chiqishi shart
+    expect(html).toContain('Plastik');
+    expect(html).toContain('Karta turi');
+    expect(html).toContain('Ijtimoiy');
+    expect(html).toContain('Ijtimoiy karta');
+    expect(html).toContain('9860********8031');
+    expect(html).toContain('RRN');
+    expect(html).toContain('631810177451');
+
+    // Ruscha bo'lmasligi shart
+    expect(html).not.toContain('Тип карты');
+    expect(html).not.toContain('Социальная карта');
+    expect(html).not.toContain('Социальная');
+  });
+
+  it('renders cash and card details for mixed payment', async () => {
+    await i18n.changeLanguage('ru');
+    const mixedSale = {
+      ...MOCK_SALE,
+      paymentMethod: 'MIXED',
+      cashAmount: 20000,
+      cardAmount: 30000,
+      cardType: 'HUMO',
+      cardCategory: 'SOCIAL',
+      socialCardNumber: '9860031122338031',
+      rrn: '631810177451',
+      paidCash: 20000,
+      paidCard: 30000,
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, { sale: mixedSale })
+    );
+
+    expect(html).toContain('Naqd');
+    expect(html).toContain('Plastik');
+    expect(html).toContain('Karta turi');
+    expect(html).toContain('Ijtimoiy');
+    expect(html).toContain('Ijtimoiy karta');
+    expect(html).toContain('9860********8031');
+    expect(html).toContain('RRN');
+    expect(html).toContain('631810177451');
+  });
 });

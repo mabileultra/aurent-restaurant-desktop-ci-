@@ -17,10 +17,14 @@ describe('buildCashierEscposPayload (pharmacy-frontend)', () => {
     expect(payload.labels.footer).toBe('Xaridingiz uchun rahmat. Chekni saqlang.');
   });
 
-  it('translates corporate card label into Uzbek', () => {
-    const sale = { ...buildEscposTestSale(), cardType: 'CORPORATE' };
+  it('translates corporate card label into Uzbek and formats category separately', () => {
+    const sale = { ...buildEscposTestSale(), paymentMethod: 'CARD', cardType: 'CORPORATE' };
     const payload = buildCashierEscposPayload(sale);
-    expect(payload.labels.plastic).toContain('Plastik');
-    expect(payload.labels.plastic).toContain('Korporativ');
+    expect(payload.labels.plastic).toBe('Plastik');
+    expect(payload.sale.cardCategoryDisplay).toBe('Korporativ');
+
+    const providerSale = { ...buildEscposTestSale(), paymentMethod: 'CARD', cardType: 'HUMO' };
+    const providerPayload = buildCashierEscposPayload(providerSale);
+    expect(providerPayload.labels.plastic).toBe('Plastik · Humo');
   });
 });

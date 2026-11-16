@@ -154,11 +154,11 @@ describe('pharmacy card details (type, RRN, masked social card)', () => {
       t,
     );
 
-    expect(payload.labels.plastic).toBe('Пластик · Humo');
-    expect(payload.labels.cardType).toBe('Тип карты');
+    expect(payload.labels.plastic).toBe('Plastik · Humo');
+    expect(payload.labels.cardType).toBe('Karta turi');
     expect(payload.labels.cardRrn).toBe('RRN');
-    expect(payload.labels.socialCardNumber).toBe('Социальная карта');
-    expect(payload.sale.cardCategoryDisplay).toBe('Корпоративная');
+    expect(payload.labels.socialCardNumber).toBe('Ijtimoiy karta');
+    expect(payload.sale.cardCategoryDisplay).toBe('Korporativ');
     expect(payload.sale.rrn).toBe('631811236997');
     expect(payload.sale.socialCardNumber).toBeNull();
   });

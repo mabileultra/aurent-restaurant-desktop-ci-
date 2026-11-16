@@ -275,7 +275,7 @@
     "cardRrnHint": "12-значный номер RRN со слип-чека терминала",
     "cardRrnLabel": "RRN (код транзакции с терминала)",
     "cardRrnPlaceholder": "Например, 631810177451",
-    "cardRrnRequired": "Введите код RRN (минимум 6 символов)",
+    "cardRrnRequired": "Введите код RRN (ровно 12 цифр)",
     "cardSocial": "Социальная",
     "cardUzcard": "Uzcard",
     "cardTypeLead": "Выберите способ",

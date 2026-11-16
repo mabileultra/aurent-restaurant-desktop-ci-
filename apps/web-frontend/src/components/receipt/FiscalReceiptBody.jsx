@@ -98,10 +98,13 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const total = Number(sale.totalAmount) || 0;
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const cardDetails = extractCardReceiptDetails(sale);
-  const cardProviderText = !normalizeCardCategory(sale.cardType)
+  const hasCardPayment =
+    Number(cardAmt) > 0 || method === 'CARD' || method === 'MIXED';
+  const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
+  const cardProviderText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
     ? cardTypeLabel(sale.cardType, t)
     : null;
-  const cardCategoryText = cardCategoryLabel(cardDetails.cardCategory, t);
+  const cardCategoryText = hasCardPayment ? cardCategoryLabel(cardDetails.cardCategory, t) : null;
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
@@ -281,10 +284,10 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             {cardCategoryText ? (
               <Row label={t('fiscalReceipt.cardType')} value={cardCategoryText} />
             ) : null}
-            {cardDetails.socialCardNumber ? (
+            {isSocialCategory && cardDetails.socialCardNumber ? (
               <Row label={t('fiscalReceipt.socialCardNumber')} value={cardDetails.socialCardNumber} />
             ) : null}
-            {cardDetails.rrn ? (
+            {hasCardPayment && cardDetails.rrn ? (
               <Row label={t('fiscalReceipt.cardRrn')} value={cardDetails.rrn} />
             ) : null}
             {method !== 'CASH' && method !== 'MIXED' && method !== 'CARD' && method !== 'CASHLESS' && method !== 'MPESA' ? (

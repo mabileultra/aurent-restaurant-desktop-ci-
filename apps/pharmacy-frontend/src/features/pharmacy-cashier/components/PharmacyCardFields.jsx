@@ -1,5 +1,6 @@
 import { CARD_CATEGORY } from '@aurent/shared-types';
 import {
+  isValidRrn,
   isValidSocialCardInput,
   maskSocialCardNumber,
   normalizeCardCategory,
@@ -30,11 +31,11 @@ export function createInitialCardDetails() {
 export function validateAndNormalizeCardDetails(state, t) {
   const cardCategory = normalizeCardCategory(state?.cardCategory) || CARD_CATEGORY.PERSONAL;
   const rrn = normalizeRrn(state?.rrn);
-  if (!rrn || rrn.length < 6) {
+  if (!isValidRrn(rrn)) {
     return {
       ok: false,
       field: 'rrn',
-      error: t('pos.cardRrnRequired', { defaultValue: 'Введите код RRN (минимум 6 символов)' }),
+      error: t('pos.cardRrnRequired', { defaultValue: 'Введите код RRN (ровно 12 цифр)' }),
     };
   }
 
