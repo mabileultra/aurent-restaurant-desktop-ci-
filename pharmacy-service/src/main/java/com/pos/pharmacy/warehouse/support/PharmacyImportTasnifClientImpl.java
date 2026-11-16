@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.function.Function;
 
 @Component
 public class PharmacyImportTasnifClientImpl implements PharmacyImportTasnifClient {
@@ -35,16 +36,62 @@ public class PharmacyImportTasnifClientImpl implements PharmacyImportTasnifClien
         if (code == null) {
             return PharmacyImportTasnifHit.miss();
         }
-        URI uri = UriComponentsBuilder
+        PharmacyImportTasnifHit hit = get(
+            b -> b.queryParam("mxikCode", code),
+            1,
+            "mxik=" + code
+        );
+        return withMxik(hit, code);
+    }
+
+    @Override
+    public PharmacyImportTasnifHit fetchByBarcode(String barcode) {
+        if (!StringUtils.hasText(barcode)) {
+            return PharmacyImportTasnifHit.miss();
+        }
+        String digits = barcode.replaceAll("\\D", "");
+        if (digits.length() < 8) {
+            return PharmacyImportTasnifHit.miss();
+        }
+        return get(b -> b.queryParam("shtrixCode", digits), 1, "barcode=" + digits);
+    }
+
+    @Override
+    public PharmacyImportTasnifHit searchByName(String name) {
+        if (!StringUtils.hasText(name) || name.trim().length() < 2) {
+            return PharmacyImportTasnifHit.miss();
+        }
+        String q = name.trim();
+        return get(
+            b -> b.queryParam("search_text", q),
+            8,
+            "name",
+            root -> PharmacyImportTasnifPayloadRead.pickForName(root, q)
+        );
+    }
+
+    private PharmacyImportTasnifHit get(
+        Function<UriComponentsBuilder, UriComponentsBuilder> params,
+        int size,
+        String logKey
+    ) {
+        return get(params, size, logKey, PharmacyImportTasnifPayloadRead::first);
+    }
+
+    private PharmacyImportTasnifHit get(
+        Function<UriComponentsBuilder, UriComponentsBuilder> params,
+        int size,
+        String logKey,
+        Function<JsonNode, PharmacyImportTasnifHit> read
+    ) {
+        UriComponentsBuilder builder = UriComponentsBuilder
             .fromUriString(properties.getBaseUrl())
             .path("/integration-mxik/get/information")
             .queryParam("page", 0)
-            .queryParam("size", 1)
+            .queryParam("size", size)
             .queryParam("type", properties.getSearchType())
-            .queryParam("lang", properties.getDefaultLang())
-            .queryParam("mxikCode", code)
-            .build()
-            .toUri();
+            .queryParam("lang", properties.getDefaultLang());
+        URI uri = params.apply(builder).build().toUri();
         try {
             return restClient.get()
                 .uri(uri)
@@ -52,19 +99,25 @@ public class PharmacyImportTasnifClientImpl implements PharmacyImportTasnifClien
                     if (response.getStatusCode().isError()) {
                         LogUtil.warn(
                             PharmacyImportTasnifClientImpl.class,
-                            "tasnif HTTP {} mxik={}",
+                            "tasnif HTTP {} {}",
                             response.getStatusCode().value(),
-                            code
+                            logKey
                         );
                         return PharmacyImportTasnifHit.miss();
                     }
-                    JsonNode root = response.bodyTo(JsonNode.class);
-                    return PharmacyImportTasnifPayloadRead.first(root);
+                    return read.apply(response.bodyTo(JsonNode.class));
                 });
         } catch (RestClientException ex) {
-            LogUtil.warn(PharmacyImportTasnifClientImpl.class, "tasnif lookup failed mxik={}: {}", code, ex.getMessage());
+            LogUtil.warn(PharmacyImportTasnifClientImpl.class, "tasnif lookup failed {}: {}", logKey, ex.getMessage());
             return PharmacyImportTasnifHit.miss();
         }
+    }
+
+    private static PharmacyImportTasnifHit withMxik(PharmacyImportTasnifHit hit, String code) {
+        if (hit == null || !hit.found() || StringUtils.hasText(hit.mxik())) {
+            return hit == null ? PharmacyImportTasnifHit.miss() : hit;
+        }
+        return new PharmacyImportTasnifHit(hit.found(), hit.labeled(), hit.packageCode(), hit.catalogText(), code);
     }
 
     /** Тасниф принимает ровно 17 цифр; Excel часто теряет ведущий 0. */

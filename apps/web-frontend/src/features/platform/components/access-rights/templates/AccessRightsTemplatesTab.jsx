@@ -15,10 +15,6 @@ export default function AccessRightsTemplatesTab({
   businessTypes = [],
   rawCatalog = [],
   statsByCode = new Map(),
-  totalEmployees = 0,
-  standardEmployees = 0,
-  exceptionEmployees = 0,
-  businessTypesCount = 0,
   selectedBT = 'RESTAURANT',
   initialRole = 'ADMIN',
   onSelectBT,
@@ -95,6 +91,11 @@ export default function AccessRightsTemplatesTab({
   const currentBTName = resolveBusinessTypeName(selectedBT, isRu ? 'ru' : 'uz');
   const currentRoleName = resolveRoleLabel(flow.currentRole, isRu ? 'ru' : 'uz');
 
+  const selectedBtStats = statsByCode.get(String(selectedBT || '').toUpperCase());
+  const selectedEmployees = Number(selectedBtStats?.totalEmployees || 0);
+  const selectedExceptions = Number(selectedBtStats?.exceptionCount || 0);
+  const selectedRolesCount = rolesForBusinessType(selectedBT).length;
+
   const handleSelectRole = (btCode, roleCode) => {
     if (btCode === selectedBT && roleCode === flow.currentRole) return;
     if (flow.isDirty) {
@@ -114,10 +115,11 @@ export default function AccessRightsTemplatesTab({
   return (
     <div className="space-y-6">
       <AccessRightsTemplatesKPIs
-        totalEmployees={totalEmployees}
-        standardEmployees={standardEmployees}
-        exceptionEmployees={exceptionEmployees}
-        businessTypesCount={businessTypesCount}
+        totalEmployees={selectedEmployees}
+        standardEmployees={Math.max(0, selectedEmployees - selectedExceptions)}
+        exceptionEmployees={selectedExceptions}
+        rolesCount={selectedRolesCount}
+        scopeLabel={currentBTName}
       />
 
       <div className="flex flex-col lg:flex-row items-start gap-6">

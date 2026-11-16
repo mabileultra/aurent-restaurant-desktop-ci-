@@ -49,7 +49,7 @@ public class PriceRegistryExcelParser {
                 if (row == null) {
                     continue;
                 }
-                String pharmId = cell(row, headers.pharmIdCol);
+                String pharmId = normalizePharmId(cell(row, headers.pharmIdCol));
                 String barcode = normalizeBarcode(cell(row, headers.barcodeCol));
                 String name = cell(row, headers.nameCol);
                 BigDecimal limit = parseMoney(cell(row, headers.priceCol));
@@ -91,7 +91,8 @@ public class PriceRegistryExcelParser {
             int pharm = -1;
             int barcode = -1;
             int name = -1;
-            int price = -1;
+            int retail = -1;
+            int priceFallback = -1;
             short last = row.getLastCellNum();
             for (int c = 0; c < last; c++) {
                 String h = cell(row, c);
@@ -117,15 +118,17 @@ public class PriceRegistryExcelParser {
                     || n.contains("trade")
                     || n.contains("nom"))) {
                     name = c;
-                } else if (price < 0 && (n.contains("предел")
-                    || n.contains("рознич")
+                } else if (retail < 0 && n.contains("рознич")) {
+                    retail = c;
+                } else if (priceFallback < 0 && (n.contains("предел")
                     || (n.contains("цена") && n.contains("ндс"))
                     || n.contains("limit")
                     || n.contains("reference")
-                    || n.contains("мах") && n.contains("нарх"))) {
-                    price = c;
+                    || (n.contains("мах") && n.contains("нарх")))) {
+                    priceFallback = c;
                 }
             }
+            int price = retail >= 0 ? retail : priceFallback;
             if (price >= 0) {
                 return new HeaderMap(r, pharm, barcode, name, price);
             }
@@ -138,6 +141,17 @@ public class PriceRegistryExcelParser {
             return null;
         }
         return formatter.formatCellValue(row.getCell(col)).trim();
+    }
+
+    private static String normalizePharmId(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        if (trimmed.matches("\\d+\\.0+")) {
+            return trimmed.substring(0, trimmed.indexOf('.'));
+        }
+        return trimmed;
     }
 
     private static String normalizeBarcode(String raw) {

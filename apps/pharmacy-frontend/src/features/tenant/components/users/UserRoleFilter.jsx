@@ -7,12 +7,7 @@ export const PLATFORM_FILTER_ROLES = [
   'ADMIN',
   'MANAGER',
   'CASHIER',
-  'WAITER',
-  'COOK',
-  'COURIER',
   'ACCOUNTANT',
-  'PLATFORM_ADMIN',
-  'PLATFORM_ANALYTICS',
 ];
 
 export default function UserRoleFilter({ t, role = '', onChange }) {

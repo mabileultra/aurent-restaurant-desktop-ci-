@@ -1,14 +1,6 @@
-import CashierBottomNav from '../../../../components/layout/cashier/bottom-nav/CashierBottomNav';
 import { usePayFlowTransition } from '../../hooks/usePayFlowTransition';
 import CashierPayColumn from '../register-pay-rail/CashierPayColumn';
 
-/**
- * Единый каркас кассы: stage + правая оплата + нижнее меню.
- * Слева (children) — свой контент: товары/чек, аптека, ресторан…
- *
- * @param {object} pay — props для PayColumn + onPayFlowClosed
- * @param {import('react').ComponentType} [PayColumn] — колонка оплаты (аптека может подменить)
- */
 export default function CashierRegisterShell({
   splitClassName = '',
   stageClassName = '',
@@ -38,7 +30,6 @@ export default function CashierRegisterShell({
         <div className={stageClass}>
           {children}
           <PayColumn {...payColumnProps} />
-          <CashierBottomNav className="cashier-register__bottom-nav" />
         </div>
       </div>
     </div>

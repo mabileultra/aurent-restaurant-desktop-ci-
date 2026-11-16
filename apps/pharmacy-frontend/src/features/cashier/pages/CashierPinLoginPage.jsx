@@ -1,3 +1,4 @@
+import { getMainAppUrl } from '../../../config/env';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import CashierPinLoginVisual from '../components/pin-login/CashierPinLoginVisual';
 import CashierPinLoginHeader from '../components/pin-login/CashierPinLoginHeader';
@@ -8,6 +9,8 @@ import '../../../styles/cashier/pin-login.css';
 
 export default function CashierPinLoginPage() {
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
+  const isDesktopApp =
+    typeof window !== 'undefined' && Boolean(window.desktopCashier?.isDesktop);
   const {
     t,
     touchLayout,
@@ -68,6 +71,14 @@ export default function CashierPinLoginPage() {
             />
 
             <footer className="cashier-pin-login__footer">
+              {!isDesktopApp ? (
+                <a
+                  href={`${getMainAppUrl()}/login`}
+                  className="cashier-pin-login__office-link"
+                >
+                  Вход в кабинет (aurent.uz)
+                </a>
+              ) : null}
               <p className="cashier-pin-login__copyright">
                 {t('login.footer', { year: new Date().getFullYear() })}
               </p>

@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
 import { Plus } from 'lucide-react';
-import { stockReportApi } from '../../../api';
 import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
@@ -27,7 +26,7 @@ export default function StockInventoriesReportPage({ hideTitle = false } = {}) {
         )}
         <div className="flex flex-wrap items-center gap-2">
           <ReportExportButton
-            fetchBlob={() => stockReportApi.exportInventories(r.exportParams)}
+            fetchBlob={r.fetchExportBlob}
             filenamePrefix="stock_inventories"
             disabled={!r.from || !r.to}
           />

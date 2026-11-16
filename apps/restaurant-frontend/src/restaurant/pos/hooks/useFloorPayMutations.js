@@ -72,7 +72,7 @@ export function useFloorPayMutations({
       playPosSound('success');
       toast.success(t('rst.order.paid'));
       // Guest display THANKS via paidReceipt.sale.
-      // Silent ESC/POS only for fiscalized; otherwise open modal (ordinary or fiscal browser print).
+      // Auto-print only when fiscalized. No tax integration → no paper after pay (ordinary = manual reprint).
       if (result?.sale) {
         const needsFiscal = saleNeedsFiscalPrint(result.sale);
         const escpos = needsFiscal && isCashierEscposPrintAvailable();
@@ -94,7 +94,7 @@ export function useFloorPayMutations({
             );
           }
         }
-        const showPrintModal = !escpos;
+        const showPrintModal = needsFiscal && !escpos;
         setPaidReceipt({
           sale: result.sale,
           autoPrint: showPrintModal,
@@ -104,10 +104,6 @@ export function useFloorPayMutations({
     },
     onError: (err) => {
       playPosSound('error');
-      if (err?.code === 'MARKING_NO_INTEGRATION' || err?.message === 'MARKING_NO_INTEGRATION') {
-        toast.error(t('rst.integrations.markingApiDisabled'));
-        return;
-      }
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {
         toast.error(t('cashRegisters.multikassa.fiscalOfflineBlocked'));
         return;

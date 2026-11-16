@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useShouldUseOfflinePos } from '../../store/connectivityStore';
 import BillingPaymentNoticeOverlay from '../../features/billing/BillingPaymentNoticeOverlay';
 import { useBillingPaymentNotice } from '../../features/billing/useBillingPaymentNotice';
+import { canAccessBilling } from '../../pharmacy/app/pharmacyRouteAccess';
 
 const RETAIL_BILLING = '/billing';
 const RESTAURANT_BILLING = '/rst/admin/billing';
@@ -62,11 +63,13 @@ export default function BillingAccessGuard({ children }) {
     noticeRequired,
   });
 
+  const canPayBilling = canAccessBilling(user?.role);
+
   const noticeOverlay = (
     <BillingPaymentNoticeOverlay
       open={visible}
       onClose={dismiss}
-      isAdmin={user?.role === 'ADMIN'}
+      isAdmin={canPayBilling}
       billingPath={billingHomeFor(location.pathname)}
       noticeKind={data?.noticeKind}
       graceDaysLeft={data?.graceDaysLeft}
@@ -86,8 +89,8 @@ export default function BillingAccessGuard({ children }) {
     );
   }
 
-  if (user?.role === 'ADMIN' && onBillingPage) return children;
-  if (user?.role === 'ADMIN') {
+  if (canPayBilling && onBillingPage) return children;
+  if (canPayBilling) {
     return <Navigate to={billingHomeFor(location.pathname)} replace />;
   }
 

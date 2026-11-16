@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
-import { getMainAppUrl } from '../../config/env';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
-import { logoutAndResetSession } from '../../utils/authSession';
+import { leaveToMainLogin } from '../../utils/leaveToMainLogin';
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import { syncRootTheme } from '../../store/themeStore';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
+import { canAccessBilling } from './pharmacyRouteAccess';
 import {
   PHARM_FINANCE_CHILDREN,
   PHARM_REGISTER_CHILDREN,
@@ -98,21 +98,25 @@ export function usePharmacyAdminShell() {
     if (pathStarts(path, '/users')) setUsersOpen(true);
   }, [path]);
 
-  const filterByModule = (items) => items.filter((item) => !item.moduleId || hasModule(item.moduleId));
+  const filterByModule = (items) => items.filter((item) => {
+    if (Array.isArray(item.anyModules) && item.anyModules.length > 0) {
+      return item.anyModules.some((id) => hasModule(id));
+    }
+    return !item.moduleId || hasModule(item.moduleId);
+  });
   const stockNav = filterByModule(PHARM_STOCK_CHILDREN);
-  const salesNav = PHARM_SALES_CHILDREN;
+  const salesNav = filterByModule(PHARM_SALES_CHILDREN);
   const financeNav = filterByModule(PHARM_FINANCE_CHILDREN);
   const registersNav = filterByModule(PHARM_REGISTER_CHILDREN);
   const reportsSalesNav = filterByModule(PHARM_REPORT_SALES_CHILDREN);
   const reportsStockNav = filterByModule(PHARM_REPORT_STOCK_CHILDREN);
   const usersNav = filterByModule(PHARM_USER_CHILDREN);
   const visibleRest = filterByModule(PHARM_REST_NAV).filter(
-    (item) => item.to !== '/billing' || user?.role === 'ADMIN'
+    (item) => item.to !== '/billing' || canAccessBilling(user?.role)
   );
 
   const handleLogout = () => {
-    logoutAndResetSession();
-    window.location.replace(`${getMainAppUrl()}/login`);
+    leaveToMainLogin();
   };
   const navLabelsVisible = isDesktop ? sidebarNavExpanded : true;
   const toggleSidebar = () => {

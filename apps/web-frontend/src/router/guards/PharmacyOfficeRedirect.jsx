@@ -48,17 +48,13 @@ export default function PharmacyOfficeRedirect({ children }) {
     return () => { cancelled = true; };
   }, [isLoading, isPharmacyCompany, onOffice, pathname, search, hopFailed]);
 
-  if (!onOffice || isLoading || !isPharmacyCompany) {
-    return children;
+  if (!onOffice) return children;
+
+  if (isLoading || (isPharmacyCompany && isPharmacyAppSplitEnabled() && !hopFailed)) {
+    return <div className="min-h-screen bg-white dark:bg-slate-950" />;
   }
 
-  if (isPharmacyAppSplitEnabled() && !hopFailed) {
-    return (
-      <div className="p-6 text-slate-600 dark:text-slate-300">
-        Перенаправление в приложение аптеки…
-      </div>
-    );
-  }
+  if (!isPharmacyCompany) return children;
 
   return <Navigate to="/cashier/pos" replace />;
 }

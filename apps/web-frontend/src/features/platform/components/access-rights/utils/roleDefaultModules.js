@@ -83,6 +83,7 @@ const MODULE_SPECS = [
   { id: 'reportsStockInventories', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockTransfers', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsPriceRegistry', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
+  { id: 'reportsDrugRegistry', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'stores', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersList', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersPrinterSettings', group: 'settings', roles: ['ADMIN'] },
@@ -125,7 +126,6 @@ export function getScopeForRole(roleCode, businessType) {
     return new Set(PLATFORM_MODULE_KEYS);
   }
 
-  const isCashierScope = role === 'CASHIER' || role === 'WAITER' || role === 'COOK';
   const isFinanceScope = role === 'ACCOUNTANT';
 
   return new Set(
@@ -133,8 +133,9 @@ export function getScopeForRole(roleCode, businessType) {
       if (PLATFORM_MODULE_KEYS.has(m.id)) return false;
       if (!isModuleVisibleForBusinessType(m.id, businessType)) return false;
 
-      // Cashier/Waiter: only POS-facing modules. Admin/Manager: full type-filtered catalog (incl. cashierPos).
-      if (isCashierScope) return m.group === 'cashier' || m.group === 'restaurant';
+      // Cook: kitchen only. Cashier/Waiter: POS + hall. Admin/Manager: full type-filtered catalog.
+      if (role === 'COOK') return m.id === 'restaurantKitchen';
+      if (role === 'CASHIER' || role === 'WAITER') return m.group === 'cashier' || m.group === 'restaurant';
       if (isFinanceScope) return m.group === 'finance';
       return true;
     }).map((m) => m.id)

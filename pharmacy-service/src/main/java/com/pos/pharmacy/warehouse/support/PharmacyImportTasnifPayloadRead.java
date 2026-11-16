@@ -5,6 +5,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Разбор ответа tasnif.soliq.uz /integration-mxik/get/information. */
 public final class PharmacyImportTasnifPayloadRead {
@@ -41,12 +42,57 @@ public final class PharmacyImportTasnifPayloadRead {
         String description = text(node, "description");
         String catalog = join(name, description);
         boolean labeled = node.path("label").asInt(0) != 0;
+        String mxik = firstNonBlank(text(node, "mxik"), text(node, "mxikCode"), text(node, "ikpu"));
         return new PharmacyImportTasnifHit(
             true,
             labeled,
             PharmacyImportTasnifPackagePick.single(packages),
-            catalog
+            catalog,
+            mxik
         );
+    }
+
+    /** Поиск по имени: точное совпадение name, иначе единственный hit. */
+    public static PharmacyImportTasnifHit pickForName(JsonNode root, String queryName) {
+        if (root == null || !root.path("success").asBoolean(false)) {
+            return PharmacyImportTasnifHit.miss();
+        }
+        JsonNode data = root.path("data");
+        if (!data.isArray() || data.isEmpty()) {
+            return PharmacyImportTasnifHit.miss();
+        }
+        String want = queryName == null ? "" : queryName.trim().toLowerCase(Locale.ROOT);
+        PharmacyImportTasnifHit exact = null;
+        for (JsonNode node : data) {
+            PharmacyImportTasnifHit hit = item(node);
+            if (!hit.found()) {
+                continue;
+            }
+            String hitName = text(node, "name");
+            if (hitName != null && hitName.trim().toLowerCase(Locale.ROOT).equals(want)) {
+                exact = hit;
+                break;
+            }
+        }
+        if (exact != null) {
+            return exact;
+        }
+        if (data.size() == 1) {
+            return item(data.get(0));
+        }
+        return PharmacyImportTasnifHit.miss();
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (StringUtils.hasText(value)) {
+                return value.trim();
+            }
+        }
+        return null;
     }
 
     private static String join(String left, String right) {

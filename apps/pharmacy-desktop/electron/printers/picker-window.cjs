@@ -87,7 +87,7 @@ function buildPickerHtml(meta) {
           + '<button class="secondary" id="refresh">Обновить</button>'
           + '<button class="secondary" id="cancel">Закрыть</button>'
           + '</div>';
-        document.getElementById('refresh').onclick = load;
+        document.getElementById('refresh').onclick = () => load(true);
         document.getElementById('cancel').onclick = () => window.printerPicker.cancel();
         return;
       }
@@ -115,7 +115,7 @@ function buildPickerHtml(meta) {
           render();
         });
       });
-      document.getElementById('refresh').onclick = load;
+      document.getElementById('refresh').onclick = () => load(true);
       const saveBtn = document.getElementById('save');
       saveBtn.disabled = !selected;
       saveBtn.onclick = () => {
@@ -125,10 +125,10 @@ function buildPickerHtml(meta) {
       };
     }
 
-    async function load() {
+    async function load(forceRefresh = false) {
       content.innerHTML = '<p class="hint">Загружаем список принтеров…</p>';
       try {
-        const data = await window.printerPicker.load();
+        const data = await window.printerPicker.load({ forceRefresh: Boolean(forceRefresh) });
         printers = Array.isArray(data?.printers) ? data.printers : [];
         if (!selected) {
           const fromSettings = data?.current;
@@ -141,7 +141,7 @@ function buildPickerHtml(meta) {
       }
     }
 
-    load();
+    load(false);
   </script>
 </body>
 </html>`;
@@ -185,11 +185,14 @@ function showPrinterPickerWindow(mainWindow, options = {}) {
       resolve(value);
     };
 
-    ipcMain.handle('printer-picker:load', async () => {
-      const wc = mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents : win.webContents;
+    ipcMain.handle('printer-picker:load', async (_e, opts) => {
+      const { listSystemPrinters } = require('./resolve.cjs');
       let printers = [];
       try {
-        printers = await wc.getPrintersAsync();
+        printers = await listSystemPrinters({
+          forceRefresh: Boolean(opts?.forceRefresh),
+          fallbackWebContents: win.webContents,
+        });
       } catch {
         printers = [];
       }

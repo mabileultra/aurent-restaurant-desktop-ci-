@@ -50,6 +50,22 @@ describe('parseMkFiscalPrinters', () => {
     expect(pickMkFiscalPrinterToSelect(dummy)).toBe('(не печатать)');
   });
 
+  it('falls back to PDF, never XP thermal (avoids MK+Aurent double paper)', () => {
+    const onlyXpAndPdf = parseMkFiscalPrinters({
+      data: {
+        result: {
+          printers: [
+            { PrinterName: 'XP-80C', IsOnline: true },
+            { PrinterName: 'Microsoft Print to PDF', IsOnline: true },
+          ],
+          selectedPrinter: 'XP-80C',
+        },
+      },
+    });
+    expect(pickMkFiscalSilentPrinter(onlyXpAndPdf)).toBe('');
+    expect(pickMkFiscalPrinterToSelect(onlyXpAndPdf)).toBe('Microsoft Print to PDF');
+  });
+
   it('does not treat paperWidths as printers', () => {
     const parsed = parseMkFiscalPrinters(MK_FISCAL_1_2);
     expect(parsed.labels).not.toContain('58');

@@ -41,6 +41,16 @@ export const pharmacyWarehouseApi = {
   priceRegistryApply: (params) => api.post('/pharmacy/price-registry/apply', null, { params, timeout: 120000 }),
   priceRegistryJournal: (params) => api.get('/pharmacy/price-registry/journal', { params }),
   priceRegistryLatest: () => api.get('/pharmacy/price-registry/latest'),
+  drugRegistrySearch: (q) => api.get('/pharmacy/drug-registry/search', { params: { q } }),
+  drugRegistryLatest: () => api.get('/pharmacy/drug-registry/latest'),
+  drugRegistryUpload: (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post('/pharmacy/drug-registry/upload', fd, {
+      headers: { 'Content-Type': undefined },
+      timeout: 180000,
+    });
+  },
   importParse: (id, file) => {
     const fd = new FormData();
     fd.append('file', file);

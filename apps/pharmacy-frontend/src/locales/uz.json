@@ -105,6 +105,7 @@
     "reportsStockInventories": "Inventarizatsiya",
     "reportsStockTransfers": "Ko'chirishlar",
     "reportsPriceRegistry": "Cheklangan narxlar reyestri",
+    "reportsDrugRegistry": "Davlat dori reyestri",
     "stockGroup": "Ombor",
     "stockProducts": "Ombordagi mahsulotlar",
     "stockReceipts": "Kirim (hujjat)",
@@ -4865,6 +4866,16 @@
     "footerSupportText": "To‘lov bo‘yicha savollar: Telegram @aurent_support",
     "deferralBanner": "Sizga {{date}} kuni oxirigacha to‘lovni kechiktirish berildi. Kirish cheklanmasligi uchun shu sanagacha balansni to‘ldiring."
   },
+  "drugRegistry": {
+    "title": "Davlat dori reyestri",
+    "subtitle": "Umumiy ma’lumotnoma: mamlakat, ishlab chiqaruvchi va retsept belgisi.",
+    "latest": "Yuklangan: {{file}}, yozuvlar: {{rows}}",
+    "empty": "Reyestr hali yuklanmagan",
+    "upload": "ZIP yoki Excel yuklash",
+    "hint": "files.uzpharm-control.uz saytida captcha bor. №30 qo‘shimchani qo‘lda yuklab oling va shu yerga joylang.",
+    "uploadDone": "Import: {{rows}} yozuv, to‘ldirilgan kartochkalar: {{filled}}",
+    "alreadyLoaded": "Bu fayl allaqachon yuklangan"
+  },
   "priceRegistry": {
     "title": "Cheklangan chakana narxlar reyestri",
     "subtitle": "pharm.gov.uz bilan solishtirish: edi → chegara → bo‘ladi. Pastga tushirish faqat «Qo‘llash» tugmasi bilan.",
@@ -5235,6 +5246,7 @@
     "productModalEditTitle": "Mahsulotni tahrirlash",
     "productCreated": "Mahsulot yaratildi",
     "productUpdated": "Mahsulot yangilandi",
+    "drugRegistryFrom": "Reestr",
     "productMxik": "MXIK (IKPU)",
     "productMxikPh": "MXIK qidiruvi uchun kod yoki nom…",
     "mxikQueryShort": "MXIK qidiruvi uchun kamida 3 belgi kiriting",

@@ -1,7 +1,10 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const test = require('node:test');
-const { writeLogoPngTempFile } = require('../electron/cashier-receipt-escpos/escpos-logo-file.cjs');
+const {
+  writeLogoPngTempFile,
+  clearLogoPngCache,
+} = require('../electron/cashier-receipt-escpos/escpos-logo-file.cjs');
 
 // 1x1 transparent PNG data URL
 const TINY_PNG_DATA_URL =
@@ -45,4 +48,18 @@ test('writeLogoPngTempFile respects maxHeightMm bounds without error', () => {
   assert.ok(fs.existsSync(filePath));
 
   fs.unlinkSync(filePath);
+});
+
+test('writeLogoPngTempFile reuses cached PNG buffer across calls and clearLogoPngCache resets it', () => {
+  clearLogoPngCache();
+  const p1 = writeLogoPngTempFile(TINY_PNG_DATA_URL, `test-cache-1-${Date.now()}`, { maxHeightMm: 20 });
+  const b1 = fs.readFileSync(p1);
+  fs.unlinkSync(p1);
+
+  const p2 = writeLogoPngTempFile(TINY_PNG_DATA_URL, `test-cache-2-${Date.now()}`, { maxHeightMm: 20 });
+  const b2 = fs.readFileSync(p2);
+  fs.unlinkSync(p2);
+
+  assert.deepEqual(b1, b2);
+  clearLogoPngCache();
 });

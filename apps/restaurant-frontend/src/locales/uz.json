@@ -1491,7 +1491,7 @@
       "registersLoadFailed": "Filial kassalarini yuklab bo‘lmadi",
       "registerOption": "Kassa №{{number}} · {{model}}",
       "selectRegister": "Filial kassasi",
-      "subtitle": "ASL Belgisi (markirovka) va Multikassa / OFD soliq moduli — do‘konlar bilan bir xil sxema",
+      "subtitle": "Multikassa / OFD soliq moduli",
       "taxLead": "Restoran savdolarini fiskallashtirish va OFD QR — grocery kassasi bilan bir xil.",
       "taxReceiptHint": "Stol to‘lovi Multikassa orqali: fiskal belgi va QR retail cheklari kabi chiqadi.",
       "taxTitle": "Soliq integratsiyasi (Multikassa / OFD)",

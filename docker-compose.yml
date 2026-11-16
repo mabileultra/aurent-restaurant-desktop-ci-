@@ -388,6 +388,10 @@ services:
       PHARMACY_REDIS_ENABLED: "true"
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      PHARMACY_DRUG_REGISTRY_ENABLED: ${PHARMACY_DRUG_REGISTRY_ENABLED:-true}
+      PHARMACY_DRUG_REGISTRY_URL: ${PHARMACY_DRUG_REGISTRY_URL:-}
+      PHARMACY_DRUG_REGISTRY_FILE: ${PHARMACY_DRUG_REGISTRY_FILE:-}
+      PHARMACY_DRUG_REGISTRY_PAGE_URL: ${PHARMACY_DRUG_REGISTRY_PAGE_URL:-https://old.uzpharm-control.uz/ru/pages/state-register-of-medicines-and-medical-products}
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - "8089:8089"

@@ -6,15 +6,19 @@ import {
   IDEMPOTENCY_HEADER,
   isFinancialOrCriticalEndpoint,
 } from '../utils/idempotencyKey';
-import { forceAuthReLogin } from '../utils/authSessionExpiry';
-import { isPublicAppPath } from '../utils/publicAppPaths';
+import {
+  applyBearerToken,
+  clearAuthSessionForPublicOrProtected,
+  extractBearerToken,
+  isValidJwtFormat,
+  refreshAuthSession,
+} from '../utils/refreshAuthSession';
 import { isApiNetworkError, notifyNetworkOffline, notifyNetworkOnline } from '../utils/apiNetworkError';
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
 import {
   markApiUnreachable,
   refreshConnectivityStatus,
 } from '../store/connectivityStore';
-import { normalizeCompanyLoginCode } from '../utils/authLogin';
 
 let connectivityRefreshTimer;
 let isAppMarkedOffline = false;
@@ -92,38 +96,23 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (!original?._retry && status === 401) {
+    if (!original?._retry && status === 401 && !String(original?.url || '').includes('/auth/refresh')) {
       original._retry = true;
       const { token } = useAuthStore.getState();
-      const jwtParts = typeof token === 'string' ? token.split('.').length : 0;
-      if (!token || jwtParts !== 3) {
-        if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
-          useAuthStore.getState().logout();
-          return Promise.reject(error);
-        }
-        forceAuthReLogin();
+      if (!isValidJwtFormat(token)) {
+        clearAuthSessionForPublicOrProtected();
         return Promise.reject(error);
       }
       try {
-        const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`, null, {
-          headers: { Authorization: `Bearer ${token}` },
+        const sentToken = extractBearerToken(original.headers);
+        const { token: newToken } = await refreshAuthSession({
+          expectedToken: sentToken,
+          baseURL: api.defaults.baseURL,
           timeout: api.defaults.timeout ?? 15_000,
         });
-        const { token: newToken, ...profile } = res.data;
-        const prevUser = useAuthStore.getState().user;
-        const companyLoginCode =
-          normalizeCompanyLoginCode(profile.companyLoginCode)
-          || normalizeCompanyLoginCode(prevUser?.companyLoginCode);
-        useAuthStore.getState().setAuth(newToken, {
-          ...prevUser,
-          ...profile,
-          companyLoginCode: companyLoginCode || prevUser?.companyLoginCode,
-        });
-        original.headers = original.headers || {};
-        original.headers.Authorization = `Bearer ${newToken}`;
+        original.headers = applyBearerToken(original.headers, newToken);
         return api(original);
       } catch {
-        forceAuthReLogin();
         return Promise.reject(error);
       }
     }

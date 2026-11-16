@@ -26,6 +26,7 @@
 }
 
 .login-card {
+  position: relative;
   width: min(100%, 28rem);
   background: var(--ps-bg-card);
   border: 1px solid var(--ps-line);
@@ -203,6 +204,22 @@
 .login-form__submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.login-card__busy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ps-bg-card) 88%, transparent);
+  color: var(--ps-ink, #0f172a);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .login-card__secure {

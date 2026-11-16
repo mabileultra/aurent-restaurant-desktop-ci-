@@ -186,16 +186,13 @@ export default function UserFormModalFields({
                   options={(
                     roleAllowList?.length
                       ? roleAllowList
-                      : ['ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
+                      : ['ADMIN', 'MANAGER', 'CASHIER', 'ACCOUNTANT']
                   ).map((role) => ({
                     value: role,
                     label: ({
                       ADMIN: t('users.roleAdmin', { defaultValue: 'Admin' }),
                       MANAGER: t('users.roleManager', { defaultValue: 'Menejer' }),
                       CASHIER: t('users.roleCashier', { defaultValue: 'Kassir' }),
-                      WAITER: t('users.roleWaiter', { defaultValue: 'Ofitsiant' }),
-                      COURIER: t('users.roleCourier', { defaultValue: 'Kuryer' }),
-                      COOK: t('users.roleCook', { defaultValue: 'Oshpaz' }),
                       ACCOUNTANT: t('users.roleAccountant', { defaultValue: 'Buxgalter' }),
                     })[role] ?? t(`roles.${role}`, { defaultValue: role }),
                   }))}

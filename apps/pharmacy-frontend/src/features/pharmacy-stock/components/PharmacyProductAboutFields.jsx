@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { usePharmacyCatalogOptions } from '../hooks/usePharmacyCatalogOptions';
 import PharmacyPackageField from './PharmacyPackageField';
+import PharmacyProductNameField from './PharmacyProductNameField';
 
 /** Карточка товара: одинаковая сетка для создания, «О товаре» и редактирования. */
 export default function PharmacyProductAboutFields({
@@ -27,14 +28,7 @@ export default function PharmacyProductAboutFields({
 
   return (
     <div className="pharm-about">
-      <label className="pharm-product-modal__field">
-        <span className="pharm-product-modal__label">{req(t('pharmacyStock.colName'))}</span>
-        <input
-          className="pharm-product-modal__input"
-          value={form.name}
-          onChange={(e) => patch('name', e.target.value)}
-        />
-      </label>
+      <PharmacyProductNameField t={t} form={form} patch={patch} />
 
       <div className="pharm-product-modal__field pharm-product-modal__field--relative">
         <span className="pharm-product-modal__label">{t('pharmacyStock.productMxik')}</span>

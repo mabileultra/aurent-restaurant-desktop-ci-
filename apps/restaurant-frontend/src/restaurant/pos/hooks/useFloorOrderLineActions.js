@@ -14,9 +14,6 @@ export function useFloorOrderLineActions({
   updateItemMutation,
   removeItemMutation,
   paintOptimisticAdd,
-  aslMarkingEnabled,
-  aslReady,
-  resolveEnabled,
   compose,
 }) {
   const {
@@ -43,13 +40,6 @@ export function useFloorOrderLineActions({
     if (activeOrderId && !canMutateOrderLines) {
       toastForeignTableForbidden();
       return;
-    }
-    if (menuItem.markedProduct) {
-      const enabled = aslReady ? aslMarkingEnabled : await resolveEnabled();
-      if (!enabled) {
-        toast.error(t('rst.integrations.markingApiDisabled'));
-        return;
-      }
     }
     if (activeOrderId) {
       if (!isOrderOpenLike(order)) {

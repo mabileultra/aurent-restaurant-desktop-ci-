@@ -15,16 +15,10 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const MANAGEMENT_ROLES = [
   'ADMIN',
   'MANAGER',
-  'SUPER_ADMIN',
-  'PLATFORM_ADMIN',
-  'PLATFORM_ANALYTICS',
 ];
 
 export const STAFF_ROLES = [
   'CASHIER',
-  'WAITER',
-  'COOK',
-  'COURIER',
   'ACCOUNTANT',
 ];
 

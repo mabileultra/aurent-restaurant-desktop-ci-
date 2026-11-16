@@ -32,6 +32,7 @@ function PharmacyPosShellInner() {
           cashierRoleLabel={p.cashierRoleLabel}
           openShift={p.openShift}
           storeId={p.storeId}
+          canOpenOffice={p.canOpenOffice}
           onLogout={p.handleLogout}
           cashierTheme={p.cashierTheme}
           toggleCashierTheme={p.toggleCashierTheme}

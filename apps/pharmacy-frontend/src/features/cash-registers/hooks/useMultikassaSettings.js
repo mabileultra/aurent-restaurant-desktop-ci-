@@ -322,7 +322,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     setLoadingPrinters(true);
     setPrintersNote('');
     try {
-      const result = await ensureMkFiscalPrinter(url);
+      const result = await ensureMkFiscalPrinter(url, { forceRefresh: true });
       setMkPrinterReady(Boolean(result.silent));
       if (!result.labels.length) {
         setPrintersNote(t('cashRegisters.multikassa.printersEmpty'));

@@ -5,8 +5,6 @@ import toast from 'react-hot-toast';
 import { cashRegisterApi } from '../../../api';
 import { toastApiError } from '../../../utils/apiError';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
-import { storeSupportsAslMarking } from '../utils/storeAslMarkingSupport';
-import { normalizeBusinessTypeCode } from '../../../config/productCatalogConfig';
 
 /**
  * Workspace store + cash registers for integrations settings.
@@ -26,10 +24,6 @@ export function useIntegrationsAdminPage() {
       || { id, name: workspace.storeName, businessType: 'RESTAURANT' }
     );
   }, [workspace]);
-
-  const aslSupported = storeSupportsAslMarking(
-    normalizeBusinessTypeCode(store?.businessType) || 'RESTAURANT',
-  );
 
   const registersQuery = useQuery({
     queryKey: ['rst-cash-registers', workspace.storeId],
@@ -75,7 +69,6 @@ export function useIntegrationsAdminPage() {
     t,
     workspace,
     store,
-    aslSupported,
     registers,
     registersLoading: registersQuery.isLoading,
     isLoading: registersQuery.isLoading,

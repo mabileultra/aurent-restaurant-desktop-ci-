@@ -111,6 +111,7 @@
     "reportsStockInventories": "Инвентаризация",
     "reportsStockTransfers": "Перемещения",
     "reportsPriceRegistry": "Реестр предельных цен",
+    "reportsDrugRegistry": "Госреестр лекарств",
     "stockGroup": "Склад",
     "stockProducts": "Товары на складе",
     "stockReceipts": "Приход (документ)",
@@ -5097,6 +5098,16 @@
     "footerSupportText": "Вопросы по оплате: Telegram @aurent_support",
     "deferralBanner": "Вам предоставлена отсрочка оплаты до {{date}} включительно. Пожалуйста, пополните баланс до этой даты, чтобы доступ не был ограничен."
   },
+  "drugRegistry": {
+    "title": "Государственный реестр лекарств",
+    "subtitle": "Общий справочник: страна, производитель и «по рецепту» для карточек и импорта.",
+    "latest": "Загружено: {{file}}, записей: {{rows}}",
+    "empty": "Реестр ещё не загружен",
+    "upload": "Загрузить ZIP или Excel",
+    "hint": "На сайте files.uzpharm-control.uz стоит капча. Скачайте дополнение к реестру №30 вручную и загрузите сюда.",
+    "uploadDone": "Импорт: {{rows}} записей, дописано карточек: {{filled}}",
+    "alreadyLoaded": "Этот файл уже был загружен"
+  },
   "priceRegistry": {
     "title": "Реестр предельных розничных цен",
     "subtitle": "Сверка с pharm.gov.uz: было → предел → станет. Снижение только по кнопке «Применить».",
@@ -5479,6 +5490,7 @@
     "productModalEditTitle": "Редактировать товар",
     "productCreated": "Товар создан",
     "productUpdated": "Товар обновлён",
+    "drugRegistryFrom": "Реестр",
     "productMxik": "МХИК (ИКПУ)",
     "productMxikPh": "Код или название для поиска МХИК…",
     "mxikQueryShort": "Введите не меньше 3 символов для поиска МХИК",

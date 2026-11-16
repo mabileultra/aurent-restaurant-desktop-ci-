@@ -4,10 +4,10 @@ import AuthAcceptPage from '../../features/auth/pages/AuthAcceptPage';
 import LoginPage from '../../features/auth/pages/LoginPage';
 import PharmacyPosShell from '../pos/PharmacyPosShell';
 import PharmacyAuthGuard from './PharmacyAuthGuard';
+import { PharmacyHomeRedirect, PharmacyPosGuard, PharmacyRouteGuard } from './PharmacyRouteGuard';
 import PharmacyAdminShell from './PharmacyAdminShell';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
 import {
-  PHARM_DASHBOARD_PATH,
   PHARM_HOME_PATH,
   PHARM_POS_PATH,
   PHARM_RETURNS_PATH,
@@ -30,8 +30,8 @@ const SupportPage = lazy(() => import('../../features/support/pages/SupportPage'
 const ReturnsPage = lazy(() => import('../../features/sales/pages/ReturnsPage'));
 const SalesLedgerPage = lazy(() => import('../../features/sales/pages/SalesLedgerPage'));
 
-function Authed({ children }) {
-  return <PharmacyAuthGuard>{children}</PharmacyAuthGuard>;
+function Authed({ children, requireOffice = false }) {
+  return <PharmacyAuthGuard requireOffice={requireOffice}>{children}</PharmacyAuthGuard>;
 }
 
 /**
@@ -49,7 +49,9 @@ export function PharmacyRoutes() {
         path={PHARM_POS_PATH}
         element={(
           <Authed>
-            <PharmacyPosShell />
+            <PharmacyPosGuard>
+              <PharmacyPosShell />
+            </PharmacyPosGuard>
           </Authed>
         )}
       >
@@ -58,32 +60,116 @@ export function PharmacyRoutes() {
 
       <Route
         element={(
-          <Authed>
+          <Authed requireOffice>
             <PharmacyAdminShell />
           </Authed>
         )}
       >
-        <Route path={PHARM_HOME_PATH} element={<Navigate to={PHARM_DASHBOARD_PATH} replace />} />
-        <Route path={PHARM_DASHBOARD_PATH} element={<DashboardPage />} />
-        <Route path="/assistant" element={<AiAssistantPage />} />
+        <Route path={PHARM_HOME_PATH} element={<PharmacyHomeRedirect />} />
+        <Route
+          path="/dashboard"
+          element={(
+            <PharmacyRouteGuard module="dashboard">
+              <DashboardPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path="/assistant"
+          element={(
+            <PharmacyRouteGuard module="aiAssistant">
+              <AiAssistantPage />
+            </PharmacyRouteGuard>
+          )}
+        />
         <Route path="/handbook" element={<HandbookPage scope="admin" />} />
         <Route path="/handbook/:moduleId" element={<HandbookPage scope="admin" />} />
         <Route path="/support" element={<SupportPage />} />
-        <Route path={PHARM_STOCK_PATHS.products} element={<PharmacyProductsPage />} />
-        <Route path={PHARM_STOCK_PATHS.receipts} element={<PharmacyReceiptsPage />} />
-        <Route path={PHARM_STOCK_PATHS.receiptsNew} element={<PharmacyReceiptDocumentPage />} />
-        <Route path="/stock/receipts/:id" element={<PharmacyReceiptDocumentPage />} />
-        <Route path="/stock/receipts/:id/pick" element={<Navigate to=".." replace />} />
-        <Route path="/stock/inventories/new" element={<StockInventoryCreatePage />} />
-        <Route path="/stock/transfers/new" element={<StockTransferCreatePage />} />
-        <Route path="/stock/suppliers" element={<SuppliersPage />} />
-        <Route path={PHARM_SALES_PATH} element={<SalesLedgerPage />} />
-        <Route path={PHARM_RETURNS_PATH} element={<ReturnsPage />} />
+        <Route
+          path={PHARM_STOCK_PATHS.products}
+          element={(
+            <PharmacyRouteGuard module="stockProducts">
+              <PharmacyProductsPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path={PHARM_STOCK_PATHS.receipts}
+          element={(
+            <PharmacyRouteGuard module="stockReceipts">
+              <PharmacyReceiptsPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path={PHARM_STOCK_PATHS.receiptsNew}
+          element={(
+            <PharmacyRouteGuard module="stockReceipts">
+              <PharmacyReceiptDocumentPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path="/stock/receipts/:id"
+          element={(
+            <PharmacyRouteGuard module="stockReceipts">
+              <PharmacyReceiptDocumentPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path="/stock/receipts/:id/pick"
+          element={(
+            <PharmacyRouteGuard module="stockReceipts">
+              <Navigate to=".." replace />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path="/stock/inventories/new"
+          element={(
+            <PharmacyRouteGuard module="stockInventories">
+              <StockInventoryCreatePage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path="/stock/transfers/new"
+          element={(
+            <PharmacyRouteGuard module="stockTransfers">
+              <StockTransferCreatePage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path="/stock/suppliers"
+          element={(
+            <PharmacyRouteGuard module="stockSuppliers">
+              <SuppliersPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path={PHARM_SALES_PATH}
+          element={(
+            <PharmacyRouteGuard anyModules={['cashierSales', 'reportsSales', 'reportsSalesDaily']}>
+              <SalesLedgerPage />
+            </PharmacyRouteGuard>
+          )}
+        />
+        <Route
+          path={PHARM_RETURNS_PATH}
+          element={(
+            <PharmacyRouteGuard module="reportsReturns">
+              <ReturnsPage />
+            </PharmacyRouteGuard>
+          )}
+        />
         {pharmacyReportRoutes()}
         {pharmacyOfficeRoutes()}
       </Route>
 
-      <Route path="*" element={<Navigate to={PHARM_DASHBOARD_PATH} replace />} />
+      <Route path="*" element={<PharmacyHomeRedirect />} />
     </Routes>
   );
 }

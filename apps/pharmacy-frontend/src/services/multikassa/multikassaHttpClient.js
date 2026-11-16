@@ -35,16 +35,40 @@ function connectionErrorMessage(url, cause) {
   return raw || 'Multikassa request failed';
 }
 
-export async function multikassaHttpRequest({ baseUrl, method = 'GET', path, body }) {
+const DEFAULT_HTTP_TIMEOUT_MS = 8_000;
+const OPERATION_HTTP_TIMEOUT_MS = 25_000;
+const printerListPathCache = new Map();
+
+export function clearMultikassaHttpCaches() {
+  printerListPathCache.clear();
+}
+
+function resolveRequestTimeoutMs(timeoutMs, method, suffix) {
+  const explicit = Number(timeoutMs);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  if (method === 'POST' && /\/operations\b/i.test(suffix)) {
+    return OPERATION_HTTP_TIMEOUT_MS;
+  }
+  return DEFAULT_HTTP_TIMEOUT_MS;
+}
+
+export async function multikassaHttpRequest({ baseUrl, method = 'GET', path, body, timeoutMs }) {
   const root = String(baseUrl || '').replace(/\/+$/, '');
   const suffix = String(path || '').startsWith('/') ? path : `/${path || ''}`;
   const url = `${root}${suffix}`;
+  const upperMethod = String(method || 'GET').toUpperCase();
+  const effectiveTimeoutMs = resolveRequestTimeoutMs(timeoutMs, upperMethod, suffix);
 
   const desktop = typeof window !== 'undefined' ? window.desktopCashier : null;
   if (desktop?.isDesktop && typeof desktop.multikassaRequest === 'function') {
     let result;
     try {
-      result = await desktop.multikassaRequest({ method, url, body });
+      result = await desktop.multikassaRequest({
+        method: upperMethod,
+        url,
+        body,
+        timeoutMs: effectiveTimeoutMs,
+      });
     } catch (cause) {
       const err = new Error(connectionErrorMessage(url, cause));
       err.cause = cause;
@@ -74,19 +98,34 @@ export async function multikassaHttpRequest({ baseUrl, method = 'GET', path, bod
   const headers = {
     Accept: 'application/json',
   };
-  const init = { method, headers };
-  if (body != null && method !== 'GET' && method !== 'HEAD') {
+  const init = { method: upperMethod, headers };
+  if (body != null && upperMethod !== 'GET' && upperMethod !== 'HEAD') {
     headers['Content-Type'] = 'application/json; charset=utf-8';
     init.body = JSON.stringify(body);
+  }
+
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  let timer = null;
+  if (controller) {
+    init.signal = controller.signal;
+    timer = setTimeout(() => controller.abort(), effectiveTimeoutMs);
   }
 
   let response;
   try {
     response = await fetch(url, init);
   } catch (cause) {
+    if (cause?.name === 'AbortError') {
+      const err = new Error(`Таймаут запроса к Multikassa (${effectiveTimeoutMs} мс)`);
+      err.code = 'MULTIKASSA_TIMEOUT';
+      err.cause = cause;
+      throw err;
+    }
     const err = new Error(connectionErrorMessage(url, cause));
     err.cause = cause;
     throw err;
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 
   const text = await response.text();
@@ -159,17 +198,27 @@ export function getPrinters(baseUrl) {
 
 /** Пробуем известные пути списка принтеров MK Fiscal. */
 export async function getPrintersWithFallback(baseUrl) {
-  const paths = [
+  const root = String(baseUrl || '').replace(/\/+$/, '');
+  const defaultPaths = [
     '/api/v1/devices/printers',
     '/api/v1/printers',
     '/api/v1/devices/printer',
   ];
+  const cachedPath = printerListPathCache.get(root);
+  const paths = cachedPath
+    ? [cachedPath, ...defaultPaths.filter((p) => p !== cachedPath)]
+    : defaultPaths;
+
   let lastErr = null;
   for (const path of paths) {
     try {
-      const data = await multikassaHttpRequest({ baseUrl, method: 'GET', path });
+      const data = await multikassaHttpRequest({ baseUrl: root, method: 'GET', path });
+      printerListPathCache.set(root, path);
       return { data, path };
     } catch (err) {
+      if (path === cachedPath && (err?.status === 404 || err?.status === 405)) {
+        printerListPathCache.delete(root);
+      }
       lastErr = err;
     }
   }

@@ -1,5 +1,5 @@
 import { FISCAL_STATUS } from './multikassaConstants';
-import { ensureMkFiscalPrinter } from './ensureMkFiscalPrinter';
+import { ensureMkFiscalPrinter, invalidateMkFiscalPrinterCache } from './ensureMkFiscalPrinter';
 import { getOperations, postOperation } from './multikassaHttpClient';
 import {
   ensureFiscalQrUrl,
@@ -46,7 +46,15 @@ export async function runMultikassaOperation(baseUrl, body, hints = {}) {
   } catch {
     // Нет выбранного принтера MK Fiscal — операция всё равно уйдёт, модуль вернёт свою ошибку.
   }
-  const raw = await postOperation(baseUrl, body);
+  let raw;
+  try {
+    raw = await postOperation(baseUrl, body);
+  } catch (err) {
+    if (/принтер|printer/i.test(String(err?.message || ''))) {
+      invalidateMkFiscalPrinterCache(baseUrl);
+    }
+    throw err;
+  }
   let parsed = ensureFiscalQrUrl(parseMultikassaOperationResult(raw, hints), hints);
 
   const needsQr = !parsed.fiscalQrUrl;

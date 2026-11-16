@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-210-drug-registry-imports" author="pos">
+        <createTable tableName="drug_registry_imports">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="source" type="VARCHAR(1000)"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="checksum" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="row_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_drug_reg_import_checksum" tableName="drug_registry_imports">
+            <column name="checksum"/>
+        </createIndex>
+        <createIndex indexName="idx_drug_reg_import_created" tableName="drug_registry_imports">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-211-drug-registry-entries" author="pos">
+        <createTable tableName="drug_registry_entries">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="import_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="registration_number" type="VARCHAR(128)"/>
+            <column name="trade_name" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_key" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inn" type="VARCHAR(500)"/>
+            <column name="dosage_form" type="VARCHAR(255)"/>
+            <column name="manufacturer" type="VARCHAR(500)"/>
+            <column name="country" type="VARCHAR(255)"/>
+            <column name="atc_code" type="VARCHAR(32)"/>
+            <column name="prescription_required" type="BOOLEAN"/>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="drug_registry_entries"
+            baseColumnNames="import_id"
+            referencedTableName="drug_registry_imports"
+            referencedColumnNames="id"
+            constraintName="fk_drug_reg_entry_import"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_drug_reg_entry_import_name" tableName="drug_registry_entries">
+            <column name="import_id"/>
+            <column name="name_key"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

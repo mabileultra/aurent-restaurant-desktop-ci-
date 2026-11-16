@@ -6,6 +6,7 @@ import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryCardFill;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeClaim;
 import com.pos.pharmacy.catalog.support.ProductExtraBarcodeWriter;
 import com.pos.pharmacy.catalog.support.ProductResponseFactory;
@@ -42,6 +43,7 @@ public class ProductWriteService {
     private final ProductResponseFactory responseFactory;
     private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
     private final PharmacyProductDraftReceiptSync draftReceiptSync;
+    private final DrugRegistryCardFill drugRegistry;
 
     @Transactional
     public ProductResponse create(CreateProductRequest req) {
@@ -93,6 +95,7 @@ public class ProductWriteService {
         Product saved = productRepository.save(product);
         extraBarcodeWriter.replace(saved.getId(), companyId, saved.getBarcode(), req.additionalBarcodes());
         productAttributeService.saveAttributes(saved.getId(), req.attributes());
+        drugRegistry.applyOnCreate(saved);
         if (req.initialStock() != null && req.initialStock().compareTo(BigDecimal.ZERO) > 0
             && req.storePrices() != null && !req.storePrices().isEmpty()) {
             storeStockService.increase(saved, req.storePrices().get(0).storeId(), req.initialStock());

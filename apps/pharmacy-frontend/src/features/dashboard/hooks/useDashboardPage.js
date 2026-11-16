@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, subDays, startOfMonth, parseISO, isValid } from 'date-fns';
-import { reportApi, productApi, pharmacyWarehouseApi } from '../../../api';
+import { reportApi, pharmacyWarehouseApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
 import { useDateFnsLocale } from '../../../hooks/useDateFnsLocale';
@@ -60,12 +60,8 @@ export function useDashboardPage() {
   });
 
   const { data: lowStockRaw } = useQuery({
-    queryKey: tenantKey('dashboard-low-stock', isPharmacyCompany ? 'pharmacy' : 'grocery'),
-    queryFn: () => (
-      isPharmacyCompany
-        ? pharmacyWarehouseApi.getLowStock({ limit: 500 }).then((r) => asLowStockList(r.data))
-        : productApi.getLowStock().then((r) => asLowStockList(r.data))
-    ),
+    queryKey: tenantKey('dashboard-low-stock', 'pharmacy'),
+    queryFn: () => pharmacyWarehouseApi.getLowStock({ limit: 500 }).then((r) => asLowStockList(r.data)),
     enabled: tenantReady && !businessTypeLoading,
   });
   const lowStock = asLowStockList(lowStockRaw);

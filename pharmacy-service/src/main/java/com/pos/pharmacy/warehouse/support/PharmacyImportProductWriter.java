@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
+import com.pos.pharmacy.catalog.registry.support.DrugRegistryCardFill;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
@@ -32,19 +33,22 @@ public class PharmacyImportProductWriter {
     private final ProductAttributeService productAttributeService;
     private final PharmacyImportProductFactory productFactory;
     private final PharmacyMassExecutor massExecutor;
+    private final DrugRegistryCardFill drugRegistry;
 
     public PharmacyImportProductWriter(
         PharmacyProductService pharmacyProductService,
         ProductRepository productRepository,
         ProductAttributeService productAttributeService,
         PharmacyImportProductFactory productFactory,
-        PharmacyMassExecutor massExecutor
+        PharmacyMassExecutor massExecutor,
+        DrugRegistryCardFill drugRegistry
     ) {
         this.pharmacyProductService = pharmacyProductService;
         this.productRepository = productRepository;
         this.productAttributeService = productAttributeService;
         this.productFactory = productFactory;
         this.massExecutor = massExecutor;
+        this.drugRegistry = drugRegistry;
     }
 
     public List<UUID> write(
@@ -157,7 +161,10 @@ public class PharmacyImportProductWriter {
             }
             productAttributeService.saveAttributes(product.getId(), attrs);
         }
-        return productRepository.save(product).getId();
+        productRepository.save(product);
+        String name = StringUtils.hasText(item.excelName()) ? item.excelName() : product.getName();
+        drugRegistry.applyMissing(product.getId(), name);
+        return product.getId();
     }
 
     private static Throwable unwrap(Throwable error) {

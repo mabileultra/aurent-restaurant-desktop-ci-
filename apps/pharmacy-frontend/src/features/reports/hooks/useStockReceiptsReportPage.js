@@ -1,19 +1,22 @@
 import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { warehouseApi } from '../../../api';
+import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { resolveStoreName, resolveSupplierName } from '../../pharmacy-stock/utils/pharmacyReceiptDisplayMeta';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
 import { useReportStores } from './useReportStores';
 
-/**
- * Operational receipts list from warehouse DB (not reporting facts / Kafka).
- */
 export function useStockReceiptsReportPage() {
   const { from, to, setFrom, setTo, rangeEnabled } = useReportDateRange(29);
   const { page, setPage, pageSize, setPageSize, resetPage } = useReportPagination(REPORT_PAGE_SIZE_DEFAULT);
   const [storeId, setStoreId] = useState('');
   const { data: stores = [] } = useReportStores();
+
+  const suppliersQuery = useQuery({
+    queryKey: ['suppliers-all'],
+    queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
+  });
 
   const params = useMemo(
     () => ({
@@ -28,10 +31,21 @@ export function useStockReceiptsReportPage() {
 
   const query = useQuery({
     queryKey: ['stock-receipts-list', params],
-    queryFn: () => warehouseApi.listReceipts(params).then((r) => r.data),
+    queryFn: () => pharmacyWarehouseApi.listReceipts(params).then((r) => r.data),
     enabled: rangeEnabled,
     placeholderData: keepPreviousData,
   });
+
+  const suppliers = suppliersQuery.data?.content ?? [];
+  const rows = useMemo(() => {
+    const raw = query.data?.content ?? [];
+    return raw.map((row) => ({
+      ...row,
+      createdAt: row.createdAt || row.documentDate || null,
+      storeName: resolveStoreName(row, stores),
+      supplierName: resolveSupplierName(row, suppliers),
+    }));
+  }, [query.data?.content, stores, suppliers]);
 
   const handleStoreChange = (value) => {
     setStoreId(value);
@@ -49,7 +63,7 @@ export function useStockReceiptsReportPage() {
     setPage,
     pageSize,
     setPageSize,
-    rows: query.data?.content ?? [],
+    rows,
     total: query.data?.totalElements ?? 0,
     totalPages: query.data?.totalPages ?? 0,
     isPending: query.isPending,

@@ -1,4 +1,5 @@
 import { refreshConnectivityStatus, useConnectivityStore } from '../../store/connectivityStore';
+import { roundQty } from '../../utils/quantityFormat';
 import { hasLocalPosCatalog } from '../offline/connectivityRules';
 import { isDesktopOfflineBridge, offlineCompleteCheckout } from '../offline/desktopOfflineBridge';
 import { resolveOfflineCheckoutTimeoutMs } from './posCheckoutTimeouts';
@@ -7,6 +8,23 @@ import {
   buildOfflineSaleResponse,
 } from '../offline/buildOfflineSaleResponse';
 import { logSale } from '../desktop/activityLog';
+
+export function buildOfflineStockLines(checkoutItems = []) {
+  const byProductKey = new Map();
+  for (const item of checkoutItems || []) {
+    if (item?.productId == null) continue;
+    const qty = roundQty(item.quantity);
+    if (qty <= 0) continue;
+    const key = String(item.productId);
+    const existing = byProductKey.get(key);
+    if (existing) {
+      existing.quantity = roundQty(existing.quantity + qty);
+    } else {
+      byProductKey.set(key, { productId: item.productId, quantity: qty });
+    }
+  }
+  return Array.from(byProductKey.values());
+}
 
 function withCheckoutTimeout(promise) {
   return Promise.race([
@@ -86,10 +104,7 @@ export async function processOfflineCheckout({
       cachedShift,
       payload,
       response,
-      stockLines: items.map((line) => ({
-        productId: line.productId,
-        quantity: line.quantity,
-      })),
+      stockLines: buildOfflineStockLines(payload.items),
     }),
   );
 

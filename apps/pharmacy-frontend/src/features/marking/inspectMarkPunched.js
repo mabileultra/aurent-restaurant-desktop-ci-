@@ -1,6 +1,5 @@
 import { pharmacySalesApi } from '../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../api/pharmacyStockMarks.api';
-import { saleApi } from '../../api/sale.api';
 import {
   collectMarksFromCartItems,
   forgetSoldMarks,
@@ -25,15 +24,10 @@ async function softCheck(fn) {
   }
 }
 
-/**
- * Жёсткая проверка одного КМ до чека.
- * Локальный кэш сначала; журналы склада/grocery/pharmacy — параллельно.
- * ASL не вызываем: оборот проверяет Tasnif, вывод — ОФД.
- */
 export async function inspectMarkPunched({ storeId, mark }) {
   if (storeId && isMarkSoldLocally(storeId, mark)) {
     try {
-      const { data } = await saleApi.checkMarkSold({ storeId, code: mark });
+      const { data } = await pharmacySalesApi.checkMarkSold({ storeId, code: mark });
       if (data?.sold === true) {
         return soldHit(data.status || 'SOLD_LOCAL');
       }
@@ -47,13 +41,9 @@ export async function inspectMarkPunched({ storeId, mark }) {
     return { punched: false, aslResult: null, stock: null, aslError: null };
   }
 
-  const [stockData, groceryData, pharmacyData] = await Promise.all([
+  const [stockData, pharmacyData] = await Promise.all([
     softCheck(async () => {
       const { data } = await pharmacyStockMarksApi.check({ storeId, code: mark });
-      return data || null;
-    }),
-    softCheck(async () => {
-      const { data } = await saleApi.checkMarkSold({ storeId, code: mark });
       return data || null;
     }),
     softCheck(async () => {
@@ -66,10 +56,6 @@ export async function inspectMarkPunched({ storeId, mark }) {
   if (stockData?.alreadySold) {
     rememberSoldMarks(storeId, [mark]);
     return soldHit(stockData.status || 'SOLD', { stock });
-  }
-  if (groceryData?.sold === true) {
-    rememberSoldMarks(storeId, [mark]);
-    return soldHit(groceryData.status || 'SOLD', { stock });
   }
   if (pharmacyData?.sold === true) {
     rememberSoldMarks(storeId, [mark]);

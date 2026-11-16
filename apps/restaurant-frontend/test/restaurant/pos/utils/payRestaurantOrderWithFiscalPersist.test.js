@@ -15,9 +15,6 @@ const fiscal = vi.hoisted(() => ({
 
 vi.mock('../../../../src/restaurant/api/order.api', () => ({ rstOrderApi: orderApi }));
 vi.mock('../../../../src/restaurant/api/payment.api', () => ({ rstPaymentApi: paymentApi }));
-vi.mock('../../../../src/api/pharmacyIntegration.api', () => ({
-  pharmacyIntegrationApi: { getCashierCapabilities: vi.fn() },
-}));
 vi.mock('../../../../src/services/fiscal', () => fiscal);
 vi.mock('../../../../src/restaurant/pos/utils/pendingFiscalQueue', () => ({
   enqueuePendingFiscal: vi.fn(),
