@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { extractVatFromInclusive, netFromInclusive, round2 } from '../utils/taxAmounts';
 import { isPieceLikeProduct, roundQty } from '../utils/quantityFormat';
 import { unitLabel } from '../utils/unitConfig';
+import { lineRequiresPrescription, normalizePrescriptionNumber } from '@aurent/shared-fiscal';
 
 export const lineGross = (item) => round2(item.unitPrice * item.quantity);
 
@@ -35,6 +36,7 @@ const snapshotActiveCart = (state) => ({
   customerId: state.customerId,
   customerName: state.customerName,
   checkNo: state.checkNo,
+  prescriptionNumber: state.prescriptionNumber,
   parkedAt: Date.now(),
 });
 
@@ -44,6 +46,7 @@ const clearActiveCartFields = {
   customerId: null,
   customerName: null,
   checkNo: null,
+  prescriptionNumber: '',
 };
 
 const buildLine = (product, quantity) => {
@@ -62,6 +65,7 @@ const buildLine = (product, quantity) => {
     productMark: product.productMark ?? product.markCode ?? null,
     productMarks: Array.isArray(product.productMarks) ? [...product.productMarks] : null,
     attributes: product.attributes ?? null,
+    requiresPrescription: lineRequiresPrescription(product),
     saleType,
     unitCode: product.unitCode || (saleType === 'WEIGHT' ? 'KG' : 'PCS'),
     unitOfMeasure: product.unitOfMeasure ?? null,
@@ -111,6 +115,13 @@ export const useCartStore = create((set, get) => ({
   customerName: null,
   /** Локальный номер черновика чека (до продажи) */
   checkNo: null,
+  /** Номер электронного рецепта текущего чека (обязателен для рецептурных препаратов). */
+  prescriptionNumber: '',
+
+  setPrescriptionNumber: (prescriptionNumber) =>
+    set({ prescriptionNumber: normalizePrescriptionNumber(prescriptionNumber) }),
+
+  clearPrescriptionNumber: () => set({ prescriptionNumber: '' }),
 
   ensureCheckNo: () => {
     if (get().checkNo) return get().checkNo;
@@ -263,14 +274,7 @@ export const useCartStore = create((set, get) => ({
     });
   },
 
-  clearCart: () =>
-    set({
-      items: [],
-      orderDiscountAmount: 0,
-      customerId: null,
-      customerName: null,
-      checkNo: null,
-    }),
+  clearCart: () => set({ ...clearActiveCartFields }),
 
   /**
    * F6: отложить текущий чек; если корзина пуста и один отложенный — вернуть;
@@ -312,6 +316,7 @@ export const useCartStore = create((set, get) => ({
       customerId: ticket.customerId ?? null,
       customerName: ticket.customerName ?? null,
       checkNo: ticket.checkNo ?? null,
+      prescriptionNumber: ticket.prescriptionNumber ?? '',
       parkedCarts: nextParked,
     });
     return 'restored';

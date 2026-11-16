@@ -27,7 +27,11 @@ import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/cashier/utils/buildPharmacySaleExtras';
 import { assertCartMarksNotPunched } from '../../features/marking';
-import { withCardReceiptDetails } from '@aurent/shared-fiscal';
+import {
+  assertSalePrescriptionNumber,
+  withCardReceiptDetails,
+  withSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { buildShiftPrintReport } from '../../features/cashier/utils/buildShiftPrintReport';
 import { assertReceiptPrinterReady } from '../cashierEscpos';
 
@@ -439,6 +443,8 @@ export async function posCreateSale({
       ? crypto.randomUUID()
       : `sale-${Date.now()}`;
 
+  // До фискализации и до любого запроса: онлайн и офлайн, любой способ оплаты.
+  assertSalePrescriptionNumber(cartItems, payment);
   await assertReceiptPrinterReady();
   await assertCartMarksNotPunched(storeId, cartItems);
 
@@ -524,7 +530,7 @@ export async function posCreateSale({
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
     return res && res.data
-      ? { ...res, data: withCardReceiptDetails(res.data, payment) }
+      ? { ...res, data: withSalePrescriptionNumber(withCardReceiptDetails(res.data, payment), payment) }
       : res;
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {

@@ -22,3 +22,22 @@ export {
   buildMultikassaCardFields,
   buildFiscalDriveCardFields,
 } from './cardDetails.js';
+export {
+  PRESCRIPTION_NUMBER_MIN_LENGTH,
+  PRESCRIPTION_NUMBER_MAX_LENGTH,
+  PRESCRIPTION_NUMBER_REQUIRED_CODE,
+  PRESCRIPTION_NUMBER_ISSUE,
+  normalizePrescriptionNumber,
+  validatePrescriptionNumber,
+  prescriptionIssueMessageKey,
+  isValidPrescriptionNumber,
+  lineRequiresPrescription,
+  cartPrescriptionLines,
+  cartHasPrescriptionRequiredItems,
+  assertCartPrescriptionReady,
+  resolveCartPrescriptionNumber,
+  isPrescriptionExemptPayment,
+  assertSalePrescriptionNumber,
+  resolveSalePrescriptionNumber,
+  withSalePrescriptionNumber,
+} from './prescriptionNumber.js';
