@@ -1042,16 +1042,41 @@
   cursor: default;
 }
 
+/* Row 2 under KDS: «Выставить счёт» full width. Pay lives in the bottom row. */
+.rst-order__hero {
+  width: 100%;
+  min-height: 3.5rem;
+  border: 0;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+}
+
+.rst-order__hero:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rst-order__hero--bill {
+  background: linear-gradient(180deg, #ff9340, var(--rst-accent));
+  color: #1b1208;
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.35), 0 10px 24px rgb(255 122 26 / 0.28);
+}
+
 .rst-order__actions {
   display: grid;
-  /* Ticket column is narrow — always stack full-width (do not use 2/3-col grid). */
-  grid-template-columns: minmax(0, 1fr);
+  /* Row 3: pay / discount / cancel — 2 equal if two, 3 equal when a third appears. */
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 0.55rem;
 }
 
 .rst-order__action {
   min-height: 3.85rem;
-  width: 100%;
+  min-width: 0;
   border: 1px solid var(--rst-line);
   border-radius: 14px;
   background: var(--rst-surface-2);
@@ -1083,6 +1108,7 @@
 }
 
 .rst-order__action--bill {
+  grid-column: auto; /* never span full row — stays one of the three bottom buttons */
   border: 0;
   background: linear-gradient(180deg, #ff9340, var(--rst-accent));
   color: #1b1208;

@@ -1,23 +1,17 @@
 ---
-description: Restaurant ticket action buttons stay full-width stacked (no 2/3-col grid)
+description: Restaurant ticket footer — 3 rows: send, bill, then pay/rest
 globs: apps/restaurant-frontend/src/restaurant/pos/styles/order-workspace.css,apps/restaurant-frontend/src/restaurant/pos/components/OrderWorkspace.jsx
 alwaysApply: false
 ---
 
-# Restaurant order ticket actions
+# Restaurant order ticket footer (desktop / admin, non-waiter)
 
-## Invariant
+Always **3 rows**:
 
-`.rst-order__actions` (non-waiter) must stay **one column, full-width stack**:
+1. `.rst-order__kds` — «Отправить заказ» (full width)
+2. `.rst-order__hero--bill` — «Выставить счёт» (full width)
+3. `.rst-order__actions` — «Оплатить» + Скидка + Отменить (`auto-fit`: 2 equal if two visible, 3 equal when a third appears)
 
-```css
-.rst-order__actions {
-  grid-template-columns: minmax(0, 1fr);
-}
-```
+Pay is **never** a hero under bill — it stays in the bottom row with the rest.
 
-Do **not** bring back `repeat(2/3, …)` or `grid-column: 1 / -1` on `--bill` for the default footer — that made «Скидка»/«Отменить» half-width and «Выставить счёт» full-width in the narrow ticket column.
-
-## Exception
-
-`.rst-order__footer--waiter .rst-order__actions` may stay compact `auto-fit` side-by-side.
+Waiter footer keeps compact `auto-fit` with send/bill/pay in the actions row.
