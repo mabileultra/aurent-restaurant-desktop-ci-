@@ -4,9 +4,16 @@
 import { APP_NAME } from '../../config/brand';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import {
+  extractCardReceiptDetails,
+  normalizeCardCategory,
+  resolveSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
-import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
+import {
+  resolveFiscalReceiptMeta,
+  resolveReceiptPaymentAmounts,
+} from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
 import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
@@ -82,6 +89,7 @@ export function buildEscposLabels(t) {
     cardType: tr('fiscalReceipt.cardType'),
     cardRrn: tr('fiscalReceipt.cardRrn'),
     socialCardNumber: tr('fiscalReceipt.socialCardNumber'),
+    prescriptionNumber: tr('fiscalReceipt.prescriptionNumber'),
     change: tr('receipt.change'),
     fiscalSection: tr('fiscalReceipt.fiscalSection'),
     virtualRegister: tr('fiscalReceipt.virtualRegister'),
@@ -144,21 +152,29 @@ export function buildCashierEscposPayload(sale, t) {
   const printSettings = usePrintSettingsStore.getState();
   const labels = buildEscposLabels(tr);
   const cardDetails = extractCardReceiptDetails(sale);
-  const cardProviderText = !normalizeCardCategory(sale.cardType)
+  const pay = resolveReceiptPaymentAmounts(sale);
+  const hasCardPayment =
+    Number(pay.cardAmt) > 0 || sale.paymentMethod === 'CARD' || sale.paymentMethod === 'MIXED';
+  const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
+
+  const cardProviderText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
     ? cardTypeLabel(sale.cardType, tr)
     : null;
   if (cardProviderText) {
     labels.plastic = `${labels.plastic} · ${cardProviderText}`;
   }
-  const cardCategoryDisplay = cardCategoryLabel(cardDetails.cardCategory, tr) || null;
+  const cardCategoryDisplay = hasCardPayment
+    ? (cardCategoryLabel(cardDetails.cardCategory, tr) || null)
+    : null;
 
   return {
     sale: {
       ...sale,
-      cardCategory: cardDetails.cardCategory,
+      cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
       cardCategoryDisplay,
-      socialCardNumber: cardDetails.socialCardNumber,
-      rrn: cardDetails.rrn,
+      socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
+      rrn: hasCardPayment ? cardDetails.rrn : null,
+      prescriptionNumber: resolveSalePrescriptionNumber(sale),
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,

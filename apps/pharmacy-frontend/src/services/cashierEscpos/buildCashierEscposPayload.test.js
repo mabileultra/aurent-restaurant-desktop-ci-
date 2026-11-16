@@ -27,4 +27,16 @@ describe('buildCashierEscposPayload (pharmacy-frontend)', () => {
     const providerPayload = buildCashierEscposPayload(providerSale);
     expect(providerPayload.labels.plastic).toBe('Plastik · Humo');
   });
+
+  it('passes electronic prescription number and its Uzbek label to the printer payload', () => {
+    const payload = buildCashierEscposPayload({ ...buildEscposTestSale(), prescriptionNumber: 'RX-2026-0042' });
+    expect(payload.labels.prescriptionNumber).toBe('Elektron retsept');
+    expect(payload.sale.prescriptionNumber).toBe('RX-2026-0042');
+
+    const fromNotes = buildCashierEscposPayload({ ...buildEscposTestSale(), notes: 'PAY:cash | RX:RX-7777' });
+    expect(fromNotes.sale.prescriptionNumber).toBeNull();
+
+    const plain = buildCashierEscposPayload(buildEscposTestSale());
+    expect(plain.sale.prescriptionNumber).toBeNull();
+  });
 });

@@ -1,14 +1,21 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import {
+  extractCardReceiptDetails,
+  normalizeCardCategory,
+  resolveSalePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
-import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
+import {
+  resolveFiscalReceiptMeta,
+  resolveReceiptPaymentAmounts,
+} from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
 import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 
@@ -82,6 +89,7 @@ export function buildEscposLabels(t) {
     cardType: t('fiscalReceipt.cardType'),
     cardRrn: t('fiscalReceipt.cardRrn'),
     socialCardNumber: t('fiscalReceipt.socialCardNumber'),
+    prescriptionNumber: t('fiscalReceipt.prescriptionNumber'),
     change: t('receipt.change'),
     fiscalSection: t('fiscalReceipt.fiscalSection'),
     virtualRegister: t('fiscalReceipt.virtualRegister'),
@@ -144,20 +152,29 @@ export function buildCashierEscposPayload(sale, t) {
   const translator = getReceiptTranslator();
   const labels = buildEscposLabels(translator);
   const cardDetails = extractCardReceiptDetails(sale);
-  const cardProviderText = !normalizeCardCategory(sale.cardType)
+  const pay = resolveReceiptPaymentAmounts(sale);
+  const hasCardPayment =
+    Number(pay.cardAmt) > 0 || sale.paymentMethod === 'CARD' || sale.paymentMethod === 'MIXED';
+  const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
+
+  const cardProviderText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
     ? cardTypeLabel(sale.cardType, translator)
     : null;
   if (cardProviderText) {
     labels.plastic = `${labels.plastic} · ${cardProviderText}`;
   }
-  const cardCategoryDisplay = cardCategoryLabel(cardDetails.cardCategory, translator);
+  const cardCategoryDisplay = hasCardPayment
+    ? (cardCategoryLabel(cardDetails.cardCategory, translator) || null)
+    : null;
 
   return {
     sale: {
       ...sale,
+      cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
       cardCategoryDisplay,
-      socialCardNumber: cardDetails.socialCardNumber,
-      rrn: cardDetails.rrn,
+      socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
+      rrn: hasCardPayment ? cardDetails.rrn : null,
+      prescriptionNumber: resolveSalePrescriptionNumber(sale),
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,
