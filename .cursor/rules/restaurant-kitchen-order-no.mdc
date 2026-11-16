@@ -1,0 +1,13 @@
+---
+description: Kitchen slip order number is a separate print-profile field
+globs: apps/restaurant-frontend/src/restaurant/**/printProfile/**/*,apps/restaurant-frontend/src/restaurant/pos/utils/kitchenPlaceLine.js,apps/restaurant-frontend/src/restaurant/pos/utils/ticketLayout.js,restaurant-service/**/StorePrintProfileDefaults.java
+alwaysApply: false
+---
+
+# Kitchen order number on slips
+
+- Place line = channel / table only (`НА ВЫНОС`, `ДОСТАВКА`, зал·стол). Do **not** append `№N` there.
+- Order number is print field `orderNo` (toggle + bold + size sm…xxl in admin «Слипы»).
+- Default for `KITCHEN` / `CANCEL`: on, bold, size `xl`.
+- Until restaurant-desktop understands `§X§`, FE maps `lg`/`xl`/`xxl` → `§E§` (old Electron OK, no desktop rebuild).
+- Keep Java `StorePrintProfileDefaults` in sync with FE defaults.

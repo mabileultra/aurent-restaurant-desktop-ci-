@@ -229,12 +229,18 @@ async function printPlainTicketEscpos(payload) {
             wrap(text.replace(/^≫ |^>> /, '')).forEach((line) => printer.println(line));
             continue;
           }
+          // §X§ — huge: bold + double-width + double-height.
           // §E§ — emphasize: bold + double-height, then restore.
           // §B§ — bold only.
-          const emph = text.startsWith('§E§');
-          const boldOnly = !emph && text.startsWith('§B§');
-          const body = emph || boldOnly ? text.slice(3) : text;
-          if (emph) {
+          const huge = text.startsWith('§X§');
+          const emph = !huge && text.startsWith('§E§');
+          const boldOnly = !huge && !emph && text.startsWith('§B§');
+          const body = huge || emph || boldOnly ? text.slice(3) : text;
+          if (huge) {
+            printer.bold(true);
+            if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
+            if (typeof printer.setTextDoubleWidth === 'function') printer.setTextDoubleWidth();
+          } else if (emph) {
             printer.bold(true);
             if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
           } else if (boldOnly) {
@@ -247,7 +253,7 @@ async function printPlainTicketEscpos(payload) {
           } else {
             wrap(body).forEach((line) => printer.println(line));
           }
-          if (emph || boldOnly) {
+          if (huge || emph || boldOnly) {
             if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
             printer.bold(false);
           }

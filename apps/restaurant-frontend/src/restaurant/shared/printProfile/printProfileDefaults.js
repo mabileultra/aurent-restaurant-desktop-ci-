@@ -9,6 +9,7 @@ export const PRINT_FIELD_KEYS = [
   'phone',
   'headerTitle',
   'hallTable',
+  'orderNo',
   'waiter',
   'time',
   'items',
@@ -28,22 +29,29 @@ export const PRINT_SIZE_OPTIONS = [
   { id: 'sm', labelKey: 'rst.admin.printSizeSm' },
   { id: 'md', labelKey: 'rst.admin.printSizeMd' },
   { id: 'lg', labelKey: 'rst.admin.printSizeLg' },
+  { id: 'xl', labelKey: 'rst.admin.printSizeXl' },
+  { id: 'xxl', labelKey: 'rst.admin.printSizeXxl' },
 ];
+
+export const PRINT_SIZE_IDS = PRINT_SIZE_OPTIONS.map((s) => s.id);
 
 function defaultField(slip, key) {
   const cancelEmph = slip === 'CANCEL' && (key === 'headerTitle' || key === 'items');
   const pickup = slip === 'PICKUP_LABEL';
   const pickupTitle = pickup && key === 'headerTitle';
+  const orderNoField = key === 'orderNo';
+  const kitchenOrderNo = orderNoField && (slip === 'KITCHEN' || slip === 'CANCEL');
   let on = true;
   if (key === 'logo' || key === 'storeName' || key === 'address' || key === 'phone' || key === 'footer') {
     on = false;
   }
   if (key === 'totals') on = slip === 'GUEST_BILL' || slip === 'SHIFT_ITEMS';
   if (pickup && key === 'waiter') on = false;
+  if (orderNoField) on = kitchenOrderNo;
   return {
     on,
-    bold: cancelEmph || key === 'headerTitle',
-    size: cancelEmph || pickupTitle ? 'lg' : 'md',
+    bold: cancelEmph || key === 'headerTitle' || kitchenOrderNo,
+    size: kitchenOrderNo ? 'xl' : (cancelEmph || pickupTitle ? 'lg' : 'md'),
     font: 'inherit',
   };
 }
@@ -85,7 +93,7 @@ export function fieldStyle(profile, slipType, fieldKey) {
   return {
     on: slip.on !== false,
     bold: Boolean(slip.bold),
-    size: ['sm', 'md', 'lg'].includes(slip.size) ? slip.size : 'md',
+    size: PRINT_SIZE_IDS.includes(slip.size) ? slip.size : 'md',
     font: slip.font || 'inherit',
   };
 }
