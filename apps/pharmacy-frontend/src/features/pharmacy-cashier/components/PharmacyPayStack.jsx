@@ -24,6 +24,10 @@ import PharmacyCardDetailsModal from './PharmacyCardDetailsModal';
 import { usePharmacyPosActions } from '../../../pharmacy/pos/pharmacyPosActions';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
+import {
+  PHARMACY_SALE_SUBMIT_ACTION,
+  resolvePharmacySaleSubmitAction,
+} from '../utils/resolvePharmacySaleSubmitAction';
 import '../styles/pharmacy-pay-stack.css';
 
 /**
@@ -86,12 +90,13 @@ export default function PharmacyPayStack({
   );
 
   const handleSubmitSale = useCallback(() => {
-    if (rail.method === 'cash' && rail.hasPartialCash) {
-      openCardModal(rail.cardType);
-      return;
-    }
-    if (rail.method === 'card' || (rail.method === 'mixed' && rail.hasPartialCash)) {
-      openCardModal(rail.cardType);
+    const action = resolvePharmacySaleSubmitAction({
+      method: rail.method,
+      hasPartialCash: rail.hasPartialCash,
+      cardType: rail.cardType,
+    });
+    if (action.kind === PHARMACY_SALE_SUBMIT_ACTION.CARD_MODAL) {
+      openCardModal(action.cardType);
       return;
     }
     rail.submitSale();
