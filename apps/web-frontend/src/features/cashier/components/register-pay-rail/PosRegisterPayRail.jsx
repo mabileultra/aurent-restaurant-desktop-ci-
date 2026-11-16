@@ -5,6 +5,7 @@ import PosRegisterPayCashPanel from './PosRegisterPayCashPanel';
 import PosRegisterPayMethods from './PosRegisterPayMethods';
 import PosRegisterCardProviders from './PosRegisterCardProviders';
 import PosRegisterPayFooter from './PosRegisterPayFooter';
+import PosCardDetailsModal from '../payment/PosCardDetailsModal';
 import { usePosRegisterPayRail } from '../../hooks/usePosRegisterPayRail';
 
 export default function PosRegisterPayRail({
@@ -55,7 +56,7 @@ export default function PosRegisterPayRail({
           isPending={isPending}
           cardPayBlocked={rail.cardPayBlocked}
           hasCardRemainder={rail.hasPartialCash}
-          onSelectCard={rail.submitCard}
+          onSelectCard={rail.requestCardCheckout}
         />
       </div>
 
@@ -119,6 +120,17 @@ export default function PosRegisterPayRail({
         printReceiptEnabled={rail.printReceiptEnabled}
         onPrintReceiptChange={rail.handlePrintReceiptChange}
         onSale={rail.submitCash}
+      />
+
+      <PosCardDetailsModal
+        open={Boolean(rail.cardModal?.open)}
+        cardType={rail.cardModal?.cardType}
+        initialCategory={rail.cardModal?.initialCategory}
+        amount={rail.cardModalAmount ?? rail.toPay}
+        busy={isPending}
+        onClose={rail.closeCardModal}
+        onConfirm={rail.confirmCardDetails}
+        t={t}
       />
     </aside>
   );

@@ -1,3 +1,4 @@
+import { buildMultikassaCardFields } from '@aurent/shared-fiscal';
 import { lineDiscountAmount, lineSubtotal } from '../../store/cartStore';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
@@ -129,6 +130,7 @@ export function buildSaleOperationBody({
       Latitude: Number(capabilities?.latitude) || 41.3111,
       Longitude: Number(capabilities?.longitude) || 69.2797,
     },
+    ...buildMultikassaCardFields(payment, card),
   };
 
   const contractor = transliterateCyrillicToLatin(String(contractorName || '').trim());

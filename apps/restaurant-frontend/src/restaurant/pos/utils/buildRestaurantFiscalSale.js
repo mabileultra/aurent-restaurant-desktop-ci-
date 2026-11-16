@@ -1,3 +1,4 @@
+import { withCardReceiptDetails } from '@aurent/shared-fiscal';
 import { extractVatFromInclusive, round2 } from '../../../utils/taxAmounts';
 import { resolveRestaurantPayTotal } from './restaurantPayAmount';
 
@@ -127,6 +128,9 @@ export function buildRestaurantFiscalSale({
   amountTendered,
   changeGiven,
   cardType = null,
+  cardCategory = null,
+  rrn = null,
+  socialCardNumber = null,
   fiscal = null,
   cashierName,
   waiterName,
@@ -237,7 +241,7 @@ export function buildRestaurantFiscalSale({
     change = fiscalPay.payment.changeGiven;
   }
 
-  return {
+  return withCardReceiptDetails({
     id: order?.id,
     receiptNumber,
     cashierName: employeeParts.join(' · ') || '—',
@@ -273,5 +277,5 @@ export function buildRestaurantFiscalSale({
     fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     serviceAmount,
     printFiscalQr: fiscal?.fiscalStatus === 'FISCALIZED',
-  };
+  }, { cardType, cardCategory, rrn, socialCardNumber });
 }

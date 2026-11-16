@@ -1,15 +1,19 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
+import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
-import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
+import {
+  resolveFiscalReceiptMeta,
+  resolveReceiptPaymentAmounts,
+} from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -87,6 +91,9 @@ export function buildEscposLabels(t) {
     paymentForm: tr('fiscalReceipt.paymentForm'),
     cash: tr('fiscalReceipt.cash'),
     plastic: tr('fiscalReceipt.plastic'),
+    cardType: tr('fiscalReceipt.cardType'),
+    cardRrn: tr('fiscalReceipt.cardRrn'),
+    socialCardNumber: tr('fiscalReceipt.socialCardNumber'),
     change: tr('receipt.change'),
     fiscalSection: tr('fiscalReceipt.fiscalSection'),
     virtualRegister: tr('fiscalReceipt.virtualRegister'),
@@ -147,14 +154,29 @@ export function buildCashierEscposPayload(sale, t) {
   const printSettings = usePrintSettingsStore.getState();
   const tReceipt = getReceiptTranslator(t);
   const labels = buildEscposLabels(tReceipt);
-  const cardTypeText = cardTypeLabel(sale.cardType, tReceipt);
-  if (cardTypeText) {
-    labels.plastic = `${labels.plastic} · ${cardTypeText}`;
+  const cardDetails = extractCardReceiptDetails(sale);
+  const pay = resolveReceiptPaymentAmounts(sale);
+  const hasCardPayment =
+    Number(pay.cardAmt) > 0 || sale.paymentMethod === 'CARD' || sale.paymentMethod === 'MIXED';
+  const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
+
+  const cardProviderText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
+    ? cardTypeLabel(sale.cardType, tReceipt)
+    : null;
+  if (cardProviderText) {
+    labels.plastic = `${labels.plastic} · ${cardProviderText}`;
   }
+  const cardCategoryDisplay = hasCardPayment
+    ? (cardCategoryLabel(cardDetails.cardCategory, tReceipt) || null)
+    : null;
 
   return {
     sale: {
       ...sale,
+      cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
+      cardCategoryDisplay,
+      socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
+      rrn: hasCardPayment ? cardDetails.rrn : null,
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,

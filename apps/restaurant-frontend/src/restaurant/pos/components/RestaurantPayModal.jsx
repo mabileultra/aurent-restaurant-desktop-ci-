@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Banknote, CircleDollarSign, CreditCard, QrCode, Split, Wallet, X } from 'lucide-react';
+import { CARD_CATEGORY } from '@aurent/shared-types';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { PAYMENT_CARD_PROVIDERS } from '../constants/paymentCardProviders';
@@ -8,6 +9,7 @@ import {
   buildRestaurantPayPayload,
   deriveRestaurantPay,
 } from '../utils/restaurantPayForm';
+import RestaurantCardDetailsFields from './RestaurantCardDetailsFields';
 import RestaurantPayKeypad from './RestaurantPayKeypad';
 import '../styles/restaurant-pay-modal.css';
 
@@ -33,14 +35,26 @@ export default function RestaurantPayModal({
 }) {
   const [method, setMethod] = useState('CASH');
   const [cardType, setCardType] = useState(null);
+  const [cardCategory, setCardCategory] = useState(CARD_CATEGORY.PERSONAL);
+  const [rrn, setRrn] = useState('');
+  const [socialCardInput, setSocialCardInput] = useState('');
   const [tendered, setTendered] = useState('');
   const [cashPart, setCashPart] = useState('');
   const [debtPhone, setDebtPhone] = useState('');
   const [debtComment, setDebtComment] = useState('');
 
   const derived = useMemo(
-    () => deriveRestaurantPay(totalDue, { method, tendered, cashPart, cardType, debtPhone }),
-    [totalDue, method, tendered, cashPart, cardType, debtPhone],
+    () => deriveRestaurantPay(totalDue, {
+      method,
+      tendered,
+      cashPart,
+      cardType,
+      cardCategory,
+      rrn,
+      socialCardInput,
+      debtPhone,
+    }),
+    [totalDue, method, tendered, cashPart, cardType, cardCategory, rrn, socialCardInput, debtPhone],
   );
 
   if (!open || typeof document === 'undefined') return null;
@@ -49,7 +63,18 @@ export default function RestaurantPayModal({
     setMethod(next);
     setTendered('');
     setCashPart('');
-    if (next !== 'CARD' && next !== 'MIXED') setCardType(null);
+    if (next !== 'CARD' && next !== 'MIXED') {
+      setCardType(null);
+      setCardCategory(CARD_CATEGORY.PERSONAL);
+      setRrn('');
+      setSocialCardInput('');
+    }
+  };
+
+  const handleCardFieldsChange = (patch) => {
+    if (patch.cardCategory !== undefined) setCardCategory(patch.cardCategory);
+    if (patch.rrn !== undefined) setRrn(patch.rrn);
+    if (patch.socialCardInput !== undefined) setSocialCardInput(patch.socialCardInput);
   };
 
   const submit = () => {
@@ -137,6 +162,16 @@ export default function RestaurantPayModal({
                   );
                 })}
               </div>
+              {cardType ? (
+                <RestaurantCardDetailsFields
+                  cardCategory={cardCategory}
+                  rrn={rrn}
+                  socialCardInput={socialCardInput}
+                  onChange={handleCardFieldsChange}
+                  disabled={paying}
+                  t={t}
+                />
+              ) : null}
             </div>
           ) : null}
 

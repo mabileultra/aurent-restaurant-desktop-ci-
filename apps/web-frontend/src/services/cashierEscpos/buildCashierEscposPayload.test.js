@@ -133,13 +133,49 @@ describe('buildCashierEscposPayload shift label', () => {
 });
 
 describe('buildCashierEscposPayload plastic label', () => {
-  it('appends card type to plastic payment row in Uzbek', () => {
+  it('appends provider to plastic payment row and exports separate card category, social card, and RRN in Uzbek', () => {
     const plain = buildCashierEscposPayload(FISCAL_SALE, t);
     expect(plain.labels.plastic).toBe('Plastik');
 
-    const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
-    expect(corporate.labels.plastic).toContain('Plastik');
-    expect(corporate.labels.plastic).toContain('Korporativ');
+    const humo = buildCashierEscposPayload(
+      { ...FISCAL_SALE, paymentMethod: 'CARD', cardType: 'HUMO' },
+      t,
+    );
+    expect(humo.labels.plastic).toBe('Plastik · Humo');
+
+    const social = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'CARD',
+        cardType: 'HUMO',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(social.labels.plastic).toBe('Plastik · Humo');
+    expect(social.labels.cardType).toBe('Karta turi');
+    expect(social.labels.socialCardNumber).toBe('Ijtimoiy karta');
+    expect(social.labels.cardRrn).toBe('RRN');
+    expect(social.sale.cardCategoryDisplay).toBe('Ijtimoiy');
+    expect(social.sale.socialCardNumber).toBe('9860********8031');
+    expect(social.sale.rrn).toBe('631810177451');
+
+    const legacyCorporate = buildCashierEscposPayload(
+      { ...FISCAL_SALE, paymentMethod: 'CARD', cardType: 'CORPORATE' },
+      t,
+    );
+    expect(legacyCorporate.labels.plastic).toBe('Plastik');
+    expect(legacyCorporate.sale.cardCategoryDisplay).toBe('Korporativ');
+
+    const plainCash = buildCashierEscposPayload(
+      { ...FISCAL_SALE, paymentMethod: 'CASH', cardAmount: 0, cashAmount: 35000 },
+      t,
+    );
+    expect(plainCash.sale.cardCategoryDisplay).toBeNull();
+    expect(plainCash.sale.socialCardNumber).toBeNull();
+    expect(plainCash.sale.rrn).toBeNull();
   });
 
   it('forces locale to uz and translates labels in Uzbek', () => {

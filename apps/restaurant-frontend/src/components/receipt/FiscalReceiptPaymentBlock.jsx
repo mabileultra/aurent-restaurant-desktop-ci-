@@ -11,6 +11,9 @@ export default function FiscalReceiptPaymentBlock({
   cashAmt,
   cardAmt,
   cardTypeText,
+  cardCategoryText = null,
+  socialCardNumber = null,
+  rrn = null,
   method,
   change,
 }) {
@@ -31,6 +34,15 @@ export default function FiscalReceiptPaymentBlock({
           }
           value={fmtMoneyCompact(cardAmt)}
         />
+        {cardCategoryText ? (
+          <FiscalReceiptRow label={t('fiscalReceipt.cardType')} value={cardCategoryText} />
+        ) : null}
+        {socialCardNumber ? (
+          <FiscalReceiptRow label={t('fiscalReceipt.socialCardNumber')} value={socialCardNumber} />
+        ) : null}
+        {rrn ? (
+          <FiscalReceiptRow label={t('fiscalReceipt.cardRrn')} value={rrn} />
+        ) : null}
         {method !== 'CASH' &&
         method !== 'MIXED' &&
         method !== 'CARD' &&

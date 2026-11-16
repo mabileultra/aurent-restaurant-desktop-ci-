@@ -121,3 +121,26 @@ describe('buildCashierEscposPayload shift label', () => {
     expect(withRegister.branding.shiftNo).toBe('2');
   });
 });
+
+describe('buildCashierEscposPayload card details', () => {
+  it('exports provider on plastic label and separate cardType, socialCardNumber, and RRN', () => {
+    const payload = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'CARD',
+        cardType: 'UZCARD',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(payload.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardUzcard');
+    expect(payload.labels.cardType).toBe('fiscalReceipt.cardType');
+    expect(payload.labels.socialCardNumber).toBe('fiscalReceipt.socialCardNumber');
+    expect(payload.labels.cardRrn).toBe('fiscalReceipt.cardRrn');
+    expect(payload.sale.cardCategoryDisplay).toBe('pos.cardSocial');
+    expect(payload.sale.socialCardNumber).toBe('9860********8031');
+    expect(payload.sale.rrn).toBe('631810177451');
+  });
+});
