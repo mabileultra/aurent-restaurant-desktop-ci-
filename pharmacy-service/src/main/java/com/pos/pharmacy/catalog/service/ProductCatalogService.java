@@ -177,7 +177,7 @@ public class ProductCatalogService {
     }
 
     private ProductResponse loadByBarcode(Integer companyId, String barcode, Integer storeId) {
-        Product product = barcodeLookupService.findByScan(companyId, barcode);
+        Product product = barcodeLookupService.findByScan(companyId, barcode, storeId);
         if (!product.isActive()) {
             throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_ACTIVE);
         }

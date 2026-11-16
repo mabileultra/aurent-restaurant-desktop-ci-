@@ -4,6 +4,7 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.entity.ProductBarcode;
 import com.pos.pharmacy.catalog.repository.ProductBarcodeRepository;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
+import com.pos.pharmacy.catalog.support.PharmacyIkpuHitPick;
 import com.pos.pharmacy.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +29,8 @@ class ProductBarcodeLookupServiceTest {
     private ProductRepository productRepository;
     @Mock
     private ProductBarcodeRepository productBarcodeRepository;
+    @Mock
+    private PharmacyIkpuHitPick ikpuHitPick;
 
     @InjectMocks
     private ProductBarcodeLookupService service;
@@ -65,19 +69,44 @@ class ProductBarcodeLookupServiceTest {
     @Test
     void findsByIkpuWhenBarcodeMissing() {
         UUID productId = UUID.randomUUID();
+        Product product = Product.builder()
+            .id(productId)
+            .companyId(10)
+            .ikpu("03305005001000000")
+            .name("By IKPU")
+            .build();
         when(productRepository.findByCompanyIdAndBarcodeIn(eq(10), any())).thenReturn(List.of());
         when(productBarcodeRepository.findByBarcodeIn(any())).thenReturn(List.of());
-        when(productRepository.findByCompanyIdAndIkpuIn(eq(10), any())).thenReturn(List.of(
-            Product.builder()
-                .id(productId)
-                .companyId(10)
-                .ikpu("03305005001000000")
-                .name("By IKPU")
-                .build()
-        ));
+        when(productRepository.findByCompanyIdAndIkpuIn(eq(10), any())).thenReturn(List.of(product));
+        when(ikpuHitPick.pick(any(), isNull())).thenReturn(product);
 
         Product found = service.findByScan(10, "03305005001000000");
         assertEquals(productId, found.getId());
+    }
+
+    @Test
+    void prefersIkpuHitWithStoreStockWhenDuplicates() {
+        UUID zeroId = UUID.randomUUID();
+        UUID stockId = UUID.randomUUID();
+        Product zero = Product.builder()
+            .id(zeroId)
+            .companyId(10)
+            .ikpu("03305005001000000")
+            .name("Zero")
+            .build();
+        Product withStock = Product.builder()
+            .id(stockId)
+            .companyId(10)
+            .ikpu("03305005001000000")
+            .name("In stock")
+            .build();
+        when(productRepository.findByCompanyIdAndBarcodeIn(eq(10), any())).thenReturn(List.of());
+        when(productBarcodeRepository.findByBarcodeIn(any())).thenReturn(List.of());
+        when(productRepository.findByCompanyIdAndIkpuIn(eq(10), any())).thenReturn(List.of(zero, withStock));
+        when(ikpuHitPick.pick(eq(List.of(zero, withStock)), eq(22))).thenReturn(withStock);
+
+        Product found = service.findByScan(10, "03305005001000000", 22);
+        assertEquals(stockId, found.getId());
     }
 
     @Test

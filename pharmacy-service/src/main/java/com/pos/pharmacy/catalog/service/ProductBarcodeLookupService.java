@@ -5,6 +5,7 @@ import com.pos.pharmacy.catalog.entity.ProductBarcode;
 import com.pos.pharmacy.catalog.repository.ProductBarcodeRepository;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeVariants;
+import com.pos.pharmacy.catalog.support.PharmacyIkpuHitPick;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,15 @@ public class ProductBarcodeLookupService {
 
     private final ProductRepository productRepository;
     private final ProductBarcodeRepository productBarcodeRepository;
+    private final PharmacyIkpuHitPick ikpuHitPick;
 
     @Transactional(readOnly = true)
     public Product findByScan(Integer companyId, String raw) {
+        return findByScan(companyId, raw, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Product findByScan(Integer companyId, String raw, Integer storeId) {
         List<String> candidates = new ArrayList<>(PharmacyBarcodeVariants.of(raw));
         if (candidates.isEmpty() && StringUtils.hasText(raw)) {
             candidates.add(raw.trim());
@@ -45,31 +52,32 @@ public class ProductBarcodeLookupService {
         if (extra != null) {
             return extra;
         }
-        Product byIkpu = matchIkpu(companyId, candidates);
+        Product byIkpu = matchIkpu(companyId, candidates, storeId);
         if (byIkpu != null) {
             return byIkpu;
         }
         throw PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_BARCODE_NOT_FOUND, raw);
     }
 
-    private Product matchIkpu(Integer companyId, List<String> candidates) {
+    private Product matchIkpu(Integer companyId, List<String> candidates, Integer storeId) {
         List<Product> hits = productRepository.findByCompanyIdAndIkpuIn(companyId, candidates);
         if (hits.isEmpty()) {
             return null;
         }
-        Map<String, Product> byIkpu = new HashMap<>();
+        Map<String, List<Product>> byIkpu = new HashMap<>();
         for (Product product : hits) {
-            if (StringUtils.hasText(product.getIkpu())) {
-                byIkpu.putIfAbsent(product.getIkpu().trim(), product);
+            if (!StringUtils.hasText(product.getIkpu())) {
+                continue;
             }
+            byIkpu.computeIfAbsent(product.getIkpu().trim(), key -> new ArrayList<>()).add(product);
         }
         for (String candidate : candidates) {
-            Product found = byIkpu.get(candidate);
-            if (found != null) {
-                return found;
+            List<Product> group = byIkpu.get(candidate);
+            if (group != null && !group.isEmpty()) {
+                return ikpuHitPick.pick(group, storeId);
             }
         }
-        return hits.get(0);
+        return ikpuHitPick.pick(hits, storeId);
     }
 
     private Product matchPrimaryBarcode(Integer companyId, List<String> candidates) {
