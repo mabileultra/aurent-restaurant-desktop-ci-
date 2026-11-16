@@ -300,6 +300,8 @@ export function usePharmacyPayRail({
     cashInput,
     setCashInput,
     selectedCardType,
+    /** Выбранный провайдер карты или первый доступный — для F12 до нажатия кнопки карты. */
+    cardType,
     pinfl,
     setPinfl,
     loyaltyPhone,
