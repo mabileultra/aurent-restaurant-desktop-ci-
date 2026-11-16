@@ -1,0 +1,23 @@
+---
+description: Restaurant ticket action buttons stay full-width stacked (no 2/3-col grid)
+globs: apps/restaurant-frontend/src/restaurant/pos/styles/order-workspace.css,apps/restaurant-frontend/src/restaurant/pos/components/OrderWorkspace.jsx
+alwaysApply: false
+---
+
+# Restaurant order ticket actions
+
+## Invariant
+
+`.rst-order__actions` (non-waiter) must stay **one column, full-width stack**:
+
+```css
+.rst-order__actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+```
+
+Do **not** bring back `repeat(2/3, …)` or `grid-column: 1 / -1` on `--bill` for the default footer — that made «Скидка»/«Отменить» half-width and «Выставить счёт» full-width in the narrow ticket column.
+
+## Exception
+
+`.rst-order__footer--waiter .rst-order__actions` may stay compact `auto-fit` side-by-side.

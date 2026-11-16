@@ -1044,12 +1044,14 @@
 
 .rst-order__actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Ticket column is narrow — always stack full-width (do not use 2/3-col grid). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.55rem;
 }
 
 .rst-order__action {
   min-height: 3.85rem;
+  width: 100%;
   border: 1px solid var(--rst-line);
   border-radius: 14px;
   background: var(--rst-surface-2);
@@ -1057,6 +1059,7 @@
   font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.02em;
+  text-align: center;
   cursor: pointer;
   padding: 0.55rem 0.45rem;
   transition: border-color 0.12s ease, background 0.12s ease, transform 0.12s ease;
@@ -1115,17 +1118,7 @@
   border: 0;
 }
 
-@media (max-width: 1100px) {
-  .rst-order__footer:not(.rst-order__footer--waiter) .rst-order__actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .rst-order__footer:not(.rst-order__footer--waiter) .rst-order__action--bill {
-    grid-column: 1 / -1;
-  }
-}
-
-/* Waiter desktop ticket — one compact row (not cashier mega KDS + stacked bill). */
+/* Waiter desktop ticket — compact side-by-side row (not stacked cashier bill). */
 .rst-order__footer--waiter {
   gap: 0.3rem;
   margin-top: 0.3rem;
