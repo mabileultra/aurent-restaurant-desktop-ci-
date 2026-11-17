@@ -77,7 +77,7 @@ export default function PharmacyAdminSidebar(p) {
       {mobileNavOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-30 bg-slate-900/50 print:hidden lg:hidden"
+          className="fixed inset-0 z-30 bg-ink/45 print:hidden lg:hidden"
           aria-label={t('nav.closeMenu')}
           onClick={onCloseMobile}
         />
@@ -236,9 +236,9 @@ export default function PharmacyAdminSidebar(p) {
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-slate-300 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+            className="flex w-full items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:bg-danger-soft hover:text-danger-text"
           >
-            <PHARM_ICONS.LogOut size={18} className="flex-shrink-0" />
+            <PHARM_ICONS.LogOut size={18} strokeWidth={1.75} className="flex-shrink-0" />
             {navLabelsVisible && t('nav.logout')}
           </button>
         </div>

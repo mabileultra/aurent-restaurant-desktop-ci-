@@ -4,6 +4,7 @@ export { default as BaseSelect } from './BaseSelect';
 export { ProductLookupSelect } from '../product-lookup';
 export { default as BaseModal } from './BaseModal';
 export { default as BaseTable } from './BaseTable';
+export { default as EmptyState } from './EmptyState';
 export { default as PageLayout } from './PageLayout';
 export { default as PageHeader } from './PageHeader';
 export { default as PageSearchField } from './PageSearchField';

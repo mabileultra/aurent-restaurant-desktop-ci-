@@ -15,23 +15,23 @@ export default function ReportDateBar({ from, to, onFrom, onTo }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="admin-card flex items-center gap-2 px-3 py-2 !shadow-none">
-        <Calendar size={14} className="admin-icon" aria-hidden />
+      <div className="inline-flex h-10 items-center gap-2 rounded-control border border-line bg-surface px-3">
+        <Calendar size={15} strokeWidth={1.75} className="text-primary-600 shrink-0" aria-hidden />
         <input
           type="date"
           value={from}
           onChange={(e) => onFrom(e.target.value)}
-          className="bg-transparent text-sm text-[color:var(--admin-text)] focus:outline-none"
+          className="bg-transparent text-sm text-ink ui-tabular focus:outline-none"
         />
-        <span className="text-[color:var(--admin-muted)]">—</span>
+        <span className="text-ink-muted">—</span>
         <input
           type="date"
           value={to}
           onChange={(e) => onTo(e.target.value)}
-          className="bg-transparent text-sm text-[color:var(--admin-text)] focus:outline-none"
+          className="bg-transparent text-sm text-ink ui-tabular focus:outline-none"
         />
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="ui-tabs flex-wrap">
         {presets.map((p) => (
           <button
             key={p.key}
@@ -40,7 +40,7 @@ export default function ReportDateBar({ from, to, onFrom, onTo }) {
               onFrom(p.from());
               onTo(p.to());
             }}
-            className={`admin-chip ${isActive(p) ? 'admin-chip--active' : ''}`}
+            className={`ui-tab ${isActive(p) ? 'ui-tab-active' : ''}`}
           >
             {t(`reports.${p.key}`)}
           </button>

@@ -42,31 +42,28 @@ const VARIANTS = ["emerald", "white", "slate", "amber", "current"];
 const TILE_PATH = "M18 2H46A16 16 0 0 1 62 18V46A16 16 0 0 1 46 62H18A16 16 0 0 1 2 46V18A16 16 0 0 1 18 2Z";
 const LETTER_PATH = "M18 48L28.5 16h7L46 48h-7.2l-1.8-6.2H27l-1.8 6.2H18zm10.4-12.2h7.2L32 24.5l-3.6 11.3z";
 
-const FONT = 'Inter, "Segoe UI", system-ui, sans-serif';
+const FONT = "'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif";
 const CYCLE = "2.8s";
 
 const CSS = `
 .aur-sp{
-  --aur-tile:#10b981;--aur-line:#047857;--aur-letter:#fff;--aur-reg:#065f46;--aur-glow:rgba(16,185,129,.28);
-  --aur-a:#34d399;--aur-b:#047857;--aur-track:rgba(16,185,129,.16);--aur-text:#64748b;
+  --aur-tile:#2E9E5B;--aur-line:#1D653A;--aur-letter:#fff;--aur-reg:#174E2E;--aur-glow:rgba(46,158,91,.24);
+  --aur-a:#6FC296;--aur-b:#1D653A;--aur-track:rgba(46,158,91,.16);--aur-text:#5E7867;
   position:relative;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   color:var(--aur-text);font:500 13px/1.35 ${FONT};vertical-align:middle}
 .aur-sp--row{flex-direction:row;gap:8px}
 .aur-sp--xs .aur-sp__text,.aur-sp--sm .aur-sp__text{font-size:12px}
-.aur-sp--xl .aur-sp__text,.aur-sp--2xl .aur-sp__text{font-size:14px;font-weight:600;letter-spacing:.01em;color:#334155}
+.aur-sp--xl .aur-sp__text,.aur-sp--2xl .aur-sp__text{font-size:14px;font-weight:600;letter-spacing:.01em;color:#14291D}
 
-.aur-sp--white{--aur-tile:#fff;--aur-line:#047857;--aur-letter:#047857;--aur-reg:#10b981;--aur-glow:rgba(255,255,255,.18);
+.aur-sp--white{--aur-tile:#fff;--aur-line:#1D653A;--aur-letter:#1D653A;--aur-reg:#2E9E5B;--aur-glow:rgba(255,255,255,.18);
   --aur-a:#fff;--aur-b:rgba(255,255,255,.72);--aur-track:rgba(255,255,255,.22);--aur-text:rgba(255,255,255,.88)}
 .aur-sp--white.aur-sp--xl .aur-sp__text,.aur-sp--white.aur-sp--2xl .aur-sp__text{color:#fff}
-.aur-sp--slate{--aur-tile:#475569;--aur-line:#1e293b;--aur-reg:#1e293b;--aur-glow:rgba(100,116,139,.2);
-  --aur-a:#94a3b8;--aur-b:#334155;--aur-track:rgba(100,116,139,.18)}
-.aur-sp--amber{--aur-tile:#f59e0b;--aur-line:#92400e;--aur-reg:#92400e;--aur-glow:rgba(245,158,11,.26);
-  --aur-a:#fbbf24;--aur-b:#b45309;--aur-track:rgba(245,158,11,.18)}
+.aur-sp--slate{--aur-tile:#5E7867;--aur-line:#14291D;--aur-reg:#14291D;--aur-glow:rgba(94,120,103,.2);
+  --aur-a:#9DB1A4;--aur-b:#5E7867;--aur-track:rgba(94,120,103,.18)}
+.aur-sp--amber{--aur-tile:#F59E0B;--aur-line:#92600A;--aur-reg:#92600A;--aur-glow:rgba(245,158,11,.26);
+  --aur-a:#F59E0B;--aur-b:#92600A;--aur-track:rgba(245,158,11,.18)}
 .aur-sp--current{--aur-a:currentColor;--aur-b:currentColor;--aur-track:currentColor;--aur-text:inherit}
 .aur-sp--current .aur-sp__track{stroke-opacity:.22}
-.dark .aur-sp{--aur-text:#94a3b8}
-.dark .aur-sp--emerald{--aur-a:#6ee7b7;--aur-b:#10b981;--aur-track:rgba(52,211,153,.18)}
-.dark .aur-sp--xl .aur-sp__text,.dark .aur-sp--2xl .aur-sp__text{color:#e2e8f0}
 
 .aur-sp__graphic{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .aur-sp__text{white-space:nowrap}
@@ -91,25 +88,19 @@ const CSS = `
 .aur-sp__arc{stroke-dasharray:1 100;stroke-dashoffset:0;animation:aur-sp-dash 1.5s ease-in-out infinite}
 
 /* overlay over existing content */
-.aur-sp-overlay{position:absolute;inset:0;z-index:20;border-radius:inherit;background:rgba(248,250,252,.5);
-  -webkit-backdrop-filter:blur(.75px);backdrop-filter:blur(.75px);animation:aur-sp-in .18s ease-out both}
+.aur-sp-overlay{position:absolute;inset:0;z-index:20;border-radius:inherit;background:rgba(246,250,247,.72);
+  animation:aur-sp-in .18s ease-out both}
 /* the slot is moved by JS so the pill stays in the visible part of a tall table */
 .aur-sp-overlay__slot{position:absolute;top:0;left:0;right:0;display:flex;justify-content:center;
   transform:translateY(16px);transition:transform .14s ease-out;will-change:transform}
 .aur-sp-overlay__pill{display:inline-flex;align-items:center;padding:8px 16px 8px 10px;
-  border-radius:9999px;background:#fff;border:1px solid #e2e8f0;
-  box-shadow:0 10px 28px -10px rgba(15,23,42,.22),0 2px 6px -2px rgba(15,23,42,.08)}
-.aur-sp-overlay__pill .aur-sp{--aur-text:#334155}
-.dark .aur-sp-overlay{background:rgba(2,6,23,.55)}
-.dark .aur-sp-overlay__pill{background:#0f172a;border-color:#1e293b}
-.dark .aur-sp-overlay__pill .aur-sp{--aur-text:#e2e8f0}
+  border-radius:9999px;background:#FFFFFF;border:1px solid #DDEAE1;
+  box-shadow:0 4px 16px rgba(20,41,29,.08),0 1px 2px rgba(20,41,29,.04)}
+.aur-sp-overlay__pill .aur-sp{--aur-text:#14291D}
 
 /* full screen */
 .aur-sp-screen{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(55% 45% at 50% 40%,rgba(16,185,129,.10),transparent 70%),#f8fafc;animation:aur-sp-in .2s ease-out both}
-.aur-sp-screen--dark{background:radial-gradient(55% 45% at 50% 40%,rgba(16,185,129,.16),transparent 70%),#0b1220}
-.aur-sp-screen--dark .aur-sp{--aur-text:#cbd5e1}
-.aur-sp-screen--dark .aur-sp--xl .aur-sp__text,.aur-sp-screen--dark .aur-sp--2xl .aur-sp__text{color:#e2e8f0}
+  background:radial-gradient(55% 45% at 50% 40%,rgba(46,158,91,.10),transparent 70%),#F6FAF7;animation:aur-sp-in .2s ease-out both}
 
 @keyframes aur-sp-tile{0%{stroke-dashoffset:100;fill-opacity:0}32%{stroke-dashoffset:0;fill-opacity:0}46%,100%{stroke-dashoffset:0;fill-opacity:1}}
 @keyframes aur-sp-letter{0%,14%{stroke-dashoffset:100;fill-opacity:0;stroke-opacity:1}46%{stroke-dashoffset:0;fill-opacity:0;stroke-opacity:1}58%,100%{stroke-dashoffset:0;fill-opacity:1;stroke-opacity:0}}
@@ -261,10 +252,10 @@ export function AurentBrandEmblem({ className = "", withShadow = true, inverted 
       focusable="false"
       className={cx(withShadow && "drop-shadow-sm", className)}
     >
-      <rect width="64" height="64" rx="16" fill={inverted ? "#FFFFFF" : "#10B981"} />
-      <path fill={inverted ? "#047857" : "#FFFFFF"} d={LETTER_PATH} />
-      <rect x="36" y="34" width="12" height="10" rx="1.5" fill={inverted ? "#10B981" : "#065F46"} />
-      <rect x="38.5" y="30" width="7" height="5" rx="1" fill={inverted ? "#10B981" : "#065F46"} />
+      <rect width="64" height="64" rx="16" fill={inverted ? "#FFFFFF" : "#2E9E5B"} />
+      <path fill={inverted ? "#1D653A" : "#FFFFFF"} d={LETTER_PATH} />
+      <rect x="36" y="34" width="12" height="10" rx="1.5" fill={inverted ? "#2E9E5B" : "#174E2E"} />
+      <rect x="38.5" y="30" width="7" height="5" rx="1" fill={inverted ? "#2E9E5B" : "#174E2E"} />
     </svg>
   );
 }
@@ -375,10 +366,9 @@ export function Spinner({
 
   if (fullScreen) {
     const screenSize = ["lg", "xl", "2xl"].includes(sizeKey) ? sizeKey : "2xl";
-    const dark = tone === "white";
     return (
-      <div className={cx("aur-sp-screen", dark && "aur-sp-screen--dark", className)}>
-        {render(screenSize, { caption: text, row: false, toneOverride: dark ? "emerald" : undefined })}
+      <div className={cx("aur-sp-screen", className)}>
+        {render(screenSize, { caption: text, row: false, toneOverride: tone === "white" ? "emerald" : undefined })}
       </div>
     );
   }

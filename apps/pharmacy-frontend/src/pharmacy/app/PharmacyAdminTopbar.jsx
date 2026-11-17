@@ -19,10 +19,12 @@ export default function PharmacyAdminTopbar({
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="shrink-0 rounded-lg p-2 text-slate-600 hover:bg-[color:var(--color-brand-soft)] hover:text-[color:var(--color-brand-deep)] dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="ui-btn-icon shrink-0"
           aria-label={mobileNavOpen || sidebarOpen ? t('nav.closeMenu') : t('nav.expandMenu')}
         >
-          {isDesktop ? (sidebarOpen ? <X size={20} /> : <Menu size={20} />) : <Menu size={20} />}
+          {isDesktop
+            ? (sidebarOpen ? <X size={20} strokeWidth={1.75} /> : <Menu size={20} strokeWidth={1.75} />)
+            : <Menu size={20} strokeWidth={1.75} />}
         </button>
         <div className="app-top-header__brand hidden sm:block">
           <BrandMark variant="full" height={28} />
@@ -36,13 +38,13 @@ export default function PharmacyAdminTopbar({
       <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
         <OnScreenKeyboardButton variant="header" />
         <LanguageSwitcher />
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2.5 text-sm">
           <div className="admin-topbar__avatar">
             {user?.fullName?.[0] ?? 'U'}
           </div>
           <div className="hidden md:block">
-            <div className="font-medium text-[color:var(--admin-ink)] dark:text-white">{user?.fullName}</div>
-            <div className="admin-page-subtitle text-xs">{roleLabel}</div>
+            <div className="font-semibold text-ink">{user?.fullName}</div>
+            <div className="text-xs text-ink-muted">{roleLabel}</div>
           </div>
         </div>
       </div>

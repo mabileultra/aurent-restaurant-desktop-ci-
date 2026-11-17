@@ -184,7 +184,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         >
           {searchable ? (
             <div className="base-select__search-wrap">
-              <Search size={14} className="base-select__search-icon" aria-hidden />
+              <Search size={14} strokeWidth={1.75} className="base-select__search-icon" aria-hidden />
               <input
                 ref={searchRef}
                 type="search"
@@ -255,7 +255,7 @@ const BaseSelect = forwardRef(function BaseSelect(
                       commitSelection(optionValue);
                     }}
                   >
-                    <Check size={14} className="base-select__check" aria-hidden />
+                    <Check size={14} strokeWidth={1.75} className="base-select__check" aria-hidden />
                     <span className="base-select__option-label">{option.label}</span>
                   </button>
                 );
@@ -282,7 +282,7 @@ const BaseSelect = forwardRef(function BaseSelect(
       {label ? (
         <label htmlFor={fieldId} className="base-select__label">
           {label}
-          {required ? <span className="text-red-500"> *</span> : null}
+          {required ? <span className="text-danger"> *</span> : null}
         </label>
       ) : null}
 
@@ -317,7 +317,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         >
           {displayLabel || placeholder || ''}
         </span>
-        <ChevronDown size={16} className="base-select__chevron" aria-hidden />
+        <ChevronDown size={16} strokeWidth={1.75} className="base-select__chevron" aria-hidden />
       </button>
 
       <select

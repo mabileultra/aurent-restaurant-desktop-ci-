@@ -68,7 +68,7 @@ describe('StoreFormModal', () => {
     // Modal dialog must have role="dialog" and aria-modal="true"
     expect(html).toContain('role="dialog"');
     expect(html).toContain('aria-modal="true"');
-    expect(html).toContain('bg-black/60');
+    expect(html).toContain('ui-overlay');
 
     // Title should be Filial qo‘shish
     expect(html).toContain('Filial qo‘shish');
