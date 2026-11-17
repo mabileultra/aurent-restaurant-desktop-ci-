@@ -14,7 +14,7 @@ html.app-viewport--canonical .platform-shell {
 }
 
 @media (min-width: 1024px) {
-  .platform-shell.admin-shell .admin-sidebar {
+.platform-shell.admin-shell .admin-sidebar {
     width: var(--platform-sidebar-w);
   }
 }

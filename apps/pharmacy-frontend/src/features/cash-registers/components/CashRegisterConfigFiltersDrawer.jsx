@@ -3,10 +3,6 @@ import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../components/ui';
 
-const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500
-                  dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
-
 export default function CashRegisterConfigFiltersDrawer({
   open,
   onClose,
@@ -24,20 +20,21 @@ export default function CashRegisterConfigFiltersDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
-      <aside className="relative flex w-full max-w-md flex-col border-l border-slate-200 bg-white shadow-2xl animate-[slideIn_0.2s_ease-out] dark:border-slate-700 dark:bg-slate-900">
+      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
+      <aside className="relative flex w-full max-w-md flex-col border-l border-line bg-surface shadow-modal animate-[slideIn_0.2s_ease-out]">
         <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="font-semibold text-slate-900 dark:text-white">{t('cashRegisters.filterPanelTitle')}</h2>
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <h2 className="text-base font-semibold text-ink">{t('cashRegisters.filterPanelTitle')}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="ui-icon-btn"
+            aria-label={t('common.close')}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
-        <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="flex-1 space-y-4 overflow-y-auto p-5">
           <BaseSelect
             label={t('cashRegisters.configFilterStore')}
             value={filters.storeId}
@@ -59,18 +56,18 @@ export default function CashRegisterConfigFiltersDrawer({
             ]}
           />
         </div>
-        <div className="flex gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
+        <div className="flex gap-2 border-t border-line px-5 py-3.5">
           <button
             type="button"
             onClick={onReset}
-            className="admin-btn-secondary flex-1 py-2.5 text-sm"
+            className="ui-btn-secondary flex-1"
           >
             {t('products.filters.reset')}
           </button>
           <button
             type="button"
             onClick={onApply}
-            className="admin-btn-primary flex-1 py-2.5 text-sm"
+            className="ui-btn-primary flex-1"
           >
             {t('common.apply')}
           </button>

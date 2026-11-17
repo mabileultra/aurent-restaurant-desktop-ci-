@@ -12,24 +12,24 @@
   margin: 0;
   font-size: 0.875rem;
   font-weight: 800;
-  color: var(--pharm-ink, #26332d);
+  color: rgb(var(--color-ink));
 }
 
 .pharmacy-preview-receipt__head p {
   margin: 2px 0 0;
   font-size: 0.75rem;
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharmacy-preview-receipt__badge {
   display: inline-block;
   margin-top: 6px !important;
   padding: 2px 8px;
-  border-radius: 6px;
-  background: var(--pharm-warn, #f8e6c8);
-  color: var(--pharm-warn-text, #8a5a12);
+  border-radius: 9999px;
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
   font-size: 0.625rem !important;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -42,14 +42,14 @@
 .pharmacy-preview-receipt__table th,
 .pharmacy-preview-receipt__table td {
   padding: 4px 6px;
-  border-bottom: 1px solid var(--pharm-border, #dddcd5);
+  border-bottom: 1px solid rgb(var(--color-line));
   text-align: left;
 }
 
 .pharmacy-preview-receipt__table th {
   font-size: 0.5625rem;
   text-transform: uppercase;
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharmacy-preview-receipt__foot {
@@ -62,12 +62,12 @@
 
 .pharmacy-preview-receipt__print {
   align-self: flex-start;
-  min-height: 32px;
+  min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--pharm-brand, #245b45);
-  border-radius: 8px;
-  background: var(--pharm-brand, #245b45);
-  color: #fff;
+  border: 1px solid rgb(var(--color-primary-500));
+  border-radius: 10px;
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;

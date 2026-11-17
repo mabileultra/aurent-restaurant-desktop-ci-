@@ -42,27 +42,27 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
   const isActive = data?.status === 'ACTIVE';
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
+    <div className="ui-modal-overlay z-[70]">
+      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
       <div
-        className="cr-details-modal relative flex max-h-[90vh] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="cr-details-modal ui-modal-panel relative max-h-[90vh]"
         role="dialog"
         aria-labelledby="cr-details-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h2 id="cr-details-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+        <div className="ui-modal-header">
+          <h2 id="cr-details-title" className="text-base font-semibold text-ink">
             {t('cashRegisters.detailsTitle')}
           </h2>
-          <button type="button" onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800 dark:hover:text-white">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label={t('common.close')}>
+            <X size={18} />
           </button>
         </div>
 
         <div className="overflow-y-auto">
           {isPending ? (
-            <p className="px-5 py-10 text-center text-sm text-slate-500">{t('common.loading')}</p>
+            <p className="px-5 py-10 text-center text-sm text-ink-muted">{t('common.loading')}</p>
           ) : isError ? (
-            <p className="px-5 py-10 text-center text-sm text-red-600">{t('cashRegisters.detailsLoadError')}</p>
+            <p className="px-5 py-10 text-center text-sm text-danger-text">{t('cashRegisters.detailsLoadError')}</p>
           ) : (
             <>
               <section className="cr-details-modal__section">
@@ -85,7 +85,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
                           <Play size={18} strokeWidth={2.5} />
                         </span>
                       ) : (
-                        <Pause size={18} className="text-slate-400" aria-hidden />
+                        <Pause size={18} className="text-ink-disabled" aria-hidden />
                       )}
                     </span>
                   </div>
@@ -128,7 +128,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
             <button
               type="button"
               onClick={() => onMultikassa(data.id)}
-              className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+              className="ui-btn-secondary"
             >
               {t('cashRegisters.multikassa.openSettings')}
             </button>
@@ -137,7 +137,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
             <button
               type="button"
               onClick={() => onFiscalDrive(data.id)}
-              className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+              className="ui-btn-secondary"
             >
               {t('cashRegisters.fiscalDrive.openSettings')}
             </button>
@@ -146,7 +146,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
             <button
               type="button"
               onClick={() => onEdit(data.id)}
-              className="admin-btn-secondary px-5 py-2 text-sm"
+              className="ui-btn-secondary"
             >
               {t('common.edit')}
             </button>
@@ -154,7 +154,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            className="ui-btn-secondary"
           >
             {t('common.close')}
           </button>

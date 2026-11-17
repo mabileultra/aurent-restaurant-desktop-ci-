@@ -4,7 +4,7 @@
 
 .pos-return-modal.pharmacy-modal {
   width: min(560px, calc(100vw - 1.5rem));
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   border: 1px solid var(--pm-border);
   border-radius: calc(var(--pm-radius) + 2px);
@@ -12,34 +12,34 @@
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__header {
-  background: #134842;
+  background: rgb(var(--color-primary-600));
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
-  color: #fff;
+  color: rgb(var(--color-surface));
   border-bottom: none;
   padding: 0.75rem 1rem;
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__header-icon {
-  background: rgb(255 255 255 / 0.16);
-  color: #fff;
-  border: 1px solid rgb(255 255 255 / 0.28);
+  background: rgb(var(--color-surface) / 0.16);
+  color: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-surface) / 0.28);
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__title {
-  color: #fff;
+  color: rgb(var(--color-surface));
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__hint {
-  color: rgb(255 255 255 / 0.82);
+  color: rgb(var(--color-surface) / 0.82);
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__close {
-  border: 1px solid rgb(255 255 255 / 0.35);
-  background: rgb(255 255 255 / 0.12);
-  color: #fff;
+  border: 1px solid rgb(var(--color-surface) / 0.35);
+  background: rgb(var(--color-surface) / 0.12);
+  color: rgb(var(--color-surface));
   border-radius: var(--pm-radius-sm);
 }
 
@@ -57,7 +57,7 @@
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__input,
 .pos-return-modal.pharmacy-modal .pos-return-modal__textarea {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border: 1px solid var(--pm-border);
   color: var(--pm-ink);
   border-radius: var(--pm-radius-sm);
@@ -82,7 +82,7 @@
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__preview-badge {
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-brand);
 }
 
@@ -96,7 +96,7 @@
 .pos-return-modal.pharmacy-modal .pos-return-modal__select-all {
   border-color: var(--pm-brand);
   color: var(--pm-brand);
-  background: #fff;
+  background: rgb(var(--color-surface));
 }
 
 .pos-return-modal.pharmacy-modal .pos-return-modal__footer {
@@ -116,7 +116,7 @@
 .pos-return-modal.pharmacy-modal .pos-return-modal__submit {
   background: var(--pm-brand);
   border-color: var(--pm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
   border-radius: var(--pm-radius-sm);
   min-height: 2.5rem;
   font-weight: 700;
@@ -132,9 +132,9 @@
   gap: 6px;
   margin: 12px 0;
   padding: 12px;
-  border: 1px solid var(--pm-brand, #245b45);
+  border: 1px solid var(--pm-brand, rgb(var(--color-primary-500)));
   border-radius: 12px;
-  background: #fff;
+  background: rgb(var(--color-surface));
 }
 
 .pharmacy-return-mark__label {
@@ -142,16 +142,16 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pm-muted, #7a817c);
+  color: var(--pm-muted, rgb(var(--color-ink-muted)));
 }
 
 .pharmacy-return-mark__input {
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--pm-border, #dddcd5);
+  border: 1px solid var(--pm-border, rgb(var(--color-line)));
   border-radius: 10px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   font-size: 15px;
 }
 
@@ -163,16 +163,16 @@
 }
 
 .pharmacy-return-mark__hint {
-  color: var(--pm-muted, #7a817c);
+  color: var(--pm-muted, rgb(var(--color-ink-muted)));
 }
 
 .pharmacy-return-mark__notice.is-ok {
-  color: #174936;
+  color: rgb(var(--color-primary-700));
   font-weight: 700;
 }
 
 .pharmacy-return-mark__notice.is-bad,
 .pharmacy-return-mark__notice.is-warn {
-  color: #a33b35;
+  color: rgb(var(--color-danger-text));
   font-weight: 700;
 }

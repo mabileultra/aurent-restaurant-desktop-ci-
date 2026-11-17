@@ -15,29 +15,29 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
   };
 
   const modalNode = (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/60" aria-label="Close" onClick={onClose} />
+    <div className="ui-modal-overlay z-[1000]">
+      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
       <div
-        className="pharm-int-settings relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="pharm-int-settings ui-modal-panel relative max-w-lg max-h-[90vh]"
         role="dialog"
         aria-labelledby="pharm-int-settings-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+        <div className="ui-modal-header">
           <div>
-            <h2 id="pharm-int-settings-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 id="pharm-int-settings-title" className="text-base font-semibold text-ink">
               {p.t('stores.pharmacyIntegration.title')}
             </h2>
-            <p className="text-sm text-slate-500">{store.name}</p>
+            <p className="text-xs text-ink-muted">{store.name}</p>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label={p.t('common.close')}>
+            <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+          <div className="ui-modal-body flex-1 space-y-4 overflow-y-auto">
             {p.isLoading ? (
-              <p className="text-sm text-slate-500">{p.t('common.loading')}</p>
+              <p className="text-sm text-ink-muted">{p.t('common.loading')}</p>
             ) : (
               <>
                 <p className="pharm-int-settings__lead">
@@ -69,7 +69,7 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
             )}
           </div>
 
-          <div className="flex gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
+          <div className="ui-modal-footer">
             <button type="button" onClick={onClose} className="pharm-int-settings__btn pharm-int-settings__btn--ghost">
               {p.t('common.cancel')}
             </button>

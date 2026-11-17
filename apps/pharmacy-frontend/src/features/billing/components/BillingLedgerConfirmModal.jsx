@@ -31,8 +31,8 @@ export default function BillingLedgerConfirmModal({
         </div>
       )}
     >
-      <p className="text-sm text-slate-700 dark:text-slate-200">{hint}</p>
-      {note ? <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{note}</p> : null}
+      <p className="text-sm text-ink">{hint}</p>
+      {note ? <p className="mt-2 text-xs text-ink-muted">{note}</p> : null}
     </BaseModal>
   );
 }

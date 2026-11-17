@@ -13,23 +13,23 @@
 .multikassa-settings__label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #334155;
+  color: rgb(var(--color-ink));
 }
 
 .multikassa-settings__input,
 .multikassa-settings__select {
-  border: 1px solid #cbd5e1;
+  border: 1px solid rgb(var(--color-line-strong));
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  background: #fff;
-  color: #0f172a;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
 }
 
 .multikassa-settings__input:focus,
 .multikassa-settings__select:focus {
   outline: 2px solid rgb(16 185 129 / 0.35);
-  border-color: #059669;
+  border-color: rgb(var(--color-primary-500));
 }
 
 .multikassa-settings__check {
@@ -37,7 +37,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #334155;
+  color: rgb(var(--color-ink));
 }
 
 .multikassa-settings__presets {
@@ -47,31 +47,31 @@
 }
 
 .multikassa-settings__preset {
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
+  border: 1px solid rgb(var(--color-line-strong));
+  background: rgb(var(--color-canvas));
   border-radius: 0.5rem;
   padding: 0.35rem 0.65rem;
   font-size: 0.75rem;
-  color: #334155;
+  color: rgb(var(--color-ink));
   cursor: pointer;
 }
 
 .multikassa-settings__preset:hover {
-  background: #ecfdf5;
-  border-color: #34d399;
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-400));
 }
 
 .multikassa-settings__hint {
   margin: 0;
   font-size: 0.75rem;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
   line-height: 1.4;
 }
 
 .multikassa-settings__test {
   margin: 0;
   font-size: 0.8125rem;
-  color: #0f766e;
+  color: rgb(var(--color-primary-600));
 }
 
 .multikassa-settings__actions {
@@ -91,36 +91,18 @@
 }
 
 .multikassa-settings__btn--secondary {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #334155;
+  border: 1px solid rgb(var(--color-line-strong));
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
 }
 
 .multikassa-settings__btn--primary {
-  border: 1px solid #047857;
-  background: #059669;
-  color: #fff;
+  border: 1px solid rgb(var(--color-primary-700));
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
 }
 
 .multikassa-settings__btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.dark .multikassa-settings__label,
-.dark .multikassa-settings__check {
-  color: #cbd5e1;
-}
-
-.dark .multikassa-settings__input,
-.dark .multikassa-settings__select {
-  background: #0f172a;
-  border-color: #475569;
-  color: #e2e8f0;
-}
-
-.dark .multikassa-settings__preset {
-  background: #1e293b;
-  border-color: #475569;
-  color: #e2e8f0;
 }

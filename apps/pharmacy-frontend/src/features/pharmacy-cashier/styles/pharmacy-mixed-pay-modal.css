@@ -33,9 +33,9 @@
   gap: 8px;
   min-height: 44px;
   padding: 8px 10px;
-  border: 1px solid var(--pm-border, #dddcd5);
+  border: 1px solid var(--pm-border, rgb(var(--color-line)));
   border-radius: 10px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   font-weight: 700;
   cursor: pointer;
 }

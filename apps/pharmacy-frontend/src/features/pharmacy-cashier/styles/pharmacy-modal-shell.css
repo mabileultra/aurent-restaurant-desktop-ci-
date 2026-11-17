@@ -4,23 +4,23 @@
  */
 
 .pharmacy-modal {
-  --pm-brand: #134842;
-  --pm-brand-hover: #0e3834;
+  --pm-brand: rgb(var(--color-primary-600));
+  --pm-brand-hover: rgb(var(--color-primary-700));
   --pm-brand-soft: rgb(19 72 66 / 0.12);
-  --pm-teal: #134842;
-  --pm-ink: #1f2024;
-  --pm-muted: #8b9198;
-  --pm-border: #e4e7ec;
-  --pm-surface: #fff;
-  --pm-elevated: #fff;
-  --pm-card: #fff;
-  --pm-hover: #e7f6ec;
-  --pm-warn: #f8e6c8;
-  --pm-warn-text: #8a5a12;
-  --pm-danger: #f8d7d4;
-  --pm-danger-text: #a33b35;
-  --pm-ok: #e3f1dc;
-  --pm-ok-text: #174936;
+  --pm-teal: rgb(var(--color-primary-600));
+  --pm-ink: rgb(var(--color-ink));
+  --pm-muted: rgb(var(--color-ink-muted));
+  --pm-border: rgb(var(--color-line));
+  --pm-surface: rgb(var(--color-surface));
+  --pm-elevated: rgb(var(--color-surface));
+  --pm-card: rgb(var(--color-surface));
+  --pm-hover: rgb(var(--color-primary-50));
+  --pm-warn: rgb(var(--color-warning-soft));
+  --pm-warn-text: rgb(var(--color-warning-text));
+  --pm-danger: rgb(var(--color-danger-soft));
+  --pm-danger-text: rgb(var(--color-danger-text));
+  --pm-ok: rgb(var(--color-success-soft));
+  --pm-ok-text: rgb(var(--color-primary-700));
   --pm-radius: 12px;
   --pm-radius-sm: 8px;
   --pm-shadow: 0 20px 48px rgb(38 51 45 / 0.18), 0 0 0 1px rgb(36 91 69 / 0.12);
@@ -83,7 +83,7 @@
   min-height: 44px;
   border: 1px solid var(--pm-border);
   border-radius: 10px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   padding: 0 12px;
   font-weight: 650;
 }
@@ -171,7 +171,7 @@
   flex-direction: column;
   overflow: hidden;
   max-height: min(92vh, 820px);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
   border: 1px solid var(--pm-border);
@@ -186,8 +186,8 @@
   gap: 0.75rem;
   flex-shrink: 0;
   padding: 0.75rem 1rem;
-  background: #134842;
-  color: #fff;
+  background: rgb(var(--color-primary-600));
+  color: rgb(var(--color-surface));
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
 }
 
@@ -197,13 +197,13 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .pharmacy-modal__hint {
   margin: 0.2rem 0 0;
   font-size: 0.75rem;
-  color: rgb(255 255 255 / 0.82);
+  color: rgb(var(--color-surface) / 0.82);
 }
 
 .pharmacy-modal__close {
@@ -212,10 +212,10 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border: 1px solid rgb(255 255 255 / 0.35);
+  border: 1px solid rgb(var(--color-surface) / 0.35);
   border-radius: var(--pm-radius-sm);
-  background: rgb(255 255 255 / 0.12);
-  color: #fff;
+  background: rgb(var(--color-surface) / 0.12);
+  color: rgb(var(--color-surface));
   cursor: pointer;
 }
 
@@ -259,7 +259,7 @@
 .pharmacy-modal__btn--primary {
   background: var(--pm-brand);
   border-color: var(--pm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .pharmacy-modal__btn--primary:hover:not(:disabled) {
@@ -301,7 +301,7 @@
   padding: 0.45rem 0.65rem;
   border: 1px solid var(--pm-border);
   border-radius: var(--pm-radius-sm);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   font-size: 0.875rem;
 }

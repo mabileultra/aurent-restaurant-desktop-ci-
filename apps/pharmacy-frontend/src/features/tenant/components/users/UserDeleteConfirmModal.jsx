@@ -5,27 +5,28 @@ export default function UserDeleteConfirmModal({ user, t, isPending, onClose, on
   if (!user) return null;
 
   const modalNode = (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('users.deleteTitle')}</h2>
+    <div className="ui-modal-overlay z-[1000]">
+      <div className="ui-modal-panel max-w-md">
+        <div className="ui-modal-header">
+          <h2 className="text-base font-semibold text-ink">{t('users.deleteTitle')}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="ui-icon-btn"
+            aria-label={t('common.close')}
           >
             <span className="text-xl leading-none">×</span>
           </button>
         </div>
-        <div className="px-4 py-4 text-sm text-slate-700 dark:text-slate-200">
+        <div className="ui-modal-body text-sm text-ink">
           {t('users.deleteHint', { name: user.fullName })}
         </div>
-        <div className="flex justify-end gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
+        <div className="ui-modal-footer">
           <button
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="ui-btn-secondary"
           >
             {t('common.cancel')}
           </button>
@@ -33,7 +34,7 @@ export default function UserDeleteConfirmModal({ user, t, isPending, onClose, on
             type="button"
             disabled={isPending}
             onClick={onConfirm}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            className="ui-btn-danger-solid"
           >
             {t('common.delete')}
           </button>

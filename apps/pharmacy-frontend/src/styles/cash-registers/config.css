@@ -7,10 +7,6 @@
   padding: 0.5rem;
 }
 
-.dark .crc-modal__pick-list {
-  border-color: rgb(51 65 85);
-}
-
 .crc-modal__pick-row {
   display: flex;
   cursor: pointer;
@@ -22,17 +18,9 @@
   color: rgb(30 41 59);
 }
 
-.dark .crc-modal__pick-row {
-  color: rgb(226 232 240);
-}
-
 .crc-modal__pick-row:hover {
   background: rgb(236 253 245);
   border-radius: 0.25rem;
-}
-
-.dark .crc-modal__pick-row:hover {
-  background: rgb(6 78 59 / 0.25);
 }
 
 .crc-modal__categories-grid {
@@ -43,7 +31,7 @@
 }
 
 @media (max-width: 480px) {
-  .crc-modal__categories-grid {
+.crc-modal__categories-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -55,10 +43,6 @@
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240);
   padding: 0.5rem;
-}
-
-.dark .crc-modal__category-panel {
-  border-color: rgb(51 65 85);
 }
 
 .crc-modal__category-panel-title {
@@ -90,10 +74,6 @@
 
 .crc-modal__category-item--add:hover {
   background: rgb(236 253 245);
-}
-
-.dark .crc-modal__category-item--add:hover {
-  background: rgb(6 78 59 / 0.25);
 }
 
 .crc-modal__empty {

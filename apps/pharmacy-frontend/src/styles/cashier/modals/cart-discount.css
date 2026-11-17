@@ -19,7 +19,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 18px 12px;
-  border-bottom: 1px solid var(--pos-border, #e5e7eb);
+  border-bottom: 1px solid var(--pos-border, rgb(var(--color-line)));
 }
 
 .pos-pay-modal--discount .pos-pay-modal__title {
@@ -42,12 +42,12 @@
   gap: 12px;
   margin: 0;
   font-size: 0.875rem;
-  color: var(--pos-muted, #6b7280);
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
 }
 
 .pos-order-discount-modal__base strong {
   font-size: 1.125rem;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .pos-order-discount-modal__mode {
@@ -62,19 +62,19 @@
   justify-content: center;
   gap: 6px;
   min-height: 40px;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   border-radius: 10px;
-  background: #fff;
-  color: var(--pos-muted, #6b7280);
+  background: rgb(var(--color-surface));
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
   font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .pos-order-discount-modal__mode button.is-active {
-  border-color: var(--pos-green, #006847);
-  background: var(--pos-green-soft, #e8f5ef);
-  color: var(--pos-green, #006847);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
+  background: var(--pos-green-soft, rgb(var(--color-primary-50)));
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .pos-order-discount-modal__editor {
@@ -90,16 +90,16 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   border-radius: 10px;
-  background: #fff;
-  color: var(--pos-text, #111827);
+  background: rgb(var(--color-surface));
+  color: var(--pos-text, rgb(var(--color-ink)));
   cursor: pointer;
 }
 
 .pos-order-discount-modal__step:hover {
-  border-color: var(--pos-green, #006847);
-  color: var(--pos-green, #006847);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .pos-order-discount-modal__input-wrap {
@@ -110,17 +110,17 @@
   width: 100%;
   min-height: 48px;
   padding: 8px 36px 8px 12px;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   border-radius: 10px;
   font-size: 1.25rem;
   font-weight: 800;
   text-align: center;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .pos-order-discount-modal__input:focus {
   outline: none;
-  border-color: var(--pos-green, #006847);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
   box-shadow: 0 0 0 3px rgb(0 104 71 / 0.12);
 }
 
@@ -130,7 +130,7 @@
   top: 50%;
   transform: translateY(-50%);
   font-weight: 700;
-  color: var(--pos-muted, #6b7280);
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
 }
 
 .pos-order-discount-modal__presets {
@@ -143,27 +143,27 @@
   flex: 1 1 calc(25% - 8px);
   min-width: 64px;
   min-height: 36px;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   border-radius: 8px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   font-weight: 700;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
   cursor: pointer;
 }
 
 .pos-order-discount-modal__preset.is-active,
 .pos-order-discount-modal__preset:hover {
-  border-color: var(--pos-green, #006847);
-  background: var(--pos-green-soft, #e8f5ef);
-  color: var(--pos-green, #006847);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
+  background: var(--pos-green-soft, rgb(var(--color-primary-50)));
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .pos-order-discount-modal__preview {
   padding: 12px;
   border-radius: 10px;
-  background: var(--pos-green-soft, #e8f5ef);
+  background: var(--pos-green-soft, rgb(var(--color-primary-50)));
   font-size: 0.875rem;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .pos-order-discount-modal__preview p {
@@ -175,7 +175,7 @@
 }
 
 .pos-order-discount-modal__preview-total strong {
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   font-size: 1.0625rem;
 }
 
@@ -183,7 +183,7 @@
   display: flex;
   gap: 10px;
   padding: 12px 18px 18px;
-  border-top: 1px solid var(--pos-border, #e5e7eb);
+  border-top: 1px solid var(--pos-border, rgb(var(--color-line)));
 }
 
 .pos-order-discount-modal__btn {
@@ -196,95 +196,14 @@
 }
 
 .pos-order-discount-modal__btn--ghost {
-  border: 1px solid var(--pos-border, #e5e7eb);
-  background: #fff;
-  color: var(--pos-muted, #6b7280);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
+  background: rgb(var(--color-surface));
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
 }
 
 .pos-order-discount-modal__btn--primary {
   border: 1px solid transparent;
-  background: var(--pos-green-gradient, var(--pos-green, #006847));
-  color: var(--pos-on-green, #fff);
+  background: var(--pos-green-gradient, var(--pos-green, rgb(var(--color-primary-500))));
+  color: var(--pos-on-green, rgb(var(--color-surface)));
   box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal {
-  background: #151b26;
-  border: 1px solid #2a3548;
-  color: #f1f5f9;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__head {
-  border-bottom-color: #2a3548;
-  background: linear-gradient(180deg, rgb(46 196 182 / 0.12) 0%, #151b26 100%);
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-pay-modal__title {
-  color: #2ec4b6;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__base {
-  color: #94a3b8;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__base strong {
-  color: #f5c842;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button,
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__step,
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__input,
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset,
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost {
-  background: #1c2433;
-  border-color: #2a3548;
-  color: #f1f5f9;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button.is-active,
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset.is-active {
-  border-color: rgb(46 196 182 / 0.45);
-  background: rgb(46 196 182 / 0.12);
-  color: #2ec4b6;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview {
-  background: rgb(46 196 182 / 0.1);
-  color: #f1f5f9;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview strong {
-  color: #e2e8f0;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview-total strong {
-  color: #f5c842;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary {
-  background: var(--pos-green-gradient, #2ec4b6);
-  border-color: transparent;
-  color: var(--pos-on-green, #0a1218);
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-pay-modal__close {
-  position: static;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid #2a3548;
-  border-radius: 10px;
-  background: #1c2433;
-  color: #f1f5f9;
-}
-
-html.cashier-theme--dark .pos-pay-modal--discount-terminal .pos-pay-modal__close:hover {
-  border-color: rgb(248 113 113 / 0.45);
-  background: rgb(248 113 113 / 0.12);
-  color: #fca5a5;
 }
