@@ -1,21 +1,3 @@
-import { CARD_CATEGORY } from '@aurent/shared-types';
-import { normalizeCardCategory } from '@aurent/shared-fiscal';
-
-export function cardCategoryLabel(category, t) {
-  const normalized = normalizeCardCategory(category);
-  if (!normalized) return null;
-  switch (normalized) {
-    case CARD_CATEGORY.PERSONAL:
-      return t('pos.cardPersonal', { defaultValue: 'Личная' });
-    case CARD_CATEGORY.CORPORATE:
-      return t('pos.cardCorporate', { defaultValue: 'Корпоративная' });
-    case CARD_CATEGORY.SOCIAL:
-      return t('pos.cardSocial', { defaultValue: 'Социальная' });
-    default:
-      return null;
-  }
-}
-
 export function cardTypeLabel(cardType, t) {
   if (!cardType) return null;
   switch (cardType) {
@@ -30,7 +12,7 @@ export function cardTypeLabel(cardType, t) {
     case 'PERSONAL':
       return t('pos.cardPersonal', { defaultValue: 'Личная' });
     case 'CORPORATE':
-      return t('pos.cardCorporate', { defaultValue: 'Корпоративная' });
+      return t('pos.cardCorporate', { defaultValue: 'Корп.' });
     case 'SOCIAL':
       return t('pos.cardSocial', { defaultValue: 'Социальная' });
     default:

@@ -87,8 +87,8 @@ describe('printShiftItemsReceipt', () => {
     expect(browser.printViaIframe).not.toHaveBeenCalled();
     const { title, lines, printerName } = printer.printTicketLines.mock.calls[0][0];
     expect(printerName).toBe('XP-80');
-    expect(title).toBe('Smenada sotildi');
-    expect(plain(lines[0])).toBe('SMENADA SOTILDI');
+    expect(title).toBe('Продано за смену');
+    expect(plain(lines[0])).toBe('ПРОДАНО ЗА СМЕНУ');
     expect(lines.map(plain)).toContain('Rayhon');
     expect(lines.map(plain)).toContain('Dilnoza');
     expect(lines).toContain('≫ Горячее');
@@ -101,12 +101,12 @@ describe('printShiftItemsReceipt', () => {
     expect(lagman.length).toBeLessThanOrEqual(32);
 
     const hotSub = findPlain(lines, (l) => l.startsWith('Горячее'));
-    expect(hotSub).toContain('12 dona');
+    expect(hotSub).toContain('12 шт.');
     const drinksSub = findPlain(lines, (l) => l.startsWith('Напитки'));
-    expect(drinksSub).toContain('30 dona');
+    expect(drinksSub).toContain('30 шт.');
 
-    const totalRow = findPlain(lines, (l) => l.startsWith('To‘lovga jami') || l.startsWith('JAMI') || l.startsWith('ИТОГО'));
-    expect(totalRow).toContain('42 dona');
+    const totalRow = findPlain(lines, (l) => l.startsWith('ИТОГО'));
+    expect(totalRow).toContain('42 шт.');
     expect(compact(plain(lines[lines.length - 1]))).toContain('450000');
   });
 
@@ -133,14 +133,14 @@ describe('printShiftItemsReceipt', () => {
     });
 
     const html = browser.printViaIframe.mock.calls[0][0];
-    expect(html).toContain('Smenada sotildi');
+    expect(html).toContain('Продано за смену');
     expect(html).toContain('≫ Горячее');
     expect(html).toContain('≫ Напитки');
     expect(html).toContain('12 × Лагман');
     expect(html).toContain('30 × Чай');
     expect(html).toContain('&lt;b&gt;Самса&lt;/b&gt;');
     expect(html).not.toContain('<b>Самса</b>');
-    expect(html).toContain('44 dona');
+    expect(html).toContain('44 шт.');
     expect(compact(html)).toContain('466000');
   });
 
@@ -151,8 +151,8 @@ describe('printShiftItemsReceipt', () => {
     await printShiftItemsReceipt({ report: { ...report, items: [] }, t });
 
     const { lines } = printer.printTicketLines.mock.calls[0][0];
-    expect(lines.map(plain)).toContain('Hozircha sotuv yo‘q');
-    expect(findPlain(lines, (l) => l.startsWith('To‘lovga jami') || l.startsWith('JAMI') || l.startsWith('ИТОГО'))).toContain('0 dona');
+    expect(lines.map(plain)).toContain('Продаж нет');
+    expect(findPlain(lines, (l) => l.startsWith('ИТОГО'))).toContain('0 шт.');
   });
 
   it('uses store and cashier passed by the modal when the Z report has none', async () => {
@@ -187,9 +187,9 @@ describe('printShiftItemsReceipt', () => {
     });
 
     const { lines } = printer.printTicketLines.mock.calls[0][0];
-    expect(lines).toContain('≫ Kategoriyasiz');
+    expect(lines).toContain('≫ Без категории');
     expect(lines).toContain('≫ Напитки');
-    expect(lines.find((l) => l.startsWith('To‘lovga jami') || l.startsWith('JAMI') || l.startsWith('ИТОГО'))).toContain('3 dona');
+    expect(lines.find((l) => l.startsWith('ИТОГО'))).toContain('3 шт.');
     expect(compact(lines[lines.length - 1])).toContain('63000');
   });
 });

@@ -105,7 +105,7 @@
   flex-direction: column;
   gap: 0.4rem;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .rst-pay-modal__body:has(.rst-pay-modal__debt) {
@@ -289,47 +289,4 @@
   border-top: 1px solid var(--rst-border, #2a2a2a);
   justify-content: flex-end;
   padding-bottom: 0.7rem;
-}
-
-.rst-pay-modal__card-extra {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  padding-top: 0.35rem;
-  border-top: 1px dashed var(--rst-border, #2a2a2a);
-}
-
-.rst-pay-modal__card-cats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.35rem;
-}
-
-.rst-pay-modal__card-cat {
-  min-height: 2.75rem;
-  padding: 0.35rem 0.45rem;
-  border-radius: 10px;
-  border: 1px solid var(--rst-border, #2a2a2a);
-  background: var(--rst-surface-2, transparent);
-  color: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.rst-pay-modal__card-cat.is-active {
-  border-color: var(--rst-accent, #3b82f6);
-  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 16%, transparent);
-}
-
-.rst-pay-modal__card-preview {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--rst-accent, #3b82f6);
-  font-variant-numeric: tabular-nums;
-}
-
-.rst-pay-modal__card-hint {
-  font-size: 0.75rem;
-  color: var(--rst-muted);
 }

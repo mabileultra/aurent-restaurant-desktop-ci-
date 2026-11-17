@@ -122,15 +122,6 @@ html.dark .receipt-page__card {
   word-break: normal;
   font-variant-numeric: tabular-nums;
 }
-.receipt-print-root .receipt-row--datetime {
-  flex-wrap: wrap;
-  row-gap: 0.15rem;
-}
-.receipt-print-root .receipt-row--datetime > span {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  max-width: 100%;
-}
 .receipt-print-root .receipt-items-table__head,
 .receipt-print-root .receipt-items-table__row {
   display: grid;

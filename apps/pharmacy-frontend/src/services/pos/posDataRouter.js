@@ -22,11 +22,6 @@ import { processOfflineCheckout } from './offlineCheckout';
 import { buildOfflineShiftSoldItems } from '../offline/buildOfflineShiftSoldItems';
 import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
-import {
-  assertSalePrescriptionNumber,
-  withCardReceiptDetails,
-  withSalePrescriptionNumber,
-} from '@aurent/shared-fiscal';
 import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
@@ -443,8 +438,6 @@ export async function posCreateSale({
       ? crypto.randomUUID()
       : `sale-${Date.now()}`;
 
-  // До фискализации и до любого запроса: онлайн и офлайн, любой способ оплаты.
-  assertSalePrescriptionNumber(cartItems, payment);
   await assertReceiptPrinterReady();
   await assertCartMarksNotPunched(storeId, cartItems);
 
@@ -525,14 +518,10 @@ export async function posCreateSale({
       printFiscalQr: capabilities?.printFiscalQr !== false,
     };
     const saleClient = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
-    const res = await saleClient.create(
+    return await saleClient.create(
       salePayload,
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
-    return {
-      ...res,
-      data: withSalePrescriptionNumber(withCardReceiptDetails(res?.data, payment), payment),
-    };
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {
       return processOfflineCheckout({

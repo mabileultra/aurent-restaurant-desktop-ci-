@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { LayoutDashboard, LogOut, MapPin } from 'lucide-react';
 import { PHARM_DASHBOARD_PATH } from '../app/pharmacyPaths';
 import PharmacyPosTabs from './PharmacyPosTabs';
 import './pharmacy-pos-shell.css';
 
-function registerLabel(shift, t) {
+function registerLabel(shift) {
   const no = shift?.registerNumber ?? shift?.cashRegisterNumber ?? shift?.registerNo;
-  if (no != null && no !== '') {
-    return t?.('pos.registerNumber', { no, defaultValue: `Касса №${no}` }) || `Касса №${no}`;
-  }
-  return t?.('pos.register', { defaultValue: 'Касса' }) || 'Касса';
+  return no != null && no !== '' ? `Касса №${no}` : 'Касса';
 }
 
 export default function PharmacyPosTopbar({
@@ -23,7 +19,6 @@ export default function PharmacyPosTopbar({
   openShift,
   onLogout,
 }) {
-  const { t } = useTranslation();
   const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
 
   useEffect(() => {
@@ -45,21 +40,17 @@ export default function PharmacyPosTopbar({
         <div className="pharmacy-pos-chrome__brand">
           <span className="pharmacy-pos-chrome__mark" aria-hidden>N</span>
           <span className="pharmacy-pos-chrome__name">Aurent POS</span>
-          <span className="pharmacy-pos-chrome__product">
-            {t('productTemplates.businessTypes.PHARMACY', { defaultValue: 'Аптека' })}
-          </span>
-          <span className="pharmacy-pos-chrome__register">{registerLabel(shift, t)}</span>
+          <span className="pharmacy-pos-chrome__product">Аптека</span>
+          <span className="pharmacy-pos-chrome__register">{registerLabel(shift)}</span>
         </div>
         <div className="pharmacy-pos-chrome__meta">
           <span className="pharmacy-pos-chrome__store">
             <MapPin size={14} strokeWidth={2} aria-hidden />
-            {storeName || t('stores.retailPoint', { defaultValue: 'Торговая точка' })}
+            {storeName || 'Торговая точка'}
           </span>
           <span className={`pharmacy-pos-chrome__online${online ? ' is-on' : ''}`}>
             <i aria-hidden />
-            {online
-              ? t('offline.topbarOnline', { defaultValue: 'Онлайн' })
-              : t('offline.topbarOffline', { defaultValue: 'Офлайн' })}
+            {online ? 'Онлайн' : 'Офлайн'}
           </span>
           {shiftOpenBadge ? <span className="pharmacy-pos-chrome__time">{shiftOpenBadge}</span> : null}
         </div>
@@ -67,14 +58,14 @@ export default function PharmacyPosTopbar({
           {canOpenOffice ? (
             <Link to={PHARM_DASHBOARD_PATH} className="pharmacy-pos-chrome__logout">
               <LayoutDashboard size={15} strokeWidth={2} aria-hidden />
-              {t('nav.office', { defaultValue: 'В кабинет' })}
+              В кабинет
             </Link>
           ) : null}
           <span className="pharmacy-pos-chrome__avatar" aria-hidden>{initial}</span>
           <span className="pharmacy-pos-chrome__user-name">{cashierName || '—'}</span>
           <button type="button" className="pharmacy-pos-chrome__logout" onClick={onLogout}>
             <LogOut size={15} strokeWidth={2} aria-hidden />
-            {t('nav.logout', { defaultValue: 'Выход' })}
+            Выход
           </button>
         </div>
       </div>

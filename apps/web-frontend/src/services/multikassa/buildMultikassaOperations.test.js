@@ -201,26 +201,4 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.receipt_gnk_receivedcash).toBe(toTiyin(100000));
     expect(body.receipt_gnk_receivedcard).toBe(toTiyin(109457.66));
   });
-
-  it('includes card_type, ppt_id, and masked social card_number for card payments', () => {
-    const body = buildSaleOperationBody({
-      cartItems: [{ productId: 1, name: 'Товар', quantity: 1, unitPrice: 10000, taxRate: 12 }],
-      payment: {
-        paymentMethod: 'CARD',
-        receiptType: 'SALE',
-        cardType: 'HUMO',
-        cardCategory: 'SOCIAL',
-        socialCardNumber: '986003******8031',
-        rrn: '631810177451',
-      },
-      total: 10000,
-      capabilities,
-      shiftId: 's1',
-      cashierName: 'CASHIER',
-    });
-
-    expect(body.card_type).toBe(3);
-    expect(body.ppt_id).toBe('631810177451');
-    expect(body.card_number).toBe('9860********8031');
-  });
 });

@@ -1,15 +1,34 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowLeftRight,
+  Building2,
+  CreditCard,
+  FileText,
+  Hash,
+  Pencil,
+  Store,
+  Tag,
+  Wallet,
+} from 'lucide-react';
 import { financeApi } from '../../../../api';
 import { useTenantScope } from '../../../../hooks/useTenantScope';
 import { formatMoney } from '../../utils/shared/formatMoney';
-import { resolveFinanceSourceDocument } from '../../utils/shared/financeSourceDocument';
+import {
+  financePaymentMethodLabel,
+  financeSourceTypeLabel,
+  resolveFinanceSourceDocument,
+} from '../../utils/shared/financeSourceDocument';
 import FinanceDetailActions from '../detail/FinanceDetailActions';
 import FinanceDetailDocumentLines from '../detail/FinanceDetailDocumentLines';
+import FinanceDetailFieldGrid, { FinanceDetailFieldCard } from '../detail/FinanceDetailFieldGrid';
 import FinanceDetailHero from '../detail/FinanceDetailHero';
+import FinanceDetailMetaSection from '../detail/FinanceDetailMetaSection';
 import FinanceDetailModalShell from '../detail/FinanceDetailModalShell';
-import FinanceRecordMainFields from '../detail/FinanceRecordMainFields';
-import FinanceRecordTechnicalDetails from '../detail/FinanceRecordTechnicalDetails';
+
+function formatDateTime(value) {
+  if (!value) return null;
+  return new Date(value).toLocaleString();
+}
 
 export default function FinanceRecordDetailModal({
   open,
@@ -91,18 +110,130 @@ export default function FinanceRecordDetailModal({
             date={record.transactionDate}
           />
 
-          <FinanceRecordMainFields
-            record={record}
-            kind={kind}
-            counterpartyLabel={counterpartyLabel}
-            t={t}
-          />
+          <FinanceDetailFieldGrid>
+            {kind === 'transfer' ? (
+              <>
+                <FinanceDetailFieldCard
+                  label={t('finance.transfers.from')}
+                  value={record.fromAccountName}
+                  icon={Wallet}
+                />
+                <FinanceDetailFieldCard
+                  label={t('finance.transfers.to')}
+                  value={record.toAccountName}
+                  icon={ArrowLeftRight}
+                />
+              </>
+            ) : (
+              <>
+                <FinanceDetailFieldCard
+                  label={t('finance.common.category')}
+                  value={record.expenseCategoryName || record.incomeCategoryName}
+                  icon={Tag}
+                />
+                {kind === 'expense' ? (
+                  <FinanceDetailFieldCard
+                    label={t('finance.expenses.counterparty')}
+                    value={counterpartyLabel}
+                    icon={Building2}
+                  />
+                ) : null}
+                <FinanceDetailFieldCard
+                  label={t('finance.common.account')}
+                  value={record.accountName}
+                  icon={Wallet}
+                />
+                <FinanceDetailFieldCard
+                  label={t('finance.common.paymentMethod')}
+                  value={financePaymentMethodLabel(t, record.paymentMethod)}
+                  icon={CreditCard}
+                />
+                <FinanceDetailFieldCard
+                  label={t('finance.common.source')}
+                  value={financeSourceTypeLabel(t, record.sourceType)}
+                  icon={Pencil}
+                />
+              </>
+            )}
+            {record.storeId != null ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.storeId')}
+                value={String(record.storeId)}
+                icon={Store}
+              />
+            ) : null}
+            {record.currency ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.currency')}
+                value={record.currency}
+                icon={FileText}
+              />
+            ) : null}
+            {record.createdAt ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.createdAt')}
+                value={formatDateTime(record.createdAt)}
+                icon={FileText}
+              />
+            ) : null}
+          </FinanceDetailFieldGrid>
 
-          <FinanceRecordTechnicalDetails
-            record={record}
-            kind={kind}
-            t={t}
-          />
+          <FinanceDetailMetaSection title={t('finance.detail.technicalDetails')}>
+            <FinanceDetailFieldCard
+              label={t('finance.detail.recordId')}
+              value={record.id}
+              icon={Hash}
+              mono
+            />
+            {kind !== 'transfer' && record.expenseCategoryId ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.categoryId')}
+                value={record.expenseCategoryId}
+                icon={Hash}
+                mono
+              />
+            ) : null}
+            {kind !== 'transfer' && record.incomeCategoryId ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.categoryId')}
+                value={record.incomeCategoryId}
+                icon={Hash}
+                mono
+              />
+            ) : null}
+            {kind !== 'transfer' && record.accountId ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.accountId')}
+                value={record.accountId}
+                icon={Hash}
+                mono
+              />
+            ) : null}
+            {kind === 'transfer' && record.fromAccountId ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.fromAccountId')}
+                value={record.fromAccountId}
+                icon={Hash}
+                mono
+              />
+            ) : null}
+            {kind === 'transfer' && record.toAccountId ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.toAccountId')}
+                value={record.toAccountId}
+                icon={Hash}
+                mono
+              />
+            ) : null}
+            {record.sourceId ? (
+              <FinanceDetailFieldCard
+                label={t('finance.detail.sourceId')}
+                value={record.sourceId}
+                icon={Hash}
+                mono
+              />
+            ) : null}
+          </FinanceDetailMetaSection>
 
           {record.comment ? (
             <div className="finance-detail-modal__section">

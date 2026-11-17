@@ -3,7 +3,6 @@ import { PosReturnModal } from '../../../components/pos';
 import WeightEntryModal from '../components/WeightEntryModal';
 import ShiftCashMovementModal from '../components/ShiftCashMovementModal';
 import PosRegisterWorkspace from '../components/pos/PosRegisterWorkspace';
-import PosPrescriptionModal from '../components/payment/PosPrescriptionModal';
 import { usePosPage } from '../hooks/usePosPage';
 
 export default function PosPage() {
@@ -85,8 +84,6 @@ export default function PosPage() {
         onApplyPercent={p.setOrderDiscountPercent}
         onClear={p.clearOrderDiscount}
       />
-
-      <PosPrescriptionModal busy={p.checkoutMutation.isPending} />
 
       <WeightEntryModal
         open={!!p.cartHandlers.weightModalProduct}

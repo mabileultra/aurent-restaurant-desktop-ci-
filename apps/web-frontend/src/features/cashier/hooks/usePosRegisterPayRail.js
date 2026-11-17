@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CARD_CATEGORY } from '@aurent/shared-types';
 import { round2 } from '../../../utils/taxAmounts';
 import {
   isPosReceiptPrintEnabled,
@@ -19,23 +18,11 @@ export function usePosRegisterPayRail({
   const { t } = useTranslation();
   const [tendered, setTendered] = useState('');
   const [printReceiptEnabled, setPrintReceiptEnabled] = useState(isPosReceiptPrintEnabled);
-  const [cardModal, setCardModal] = useState({
-    open: false,
-    cardType: null,
-    initialCategory: CARD_CATEGORY.PERSONAL,
-  });
 
   const toPay = round2(total);
 
   useEffect(() => {
-    if (toPay <= 0) {
-      setTendered('');
-      setCardModal({
-        open: false,
-        cardType: null,
-        initialCategory: CARD_CATEGORY.PERSONAL,
-      });
-    }
+    if (toPay <= 0) setTendered('');
   }, [toPay]);
 
   const tenderedNum = parseTenderedInput(tendered);
@@ -76,22 +63,14 @@ export function usePosRegisterPayRail({
   }, []);
 
   const submitCard = useCallback(
-    (cardType, cardDetails = null) => {
+    (cardType) => {
       if (!guardCheckout() || cardPayBlocked) return;
       const entered = parseTenderedInput(tendered);
-      const details = cardDetails
-        ? {
-            cardCategory: cardDetails.cardCategory,
-            rrn: cardDetails.rrn,
-            socialCardNumber: cardDetails.socialCardNumber,
-          }
-        : {};
       if (hasPartialCash) {
         onConfirm({
           paymentMethod: 'MIXED',
           receiptType: 'SALE',
           cardType,
-          ...details,
           cashAmount: entered,
           cardAmount: cardRemainder,
           amountTendered: entered,
@@ -103,36 +82,11 @@ export function usePosRegisterPayRail({
         paymentMethod: 'CARD',
         receiptType: 'SALE',
         cardType,
-        ...details,
         amountTendered: toPay,
         printReceipt: isPosReceiptPrintEnabled(),
       });
     },
     [cardPayBlocked, cardRemainder, guardCheckout, hasPartialCash, onConfirm, tendered, toPay],
-  );
-
-  const requestCardCheckout = useCallback(
-    (cardType, initialCategory = CARD_CATEGORY.PERSONAL) => {
-      if (!guardCheckout() || cardPayBlocked) return;
-      setCardModal({
-        open: true,
-        cardType: cardType || null,
-        initialCategory,
-      });
-    },
-    [cardPayBlocked, guardCheckout],
-  );
-
-  const closeCardModal = useCallback(() => {
-    setCardModal((prev) => ({ ...prev, open: false }));
-  }, []);
-
-  const confirmCardDetails = useCallback(
-    (cardType, cardDetails) => {
-      setCardModal((prev) => ({ ...prev, open: false }));
-      submitCard(cardType, cardDetails);
-    },
-    [submitCard],
   );
 
   const submitCashless = useCallback(() => {
@@ -157,8 +111,8 @@ export function usePosRegisterPayRail({
   }, [guardCheckout, onOpenPaymentFlow]);
 
   const submitCorporate = useCallback(() => {
-    requestCardCheckout(null, CARD_CATEGORY.CORPORATE);
-  }, [requestCardCheckout]);
+    submitCard('CORPORATE');
+  }, [submitCard]);
 
   return {
     tendered,
@@ -169,13 +123,8 @@ export function usePosRegisterPayRail({
     cardRemainder,
     hasPartialCash,
     cardPayBlocked,
-    cardModal,
-    cardModalAmount: hasPartialCash ? cardRemainder : toPay,
     submitCash,
     submitCard,
-    requestCardCheckout,
-    closeCardModal,
-    confirmCardDetails,
     submitCashless,
     openCredit,
     openAdvance,

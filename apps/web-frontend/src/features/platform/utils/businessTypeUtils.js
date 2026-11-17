@@ -1,5 +1,3 @@
-import { CATALOG_FORM_FIELD_DEFS } from '../../../config/productCatalogFormFields';
-
 export const BUSINESS_TYPE_FIELD_TYPES = ['TEXT', 'NUMBER', 'PRICE', 'DATE', 'BOOLEAN', 'LIST'];
 
 export const EMPTY_BUSINESS_FIELD_FORM = {
@@ -61,17 +59,4 @@ export function fieldToForm(field) {
     optionsText: optionsToText(field.options),
     referenceBookId: field.referenceBookId ? String(field.referenceBookId) : '',
   };
-}
-
-export function mergeFormFieldsState(rows) {
-  const byKey = Object.fromEntries((rows ?? []).map((row) => [row.ruleKey, row]));
-  return CATALOG_FORM_FIELD_DEFS.map((def) => {
-    const row = byKey[def.ruleKey];
-    const enabled = row ? row.enabled !== false : true;
-    return {
-      ruleKey: def.ruleKey,
-      ruleValue: enabled ? 'true' : 'false',
-      enabled,
-    };
-  });
 }

@@ -14,7 +14,7 @@ export default function FiscalReceiptMetaBlock({
   return (
     <section className="receipt-section mt-2 space-y-0.5">
       {isOn('dateTime') ? (
-        <div {...fs('dateTime', 'receipt-row receipt-row--datetime')}>
+        <div {...fs('dateTime', 'receipt-row')}>
           <span>
             <span className="receipt-meta-label">{labels.time}: </span>
             {time}

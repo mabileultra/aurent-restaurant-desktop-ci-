@@ -10,7 +10,6 @@ import {
   printTicketLines,
 } from './desktopPrinters';
 import { buildRestaurantTicketBody, formatTicketItemLines } from './buildRestaurantTicketBody';
-import { getReceiptTranslator } from '../../../utils/receiptI18n';
 import { ticketStamp } from './ticketLayout';
 import {
   resolveTicketTitle,
@@ -37,8 +36,7 @@ function isFiscalizedSale(sale) {
 export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
   if (typeof window === 'undefined' || !sale) return { mode: 'skip' };
 
-  const tReceipt = getReceiptTranslator(t);
-  const title = tReceipt('rst.order.receiptTitle', { defaultValue: 'Fiskal chek' }) || 'Fiskal chek';
+  const title = t?.('rst.order.receiptTitle', { defaultValue: 'Чек' }) || 'Чек';
   const qrValue = isFiscalizedSale(sale) ? resolveReceiptQrValue(sale) : '';
   const profile = await loadStorePrintProfile(sale.storeId);
   const slipType = 'GUEST_BILL';
@@ -46,7 +44,7 @@ export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
   const textLines = wrapSlipLines(buildRestaurantTicketBody({
     kind: 'sale',
     sale,
-    t: tReceipt,
+    t,
     shift,
     profile,
     paymentMethod: sale.paymentMethod,

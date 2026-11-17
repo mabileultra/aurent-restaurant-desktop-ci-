@@ -72,6 +72,7 @@
     "edgeBootstrapDone": "Mahalliy xodimlar va katalog tayyor",
     "edgeBootstrapPartial": "Bulut yo‘q — mahalliy nusxa bilan ishlaymiz",
     "adminCard": "Admin",
+
     "adminBadge": "Login / parol",
     "adminTitle": "Admin",
     "adminHint": "Login va parol",
@@ -152,8 +153,6 @@
     }
   },
   "fiscalReceipt": {
-    "cardRrn": "RRN",
-    "cardType": "Karta turi",
     "cash": "Naqd",
     "currency": "so'm",
     "date": "Sana",
@@ -176,14 +175,11 @@
     "receiptTypeReturn": "Qaytarish",
     "receiptTypeSale": "Xarid",
     "shift": "Smena",
-    "socialCardNumber": "Ijtimoiy karta",
     "stir": "STIR",
     "time": "Vaqt",
     "vatLineShort": "QQS {{rate}}%",
     "vatTotalLine": "QQS {{rate}}%",
-    "virtualRegister": "Virtual kassa S/R",
-    "cashier": "Kassir",
-    "change": "Qaytim"
+    "virtualRegister": "Virtual kassa S/R"
   },
   "login": {
     "badCompanyCode": "Kompaniya kodi noto‘g‘ri",
@@ -266,16 +262,11 @@
     "receiptPrinterOffline": "Chek printeri faol emas. Quvvat va ulanishni tekshiring.",
     "receiptPrinterPaused": "Chek printerida chop etish to‘xtatilgan. Printer ishini davom ettiring.",
     "receiptPrinterError": "Chek printerida xatolik. Savdoni yakunlashdan oldin printer holatini tekshiring.",
-    "cardCategoryLabel": "Karta turi",
     "cardClick": "Click",
     "cardCorporate": "Korporativ",
     "cardHumo": "Humo",
     "cardPayme": "Payme",
     "cardPersonal": "Shaxsiy",
-    "cardRrnHint": "Terminal slip-chekidagi 12 xonali RRN raqami",
-    "cardRrnLabel": "RRN (terminal slip-chek kodi)",
-    "cardRrnPlaceholder": "Masalan, 631810177451",
-    "cardRrnRequired": "RRN kodi kiritilishi shart (aynan 12 ta raqam)",
     "cardSocial": "Ijtimoiy",
     "cardUzcard": "Uzcard",
     "cardTypeLead": "To‘lov usulini tanlang",
@@ -285,10 +276,6 @@
     "keypadExact": "Aniq summa",
     "mixedCardRemainder": "Kartada qoladi",
     "mixedCashPart": "Naqd summa",
-    "socialCardLabel": "Ijtimoiy karta raqami",
-    "socialCardPlaceholder": "16 ta raqam yoki slipdagi raqam (masalan 986003******8031)",
-    "socialCardPreview": "Chekda: {{masked}}",
-    "socialCardRequired": "Ijtimoiy karta raqamini kiriting (kamida boshidagi 4 va oxirgi 4 raqam)",
     "mixedPaidCash": "Naqd to‘langan",
     "openShift": "Smenani ochish",
     "printReceiptAfterSale": "Sotuvdan keyin chek chop etish",
@@ -1804,7 +1791,7 @@
       "refund": "Chekni qaytarish",
       "refundFailed": "To‘langan buyurtmani qaytarib bo‘lmadi",
       "refunded": "To‘lov qaytarildi, tushum kamaydi",
-      "requestBill": "Hisob",
+      "requestBill": "Hisob qo‘yish",
       "searchEsc": "ESC tozalash",
       "searchMenuPh": "Nom, kod yoki shtrixkod bo‘yicha qidirish…",
       "searchMenuShortPh": "Qidiruv…",
@@ -1875,9 +1862,7 @@
       "nothingToSend": "Oshxonaga yangi pozitsiyalar yo‘q",
       "modMin": "«{{group}}» bo‘yicha kamida {{min}} tanlang (hozir {{count}})",
       "modMax": "«{{group}}» bo‘yicha ko‘pi {{max}} (hozir {{count}})",
-      "cashShort": "Summa to‘lovdan kam",
-      "billFooter": "Tashrifingiz uchun rahmat!",
-      "billTitle": "Hisob"
+      "cashShort": "Summa to‘lovdan kam"
     },
     "pos": {
       "bookings": "Bronlar",

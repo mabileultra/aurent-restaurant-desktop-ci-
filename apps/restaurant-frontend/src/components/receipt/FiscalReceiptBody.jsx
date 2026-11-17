@@ -1,14 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../../config/brand';
-import { getReceiptTranslator } from '../../utils/receiptI18n';
 import { receiptFieldStyleProps } from '../../receiptProfile/receiptFieldStyles';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import {
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
-import { extractCardReceiptDetails, normalizeCardCategory, shouldPrintFiscalQr } from '@aurent/shared-fiscal';
-import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
+import { cardTypeLabel } from '../../utils/salePaymentLabel';
 import {
   resolveFiscalReceiptMeta,
   resolveReceiptPaymentAmounts,
@@ -30,7 +28,6 @@ export default function FiscalReceiptBody({
   className = '',
 }) {
   const { t } = useTranslation();
-  const tReceipt = getReceiptTranslator(t);
   const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
   const fieldStyles = useTenantDisplayStore((s) => s.committed.receiptFieldStyles);
   const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
@@ -70,16 +67,12 @@ export default function FiscalReceiptBody({
     fmNumber: import.meta.env.VITE_FISCAL_MODULE_NUMBER || import.meta.env.VITE_FISCAL_CARD_ID || '',
     virtualRegister: import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '',
   });
-  const printFiscalQr = sale.printFiscalQr !== false && shouldPrintFiscalQr(sale?.receiptType);
+  const printFiscalQr = sale.printFiscalQr !== false;
   const qrValue = fiscalMeta.qrValue;
   const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
 
   const pay = resolveReceiptPaymentAmounts(sale);
-  const cardDetails = extractCardReceiptDetails(sale);
-  const cardTypeText = !normalizeCardCategory(sale.cardType)
-    ? cardTypeLabel(sale.cardType, tReceipt)
-    : null;
-  const cardCategoryText = cardCategoryLabel(cardDetails.cardCategory, tReceipt);
+  const cardTypeText = cardTypeLabel(sale.cardType, t);
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
@@ -91,7 +84,7 @@ export default function FiscalReceiptBody({
       .filter((r) => r > 0),
   );
   const vatRateLabel = vatRates.size === 1 ? `${[...vatRates][0].toFixed(0)}` : '—';
-  const receiptTypeLabel = resolveFiscalReceiptTypeLabel(sale, tReceipt);
+  const receiptTypeLabel = resolveFiscalReceiptTypeLabel(sale, t);
 
   const showHeader =
     showLogo || showName || showAddress || showPhone || (isOn('stir') && stir);
@@ -118,8 +111,8 @@ export default function FiscalReceiptBody({
           companyPhone={companyPhone}
           showStir={isOn('stir')}
           stir={stir}
-          phoneLabel={tReceipt('fiscalReceipt.phoneLabel')}
-          stirLabel={tReceipt('fiscalReceipt.stir')}
+          phoneLabel={t('fiscalReceipt.phoneLabel')}
+          stirLabel={t('fiscalReceipt.stir')}
           fs={fs}
         />
       ) : null}
@@ -135,36 +128,33 @@ export default function FiscalReceiptBody({
           cashierName={sale.cashierName}
           shiftNo={shiftNo}
           labels={{
-            time: tReceipt('fiscalReceipt.time'),
-            date: tReceipt('fiscalReceipt.date'),
-            receiptNo: tReceipt('fiscalReceipt.receiptNoShort'),
-            originalReceiptNo: tReceipt('fiscalReceipt.originalReceiptNo'),
-            employee: tReceipt('fiscalReceipt.employee'),
-            shift: tReceipt('fiscalReceipt.shift'),
+            time: t('fiscalReceipt.time'),
+            date: t('fiscalReceipt.date'),
+            receiptNo: t('fiscalReceipt.receiptNoShort'),
+            originalReceiptNo: t('fiscalReceipt.originalReceiptNo'),
+            employee: t('fiscalReceipt.employee'),
+            shift: t('fiscalReceipt.shift'),
           }}
         />
       ) : null}
 
       {isOn('items') ? (
-        <FiscalReceiptItemsBlock items={sale.items} isOn={isOn} fs={fs} t={tReceipt} />
+        <FiscalReceiptItemsBlock items={sale.items} isOn={isOn} fs={fs} t={t} />
       ) : null}
 
       {showTotals ? (
-        <FiscalReceiptTotalsBlock sale={sale} isOn={isOn} fs={fs} t={tReceipt} vatRateLabel={vatRateLabel} />
+        <FiscalReceiptTotalsBlock sale={sale} isOn={isOn} fs={fs} t={t} vatRateLabel={vatRateLabel} />
       ) : null}
 
       <FiscalReceiptPaymentBlock
         isOn={isOn}
         fs={fs}
-        t={tReceipt}
+        t={t}
         paidTotal={pay.paidTotal}
         total={total}
         cashAmt={pay.cashAmt}
         cardAmt={pay.cardAmt}
         cardTypeText={cardTypeText}
-        cardCategoryText={cardCategoryText}
-        socialCardNumber={cardDetails.socialCardNumber}
-        rrn={cardDetails.rrn}
         method={pay.method}
         change={pay.change}
       />
@@ -172,7 +162,7 @@ export default function FiscalReceiptBody({
       <FiscalReceiptFiscalBlock
         isOn={isOn}
         fs={fs}
-        t={tReceipt}
+        t={t}
         fiscalReceiptNo={fiscalMeta.fiscalReceiptNo}
         fmNumber={fiscalMeta.fmNumber}
         virtualRegister={fiscalMeta.virtualRegister}

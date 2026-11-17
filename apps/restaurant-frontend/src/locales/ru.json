@@ -152,8 +152,6 @@
     }
   },
   "fiscalReceipt": {
-    "cardRrn": "RRN",
-    "cardType": "Тип карты",
     "cash": "Наличные",
     "currency": "сум",
     "date": "Дата",
@@ -176,14 +174,11 @@
     "receiptTypeReturn": "Возврат",
     "receiptTypeSale": "Покупка",
     "shift": "Смена",
-    "socialCardNumber": "Социальная карта",
     "stir": "СТИР",
     "time": "Время",
     "vatLineShort": "НДС {{rate}}%",
     "vatTotalLine": "НДС {{rate}}%",
-    "virtualRegister": "Вирт. касса S/R",
-    "cashier": "Кассир",
-    "change": "Сдача"
+    "virtualRegister": "Вирт. касса S/R"
   },
   "login": {
     "badCompanyCode": "Неверный код компании",
@@ -266,16 +261,11 @@
     "receiptPrinterOffline": "Чековый принтер недоступен. Проверьте питание и подключение.",
     "receiptPrinterPaused": "Печать на чековом принтере приостановлена. Возобновите работу принтера.",
     "receiptPrinterError": "Ошибка чекового принтера. Проверьте состояние принтера перед завершением продажи.",
-    "cardCategoryLabel": "Тип карты",
     "cardClick": "Click",
     "cardCorporate": "Корпоративная",
     "cardHumo": "Humo",
     "cardPayme": "Payme",
     "cardPersonal": "Личная",
-    "cardRrnHint": "12-значный номер RRN со слип-чека терминала",
-    "cardRrnLabel": "RRN (код транзакции с терминала)",
-    "cardRrnPlaceholder": "Например, 631810177451",
-    "cardRrnRequired": "Введите код RRN (ровно 12 цифр)",
     "cardSocial": "Социальная",
     "cardUzcard": "Uzcard",
     "cardTypeLead": "Выберите способ",
@@ -285,10 +275,6 @@
     "keypadExact": "Без сдачи",
     "mixedCardRemainder": "Картой останется",
     "mixedCashPart": "Сумма наличными",
-    "socialCardLabel": "Номер социальной карты",
-    "socialCardPlaceholder": "16 цифр или маска со слип-чека (напр. 986003******8031)",
-    "socialCardPreview": "В чеке: {{masked}}",
-    "socialCardRequired": "Введите номер социальной карты (минимум первые 4 и последние 4 цифры)",
     "mixedPaidCash": "Уже наличными",
     "openShift": "Открыть смену",
     "printReceiptAfterSale": "Печатать чек после продажи",
@@ -1918,9 +1904,7 @@
       "nothingToSend": "Нет новых позиций для кухни",
       "modMin": "В «{{group}}» выберите минимум {{min}} (сейчас {{count}})",
       "modMax": "В «{{group}}» максимум {{max}} (сейчас {{count}})",
-      "cashShort": "Сумма меньше к оплате",
-      "billFooter": "Спасибо за визит!",
-      "billTitle": "Счёт"
+      "cashShort": "Сумма меньше к оплате"
     },
     "pos": {
       "bookings": "Бронирования",

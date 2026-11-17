@@ -3,8 +3,6 @@
  * Цвета ячеек — см. pharmacyCellTone.js
  */
 
-import { lineRequiresPrescription } from '@aurent/shared-fiscal';
-
 export const PHARMACY_EXPIRY_WARN_DAYS = 90;
 export const PHARMACY_LOW_STOCK_THRESHOLD = 5;
 
@@ -134,9 +132,32 @@ export function productStorageLocation(productOrLine) {
   );
 }
 
-/** Нужен рецепт (подсветка строки, тег РЕЦЕПТ, обязательный номер рецепта). */
+/** Нужен рецепт (для подсветки строки и тега РЕЦЕПТ). */
 export function productRequiresPrescription(productOrLine) {
-  return lineRequiresPrescription(productOrLine);
+  const raw = productAttr(
+    productOrLine,
+    'requires_prescription',
+    'requiresPrescription',
+    'prescription_required',
+    'prescriptionRequired',
+    'rx_required',
+    'rxRequired',
+    'рецепт',
+  );
+  if (!raw) {
+    const flag = productOrLine?.requiresPrescription
+      ?? productOrLine?.prescriptionRequired
+      ?? productOrLine?.retailExtras?.requiresPrescription;
+    if (flag === true || flag === 1 || flag === '1') return true;
+    return false;
+  }
+  const normalized = String(raw).trim().toLowerCase();
+  return normalized === '1'
+    || normalized === 'true'
+    || normalized === 'yes'
+    || normalized === 'да'
+    || normalized === 'rx'
+    || normalized === 'рецепт';
 }
 
 /**

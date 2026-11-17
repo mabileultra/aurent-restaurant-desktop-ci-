@@ -95,13 +95,6 @@ describe('buildShiftItemsReceiptLines', () => {
     expect(lines.join('\n')).toContain('Продаж нет');
     expect(lines.find((line) => line.startsWith('ИТОГО'))).toContain('0 шт.');
   });
-
-  it('forces strictly Uzbek labels when t is omitted or defaults used', () => {
-    const { lines, title, totalLabel } = buildShiftItemsReceiptLines({ report });
-    expect(title).toBe('Smena davomida sotilgan');
-    expect(totalLabel).toBe('JAMI');
-    expect(lines[0]).toBe('SMENA DAVOMIDA SOTILGAN');
-  });
 });
 
 describe('printShiftItemsReceipt', () => {
