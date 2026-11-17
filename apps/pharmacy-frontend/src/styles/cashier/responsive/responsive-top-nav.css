@@ -6,7 +6,7 @@
     padding-bottom: 6px !important;
   }
 
-  .cashier-app main.flex-grow-1 {
+  .cashier-app main.cashier-app__main {
     padding: 8px !important;
   }
 

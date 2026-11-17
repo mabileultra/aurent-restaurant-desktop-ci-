@@ -45,7 +45,7 @@ export default function PharmacyPosTopbar({
         </div>
         <div className="pharmacy-pos-chrome__meta">
           <span className="pharmacy-pos-chrome__store">
-            <MapPin size={14} strokeWidth={2} aria-hidden />
+            <MapPin size={14} strokeWidth={1.75} aria-hidden />
             {storeName || 'Торговая точка'}
           </span>
           <span className={`pharmacy-pos-chrome__online${online ? ' is-on' : ''}`}>
@@ -57,14 +57,14 @@ export default function PharmacyPosTopbar({
         <div className="pharmacy-pos-chrome__user">
           {canOpenOffice ? (
             <Link to={PHARM_DASHBOARD_PATH} className="pharmacy-pos-chrome__logout">
-              <LayoutDashboard size={15} strokeWidth={2} aria-hidden />
+              <LayoutDashboard size={15} strokeWidth={1.75} aria-hidden />
               В кабинет
             </Link>
           ) : null}
           <span className="pharmacy-pos-chrome__avatar" aria-hidden>{initial}</span>
           <span className="pharmacy-pos-chrome__user-name">{cashierName || '—'}</span>
           <button type="button" className="pharmacy-pos-chrome__logout" onClick={onLogout}>
-            <LogOut size={15} strokeWidth={2} aria-hidden />
+            <LogOut size={15} strokeWidth={1.75} aria-hidden />
             Выход
           </button>
         </div>

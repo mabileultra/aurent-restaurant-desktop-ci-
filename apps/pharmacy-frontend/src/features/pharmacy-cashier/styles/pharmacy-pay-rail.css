@@ -1,10 +1,10 @@
-/* Аптечная оплата — изолированные стили под макет (не retail pos-keypad) */
+/* Pharmacy pay rail — Pharma Green light tokens */
 
 .pharmacy-pay-column .cashier-register__pay-pane--rail {
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  background: #f7f8f9;
+  background: rgb(var(--color-surface));
 }
 
 .pharmacy-pay-column .cashier-register__pay-pane--rail > .pharmacy-pay-rail {
@@ -14,15 +14,15 @@
 }
 
 .pharmacy-pay-rail {
-  --ppr-border: #d5dbe3;
-  --ppr-ink: #1a2332;
-  --ppr-muted: #8b95a5;
-  --ppr-green: #006847;
-  --ppr-green-soft: #e7f3ec;
-  --ppr-gold: #c4a35a;
-  --ppr-surface: #fff;
-  --ppr-btn: #eef1f5;
-  --ppr-radius: 10px;
+  --ppr-border: rgb(var(--color-line));
+  --ppr-ink: rgb(var(--color-ink));
+  --ppr-muted: rgb(var(--color-ink-muted));
+  --ppr-green: rgb(var(--color-primary-500));
+  --ppr-green-text: rgb(var(--color-primary-700));
+  --ppr-green-soft: rgb(var(--color-primary-50));
+  --ppr-surface: rgb(var(--color-surface));
+  --ppr-btn: rgb(var(--color-canvas));
+  --ppr-radius: var(--radius-control);
   --ppr-gap: 8px;
   --ppr-pad: 10px;
   --ppr-method-h: 58px;
@@ -40,7 +40,7 @@
   padding: var(--ppr-pad);
   overflow: hidden;
   color: var(--ppr-ink);
-  background: #f7f8f9;
+  background: var(--ppr-surface);
   box-sizing: border-box;
 }
 
@@ -56,13 +56,13 @@
   flex: 1;
   min-width: 0;
   flex-shrink: 0;
-  padding: 4px 10px;
+  padding: 5px 10px;
   border-radius: 8px;
   border: 1px solid var(--ppr-border);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.25;
-  background: #fff;
+  background: var(--ppr-surface);
   color: var(--ppr-muted);
 }
 
@@ -74,17 +74,17 @@
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid var(--ppr-border);
-  background: #fff;
+  background: var(--ppr-surface);
   color: var(--ppr-muted);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .pharmacy-pay-rail__qr-toggle.is-on {
-  border-color: #9dceb5;
+  border-color: rgb(var(--color-primary-300));
   background: var(--ppr-green-soft);
-  color: var(--ppr-green);
+  color: var(--ppr-green-text);
 }
 
 .pharmacy-pay-rail__qr-toggle:disabled {
@@ -103,36 +103,36 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 34px;
+  width: 36px;
   padding: 6px;
   border-radius: 8px;
   border: 1px solid var(--ppr-border);
-  background: #fff;
+  background: var(--ppr-surface);
   color: var(--ppr-muted);
   cursor: pointer;
 }
 
 .pharmacy-pay-rail__mk-settings:hover {
-  border-color: #9dceb5;
-  color: var(--ppr-green);
+  border-color: rgb(var(--color-primary-300));
+  color: var(--ppr-green-text);
 }
 
 .pharmacy-pay-rail__mk--ok {
-  border-color: #9dceb5;
+  border-color: rgb(var(--color-primary-200));
   background: var(--ppr-green-soft);
-  color: var(--ppr-green);
+  color: var(--ppr-green-text);
 }
 
 .pharmacy-pay-rail__mk--warn {
-  border-color: #e8d39a;
-  background: #fff8e6;
-  color: #8a6a12;
+  border-color: rgb(var(--color-warning) / 0.35);
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
 }
 
 .pharmacy-pay-rail__mk--danger {
-  border-color: #f0b4b4;
-  background: #fff1f1;
-  color: #b42318;
+  border-color: rgb(var(--color-danger) / 0.35);
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
 }
 
 .pharmacy-pay-rail__mk--muted {
@@ -147,17 +147,17 @@
 
 .pharmacy-pay-rail__total {
   flex-shrink: 0;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border: 1px solid var(--ppr-border);
   border-radius: var(--ppr-radius);
-  background: var(--ppr-surface);
+  background: var(--ppr-btn);
 }
 
 .pharmacy-pay-rail__total-label {
   display: block;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ppr-muted);
 }
@@ -171,7 +171,7 @@
 
 .pharmacy-pay-rail__total-value {
   font-size: var(--ppr-total-size);
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -180,7 +180,7 @@
 
 .pharmacy-pay-rail__currency {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ppr-muted);
 }
 
@@ -201,7 +201,7 @@
   min-height: 0;
   height: var(--ppr-method-h);
   padding: 4px 2px 14px;
-  border: 1.5px solid var(--ppr-border);
+  border: 1px solid var(--ppr-border);
   border-radius: var(--ppr-radius);
   background: var(--ppr-surface);
   color: var(--ppr-muted);
@@ -214,8 +214,8 @@
 }
 
 .pharmacy-pay-rail__method-label {
-  font-size: 0.5625rem;
-  font-weight: 800;
+  font-size: 0.625rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 1.1;
@@ -227,15 +227,15 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.5rem;
-  font-weight: 700;
-  opacity: 0.65;
+  font-weight: 600;
+  opacity: 0.7;
   line-height: 1;
 }
 
 .pharmacy-pay-rail__method.is-active {
   background: var(--ppr-green-soft);
-  border-color: var(--ppr-gold);
-  color: var(--ppr-green);
+  border-color: rgb(var(--color-primary-500));
+  color: var(--ppr-green-text);
 }
 
 .pharmacy-pay-rail__method:disabled {
@@ -246,9 +246,9 @@
 .pharmacy-pay-rail__hint {
   flex-shrink: 0;
   margin: 0;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: #fff;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--ppr-btn);
   border: 1px solid var(--ppr-border);
   color: var(--ppr-muted);
   font-size: 0.6875rem;
@@ -259,9 +259,9 @@
   flex-shrink: 0;
   padding: 6px 8px;
   border-radius: 8px;
-  border: 1px solid #b7e0dc;
-  background: #e8f7f5;
-  color: #0f5c56;
+  border: 1px solid rgb(var(--color-info) / 0.35);
+  background: rgb(var(--color-info-soft));
+  color: rgb(var(--color-info-text));
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -281,14 +281,14 @@
   min-height: 0;
   height: var(--ppr-box-h);
   padding: 4px 8px;
-  border: 1.5px solid var(--ppr-border);
+  border: 1px solid var(--ppr-border);
   border-radius: 8px;
   background: var(--ppr-surface);
 }
 
 .pharmacy-pay-rail__box-label {
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--ppr-muted);
@@ -296,39 +296,38 @@
 
 .pharmacy-pay-rail__box-value {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--ppr-ink);
   line-height: 1.2;
 }
 
 .pharmacy-pay-rail__box.is-ready {
-  background: #dff6ea;
-  border-color: #b7e0c8;
+  background: rgb(var(--color-success-soft));
+  border-color: rgb(var(--color-primary-200));
 }
 
 .pharmacy-pay-rail__box.is-ready .pharmacy-pay-rail__box-value {
-  color: #0b5c3a;
+  color: rgb(var(--color-success-text));
 }
 
 .pharmacy-pay-rail__box.is-remainder {
-  background: #e8f7f5;
-  border-color: #b7e0dc;
+  background: rgb(var(--color-warning-soft));
+  border-color: rgb(var(--color-warning) / 0.35);
 }
 
 .pharmacy-pay-rail__box.is-remainder .pharmacy-pay-rail__box-value {
-  color: #0f5c56;
+  color: rgb(var(--color-warning-text));
 }
 
-/* —— быстрый ввод купюр (без numpad 0–9) —— */
 .pharmacy-pay-quick {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 0 0 auto;
   min-height: 0;
-  padding: 6px 8px 8px;
-  border: 1.5px solid var(--ppr-border);
+  padding: 8px;
+  border: 1px solid var(--ppr-border);
   border-radius: var(--ppr-radius);
   background: var(--ppr-surface);
 }
@@ -342,7 +341,7 @@
 
 .pharmacy-pay-quick__title {
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ppr-muted);
@@ -355,20 +354,20 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--ppr-green);
+  color: var(--ppr-green-text);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .pharmacy-pay-quick__exact kbd {
-  padding: 1px 4px;
-  border: 1px solid color-mix(in srgb, var(--ppr-green) 35%, #d5dbe3);
+  padding: 1px 5px;
+  border: 1px solid rgb(var(--color-primary-200));
   border-radius: 4px;
   background: var(--ppr-green-soft);
   font-family: inherit;
   font-size: 0.5625rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -388,28 +387,29 @@
   min-height: var(--ppr-quick-btn-h);
   max-height: var(--ppr-quick-btn-h);
   padding: 0 6px;
-  border: 1.5px solid #cfd8e3;
+  border: 1px solid var(--ppr-border);
   border-radius: 8px;
-  background: #eef3f8;
-  color: #243447;
+  background: var(--ppr-btn);
+  color: var(--ppr-ink);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
 
 .pharmacy-pay-quick__btn:hover:not(:disabled) {
-  background: #e4ebf3;
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-200));
 }
 
 .pharmacy-pay-quick__btn--reset {
-  background: #fff1f0;
-  border-color: #f0c2bd;
-  color: #b42318;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.25);
+  color: rgb(var(--color-danger-text));
 }
 
 .pharmacy-pay-quick__btn--reset:hover:not(:disabled) {
-  background: #ffe8e6;
+  background: rgb(var(--color-danger) / 0.2);
 }
 
 .pharmacy-pay-quick__btn:disabled {
@@ -442,17 +442,21 @@
   gap: 6px;
   min-height: 0;
   height: var(--ppr-tool-h);
-  border: 1.5px solid var(--ppr-border);
+  border: 1px solid var(--ppr-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ppr-surface);
   color: var(--ppr-ink);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
+.pharmacy-pay-rail__tool:hover:not(:disabled) {
+  background: rgb(var(--color-primary-50));
+}
+
 .pharmacy-pay-rail__tool--return {
-  color: #b42318;
+  color: rgb(var(--color-danger-text));
 }
 
 .pharmacy-pay-rail__footer {
@@ -473,15 +477,18 @@
   height: var(--ppr-sale-h);
   padding: 0 44px 0 12px;
   border: none;
-  border-radius: 10px;
-  background: var(--ppr-green);
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 800;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
+  font-size: 0.875rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgb(0 80 55 / 0.22);
+}
+
+.pharmacy-pay-rail__sale:hover:not(:disabled) {
+  background: rgb(var(--color-primary-600));
 }
 
 .pharmacy-pay-rail__sale svg {
@@ -500,9 +507,9 @@
   top: 6px;
   right: 8px;
   padding: 2px 5px;
-  border: 1px solid rgb(255 255 255 / 0.45);
+  border: 1px solid rgb(var(--color-surface) / 0.45);
   border-radius: 4px;
-  background: rgb(0 0 0 / 0.14);
+  background: rgb(var(--color-ink) / 0.14);
   font-size: 0.5625rem;
   font-weight: 700;
   line-height: 1.2;
@@ -511,7 +518,7 @@
 }
 
 .pharmacy-pay-rail__sale:disabled {
-  background: #9bb5a8;
+  background: rgb(var(--color-ink-disabled));
   box-shadow: none;
   cursor: default;
 }
@@ -531,9 +538,9 @@
   height: var(--ppr-sale-h);
   padding: 4px 3px 3px;
   overflow: hidden;
-  border: 1.5px solid #b7d4c6;
-  border-radius: 10px;
-  background: var(--ppr-green-soft);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
   box-sizing: border-box;
 }
 
@@ -556,7 +563,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ppr-green);
+  color: var(--ppr-green-text);
   line-height: 0;
 }
 
@@ -574,7 +581,7 @@
   font-size: 0.5rem;
   line-height: 1.1;
   text-align: center;
-  color: var(--ppr-green);
+  color: var(--ppr-green-text);
   font-weight: 700;
 }
 
@@ -586,7 +593,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* шире колонка оплаты аптеки */
 .cashier-app--pharmacy-pos {
   --cashier-pay-w: 320px;
 }
@@ -658,86 +664,4 @@
     right: 6px;
     padding: 1px 4px;
   }
-}
-
-/* —— тёмная тема —— */
-.cashier-app.cashier-app--terminal .pharmacy-pay-column .cashier-register__pay-pane--rail,
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail {
-  background: var(--pos-surface, #151b26);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail {
-  --ppr-border: var(--pos-border, #2a3548);
-  --ppr-ink: var(--pos-text, #f1f5f9);
-  --ppr-muted: var(--pos-muted, #94a3b8);
-  --ppr-green: var(--pos-green, #1a8f7a);
-  --ppr-green-soft: var(--pos-green-soft, rgb(26 143 122 / 0.16));
-  --ppr-gold: #c4a35a;
-  --ppr-surface: var(--pos-surface-elevated, #1c2433);
-  --ppr-btn: var(--pos-surface-hover, #243044);
-  color: var(--ppr-ink);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__tool,
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box,
-.cashier-app.cashier-app--terminal .pharmacy-pay-quick {
-  background: var(--ppr-surface);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn {
-  background: var(--pos-surface-hover, #243044);
-  border-color: var(--pos-border, #2a3548);
-  color: var(--pos-text, #f1f5f9);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn:hover:not(:disabled) {
-  background: var(--pos-surface-active, #2a3548);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn--reset {
-  background: rgb(248 113 113 / 0.12);
-  border-color: rgb(248 113 113 / 0.35);
-  color: #fca5a5;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn--reset:hover:not(:disabled) {
-  background: rgb(248 113 113 / 0.2);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-ready {
-  background: rgb(26 143 122 / 0.18);
-  border-color: rgb(26 143 122 / 0.4);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-ready .pharmacy-pay-rail__box-value {
-  color: #7dffc4;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-remainder {
-  background: rgb(13 148 136 / 0.16);
-  border-color: rgb(13 148 136 / 0.4);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-remainder .pharmacy-pay-rail__box-value {
-  color: #5eead4;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__dmed-note {
-  background: rgb(47 111 237 / 0.14);
-  border-color: rgb(47 111 237 / 0.35);
-  color: #93c5fd;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__tool--return {
-  color: #fca5a5;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__print {
-  background: var(--ppr-green-soft);
-  border-color: color-mix(in srgb, var(--ppr-green) 40%, var(--ppr-border));
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__print .pos-pay-print-toggle__text,
-.cashier-app.cashier-app--terminal .pharmacy-pay-rail__print .pos-pay-print-toggle__icon {
-  color: #7dffc4;
 }

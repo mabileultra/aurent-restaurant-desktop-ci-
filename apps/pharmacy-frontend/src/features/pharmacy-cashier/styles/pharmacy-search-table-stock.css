@@ -1,4 +1,4 @@
-/* Имя забирает свободную ширину. Цены и служебные колонки узкие. */
+/* Stock search table column sizing and row actions */
 
 .pharmacy-search__table--stock {
   width: 100%;
@@ -9,7 +9,7 @@
 .pharmacy-search__table--stock col.is-num { width: 6.5rem; }
 .pharmacy-search__table--stock col.is-text { width: 6.25rem; }
 .pharmacy-search__table--stock col.is-fiscal { width: 8.5rem; }
-.pharmacy-search__table--stock col.is-actions { width: 3.25rem; }
+.pharmacy-search__table--stock col.is-actions { width: 3.5rem; }
 
 .pharmacy-search__table--stock .pharmacy-search__name {
   width: auto;
@@ -29,7 +29,7 @@
 
 .pharmacy-search__actions {
   white-space: nowrap;
-  width: 56px;
+  width: 60px;
   text-align: right;
 }
 
@@ -37,17 +37,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   margin-left: 2px;
   padding: 0;
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: 6px;
-  background: var(--pharm-card, #f7f6f1);
-  color: var(--pharm-ink, #26332d);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 8px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
   cursor: pointer;
 }
 
+.pharmacy-search__icon-btn:hover {
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-line-strong));
+}
+
 .pharmacy-search__icon-btn--danger {
-  color: var(--pharm-danger-accent, #d9534f);
+  color: rgb(var(--color-danger-text));
+  border-color: rgb(var(--color-danger) / 0.25);
+}
+
+.pharmacy-search__icon-btn--danger:hover {
+  background: rgb(var(--color-danger-soft));
 }

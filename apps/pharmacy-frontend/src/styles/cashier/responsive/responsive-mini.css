@@ -57,7 +57,7 @@
     display: none;
   }
 
-  .cashier-app main.flex-grow-1 {
+  .cashier-app main.cashier-app__main {
     padding: 4px !important;
   }
 

@@ -1,40 +1,40 @@
-/* Краски полосы поиска на кассе аптеки. Размеры не трогаем. */
+/* Search strip overrides — Pharma Green */
 
 .cashier-app--pharmacy-pos .pharmacy-cashier__pane-head--search {
-  border-bottom-color: #e4e7ec;
-  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  border-bottom-color: rgb(var(--color-line));
+  font-family: var(--font-ui);
 }
 
 .cashier-app--pharmacy-pos .pharmacy-search-strip__field--product::placeholder {
-  color: #8b9198;
+  color: rgb(var(--color-ink-disabled));
   font-weight: 400;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-search-strip__toggle,
 .cashier-app--pharmacy-pos .pharmacy-search-strip__icon-btn {
-  border-color: #e4e7ec;
-  background: #fff;
-  color: #3b3e45;
-  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  border-color: rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
   font-weight: 600;
   letter-spacing: 0;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-search-strip__toggle:has(.pharmacy-integration-icon--dmed) {
-  color: #4476d7;
+  color: rgb(var(--color-info-text));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__btn {
-  border-color: #e4e7ec;
-  color: #3b3e45;
+  border-color: rgb(var(--color-line));
+  color: rgb(var(--color-ink-muted));
   font-weight: 600;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__auto {
-  color: #05966a;
+  color: rgb(var(--color-primary-700));
   font-weight: 600;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__auto input {
-  accent-color: #05966a;
+  accent-color: rgb(var(--color-primary-500));
 }

@@ -110,7 +110,7 @@ export function usePharmacyPosShell() {
     'cashier-app',
     'pharmacy-pos-shell',
     themeClass,
-    'd-flex',
+    'flex',
     'cashier-app--pos-screen',
     'cashier-app--pharmacy-pos',
     posDesktop ? 'cashier-app--pos-desktop' : '',

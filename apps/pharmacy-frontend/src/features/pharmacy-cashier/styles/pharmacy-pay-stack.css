@@ -1,10 +1,10 @@
-/* Tall-stack панель оплаты аптеки (левая колонка) */
+/* Pharmacy pay stack base (used in POS left column) */
 
 .pharmacy-pay-column .cashier-register__pay-pane--rail {
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--pharm-elevated, #f8f7f3);
+  background: rgb(var(--color-surface));
 }
 
 .pharmacy-pay-column .cashier-register__pay-pane--rail > .pharmacy-pay-stack {
@@ -21,36 +21,37 @@
   min-height: 0;
   padding: 10px;
   overflow: auto;
-  color: var(--pharm-ink, #26332d);
-  background: var(--pharm-elevated, #f8f7f3);
+  color: rgb(var(--color-ink));
+  background: rgb(var(--color-surface));
   box-sizing: border-box;
 }
 
 .pharmacy-pay-stack__total {
   flex-shrink: 0;
-  padding: 8px 10px;
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: 10px;
-  background: var(--pharm-card, #f7f6f1);
+  padding: 10px 12px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-canvas));
 }
 
 .pharmacy-pay-stack__total-label {
   display: block;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharmacy-pay-stack__total-value {
   display: block;
   margin-top: 2px;
-  font-size: 1.375rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  color: rgb(var(--color-ink));
 }
 
 .pharmacy-pay-stack__actions,
@@ -67,14 +68,14 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 44px;
-  padding: 8px 36px 8px 12px;
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: 10px;
-  background: var(--pharm-card, #f7f6f1);
-  color: var(--pharm-ink, #26332d);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  min-height: 48px;
+  padding: 8px 42px 8px 12px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  font-size: 0.875rem;
+  font-weight: 600;
   text-align: left;
   cursor: pointer;
 }
@@ -82,55 +83,63 @@
 .pharmacy-pay-stack__btn span {
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .pharmacy-pay-stack__btn kbd {
   position: absolute;
-  right: 10px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.625rem;
-  font-weight: 700;
-  color: var(--pharm-muted, #7a817c);
-  background: transparent;
-  border: none;
-  padding: 0;
+  font-weight: 600;
+  color: rgb(var(--color-ink-muted));
+  background: rgb(var(--color-canvas));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 5px;
+  padding: 2px 5px;
 }
 
-.pharmacy-pay-stack__btn.is-active,
-.pharmacy-pay-stack__btn--sale {
-  background: var(--pharm-active, #e6f2de);
-  border-color: color-mix(in srgb, var(--pharm-brand, #245b45) 35%, var(--pharm-border, #dddcd5));
-  color: var(--pharm-brand, #245b45);
+.pharmacy-pay-stack__btn.is-active {
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-300));
+  color: rgb(var(--color-primary-700));
 }
 
 .pharmacy-pay-stack__btn--sale {
-  background: var(--pharm-brand, #245b45);
-  border-color: var(--pharm-brand, #245b45);
-  color: #fff;
+  background: rgb(var(--color-primary-500));
+  border-color: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
+}
+
+.pharmacy-pay-stack__btn--sale:hover:not(:disabled) {
+  background: rgb(var(--color-primary-600));
+  border-color: rgb(var(--color-primary-600));
 }
 
 .pharmacy-pay-stack__btn--sale kbd {
-  color: rgb(255 255 255 / 0.75);
+  background: rgb(var(--color-surface) / 0.16);
+  border-color: rgb(var(--color-surface) / 0.3);
+  color: rgb(var(--color-surface));
 }
 
 .pharmacy-pay-stack__btn--return {
-  color: var(--pharm-danger-accent, #d9534f);
+  color: rgb(var(--color-danger-text));
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.25);
 }
 
 .pharmacy-pay-stack__btn:disabled {
-  opacity: 0.45;
-  cursor: default;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .pharmacy-pay-stack__logo {
   display: block;
   width: auto;
   height: 16px;
-  max-width: 42px;
+  max-width: 32px;
   object-fit: contain;
   pointer-events: none;
 }
@@ -139,9 +148,9 @@
   margin: 0;
   padding: 6px 8px;
   border-radius: 8px;
-  background: var(--pharm-ok, #e3f1dc);
-  color: var(--pharm-ok-text, #174936);
-  font-size: 0.6875rem;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.3;
 }
@@ -152,9 +161,9 @@
   gap: 6px;
   flex-shrink: 0;
   padding: 8px;
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: 10px;
-  background: var(--pharm-surface, #f2f1ec);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-canvas));
 }
 
 .pharmacy-pay-stack__cash-row {
@@ -163,16 +172,16 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 0.75rem;
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharmacy-pay-stack__cash-row strong {
-  color: var(--pharm-ink, #26332d);
+  color: rgb(var(--color-ink));
   font-variant-numeric: tabular-nums;
 }
 
 .pharmacy-pay-stack__cash-row.is-remainder strong {
-  color: var(--pharm-brand, #245b45);
+  color: rgb(var(--color-primary-700));
 }
 
 .pharmacy-pay-stack__print {
@@ -190,9 +199,8 @@
   }
 }
 
-/* Панель оплаты слева. Уже продуктовых 360px — чек и остатки получают ширину. */
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pharmacy-cashier__split.cashier-register__split--register .cashier-register__stage {
-  --cashier-pay-w: 240px;
+  --cashier-pay-w: 224px;
   grid-template-columns: var(--cashier-pay-w) minmax(0, 1fr);
 }
 
@@ -206,10 +214,10 @@
 .pharmacy-cashier__split.cashier-register__split--register .cashier-register__actions-col {
   grid-column: 1;
   grid-row: 1;
-  background: var(--pharm-elevated, #f8f7f3);
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: var(--pharm-radius, 10px);
-  box-shadow: none;
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
 .pharmacy-cashier__split.cashier-register__split--register .cashier-register__order-col {

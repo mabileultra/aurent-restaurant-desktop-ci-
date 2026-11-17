@@ -1,4 +1,4 @@
-/* Шапка чека — только pharmacy */
+/* Cart pane head — Pharma Green */
 
 .pharmacy-cart-pane-head {
   flex-shrink: 0;
@@ -6,10 +6,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 5px 8px 5px 10px;
-  border-bottom: 1px solid var(--pharm-border, #d5ddd8);
-  background: var(--pharm-surface, #f4f7f5);
-  min-height: 36px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  min-height: 40px;
 }
 
 .pharmacy-cart-pane-head__meta {
@@ -21,48 +21,47 @@
 }
 
 .pharmacy-cart-pane-head__title {
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--pharm-ink, #1a2e28);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgb(var(--color-ink));
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .pharmacy-cart-pane-head__status {
   display: inline-flex;
   align-items: center;
-  height: 20px;
-  padding: 0 7px;
+  height: 22px;
+  padding: 0 8px;
   border-radius: 999px;
-  font-size: 0.625rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .pharmacy-cart-pane-head__status.is-open {
-  background: var(--pharm-ok, #d8f5e3);
-  color: var(--pharm-ok-text, #0b5c3a);
+  background: rgb(var(--color-success-soft));
+  color: rgb(var(--color-success-text));
 }
 
 .pharmacy-cart-pane-head__status.is-idle {
-  background: var(--pharm-elevated, #fff);
-  border: 1px solid var(--pharm-border, #d5ddd8);
-  color: var(--pharm-muted, #64748b);
+  background: rgb(var(--color-canvas));
+  border: 1px solid rgb(var(--color-line));
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharmacy-cart-pane-head__parked {
   display: inline-flex;
   align-items: center;
-  height: 20px;
-  padding: 0 7px;
+  height: 22px;
+  padding: 0 8px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
-  font-size: 0.625rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
+  font-size: 0.6875rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -78,14 +77,14 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-height: 28px;
+  min-height: 32px;
   padding: 0 10px;
-  border-radius: 7px;
-  border: 1px solid var(--pharm-border, #d5ddd8);
-  background: var(--pharm-elevated, #fff);
-  color: var(--pharm-ink, #1a2e28);
-  font-size: 0.6875rem;
-  font-weight: 700;
+  border-radius: var(--radius-control);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  font-size: 0.75rem;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -96,28 +95,28 @@
 }
 
 .pharmacy-cart-pane-head__btn--new:hover:not(:disabled) {
-  background: var(--pharm-hover, #eef5f1);
-  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 28%, #d5ddd8);
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-200));
 }
 
 .pharmacy-cart-pane-head__btn--clear {
-  color: #b42318;
-  border-color: color-mix(in srgb, #b42318 28%, #d5ddd8);
+  color: rgb(var(--color-danger-text));
+  border-color: rgb(var(--color-danger) / 0.25);
 }
 
 .pharmacy-cart-pane-head__btn--clear:hover:not(:disabled) {
-  background: #fff5f5;
+  background: rgb(var(--color-danger-soft));
 }
 
 .pharmacy-cart-pane-head__kbd {
   margin-left: 2px;
-  padding: 1px 4px;
-  border: 1px solid color-mix(in srgb, #b42318 22%, #d5ddd8);
+  padding: 1px 5px;
+  border: 1px solid rgb(var(--color-danger) / 0.25);
   border-radius: 4px;
-  background: rgb(180 35 24 / 0.06);
+  background: rgb(var(--color-danger-soft));
   color: inherit;
   font-family: inherit;
-  font-size: 0.5625rem;
-  font-weight: 800;
+  font-size: 0.625rem;
+  font-weight: 600;
   line-height: 1.2;
 }

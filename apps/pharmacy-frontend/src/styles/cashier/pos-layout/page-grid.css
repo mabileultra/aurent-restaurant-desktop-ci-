@@ -91,10 +91,10 @@
 
 .cashier-register__split--catalog .cashier-register__actions-col,
 .cashier-register__split--catalog .cashier-register__catalog-col {
-  background: var(--pos-surface, #151b26);
-  border: 1px solid var(--pos-border, #2a3548);
-  border-radius: var(--cashier-block-radius, 14px);
-  box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
 .cashier-register__split--catalog .cashier-register__catalog-col > .pos-catalog-panel {
@@ -137,10 +137,10 @@
 
 .cashier-register__split--register .cashier-register__actions-col,
 .cashier-register__split--register .cashier-register__order-col {
-  background: var(--pos-surface, #151b26);
-  border: 1px solid var(--pos-border, #2a3548);
-  border-radius: var(--cashier-block-radius, 14px);
-  box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
 .cashier-register__split--register .cashier-register__order-col .pos-order-panel {

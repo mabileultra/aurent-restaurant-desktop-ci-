@@ -1,16 +1,16 @@
 /* Cashier my-sales — sales table, pills, pagination */
 /* Таблица «Мои продажи» */
 .cashier-sales-card {
-  background: #fff;
-  border: 1px solid var(--bs-border-color, #dee2e6);
-  border-radius: 0.5rem;
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
 .cashier-sales-card__head {
   padding: 0.625rem 0.875rem;
-  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
-  background: #f8f9fa;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-canvas));
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -19,6 +19,7 @@
   width: 100%;
   margin: 0;
   font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
   border-collapse: collapse;
 }
 
@@ -29,15 +30,15 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #6c757d;
-  background: #f8f9fa;
-  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+  color: rgb(var(--color-ink-muted));
+  background: rgb(var(--color-canvas));
+  border-bottom: 1px solid rgb(var(--color-line));
   white-space: nowrap;
 }
 
 .cashier-sales-table tbody td {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgb(var(--color-line));
   vertical-align: middle;
 }
 
@@ -46,11 +47,12 @@
 }
 
 .cashier-sales-table tbody tr:hover {
-  background: #f1f3f5;
+  background: rgb(var(--color-primary-50));
 }
 
 .cashier-sales-table__receipt {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 

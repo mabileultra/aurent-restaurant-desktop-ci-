@@ -21,7 +21,7 @@ export default function CashierMySalesWorkspace({
   onCloseReceipt,
 }) {
   if (shiftLoading) {
-    return <p className="text-muted small">{t('common.loading')}</p>;
+    return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
   }
 
   return (

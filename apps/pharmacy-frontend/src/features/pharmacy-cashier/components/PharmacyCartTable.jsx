@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { ShoppingCart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from '../../../components/ui';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import PharmacyCartTableRow from './PharmacyCartTableRow';
 import '../styles/pharmacy-cart-table.css';
@@ -28,8 +30,8 @@ export default function PharmacyCartTable({
 
   if (!items.length) {
     return (
-      <div className="pharmacy-cart-table">
-        <p className="pharmacy-cart-table__empty">{t('pharmacyCashier.cartEmpty')}</p>
+      <div className="pharmacy-cart-table flex items-center justify-center">
+        <EmptyState icon={ShoppingCart} title={t('pharmacyCashier.cartEmpty')} compact />
       </div>
     );
   }

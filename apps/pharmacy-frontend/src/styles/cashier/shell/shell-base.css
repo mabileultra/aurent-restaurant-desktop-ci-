@@ -1,26 +1,13 @@
-/* Cashier shell — bootstrap overrides, topbar */
-.cashier-app.cashier-app--terminal {
-  color-scheme: dark;
-}
-
+/* Cashier shell — light-only Pharma Green topbar & lock overlay */
 .cashier-app.cashier-app--light {
   color-scheme: light;
 }
 
-/* Сброс Bootstrap внутри кассы */
 .cashier-app *,
 .cashier-app *::before,
 .cashier-app *::after {
   box-sizing: border-box;
 }
-
-.cashier-app .btn-primary {
-  --bs-btn-bg: var(--pos-green);
-  --bs-btn-border-color: var(--pos-green);
-  --bs-btn-hover-bg: var(--pos-green-hover);
-  --bs-btn-hover-border-color: var(--pos-green-hover);
-}
-
 
 .cashier-lock-overlay {
   position: fixed;
@@ -35,8 +22,7 @@
 .cashier-lock-overlay__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(2px);
+  background: var(--color-overlay);
 }
 
 .cashier-lock-overlay__card {
@@ -44,27 +30,28 @@
   z-index: 1;
   width: min(100%, 22rem);
   padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  border-radius: var(--radius-card);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-elevated);
   text-align: center;
 }
 
 .cashier-lock-overlay__icon {
-  color: #198754;
-  margin-bottom: 0.75rem;
+  color: rgb(var(--color-primary-500));
+  margin: 0 auto 0.75rem;
 }
 
 .cashier-lock-overlay__title {
   font-size: 1.125rem;
   font-weight: 700;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.35rem;
 }
 
 .cashier-lock-overlay__hint {
   font-size: 0.875rem;
-  color: var(--pos-muted);
+  color: rgb(var(--color-ink-muted));
   margin: 0 0 1rem;
 }
 
@@ -88,8 +75,8 @@
 
 .cashier-topbar {
   min-height: 48px;
-  background: var(--pos-surface) !important;
-  border-bottom: 1px solid var(--pos-border) !important;
+  background: rgb(var(--color-surface)) !important;
+  border-bottom: 1px solid rgb(var(--color-line)) !important;
 }
 
 .cashier-topbar--pos {
@@ -131,9 +118,9 @@
 .cashier-topbar__terminal-name {
   flex-shrink: 0;
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
-  color: var(--pos-green);
+  color: rgb(var(--color-primary-600));
   white-space: nowrap;
 }
 
@@ -151,10 +138,9 @@
   align-items: center;
   min-height: 28px;
   padding: 4px 12px;
-  border-radius: var(--pos-control-radius, 10px);
-  border: 1px solid var(--pos-border);
-  background: var(--pos-surface-elevated, #fff);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  border-radius: var(--radius-control);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
 }
 
 .cashier-topbar__terminal-strip {
@@ -163,4 +149,3 @@
   gap: 8px;
   min-width: 0;
 }
-
