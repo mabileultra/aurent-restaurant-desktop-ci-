@@ -23,6 +23,7 @@ import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
 import { FISCAL_STATUS } from '../../../../services/fiscal';
 import { collectMarksFromCartItems, rememberSoldMarks } from '../../../marking';
+import { resolveCashPaymentRestrictionError } from '../../utils/resolveCashPaymentRestrictionError';
 
 export function usePosCheckout({
   storeId,
@@ -110,6 +111,11 @@ export function usePosCheckout({
       }
     },
     onError: (e) => {
+      const cashRestrictionMsg = resolveCashPaymentRestrictionError(e, t);
+      if (cashRestrictionMsg) {
+        toast.error(cashRestrictionMsg, { id: 'pos-checkout-error' });
+        return;
+      }
       if (e?.code === 'MARK_ALREADY_SOLD') {
         toast.error(t('pos.markingSoldLocal'));
         return;
