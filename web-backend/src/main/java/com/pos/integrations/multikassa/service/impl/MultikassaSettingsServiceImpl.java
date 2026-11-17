@@ -5,6 +5,8 @@ import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.integrations.fiscal.domain.FiscalProvider;
+import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
+import com.pos.integrations.fiscal.support.FiscalModuleField;
 import com.pos.integrations.multikassa.dto.AdminMultikassaSettingsResponse;
 import com.pos.integrations.multikassa.dto.CashierMultikassaCapabilitiesResponse;
 import com.pos.integrations.multikassa.dto.SaveMultikassaSettingsRequest;
@@ -29,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -42,6 +46,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
     private final CashierSaleSupport cashierSaleSupport;
     private final MultikassaCashierRegisterGuard cashierRegisterGuard;
     private final EntityManager entityManager;
+    private final FiscalModuleBindingGuard fiscalModuleGuard;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,6 +69,8 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
 
         CashRegisterMultikassaSettings entity = settingsRepository.findById(cashRegisterId)
             .orElseGet(() -> newSettingsRow(register));
+        // AUR-19: до первого entity.set... — запросы guard могут вызвать auto-flush managed-сущности.
+        assertFiscalModuleAvailable(register, request);
 
         entity.setEnabled(request.enabled());
         entity.setBaseUrl(normalizeBaseUrl(request.baseUrl()));
@@ -181,6 +188,19 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
                 "ALTER TABLE sales ADD COLUMN print_fiscal_qr BOOLEAN NOT NULL DEFAULT TRUE"
             ).executeUpdate();
         }
+    }
+
+    private void assertFiscalModuleAvailable(CashRegister register, SaveMultikassaSettingsRequest request) {
+        Map<FiscalModuleField, String> values = new EnumMap<>(FiscalModuleField.class);
+        values.put(FiscalModuleField.MULTIKASSA_TERMINAL_ID, request.terminalId());
+        values.put(FiscalModuleField.MULTIKASSA_MODULE_NUMBER, request.moduleNumber());
+        values.put(FiscalModuleField.MULTIKASSA_SELECTED_DRIVE_ID, request.selectedDriveId());
+        fiscalModuleGuard.assertAvailable(values, register.getId(), companyIdOf(register));
+    }
+
+    private static Integer companyIdOf(CashRegister register) {
+        Store store = register.getStore();
+        return store != null && store.getCompany() != null ? store.getCompany().getId() : null;
     }
 
     private static RuntimeException translateDb(Throwable ex) {

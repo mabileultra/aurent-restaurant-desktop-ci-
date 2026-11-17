@@ -1,5 +1,6 @@
 package com.pos.sales.support;
 
+import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
 import com.pos.sales.entity.CashRegister;
 import com.pos.entity.Store;
 import com.pos.exception.BadRequestException;
@@ -28,6 +29,9 @@ class CashRegisterTerminalResolverRejectTest {
     @Mock
     private CashRegisterRepository cashRegisterRepository;
 
+    @Mock
+    private FiscalModuleBindingGuard fiscalModuleGuard;
+
     private CashRegisterTerminalResolver resolver;
     private Store shop;
 
@@ -35,7 +39,8 @@ class CashRegisterTerminalResolverRejectTest {
     void setUp() {
         resolver = new CashRegisterTerminalResolver(
             cashRegisterRepository,
-            new CashRegisterTerminalLookup(cashRegisterRepository)
+            new CashRegisterTerminalLookup(cashRegisterRepository),
+            fiscalModuleGuard
         );
         shop = store(10);
     }

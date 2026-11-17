@@ -8,6 +8,8 @@ import com.pos.sales.entity.CashRegister;
 import com.pos.entity.Store;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
+import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
+import com.pos.integrations.fiscal.support.FiscalModuleField;
 import com.pos.sales.mapper.CashRegisterMapper;
 import com.pos.sales.repository.CashRegisterRepository;
 import com.pos.sales.repository.spec.CashRegisterSpecifications;
@@ -39,6 +41,7 @@ public class CashRegisterServiceImpl implements CashRegisterService {
     private final CashRegisterMapper cashRegisterMapper;
     private final TenantAccessSupport tenantAccess;
     private final CashRegisterStatusToggle cashRegisterStatusToggle;
+    private final FiscalModuleBindingGuard fiscalModuleGuard;
 
     @Override
     public PageResponse<CashRegisterRowResponse> list(
@@ -109,6 +112,7 @@ public class CashRegisterServiceImpl implements CashRegisterService {
         int registerNumber = resolveRegisterNumber(store.getId(), request.registerNumber(), null);
         assertUniqueRegister(store.getId(), registerNumber, null);
         assertUniqueDeviceId(request.deviceId(), null);
+        assertFiscalCardAvailable(request.fiscalCardId(), null, store);
 
         CashRegister register = CashRegister.builder()
             .store(store)
@@ -137,6 +141,8 @@ public class CashRegisterServiceImpl implements CashRegisterService {
         int registerNumber = resolveRegisterNumber(store.getId(), request.registerNumber(), register.getRegisterNumber());
         assertUniqueRegister(store.getId(), registerNumber, id);
         assertUniqueDeviceId(request.deviceId(), id);
+        // До первого register.set...: запрос guard может вызвать auto-flush изменённой сущности.
+        assertFiscalCardAvailable(request.fiscalCardId(), id, store);
 
         register.setStore(store);
         register.setRegisterNumber(registerNumber);
@@ -191,6 +197,16 @@ public class CashRegisterServiceImpl implements CashRegisterService {
         if (exists) {
             throw new BadRequestException("Касса с таким deviceId уже зарегистрирована");
         }
+    }
+
+    private void assertFiscalCardAvailable(String fiscalCardId, Long registerId, Store store) {
+        Integer companyId = store.getCompany() != null ? store.getCompany().getId() : null;
+        fiscalModuleGuard.assertAvailable(
+            FiscalModuleField.CASH_REGISTER_FISCAL_CARD_ID,
+            fiscalCardId,
+            registerId,
+            companyId
+        );
     }
 
     private static String trimToNull(String raw) {

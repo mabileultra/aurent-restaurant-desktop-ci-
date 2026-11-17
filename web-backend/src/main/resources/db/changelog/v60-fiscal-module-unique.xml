@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        AUR-19: один фискальный модуль — одна касса.
+        До деплоя запустите db/check_fiscal_module_duplicates.sql и вычистите дубли вручную.
+        Precondition ниже считает дубли по тем же правилам (включая перекрёст Multikassa
+        terminal_id ↔ module_number) и останавливает Liquibase (HALT), если они ещё есть.
+        После деплоя: db/check_fiscal_module_indexes.sql.
+        Перекрёст terminal_id ↔ module_number индексом не покрыт (индекс — на одну колонку):
+        его сериализует advisory-lock в FiscalModuleBindingGuard.
+    -->
+    <changeSet id="v60-fiscal-module-unique-indexes" author="pos" dbms="postgresql">
+        <preConditions onFail="HALT"
+                       onFailMessage="AUR-19: найдены ФМ, привязанные к нескольким кассам. Запустите db/check_fiscal_module_duplicates.sql, отвяжите дубли и повторите деплой.">
+            <sqlCheck expectedResult="0"><![CDATA[
+                WITH bindings AS (
+                    SELECT 'CASH_REGISTER_FISCAL_CARD' AS fm_group, cr.id AS register_id,
+                           LOWER(TRIM(cr.fiscal_card_id)) AS fm_key
+                      FROM cash_registers cr
+                     WHERE cr.fiscal_card_id IS NOT NULL AND TRIM(cr.fiscal_card_id) <> ''
+                    UNION ALL
+                    SELECT 'MULTIKASSA_FM_SERIAL', mk.cash_register_id, LOWER(TRIM(mk.terminal_id))
+                      FROM cash_register_multikassa_settings mk
+                     WHERE mk.terminal_id IS NOT NULL AND TRIM(mk.terminal_id) <> ''
+                    UNION ALL
+                    SELECT 'MULTIKASSA_FM_SERIAL', mk.cash_register_id, LOWER(TRIM(mk.module_number))
+                      FROM cash_register_multikassa_settings mk
+                     WHERE mk.module_number IS NOT NULL AND TRIM(mk.module_number) <> ''
+                    UNION ALL
+                    SELECT 'MULTIKASSA_DRIVE', mk.cash_register_id, LOWER(TRIM(mk.selected_drive_id))
+                      FROM cash_register_multikassa_settings mk
+                     WHERE mk.selected_drive_id IS NOT NULL AND TRIM(mk.selected_drive_id) <> ''
+                    UNION ALL
+                    SELECT 'FISCAL_DRIVE_FACTORY', fd.cash_register_id, LOWER(TRIM(fd.factory_id))
+                      FROM cash_register_fiscal_drive_settings fd
+                     WHERE fd.factory_id IS NOT NULL AND TRIM(fd.factory_id) <> ''
+                    UNION ALL
+                    SELECT 'FISCAL_DRIVE_TERMINAL', fd.cash_register_id, LOWER(TRIM(fd.terminal_id))
+                      FROM cash_register_fiscal_drive_settings fd
+                     WHERE fd.terminal_id IS NOT NULL AND TRIM(fd.terminal_id) <> ''
+                )
+                SELECT COUNT(*) FROM (
+                    SELECT fm_group, fm_key
+                      FROM bindings
+                     GROUP BY fm_group, fm_key
+                    HAVING COUNT(DISTINCT register_id) > 1
+                ) conflicts
+            ]]></sqlCheck>
+        </preConditions>
+        <sql><![CDATA[
+            CREATE UNIQUE INDEX uq_cash_registers_fm_fiscal_card_id
+                ON cash_registers (LOWER(TRIM(fiscal_card_id)))
+                WHERE fiscal_card_id IS NOT NULL AND TRIM(fiscal_card_id) <> '';
+            CREATE UNIQUE INDEX uq_cr_multikassa_fm_terminal_id
+                ON cash_register_multikassa_settings (LOWER(TRIM(terminal_id)))
+                WHERE terminal_id IS NOT NULL AND TRIM(terminal_id) <> '';
+            CREATE UNIQUE INDEX uq_cr_multikassa_fm_module_number
+                ON cash_register_multikassa_settings (LOWER(TRIM(module_number)))
+                WHERE module_number IS NOT NULL AND TRIM(module_number) <> '';
+            CREATE UNIQUE INDEX uq_cr_multikassa_fm_selected_drive_id
+                ON cash_register_multikassa_settings (LOWER(TRIM(selected_drive_id)))
+                WHERE selected_drive_id IS NOT NULL AND TRIM(selected_drive_id) <> '';
+            CREATE UNIQUE INDEX uq_cr_fiscal_drive_fm_factory_id
+                ON cash_register_fiscal_drive_settings (LOWER(TRIM(factory_id)))
+                WHERE factory_id IS NOT NULL AND TRIM(factory_id) <> '';
+            CREATE UNIQUE INDEX uq_cr_fiscal_drive_fm_terminal_id
+                ON cash_register_fiscal_drive_settings (LOWER(TRIM(terminal_id)))
+                WHERE terminal_id IS NOT NULL AND TRIM(terminal_id) <> '';
+        ]]></sql>
+        <rollback><![CDATA[
+            DROP INDEX IF EXISTS uq_cash_registers_fm_fiscal_card_id;
+            DROP INDEX IF EXISTS uq_cr_multikassa_fm_terminal_id;
+            DROP INDEX IF EXISTS uq_cr_multikassa_fm_module_number;
+            DROP INDEX IF EXISTS uq_cr_multikassa_fm_selected_drive_id;
+            DROP INDEX IF EXISTS uq_cr_fiscal_drive_fm_factory_id;
+            DROP INDEX IF EXISTS uq_cr_fiscal_drive_fm_terminal_id;
+        ]]></rollback>
+    </changeSet>
+
+</databaseChangeLog>
