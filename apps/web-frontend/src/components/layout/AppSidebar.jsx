@@ -1,9 +1,10 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import BrandMark from '../shared/BrandMark';
-import { ICONS, REPORT_HUB } from './layoutNavConfig';
-import SidebarGroupCompact from './sidebar/SidebarGroupCompact';
-import SidebarGroupExpanded from './sidebar/SidebarGroupExpanded';
-import SidebarReportsExpanded from './sidebar/SidebarReportsExpanded';
+import { ICONS } from './layoutNavConfig';
+import SidebarNavSection from './sidebar/SidebarNavSection';
+import SidebarTopLinks from './sidebar/SidebarTopLinks';
+import SidebarReportsSection from './sidebar/SidebarReportsSection';
 
 export default function AppSidebar(props) {
   const {
@@ -17,54 +18,6 @@ export default function AppSidebar(props) {
     onLogout,
     topLinkClass,
     subLinkClass,
-    showDashboard,
-    showAssistant,
-    inAssistantSection,
-    showGoods,
-    showStock,
-    showOrders,
-    showFinance,
-    showRegisters,
-    showReports,
-    showUsers,
-    inGoodsSection,
-    inStockSection,
-    inOrdersSection,
-    inFinanceSection,
-    inRegistersSection,
-    inReportsSection,
-    inReportsSalesSection,
-    inReportsStockSection,
-    inUsersSection,
-    goodsOpen,
-    stockOpen,
-    ordersOpen,
-    financeOpen,
-    registersOpen,
-    reportsOpen,
-    reportsSalesOpen,
-    reportsStockOpen,
-    usersOpen,
-    setGoodsOpen,
-    setStockOpen,
-    setOrdersOpen,
-    setFinanceOpen,
-    setRegistersOpen,
-    setReportsOpen,
-    setReportsSalesOpen,
-    setReportsStockOpen,
-    setUsersOpen,
-    goodsNav,
-    stockNav,
-    ordersNav,
-    financeNav,
-    registersNav,
-    showReportsSales,
-    showReportsStock,
-    reportsSalesNav,
-    reportsStockNav,
-    reportsHubActive,
-    usersNav,
     visibleRest,
   } = props;
 
@@ -86,173 +39,120 @@ export default function AppSidebar(props) {
         } ${sidebarOpen ? 'w-[min(100vw,20rem)] lg:w-60' : 'w-[min(100vw,20rem)] lg:w-16'}`}
       >
         <div className="admin-sidebar__brand flex h-16 items-center gap-3 px-4">
-          <BrandMark
-            variant="full"
-            size={32}
-            height={navLabelsVisible ? 32 : 28}
-          />
+          <BrandMark variant="full" size={32} height={navLabelsVisible ? 32 : 28} />
           {navLabelsVisible ? (
             <span className="admin-sidebar__brand-name truncate text-lg">{displayAppName()}</span>
           ) : null}
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-4">
-          {showDashboard ? (
-            <NavLink to="/dashboard" end className={topLinkClass}>
-              <ICONS.LayoutDashboard size={18} className="flex-shrink-0" />
-              {navLabelsVisible && t('nav.dashboard')}
-            </NavLink>
-          ) : null}
+          <SidebarTopLinks
+            showDashboard={props.showDashboard}
+            showAssistant={props.showAssistant}
+            inAssistantSection={props.inAssistantSection}
+            navLabelsVisible={navLabelsVisible}
+            topLinkClass={topLinkClass}
+            t={t}
+          />
 
-          {showAssistant ? (
-            <NavLink
-              to="/assistant"
-              className={({ isActive }) => topLinkClass({ isActive: isActive || inAssistantSection })}
-            >
-              <ICONS.Bot size={18} className="flex-shrink-0" />
-              {navLabelsVisible && t('nav.aiAssistant')}
-            </NavLink>
-          ) : null}
+          <SidebarNavSection
+            show={props.showGoods}
+            navLabelsVisible={navLabelsVisible}
+            label={t('nav.goodsGroup')}
+            icon={ICONS.LayoutGrid}
+            isOpen={props.goodsOpen}
+            onToggle={() => props.setGoodsOpen((o) => !o)}
+            isActive={props.inGoodsSection}
+            items={props.goodsNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
-          <NavLink to="/handbook/dashboard" className={topLinkClass}>
-            <ICONS.BookOpen size={18} className="flex-shrink-0" />
-            {navLabelsVisible && t('nav.handbook')}
-          </NavLink>
+          <SidebarNavSection
+            show={props.showStock}
+            navLabelsVisible={navLabelsVisible}
+            label={t('nav.stockGroup')}
+            icon={ICONS.Home}
+            isOpen={props.stockOpen}
+            onToggle={() => props.setStockOpen((o) => !o)}
+            isActive={props.inStockSection}
+            items={props.stockNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
-          <NavLink to="/support" className={topLinkClass}>
-            <ICONS.Headphones size={18} className="flex-shrink-0" />
-            {navLabelsVisible && t('nav.support')}
-          </NavLink>
+          <SidebarNavSection
+            show={props.showOrders}
+            navLabelsVisible={navLabelsVisible}
+            label={t('nav.ordersGroup')}
+            icon={ICONS.Truck}
+            isOpen={props.ordersOpen}
+            onToggle={() => props.setOrdersOpen((o) => !o)}
+            isActive={props.inOrdersSection}
+            items={props.ordersNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
-          {showGoods
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.goodsGroup')}
-                  icon={ICONS.LayoutGrid}
-                  isOpen={goodsOpen}
-                  onToggle={() => setGoodsOpen((o) => !o)}
-                  isActive={inGoodsSection}
-                  items={goodsNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={goodsNav} />
-              )
-            : null}
+          <SidebarNavSection
+            show={props.showFinance}
+            navLabelsVisible={navLabelsVisible}
+            label={t('nav.financeGroup')}
+            icon={ICONS.Calculator}
+            isOpen={props.financeOpen}
+            onToggle={() => props.setFinanceOpen((o) => !o)}
+            isActive={props.inFinanceSection}
+            items={props.financeNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
-          {showStock
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.stockGroup')}
-                  icon={ICONS.Home}
-                  isOpen={stockOpen}
-                  onToggle={() => setStockOpen((o) => !o)}
-                  isActive={inStockSection}
-                  items={stockNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={stockNav} />
-              )
-            : null}
+          <SidebarNavSection
+            show={props.showRegisters}
+            navLabelsVisible={navLabelsVisible}
+            label={t('nav.registersGroup')}
+            icon={ICONS.Calculator}
+            isOpen={props.registersOpen}
+            onToggle={() => props.setRegistersOpen((o) => !o)}
+            isActive={props.inRegistersSection}
+            items={props.registersNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
-          {showOrders
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.ordersGroup')}
-                  icon={ICONS.Truck}
-                  isOpen={ordersOpen}
-                  onToggle={() => setOrdersOpen((o) => !o)}
-                  isActive={inOrdersSection}
-                  items={ordersNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={ordersNav} />
-              )
-            : null}
+          <SidebarReportsSection
+            showReports={props.showReports}
+            navLabelsVisible={navLabelsVisible}
+            reportsOpen={props.reportsOpen}
+            setReportsOpen={props.setReportsOpen}
+            inReportsSection={props.inReportsSection}
+            reportsHubActive={props.reportsHubActive}
+            reportsSalesOpen={props.reportsSalesOpen}
+            setReportsSalesOpen={props.setReportsSalesOpen}
+            inReportsSalesSection={props.inReportsSalesSection}
+            showReportsSales={props.showReportsSales}
+            reportsSalesNav={props.reportsSalesNav}
+            reportsStockOpen={props.reportsStockOpen}
+            setReportsStockOpen={props.setReportsStockOpen}
+            inReportsStockSection={props.inReportsStockSection}
+            showReportsStock={props.showReportsStock}
+            reportsStockNav={props.reportsStockNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
-          {showFinance
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.financeGroup')}
-                  icon={ICONS.Calculator}
-                  isOpen={financeOpen}
-                  onToggle={() => setFinanceOpen((o) => !o)}
-                  isActive={inFinanceSection}
-                  items={financeNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={financeNav} />
-              )
-            : null}
-
-          {showRegisters
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.registersGroup')}
-                  icon={ICONS.Calculator}
-                  isOpen={registersOpen}
-                  onToggle={() => setRegistersOpen((o) => !o)}
-                  isActive={inRegistersSection}
-                  items={registersNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={registersNav} />
-              )
-            : null}
-
-          {showReports
-            ? navLabelsVisible ? (
-                <SidebarReportsExpanded
-                  t={t}
-                  reportsOpen={reportsOpen}
-                  onReportsToggle={() => setReportsOpen((o) => !o)}
-                  inReportsSection={inReportsSection}
-                  reportsHubActive={reportsHubActive}
-                  reportsSalesOpen={reportsSalesOpen}
-                  onReportsSalesToggle={() => setReportsSalesOpen((o) => !o)}
-                  inReportsSalesSection={inReportsSalesSection}
-                  showReportsSales={showReportsSales}
-                  reportsSalesNav={reportsSalesNav}
-                  reportsStockOpen={reportsStockOpen}
-                  onReportsStockToggle={() => setReportsStockOpen((o) => !o)}
-                  inReportsStockSection={inReportsStockSection}
-                  showReportsStock={showReportsStock}
-                  reportsStockNav={reportsStockNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact
-                  t={t}
-                  items={[REPORT_HUB, ...reportsSalesNav, ...reportsStockNav]}
-                />
-              )
-            : null}
-
-          {showUsers
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.usersGroup')}
-                  icon={ICONS.Users}
-                  isOpen={usersOpen}
-                  onToggle={() => setUsersOpen((o) => !o)}
-                  isActive={inUsersSection}
-                  items={usersNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={usersNav} />
-              )
-            : null}
+          <SidebarNavSection
+            show={props.showUsers}
+            navLabelsVisible={navLabelsVisible}
+            label={t('nav.usersGroup')}
+            icon={ICONS.Users}
+            isOpen={props.usersOpen}
+            onToggle={() => props.setUsersOpen((o) => !o)}
+            isActive={props.inUsersSection}
+            items={props.usersNav}
+            subLinkClass={subLinkClass}
+            t={t}
+          />
 
           {visibleRest.map(({ to, icon: Icon, key }) => (
             <NavLink key={to} to={to} className={topLinkClass}>
