@@ -1,5 +1,6 @@
 import { rstOrderApi } from '../../api/order.api';
 import { FISCAL_STATUS, loadFiscalContext, resolveFiscalProvider } from '../../../services/fiscal';
+import { assertReceiptPrinterReady } from '../../../services/cashierEscpos';
 import {
   buildRestaurantFiscalSale,
   fiscalPaymentForCart,
@@ -84,6 +85,8 @@ export async function payRestaurantOrderWithFiscal({
   }
 
   const skipFiscal = isNonFiscalPayMethod(payMethod);
+
+  await assertReceiptPrinterReady();
 
   const payment = {
     paymentMethod: payMethod,

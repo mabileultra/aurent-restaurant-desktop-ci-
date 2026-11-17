@@ -3,6 +3,7 @@ const { listSystemPrinters, invalidatePrinterListCache } = require('./list-print
 const { readPrinterSettings, writePrinterSettings } = require('./printer-settings.cjs');
 const { printTicketHtml } = require('./print-ticket.cjs');
 const { resolveReceiptPrinterName, resolveLabelPrinterName } = require('./resolve.cjs');
+const { checkReceiptPrinterReady } = require('./receipt-printer-health.cjs');
 
 function registerPrinterIpc() {
   try {
@@ -16,6 +17,7 @@ function registerPrinterIpc() {
     invalidatePrinterListCache();
     return listSystemPrinters();
   });
+  ipcMain.handle('desktop:check-receipt-printer-ready', async () => checkReceiptPrinterReady());
   ipcMain.handle('desktop:get-printer-settings', () => readPrinterSettings());
   ipcMain.handle('desktop:set-printer-settings', (_e, settings) =>
     writePrinterSettings(settings || {}),

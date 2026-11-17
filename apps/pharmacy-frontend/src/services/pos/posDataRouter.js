@@ -28,6 +28,7 @@ import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
 import { assertCartMarksNotPunched } from '../../features/marking';
 import { buildShiftPrintReport } from '../../features/cashier/utils/buildShiftPrintReport';
+import { assertReceiptPrinterReady } from '../cashierEscpos';
 
 function connectivityState() {
   return useConnectivityStore.getState();
@@ -437,6 +438,7 @@ export async function posCreateSale({
       ? crypto.randomUUID()
       : `sale-${Date.now()}`;
 
+  await assertReceiptPrinterReady();
   await assertCartMarksNotPunched(storeId, cartItems);
 
   let fiscalPayload = null;
