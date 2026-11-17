@@ -23,6 +23,7 @@ import {
   preserveMarkingCodeForFiscal,
 } from '../../../marking';
 import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 
 export function usePosCartHandlers({
@@ -258,7 +259,14 @@ export function usePosCartHandlers({
         setWeightModalProduct(payload);
         return;
       }
-      const lineId = addPieceItem(payload, 1);
+      let lineId;
+      try {
+        lineId = addPieceItem(payload, 1);
+      } catch (err) {
+        const msg = resolveForbiddenMxikError(err, t);
+        toast.error(msg || err?.message || t('pos.saleFailed'));
+        return;
+      }
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
       if (line) showLineAddedToast(line, product.name);
       setSelectedLineId(lineId);
@@ -281,7 +289,13 @@ export function usePosCartHandlers({
           updateUnitPrice(weightEditLineId, lineUnitPrice);
         }
       } else {
-        lineId = addWeightLine({ ...payload, sellingPrice: lineUnitPrice }, kg);
+        try {
+          lineId = addWeightLine({ ...payload, sellingPrice: lineUnitPrice }, kg);
+        } catch (err) {
+          const msg = resolveForbiddenMxikError(err, t);
+          toast.error(msg || err?.message || t('pos.saleFailed'));
+          return;
+        }
         const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
         if (line) showLineAddedToast(line, payload.name);
       }

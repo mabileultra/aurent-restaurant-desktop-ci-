@@ -1,8 +1,18 @@
 // src/store/cartStore.js
 import { create } from 'zustand';
+import { FORBIDDEN_MXIK_REASON_CODE, isForbiddenMxik, normalizeMxik } from '@aurent/shared-fiscal';
 import { extractVatFromInclusive, netFromInclusive, round2 } from '../utils/taxAmounts';
 import { isPieceLikeProduct, roundQty } from '../utils/quantityFormat';
 import { unitLabel } from '../utils/unitConfig';
+
+function assertProductMxikAllowed(product) {
+  const raw = product?.ikpu ?? product?.mxik;
+  if (!isForbiddenMxik(raw)) return;
+  const err = new Error(`FORBIDDEN_MXIK:${normalizeMxik(raw)}`);
+  err.code = FORBIDDEN_MXIK_REASON_CODE;
+  err.mxik = normalizeMxik(raw);
+  throw err;
+}
 
 export const lineGross = (item) => round2(item.unitPrice * item.quantity);
 
@@ -136,6 +146,7 @@ export const useCartStore = create((set, get) => ({
 
   /** Штучный / услуга: +1, объединение строк по productId. */
   addPieceItem: (product, quantity = 1) => {
+    assertProductMxikAllowed(product);
     get().ensureCheckNo();
     const qty = roundQty(quantity);
     const { items } = get();
@@ -169,6 +180,7 @@ export const useCartStore = create((set, get) => ({
 
   /** Строка не сливается с уже лежащим товаром (отдельный учёт маркировок). */
   insertSeparatePieceItem: (product, quantity = 1) => {
+    assertProductMxikAllowed(product);
     get().ensureCheckNo();
     const line = syncDiscountFromPercent(buildLine(product, quantity));
     const nextItems = [...get().items, line];
@@ -192,6 +204,7 @@ export const useCartStore = create((set, get) => ({
 
   /** Весовой: всегда отдельная строка. */
   addWeightLine: (product, quantityKg) => {
+    assertProductMxikAllowed(product);
     get().ensureCheckNo();
     const line = syncDiscountFromPercent(buildLine(product, quantityKg));
     const nextItems = [...get().items, line];
@@ -203,6 +216,7 @@ export const useCartStore = create((set, get) => ({
   },
 
   addItem: (product, quantity = 1) => {
+    assertProductMxikAllowed(product);
     if (product.saleType === 'WEIGHT') {
       return get().addWeightLine(product, quantity);
     }

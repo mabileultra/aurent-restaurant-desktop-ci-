@@ -29,6 +29,7 @@ import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
+import com.pos.sales.support.mxik.ForbiddenMxikGuard;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceAdvancePaymentIntegrationService;
 import com.pos.integrations.finance.service.FinanceAdvanceSaleIntegrationService;
@@ -84,6 +85,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final SaleFiscalApplier saleFiscalApplier;
     private final MarkingAfterSaleService markingAfterSaleService;
     private final MarkingSoldJournalService markingSoldJournalService;
+    private final ForbiddenMxikGuard forbiddenMxikGuard;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -106,6 +108,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
 
         Map<UUID, Product> productsById = checkoutProductLoader.loadIndexed(req.items());
         productsById.values().forEach(product -> catalogIsolation.assertSaleCatalogMatchesStore(store, product));
+        forbiddenMxikGuard.assertProductsAllowed(productsById.values());
         Set<UUID> productIds = new HashSet<>(productsById.keySet());
         Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(productIds);
 

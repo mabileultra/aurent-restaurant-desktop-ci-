@@ -10,3 +10,9 @@ export {
   toFiscalRefundDateTime,
 } from './fiscalMoney.js';
 export { resolveLinePackageCode } from './resolveLinePackageCode.js';
+export {
+  FORBIDDEN_MXIK_REASON_CODE,
+  FORBIDDEN_MXIK_CODES,
+  normalizeMxik,
+  isForbiddenMxik,
+} from './forbiddenMxik.js';
