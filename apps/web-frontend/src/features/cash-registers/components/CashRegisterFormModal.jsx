@@ -36,7 +36,6 @@ export default function CashRegisterFormModal({ open, registerId, onClose, onSav
                 <div>
                   <label className="cr-form-modal__label">* {p.t('cashRegisters.formStore')}</label>
                   <BaseSelect
-                    className={inputCls}
                     disabled={p.isEdit}
                     {...p.register('storeId')}
                     placeholder={p.t('cashRegisters.formStorePlaceholder')}
@@ -66,7 +65,19 @@ export default function CashRegisterFormModal({ open, registerId, onClose, onSav
 
                 <div>
                   <label className="cr-form-modal__label">{p.t('cashRegisters.colFiscal')}</label>
-                  <input className={inputCls} {...p.register('fiscalCardId')} />
+                  <input
+                    className={`${inputCls}${p.fiscalCardError ? ' cr-form-modal__input--error' : ''}`}
+                    aria-invalid={Boolean(p.fiscalCardError)}
+                    {...p.register('fiscalCardId')}
+                  />
+                  {p.checkingFiscalCard && !p.fiscalCardError ? (
+                    <p className="cr-form-modal__hint">{p.t('cashRegisters.fiscalCardChecking')}</p>
+                  ) : null}
+                  {p.fiscalCardError ? (
+                    <p className="cr-form-modal__error" role="alert">
+                      {p.fiscalCardError}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div>
@@ -86,7 +97,11 @@ export default function CashRegisterFormModal({ open, registerId, onClose, onSav
             <button type="button" onClick={onClose} className="cr-form-modal__btn cr-form-modal__btn--ghost">
               {p.t('common.cancel')}
             </button>
-            <button type="submit" disabled={p.loading || p.saving} className="cr-form-modal__btn cr-form-modal__btn--primary">
+            <button
+              type="submit"
+              disabled={p.loading || p.saving || p.checkingFiscalCard || Boolean(p.fiscalCardError)}
+              className="cr-form-modal__btn cr-form-modal__btn--primary"
+            >
               {p.t('common.save')}
             </button>
           </div>

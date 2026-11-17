@@ -53,6 +53,16 @@
   font-size: 0.82rem;
 }
 
+.rst-int-form__error {
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgb(244 63 94 / 0.45);
+  background: rgb(244 63 94 / 0.12);
+  color: #fecdd3;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .rst-int-form__actions {
   display: flex;
   flex-wrap: wrap;

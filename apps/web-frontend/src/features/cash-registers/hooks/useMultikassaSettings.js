@@ -142,6 +142,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   const [loadingPrinters, setLoadingPrinters] = useState(false);
   const [printersNote, setPrintersNote] = useState('');
   const [mkPrinterReady, setMkPrinterReady] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['multikassa-admin', cashRegisterId],
@@ -164,6 +165,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     setTestMessage('');
     setPrintersNote('');
     setMkPrinterReady(false);
+    setSaveError('');
   }, [data]);
 
   const loadDrives = async (baseUrl = form.baseUrl, { notifyEmpty = false } = {}) => {
@@ -239,18 +241,24 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   }, [open, form.baseUrl, t]);
 
   const saveMutation = useMutation({
+    meta: { suppressGlobalError: true },
     mutationFn: (payload) =>
       multikassaApi.saveAdminSettings(cashRegisterId, payload).then((r) => r.data),
     onSuccess: () => {
+      setSaveError('');
       qc.invalidateQueries({ queryKey: ['multikassa-admin', cashRegisterId] });
       toast.success(t('cashRegisters.multikassa.saved'));
       onSaved?.();
     },
-    onError: (e) =>
-      toast.error(e.response?.data?.message ?? t('cashRegisters.multikassa.saveFailed')),
+    onError: (e) => {
+      const msg = e?.response?.data?.message ?? t('cashRegisters.multikassa.saveFailed');
+      setSaveError(msg);
+      toast.error(msg);
+    },
   });
 
   const updateField = (field, value) => {
+    setSaveError('');
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -261,6 +269,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
 
   const submit = (e) => {
     e.preventDefault();
+    setSaveError('');
     const terminalId = normalizeGnkTerminalId(form.terminalId) || null;
     const moduleNumber = normalizeGnkTerminalId(form.moduleNumber) || terminalId;
     saveMutation.mutate({
@@ -400,6 +409,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     saving: saveMutation.isPending,
     testing,
     testMessage,
+    saveError,
     presets: {
       local8080: data?.suggestedLocalUrl8080 || MULTIKASSA_BASE_URL_PRESETS.local8080,
       local12346: data?.suggestedLocalUrl12346 || MULTIKASSA_BASE_URL_PRESETS.local12346,

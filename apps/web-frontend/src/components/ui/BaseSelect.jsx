@@ -55,11 +55,14 @@ const BaseSelect = forwardRef(function BaseSelect(
   const effectiveValue = isControlled
     ? toOptionValue(value ?? emptyValue)
     : uncontrolledValue;
+  const valueRef = useRef(effectiveValue);
+  valueRef.current = effectiveValue;
 
   const closeMenuRef = useRef(() => {});
 
   const commitSelection = (optionValue) => {
     const next = toOptionValue(optionValue);
+    valueRef.current = next;
     if (!isControlled) {
       setUncontrolledValue(next);
     }
@@ -71,7 +74,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     });
     setQuery('');
     onSearchQueryChange?.('');
-    closeMenuRef.current({ restoreFocus: true });
+    closeMenuRef.current({ restoreFocus: true, value: next });
   };
 
   const selectedOption = useMemo(
@@ -139,10 +142,11 @@ const BaseSelect = forwardRef(function BaseSelect(
 
   useImperativeHandle(forwardedRef, () => ({
     get value() {
-      return effectiveValue;
+      return valueRef.current;
     },
     set value(next) {
       const normalized = toOptionValue(next ?? emptyValue);
+      valueRef.current = normalized;
       if (!isControlled) {
         setUncontrolledValue(normalized);
       }
@@ -161,7 +165,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     get name() {
       return name;
     },
-  }), [effectiveValue, emptyValue, isControlled, name]);
+  }), [emptyValue, isControlled, name]);
 
   const hasEmptyOption = options.some((option) => toOptionValue(option.value) === '');
   const searchPh = searchPlaceholder || t('common.search', { defaultValue: 'Поиск…' });
