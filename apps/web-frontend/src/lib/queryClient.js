@@ -37,7 +37,7 @@ export const queryClient = new QueryClient({
         return;
       }
 
-      if (mutation?.meta?.suppressGlobalError) return;
+      if (mutation?.meta?.suppressGlobalError || error?.isReceiptPrinterError) return;
 
       if (mutation?.meta?.errorMessage) {
         toast.error(mutation.meta.errorMessage);
