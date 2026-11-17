@@ -3,6 +3,8 @@ package com.pos.integrations.fiscaldrive.service.impl;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.integrations.fiscal.domain.FiscalProvider;
+import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
+import com.pos.integrations.fiscal.support.FiscalModuleField;
 import com.pos.integrations.fiscaldrive.dto.FiscalDriveSettingsResponse;
 import com.pos.integrations.fiscaldrive.dto.SaveFiscalDriveSettingsRequest;
 import com.pos.integrations.fiscaldrive.entity.CashRegisterFiscalDriveSettings;
@@ -21,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class FiscalDriveSettingsServiceImpl implements FiscalDriveSettingsServic
     private final CashRegisterFiscalDriveSettingsRepository settingsRepository;
     private final TenantAccessSupport tenantAccess;
     private final MultikassaCashierRegisterGuard registerGuard;
+    private final FiscalModuleBindingGuard fiscalModuleGuard;
 
     @Override
     @Transactional(readOnly = true)
@@ -44,6 +49,8 @@ public class FiscalDriveSettingsServiceImpl implements FiscalDriveSettingsServic
         CashRegister register = requireAccessibleRegister(cashRegisterId);
         CashRegisterFiscalDriveSettings entity = settingsRepository.findById(cashRegisterId)
             .orElseGet(() -> CashRegisterFiscalDriveSettings.builder().cashRegister(register).build());
+        // AUR-19: до первого entity.set... — запросы guard могут вызвать auto-flush managed-сущности.
+        assertFiscalModuleAvailable(register, request);
 
         String factoryId = trimToNull(request.factoryId());
         entity.setBaseUrl(normalizeBaseUrl(request.baseUrl()));
@@ -75,6 +82,16 @@ public class FiscalDriveSettingsServiceImpl implements FiscalDriveSettingsServic
             register.getFiscalProvider()
         );
         return toResponse(register, entity);
+    }
+
+    private void assertFiscalModuleAvailable(CashRegister register, SaveFiscalDriveSettingsRequest request) {
+        Map<FiscalModuleField, String> values = new EnumMap<>(FiscalModuleField.class);
+        values.put(FiscalModuleField.FISCAL_DRIVE_FACTORY_ID, request.factoryId());
+        values.put(FiscalModuleField.FISCAL_DRIVE_TERMINAL_ID, request.terminalId());
+        Integer companyId = register.getStore() != null && register.getStore().getCompany() != null
+            ? register.getStore().getCompany().getId()
+            : null;
+        fiscalModuleGuard.assertAvailable(values, register.getId(), companyId);
     }
 
     private CashRegister requireAccessibleRegister(Long cashRegisterId) {

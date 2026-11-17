@@ -5,12 +5,25 @@ import com.pos.exception.ConflictException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
  * Maps JDBC / JPA errors to client-facing business exceptions.
  */
 public final class DbExceptionTranslator {
+
+    /** Partial unique index'ы AUR-19 (db/changelog/v60-fiscal-module-unique.xml). */
+    static final List<String> FISCAL_MODULE_UNIQUE_INDEXES = List.of(
+        "uq_cash_registers_fm_fiscal_card_id",
+        "uq_cr_multikassa_fm_terminal_id",
+        "uq_cr_multikassa_fm_module_number",
+        "uq_cr_multikassa_fm_selected_drive_id",
+        "uq_cr_fiscal_drive_fm_factory_id",
+        "uq_cr_fiscal_drive_fm_terminal_id"
+    );
+
+    static final String FISCAL_MODULE_TAKEN_MESSAGE = "Фискальный модуль уже привязан к другой кассе";
 
     private DbExceptionTranslator() {
     }
@@ -21,6 +34,9 @@ public final class DbExceptionTranslator {
 
         // Unique-constraint names first — substring "pin_digest" also matches them and must not
         // be mislabeled as a missing-column / stale-schema error.
+        if (FISCAL_MODULE_UNIQUE_INDEXES.stream().anyMatch(lower::contains)) {
+            return FISCAL_MODULE_TAKEN_MESSAGE;
+        }
         if (lower.contains("uq_users_company_pin_digest")) {
             return "Такой PIN уже используется в компании";
         }
@@ -71,7 +87,8 @@ public final class DbExceptionTranslator {
         if (message.contains("уже занят")
             || message.contains("уже зарегистрирован")
             || message.contains("уже существует")
-            || message.contains("PIN уже")) {
+            || message.contains("PIN уже")
+            || message.contains("уже привязан")) {
             return new ConflictException(message);
         }
         return new BadRequestException(message);
