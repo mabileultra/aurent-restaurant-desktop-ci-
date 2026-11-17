@@ -25,23 +25,23 @@ export default function LogoUploadField({ label, hint, dataUrl, onSet, onClear, 
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-slate-600 dark:text-slate-400">{label}</p>
+      <p className="text-xs font-medium text-ink-muted">{label}</p>
       <div className="flex flex-wrap items-center gap-3">
         <div
-          className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50"
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-control border border-dashed border-line-strong bg-canvas"
           style={{ width: previewSize, height: previewSize }}
         >
           {dataUrl ? (
             <img src={dataUrl} alt="" className="h-full w-full object-contain" />
           ) : (
-            <ImagePlus size={24} className="text-slate-400" aria-hidden />
+            <ImagePlus size={24} strokeWidth={1.75} className="text-ink-disabled" aria-hidden />
           )}
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="admin-btn-secondary px-3 py-1.5 text-xs"
+            className="ui-btn ui-btn-secondary ui-btn-sm"
           >
             {t('tenantSettings.uploadLogo')}
           </button>
@@ -49,15 +49,15 @@ export default function LogoUploadField({ label, hint, dataUrl, onSet, onClear, 
             <button
               type="button"
               onClick={onClear}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="ui-btn ui-btn-danger ui-btn-sm"
             >
-              <Trash2 size={14} />
+              <Trash2 size={14} strokeWidth={1.75} />
               {t('tenantSettings.removeLogo')}
             </button>
           ) : null}
         </div>
       </div>
-      {hint ? <p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p> : null}
+      {hint ? <p className="text-xs text-ink-muted">{hint}</p> : null}
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={onPick} />
     </div>
   );

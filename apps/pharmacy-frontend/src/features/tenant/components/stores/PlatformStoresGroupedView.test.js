@@ -195,7 +195,7 @@ describe('PlatformStoresGroupedView', () => {
       })
     );
 
-    expect(html).toContain('bg-emerald-500 animate-pulse');
+    expect(html).toContain('bg-primary-500 animate-pulse');
     expect(html).toContain('EVOS Fast Food');
   });
 
@@ -250,7 +250,7 @@ describe('PlatformStoresGroupedView', () => {
 
     // Focused company 2 (Dori-Darmon Farmatsiya) is auto-expanded and highlighted with emerald ring
     expect(html).toContain('Apteka Markaziy');
-    expect(html).toContain('ring-emerald-500');
+    expect(html).toContain('ring-primary-500');
 
     // Overall count maintains all companies and branches
     expect(html).toContain('2 ta kompaniya • 3 ta filial');

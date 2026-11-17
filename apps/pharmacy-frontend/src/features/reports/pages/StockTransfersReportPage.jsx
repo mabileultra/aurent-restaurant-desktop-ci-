@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
-import { Plus } from 'lucide-react';
-import { BaseSelect } from '../../../components/ui';
+import { ArrowRightLeft, Plus } from 'lucide-react';
+import { BaseSelect, EmptyState, PageHeader } from '../../../components/ui';
 import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
@@ -14,18 +14,16 @@ export default function StockTransfersReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.transfersTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.transfersSubtitle')}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link to="/stock/transfers/new" className="admin-btn-primary px-4 py-2 text-sm">
-            <Plus size={16} />
+      <PageHeader
+        title={t('stockReports.transfersTitle')}
+        subtitle={t('stockReports.transfersSubtitle')}
+        actions={(
+          <Link to="/stock/transfers/new" className="ui-btn ui-btn-primary">
+            <Plus size={16} strokeWidth={1.75} />
             {t('stockReports.newTransferDoc')}
           </Link>
-        </div>
-      </div>
+        )}
+      />
       <div className="flex flex-wrap gap-3">
         <ReportDateBar from={r.from} to={r.to} onFrom={r.setFrom} onTo={r.setTo} />
         <BaseSelect
@@ -57,26 +55,32 @@ export default function StockTransfersReportPage() {
           onPageSizeChange: r.setPageSize,
         }}
       >
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase dark:bg-slate-800/80">
+        <table className="ui-table">
+          <thead>
             <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3">{t('stockReports.colTransferNo')}</th>
-              <th className="px-4 py-3">{t('stockReports.colDate')}</th>
-              <th className="px-4 py-3">{t('stockReports.colRoute')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colQty')}</th>
+              <th className="ui-th">{t('stockReports.colTransferNo')}</th>
+              <th className="ui-th">{t('stockReports.colDate')}</th>
+              <th className="ui-th">{t('stockReports.colRoute')}</th>
+              <th className="ui-th text-right">{t('stockReports.colQty')}</th>
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={6} className="p-6 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.isPending && <tr><td colSpan={6} className="ui-td p-6 text-center text-ink-muted">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-0">
+                  <EmptyState icon={ArrowRightLeft} title={t('common.noData')} />
+                </td>
+              </tr>
+            )}
             {r.rows.map((row, index) => (
-              <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
+              <tr key={row.id} className="ui-tr">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
-                <td className="px-4 py-3 font-medium">{row.transferNumber}</td>
-                <td className="px-4 py-3">{fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm')}</td>
-                <td className="px-4 py-3">{row.fromStoreName} → {row.toStoreName}</td>
-                <td className="px-4 py-3 text-right">{row.totalQuantity}</td>
+                <td className="ui-td-nowrap font-semibold">{row.transferNumber}</td>
+                <td className="ui-td-nowrap text-ink-muted">{fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm')}</td>
+                <td className="ui-td">{row.fromStoreName} → {row.toStoreName}</td>
+                <td className="ui-td-nowrap text-right font-medium">{row.totalQuantity}</td>
               </tr>
             ))}
           </tbody>

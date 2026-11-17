@@ -14,54 +14,38 @@ export default function StoresPageControls({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       {/* Segmented Status Tabs */}
-      <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+      <div className="ui-tabs self-start sm:self-auto">
         <button
           type="button"
           onClick={() => onStatusFilterChange('ALL')}
-          className={`px-3 py-1.5 rounded-lg transition-all ${
-            statusFilter === 'ALL'
-              ? 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
+          className={`ui-tab ${statusFilter === 'ALL' ? 'ui-tab-active' : ''}`}
         >
           {t('platform.tabAll', { defaultValue: 'Barchasi' })}
-          <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+          <span className="ui-tabular rounded-full bg-canvas px-1.5 text-[11px] text-ink-muted">
             {totalStores}
           </span>
         </button>
         <button
           type="button"
           onClick={() => onStatusFilterChange('ACTIVE')}
-          className={`px-3 py-1.5 rounded-lg transition-all ${
-            statusFilter === 'ACTIVE'
-              ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600'
-          }`}
+          className={`ui-tab ${statusFilter === 'ACTIVE' ? 'ui-tab-active' : ''}`}
         >
           {t('platform.tabActive', { defaultValue: 'Faol' })}
-          <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-mono">
+          <span className="ui-tabular rounded-full bg-success-soft px-1.5 text-[11px] text-success-text">
             {activeStores}
           </span>
         </button>
         <button
           type="button"
           onClick={() => onStatusFilterChange('INACTIVE')}
-          className={`px-3 py-1.5 rounded-lg transition-all ${
-            statusFilter === 'INACTIVE'
-              ? inactiveStores > 0
-                ? 'bg-white dark:!bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'bg-white dark:!bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-              : inactiveStores > 0
-                ? 'text-slate-600 dark:text-slate-400 hover:text-amber-600'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
+          className={`ui-tab ${statusFilter === 'INACTIVE' ? 'ui-tab-active' : ''}`}
         >
           {t('platform.tabInactive', { defaultValue: 'Nofaol' })}
           <span
-            className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+            className={`ui-tabular rounded-full px-1.5 text-[11px] ${
               inactiveStores > 0
-                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                ? 'bg-warning-soft text-warning-text font-semibold'
+                : 'bg-canvas text-ink-muted'
             }`}
           >
             {inactiveStores}
@@ -70,31 +54,23 @@ export default function StoresPageControls({
       </div>
 
       {/* View Switcher: Grouped by Company vs Flat Table */}
-      <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+      <div className="ui-tabs self-start sm:self-auto">
         <button
           type="button"
           onClick={() => onViewModeChange('grouped')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-            viewMode === 'grouped'
-              ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
+          className={`ui-tab ${viewMode === 'grouped' ? 'ui-tab-active' : ''}`}
           title={t('platform.viewGrouped', { defaultValue: 'Kompaniyalar bo‘yicha' })}
         >
-          <Layers size={14} />
+          <Layers size={14} strokeWidth={1.75} />
           <span>{t('platform.viewGrouped', { defaultValue: 'Kompaniyalar bo‘yicha' })}</span>
         </button>
         <button
           type="button"
           onClick={() => onViewModeChange('table')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-            viewMode === 'table'
-              ? 'bg-white dark:!bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
+          className={`ui-tab ${viewMode === 'table' ? 'ui-tab-active' : ''}`}
           title={t('platform.viewTable', { defaultValue: 'Yagona jadval' })}
         >
-          <List size={14} />
+          <List size={14} strokeWidth={1.75} />
           <span>{t('platform.viewTable', { defaultValue: 'Yagona jadval' })}</span>
         </button>
       </div>

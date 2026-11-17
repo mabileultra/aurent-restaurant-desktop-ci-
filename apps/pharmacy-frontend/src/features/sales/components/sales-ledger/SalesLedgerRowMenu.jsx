@@ -14,7 +14,7 @@ export default function SalesLedgerRowMenu({ menu, t, onClose, onPrint, onReturn
       />
       <div
         role="menu"
-        className="fixed z-[210] min-w-[180px] rounded-lg border border-slate-200 bg-white py-1 text-left shadow-xl dark:!border-slate-700 dark:!bg-slate-900"
+        className="fixed z-[210] min-w-[180px] rounded-card border border-line bg-surface p-1 text-left shadow-elevated"
         style={{
           top: `${menu.rect.bottom + 4}px`,
           right: `${window.innerWidth - menu.rect.right}px`,
@@ -22,7 +22,7 @@ export default function SalesLedgerRowMenu({ menu, t, onClose, onPrint, onReturn
       >
         <button
           type="button"
-          className="block w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="block w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-ink hover:bg-primary-50"
           onClick={() => {
             onPrint(menu.row.id);
             onClose();
@@ -32,7 +32,7 @@ export default function SalesLedgerRowMenu({ menu, t, onClose, onPrint, onReturn
         </button>
         <Link
           to={`/receipt/${menu.row.receiptNumber}`}
-          className="block px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="block rounded-lg px-3 py-2 text-xs font-medium text-ink hover:bg-primary-50"
           onClick={onClose}
         >
           {t('salesLedger.openReceipt')}
@@ -40,7 +40,7 @@ export default function SalesLedgerRowMenu({ menu, t, onClose, onPrint, onReturn
         {menu.row.status !== 'VOIDED' && (
           <button
             type="button"
-            className="block w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+            className="block w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-danger-text hover:bg-danger-soft"
             onClick={() => {
               onReturn(menu.row.id);
               onClose();

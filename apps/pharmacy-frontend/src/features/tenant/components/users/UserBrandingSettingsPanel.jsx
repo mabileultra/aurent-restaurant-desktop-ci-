@@ -14,8 +14,7 @@ import SettingsFieldToggles from './SettingsFieldToggles';
 import BrandMark from '../../../../components/shared/BrandMark';
 import TenantSettingsSaveBar from './TenantSettingsSaveBar';
 
-const inputCls =
-  'mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100';
+const inputCls = 'ui-input mt-1';
 
 export default function UserBrandingSettingsPanel() {
   const { t } = useTranslation();
@@ -43,10 +42,10 @@ export default function UserBrandingSettingsPanel() {
   }, [fetchFromServer]);
 
   return (
-    <section className="admin-card">
-      <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        <UserCog size={18} className="text-emerald-600 dark:text-emerald-400" />
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+    <section className="ui-card">
+      <div className="flex items-center gap-2 border-b border-line px-4 py-3">
+        <UserCog size={18} strokeWidth={1.75} className="text-primary-600" />
+        <h2 className="text-sm font-semibold text-ink">
           {t('tenantSettings.userTitle')}
         </h2>
       </div>
@@ -62,7 +61,7 @@ export default function UserBrandingSettingsPanel() {
 
         {systemLogoDataUrl ? (
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="ui-label">
               {t('tenantSettings.systemLogoSize')}
             </label>
             <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -73,33 +72,33 @@ export default function UserBrandingSettingsPanel() {
                 step={2}
                 value={systemLogoSizePx}
                 onChange={(e) => setSystemLogoSizePx(e.target.value)}
-                className="min-w-[10rem] flex-1"
+                className="min-w-[10rem] flex-1 accent-primary-500"
               />
-              <span className="text-sm font-medium tabular-nums text-slate-800 dark:text-slate-200">
+              <span className="text-sm font-medium ui-tabular text-ink">
                 {systemLogoSizePx} {t('tenantSettings.systemLogoSizeUnit')}
               </span>
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-input border border-dashed border-line-strong bg-canvas">
                 <BrandMark size={systemLogoSizePx} />
               </div>
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-ink-muted">
               {t('tenantSettings.systemLogoSizeHint')}
             </p>
           </div>
         ) : null}
 
-        <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/40">
+        <div className="flex items-center gap-3 rounded-input border border-line bg-canvas px-3 py-2">
           <div className="admin-icon-tile !h-12 !w-12 !rounded-xl">
             <BrandMark size={28} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenantSettings.preview')}</p>
-            <p className="truncate font-semibold text-slate-900 dark:text-white">{previewAppName}</p>
+            <p className="text-xs text-ink-muted">{t('tenantSettings.preview')}</p>
+            <p className="truncate font-semibold text-ink">{previewAppName}</p>
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+          <label className="ui-label">
             {t('tenantSettings.systemAppName')}
           </label>
           <input
@@ -108,11 +107,11 @@ export default function UserBrandingSettingsPanel() {
             onChange={(e) => setSystemAppName(e.target.value)}
             placeholder={APP_NAME}
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('tenantSettings.systemAppNameHint')}</p>
+          <p className="mt-1 text-xs text-ink-muted">{t('tenantSettings.systemAppNameHint')}</p>
         </div>
 
-        <div className="border-t border-slate-200 pt-5 dark:border-slate-800">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <div className="border-t border-line pt-5">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
             {t('tenantSettings.brandingReceiptSection')}
           </p>
           <div className="space-y-4">
@@ -134,18 +133,18 @@ export default function UserBrandingSettingsPanel() {
 
         <div>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {t('tenantSettings.userFieldsTitle')}
             </p>
             <button
               type="button"
               onClick={resetUserFormFields}
-              className="text-xs text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
+              className="text-xs font-medium text-primary-600 hover:text-primary-700"
             >
               {t('tenantSettings.resetFields')}
             </button>
           </div>
-          <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">{t('tenantSettings.userFieldsHint')}</p>
+          <p className="mb-2 text-xs text-ink-muted">{t('tenantSettings.userFieldsHint')}</p>
           <SettingsFieldToggles
             defs={USER_FORM_FIELD_DEFS}
             values={userFormFields}

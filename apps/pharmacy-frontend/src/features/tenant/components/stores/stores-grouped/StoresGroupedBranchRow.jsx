@@ -29,26 +29,26 @@ export default function StoresGroupedBranchRow({
   return (
     <tr
       onClick={() => onSelectStore?.(store)}
-      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+      className="ui-tr cursor-pointer group"
     >
-      <td className="px-5 py-3 font-medium text-slate-900 dark:text-white">
+      <td className="ui-td px-5 font-medium">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-700 dark:group-hover:bg-emerald-950/60 dark:group-hover:text-emerald-300 transition-colors">
-            <TypeIcon size={13} />
+          <div className="w-6 h-6 rounded-md bg-canvas text-ink-muted flex items-center justify-center shrink-0 group-hover:bg-primary-50 group-hover:text-primary-700 transition-colors">
+            <TypeIcon size={13} strokeWidth={1.75} />
           </div>
-          <span className="font-semibold text-slate-900 dark:text-white truncate max-w-xs" title={store.name}>
+          <span className="font-semibold text-ink truncate max-w-xs" title={store.name}>
             {store.name}
           </span>
         </div>
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
-        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium border ${badgeClass}`}>
+      <td className="ui-td-nowrap">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeClass}`}>
           {t(`productTemplates.businessTypes.${store.businessType ?? 'UNIVERSAL'}`, {
             defaultValue: store.businessType || 'Universal',
           })}
         </span>
       </td>
-      <td className="px-4 py-3">
+      <td className="ui-td">
         <StoresGroupedLocationCell
           store={store}
           regionName={regionName}
@@ -56,26 +56,20 @@ export default function StoresGroupedBranchRow({
           empty={empty}
         />
       </td>
-      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
+      <td className="ui-td-nowrap text-xs text-ink-muted">
         {store.phone ? (
           formatUzPhone(store.phone)
         ) : (
-          <span className="text-slate-400 dark:text-slate-600 font-medium font-sans">—</span>
+          <span className="text-ink-disabled font-medium">—</span>
         )}
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-            store.active
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-          }`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${store.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+      <td className="ui-td-nowrap">
+        <span className={store.active ? 'ui-badge-success' : 'ui-badge-neutral'}>
+          <span className={`w-1.5 h-1.5 rounded-full ${store.active ? 'bg-success' : 'bg-ink-disabled'}`} />
           {store.active ? t('common.active', { defaultValue: 'Faol' }) : t('common.inactive', { defaultValue: 'Nofaol' })}
         </span>
       </td>
-      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+      <td className="ui-td text-right" onClick={(e) => e.stopPropagation()}>
         <TableRowActionsMenu
           open={menuId === store.id}
           onOpenChange={(next) => onMenuOpenChange?.(next ? store.id : null)}

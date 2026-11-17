@@ -14,10 +14,10 @@ export default function CashRegistersListFooter({
   onPageSizeChange,
 }) {
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400 lg:flex-row lg:items-center lg:justify-between">
-      <span>{t('products.recordsRange', { from: fromN, to: toN, total })}</span>
+    <div className="flex flex-col gap-3 border-t border-line px-4 py-3 text-sm text-ink-muted lg:flex-row lg:items-center lg:justify-between">
+      <span className="ui-tabular">{t('products.recordsRange', { from: fromN, to: toN, total })}</span>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-slate-500 dark:text-slate-500">{t('cashRegisters.pageSizePrefix')}</span>
+        <span className="text-xs text-ink-muted">{t('cashRegisters.pageSizePrefix')}</span>
         <BaseSelect
           size="sm"
           value={pageSize}
@@ -33,7 +33,7 @@ export default function CashRegistersListFooter({
           type="button"
           disabled={page === 0}
           onClick={() => onPageChange(Math.max(0, page - 1))}
-          className="rounded border border-slate-300 px-2 py-1 text-xs disabled:opacity-40 dark:border-slate-600"
+          className="ui-pagination-btn"
         >
           {t('common.prev')}
         </button>
@@ -43,11 +43,7 @@ export default function CashRegistersListFooter({
             type="button"
             onClick={() => totalPages > 1 && onPageChange(i)}
             disabled={totalPages <= 1}
-            className={`min-w-[2rem] rounded border px-2 py-1 text-xs ${
-              page === i
-                ? 'border-[color:var(--color-brand)] bg-[color:var(--color-brand-soft)] font-semibold text-[color:var(--color-brand-deep)]'
-                : 'border-slate-300 dark:border-slate-600'
-            }`}
+            className={page === i ? 'ui-pagination-btn ui-pagination-btn-active' : 'ui-pagination-btn'}
           >
             {i + 1}
           </button>
@@ -56,7 +52,7 @@ export default function CashRegistersListFooter({
           type="button"
           disabled={page >= totalPages - 1 || totalPages === 0}
           onClick={() => onPageChange(page + 1)}
-          className="rounded border border-slate-300 px-2 py-1 text-xs disabled:opacity-40 dark:border-slate-600"
+          className="ui-pagination-btn"
         >
           {t('common.next')}
         </button>

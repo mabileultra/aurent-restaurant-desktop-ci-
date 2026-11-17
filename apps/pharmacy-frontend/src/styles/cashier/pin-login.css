@@ -1,14 +1,12 @@
 .cashier-pin-login {
   box-sizing: border-box;
-  /* Важно: при любых ре-рендерах/ошибках входа полностью перекрываем кассу,
-     чтобы не было “мигания” фона POS под страницей логина. */
+  /* Cover POS background during login transitions and errors */
   position: fixed;
   inset: 0;
   z-index: 2147483600;
   width: 100%;
   min-height: 100dvh;
-  background: #f8fafc;
-  background-color: #f8fafc;
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-pin-login *,
@@ -40,7 +38,7 @@
   align-items: center;
   justify-content: center;
   padding: max(1.25rem, env(safe-area-inset-top, 0px)) 1.25rem max(1.25rem, env(safe-area-inset-bottom, 0px));
-  background: #f8fafc;
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-pin-login__shell {
@@ -64,8 +62,9 @@
   width: 3.5rem;
   height: 3.5rem;
   margin-bottom: 0.875rem;
-  border-radius: 1rem;
-  background: #10b981;
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
 }
 
 .cashier-pin-login__title {
@@ -73,13 +72,13 @@
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-  color: #0f172a;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-pin-login__subtitle {
   margin: 0.375rem 0 0;
   font-size: 1rem;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
 }
 
 .cashier-pin-login__company-wrap {
@@ -96,24 +95,24 @@
   margin: 0;
   padding: 0;
   border-radius: 9999px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #64748b;
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink-muted));
   cursor: pointer;
-  box-shadow: 0 2px 10px rgb(15 23 42 / 0.08);
+  box-shadow: var(--shadow-card);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
 }
 
 .cashier-pin-login__company-chip:hover {
-  border-color: #94a3b8;
-  color: #334155;
+  border-color: rgb(var(--color-line-strong));
+  color: rgb(var(--color-ink));
 }
 
 .cashier-pin-login__company-chip.is-open,
 .cashier-pin-login__company-chip.is-set {
-  border-color: #10b981;
-  color: #10b981;
-  box-shadow: 0 4px 14px rgb(16 185 129 / 0.18);
+  border-color: rgb(var(--color-primary-500));
+  color: rgb(var(--color-primary-600));
+  box-shadow: 0 4px 14px rgb(var(--color-primary-500) / 0.16);
 }
 
 .cashier-pin-login__company-chip:active:not(:disabled) {
@@ -126,10 +125,10 @@
   right: 0;
   width: min(14rem, calc(100vw - 2rem));
   padding: 0.875rem;
-  border-radius: 0.875rem;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  box-shadow: 0 12px 32px rgb(15 23 42 / 0.12);
+  border-radius: var(--radius-card);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-elevated);
 }
 
 .cashier-pin-login__company-label {
@@ -137,35 +136,36 @@
   margin-bottom: 0.375rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #475569;
+  color: rgb(var(--color-ink-muted));
 }
 
 .cashier-pin-login__company-input {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.625rem;
-  background: #fff;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
   font-size: 1rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.08em;
   text-align: center;
-  color: #0f172a;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-pin-login__company-input:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.15);
+  border-color: rgb(var(--color-primary-500));
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
 }
 
 .cashier-pin-login__card {
   width: 100%;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border-radius: var(--radius-card);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
   padding: 1.25rem;
-  box-shadow: 0 4px 24px rgb(15 23 42 / 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .cashier-pin-login__pin-display {
@@ -173,14 +173,14 @@
   align-items: center;
   justify-content: center;
   min-height: 3.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border-radius: var(--radius-control);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-pin-login__pin-display.is-error {
-  border-color: #f87171;
-  background: #fef2f2;
+  border-color: rgb(var(--color-danger));
+  background: rgb(var(--color-danger-soft));
 }
 
 .cashier-pin-login__pin-error {
@@ -188,7 +188,7 @@
   text-align: center;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #dc2626;
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-pin-login__dots {
@@ -206,14 +206,14 @@
   align-items: center;
   justify-content: center;
   width: 1.25rem;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-ui);
   font-size: 1.75rem;
   line-height: 1;
-  color: #cbd5e1;
+  color: rgb(var(--color-ink-disabled));
 }
 
 .cashier-pin-login__dot.is-filled {
-  color: #0f172a;
+  color: rgb(var(--color-primary-600));
 }
 
 .cashier-pin-login__keypad {
@@ -232,21 +232,27 @@
   min-height: 3.25rem;
   margin: 0;
   padding: 0;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border-radius: var(--radius-control);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
   font-size: 1.35rem;
   font-weight: 600;
-  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-ink));
   cursor: pointer;
   touch-action: manipulation;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
+.cashier-pin-login__key:hover:not(:disabled) {
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-line-strong));
+}
+
 .cashier-pin-login__key:active:not(:disabled) {
   transform: scale(0.97);
-  background: #f8fafc;
+  background: rgb(var(--color-primary-100));
 }
 
 .cashier-pin-login__key:disabled {
@@ -257,7 +263,7 @@
 .cashier-pin-login__key--action {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
 }
 
 .cashier-pin-login__submit {
@@ -270,9 +276,9 @@
   margin: 0.75rem 0 0;
   padding: 0 1rem;
   border: none;
-  border-radius: 0.75rem;
-  background: #10b981;
-  color: #fff;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -280,7 +286,7 @@
 }
 
 .cashier-pin-login__submit:hover:not(:disabled) {
-  background: #059669;
+  background: rgb(var(--color-primary-600));
 }
 
 .cashier-pin-login__submit:disabled {
@@ -296,10 +302,9 @@
 .cashier-pin-login__copyright {
   margin: 0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: rgb(var(--color-ink-disabled));
 }
 
-/* Планшет / касса / десктоп: слева фото 50%, справа PIN по центру колонки */
 @media (min-width: 768px) {
   .cashier-pin-login__layout {
     display: grid;
@@ -315,8 +320,8 @@
     min-height: 100dvh;
     position: relative;
     overflow: hidden;
-    background: #0f172a;
-    border-right: 1px solid #e2e8f0;
+    background: rgb(var(--color-primary-50));
+    border-right: 1px solid rgb(var(--color-line));
   }
 
   .cashier-pin-login__visual-img {
@@ -333,8 +338,8 @@
     inset: 0;
     background: linear-gradient(
       to left,
-      rgb(15 23 42 / 0.3) 0%,
-      rgb(15 23 42 / 0.06) 35%,
+      rgb(var(--color-ink) / 0.16) 0%,
+      rgb(var(--color-ink) / 0.04) 35%,
       transparent 55%
     );
     pointer-events: none;
@@ -396,7 +401,6 @@
   }
 }
 
-/* Сенсорный POS */
 .cashier-pin-login--touch .cashier-pin-login__key {
   min-height: 4rem;
   font-size: 1.65rem;
@@ -439,11 +443,11 @@
   display: inline-block;
   margin-bottom: 0.5rem;
   font-size: 0.8125rem;
-  font-weight: 500;
-  color: #475569;
+  font-weight: 600;
+  color: rgb(var(--color-primary-600));
   text-decoration: underline;
 }
 
 .cashier-pin-login__office-link:hover {
-  color: #0f172a;
+  color: rgb(var(--color-primary-700));
 }

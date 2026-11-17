@@ -1,8 +1,9 @@
 import React from 'react';
+import { Store } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
-import { Spinner } from '../../../../components/ui';
+import { EmptyState, Spinner } from '../../../../components/ui';
 import StoresTableRow from './StoresTableRow';
 import PlatformStoreMobileCard from './PlatformStoreMobileCard';
 
@@ -34,11 +35,11 @@ export default function StoresTable({
   const { regionName, districtName, empty } = useGeoNameLookup(regionCodes);
 
   return (
-    <div className="admin-table-shell relative">
-      {/* Indeterminate emerald progress line during background refetching */}
+    <div className="ui-table-wrap relative">
+      {/* Indeterminate primary progress line during background refetching */}
       {isRefreshing && (
-        <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden">
-          <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
+        <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-primary-100 overflow-hidden">
+          <div className="h-full bg-primary-500 animate-pulse w-full motion-reduce:animate-none" />
         </div>
       )}
 
@@ -49,69 +50,69 @@ export default function StoresTable({
 
       {/* Desktop Table View (>= md) */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="ui-table">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+            <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3 font-medium">
+              <th className="ui-th">
                 {showCompany ? t('platform.colBranchName', { defaultValue: 'Filial nomi' }) : t('stores.colName')}
               </th>
               {showCompany && (
-                <th className="px-4 py-3 font-medium">{t('stores.colCompany')}</th>
+                <th className="ui-th">{t('stores.colCompany')}</th>
               )}
-              <th className="px-4 py-3 font-medium">{t('platform.colHudud', { defaultValue: 'Hudud' })}</th>
-              <th className="px-4 py-3 font-medium">
+              <th className="ui-th">{t('platform.colHudud', { defaultValue: 'Hudud' })}</th>
+              <th className="ui-th">
                 {showCompany ? t('platform.colBranchType', { defaultValue: 'Filial turi' }) : t('stores.colBusinessType')}
               </th>
-              <th className="px-4 py-3 font-medium">{t('stores.colAddress')}</th>
-              <th className="px-4 py-3 font-medium">{t('stores.colPhone')}</th>
-              <th className="px-4 py-3 font-medium">{t('platform.colStatus', { defaultValue: 'Holat' })}</th>
-              <th className="px-4 py-3 w-12" />
+              <th className="ui-th">{t('stores.colAddress')}</th>
+              <th className="ui-th">{t('stores.colPhone')}</th>
+              <th className="ui-th">{t('platform.colStatus', { defaultValue: 'Holat' })}</th>
+              <th className="ui-th w-12" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+          <tbody>
             {isPending ? (
               Array.from({ length: Math.min(pageSize || 10, 10) }).map((_, idx) => (
-                <tr key={`store-skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
-                  <td className="w-12 px-3 py-3 text-center">
-                    <div className="h-4 w-5 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                <tr key={`store-skeleton-${idx}`} className="ui-tr animate-pulse motion-reduce:animate-none">
+                  <td className="ui-td w-12 text-center">
+                    <div className="h-4 w-5 mx-auto rounded bg-canvas" />
                   </td>
-                  <td className="w-16 px-3 py-3 text-center">
-                    <div className="h-4 w-8 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <td className="ui-td w-16 text-center">
+                    <div className="h-4 w-8 mx-auto rounded bg-canvas" />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="ui-td">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700/60 shrink-0" />
-                      <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
+                      <div className="w-7 h-7 rounded-lg bg-canvas shrink-0" />
+                      <div className="h-4 w-32 rounded bg-canvas" />
                     </div>
                   </td>
                   {showCompany && (
-                    <td className="px-4 py-3">
-                      <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700/60" />
+                    <td className="ui-td">
+                      <div className="h-4 w-28 rounded bg-canvas" />
                     </td>
                   )}
-                  <td className="px-4 py-3">
-                    <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <td className="ui-td">
+                    <div className="h-4 w-24 rounded bg-canvas" />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="h-5 w-16 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                  <td className="ui-td">
+                    <div className="h-5 w-16 rounded-full bg-canvas" />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <td className="ui-td">
+                    <div className="h-4 w-24 rounded bg-canvas" />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <td className="ui-td">
+                    <div className="h-4 w-24 rounded bg-canvas" />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="h-5 w-12 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                  <td className="ui-td">
+                    <div className="h-5 w-12 rounded-full bg-canvas" />
                   </td>
-                  <td className="w-12 px-4 py-3" />
+                  <td className="ui-td w-12" />
                 </tr>
               ))
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
-                  {t('stores.empty')}
+                <td colSpan={colSpan} className="p-0">
+                  <EmptyState icon={Store} title={t('stores.empty')} />
                 </td>
               </tr>
             ) : (
@@ -145,20 +146,18 @@ export default function StoresTable({
       <div className="md:hidden p-3 space-y-3">
         {isPending ? (
           Array.from({ length: 3 }).map((_, idx) => (
-            <div key={`m-skel-${idx}`} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse space-y-3">
+            <div key={`m-skel-${idx}`} className="ui-card-padded animate-pulse space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700/60" />
+                <div className="w-10 h-10 rounded-control bg-canvas" />
                 <div className="space-y-1.5 flex-1">
-                  <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700/60 rounded" />
-                  <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded" />
+                  <div className="h-4 w-32 bg-canvas rounded" />
+                  <div className="h-3 w-20 bg-canvas rounded" />
                 </div>
               </div>
             </div>
           ))
         ) : rows.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
-            {t('stores.empty')}
-          </div>
+          <EmptyState icon={Store} title={t('stores.empty')} />
         ) : (
           rows.map((row) => (
             <PlatformStoreMobileCard

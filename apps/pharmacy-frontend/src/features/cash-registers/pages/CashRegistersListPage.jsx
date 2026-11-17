@@ -21,7 +21,7 @@ export default function CashRegistersListPage() {
     <div className="space-y-4">
       {p.isError && <CashRegisterErrorBanner message={errorMessage} />}
 
-      <h1 className="text-xl font-bold text-slate-900 dark:text-white">{p.t('cashRegisters.title')}</h1>
+      <h1 className="text-xl font-bold text-ink">{p.t('cashRegisters.title')}</h1>
 
       <CashRegisterHintBanner
         title={p.t('cashRegisters.listHintTitle')}
@@ -38,7 +38,7 @@ export default function CashRegistersListPage() {
         onAdd={p.openCreateForm}
       />
 
-      <div className="admin-table-shell">
+      <div className="ui-table-wrap">
         <CashRegistersTable
           t={p.t}
           rows={p.rows}

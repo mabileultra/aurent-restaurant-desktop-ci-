@@ -7,10 +7,10 @@
 
 .finance-income-tabs__btn {
   padding: 0.45rem 1rem;
-  border: 1px solid var(--finance-border, #e2e8f0);
+  border: 1px solid var(--finance-border, rgb(var(--color-line)));
   border-radius: 0.5rem;
-  background: #fff;
-  color: #334155;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -18,12 +18,12 @@
 }
 
 .finance-income-tabs__btn:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: rgb(var(--color-ink-disabled));
+  background: rgb(var(--color-canvas));
 }
 
 .finance-income-tabs__btn--active {
-  border-color: #0f766e;
-  background: #ecfdf5;
-  color: #0f766e;
+  border-color: rgb(var(--color-primary-500));
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
 }

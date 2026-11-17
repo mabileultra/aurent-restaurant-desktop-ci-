@@ -22,8 +22,8 @@ export default function SuppliersPage({ hideTitle = false } = {}) {
       title={hideTitle ? undefined : t('suppliersModule.title')}
       actions={
         s.manage ? (
-          <BaseButton onClick={() => s.setAddOpen(true)} className="admin-btn-primary">
-            <Plus size={16} />
+          <BaseButton onClick={() => s.setAddOpen(true)} variant="primary">
+            <Plus size={16} strokeWidth={1.75} />
             {t('suppliersModule.add')}
           </BaseButton>
         ) : null
@@ -39,9 +39,9 @@ export default function SuppliersPage({ hideTitle = false } = {}) {
           <BaseButton
             variant="secondary"
             onClick={() => s.setFiltersOpen(true)}
-            className="admin-btn-secondary shrink-0"
+            className="shrink-0"
           >
-            <Filter size={16} />
+            <Filter size={16} strokeWidth={1.75} />
             {t('products.toolbar.filters')}
           </BaseButton>
         </div>

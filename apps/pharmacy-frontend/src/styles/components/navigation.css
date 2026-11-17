@@ -35,4 +35,12 @@
   .ui-pagination-btn-active {
     @apply bg-primary-500 text-surface border-primary-500 hover:bg-primary-600 hover:border-primary-600;
   }
+
+  .ui-chip {
+    @apply inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-full border border-line bg-surface text-xs font-medium text-ink-muted hover:bg-primary-50 hover:text-ink hover:border-line-strong transition-colors duration-150 whitespace-nowrap;
+  }
+
+  .ui-chip-active {
+    @apply bg-primary-50 text-primary-700 border-primary-200 font-semibold;
+  }
 }

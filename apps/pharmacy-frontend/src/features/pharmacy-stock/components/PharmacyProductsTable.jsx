@@ -84,7 +84,7 @@ export default function PharmacyProductsTable({
                   onClick={() => onEdit(p)}
                 >
                   <PharmacySelectCell t={t} row={p} selection={selection} />
-                  <td>{page * pageSize + idx + 1}</td>
+                  <td className="ui-tabular whitespace-nowrap text-ink-muted">{page * pageSize + idx + 1}</td>
                   <td className="font-semibold">
                     {p.name}
                     {p.active === false ? (
@@ -97,28 +97,36 @@ export default function PharmacyProductsTable({
                     ) : null}
                   </td>
                   <td>
-                    {origin.supplierName || '—'}
-                    {origin.receiptType === 'OPENING' ? (
-                      <span className="pharmacy-stock__inline-badge">
-                        {receiptTypeLabel(origin.receiptType, t)}
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                      {origin.supplierName || '—'}
+                      {origin.receiptType === 'OPENING' ? (
+                        <span className="pharmacy-stock__inline-badge">
+                          {receiptTypeLabel(origin.receiptType, t)}
+                        </span>
+                      ) : null}
+                    </span>
+                  </td>
+                  <td className="ui-tabular whitespace-nowrap">{origin.receiptNumber || '—'}</td>
+                  <td className="ui-tabular whitespace-nowrap text-ink-muted">{origin.documentDate || '—'}</td>
+                  <td className="ui-tabular whitespace-nowrap text-right font-semibold">
+                    {p.lowStock ? (
+                      <span className="ui-badge-danger">
+                        <AlertTriangle size={12} strokeWidth={1.75} />
+                        {p.stockQuantity ?? 0}
                       </span>
-                    ) : null}
+                    ) : (
+                      p.stockQuantity ?? 0
+                    )}
                   </td>
-                  <td>{origin.receiptNumber || '—'}</td>
-                  <td>{origin.documentDate || '—'}</td>
-                  <td className={`text-right font-semibold ${p.lowStock ? 'text-red-600' : ''}`}>
-                    {p.stockQuantity ?? 0}
-                    {p.lowStock ? <AlertTriangle size={12} className="ml-1 inline" /> : null}
-                  </td>
-                  <td>{formatMoney(p.sellingPrice)}</td>
+                  <td className="ui-tabular whitespace-nowrap">{formatMoney(p.sellingPrice)}</td>
                   <td>{productManufacturer(p) || '—'}</td>
                   <td>{productDosageForm(p) || '—'}</td>
-                  <td>{productAtc(p) || '—'}</td>
-                  <td>{p.barcode || '—'}</td>
-                  <td>{p.ikpu || '—'}</td>
-                  <td>{productUnitsInPack(p) || 1}</td>
+                  <td className="whitespace-nowrap">{productAtc(p) || '—'}</td>
+                  <td className="ui-tabular whitespace-nowrap">{p.barcode || '—'}</td>
+                  <td className="ui-tabular whitespace-nowrap">{p.ikpu || '—'}</td>
+                  <td className="ui-tabular whitespace-nowrap">{productUnitsInPack(p) || 1}</td>
                   <td>{productCountry(p) || '—'}</td>
-                  <td title={p.updatedAt || ''}>{formatProductUpdatedAt(p.updatedAt || p.createdAt)}</td>
+                  <td className="ui-tabular whitespace-nowrap text-ink-muted" title={p.updatedAt || ''}>{formatProductUpdatedAt(p.updatedAt || p.createdAt)}</td>
                   <td className="pharmacy-stock__row-actions" onClick={(e) => e.stopPropagation()}>
                     <div className="pharmacy-stock__icon-row">
                       <PharmacyReceiptLineRowMenu

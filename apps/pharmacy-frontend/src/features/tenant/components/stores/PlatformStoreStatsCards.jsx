@@ -22,9 +22,8 @@ export default function PlatformStoreStatsCards({
       value: totalStores,
       hint: t('platform.statsBranchesDesc', { defaultValue: 'Barcha savdo nuqtalari' }),
       icon: Store,
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60',
-      activeRing: 'ring-2 ring-emerald-500/80 border-emerald-300 dark:border-emerald-700',
+      iconTile: 'ui-kpi-icon-primary',
+      activeRing: 'ring-2 ring-primary-500/70 border-primary-300',
     },
     {
       id: 'ACTIVE',
@@ -34,9 +33,8 @@ export default function PlatformStoreStatsCards({
         ? `${activePercent}% ${t('platform.statsActivePercent', { defaultValue: 'faoliyatda' })}`
         : t('platform.statsBranchesDesc', { defaultValue: 'Barcha savdo nuqtalari' }),
       icon: CheckCircle2,
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60',
-      activeRing: 'ring-2 ring-emerald-500/80 border-emerald-300 dark:border-emerald-700',
+      iconTile: 'ui-kpi-icon-primary',
+      activeRing: 'ring-2 ring-primary-500/70 border-primary-300',
     },
     {
       id: 'COMPANIES',
@@ -44,8 +42,7 @@ export default function PlatformStoreStatsCards({
       value: companiesCount,
       hint: t('platform.statsCompaniesCoveredDesc', { defaultValue: 'Tarmoq ijarachilari' }),
       icon: Building2,
-      iconColor: 'text-sky-600 dark:text-sky-400',
-      iconBg: 'bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/60',
+      iconTile: 'ui-kpi-icon-primary',
       activeRing: '',
       isFilterable: false,
     },
@@ -55,11 +52,8 @@ export default function PlatformStoreStatsCards({
       value: inactiveStores,
       hint: t('platform.statsInactiveBranchesDesc', { defaultValue: 'To‘xtatilgan filiallar' }),
       icon: AlertCircle,
-      iconColor: inactiveStores > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400',
-      iconBg: inactiveStores > 0
-        ? 'bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/60'
-        : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
-      activeRing: 'ring-2 ring-amber-500/80 border-amber-300 dark:border-amber-700',
+      iconTile: inactiveStores > 0 ? 'ui-kpi-icon-warning' : 'ui-kpi-icon bg-canvas text-ink-disabled border border-line',
+      activeRing: 'ring-2 ring-warning/70 border-warning/50',
     },
   ];
 
@@ -89,28 +83,28 @@ export default function PlatformStoreStatsCards({
                 handleClick();
               }
             } : undefined}
-            className={`relative p-3.5 sm:p-4 rounded-xl bg-white dark:!bg-slate-900/90 border transition-all duration-200 shadow-sm ${
+            className={`ui-card relative p-4 transition-all duration-150 ${
               isFilterActive
                 ? card.activeRing
-                : 'border-slate-200 dark:!border-slate-800 hover:border-slate-300 dark:hover:!border-slate-700'
-            } ${isClickable ? 'cursor-pointer hover:shadow hover:-translate-y-0.5' : 'cursor-default'}`}
+                : 'hover:border-line-strong'
+            } ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+              <span className="truncate text-xs font-medium uppercase tracking-wider text-ink-muted">
                 {card.title}
               </span>
-              <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${card.iconBg}`}>
-                <Icon size={18} className={card.iconColor} />
+              <div className={card.iconTile}>
+                <Icon size={18} strokeWidth={1.75} />
               </div>
             </div>
 
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <span className="ui-tabular text-2xl sm:text-3xl font-bold tracking-tight text-ink">
                 {isPending ? '—' : Number(card.value).toLocaleString()}
               </span>
             </div>
 
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p className="mt-1 truncate text-xs text-ink-muted">
               {card.hint}
             </p>
           </div>

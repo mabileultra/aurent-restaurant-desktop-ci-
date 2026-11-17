@@ -17,14 +17,14 @@ export default function CashRegisterTransferPage() {
       {p.isError && <CashRegisterErrorBanner message={errorMessage} />}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">{p.t('cashRegisters.transferTitle')}</h1>
+        <h1 className="text-xl font-bold text-ink">{p.t('cashRegisters.transferTitle')}</h1>
         <button
           type="button"
           onClick={p.handleExportExcel}
           disabled={p.exporting}
-          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="ui-btn ui-btn-secondary shrink-0"
         >
-          <Download size={16} />
+          <Download size={16} strokeWidth={1.75} />
           {p.exporting ? p.t('cashRegisters.transferExporting') : p.t('cashRegisters.transferExport')}
         </button>
       </div>

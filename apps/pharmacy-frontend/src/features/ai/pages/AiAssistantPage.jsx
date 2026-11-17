@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '../../../components/ui';
 import AiAssistantWidget from '../components/AiAssistantWidget';
 import AiAssistantChartPanel from '../components/AiAssistantChartPanel';
 import { useAiAssistantPage } from '../hooks/useAiAssistantPage';
@@ -9,10 +10,7 @@ export default function AiAssistantPage() {
 
   return (
     <div className="admin-page admin-page--full space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('aiAssistant.pageTitle')}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">{t('aiAssistant.pageIntro')}</p>
-      </div>
+      <PageHeader title={t('aiAssistant.pageTitle')} subtitle={t('aiAssistant.pageIntro')} />
       <AiAssistantWidget onChartDataChange={setChartData} />
       <AiAssistantChartPanel data={chartData} />
     </div>

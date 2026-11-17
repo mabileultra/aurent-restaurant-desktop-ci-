@@ -68,11 +68,13 @@ export default function AuthAcceptPage() {
 
   if (error) {
     return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '2rem' }}>
-        <div style={{ maxWidth: '28rem', background: 'var(--pharm-card)', borderRadius: 12, padding: '1.5rem' }}>
-          <p style={{ margin: 0 }}>{error}</p>
-          <p style={{ margin: '1rem 0 0' }}>
-            <a href={`${getMainAppUrl()}/login`}>← Вход на aurent.uz</a>
+      <main className="grid min-h-screen place-items-center bg-canvas p-8">
+        <div className="ui-card-padded w-full max-w-md space-y-4">
+          <div className="ui-alert-danger">{error}</div>
+          <p className="text-sm">
+            <a href={`${getMainAppUrl()}/login`} className="font-medium text-primary-600 hover:underline">
+              ← Вход на aurent.uz
+            </a>
           </p>
         </div>
       </main>

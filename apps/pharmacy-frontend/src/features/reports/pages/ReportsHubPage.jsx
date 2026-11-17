@@ -1,3 +1,4 @@
+import { PageHeader } from '../../../components/ui';
 import ReportsHubSection from '../components/ReportsHubSection';
 import { useReportsHubPage } from '../hooks/useReportsHubPage';
 
@@ -6,10 +7,7 @@ export default function ReportsHubPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('reportsHub.title')}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">{t('reportsHub.subtitle')}</p>
-      </div>
+      <PageHeader title={t('reportsHub.title')} subtitle={t('reportsHub.subtitle')} />
 
       <ReportsHubSection
         title={t('reportsHub.salesSection')}
