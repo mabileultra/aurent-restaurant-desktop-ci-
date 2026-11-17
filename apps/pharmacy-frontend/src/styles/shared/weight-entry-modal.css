@@ -1,17 +1,17 @@
 /* Модал веса — soft gray + тёмно-зелёный акцент */
 
 .weight-entry-modal {
-  --wem-ink: var(--pos-text, #1e3a5f);
-  --wem-muted: var(--pos-muted, #5a6f8c);
-  --wem-green: var(--pos-green, #006847);
+  --wem-ink: var(--pos-text, rgb(var(--color-ink)));
+  --wem-muted: var(--pos-muted, rgb(var(--color-ink-muted)));
+  --wem-green: var(--pos-green, rgb(var(--color-primary-500)));
   --wem-green-soft: var(--pos-green-soft, rgb(0 104 71 / 0.12));
-  --wem-green-gradient: var(--pos-green-gradient, linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%));
-  --wem-green-gradient-hover: var(--pos-green-gradient-hover, linear-gradient(135deg, #003826 0%, #005538 48%, #087a52 100%));
-  --wem-surface: var(--pos-surface, #f4f6fa);
-  --wem-surface-elevated: var(--pos-surface-elevated, #fbfcfe);
-  --wem-border: var(--pos-border, #d1d9e6);
-  --wem-hover: var(--pos-surface-hover, #eef2f8);
-  --wem-active: var(--pos-surface-accent, #e8f5ef);
+  --wem-green-gradient: var(--pos-green-gradient, linear-gradient(135deg, rgb(var(--color-primary-800)) 0%, rgb(var(--color-primary-500)) 48%, rgb(var(--color-primary-500)) 100%));
+  --wem-green-gradient-hover: var(--pos-green-gradient-hover, linear-gradient(135deg, rgb(var(--color-primary-900)) 0%, rgb(var(--color-primary-700)) 48%, rgb(var(--color-primary-600)) 100%));
+  --wem-surface: var(--pos-surface, rgb(var(--color-canvas)));
+  --wem-surface-elevated: var(--pos-surface-elevated, rgb(var(--color-canvas)));
+  --wem-border: var(--pos-border, rgb(var(--color-line-strong)));
+  --wem-hover: var(--pos-surface-hover, rgb(var(--color-canvas)));
+  --wem-active: var(--pos-surface-accent, rgb(var(--color-primary-50)));
 
   position: fixed;
   inset: 0;
@@ -26,7 +26,7 @@
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgb(var(--color-ink) / 0.45);
   cursor: pointer;
 }
 
@@ -165,7 +165,7 @@
 }
 
 .weight-entry-modal__scale-value.is-unstable {
-  color: #b45309;
+  color: rgb(var(--color-warning-text));
 }
 
 .weight-entry-modal__scale-unit {
@@ -210,7 +210,7 @@
   margin: 0.75rem 0 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #dc2626;
+  color: rgb(var(--color-danger-text));
 }
 
 .weight-entry-modal__actions {
@@ -244,7 +244,7 @@
 
 .weight-entry-modal__btn--primary {
   background: var(--wem-green-gradient);
-  color: #fff;
+  color: rgb(var(--color-surface));
   box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
 }
 
@@ -263,7 +263,7 @@
 .weight-entry-modal__btn--scale {
   width: 100%;
   background: var(--wem-green-gradient);
-  color: #fff;
+  color: rgb(var(--color-surface));
   box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
 }
 
@@ -284,7 +284,7 @@
 }
 
 @media (max-width: 520px) {
-  .weight-entry-modal {
+.weight-entry-modal {
     padding: 0.75rem;
   }
 

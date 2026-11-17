@@ -70,7 +70,7 @@ describe('StoresTable', () => {
     // Status badges
     expect(html).toContain('Faol');
     expect(html).toContain('Nofaol');
-    expect(html).toContain('bg-emerald-50');
+    expect(html).toContain('ui-badge-success');
 
     // Headers
     expect(html).toContain('Filial nomi');
@@ -100,7 +100,7 @@ describe('StoresTable', () => {
     const html = renderToStaticMarkup(
       React.createElement(StoresTable, { ...defaultProps, isRefreshing: true })
     );
-    expect(html).toContain('bg-emerald-500 animate-pulse');
+    expect(html).toContain('bg-primary-500 animate-pulse');
     expect(html).toContain('404 Toys');
   });
 

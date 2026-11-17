@@ -34,7 +34,7 @@ describe('PharmacyIntegrationSettingsModal', () => {
     expect(html).toBe('');
   });
 
-  it('renders full-screen backdrop with z-[1000] and bg-black/60 when open is true', () => {
+  it('renders full-screen backdrop with z-[1000] and Pharma Green overlay when open is true', () => {
     const html = renderToStaticMarkup(
       React.createElement(PharmacyIntegrationSettingsModal, {
         open: true,
@@ -43,8 +43,8 @@ describe('PharmacyIntegrationSettingsModal', () => {
       })
     );
 
-    expect(html).toContain('fixed inset-0 z-[1000]');
-    expect(html).toContain('bg-black/60');
+    expect(html).toContain('ui-modal-overlay z-[1000]');
+    expect(html).toContain('bg-ink/45');
     expect(html).toContain('Dorixona 1');
   });
 });

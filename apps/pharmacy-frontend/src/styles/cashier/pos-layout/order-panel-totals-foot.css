@@ -8,8 +8,8 @@
   flex-wrap: wrap;
   min-height: 72px;
   padding: 12px 14px 14px;
-  border-top: 1px solid var(--pos-border, #e5e7eb);
-  background: #eef1f5;
+  border-top: 1px solid var(--pos-border, rgb(var(--color-line)));
+  background: rgb(var(--color-canvas));
   border-radius: 0 0 14px 14px;
 }
 
@@ -32,7 +32,7 @@
 .pos-order-panel--register .pos-order-panel__totals-stat-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: rgb(var(--color-ink-muted));
   white-space: nowrap;
 }
 
@@ -45,20 +45,20 @@
   min-height: 2.25rem;
   padding: 4px 8px;
   border-radius: 8px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   font-size: 0.9375rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #111827;
+  color: rgb(var(--color-ink));
   line-height: 1.1;
 }
 
 .pos-order-panel--register .pos-order-panel__totals-stat-unit {
   font-size: 0.625rem;
   font-weight: 600;
-  color: #9ca3af;
+  color: rgb(var(--color-ink-disabled));
   letter-spacing: 0.02em;
 }
 
@@ -70,7 +70,7 @@
   font-size: 0.875rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #111827;
+  color: rgb(var(--color-ink));
   white-space: nowrap;
 }
 
@@ -118,105 +118,52 @@
 }
 
 .pos-order-panel--register .pos-order-panel__foot-btn--hold {
-  background: #fff;
-  border-color: #cfe0f5;
-  color: #1f2937;
+  background: rgb(var(--color-surface));
+  border-color: rgb(var(--color-info) / 0.25);
+  color: rgb(var(--color-ink));
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .pos-order-panel--register .pos-order-panel__foot-btn--hold:hover:not(:disabled) {
-  background: #f8fbff;
-  border-color: #b6d0ef;
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-info) / 0.35);
 }
 
 .pos-order-panel--register .pos-order-panel__foot-btn-icon--hold {
-  background: #f59e0b;
-  color: #fff;
+  background: rgb(var(--color-warning));
+  color: rgb(var(--color-surface));
 }
 
 .pos-order-panel--register .pos-order-panel__foot-btn--clear {
-  background: #fff1f2;
-  border-color: #fecdd3;
-  color: #dc2626;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.35);
+  color: rgb(var(--color-danger-text));
 }
 
 .pos-order-panel--register .pos-order-panel__foot-btn--clear:hover:not(:disabled) {
-  background: #ffe4e6;
-  border-color: #fda4af;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.4);
 }
 
 .pos-order-panel--register .pos-order-panel__foot-btn-icon--clear {
-  background: #ef4444;
-  color: #fff;
+  background: rgb(var(--color-danger));
+  color: rgb(var(--color-surface));
 }
 
 .cashier-app.cashier-app--light .pos-order-panel--register .pos-order-panel__totals-foot {
-  background: #eef1f5;
+  background: rgb(var(--color-canvas));
   border-top-color: var(--pos-border);
 }
-
-/* Dark / terminal — как на Aurent desktop (жёлтый Hold, красный Clear, без салатового) */
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-foot {
+/* Dark / terminal — как на Aurent desktop (жёлтый Hold,
+красный Clear {
   align-items: center;
-  background: #121820;
-  border-top-color: #2a3548;
+  background: rgb(var(--color-surface));
+  border-top-color: rgb(var(--color-surface));
   border-radius: 0 0 14px 14px;
 }
 
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-label {
-  color: #8b97ab;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-box {
-  background: #1a2333;
-  border-color: #2a3548;
-  box-shadow: none;
-  color: #f1f5f9;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-unit {
-  color: #7c8aa0;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-tax {
-  color: #f1f5f9;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--hold {
-  background: #151c28;
-  border-color: #e5b84a;
-  color: #f1f5f9;
-  box-shadow: none;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--hold:hover:not(:disabled) {
-  background: #1a2433;
-  border-color: #f0c65a;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn-icon--hold {
-  background: transparent;
-  color: #f5c842;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--clear {
-  background: #151c28;
-  border-color: #d94c5a;
-  color: #f1f5f9;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--clear:hover:not(:disabled) {
-  background: #1a2433;
-  border-color: #f0717c;
-}
-
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn-icon--clear {
-  background: transparent;
-  color: #f0717c;
-}
-
 @media (max-width: 1100px) {
-  .pos-order-panel--register .pos-order-panel__totals-foot {
+.pos-order-panel--register .pos-order-panel__totals-foot {
     flex-direction: column;
     align-items: stretch;
   }
@@ -231,7 +178,7 @@
 }
 
 @media (max-height: 720px) {
-  .pos-order-panel--register .pos-order-panel__totals-foot {
+.pos-order-panel--register .pos-order-panel__totals-foot {
     min-height: 52px;
     gap: 8px;
     padding: 6px 10px 8px;

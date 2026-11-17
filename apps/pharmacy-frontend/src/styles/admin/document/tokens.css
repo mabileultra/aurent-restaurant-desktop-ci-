@@ -2,10 +2,10 @@
   --doc-space: 16px;
   --doc-radius: 16px;
   --doc-radius-control: 12px;
-  --doc-line: #e6ebe8;
-  --doc-line-soft: #f0f3f1;
-  --doc-ink: #10241c;
-  --doc-muted: #8b98a5;
+  --doc-line: rgb(var(--color-line));
+  --doc-line-soft: rgb(var(--color-line));
+  --doc-ink: rgb(var(--color-ink));
+  --doc-muted: rgb(var(--color-ink-muted));
   --doc-label: 11px;
   --doc-title: 32px;
   --doc-kpi-h: 104px;

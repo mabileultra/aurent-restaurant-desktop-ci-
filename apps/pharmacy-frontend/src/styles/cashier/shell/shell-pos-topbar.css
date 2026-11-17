@@ -37,7 +37,7 @@
   padding: 0 14px;
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-control-radius, 10px);
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
   color: var(--pos-text);
 }
 
@@ -45,7 +45,7 @@
   width: 8px;
   height: 8px;
   border-radius: var(--pos-control-radius, 10px);
-  background: var(--pos-green, #006847);
+  background: var(--pos-green, rgb(var(--color-primary-500)));
   box-shadow: 0 0 0 3px rgb(0 104 71 / 0.16);
   flex-shrink: 0;
 }
@@ -91,7 +91,7 @@
   padding: 4px 10px 4px 6px;
   border: 1px solid var(--pos-border);
   border-radius: 14px;
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
   color: var(--pos-text);
 }
 
@@ -102,8 +102,8 @@
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: #7c3aed;
-  color: #fff;
+  background: rgb(var(--color-primary-600));
+  color: rgb(var(--color-surface));
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -130,7 +130,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   font-size: 0.6875rem;
   font-weight: 700;
   line-height: 1.1;
@@ -176,10 +176,10 @@
   gap: 8px;
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 14px;
-  border: 1px solid #fecaca;
+  border: 1px solid rgb(var(--color-danger) / 0.35);
   border-radius: var(--pos-control-radius, 10px);
-  background: #fef2f2;
-  color: #dc2626;
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
   font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1;
@@ -189,9 +189,9 @@
 }
 
 .cashier-pos-topbar__logout:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #b91c1c;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.4);
+  color: rgb(var(--color-danger-text));
 }
 
 /* Theme segmented control */
@@ -203,7 +203,7 @@
   min-height: var(--cashier-topbar-control-h, 40px);
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-control-radius, 10px);
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
 }
 
 .cashier-theme-toggle__opt {
@@ -220,53 +220,26 @@
 }
 
 .cashier-theme-toggle__opt.is-active {
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pos-text);
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
 }
 
-.cashier-app.cashier-app--terminal .cashier-theme-toggle__opt.is-active {
-  background: var(--pos-surface);
-  color: var(--pos-green);
-  box-shadow: 0 0 0 1px rgb(46 196 182 / 0.2);
-}
-
 .cashier-app.cashier-app--light .cashier-topbar--pos {
-  background: #fff !important;
+  background: rgb(var(--color-surface)) !important;
   border-bottom: 1px solid var(--pos-border) !important;
   box-shadow: 0 1px 0 rgb(15 23 42 / 0.03);
 }
 
 .cashier-app.cashier-app--light .cashier-topbar__brand-name {
-  color: #0f172a;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-app.cashier-app--light .cashier-topbar__store-pill,
 .cashier-app.cashier-app--light .cashier-pos-topbar__cashier,
 .cashier-app.cashier-app--light .cashier-theme-toggle,
 .cashier-app.cashier-app--light .cashier-lang-switch {
-  background: #fff;
-  border-color: var(--pos-border);
-}
-
-.cashier-app.cashier-app--terminal .cashier-topbar__brand-name {
-  color: var(--pos-text);
-}
-
-.cashier-app.cashier-app--terminal .cashier-topbar__store-pill,
-.cashier-app.cashier-app--terminal .cashier-pos-topbar__cashier {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-}
-
-.cashier-app.cashier-app--terminal .cashier-pos-topbar__logout {
-  background: rgb(239 68 68 / 0.12);
-  border-color: rgb(239 68 68 / 0.35);
-  color: #f87171;
-}
-
-.cashier-app.cashier-app--terminal .cashier-theme-toggle {
-  background: var(--pos-surface-elevated);
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
 }
 
@@ -336,7 +309,7 @@
 }
 
 @media (max-width: 1280px) {
-  .cashier-topbar--compact .cashier-pos-topbar__cashier-text {
+.cashier-topbar--compact .cashier-pos-topbar__cashier-text {
     display: none;
   }
 
@@ -351,7 +324,7 @@
 }
 
 @media (max-width: 1100px) {
-  .cashier-topbar--compact .cashier-topbar__shift-meta {
+.cashier-topbar--compact .cashier-topbar__shift-meta {
     display: none;
   }
 

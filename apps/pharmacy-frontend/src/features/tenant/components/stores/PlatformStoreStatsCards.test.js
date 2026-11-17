@@ -43,10 +43,10 @@ describe('PlatformStoreStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-emerald-500/80');
+    expect(html).toContain('ring-2 ring-primary-500/70');
   });
 
-  it('shows amber alert styling for inactive branches when inactiveStores > 0', () => {
+  it('shows warning alert styling for inactive branches when inactiveStores > 0', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformStoreStatsCards, {
         ...defaultProps,
@@ -54,11 +54,10 @@ describe('PlatformStoreStatsCards', () => {
       })
     );
 
-    expect(html).toContain('text-amber-600');
-    expect(html).toContain('bg-amber-50');
+    expect(html).toContain('ui-kpi-icon-warning');
   });
 
-  it('shows neutral slate styling for inactive branches when inactiveStores is 0', () => {
+  it('shows neutral styling for inactive branches when inactiveStores is 0', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformStoreStatsCards, {
         ...defaultProps,
@@ -66,8 +65,8 @@ describe('PlatformStoreStatsCards', () => {
       })
     );
 
-    expect(html).toContain('text-slate-400');
-    expect(html).toContain('bg-slate-100');
+    expect(html).toContain('text-ink-disabled');
+    expect(html).toContain('bg-canvas');
   });
 
   it('renders em-dash placeholder when isPending is true', () => {

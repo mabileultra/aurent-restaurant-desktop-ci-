@@ -143,7 +143,7 @@ export default function PlatformUserQuickDrawer({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-ink/45 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -152,36 +152,34 @@ export default function PlatformUserQuickDrawer({
         <div
           ref={drawerRef}
           tabIndex={-1}
-          className="w-screen max-w-md bg-white dark:!bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col animate-in slide-in-from-right duration-200 outline-none"
+          className="w-screen max-w-md bg-surface shadow-modal border-l border-line flex flex-col outline-none"
         >
           {/* Header */}
-          <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-4 bg-slate-50/50 dark:bg-slate-850">
+          <div className="px-6 py-5 border-b border-line flex items-start justify-between gap-4 bg-canvas">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 flex items-center justify-center shrink-0 text-base font-bold font-mono shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-primary-50 text-primary-700 border border-primary-200 flex items-center justify-center shrink-0 text-base font-bold font-mono">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
-                <h2 id="user-drawer-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white break-words line-clamp-2 leading-snug">
+                <h2 id="user-drawer-title" className="text-base sm:text-lg font-bold text-ink break-words line-clamp-2 leading-snug">
                   {user.fullName || user.username}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                      user.active
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                    className={`gap-1.5 ${
+                      user.active ? 'ui-badge-success' : 'ui-badge-neutral'
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        user.active ? 'bg-emerald-500' : 'bg-slate-400'
+                        user.active ? 'bg-success' : 'bg-ink-disabled'
                       }`}
                     />
                     {user.active ? t('users.activeStatus', { defaultValue: 'Faol' }) : t('users.inactiveStatus', { defaultValue: 'Nofaol' })}
                   </span>
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                      USER_ROLE_BADGE[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      USER_ROLE_BADGE[user.role] ?? 'ui-badge-neutral'
                     }`}
                   >
                     {t(`roles.${user.role}`, user.role)}
@@ -192,10 +190,10 @@ export default function PlatformUserQuickDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+              className="ui-icon-btn"
               aria-label={t('common.close', { defaultValue: 'Yopish' })}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
@@ -203,17 +201,17 @@ export default function PlatformUserQuickDrawer({
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
             
             {/* Quick Actions / Copy ID */}
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3">
+            <div className="p-3 rounded-card bg-canvas border border-line flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <Hash size={16} className="text-slate-400 shrink-0" />
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">
+                <Hash size={16} className="text-ink-muted shrink-0" />
+                <span className="text-xs font-mono ui-tabular text-ink-muted truncate">
                   {user.id}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyId}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/60 transition-colors shrink-0"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-input text-xs font-medium text-primary-600 hover:bg-primary-50 transition-colors shrink-0"
               >
                 <Copy size={13} />
                 <span>{t('users.copyUuid', { defaultValue: 'Nusxalash' })}</span>
@@ -222,17 +220,17 @@ export default function PlatformUserQuickDrawer({
 
             {/* Profile & Contact Details */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted mb-3">
                 {t('users.personalDetails', { defaultValue: 'Shaxsiy ma\'lumotlar' })}
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                  <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                     <Shield size={16} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-400 block">{t('users.colUsername')}</span>
-                    <span className="text-sm font-mono font-medium text-slate-900 dark:text-white">
+                    <span className="text-xs text-ink-muted block">{t('users.colUsername')}</span>
+                    <span className="text-sm font-mono font-medium text-ink">
                       {user.username}
                     </span>
                   </div>
@@ -240,14 +238,14 @@ export default function PlatformUserQuickDrawer({
 
                 {user.phone ? (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                    <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                       <Phone size={16} />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-400 block">{t('users.phone', { defaultValue: 'Telefon' })}</span>
+                      <span className="text-xs text-ink-muted block">{t('users.phone', { defaultValue: 'Telefon' })}</span>
                       <a
                         href={`tel:${user.phone}`}
-                        className="text-sm font-mono text-purple-600 dark:text-purple-400 hover:underline"
+                        className="text-sm font-mono ui-tabular text-primary-600 hover:underline"
                       >
                         {user.phone}
                       </a>
@@ -257,14 +255,14 @@ export default function PlatformUserQuickDrawer({
 
                 {user.email ? (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                    <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                       <Mail size={16} />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-400 block">{t('users.email')}</span>
+                      <span className="text-xs text-ink-muted block">{t('users.email')}</span>
                       <a
                         href={`mailto:${user.email}`}
-                        className="text-sm text-slate-700 dark:text-slate-300 hover:underline truncate block"
+                        className="text-sm text-ink hover:underline truncate block"
                       >
                         {user.email}
                       </a>
@@ -273,12 +271,12 @@ export default function PlatformUserQuickDrawer({
                 ) : null}
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                  <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                     <KeyRound size={16} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-400 block">{t('users.colCredentials', { defaultValue: 'Kirish turi' })}</span>
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                    <span className="text-xs text-ink-muted block">{t('users.colCredentials', { defaultValue: 'Kirish turi' })}</span>
+                    <span className="text-sm text-ink">
                       {isPin
                         ? t('users.credentialsPinProtected', { defaultValue: 'PIN-kod bilan himoyalangan' })
                         : t('users.credentialsPasswordProtected', { defaultValue: 'Parol bilan himoyalangan' })}
@@ -288,12 +286,12 @@ export default function PlatformUserQuickDrawer({
 
                 {user.createdAt ? (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                    <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                       <Calendar size={16} />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-400 block">{t('users.createdAt', { defaultValue: 'Yaratilgan sana' })}</span>
-                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                      <span className="text-xs text-ink-muted block">{t('users.createdAt', { defaultValue: 'Yaratilgan sana' })}</span>
+                      <span className="text-sm text-ink ui-tabular">
                         {formatSimpleDate(user.createdAt)}
                       </span>
                     </div>
@@ -304,21 +302,21 @@ export default function PlatformUserQuickDrawer({
 
             {/* Workplace Info */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted mb-3">
                 {t('users.workplaceDetails', { defaultValue: 'Kompaniya va filiallar' })}
               </h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                  <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                     <Building2 size={16} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-400 block">{t('users.colCompany')}</span>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    <span className="text-xs text-ink-muted block">{t('users.colCompany')}</span>
+                    <span className="text-sm font-medium text-ink">
                       {user.companyName || '—'}
                     </span>
                     {user.companyLoginCode ? (
-                      <span className="ml-2 font-mono text-xs text-purple-600 dark:text-purple-400">
+                      <span className="ml-2 font-mono text-xs ui-tabular text-primary-600">
                         #{user.companyLoginCode}
                       </span>
                     ) : null}
@@ -326,12 +324,12 @@ export default function PlatformUserQuickDrawer({
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                  <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                     <Store size={16} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-400 block">{t('users.colStores', { defaultValue: 'Filiallar' })}</span>
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                    <span className="text-xs text-ink-muted block">{t('users.colStores', { defaultValue: 'Filiallar' })}</span>
+                    <span className="text-sm text-ink">
                       {user.storeNames?.length ? user.storeNames.join(', ') : t('users.noStoresAvailable', { defaultValue: 'Biriktirilmagan' })}
                     </span>
                   </div>
@@ -339,12 +337,12 @@ export default function PlatformUserQuickDrawer({
 
                 {locationText ? (
                   <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
+                    <div className="p-2 rounded-input bg-canvas border border-line text-ink-muted shrink-0">
                       <MapPin size={16} />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-400 block">{t('geo.region', { defaultValue: 'Manzil' })}</span>
-                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                      <span className="text-xs text-ink-muted block">{t('geo.region', { defaultValue: 'Manzil' })}</span>
+                      <span className="text-sm text-ink">
                         {locationText}
                       </span>
                     </div>
@@ -355,7 +353,7 @@ export default function PlatformUserQuickDrawer({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 flex flex-col gap-2.5">
+          <div className="p-5 border-t border-line bg-canvas flex flex-col gap-2.5">
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -363,7 +361,7 @@ export default function PlatformUserQuickDrawer({
                   onClose();
                   onEdit?.(user);
                 }}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-medium text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="ui-btn-secondary"
               >
                 <Pencil size={15} />
                 {t('common.edit', { defaultValue: 'Tahrirlash' })}
@@ -374,11 +372,11 @@ export default function PlatformUserQuickDrawer({
                 onClick={() => {
                   onToggleActive?.(user.id);
                 }}
-                className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors ${
+                className={
                   user.active
-                    ? 'border border-amber-300 text-amber-700 dark:border-amber-700/80 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
-                }`}
+                    ? 'ui-btn-secondary border-warning/40 text-warning-text hover:bg-warning-soft'
+                    : 'ui-btn-primary'
+                }
               >
                 <Power size={15} />
                 {user.active ? t('users.deactivate', { defaultValue: 'Faolsizlantirish' }) : t('users.activate', { defaultValue: 'Faollashtirish' })}
@@ -391,7 +389,7 @@ export default function PlatformUserQuickDrawer({
                 onClose();
                 onEdit?.(user);
               }}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-medium text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="ui-btn-secondary h-9 text-xs"
             >
               <KeyRound size={14} />
               {t('users.resetPasswordOrPin', { defaultValue: 'Parol / PIN tiklash' })}
@@ -400,7 +398,7 @@ export default function PlatformUserQuickDrawer({
             <button
               type="button"
               onClick={handleTerminateSessions}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="ui-btn-ghost h-9 text-xs"
             >
               <LogOut size={14} />
               {t('users.actionsTerminateSessions', { defaultValue: 'Faol sessiyalarni tugatish' })}
@@ -413,7 +411,7 @@ export default function PlatformUserQuickDrawer({
                   onClose();
                   onDelete?.(user);
                 }}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition-colors"
+                className="ui-btn-danger h-9 text-xs"
               >
                 <Trash2 size={14} />
                 {t('common.delete', { defaultValue: 'O‘chirish' })}

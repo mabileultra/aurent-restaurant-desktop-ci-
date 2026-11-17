@@ -30,12 +30,12 @@ export default function StoresGroupedCompanyCard({
   return (
     <div
       id={`company-group-${group.id}`}
-      className={`rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xs scroll-mt-24 ${
+      className={`ui-card transition-all duration-200 overflow-hidden scroll-mt-24 ${
         isHighlighted
-          ? 'border-emerald-500 dark:border-emerald-500 ring-2 ring-emerald-500/50 shadow-md bg-white dark:bg-slate-900'
+          ? 'border-primary-500 ring-2 ring-primary-500/40'
           : isExpanded
-            ? 'border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-900 ring-1 ring-slate-900/5'
-            : 'border-slate-200 dark:border-slate-800/90 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+            ? 'border-line-strong'
+            : 'hover:border-line-strong'
       }`}
     >
       <div
@@ -50,45 +50,45 @@ export default function StoresGroupedCompanyCard({
         }}
         className={`w-full p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left cursor-pointer select-none transition-colors ${
           isExpanded
-            ? 'bg-slate-50 dark:bg-slate-850/80 border-b border-slate-200/80 dark:border-slate-800'
-            : 'hover:bg-slate-50/80 dark:hover:bg-slate-850/50'
+            ? 'bg-canvas border-b border-line'
+            : 'hover:bg-primary-50/40'
         }`}
         aria-expanded={isExpanded}
       >
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center font-bold font-mono text-sm shadow-2xs shrink-0 border ${paletteClass}`}>
+          <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-control flex items-center justify-center font-bold ui-tabular text-sm shrink-0 border ${paletteClass}`}>
             {initials}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-slate-900 dark:text-white text-base truncate">
+              <h3 className="font-bold text-ink text-base truncate">
                 {group.company.name}
               </h3>
               {group.company.businessType && (
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-white text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-surface text-ink-muted border border-line">
                   {t(`productTemplates.businessTypes.${group.company.businessType}`, {
                     defaultValue: group.company.businessType,
                   })}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {group.company.tin && <span className="font-mono">STIR: {group.company.tin}</span>}
+            <div className="ui-tabular flex items-center gap-2 text-xs text-ink-muted mt-0.5">
+              {group.company.tin && <span>STIR: {group.company.tin}</span>}
               {group.company.phone && <span>• {formatUzPhone(group.company.phone)}</span>}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 dark:border-slate-800">
+        <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-line">
           <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
+            <span className="ui-badge-neutral bg-surface">
               {t('platform.groupedBranchesCount', { count: group.total, defaultValue: `${group.total} ta filial` })}
             </span>
-            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+            <span className="ui-badge-success">
               {t('platform.groupedActiveCount', { count: group.active, defaultValue: `${group.active} faol` })}
             </span>
             {group.inactive > 0 && (
-              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60">
+              <span className="ui-badge-warning">
                 {t('platform.groupedInactiveCount', { count: group.inactive, defaultValue: `${group.inactive} nofaol` })}
               </span>
             )}
@@ -100,53 +100,53 @@ export default function StoresGroupedCompanyCard({
                 e.stopPropagation();
                 openCreateForCompany?.(group.id);
               }}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
+              className="ui-btn ui-btn-secondary ui-btn-sm text-primary-700 border-primary-200 bg-primary-50 hover:bg-primary-100"
               title={t('platform.groupedAddBranch', { defaultValue: 'Filial qo‘shish' })}
             >
-              <Plus size={14} />
+              <Plus size={14} strokeWidth={1.75} />
               <span className="hidden md:inline">{t('platform.groupedAddBranch', { defaultValue: 'Filial qo‘shish' })}</span>
             </button>
           )}
-          <div className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          <div className="p-1 rounded-lg text-ink-muted hover:text-ink transition-colors">
+            {isExpanded ? <ChevronUp size={18} strokeWidth={1.75} /> : <ChevronDown size={18} strokeWidth={1.75} />}
           </div>
         </div>
       </div>
 
       {isExpanded && (
-        <div className="bg-white dark:bg-slate-900">
+        <div className="bg-surface">
           {group.stores.length === 0 && loadingBranches ? (
             <div className="p-8 flex justify-center">
               <Spinner size="sm" text={t('common.loading')} />
             </div>
           ) : group.stores.length === 0 ? (
-            <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="p-6 text-center text-sm text-ink-muted">
               <p>{t('platform.groupedEmptyCompany', { defaultValue: 'Ushbu kompaniyada hozircha filiallar yo‘q' })}</p>
               {typeof group.id === 'number' && (
                 <button
                   type="button"
                   onClick={() => openCreateForCompany?.(group.id)}
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:underline"
                 >
-                  <Plus size={13} />
+                  <Plus size={13} strokeWidth={1.75} />
                   <span>{t('platform.groupedAddBranch', { defaultValue: 'Birinchi filialni qo‘shish' })}</span>
                 </button>
               )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="ui-table">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800/90 text-left text-[11px] uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-850/40">
-                    <th className="px-5 py-2.5 font-medium">{t('platform.colBranchName', { defaultValue: 'Filial nomi' })}</th>
-                    <th className="px-4 py-2.5 font-medium">{t('platform.colBranchType', { defaultValue: 'Filial turi' })}</th>
-                    <th className="px-4 py-2.5 font-medium">{t('stores.colAddress', { defaultValue: 'Manzil va joylashuv' })}</th>
-                    <th className="px-4 py-2.5 font-medium">{t('stores.colPhone', { defaultValue: 'Telefon' })}</th>
-                    <th className="px-4 py-2.5 font-medium">{t('stores.colActive', { defaultValue: 'Holat' })}</th>
-                    <th className="px-4 py-2.5 w-12 text-right" />
+                  <tr>
+                    <th className="ui-th px-5">{t('platform.colBranchName', { defaultValue: 'Filial nomi' })}</th>
+                    <th className="ui-th">{t('platform.colBranchType', { defaultValue: 'Filial turi' })}</th>
+                    <th className="ui-th">{t('stores.colAddress', { defaultValue: 'Manzil va joylashuv' })}</th>
+                    <th className="ui-th">{t('stores.colPhone', { defaultValue: 'Telefon' })}</th>
+                    <th className="ui-th">{t('stores.colActive', { defaultValue: 'Holat' })}</th>
+                    <th className="ui-th w-12 text-right" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
+                <tbody>
                   {group.stores.map((store) => (
                     <StoresGroupedBranchRow
                       key={store.id}

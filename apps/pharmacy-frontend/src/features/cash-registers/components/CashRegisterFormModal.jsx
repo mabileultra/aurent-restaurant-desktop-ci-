@@ -11,26 +11,26 @@ export default function CashRegisterFormModal({ open, registerId, onClose, onSav
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[75] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
+    <div className="ui-modal-overlay z-[75]">
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
       <div
-        className="cr-form-modal relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="cr-form-modal ui-modal-panel relative max-w-lg max-h-[90vh]"
         role="dialog"
         aria-labelledby="cr-form-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 id="cr-form-title" className="text-lg font-semibold text-slate-900 dark:text-white">
+        <div className="ui-modal-header">
+          <h2 id="cr-form-title" className="text-base font-semibold text-ink">
             {p.isEdit ? p.t('cashRegisters.formEditTitle') : p.t('cashRegisters.formCreateTitle')}
           </h2>
-          <button type="button" onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label={p.t('common.close')}>
+            <X size={18} />
           </button>
         </div>
 
         <form onSubmit={p.onSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="cr-form-modal__body flex-1 space-y-4 overflow-y-auto p-4">
+          <div className="cr-form-modal__body ui-modal-body flex-1 space-y-4 overflow-y-auto">
             {p.loading ? (
-              <p className="text-sm text-slate-500">{p.t('common.loading')}</p>
+              <p className="text-sm text-ink-muted">{p.t('common.loading')}</p>
             ) : (
               <>
                 <div>
@@ -82,7 +82,7 @@ export default function CashRegisterFormModal({ open, registerId, onClose, onSav
             )}
           </div>
 
-          <div className="flex gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
+          <div className="ui-modal-footer">
             <button type="button" onClick={onClose} className="cr-form-modal__btn cr-form-modal__btn--ghost">
               {p.t('common.cancel')}
             </button>

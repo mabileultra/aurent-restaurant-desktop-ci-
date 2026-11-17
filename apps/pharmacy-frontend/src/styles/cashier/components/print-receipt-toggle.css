@@ -7,8 +7,8 @@
   margin: 0;
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1.5px solid #c5ccd6;
-  background: #fff;
+  border: 1.5px solid rgb(var(--color-line-strong));
+  background: rgb(var(--color-surface));
   cursor: pointer;
   user-select: none;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
@@ -16,8 +16,8 @@
 }
 
 .cashier-app .pos-pay-print-toggle:hover:not(:has(input:disabled)) {
-  border-color: #9ca3af;
-  background: #f9fafb;
+  border-color: rgb(var(--color-ink-disabled));
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-app .pos-pay-print-toggle__input {
@@ -32,14 +32,14 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  border: 2px solid #9ca3af;
-  background: #fff;
+  border: 2px solid rgb(var(--color-ink-disabled));
+  background: rgb(var(--color-surface));
   position: relative;
 }
 
 .cashier-app .pos-pay-print-toggle__input:checked + .pos-pay-print-toggle__box {
-  border-color: var(--pos-green, #006847);
-  background: var(--pos-green-soft, #e8f5ef);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
+  background: var(--pos-green-soft, rgb(var(--color-primary-50)));
 }
 
 .cashier-app .pos-pay-print-toggle__input:checked + .pos-pay-print-toggle__box::after {
@@ -49,7 +49,7 @@
   top: 1px;
   width: 6px;
   height: 11px;
-  border: solid var(--pos-green, #006847);
+  border: solid var(--pos-green, rgb(var(--color-primary-500)));
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -62,13 +62,13 @@
 
 .cashier-app .pos-pay-print-toggle__icon {
   flex-shrink: 0;
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .cashier-app .pos-pay-print-toggle__text {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
   line-height: 1.25;
 }
 
@@ -80,18 +80,4 @@
   min-width: 4.75rem;
   min-height: clamp(44px, 11cqi, 56px);
   box-sizing: border-box;
-}
-
-.cashier-app.cashier-app--terminal .pos-pay-print-toggle {
-  background: var(--pos-surface, #151b26);
-  border-color: var(--pos-border, #2a3548);
-}
-
-.cashier-app.cashier-app--terminal .pos-pay-print-toggle__box {
-  background: var(--pos-surface-elevated, #1c2433);
-  border-color: var(--pos-border, #2a3548);
-}
-
-.cashier-app.cashier-app--terminal .pos-pay-print-toggle__text {
-  color: var(--pos-text, #f1f5f9);
 }

@@ -3,9 +3,7 @@ import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../../components/ui';
 
-const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500
-                  dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
+const inputCls = 'ui-input';
 
 export default function ZReportFiltersDrawer({ open, onClose, filters, onChange, onApply, onReset, stores }) {
   const { t } = useTranslation();
@@ -15,20 +13,21 @@ export default function ZReportFiltersDrawer({ open, onClose, filters, onChange,
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
-      <aside className="relative flex w-full max-w-md flex-col border-l border-slate-200 bg-white shadow-2xl animate-[slideIn_0.2s_ease-out] dark:border-slate-700 dark:bg-slate-900">
+      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
+      <aside className="relative flex w-full max-w-md flex-col border-l border-line bg-surface shadow-modal animate-[slideIn_0.2s_ease-out]">
         <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="font-semibold text-slate-900 dark:text-white">{t('zReports.filterPanelTitle')}</h2>
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <h2 className="text-base font-semibold text-ink">{t('zReports.filterPanelTitle')}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="ui-icon-btn"
+            aria-label={t('common.close')}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
-        <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="flex-1 space-y-4 overflow-y-auto p-5">
           <BaseSelect
             label={t('zReports.filterStore')}
             value={filters.storeId}
@@ -40,39 +39,39 @@ export default function ZReportFiltersDrawer({ open, onClose, filters, onChange,
             ]}
           />
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{t('zReports.filterClosedRange')}</label>
+            <label className="ui-label mb-1">{t('zReports.filterClosedRange')}</label>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="mb-1 block text-xs text-slate-500">{t('salesLedger.filters.from')}</span>
+                <span className="mb-1 block text-xs text-ink-muted">{t('salesLedger.filters.from')}</span>
                 <input type="date" className={inputCls} value={filters.closedFrom} onChange={(e) => set('closedFrom', e.target.value)} />
               </div>
               <div>
-                <span className="mb-1 block text-xs text-slate-500">{t('salesLedger.filters.to')}</span>
+                <span className="mb-1 block text-xs text-ink-muted">{t('salesLedger.filters.to')}</span>
                 <input type="date" className={inputCls} value={filters.closedTo} onChange={(e) => set('closedTo', e.target.value)} />
               </div>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{t('cashRegisters.colFiscal')}</label>
+            <label className="ui-label mb-1">{t('cashRegisters.colFiscal')}</label>
             <input className={inputCls} value={filters.fiscalCardId} onChange={(e) => set('fiscalCardId', e.target.value)} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{t('cashRegisters.colSerial')}</label>
+            <label className="ui-label mb-1">{t('cashRegisters.colSerial')}</label>
             <input className={inputCls} value={filters.terminalSerial} onChange={(e) => set('terminalSerial', e.target.value)} />
           </div>
         </div>
-        <div className="flex gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
+        <div className="flex gap-2 border-t border-line px-5 py-3.5">
           <button
             type="button"
             onClick={onReset}
-            className="admin-btn-secondary flex-1 py-2.5 text-sm"
+            className="ui-btn-secondary flex-1"
           >
             {t('products.filters.reset')}
           </button>
           <button
             type="button"
             onClick={onApply}
-            className="admin-btn-primary flex-1 py-2.5 text-sm"
+            className="ui-btn-primary flex-1"
           >
             {t('common.apply')}
           </button>

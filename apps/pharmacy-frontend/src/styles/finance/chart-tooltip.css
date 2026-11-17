@@ -31,8 +31,8 @@
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240);
   background: rgb(15 23 42);
-  color: #fff;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.28);
+  color: rgb(var(--color-surface));
+  box-shadow: 0 8px 24px rgb(var(--color-ink) / 0.28);
   pointer-events: none;
   white-space: nowrap;
 }

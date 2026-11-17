@@ -140,7 +140,7 @@
 .cashier-app .cashier-page--my-sales .cashier-sales-pagination__info {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--pos-text, #334155);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .cashier-app .cashier-page--my-sales .cashier-sales-pagination__sep {

@@ -57,7 +57,7 @@
     display: none;
   }
 
-  .cashier-app main.flex-grow-1 {
+  .cashier-app main.cashier-app__main {
     padding: 4px !important;
   }
 
@@ -90,9 +90,9 @@
 
 .cashier-sales-mobile-card {
   padding: 14px 16px;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   border-radius: 10px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   cursor: pointer;
   transition: border-color 0.12s, box-shadow 0.12s;
 }
@@ -113,14 +113,14 @@
 .cashier-sales-mobile-card__receipt {
   font-weight: 700;
   font-size: 0.875rem;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
   word-break: break-all;
 }
 
 .cashier-sales-mobile-card__amount {
   font-weight: 800;
   font-size: 0.9375rem;
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   white-space: nowrap;
 }
 
@@ -130,13 +130,13 @@
   align-items: center;
   gap: 6px 10px;
   font-size: 0.75rem;
-  color: var(--pos-muted, #6b7280);
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
 }
 
 .cashier-sales-mobile-card__actions {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--pos-border, #e5e7eb);
+  border-top: 1px solid var(--pos-border, rgb(var(--color-line)));
 }
 
 @media (max-width: 639px) {

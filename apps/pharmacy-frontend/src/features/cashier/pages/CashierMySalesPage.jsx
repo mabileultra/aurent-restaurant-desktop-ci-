@@ -21,7 +21,7 @@ export default function CashierMySalesPage() {
       />
 
       {p.salesError ? (
-        <div className="alert alert-danger py-2 mb-3 flex-shrink-0" role="alert">
+        <div className="ui-alert-danger mb-3 shrink-0 py-2" role="alert">
           {t('pos.salesLoadFailed')}
         </div>
       ) : null}

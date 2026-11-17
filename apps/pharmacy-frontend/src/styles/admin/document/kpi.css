@@ -13,7 +13,7 @@
   padding: 14px 16px 12px;
   border: 1px solid var(--doc-line);
   border-radius: var(--doc-radius);
-  background: #fff;
+  background: rgb(var(--color-surface));
   box-shadow: var(--doc-shadow);
 }
 
@@ -25,7 +25,7 @@
   letter-spacing: 0.08em;
   line-height: 14px;
   text-transform: uppercase;
-  color: #9aa6b2;
+  color: rgb(var(--color-ink-disabled));
 }
 
 .admin-doc-kpi__value {
@@ -40,15 +40,15 @@
 }
 
 .admin-doc-kpi__value--ok {
-  color: #15803d;
+  color: rgb(var(--color-success-text));
 }
 
 .admin-doc-kpi__value--warn {
-  color: #c2410c;
+  color: rgb(var(--color-warning-text));
 }
 
 .admin-doc-kpi__value--danger {
-  color: #e11d48;
+  color: rgb(var(--color-danger-text));
 }
 
 .admin-doc-kpi__hint {
@@ -57,19 +57,19 @@
   overflow: hidden;
   font-size: 13px;
   line-height: 18px;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 @media (max-width: 1100px) {
-  .admin-doc-kpis {
+.admin-doc-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
-  .admin-doc-kpis {
+.admin-doc-kpis {
     grid-template-columns: 1fr;
   }
 }

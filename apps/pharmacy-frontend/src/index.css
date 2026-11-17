@@ -1,5 +1,4 @@
-/* Global entry — design tokens, admin modules, Tailwind */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Global entry — Pharma Green design tokens, component classes, admin modules, Tailwind */
 @import './styles/tokens/index.css';
 @import './styles/admin/index.css';
 @import './styles/admin/buttons.css';
@@ -10,6 +9,7 @@
 @import './styles/shared/page-search-field.css';
 @import './styles/shared/on-screen-keyboard.css';
 @import './styles/shared/brand-logo.css';
+@import './styles/components/index.css';
 
 @tailwind base;
 @tailwind components;
@@ -17,16 +17,37 @@
 
 @layer base {
   html {
+    color-scheme: light;
     scrollbar-gutter: stable;
   }
-  * { box-sizing: border-box; }
-  body {
-    @apply bg-slate-100 text-slate-900 dark:bg-[#0b1210] dark:text-slate-100;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
+
+  * {
+    box-sizing: border-box;
   }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-slate-200 dark:bg-slate-900; }
-  ::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-400 dark:bg-slate-700; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-500 dark:bg-slate-600; }
+
+  body {
+    @apply bg-canvas text-ink font-sans text-sm antialiased;
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid rgb(var(--color-primary-500) / 0.4);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-canvas;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-line-strong;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-disabled;
+  }
 }

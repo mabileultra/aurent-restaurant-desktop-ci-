@@ -89,7 +89,7 @@ export default function CashierLockOverlay() {
         className={`cashier-lock-overlay__card${isCashier ? ' cashier-lock-overlay__card--pin-touch' : ''}${touchLayout ? ' cashier-lock-overlay__card--touch' : ''}`}
         onSubmit={handleSubmit}
       >
-        <Lock size={32} className="cashier-lock-overlay__icon" aria-hidden />
+        <Lock size={32} strokeWidth={1.75} className="cashier-lock-overlay__icon" aria-hidden />
         <h2 id="cashier-lock-title" className="cashier-lock-overlay__title">
           {t('pos.lockTitle')}
         </h2>
@@ -114,7 +114,7 @@ export default function CashierLockOverlay() {
             </div>
             <input
               type="password"
-              className="visually-hidden"
+              className="sr-only"
               tabIndex={-1}
               aria-hidden
               value={secret}
@@ -160,7 +160,7 @@ export default function CashierLockOverlay() {
             </div>
             <button
               type="button"
-              className="cashier-pin-login__submit w-100"
+              className="cashier-pin-login__submit w-full"
               disabled={submitting || pinDigits.length < 4}
               onClick={() => submitPin(secret)}
             >
@@ -172,7 +172,7 @@ export default function CashierLockOverlay() {
           <>
             <input
               type="password"
-              className="form-control cashier-lock-overlay__input"
+              className="ui-input-pos cashier-lock-overlay__input"
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
               placeholder={t('pos.lockPasswordPh')}
@@ -180,7 +180,7 @@ export default function CashierLockOverlay() {
               autoFocus
               disabled={submitting}
             />
-            <button type="submit" className="btn btn-success w-100" disabled={submitting || !secret.trim()}>
+            <button type="submit" className="ui-btn-pos ui-btn-primary w-full" disabled={submitting || !secret.trim()}>
               {submitting ? <Loader size={18} className="animate-spin" aria-hidden /> : null}
               {t('pos.lockUnlock')}
             </button>

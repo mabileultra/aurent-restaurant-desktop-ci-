@@ -4,9 +4,7 @@ import RegionDistrictFields from '../../../shared/geo/RegionDistrictFields';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 import { formatUzPhone, digitsAfter998 } from '../../../../utils/phoneUz';
 
-const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-  focus:outline-none focus:ring-2 focus:ring-emerald-500
-  dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
+const inputCls = 'ui-input';
 
 export default function StoreFormModalFields({
   t,
@@ -53,11 +51,11 @@ export default function StoreFormModalFields({
         </>
       ) : null}
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+        <label className="ui-label mb-1">
           {t('stores.colName')} *
         </label>
         <input {...register('name')} className={inputCls} />
-        {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>}
+        {errors.name && <p className="mt-1 text-xs text-danger-text">{errors.name.message}</p>}
       </div>
       <div>
         <input type="hidden" {...register('businessTypeId')} />
@@ -82,7 +80,7 @@ export default function StoreFormModalFields({
             disabled: !bt.value,
           }))}
         />
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('stores.businessTypeHint')}</p>
+        <p className="mt-1 text-xs text-ink-muted">{t('stores.businessTypeHint')}</p>
       </div>
       <input type="hidden" {...register('regionCode')} />
       <input type="hidden" {...register('districtCode')} />
@@ -98,13 +96,13 @@ export default function StoreFormModalFields({
         }}
       />
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+        <label className="ui-label mb-1">
           {t('stores.colAddress')}
         </label>
-        <textarea {...register('address')} rows={2} className={inputCls} />
+        <textarea {...register('address')} rows={2} className="ui-textarea" />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+        <label className="ui-label mb-1">
           {t('stores.colPhone')}
         </label>
         <input
@@ -122,10 +120,10 @@ export default function StoreFormModalFields({
           placeholder="+998 (90) 123-45-67"
           className={inputCls}
         />
-        {errors.phone && <p className="mt-1 text-xs text-red-400">{errors.phone.message}</p>}
+        {errors.phone && <p className="mt-1 text-xs text-danger-text">{errors.phone.message}</p>}
       </div>
-      <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-        <input type="checkbox" {...register('active')} className="rounded border-slate-300" />
+      <label className="flex items-center gap-2 text-sm text-ink">
+        <input type="checkbox" {...register('active')} className="rounded border-line-strong text-primary-600 accent-primary-600" />
         {showCompanySelect
           ? t('platform.branchActive', { defaultValue: 'Filial faol' })
           : t('stores.activeLabel')}

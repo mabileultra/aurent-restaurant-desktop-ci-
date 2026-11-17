@@ -1,0 +1,30 @@
+@layer components {
+  .ui-badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold leading-5 whitespace-nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ui-badge-primary {
+    @apply ui-badge bg-primary-50 text-primary-700;
+  }
+
+  .ui-badge-success {
+    @apply ui-badge bg-success-soft text-success-text;
+  }
+
+  .ui-badge-warning {
+    @apply ui-badge bg-warning-soft text-warning-text;
+  }
+
+  .ui-badge-danger {
+    @apply ui-badge bg-danger-soft text-danger-text;
+  }
+
+  .ui-badge-info {
+    @apply ui-badge bg-info-soft text-info-text;
+  }
+
+  .ui-badge-neutral {
+    @apply ui-badge bg-canvas text-ink-muted border border-line;
+  }
+}

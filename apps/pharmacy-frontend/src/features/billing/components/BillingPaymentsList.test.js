@@ -45,7 +45,7 @@ describe('BillingPaymentsList', () => {
     expect(html).toContain("To&#x27;lovlar topilmadi");
   });
 
-  it('renders table rows with correct dark mode classes and amounts', () => {
+  it('renders table rows with correct classes and amounts', () => {
     const rows = [
       {
         id: 'pay-1',
@@ -73,7 +73,7 @@ describe('BillingPaymentsList', () => {
     );
 
     expect(html).toContain('billing-table');
-    expect(html).toContain('dark:text-slate-100');
+    expect(html).toContain('text-ink');
     expect(html).toContain('Payme');
     expect(html).toContain('10,000');
     expect(html).toContain('Click');

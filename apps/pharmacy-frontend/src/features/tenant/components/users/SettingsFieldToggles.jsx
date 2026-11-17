@@ -4,15 +4,15 @@ export default function SettingsFieldToggles({ defs, values, onChange, labelFor 
       {defs.map(({ key, labelKey }) => (
         <label
           key={key}
-          className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800/50"
+          className="flex cursor-pointer items-center gap-2 rounded-control border border-line bg-canvas px-3 py-2 text-sm hover:border-line-strong"
         >
           <input
             type="checkbox"
-            className="rounded border-slate-400 text-emerald-600 focus:ring-emerald-500"
+            className="rounded border-line-strong accent-primary-500"
             checked={values[key] !== false}
             onChange={(e) => onChange(key, e.target.checked)}
           />
-          <span className="text-slate-700 dark:text-slate-200">{labelFor(labelKey)}</span>
+          <span className="text-ink">{labelFor(labelKey)}</span>
         </label>
       ))}
     </div>

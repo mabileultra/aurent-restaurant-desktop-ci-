@@ -5,7 +5,7 @@
   padding: 16px;
   border: 1px solid var(--doc-line);
   border-radius: var(--doc-radius);
-  background: #fff;
+  background: rgb(var(--color-surface));
   box-shadow: var(--doc-shadow);
 }
 
@@ -18,11 +18,11 @@
   letter-spacing: 0.08em;
   line-height: 14px;
   text-transform: uppercase;
-  color: #9aa6b2;
+  color: rgb(var(--color-ink-disabled));
 }
 
 .admin-doc-meta__req {
-  color: #e11d48;
+  color: rgb(var(--color-danger-text));
 }
 
 .admin-doc-meta__notes,
@@ -30,9 +30,9 @@
   width: 100%;
   height: var(--doc-control-h);
   min-height: var(--doc-control-h);
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgb(var(--color-line));
   border-radius: var(--doc-radius-control);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--doc-ink);
   font-size: 14px;
 }
@@ -44,12 +44,12 @@
 .admin-doc-meta__notes:focus,
 .admin-doc-meta .base-select__trigger:focus-within {
   outline: none;
-  border-color: var(--admin-brand, #006847);
+  border-color: var(--admin-brand, rgb(var(--color-primary-500)));
   box-shadow: 0 0 0 3px var(--admin-focus, rgb(0 104 71 / 0.16));
 }
 
 @media (max-width: 800px) {
-  .admin-doc-meta {
+.admin-doc-meta {
     grid-template-columns: 1fr;
   }
 }

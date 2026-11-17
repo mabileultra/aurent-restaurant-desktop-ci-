@@ -9,7 +9,7 @@ export default function ReceiptLogoSizeControl({ mm, onChange, previewDataUrl })
 
   return (
     <div>
-      <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+      <label className="text-xs font-medium text-ink-muted">
         {t('tenantSettings.receiptLogoMaxHeight')}
       </label>
       <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -20,14 +20,14 @@ export default function ReceiptLogoSizeControl({ mm, onChange, previewDataUrl })
           step={1}
           value={mm}
           onChange={(e) => onChange(e.target.value)}
-          className="min-w-[10rem] flex-1"
+          className="min-w-[10rem] flex-1 accent-primary-500"
         />
-        <span className="text-sm font-medium tabular-nums text-slate-800 dark:text-slate-200">
+        <span className="ui-tabular text-sm font-medium text-ink">
           {mm} {t('tenantSettings.receiptLogoMaxHeightUnit')}
         </span>
         {previewDataUrl ? (
           <div
-            className="flex shrink-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-800"
+            className="flex shrink-0 items-center justify-center overflow-hidden rounded-control border border-dashed border-line-strong bg-surface px-2"
             style={{ width: 120, height: Math.min(96, mm * 2.2) }}
           >
             <img
@@ -39,7 +39,7 @@ export default function ReceiptLogoSizeControl({ mm, onChange, previewDataUrl })
           </div>
         ) : null}
       </div>
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+      <p className="mt-1 text-xs text-ink-muted">
         {t('tenantSettings.receiptLogoMaxHeightHint')}
       </p>
     </div>

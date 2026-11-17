@@ -12,7 +12,6 @@
 @import './pos-credit-customer.css';
 @import './catalog-panel/index.css';
 @import './my-sales/index.css';
-@import './terminal-theme/index.css';
 @import './light-theme/index.css';
 @import './pos-layout/index.css';
 @import './register-pay-rail/index.css';
@@ -30,5 +29,4 @@
 @import './cart/pos-desktop-cart-type.css';
 @import './catalog-panel/pos-desktop-product-row-type.css';
 @import './secondary-pages/index.css';
-@import './my-sales/terminal-overrides.css';
 @import './modals/index.css';

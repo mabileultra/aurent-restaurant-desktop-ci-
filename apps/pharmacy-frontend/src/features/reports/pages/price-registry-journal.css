@@ -1,37 +1,42 @@
 .price-registry-journal__row--pending {
-  background: color-mix(in srgb, #f59e0b 8%, transparent);
+  background: rgb(var(--color-warning-soft) / 0.45);
 }
 
 .price-registry-journal__badge {
   display: inline-flex;
   align-items: center;
   min-height: 1.5rem;
-  padding: 0 0.5rem;
+  padding: 0 0.6rem;
   border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  background: #e2e8f0;
-  color: #334155;
+  white-space: nowrap;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
+  border: 1px solid rgb(var(--color-line));
 }
 
 .price-registry-journal__badge.is-pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
+  border-color: rgb(var(--color-warning) / 0.3);
 }
 
 .price-registry-journal__badge.is-applied {
-  background: #d1fae5;
-  color: #065f46;
+  background: rgb(var(--color-success-soft));
+  color: rgb(var(--color-success-text));
+  border-color: rgb(var(--color-primary-200));
 }
 
 .price-registry-journal__badge.is-skipped_ok {
-  background: #e0f2fe;
-  color: #075985;
+  background: rgb(var(--color-info-soft));
+  color: rgb(var(--color-info-text));
+  border-color: rgb(var(--color-info) / 0.3);
 }
 
 .price-registry-journal__badge.is-unmatched {
-  background: #f1f5f9;
-  color: #64748b;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
 }

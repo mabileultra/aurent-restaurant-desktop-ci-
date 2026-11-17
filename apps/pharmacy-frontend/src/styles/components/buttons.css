@@ -1,0 +1,45 @@
+@layer components {
+  .ui-btn {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-4 rounded-control text-sm font-semibold leading-none whitespace-nowrap select-none transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ui-btn-pos {
+    @apply inline-flex items-center justify-center gap-2 h-12 px-5 rounded-control text-base font-semibold leading-none whitespace-nowrap select-none transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ui-btn-sm {
+    @apply h-8 px-3 text-xs rounded-control;
+  }
+
+  .ui-btn-primary {
+    @apply bg-primary-500 text-surface border border-transparent hover:bg-primary-600 active:bg-primary-700 shadow-sm;
+  }
+
+  .ui-btn-secondary {
+    @apply bg-surface text-ink border border-line hover:bg-canvas hover:border-line-strong active:bg-primary-50;
+  }
+
+  .ui-btn-ghost {
+    @apply bg-transparent text-ink-muted border border-transparent hover:bg-primary-50 hover:text-ink active:bg-primary-100;
+  }
+
+  .ui-btn-danger {
+    @apply bg-danger-soft text-danger-text border border-danger/20 hover:bg-danger/15 active:bg-danger/20;
+  }
+
+  .ui-btn-danger-solid {
+    @apply bg-danger text-surface border border-transparent hover:bg-danger-text active:bg-danger-text shadow-sm;
+  }
+
+  .ui-btn-icon {
+    @apply inline-flex items-center justify-center w-10 h-10 p-0 rounded-control text-ink-muted bg-transparent border border-transparent hover:bg-primary-50 hover:text-ink transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ui-btn-icon-pos {
+    @apply inline-flex items-center justify-center w-12 h-12 p-0 rounded-control text-ink-muted bg-surface border border-line hover:bg-primary-50 hover:text-ink transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ui-btn-plus {
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary-500 text-surface hover:bg-primary-600 active:bg-primary-700 transition-colors duration-150 shadow-sm shrink-0;
+  }
+}

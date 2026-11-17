@@ -108,7 +108,7 @@
 }
 
 @media (min-width: 1024px) and (max-width: 1280px) and (max-height: 820px) {
-  .cashier-app.cashier-app--pos-screen .pos-order-panel--register {
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register {
     --pos-cart-row-py: 4px;
     --pos-cart-qty-h: 32px;
     --pos-cart-qty-btn: 30px;

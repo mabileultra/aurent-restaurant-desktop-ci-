@@ -18,10 +18,20 @@ import {
 import { productReferencePrice, productScore } from '../utils/pharmacyProductScoreRef';
 import { productIkpu, productPackageCode } from '../utils/pharmacyProductFiscalMeta';
 import {
-  pharmacyCellToneClass,
   pharmacyExpiryTone,
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
+
+const TONE_BADGE_CLASS = {
+  ok: 'ui-badge-success',
+  warn: 'ui-badge-warning',
+  danger: 'ui-badge-danger',
+  info: 'ui-badge-info',
+};
+
+function toneBadgeClass(tone) {
+  return TONE_BADGE_CLASS[tone] || 'ui-badge-neutral';
+}
 
 function formatStockExpiryDays(daysLeft, shelfLife, daysLabel) {
   if (daysLeft == null) return '—';
@@ -94,8 +104,8 @@ export default function PharmacyProductSearchTableRow({
         </div>
       </td>
       {col('stock') ? (
-        <td className={['pharmacy-search__num', pharmacyCellToneClass(stockTone, 'pharmacy-search__cell')].filter(Boolean).join(' ')}>
-          <span className="pharmacy-search__badge">
+        <td className="pharmacy-search__num">
+          <span className={toneBadgeClass(stockTone)}>
             {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
           </span>
         </td>
@@ -104,8 +114,12 @@ export default function PharmacyProductSearchTableRow({
       {col('price') ? <td className="pharmacy-search__num">{fmt(unitPrice)}</td> : null}
       {col('unitPrice') ? <td className="pharmacy-search__num">{fmt(unitPrice)}</td> : null}
       {col('expiry') ? (
-        <td className={['pharmacy-search__mono', pharmacyCellToneClass(expiryTone, 'pharmacy-search__cell')].filter(Boolean).join(' ')} title={expiryDate || undefined}>
-          <span className="pharmacy-search__badge">{daysLabelText}</span>
+        <td className="pharmacy-search__mono" title={expiryDate || undefined}>
+          {daysLeft == null ? (
+            <span className="text-ink-muted">—</span>
+          ) : (
+            <span className={toneBadgeClass(expiryTone)}>{daysLabelText}</span>
+          )}
         </td>
       ) : null}
       {col('shelf') ? (
@@ -139,12 +153,12 @@ export default function PharmacyProductSearchTableRow({
         <td className="pharmacy-search__actions" onClick={(e) => e.stopPropagation()}>
           {onEditProduct ? (
             <button type="button" className="pharmacy-search__icon-btn" title={t('common.edit')} onClick={() => onEditProduct(product)}>
-              <Pencil size={13} strokeWidth={2.25} aria-hidden />
+              <Pencil size={14} strokeWidth={1.75} aria-hidden />
             </button>
           ) : null}
           {onDeactivateProduct ? (
             <button type="button" className="pharmacy-search__icon-btn pharmacy-search__icon-btn--danger" title={t('common.delete')} onClick={() => onDeactivateProduct(product)}>
-              <Trash2 size={13} strokeWidth={2.25} aria-hidden />
+              <Trash2 size={14} strokeWidth={1.75} aria-hidden />
             </button>
           ) : null}
         </td>

@@ -61,7 +61,7 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
         width: MENU_WIDTH,
         zIndex: 9999,
       }}
-      className="rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl dark:!border-slate-700 dark:!bg-slate-900 animate-in fade-in zoom-in-95 duration-100"
+      className="ui-popover py-1.5"
     >
       {actions.map((action) => {
         const isDisabled = Boolean(action.disabled);
@@ -78,17 +78,17 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
               action.onClick();
               onOpenChange(false);
             }}
-            className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
+            className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
               isDisabled
-                ? 'cursor-not-allowed opacity-50 text-slate-400 dark:text-slate-500 hover:bg-transparent'
+                ? 'cursor-not-allowed text-ink-disabled'
                 : action.danger
-                  ? 'text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:!bg-slate-800'
-                  : 'text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:!bg-slate-800'
+                  ? 'text-danger-text hover:bg-danger-soft'
+                  : 'text-ink hover:bg-primary-50'
             }`}
           >
             <div className="font-medium leading-snug">{action.label}</div>
             {isDisabled && action.disabledReason ? (
-              <div className="text-[11px] text-slate-400 dark:text-slate-500 font-normal leading-tight mt-0.5">
+              <div className="mt-0.5 text-xs font-normal leading-tight text-ink-muted">
                 {action.disabledReason}
               </div>
             ) : null}
@@ -107,9 +107,9 @@ export default function TableRowActionsMenu({ open, onOpenChange, actions }) {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => onOpenChange(!open)}
-        className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+        className="ui-btn-icon h-8 w-8"
       >
-        <MoreVertical size={16} />
+        <MoreVertical size={16} strokeWidth={1.75} />
       </button>
       {menu ? (typeof document !== 'undefined' && document.body ? createPortal(menu, document.body) : menu) : null}
     </>

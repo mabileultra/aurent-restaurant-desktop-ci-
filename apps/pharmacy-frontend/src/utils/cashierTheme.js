@@ -2,46 +2,30 @@ import { syncCashierDocumentPaint } from './cashierDocumentPaint';
 
 export const CASHIER_THEME_STORAGE_KEY = 'pos-cashier-theme';
 
-/** @typedef {'dark' | 'light'} CashierTheme */
-
-/** @returns {CashierTheme} */
+/** @returns {'light'} */
 export function readCashierTheme() {
   try {
-    const v = localStorage.getItem(CASHIER_THEME_STORAGE_KEY);
-    if (v === 'light' || v === 'dark') return v;
+    localStorage.removeItem(CASHIER_THEME_STORAGE_KEY);
   } catch {
     /* ignore */
   }
-  return 'dark';
+  return 'light';
 }
 
-/** @param {CashierTheme} theme */
-export function writeCashierTheme(theme) {
-  try {
-    localStorage.setItem(CASHIER_THEME_STORAGE_KEY, theme);
-  } catch {
-    /* ignore */
-  }
+export function cashierThemeClassName() {
+  return 'cashier-app--light';
 }
 
-/** @param {CashierTheme} theme */
-export function cashierThemeClassName(theme) {
-  return theme === 'light' ? 'cashier-app--light' : 'cashier-app--terminal';
-}
-
-/** @param {CashierTheme} theme — класс на html для порталов кассы */
-export function syncCashierThemeDocument(theme) {
+/** Light-only document classes for cashier portals. */
+export function syncCashierThemeDocument() {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  root.classList.remove('cashier-theme--light', 'cashier-theme--dark', 'app-theme--admin');
-  root.classList.add(
-    theme === 'light' ? 'cashier-theme--light' : 'cashier-theme--dark',
-    'app-theme--cashier',
-  );
-  syncCashierDocumentPaint(theme);
+  root.classList.remove('dark', 'cashier-theme--dark', 'app-theme--admin');
+  root.classList.add('cashier-theme--light', 'app-theme--cashier');
+  syncCashierDocumentPaint('light');
 }
 
-/** Сброс классов кассы при уходе с /cashier (админка остаётся светлой). */
+/** Clear cashier document classes when leaving /pos. */
 export function clearCashierThemeDocument() {
   if (typeof document === 'undefined') return;
   document.documentElement.classList.remove(

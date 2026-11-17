@@ -28,8 +28,8 @@
 
 /* Фильтры «Мои продажи» */
 .cashier-sales-filters-card {
-  background: #fff;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  background: rgb(var(--color-surface));
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   border-radius: 12px;
   box-shadow: 0 1px 4px rgb(15 23 42 / 0.05);
   overflow: hidden;
@@ -47,8 +47,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 14px;
-  background: linear-gradient(180deg, #f8faf9 0%, #fff 100%);
-  border-bottom: 1px solid var(--pos-border, #e5e7eb);
+  background: linear-gradient(180deg, rgb(var(--color-canvas)) 0%, rgb(var(--color-surface)) 100%);
+  border-bottom: 1px solid var(--pos-border, rgb(var(--color-line)));
 }
 
 .cashier-sales-filters-card__title {
@@ -57,14 +57,14 @@
   gap: 8px;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .cashier-sales-filters-card__badge {
   padding: 2px 8px;
   border-radius: var(--pos-control-radius, 8px);
-  background: var(--pos-green-soft, #e8f5ef);
-  color: var(--pos-green, #006847);
+  background: var(--pos-green-soft, rgb(var(--color-primary-50)));
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   font-size: 0.6875rem;
   font-weight: 700;
 }
@@ -74,10 +74,10 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   border-radius: 8px;
-  background: #fff;
-  color: #6b7280;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink-muted));
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -85,9 +85,9 @@
 }
 
 .cashier-sales-filters-card__reset:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #b91c1c;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.35);
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-sales-filters-card__body {
@@ -113,7 +113,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: rgb(var(--color-ink-muted));
   margin: 0;
 }
 
@@ -122,18 +122,18 @@
   width: 100%;
   min-height: 36px;
   padding: 6px 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(var(--color-line-strong));
   border-radius: var(--pos-control-radius, 10px);
-  background: #fff;
+  background: rgb(var(--color-surface));
   font-size: 0.8125rem;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 
 .cashier-sales-filters__input:focus,
 .cashier-sales-filters__select:focus {
   outline: none;
-  border-color: var(--pos-green, #006847);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
   box-shadow: 0 0 0 3px rgb(0 104 71 / 0.12);
 }
 
@@ -158,8 +158,8 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  border-top: 1px solid var(--bs-border-color, #dee2e6);
-  background: #f8f9fa;
+  border-top: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-canvas));
   font-size: 0.8125rem;
 }
 

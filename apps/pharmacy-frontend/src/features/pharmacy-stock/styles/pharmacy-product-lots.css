@@ -1,7 +1,7 @@
 .pharm-product-lots {
   margin-top: 0.85rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--pharm-line, #e2e8f0);
+  border-top: 1px solid rgb(var(--color-line));
 }
 
 .pharm-product-lots__head {
@@ -10,24 +10,24 @@
 
 .pharm-product-lots__title {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pharm-muted, #64748b);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharm-product-lots__hint {
   margin: 0.2rem 0 0;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.3;
-  color: var(--pharm-muted, #64748b);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharm-product-lots__empty {
   margin: 0.35rem 0 0;
-  font-size: 0.82rem;
-  color: var(--pharm-muted, #64748b);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharm-product-lots__list {
@@ -41,9 +41,9 @@
 
 .pharm-product-lots__row {
   padding: 0.55rem 0.65rem;
-  border: 1px solid var(--pharm-line, #e2e8f0);
-  border-radius: 0.5rem;
-  background: #fff;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
 }
 
 .pharm-product-lots__main {
@@ -54,25 +54,29 @@
 }
 
 .pharm-product-lots__batch {
-  font-size: 0.88rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-ink));
 }
 
 .pharm-product-lots__badge {
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  padding: 0.12rem 0.4rem;
-  border-radius: 0.3rem;
-  background: #e2e8f0;
-  color: #334155;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
+  border: 1px solid rgb(var(--color-line));
+  white-space: nowrap;
 }
 
 .pharm-product-lots__badge.is-opening {
-  background: #ecfdf5;
-  color: #047857;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
+  border-color: rgb(var(--color-primary-200));
 }
 
 .pharm-product-lots__meta {
@@ -81,12 +85,13 @@
   flex-wrap: wrap;
   gap: 0.65rem;
   font-size: 0.75rem;
-  color: var(--pharm-muted, #64748b);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharm-product-lots__qty {
-  font-weight: 650;
-  color: #0f172a;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-ink));
 }
 
 .pharm-product-lots__link {
@@ -95,8 +100,8 @@
   align-items: center;
   gap: 0.3rem;
   font-size: 0.75rem;
-  font-weight: 650;
-  color: #047857;
+  font-weight: 600;
+  color: rgb(var(--color-primary-600));
   background: none;
   border: 0;
   padding: 0;
@@ -105,28 +110,4 @@
 
 .pharm-product-lots__link:hover {
   text-decoration: underline;
-}
-
-.dark .pharm-product-lots {
-  border-top-color: rgba(148, 163, 184, 0.25);
-}
-
-.dark .pharm-product-lots__row {
-  background: #0f172a;
-  border-color: rgba(148, 163, 184, 0.25);
-}
-
-.dark .pharm-product-lots__batch,
-.dark .pharm-product-lots__qty {
-  color: #f8fafc;
-}
-
-.dark .pharm-product-lots__badge {
-  background: rgba(148, 163, 184, 0.18);
-  color: #cbd5e1;
-}
-
-.dark .pharm-product-lots__badge.is-opening {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
 }

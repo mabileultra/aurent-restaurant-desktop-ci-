@@ -51,7 +51,7 @@
   border: 1px solid rgb(226 232 240);
   border-radius: 0.75rem;
   background: rgb(248 250 252);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  box-shadow: 0 1px 2px rgb(var(--color-ink) / 0.04);
 }
 
 .finance-filters__field {
@@ -73,8 +73,8 @@
   padding: 1rem 1.25rem;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  background: rgb(var(--color-surface));
+  box-shadow: 0 1px 2px rgb(var(--color-ink) / 0.04);
 }
 
 .finance-inline-form__field {

@@ -33,18 +33,22 @@ export default function PharmacyPosPage() {
 
   if (p.storeBlocked) {
     return (
-      <div className="alert alert-warning mb-0">
+      <div className="ui-alert-warning" role="alert">
         {p.noAssignment ? p.t('pos.noStoreAssigned') : p.t('pos.multipleStoresAssigned')}
       </div>
     );
   }
 
   if (!p.storeId) {
-    return <div className="alert alert-secondary mb-0">{p.t('common.loading')}</div>;
+    return (
+      <div className="ui-card-padded text-sm text-ink-muted" role="status">
+        {p.t('common.loading')}
+      </div>
+    );
   }
 
   return (
-    <div className="cashier-register pharmacy-cashier pharmacy-cashier--compact d-flex flex-column flex-grow-1 min-h-0">
+    <div className="cashier-register pharmacy-cashier pharmacy-cashier--compact flex flex-col flex-1 min-h-0">
       <PharmacyRegisterWorkspace
         searchInputRef={p.searchInputRef}
         kmInputRef={p.kmInputRef}

@@ -24,7 +24,7 @@
   padding: clamp(6px, 1.2cqi, 10px) clamp(5px, 0.9cqi, 8px);
   border: 1px solid var(--pos-border);
   border-radius: 12px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pos-text);
   font-size: clamp(0.6875rem, 2.2cqi, 0.8125rem);
   font-weight: 700;
@@ -71,12 +71,12 @@
 .cashier-bottom-nav__btn.is-active {
   border-color: transparent;
   background: var(--pos-green-gradient, var(--pos-green));
-  color: var(--pos-on-green, #fff);
+  color: var(--pos-on-green, rgb(var(--color-surface)));
   box-shadow: 0 2px 12px rgb(0 80 55 / 0.22);
 }
 
 .cashier-bottom-nav__btn.is-active svg {
-  color: var(--pos-on-green, #fff);
+  color: var(--pos-on-green, rgb(var(--color-surface)));
 }
 
 .cashier-bottom-nav__btn:disabled {
@@ -107,8 +107,8 @@
   padding: 8px 10px;
   box-sizing: border-box;
   overflow: visible;
-  background: var(--pos-surface-elevated, #fff);
-  border: 1px solid var(--pos-border, #d1d9e6);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
+  border: 1px solid var(--pos-border, rgb(var(--color-line-strong)));
   border-radius: var(--cashier-block-radius, 12px);
   box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
 }
@@ -118,35 +118,14 @@
 }
 
 .cashier-app.cashier-app--light .cashier-register__bottom-nav {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
   box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
-}
-
-.cashier-app.cashier-app--terminal .cashier-register__bottom-nav {
-  background: var(--pos-surface);
-  border-color: var(--pos-border);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
 }
 
 .cashier-app.cashier-app--light .cashier-bottom-nav__btn {
   background: var(--pos-surface);
   border-color: var(--pos-border);
-}
-
-.cashier-app.cashier-app--terminal .cashier-bottom-nav__btn {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
-}
-
-.cashier-app.cashier-app--terminal .cashier-bottom-nav__btn.is-active {
-  background: var(--pos-green-gradient, var(--pos-green));
-  color: var(--pos-on-green);
-}
-
-.cashier-app.cashier-app--terminal .cashier-bottom-nav__btn.is-active svg {
-  color: var(--pos-on-green);
 }
 
 .cashier-app.cashier-app--touch .cashier-bottom-nav__btn {
@@ -173,7 +152,7 @@
 }
 
 @media (max-width: 799px) {
-  .cashier-bottom-nav {
+.cashier-bottom-nav {
     gap: 5px;
   }
 }

@@ -1,6 +1,6 @@
 .cashier-cash-move-modal.pharmacy-modal {
   width: min(440px, calc(100vw - 1.5rem));
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   border: 1px solid var(--pm-border);
   border-radius: calc(var(--pm-radius) + 2px);
@@ -8,33 +8,33 @@
 }
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__head {
-  background: #134842;
+  background: rgb(var(--color-primary-600));
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
-  color: #fff;
+  color: rgb(var(--color-surface));
   border-bottom: none;
 }
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__title {
-  color: #fff;
+  color: rgb(var(--color-surface));
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__hint {
-  color: rgb(255 255 255 / 0.82);
+  color: rgb(var(--color-surface) / 0.82);
 }
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__icon {
-  background: rgb(255 255 255 / 0.16);
-  color: #fff;
-  border: 1px solid rgb(255 255 255 / 0.28);
+  background: rgb(var(--color-surface) / 0.16);
+  color: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-surface) / 0.28);
 }
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__close {
-  border: 1px solid rgb(255 255 255 / 0.35);
-  background: rgb(255 255 255 / 0.12);
-  color: #fff;
+  border: 1px solid rgb(var(--color-surface) / 0.35);
+  background: rgb(var(--color-surface) / 0.12);
+  color: rgb(var(--color-surface));
   border-radius: var(--pm-radius-sm);
 }
 
@@ -47,7 +47,7 @@
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__input,
 .cashier-cash-move-modal.pharmacy-modal textarea {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border: 1px solid var(--pm-border);
   color: var(--pm-ink);
   border-radius: var(--pm-radius-sm);
@@ -55,7 +55,7 @@
 
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__quick {
   border: 1px solid var(--pm-border);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   border-radius: var(--pm-radius-sm);
 }
@@ -68,7 +68,7 @@
 .cashier-cash-move-modal.pharmacy-modal .cashier-cash-move-modal__submit {
   background: var(--pm-brand);
   border-color: var(--pm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
   border-radius: var(--pm-radius-sm);
   min-height: 2.5rem;
   font-weight: 700;

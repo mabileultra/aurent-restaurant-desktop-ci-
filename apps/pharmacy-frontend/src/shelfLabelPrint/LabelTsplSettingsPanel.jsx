@@ -127,11 +127,11 @@ export default function LabelTsplSettingsPanel({ t }) {
   if (!available || !loaded) return null;
 
   return (
-    <section className="mt-4 rounded-xl border border-violet-200 bg-violet-50/50 p-3 dark:border-violet-900/50 dark:bg-violet-950/20">
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+    <section className="mt-4 rounded-card border border-line bg-canvas p-3">
+      <h3 className="text-sm font-semibold text-ink">
         {t('usersBarcodePrint.tsplTitle', { defaultValue: 'TSPL — сетевой XP-365B' })}
       </h3>
-      <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+      <p className="mt-1 text-xs text-ink-muted">
         {t('usersBarcodePrint.tsplHint', {
           defaultValue:
             'Прямая печать этикеток по TSPL (порт 9100). Не влияет на чеки и другие принтеры.',
@@ -149,14 +149,14 @@ export default function LabelTsplSettingsPanel({ t }) {
           <>
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                <label className="ui-label">
                   {t('usersBarcodePrint.tsplHost', { defaultValue: 'IP-адрес принтера' })}
                 </label>
                 <button
                   type="button"
                   disabled={scanning}
                   onClick={() => runAutoDetect({ save: true })}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-white px-2.5 py-1 text-xs font-medium text-violet-900 hover:bg-violet-50 disabled:opacity-60 dark:border-violet-700 dark:bg-slate-900 dark:text-violet-100"
+                  className="ui-btn-secondary h-8 px-2.5 text-xs"
                 >
                   {scanning ? <Loader2 size={14} className="animate-spin" /> : <Radar size={14} />}
                   {scanning
@@ -169,12 +169,12 @@ export default function LabelTsplSettingsPanel({ t }) {
                 inputMode="decimal"
                 autoComplete="off"
                 placeholder="192.168.1.200"
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                className="ui-input ui-tabular"
                 value={settings.host || ''}
                 onChange={(e) => setSettings((s) => ({ ...s, host: e.target.value }))}
                 onBlur={() => persist({ host: settings.host || '' })}
               />
-              <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] leading-relaxed text-ink-muted">
                 {t('usersBarcodePrint.tsplFindManualHint', {
                   defaultValue:
                     'Вручную: на XP-365B распечатайте self-test (удерживайте FEED 3 сек) — IP будет на этикетке. Или посмотрите в роутере список устройств.',
@@ -183,8 +183,8 @@ export default function LabelTsplSettingsPanel({ t }) {
             </div>
 
             {candidates.length > 0 ? (
-              <div className="rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-600 dark:bg-slate-900/50">
-                <p className="mb-2 flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
+              <div className="rounded-input border border-line bg-surface p-2">
+                <p className="mb-2 flex items-center gap-1 text-[11px] font-medium text-ink-muted">
                   <Wifi size={12} aria-hidden />
                   {t('usersBarcodePrint.tsplCandidates', { defaultValue: 'Найденные устройства (порт 9100)' })}
                 </p>
@@ -194,16 +194,16 @@ export default function LabelTsplSettingsPanel({ t }) {
                       key={`${item.host}:${item.port}`}
                       type="button"
                       onClick={() => pickCandidate(item.host)}
-                      className={`flex items-center justify-between rounded-md border px-2.5 py-1.5 text-left text-xs transition ${
+                      className={`flex items-center justify-between rounded-input border px-2.5 py-1.5 text-left text-xs transition ${
                         settings.host === item.host
-                          ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-950/40'
-                          : 'border-slate-200 hover:border-violet-300 dark:border-slate-600 dark:hover:border-violet-700'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-line hover:border-primary-300'
                       }`}
                     >
-                      <span className="font-mono font-semibold text-slate-800 dark:text-slate-100">
+                      <span className="font-mono ui-tabular font-semibold text-ink">
                         {item.host}
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">{sourceLabel(item.source, t)}</span>
+                      <span className="text-ink-muted">{sourceLabel(item.source, t)}</span>
                     </button>
                   ))}
                 </div>
@@ -212,21 +212,21 @@ export default function LabelTsplSettingsPanel({ t }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                <label className="ui-label">
                   {t('usersBarcodePrint.tsplPort', { defaultValue: 'Порт' })}
                 </label>
                 <input
                   type="number"
                   min={1}
                   max={65535}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  className="ui-input ui-tabular"
                   value={settings.port ?? 9100}
                   onChange={(e) => setSettings((s) => ({ ...s, port: Number(e.target.value) || 9100 }))}
                   onBlur={() => persist({ port: Number(settings.port) || 9100 })}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                <label className="ui-label">
                   {t('usersBarcodePrint.tsplGap', { defaultValue: 'GAP (мм)' })}
                 </label>
                 <input
@@ -234,7 +234,7 @@ export default function LabelTsplSettingsPanel({ t }) {
                   min={0}
                   max={10}
                   step={0.5}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  className="ui-input ui-tabular"
                   value={settings.gapMm ?? 2}
                   onChange={(e) => setSettings((s) => ({ ...s, gapMm: Number(e.target.value) || 2 }))}
                   onBlur={() => persist({ gapMm: Number(settings.gapMm) || 2 })}
@@ -242,7 +242,7 @@ export default function LabelTsplSettingsPanel({ t }) {
               </div>
             </div>
 
-            <p className="rounded-md bg-white/70 px-2 py-1.5 text-xs text-slate-600 dark:bg-slate-900/40 dark:text-slate-300">
+            <p className="rounded-input bg-surface border border-line px-2.5 py-1.5 text-xs text-ink-muted">
               {t('usersBarcodePrint.tsplCalibrationHint', {
                 defaultValue:
                   'Калибровка GAP: выключите принтер → зажмите FEED → включите → держите, пока не протянет этикетки. Сдвиги — в блоке «Калибровка печати» ниже.',

@@ -1,42 +1,73 @@
-/* Semantic brand colors — единый источник для всех оболочек */
+/* Pharma Green design tokens (light-only) */
 
 :root {
-  /* Brand — deep retail green (Aurent) */
-  --color-brand: #006847;
-  --color-brand-hover: #005538;
-  --color-brand-deep: #043d2c;
-  --color-brand-mid: #0a7a52;
-  --color-brand-soft: #e6f2ec;
-  --color-brand-soft-2: #d1e8dc;
-  --color-brand-on: #ffffff;
+  color-scheme: light;
 
-  --color-ink: #0f2a1f;
-  --color-text: #0f172a;
-  --color-muted: #64748b;
-  --color-border: #e2e8f0;
-  --color-surface: #ffffff;
-  --color-surface-muted: #f4f7f5;
-  --color-danger: #dc2626;
-  --color-money: #0f2a1f;
+  /* Primary scale (RGB channels for Tailwind <alpha-value>) */
+  --color-primary-50: 232 245 238;   /* #E8F5EE */
+  --color-primary-100: 207 235 218;  /* #CFEBDA */
+  --color-primary-200: 163 217 186;  /* #A3D9BA */
+  --color-primary-300: 111 194 150;  /* #6FC296 */
+  --color-primary-400: 67 172 114;   /* #43AC72 */
+  --color-primary-500: 46 158 91;    /* #2E9E5B */
+  --color-primary-600: 37 128 73;    /* #258049 */
+  --color-primary-700: 29 101 58;    /* #1D653A */
+  --color-primary-800: 23 78 46;     /* #174E2E */
+  --color-primary-900: 18 60 36;     /* #123C24 */
 
-  --color-focus-ring: rgb(0 104 71 / 0.18);
+  /* Surfaces & lines */
+  --color-canvas: 246 250 247;       /* #F6FAF7 */
+  --color-surface: 255 255 255;      /* #FFFFFF */
+  --color-line: 221 234 225;         /* #DDEAE1 */
+  --color-line-strong: 199 218 205;  /* #C7DACD */
+
+  /* Typography */
+  --color-ink: 20 41 29;             /* #14291D */
+  --color-ink-muted: 94 120 103;     /* #5E7867 */
+  --color-ink-disabled: 157 177 164; /* #9DB1A4 */
+
+  /* Semantic states */
+  --color-success: 22 163 74;        /* #16A34A */
+  --color-success-soft: 231 246 236; /* #E7F6EC */
+  --color-success-text: 22 101 52;   /* #166534 */
+
+  --color-warning: 245 158 11;       /* #F59E0B */
+  --color-warning-soft: 254 243 220; /* #FEF3DC */
+  --color-warning-text: 146 96 10;   /* #92600A */
+
+  --color-danger: 229 72 77;         /* #E5484D */
+  --color-danger-soft: 253 236 236;  /* #FDECEC */
+  --color-danger-text: 180 35 24;    /* #B42318 */
+
+  --color-info: 14 165 233;          /* #0EA5E9 */
+  --color-info-soft: 230 244 251;    /* #E6F4FB */
+  --color-info-text: 11 110 153;     /* #0B6E99 */
+
+  /* Shape & elevation */
+  --radius-card: 14px;
+  --radius-control: 10px;
+  --shadow-card: 0 1px 2px rgb(20 41 29 / 0.04), 0 4px 16px rgb(20 41 29 / 0.06);
+  --shadow-elevated: 0 8px 24px rgb(20 41 29 / 0.08);
+  --color-overlay: rgb(20 41 29 / 0.45);
+  --color-focus-ring: rgb(46 158 91 / 0.4);
+
+  /* Compatibility aliases (mapped to Pharma Green tokens) */
+  --color-brand: rgb(var(--color-primary-500));
+  --color-brand-hover: rgb(var(--color-primary-600));
+  --color-brand-pressed: rgb(var(--color-primary-700));
+  --color-brand-deep: rgb(var(--color-primary-800));
+  --color-brand-mid: rgb(var(--color-primary-500));
+  --color-brand-soft: rgb(var(--color-primary-50));
+  --color-brand-soft-2: rgb(var(--color-primary-100));
+  --color-brand-on: rgb(var(--color-surface));
+  --color-text: rgb(var(--color-ink));
+  --color-muted: rgb(var(--color-ink-muted));
+  --color-border: rgb(var(--color-line));
+  --color-surface-muted: rgb(var(--color-canvas));
+  --color-money: rgb(var(--color-ink));
   --color-brand-gradient: linear-gradient(
     135deg,
-    var(--color-brand-deep) 0%,
-    var(--color-brand) 52%,
-    var(--color-brand-mid) 100%
+    rgb(var(--color-primary-50)) 0%,
+    rgb(var(--color-surface)) 100%
   );
-}
-
-.dark {
-  --color-text: #f1f5f9;
-  --color-muted: #94a3b8;
-  --color-border: #334155;
-  --color-surface: #0f172a;
-  --color-surface-muted: #12201a;
-  --color-brand-soft: rgb(0 104 71 / 0.22);
-  --color-brand-soft-2: rgb(0 104 71 / 0.35);
-  --color-focus-ring: rgb(16 185 129 / 0.22);
-  --color-ink: #e8f5ef;
-  --color-money: #e8f5ef;
 }

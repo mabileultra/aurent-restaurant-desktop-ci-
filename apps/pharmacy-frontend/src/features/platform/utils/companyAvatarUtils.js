@@ -7,14 +7,10 @@ import { Pill, Store, UtensilsCrossed } from 'lucide-react';
 const LEGAL_FORM_REGEX = /^(mchj|ooo|xk|ok|ya|ip|qoshma|korxona|chp|llc|inc)$/i;
 
 const PALETTES = [
-  'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
-  'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800',
-  'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800',
-  'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/50 dark:text-violet-300 dark:border-violet-800',
-  'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800',
-  'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800',
-  'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800',
-  'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/50 dark:text-cyan-300 dark:border-cyan-800',
+  'bg-primary-50 text-primary-700 border-primary-200',
+  'bg-primary-100 text-primary-800 border-primary-200',
+  'bg-info-soft text-info-text border-info/25',
+  'bg-canvas text-ink border-line',
 ];
 
 /**
@@ -69,20 +65,16 @@ export function getCompanyPalette(name, id) {
  * Clean, neutral B2B styling (Slate) to avoid color noise and rainbow effect.
  */
 export function getBusinessTypeBadgeClass() {
-  return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
+  return 'bg-canvas text-ink-muted border-line';
 }
 
 /**
  * Returns contextual branch metadata (icon, label, tooltip, styling) based on company business type.
- * e.g., Restaurants show UtensilsCrossed (🍽️) + "Restoran filiallari",
- * Pharmacies show Pill (💊) + "Dorixona filiallari",
- * Retail/General show Store (🏪) + "Filiallar".
- * Badges consistently use the brand emerald style to preserve visual calm.
  */
 export function getCompanyBranchMeta(businessType, t = (k, opts) => opts?.defaultValue || k) {
   const normalized = (businessType || '').toUpperCase();
   const brandBadgeClass =
-    'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 border-emerald-200/80 dark:border-emerald-800/60';
+    'bg-primary-50 text-primary-700 hover:bg-primary-100 border-primary-200';
 
   switch (normalized) {
     case 'RESTAURANT':

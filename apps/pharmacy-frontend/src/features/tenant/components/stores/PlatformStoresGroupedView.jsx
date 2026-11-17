@@ -53,8 +53,8 @@ export default function PlatformStoresGroupedView(props) {
   return (
     <div className="space-y-3 relative">
       {isRefreshing && (
-        <div className="absolute -top-1 left-0 right-0 z-30 h-0.5 bg-emerald-100 dark:bg-emerald-950 overflow-hidden rounded-full">
-          <div className="h-full bg-emerald-500 animate-pulse w-full motion-reduce:animate-none" />
+        <div className="absolute -top-1 left-0 right-0 z-30 h-0.5 bg-primary-100 overflow-hidden rounded-full">
+          <div className="h-full bg-primary-500 animate-pulse w-full motion-reduce:animate-none" />
         </div>
       )}
       {showOverlay && <Spinner overlay size="sm" text={t('common.loading')} />}
@@ -99,7 +99,7 @@ export default function PlatformStoresGroupedView(props) {
       </div>
 
       {ui.total > 0 && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+        <div className="ui-card overflow-hidden">
           <TablePagination
             page={ui.safePage}
             pageSize={ui.pageSize}

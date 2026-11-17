@@ -5,14 +5,14 @@
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
 .cashier-app .pos-pay-panel--register-rail .pos-keypad__key {
-  color: var(--pos-keypad-text, #0f172a);
+  color: var(--pos-keypad-text, rgb(var(--color-ink)));
   font-weight: 800;
   -webkit-font-smoothing: antialiased;
 }
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key {
-  color: var(--pos-ink, #1e3a5f);
+  color: var(--pos-ink, rgb(var(--color-ink)));
 }
 
 .cashier-app .pos-register-pay-rail .pos-pay-cash__due-value,
@@ -63,7 +63,7 @@
 }
 
 @media (min-width: 1024px) and (max-width: 1366px) and (max-height: 820px) {
-  .cashier-app.cashier-app--pos-screen {
+.cashier-app.cashier-app--pos-screen {
     --pos-keypad-key-h: 48px;
     --pos-keypad-digit-size: 1.25rem;
     --pos-keypad-action-size: 0.75rem;

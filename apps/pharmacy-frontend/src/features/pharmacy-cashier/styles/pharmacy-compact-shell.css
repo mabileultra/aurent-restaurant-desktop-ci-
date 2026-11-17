@@ -1,23 +1,23 @@
-/* Компактная аптечная касса: меньше отступов, поиск в одну строку с заголовком */
+/* Compact pharmacy POS adjustments */
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
   grid-template-rows: minmax(120px, 22%) minmax(88px, 120px) minmax(0, 1fr);
-  gap: 4px;
+  gap: 6px;
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__cart-pane,
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__search-pane {
-  border-radius: var(--pharm-radius-sm, 8px);
+  border-radius: var(--radius-card);
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-head {
-  padding: 4px 8px;
+  padding: 6px 10px;
   gap: 6px;
   min-height: 0;
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-title {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 
@@ -30,32 +30,32 @@
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field,
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search-strip__field--product {
-  height: 28px;
-  font-size: 0.75rem;
-  padding: 0 8px;
+  height: 32px;
+  font-size: 0.8125rem;
+  padding: 0 10px;
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact {
   width: 100%;
   min-width: 0;
-  height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--pharm-border);
-  border-radius: 6px;
-  background: var(--pharm-surface);
-  color: var(--pharm-ink);
-  font-size: 0.75rem;
-  font-weight: 600;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 8px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  font-size: 0.8125rem;
+  font-weight: 500;
   outline: none;
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact::placeholder {
-  color: var(--pharm-muted);
+  color: rgb(var(--color-ink-disabled));
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact:focus {
-  border-color: var(--pharm-accent);
-  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+  border-color: rgb(var(--color-primary-500));
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
@@ -66,7 +66,6 @@
     minmax(40px, 4.5cqi);
 }
 
-/* Нижнее меню — ниже и компактнее на аптечной кассе */
 .cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) {
   --cashier-bottom-nav-h: 68px;
 }
@@ -74,7 +73,7 @@
 .cashier-app--pharmacy-pos .cashier-bottom-nav__btn {
   padding: 5px 4px;
   gap: 3px;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   border-radius: 10px;
 }
 
@@ -109,13 +108,13 @@
   gap: 5px;
   min-height: 28px;
   padding: 0 8px;
-  border: 1px solid var(--pharm-border, var(--pos-border));
+  border: 1px solid rgb(var(--color-line));
   border-radius: 999px;
-  background: var(--pharm-elevated, #fff);
-  color: var(--pharm-muted, var(--pos-muted));
-  font-size: 0.625rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink-muted));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -124,26 +123,27 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: rgb(var(--color-ink-disabled));
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-ok {
-  color: var(--pharm-ok-text, #0b5c3a);
-  background: var(--pharm-ok, #d8f5e3);
-  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 25%, transparent);
+  color: rgb(var(--color-success-text));
+  background: rgb(var(--color-success-soft));
+  border-color: rgb(var(--color-primary-200));
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-ok .cashier-bottom-nav__kkm-dot {
-  background: var(--pharm-brand, #006847);
+  background: rgb(var(--color-success));
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-warn {
-  color: var(--pharm-warn-text, #7a5b00);
-  background: var(--pharm-warn, #fff3cd);
+  color: rgb(var(--color-warning-text));
+  background: rgb(var(--color-warning-soft));
+  border-color: rgb(var(--color-warning) / 0.35);
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-warn .cashier-bottom-nav__kkm-dot {
-  background: #d97706;
+  background: rgb(var(--color-warning));
 }
 
 .cashier-app--pharmacy-pos .cashier-topbar__store-pill--pharmacy .cashier-topbar__store-name {

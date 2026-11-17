@@ -81,17 +81,17 @@
   min-width: 0;
 }
 
-.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main {
+.pharmacy-cashier__split.cashier-register__split--register .cashier-register__main {
   background: transparent;
   border: none;
   box-shadow: none;
 }
 
-.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__cart-pane,
-.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__search-pane,
-.cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main .pharmacy-cashier__context-pane {
-  background: var(--pharm-elevated, #f8f7f3);
-  box-shadow: none;
+.pharmacy-cashier__split.cashier-register__split--register .cashier-register__main .pharmacy-cashier__cart-pane,
+.pharmacy-cashier__split.cashier-register__split--register .cashier-register__main .pharmacy-cashier__search-pane,
+.pharmacy-cashier__split.cashier-register__split--register .cashier-register__main .pharmacy-cashier__context-pane {
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-card);
 }
 
 /* Статус-ячейки: чуть плотнее типографика под бейджи макета */

@@ -43,13 +43,13 @@
   flex-shrink: 0;
   padding: 6px 10px;
   border-radius: var(--pos-control-radius, 10px);
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: rgb(var(--color-primary-50));
+  border: 1px solid rgb(var(--color-primary-200));
   font-size: 0.6875rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  color: #047857;
+  color: rgb(var(--color-primary-700));
   white-space: nowrap;
 }
 
@@ -70,7 +70,7 @@
   margin: 2px 0 0;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--pos-muted, #9ca3af);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -97,12 +97,12 @@
   padding: 0 8px 0 12px;
   border-radius: var(--pos-control-radius, 12px);
   border: 1px solid var(--pos-border);
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
 }
 
 .pos-register-finder__search-icon {
   flex-shrink: 0;
-  color: var(--pos-muted, #9ca3af);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
 }
 
 .pos-register-finder__search-input {
@@ -118,7 +118,7 @@
 }
 
 .pos-register-finder__search-input::placeholder {
-  color: var(--pos-muted, #9ca3af);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
   font-weight: 500;
 }
 
@@ -129,8 +129,8 @@
   flex-shrink: 0;
   padding: 4px 8px;
   border-radius: var(--pos-control-radius, 10px);
-  background: #f3f4f6;
-  color: #6b7280;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
   font-size: 0.625rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -145,9 +145,9 @@
   min-height: 40px;
   padding: 0 12px;
   border-radius: var(--pos-control-radius, 12px);
-  border: 1px solid #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border: 1px solid rgb(var(--color-info) / 0.3);
+  background: rgb(var(--color-info-soft));
+  color: rgb(var(--color-info-text));
   font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
@@ -155,8 +155,8 @@
 }
 
 .pos-register-finder__card-btn:hover {
-  background: #dbeafe;
-  border-color: #93c5fd;
+  background: rgb(var(--color-info-soft));
+  border-color: rgb(var(--color-info) / 0.45);
 }
 
 .pos-register-finder .pos-quick-filters {
@@ -196,8 +196,8 @@
   padding: 0 10px;
   border-radius: var(--pos-control-radius, 10px);
   border: 1px solid var(--pos-border);
-  background: var(--pos-surface-elevated, #fff);
-  color: var(--pos-muted, #6b7280);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
@@ -205,7 +205,7 @@
 
 .pos-register-finder__picker-close:hover {
   color: var(--pos-text);
-  border-color: #d1d5db;
+  border-color: rgb(var(--color-line-strong));
 }
 
 .pos-register-finder__picker-body {
@@ -218,9 +218,9 @@
 
 /* Light */
 .cashier-app.cashier-app--light .pos-register-finder__check-badge {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
-  color: #047857;
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-200));
+  color: rgb(var(--color-primary-700));
 }
 
 .cashier-app.cashier-app--light .pos-register-finder__search {
@@ -229,65 +229,6 @@
 }
 
 .cashier-app.cashier-app--light .pos-register-finder__f2 {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-/* Terminal / dark */
-.cashier-app.cashier-app--terminal .pos-register-finder {
-  background: transparent;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__check-badge {
-  background: rgba(46, 196, 182, 0.16);
-  border-color: rgba(46, 196, 182, 0.4);
-  color: #2ec4b6;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__title {
-  color: #f3f4f6;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__client {
-  color: rgba(243, 244, 246, 0.55);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__search {
-  background: rgba(15, 23, 42, 0.55);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__search-input {
-  color: #f3f4f6;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__f2 {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(243, 244, 246, 0.7);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__card-btn {
-  background: rgba(59, 130, 246, 0.18);
-  border-color: rgba(96, 165, 250, 0.45);
-  color: #93c5fd;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__card-btn:hover {
-  background: rgba(59, 130, 246, 0.28);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__picker {
-  border-top-color: rgba(255, 255, 255, 0.08);
-  background: transparent;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__picker-title {
-  color: #f3f4f6;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-finder__picker-close {
-  background: rgba(15, 23, 42, 0.55);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(243, 244, 246, 0.7);
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
 }

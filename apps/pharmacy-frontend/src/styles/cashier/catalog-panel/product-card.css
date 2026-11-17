@@ -33,7 +33,7 @@
   font-size: 0.6875rem;
   line-height: 1.3;
   font-weight: 600;
-  color: #334155;
+  color: rgb(var(--color-ink));
   word-break: break-all;
 }
 

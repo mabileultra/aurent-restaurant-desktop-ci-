@@ -177,18 +177,18 @@ export default function PharmacyReceiptsPage() {
                   }}
                 >
                   <PharmacySelectCell t={t} row={row} selection={selection} />
-                  <td>{page * pageSize + idx + 1}</td>
-                  <td><PharmacyStatusBadge status={row.status} t={t} /></td>
-                  <td>{t('pharmacyStock.receiptTypeReceipt')}</td>
-                  <td>
+                  <td className="ui-tabular whitespace-nowrap text-ink-muted">{page * pageSize + idx + 1}</td>
+                  <td className="whitespace-nowrap"><PharmacyStatusBadge status={row.status} t={t} /></td>
+                  <td className="whitespace-nowrap">{t('pharmacyStock.receiptTypeReceipt')}</td>
+                  <td className="ui-tabular whitespace-nowrap">
                     <span className="pharmacy-stock__link">{row.receiptNumber}</span>
                   </td>
-                  <td>{row.documentDate || '—'}</td>
+                  <td className="ui-tabular whitespace-nowrap text-ink-muted">{row.documentDate || '—'}</td>
                   <td>{row.supplierName || '—'}</td>
                   <td>{row.storeName || '—'}</td>
-                  <td>{formatMoney(row.totalCost)}</td>
-                  <td>{formatMoney(row.totalRetail)}</td>
-                  <td>{row.totalQuantity ?? 0}</td>
+                  <td className="ui-tabular whitespace-nowrap">{formatMoney(row.totalCost)}</td>
+                  <td className="ui-tabular whitespace-nowrap">{formatMoney(row.totalRetail)}</td>
+                  <td className="ui-tabular whitespace-nowrap">{row.totalQuantity ?? 0}</td>
                   <td className="pharmacy-stock__row-actions" onClick={(e) => e.stopPropagation()}>
                     <div className="pharmacy-stock__icon-row">
                       <PharmacyReceiptLineRowMenu

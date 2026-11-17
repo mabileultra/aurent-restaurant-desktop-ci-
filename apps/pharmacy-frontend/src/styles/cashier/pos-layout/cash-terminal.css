@@ -14,7 +14,7 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 0.875rem;
-  color: var(--pos-text, #f1f5f9);
+  color: var(--pos-text, rgb(var(--color-canvas)));
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__summary-row strong {
@@ -30,8 +30,8 @@
   gap: 12px;
   padding: 14px 16px;
   border-radius: 10px;
-  border: 1px solid rgb(46 196 182 / 0.35);
-  background: rgb(46 196 182 / 0.08);
+  border: 1px solid rgb(var(--color-primary-500) / 0.35);
+  background: rgb(var(--color-primary-500) / 0.08);
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__received-label {
@@ -39,7 +39,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--pos-green, #2ec4b6);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__received-value {
@@ -49,7 +49,7 @@
 .pos-pay-cash-panel--terminal .pos-pay-cash__received-value .auto-fit-text__inner {
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--pos-green, #2ec4b6);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   line-height: 1;
 }
 
@@ -59,7 +59,7 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 0.875rem;
-  color: var(--pos-text, #f1f5f9);
+  color: var(--pos-text, rgb(var(--color-canvas)));
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__change-value {
@@ -72,7 +72,7 @@
   font-size: 0.875rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--pos-text, #f1f5f9);
+  color: var(--pos-text, rgb(var(--color-canvas)));
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__change-value--ready {
@@ -84,14 +84,14 @@
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.35;
-  color: var(--pos-muted, #94a3b8);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__shortfall {
   margin: 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--pos-danger, #f87171);
+  color: var(--pos-danger, rgb(var(--color-danger)));
 }
 
 .pos-pay-cash-panel--terminal .pos-keypad {
@@ -111,8 +111,8 @@
   min-height: 52px;
   border: none;
   border-radius: 12px;
-  background: #b91c1c;
-  color: #fff;
+  background: rgb(var(--color-danger-text));
+  color: rgb(var(--color-surface));
   font-size: 0.875rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -121,7 +121,5 @@
 }
 
 .pos-pay-panel__back-check:hover {
-  background: #dc2626;
+  background: rgb(var(--color-danger-text));
 }
-
-

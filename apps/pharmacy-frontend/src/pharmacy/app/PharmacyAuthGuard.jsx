@@ -11,8 +11,8 @@ export default function PharmacyAuthGuard({ children, requireOffice = false }) {
 
   if (!hydrated) {
     return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-        <p style={{ color: 'var(--pharm-muted)' }}>Загрузка…</p>
+      <main className="grid min-h-screen place-items-center bg-canvas">
+        <p className="text-sm text-ink-muted">Загрузка…</p>
       </main>
     );
   }

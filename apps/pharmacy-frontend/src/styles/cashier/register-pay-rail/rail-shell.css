@@ -20,7 +20,7 @@
   min-height: 0;
   height: 100%;
   background: transparent;
-  color: var(--pos-text, #f1f5f9);
+  color: var(--pos-text, rgb(var(--color-canvas)));
 }
 
 .pos-pay-register-rail__head {
@@ -30,8 +30,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--pos-border, #2a3548);
-  background: var(--pos-surface-elevated, #1c2433);
+  border-bottom: 1px solid var(--pos-border, rgb(var(--color-surface)));
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
 }
 
 .pos-pay-register-rail__back {
@@ -41,16 +41,16 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid var(--pos-border, #2a3548);
+  border: 1px solid var(--pos-border, rgb(var(--color-surface)));
   border-radius: 10px;
-  background: var(--pos-surface, #151b26);
-  color: var(--pos-text, #f1f5f9);
+  background: var(--pos-surface, rgb(var(--color-surface)));
+  color: var(--pos-text, rgb(var(--color-canvas)));
   cursor: pointer;
 }
 
 .pos-pay-register-rail__back:hover {
-  border-color: rgb(46 196 182 / 0.4);
-  color: var(--pos-green, #2ec4b6);
+  border-color: rgb(var(--color-primary-500) / 0.4);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .pos-pay-register-rail__back--spacer,
@@ -65,21 +65,21 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--pos-muted, #94a3b8);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
   text-align: center;
   line-height: 1.2;
 }
 
 .pos-pay-panel--register-rail.is-step-method .pos-pay-register-rail__title,
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-register-rail__title {
-  color: var(--pos-money, #f5c842);
+  color: var(--pos-money, rgb(var(--color-warning)));
 }
 
 .pos-pay-register-rail__amount {
   font-size: 0.875rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--pos-money, #f5c842);
+  color: var(--pos-money, rgb(var(--color-warning)));
   white-space: nowrap;
 }
 
@@ -90,7 +90,7 @@
   flex-direction: column;
   overflow: hidden;
   padding: 0;
-  background: #0c1018;
+  background: rgb(var(--color-surface));
 }
 
 .pos-pay-panel--register-rail .pos-pay-panel__scroll {
@@ -100,7 +100,6 @@
   padding: 12px 14px;
   position: relative;
 }
-
 
 .pos-pay-panel--register-rail .pos-pay-panel__step {
   flex: 1 1 auto;
@@ -115,8 +114,8 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px 14px 14px;
-  border-top: 1px solid var(--pos-border, #2a3548);
-  background: var(--pos-surface-elevated, #1c2433);
+  border-top: 1px solid var(--pos-border, rgb(var(--color-surface)));
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
 }
 
 .pos-pay-panel--register-rail .pos-pay-panel__primary {
@@ -124,8 +123,8 @@
   min-height: clamp(44px, 12cqi, 58px);
   border: none;
   border-radius: 16px;
-  background: var(--pos-green-gradient, var(--pos-green, #006847));
-  color: #fff;
+  background: var(--pos-green-gradient, var(--pos-green, rgb(var(--color-primary-500))));
+  color: rgb(var(--color-surface));
   font-size: 0.9375rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -138,7 +137,7 @@
 }
 
 .pos-pay-panel--register-rail .pos-pay-panel__primary:disabled {
-  background: #3d4f3a;
+  background: rgb(var(--color-ink));
   color: rgb(255 255 255 / 0.55);
 }
 
@@ -146,4 +145,3 @@
   width: 100%;
   min-height: 48px;
 }
-

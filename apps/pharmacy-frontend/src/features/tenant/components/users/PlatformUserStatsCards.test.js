@@ -47,11 +47,11 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-slate-600');
+    expect(html).toContain('ring-2 ring-primary-500');
     expect(html).toContain('aria-pressed="true"');
   });
 
-  it('applies emerald active ring on active users card when statusFilter is ACTIVE', () => {
+  it('applies active ring on active users card when statusFilter is ACTIVE', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformUserStatsCards, {
         ...defaultProps,
@@ -59,10 +59,10 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-emerald-600');
+    expect(html).toContain('ring-2 ring-primary-500');
   });
 
-  it('applies purple active ring on management card when roleFilter is MANAGEMENT', () => {
+  it('applies active ring on management card when roleFilter is MANAGEMENT', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformUserStatsCards, {
         ...defaultProps,
@@ -70,10 +70,10 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-purple-600');
+    expect(html).toContain('ring-2 ring-primary-500');
   });
 
-  it('applies sky active ring on staff card when roleFilter is STAFF', () => {
+  it('applies active ring on staff card when roleFilter is STAFF', () => {
     const html = renderToStaticMarkup(
       React.createElement(PlatformUserStatsCards, {
         ...defaultProps,
@@ -81,6 +81,6 @@ describe('PlatformUserStatsCards', () => {
       })
     );
 
-    expect(html).toContain('ring-2 ring-sky-600');
+    expect(html).toContain('ring-2 ring-primary-500');
   });
 });

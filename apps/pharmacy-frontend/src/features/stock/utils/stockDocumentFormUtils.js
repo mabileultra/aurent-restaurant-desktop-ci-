@@ -1,5 +1,5 @@
 export const STOCK_DOC_INPUT_CLS =
-  'w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-800';
+  'ui-input h-9 px-2.5 py-1.5 text-sm';
 
 export function emptyReceiptLine() {
   return {

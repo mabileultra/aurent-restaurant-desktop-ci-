@@ -15,5 +15,5 @@ export default function PaymentIcon({ method }) {
               : method === 'MIXED'
                 ? Wallet
                 : Banknote;
-  return <Icon size={14} className="text-slate-600 dark:text-slate-400" />;
+  return <Icon size={15} strokeWidth={1.75} className="shrink-0 text-ink-muted" />;
 }

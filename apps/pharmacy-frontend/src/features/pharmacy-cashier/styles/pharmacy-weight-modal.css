@@ -7,7 +7,7 @@
 }
 
 .weight-entry-modal.pharmacy-modal .weight-entry-modal__panel {
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   border: 1px solid var(--pm-border);
   border-radius: calc(var(--pm-radius) + 2px);
@@ -21,7 +21,7 @@
 .weight-entry-modal.pharmacy-modal .weight-entry-modal__tab.is-active {
   background: var(--pm-brand);
   border-color: var(--pm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .weight-entry-modal.pharmacy-modal .weight-entry-modal__input:focus {
@@ -32,5 +32,5 @@
 .weight-entry-modal.pharmacy-modal .weight-entry-modal__btn--primary {
   background: var(--pm-brand);
   border-color: var(--pm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
 }

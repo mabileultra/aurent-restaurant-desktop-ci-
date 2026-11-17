@@ -47,7 +47,7 @@ export default function TablePagination({
 
   return (
     <div
-      className={`table-pagination flex flex-col gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800 lg:flex-row lg:items-center lg:justify-between ${className}`.trim()}
+      className={`table-pagination flex flex-col gap-3 border-t border-line px-4 py-3 lg:flex-row lg:items-center lg:justify-between ${className}`.trim()}
     >
       <div className="table-pagination__meta">
         <span className="table-pagination__range">

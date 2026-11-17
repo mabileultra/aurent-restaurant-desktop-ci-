@@ -2,7 +2,7 @@ import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/sh
 
 export default function ReportTableCard({ children, pagination, pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS }) {
   return (
-    <div className="admin-table-shell">
+    <div className="ui-table-wrap">
       <div className="overflow-x-auto">{children}</div>
       {pagination ? (
         <TablePagination

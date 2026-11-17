@@ -1,114 +1,63 @@
 /**
- * Тема аптечных таблиц / chrome.
- * Эталон — молочный фон, как шапка и чек. Не наследует тёмные --pos-* продуктовой кассы.
- *
- * Токены на `.cashier-app--pharmacy-pos` — для topbar/pay;
- * дублируются на `.pharmacy-cashier` — для таблиц.
+ * Pharmacy table & POS surface tokens — light-only Pharma Green.
  */
 
 .cashier-app.cashier-app--pharmacy-pos,
 .pharmacy-cashier {
-  /* Brand */
-  --pharm-brand: #006847;
-  --pharm-brand-hover: #005538;
-  --pharm-brand-soft: rgb(0 104 71 / 0.14);
-  --pharm-teal: #0d9488;
-  --pharm-teal-soft: rgb(13 148 136 / 0.16);
+  --pharm-brand: rgb(var(--color-primary-500));
+  --pharm-brand-hover: rgb(var(--color-primary-600));
+  --pharm-brand-pressed: rgb(var(--color-primary-700));
+  --pharm-brand-soft: rgb(var(--color-primary-50));
+  --pharm-teal: rgb(var(--color-primary-600));
+  --pharm-teal-soft: rgb(var(--color-primary-50));
 
-  --pharm-ink: #26332d;
-  --pharm-muted: #7a817c;
-  --pharm-border: #e3e8e4;
-  --pharm-surface: #fff;
-  --pharm-elevated: #fff;
-  --pharm-hover: #e7f6ec;
-  --pharm-active: #e7f6ec;
-  --pharm-accent: var(--pharm-brand);
-  --pharm-accent-soft: var(--pharm-brand-soft);
-  --pharm-cell-bg: #fff;
+  --pharm-ink: rgb(var(--color-ink));
+  --pharm-muted: rgb(var(--color-ink-muted));
+  --pharm-border: rgb(var(--color-line));
+  --pharm-surface: rgb(var(--color-canvas));
+  --pharm-elevated: rgb(var(--color-surface));
+  --pharm-hover: rgb(var(--color-primary-50));
+  --pharm-active: rgb(var(--color-primary-100));
+  --pharm-accent: rgb(var(--color-primary-500));
+  --pharm-accent-soft: rgb(var(--color-primary-50));
+  --pharm-cell-bg: rgb(var(--color-surface));
+  --pharm-card: rgb(var(--color-surface));
 
-  /* OK — остаток в норме */
-  --pharm-ok: #e3f1dc;
-  --pharm-ok-strong: #cfe8c4;
-  --pharm-ok-text: #174936;
+  --pharm-ok: rgb(var(--color-success-soft));
+  --pharm-ok-strong: rgb(var(--color-primary-100));
+  --pharm-ok-text: rgb(var(--color-success-text));
 
-  /* Warn — низкий остаток / РЕЦЕПТ */
-  --pharm-warn: #f8e6c8;
-  --pharm-warn-strong: #f0d19a;
-  --pharm-warn-text: #8a5a12;
-  --pharm-recipe: #f8e6c8;
-  --pharm-recipe-border: #e9a23b;
+  --pharm-warn: rgb(var(--color-warning-soft));
+  --pharm-warn-strong: rgb(var(--color-warning-soft));
+  --pharm-warn-text: rgb(var(--color-warning-text));
 
-  /* Danger — просрочка */
-  --pharm-danger: #f6d4d2;
-  --pharm-danger-strong: #eeb8b5;
-  --pharm-danger-text: #a33a36;
+  --pharm-recipe: rgb(var(--color-info-soft));
+  --pharm-recipe-border: rgb(var(--color-info) / 0.28);
 
-  /* Info — DMED / полка */
-  --pharm-info: #e3f1dc;
-  --pharm-info-strong: #cfe8c4;
-  --pharm-info-text: #174936;
+  --pharm-danger: rgb(var(--color-danger-soft));
+  --pharm-danger-strong: rgb(var(--color-danger-soft));
+  --pharm-danger-text: rgb(var(--color-danger-text));
 
-  --pharm-focus-ring: rgb(0 104 71 / 0.28);
-  --pharm-radius: 10px;
-  --pharm-radius-sm: 6px;
+  --pharm-info: rgb(var(--color-info-soft));
+  --pharm-info-strong: rgb(var(--color-info-soft));
+  --pharm-info-text: rgb(var(--color-info-text));
+
+  --pharm-focus-ring: var(--color-focus-ring);
+  --pharm-radius: var(--radius-card);
+  --pharm-radius-sm: var(--radius-control);
+  --pharm-warn-accent: rgb(var(--color-warning));
+  --pharm-danger-accent: rgb(var(--color-danger));
 }
 
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--light,
-.cashier-app.cashier-app--light .pharmacy-cashier {
-  /* TZ Aurent pharmacy POS — молочный фон, зелёный бренд */
-  --pharm-brand: #245b45;
-  --pharm-brand-hover: #174936;
-  --pharm-brand-soft: rgb(36 91 69 / 0.12);
-  --pharm-teal: #245b45;
-  --pharm-teal-soft: rgb(36 91 69 / 0.1);
-
-  --pharm-ink: #26332d;
-  --pharm-muted: #7a817c;
-  --pharm-border: #e3e8e4;
-  --pharm-surface: #fff;
-  --pharm-elevated: #fff;
-  --pharm-hover: #e7f6ec;
-  --pharm-active: #e7f6ec;
-  --pharm-accent: var(--pharm-brand);
-  --pharm-accent-soft: var(--pharm-brand-soft);
-  --pharm-cell-bg: #fff;
-  --pharm-card: #fff;
-
-  --pharm-ok: #e3f1dc;
-  --pharm-ok-strong: #cfe8c4;
-  --pharm-ok-text: #174936;
-
-  --pharm-warn: #f8e6c8;
-  --pharm-warn-strong: #f0d19a;
-  --pharm-warn-text: #8a5a12;
-  --pharm-recipe: #f8e6c8;
-  --pharm-recipe-border: #e9a23b;
-
-  --pharm-danger: #f6d4d2;
-  --pharm-danger-strong: #eeb8b5;
-  --pharm-danger-text: #a33a36;
-
-  --pharm-info: #e3f1dc;
-  --pharm-info-strong: #cfe8c4;
-  --pharm-info-text: #174936;
-
-  --pharm-focus-ring: rgb(36 91 69 / 0.22);
-  --pharm-radius: 10px;
-  --pharm-radius-sm: 8px;
-  --pharm-warn-accent: #e9a23b;
-  --pharm-danger-accent: #d9534f;
-}
-
-/* Аптечный shell: бренд и pay наследуют зелёный Aurent, не синий admin */
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--light {
-  --pos-accent: #245b45;
-  --pos-green: #245b45;
-  --pos-green-hover: #174936;
-  --pos-green-soft: rgb(36 91 69 / 0.12);
-  --pos-bg: #f1f4f9;
-  --pos-surface: #fff;
-  --pos-surface-elevated: #fff;
-  --pos-border: #e3e8e4;
-  --pos-text: #26332d;
-  --pos-muted: #7a817c;
+  --pos-accent: rgb(var(--color-primary-500));
+  --pos-green: rgb(var(--color-primary-500));
+  --pos-green-hover: rgb(var(--color-primary-600));
+  --pos-green-soft: rgb(var(--color-primary-50));
+  --pos-bg: rgb(var(--color-canvas));
+  --pos-surface: rgb(var(--color-surface));
+  --pos-surface-elevated: rgb(var(--color-surface));
+  --pos-border: rgb(var(--color-line));
+  --pos-text: rgb(var(--color-ink));
+  --pos-muted: rgb(var(--color-ink-muted));
 }

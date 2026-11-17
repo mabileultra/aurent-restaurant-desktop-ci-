@@ -32,7 +32,7 @@
   min-height: 2.5rem;
   border: 1px solid var(--pm-border);
   border-radius: var(--pm-radius-sm);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -60,7 +60,7 @@
   height: 2.5rem;
   border: 1px solid var(--pm-border);
   border-radius: var(--pm-radius-sm);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   cursor: pointer;
 }
@@ -76,7 +76,7 @@
   padding: 0.45rem 2rem 0.45rem 0.75rem;
   border: 1px solid var(--pm-border);
   border-radius: var(--pm-radius-sm);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   font-size: 1.125rem;
   font-weight: 800;
@@ -109,7 +109,7 @@
   min-height: 2.25rem;
   border: 1px solid var(--pm-border);
   border-radius: var(--pm-radius-sm);
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pm-ink);
   font-weight: 700;
   cursor: pointer;
@@ -118,7 +118,7 @@
 .pharmacy-discount-modal__preset.is-active {
   background: var(--pm-brand);
   border-color: var(--pm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .pharmacy-discount-modal__preview {

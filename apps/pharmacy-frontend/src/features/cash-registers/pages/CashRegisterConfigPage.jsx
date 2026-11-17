@@ -17,22 +17,22 @@ export default function CashRegisterConfigPage() {
       {p.isError && <CashRegisterErrorBanner message={errorMessage} />}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">{p.t('cashRegisters.configTitle')}</h1>
+        <h1 className="text-xl font-bold text-ink">{p.t('cashRegisters.configTitle')}</h1>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => p.setAddOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+            className="ui-btn ui-btn-primary"
           >
-            <Plus size={16} />
+            <Plus size={16} strokeWidth={1.75} />
             {p.t('cashRegisters.configAdd')}
           </button>
           <button
             type="button"
             onClick={() => p.setFiltersOpen(true)}
-            className="admin-btn-primary px-4 py-2 text-sm"
+            className="ui-btn ui-btn-secondary"
           >
-            <Filter size={16} />
+            <Filter size={16} strokeWidth={1.75} />
             {p.t('products.toolbar.filters')}
           </button>
         </div>

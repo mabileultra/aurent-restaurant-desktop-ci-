@@ -9,15 +9,20 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 26px;
-  padding: 0 8px;
-  border: 1px solid var(--pharm-border, #dddcd5);
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgb(var(--color-line));
   border-radius: 8px;
-  background: var(--pharm-card, #f7f6f1);
-  color: var(--pharm-ink, #26332d);
-  font-size: 0.625rem;
-  font-weight: 700;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.pharmacy-catalog-toolbar__btn:hover:not(:disabled) {
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-line-strong));
 }
 
 .pharmacy-catalog-toolbar__btn:disabled {
@@ -26,7 +31,7 @@
 }
 
 .pharmacy-catalog-toolbar__btn--ghost {
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
 }
 
 .pharmacy-catalog-toolbar__btn .is-spin {
@@ -37,15 +42,15 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.625rem;
-  font-weight: 700;
-  color: var(--pharm-muted, #7a817c);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(var(--color-ink-muted));
   cursor: pointer;
   user-select: none;
 }
 
 .pharmacy-catalog-toolbar__auto input {
-  accent-color: var(--pharm-brand, #245b45);
+  accent-color: rgb(var(--color-primary-500));
 }
 
 .pharmacy-catalog-toolbar__cols {
@@ -57,14 +62,14 @@
   top: calc(100% + 4px);
   right: 0;
   z-index: 40;
-  min-width: 200px;
+  min-width: 210px;
   max-height: 280px;
   overflow: auto;
   padding: 8px;
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: 10px;
-  background: var(--pharm-elevated, #f8f7f3);
-  box-shadow: 0 8px 24px rgb(38 51 45 / 0.12);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-elevated);
 }
 
 .pharmacy-catalog-cols-pop__list {
@@ -78,14 +83,14 @@
   align-items: center;
   gap: 8px;
   padding: 4px 2px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--pharm-ink, #26332d);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
   cursor: pointer;
 }
 
 .pharmacy-catalog-cols-pop__item input {
-  accent-color: var(--pharm-brand, #245b45);
+  accent-color: rgb(var(--color-primary-500));
 }
 
 @keyframes pharmacy-catalog-spin {
