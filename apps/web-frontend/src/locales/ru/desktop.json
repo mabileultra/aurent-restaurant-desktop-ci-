@@ -20,6 +20,8 @@
     "barcodePrint": "Печать штрих-кодов",
     "checkUpdates": "Проверить обновления",
     "aboutApp": "О программе",
+    "aboutDesktopVersion": "Версия десктопа",
+    "aboutUiVersion": "Версия интерфейса (UI)",
     "checkUpdatesLatest": "Установлена последняя версия",
     "checkUpdatesAvailable": "Доступна версия {{version}} — загрузка началась",
     "checkUpdatesFailed": "Не удалось проверить обновления",

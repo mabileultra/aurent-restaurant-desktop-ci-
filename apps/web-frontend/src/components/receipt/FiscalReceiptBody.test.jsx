@@ -214,5 +214,21 @@ describe('FiscalReceiptBody', () => {
       expect(html).toContain('FM998877');
       expect(html).not.toContain('Версия ПО');
     });
+
+    it('resolves browser version with short git hash automatically when sale.appVersion is omitted', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: {
+            ...MOCK_SALE,
+            fiscalTerminalId: 'FM998877',
+            fiscalReceiptSeq: '101',
+            fiscalSign: '998877665544',
+          },
+        })
+      );
+
+      expect(html).toContain('Dastur versiyasi');
+      expect(html).toMatch(/1\.0\.0 \([0-9a-f]{7,}\)/i);
+    });
   });
 });

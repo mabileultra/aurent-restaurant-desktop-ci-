@@ -199,6 +199,8 @@
     "barcodePrint": "Shtrix-kod chop etish",
     "checkUpdates": "Yangilanishni tekshirish",
     "aboutApp": "Dastur haqida",
+    "aboutDesktopVersion": "Desktop versiyasi",
+    "aboutUiVersion": "UI versiyasi",
     "checkUpdatesLatest": "So‘nggi versiya o‘rnatilgan",
     "checkUpdatesAvailable": "{{version}} versiyasi mavjud — yuklab olinmoqda",
     "checkUpdatesFailed": "Yangilanishni tekshirib bo‘lmadi",

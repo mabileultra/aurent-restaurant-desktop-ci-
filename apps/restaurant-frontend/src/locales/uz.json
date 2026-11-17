@@ -939,6 +939,8 @@
       "navLabel": "Kassa",
       "checkUpdates": "Yangilanishni tekshirish",
       "aboutApp": "Dastur haqida",
+      "aboutDesktopVersion": "Desktop versiyasi",
+      "aboutUiVersion": "UI versiyasi",
       "checkUpdatesChecking": "Tekshirilmoqda…",
       "checkUpdatesLatest": "Eng so‘nggi versiya o‘rnatilgan",
       "checkUpdatesAvailable": "{{version}} versiyasi bor — yuklash boshlandi",

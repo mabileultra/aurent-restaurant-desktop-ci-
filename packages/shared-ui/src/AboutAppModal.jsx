@@ -42,6 +42,14 @@ export default function AboutAppModal({
 
   const title = tr('desktop.aboutApp', tr('about.title', 'Dastur haqida'));
   const versionLabel = tr('fiscalReceipt.appVersion', tr('about.version', 'Dastur versiyasi'));
+  const desktopVersionLabel = tr(
+    'desktop.aboutDesktopVersion',
+    tr('about.desktopVersion', 'Desktop versiyasi')
+  );
+  const uiVersionLabel = tr(
+    'desktop.aboutUiVersion',
+    tr('about.uiVersion', 'UI versiyasi')
+  );
   const fmLabel = tr('fiscalReceipt.fmNumber', tr('about.fmNumber', 'FM raqami'));
   const licenseLabel = tr('about.licenseNumber', 'Litsenziya raqami');
   const platformLabel = versionInfo.isDesktop
@@ -123,12 +131,31 @@ export default function AboutAppModal({
         </div>
 
         <div className="py-4 space-y-3 text-sm">
-          <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
-            <span className="text-slate-500 dark:text-slate-400">{versionLabel}</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
-              {versionInfo.version ? `v${versionInfo.version}` : '1.0.0'}
-            </span>
-          </div>
+          {versionInfo.isDesktop ? (
+            <>
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                <span className="text-slate-500 dark:text-slate-400">{desktopVersionLabel}</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+                  {versionInfo.desktopVersion || versionInfo.version || '1.0.0'}
+                </span>
+              </div>
+              {versionInfo.uiVersion ? (
+                <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                  <span className="text-slate-500 dark:text-slate-400">{uiVersionLabel}</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+                    {versionInfo.uiVersion}
+                  </span>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+              <span className="text-slate-500 dark:text-slate-400">{versionLabel}</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+                {versionInfo.version || '1.0.0'}
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
             <span className="text-slate-500 dark:text-slate-400">Platforma</span>

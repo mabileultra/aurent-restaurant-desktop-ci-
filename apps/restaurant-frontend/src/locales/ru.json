@@ -975,6 +975,8 @@
       "navLabel": "Касса",
       "checkUpdates": "Проверить обновления",
       "aboutApp": "О программе",
+      "aboutDesktopVersion": "Версия десктопа",
+      "aboutUiVersion": "Версия интерфейса (UI)",
       "checkUpdatesChecking": "Проверка…",
       "checkUpdatesLatest": "Установлена последняя версия",
       "checkUpdatesAvailable": "Доступна версия {{version}} — загрузка началась",
