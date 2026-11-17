@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { BaseButton, PageLayout } from '../../../components/ui';
 import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import { buildBusinessTypeFilterOptions } from '../utils/businessTypeFilterOptions';
+import PlatformCompaniesStatusTabs from '../components/PlatformCompaniesStatusTabs';
 import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
 import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
 import PlatformCompanyStatsCards from '../components/PlatformCompanyStatsCards';
@@ -43,51 +44,14 @@ export default function PlatformCompaniesPage() {
       {/* 2. Status Segmented Tabs + Filters Toolbar */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Segmented Status Tabs */}
-          <div className="aa-size-seg flex items-center rounded-aa-md bg-aa-surface-sunken border border-aa-line font-semibold w-full sm:w-auto overflow-x-auto overflow-y-hidden shadow-none">
-            <button
-              type="button"
-              onClick={() => p.setStatusFilter('ALL')}
-              className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
-                p.statusFilter === 'ALL'
-                  ? 'bg-aa-surface text-aa-ink shadow-xs'
-                  : 'text-aa-ink-muted hover:text-aa-ink'
-              }`}
-            >
-              <span>{p.t('platform.tabAll', { defaultValue: 'Barchasi' })}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
-                {p.totalCompanies}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => p.setStatusFilter('ACTIVE')}
-              className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
-                p.statusFilter === 'ACTIVE'
-                  ? 'bg-aa-surface text-aa-ink shadow-xs'
-                  : 'text-aa-ink-muted hover:text-aa-ink'
-              }`}
-            >
-              <span>{p.t('platform.tabActive', { defaultValue: 'Faol' })}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
-                {p.activeCompanies}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => p.setStatusFilter('INACTIVE')}
-              className={`aa-size-seg-btn flex-1 sm:flex-initial whitespace-nowrap rounded-aa-sm transition-all inline-flex items-center justify-center font-semibold cursor-pointer ${
-                p.statusFilter === 'INACTIVE'
-                  ? 'bg-aa-surface text-aa-ink shadow-xs'
-                  : 'text-aa-ink-muted hover:text-aa-ink'
-              }`}
-            >
-              <span>{p.t('platform.tabInactive', { defaultValue: 'Nofaol' })}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs leading-4 bg-aa-surface-sunken text-aa-ink-muted aa-num font-medium">
-                {p.inactiveCompanies}
-              </span>
-            </button>
-          </div>
+          <PlatformCompaniesStatusTabs
+            statusFilter={p.statusFilter}
+            onStatusFilterChange={p.setStatusFilter}
+            totalCompanies={p.totalCompanies}
+            activeCompanies={p.activeCompanies}
+            inactiveCompanies={p.inactiveCompanies}
+            t={p.t}
+          />
         </div>
 
         <PlatformCompactFilterBar

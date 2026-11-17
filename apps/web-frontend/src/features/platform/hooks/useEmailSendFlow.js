@@ -7,13 +7,14 @@ import { useAuthStore } from '../../../store/authStore';
 import { AUDIENCE_MODES, ROLE_OPTIONS } from '../utils/emailConstants';
 import { formatNumberWithSpaces } from '../utils/emailFormatUtils';
 import { clearEmailDraft, loadEmailDraft, saveEmailDraft } from '../utils/emailDraftStorage';
-
-function createIdempotencyKey() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID().replace(/-/g, '');
-  }
-  return `${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`.slice(0, 32);
-}
+import {
+  createIdempotencyKey,
+  computeRoleCounts,
+  buildRoleOptionsWithCounts,
+  computeRecipientCount,
+  resolveEmailSampleUser,
+  validateEmailSendPayload,
+} from '../utils/emailSendHelpers';
 
 export function useEmailSendFlow() {
   const { t, i18n } = useTranslation();
@@ -53,28 +54,13 @@ export function useEmailSendFlow() {
     return Array.isArray(usersData?.content) ? usersData.content : [];
   }, [usersData]);
 
-  // Dynamic role counts calculated directly from active users
-  const roleCounts = useMemo(() => {
-    const counts = { ADMIN: 0, CASHIER: 0, WAITER: 0, MANAGER: 0, COOK: 0 };
-    activeUsers.forEach((u) => {
-      const r = u.role?.toUpperCase();
-      if (counts[r] !== undefined) counts[r] += 1;
-    });
-    return counts;
-  }, [activeUsers]);
-
-  const roleOptions = useMemo(() => {
-    return ROLE_OPTIONS.map((opt) => ({
-      ...opt,
-      count: roleCounts[opt.id] ?? 0,
-    }));
-  }, [roleCounts]);
+  const roleCounts = useMemo(() => computeRoleCounts(activeUsers), [activeUsers]);
+  const roleOptions = useMemo(() => buildRoleOptionsWithCounts(roleCounts), [roleCounts]);
 
   const toggleRole = (rId) => setRoles((p) => ({ ...p, [rId]: !p[rId] }));
 
   const recipientCount = useMemo(() => {
-    if (mode === 'all') return usersData?.totalElements ?? activeUsers.length;
-    return activeUsers.filter((u) => Boolean(roles[u.role?.toUpperCase()])).length;
+    return computeRecipientCount(mode, roles, activeUsers, usersData?.totalElements);
   }, [mode, roles, activeUsers, usersData]);
 
   const setSubject = (val) => {
@@ -89,7 +75,6 @@ export function useEmailSendFlow() {
 
   const insertVariable = (varKey) => setMessage(message ? `${message} ${varKey}` : varKey);
 
-  // Real preview query from backend
   const previewUser = activeUsers[0] || currentUser;
   const { data: previewData, isFetching: isPreviewLoading } = useQuery({
     queryKey: ['platform-email-preview', debouncedPreview.subject, debouncedPreview.message, previewUser?.id],
@@ -134,16 +119,10 @@ export function useEmailSendFlow() {
   });
 
   const handleSend = () => {
-    const errs = {};
-    if (!subject.trim()) errs.subject = 'Mavzuni kiriting';
-    if (!message.trim()) errs.message = 'Xabar matnini kiriting';
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs);
-      toast.error('Iltimos, maydonlarni to‘ldiring');
-      return;
-    }
-    if (recipientCount === 0) {
-      toast.error('Kamida bitta qabul qiluvchi tanlang');
+    const check = validateEmailSendPayload({ subject, message, recipientCount });
+    if (!check.valid) {
+      if (Object.keys(check.errors).length > 0) setErrors(check.errors);
+      toast.error(check.toastMessage);
       return;
     }
     idempotencyKeyRef.current = createIdempotencyKey();
@@ -191,14 +170,7 @@ export function useEmailSendFlow() {
   }, [mode, roles, t]);
 
   const currentSample = useMemo(() => {
-    if (activeUsers.length > 0) {
-      const u = activeUsers[0];
-      return { name: u.fullName || u.username, email: u.email || 'user@aurent.uz', role: u.role, company: u.companyName || 'Aurent POS' };
-    }
-    if (currentUser) {
-      return { name: currentUser.fullName || currentUser.username, email: currentUser.email || 'admin@aurent.uz', role: currentUser.role, company: 'Aurent POS' };
-    }
-    return { name: 'Xodim', email: 'user@aurent.uz', role: 'Foydalanuvchi', company: 'Aurent POS' };
+    return resolveEmailSampleUser(activeUsers, currentUser);
   }, [activeUsers, currentUser]);
 
   return {

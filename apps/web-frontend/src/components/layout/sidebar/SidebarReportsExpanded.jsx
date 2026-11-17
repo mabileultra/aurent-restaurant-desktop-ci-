@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { ICONS, REPORT_HUB } from '../layoutNavConfig';
