@@ -29,6 +29,7 @@ import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
+import com.pos.sales.support.cashlimit.CashPaymentRestrictionGuard;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceAdvancePaymentIntegrationService;
 import com.pos.integrations.finance.service.FinanceAdvanceSaleIntegrationService;
@@ -84,6 +85,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final SaleFiscalApplier saleFiscalApplier;
     private final MarkingAfterSaleService markingAfterSaleService;
     private final MarkingSoldJournalService markingSoldJournalService;
+    private final CashPaymentRestrictionGuard cashPaymentRestrictionGuard;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -174,6 +176,12 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             BigDecimal payable = total.subtract(advanceAmount).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
             amounts = paymentResolver.resolve(paymentMethod, payable, req);
             validatePaymentTotals(total, advanceAmount, amounts);
+            cashPaymentRestrictionGuard.assertCashAllowed(
+                paymentMethod,
+                amounts.cash(),
+                List.copyOf(productsById.values()),
+                attributesByProductId
+            );
             if (paymentMethod == Sale.PaymentMethod.CASHLESS) {
                 cardType = null;
             } else if (paymentMethod == Sale.PaymentMethod.CARD && cardType == null) {

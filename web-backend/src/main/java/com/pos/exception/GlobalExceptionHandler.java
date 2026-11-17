@@ -29,6 +29,7 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -312,10 +313,31 @@ public class GlobalExceptionHandler {
     }
 
     private Map<String, Object> contextForResponse(Map<String, Object> context) {
-        if (!includeContextInResponse || context == null || context.isEmpty()) {
+        if (context == null || context.isEmpty()) {
             return null;
         }
-        return context;
+        if (includeContextInResponse) {
+            return context;
+        }
+        // Стабильные бизнес-коды (AUR-13 и др.) всегда отдаём фронту.
+        Object reasonCode = context.get("reasonCode");
+        if (reasonCode == null) {
+            return null;
+        }
+        Map<String, Object> slim = new LinkedHashMap<>();
+        slim.put("reasonCode", reasonCode);
+        copyIfPresent(context, slim, "category");
+        copyIfPresent(context, slim, "cashPaymentLimitSoum");
+        copyIfPresent(context, slim, "cashAmount");
+        copyIfPresent(context, slim, "vehicleAgeYears");
+        return slim;
+    }
+
+    private static void copyIfPresent(Map<String, Object> from, Map<String, Object> to, String key) {
+        Object value = from.get(key);
+        if (value != null) {
+            to.put(key, value);
+        }
     }
 
     private void logClientError(

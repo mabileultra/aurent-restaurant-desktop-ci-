@@ -57,6 +57,13 @@ spring:
           time_zone: UTC
 
 app:
+  operator:
+    brv:
+      # Актуальная БРВ (сум). Подменяется из API/секретов оператора.
+      amount: ${APP_OPERATOR_BRV_AMOUNT:340000}
+      # Порог налички = amount × cash-limit-brv-units (ориентир ≈ 25 млн сум).
+      cash-limit-brv-units: ${APP_OPERATOR_CASH_LIMIT_BRV_UNITS:74}
+      currency: ${APP_OPERATOR_BRV_CURRENCY:UZS}
   security:
     user-cache:
       max-size: 2000
