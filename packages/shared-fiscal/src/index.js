@@ -46,4 +46,9 @@ export {
   isAdvanceOrCreditReceipt,
   FISCAL_QR_SUPPRESSED_RECEIPT_TYPES,
 } from './receiptQr.js';
-
+export {
+  FORBIDDEN_MXIK_REASON_CODE,
+  FORBIDDEN_MXIK_CODES,
+  normalizeMxik,
+  isForbiddenMxik,
+} from './forbiddenMxik.js';

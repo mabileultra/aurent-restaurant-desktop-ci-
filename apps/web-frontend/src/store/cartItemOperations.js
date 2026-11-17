@@ -1,3 +1,4 @@
+import { FORBIDDEN_MXIK_REASON_CODE, isForbiddenMxik, normalizeMxik } from '@aurent/shared-fiscal';
 import { isPieceLikeProduct, roundQty } from '../utils/quantityFormat';
 import { round2 } from '../utils/taxAmounts';
 import {
@@ -6,7 +7,17 @@ import {
   syncDiscountFromPercent,
 } from './cartCalculations';
 
+function assertProductMxikAllowed(product) {
+  const raw = product?.ikpu ?? product?.mxik;
+  if (!isForbiddenMxik(raw)) return;
+  const err = new Error(`FORBIDDEN_MXIK:${normalizeMxik(raw)}`);
+  err.code = FORBIDDEN_MXIK_REASON_CODE;
+  err.mxik = normalizeMxik(raw);
+  throw err;
+}
+
 export function addPieceItemToCart(items, product, quantity = 1, currentOrderDiscount = 0) {
+  assertProductMxikAllowed(product);
   const qty = roundQty(quantity);
   const existing = items.find(
     (i) =>
@@ -39,6 +50,7 @@ export function addPieceItemToCart(items, product, quantity = 1, currentOrderDis
 }
 
 export function insertSeparatePieceItemToCart(items, product, quantity = 1, currentOrderDiscount = 0) {
+  assertProductMxikAllowed(product);
   const line = syncDiscountFromPercent(buildLine(product, quantity));
   const nextItems = [...items, line];
   return {
@@ -60,6 +72,7 @@ export function patchCartLineInCart(items, lineId, patch, currentOrderDiscount =
 }
 
 export function addWeightLineToCart(items, product, quantityKg, currentOrderDiscount = 0) {
+  assertProductMxikAllowed(product);
   const line = syncDiscountFromPercent(buildLine(product, quantityKg));
   const nextItems = [...items, line];
   return {

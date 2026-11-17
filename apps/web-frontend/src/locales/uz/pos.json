@@ -357,6 +357,7 @@
     "cashPaymentCategoryForbidden": "Ushbu toifa mahsulot/xizmat uchun naqd to‘lov taqiqlangan",
     "cashPaymentVehicleAgeForbidden": "M/N/O/G toifadagi 10 yildan yosh transport uchun naqd to‘lov taqiqlangan",
     "cashPaymentAmountLimit": "Naqd to‘lov ruxsat etilgan chegaradan oshib ketdi ({{limit}} so‘m)",
+    "forbiddenMxik": "Taqiqlangan MXIK {{mxik}} bilan mahsulotni sotib bo‘lmaydi",
     "mySalesTitle": "Mening savdolarim",
     "salesListTitle": "Savdolar",
     "salesSelectHint": "Ro‘yxatdan savdoni tanlang",

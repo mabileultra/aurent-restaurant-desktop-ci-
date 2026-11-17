@@ -1,0 +1,21 @@
+---
+description: AUR-14 forbidden MXIK/IKPU sale block
+globs:
+  - web-backend/src/main/java/com/pos/sales/support/mxik/**
+  - packages/shared-fiscal/src/forbiddenMxik*
+  - apps/web-frontend/src/store/cartStore.js
+---
+
+# Forbidden MXIK (AUR-14)
+
+## Must
+
+- Block codes: `06302001004033010`, `09405001011002016`, `00000000000000000` (normalize digits-only).
+- Server: `ForbiddenMxikGuard` in grocery checkout **before** stock decrease / fiscal — product never enters sale or FM payload.
+- Client: cart `addPieceItem` / `addWeightLine` / `insertSeparatePieceItem` throw `FORBIDDEN_MXIK`; cashier shows toast.
+- API error `context.reasonCode = FORBIDDEN_MXIK` + `mxik`.
+
+## Must NOT
+
+- Soft-allow these codes for fiscal “just this once”.
+- Rely only on frontend — server is source of truth.

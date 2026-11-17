@@ -9,6 +9,7 @@ import {
 } from '../../../marking';
 import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 
 export function usePosMarkingScan({
   storeId,
@@ -42,7 +43,14 @@ export function usePosMarkingScan({
         toast.error(t('pos.outOfStock'));
         return null;
       }
-      const result = applyMarkingScan(payload, product.productMark || product.markCode);
+      let result;
+      try {
+        result = applyMarkingScan(payload, product.productMark || product.markCode);
+      } catch (err) {
+        const msg = resolveForbiddenMxikError(err, t);
+        toast.error(msg || err?.message || t('pos.saleFailed'));
+        return null;
+      }
       if (result.status === 'duplicate') {
         toast.error(t('pos.markingAlreadyCounted'));
         return result;

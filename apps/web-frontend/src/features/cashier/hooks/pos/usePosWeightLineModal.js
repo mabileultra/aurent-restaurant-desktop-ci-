@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useCartStore } from '../../../../store/cartStore';
 import { getUnitConfig } from '../../../../utils/unitConfig';
 import { minQtyForUnit, qtyStepForUnit, roundQty } from '../../../../utils/quantityFormat';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 
 export function usePosWeightLineModal({
   addWeightLine,
@@ -45,7 +46,13 @@ export function usePosWeightLineModal({
           updateUnitPrice(weightEditLineId, lineUnitPrice);
         }
       } else {
-        lineId = addWeightLine({ ...payload, sellingPrice: lineUnitPrice }, kg);
+        try {
+          lineId = addWeightLine({ ...payload, sellingPrice: lineUnitPrice }, kg);
+        } catch (err) {
+          const msg = resolveForbiddenMxikError(err, t);
+          toast.error(msg || err?.message || t('pos.saleFailed'));
+          return;
+        }
         const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
         if (line) showLineAddedToast(line, payload.name);
       }
@@ -56,6 +63,7 @@ export function usePosWeightLineModal({
     [
       addWeightLine,
       showLineAddedToast,
+      t,
       updateQuantity,
       updateUnitPrice,
       weightEditLineId,

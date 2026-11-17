@@ -326,6 +326,7 @@ public class GlobalExceptionHandler {
         }
         Map<String, Object> slim = new LinkedHashMap<>();
         slim.put("reasonCode", reasonCode);
+        copyIfPresent(context, slim, "mxik");
         copyIfPresent(context, slim, "category");
         copyIfPresent(context, slim, "cashPaymentLimitSoum");
         copyIfPresent(context, slim, "cashAmount");

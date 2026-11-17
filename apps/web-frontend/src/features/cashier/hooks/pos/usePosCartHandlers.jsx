@@ -7,6 +7,7 @@ import { fmtMoney as fmt } from '../../../../utils/formatMoney';
 import { isMeasuredProduct } from '../../../../utils/quantityFormat';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { isMarkingOnlyProduct } from '../../../marking';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 import { usePosWeightLineModal } from './usePosWeightLineModal';
 import { usePosMarkingScan } from './usePosMarkingScan';
 import { usePosBarcodeScannerHandler } from './usePosBarcodeScannerHandler';
@@ -137,7 +138,14 @@ export function usePosCartHandlers({
         weight.setWeightModalProduct(payload);
         return;
       }
-      const lineId = addPieceItem(payload, 1);
+      let lineId;
+      try {
+        lineId = addPieceItem(payload, 1);
+      } catch (err) {
+        const msg = resolveForbiddenMxikError(err, t);
+        toast.error(msg || err?.message || t('pos.saleFailed'));
+        return;
+      }
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
       if (line) showLineAddedToast(line, product.name);
       setSelectedLineId(lineId);

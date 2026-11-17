@@ -10,6 +10,7 @@ import { posBarcodeCandidates } from '../../utils/posBarcodeCandidates';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 import { canAddProductFromSearchList } from './posProductsSearchStale';
 import { useCartStore } from '../../../../store/cartStore';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 
 export function usePosBarcodeScannerHandler({
   storeId,
@@ -67,7 +68,15 @@ export function usePosBarcodeScannerHandler({
             return false;
           }
           const payload = cartProductPayload(weightHit.product);
-          const lineId = addWeightLine(payload, weightHit.weightKg);
+          let lineId;
+          try {
+            lineId = addWeightLine(payload, weightHit.weightKg);
+          } catch (err) {
+            const msg = resolveForbiddenMxikError(err, t);
+            toast.error(msg || err?.message || t('pos.saleFailed'));
+            setSearch('');
+            return true;
+          }
           const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
           if (line) showLineAddedToast(line, weightHit.product.name);
           if (lineId) setSelectedLineId(lineId);
