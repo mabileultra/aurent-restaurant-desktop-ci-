@@ -1,5 +1,4 @@
 import { BrowserRouter } from 'react-router-dom';
-import AdminThemeSync from './components/shared/AdminThemeSync';
 import GlobalOfflineBanner from './components/shared/GlobalOfflineBanner';
 import HtmlLangSync from './components/shared/HtmlLangSync';
 import TenantDisplayBootstrap from './components/shared/TenantDisplayBootstrap';
@@ -12,7 +11,6 @@ export default function App() {
       <HtmlLangSync />
       <BrowserRouter>
         <TenantDisplayBootstrap>
-          <AdminThemeSync />
           <PharmacyRoutes />
         </TenantDisplayBootstrap>
       </BrowserRouter>

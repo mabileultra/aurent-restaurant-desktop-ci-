@@ -24,19 +24,12 @@ html.app-viewport--canonical .platform-shell {
   height: 6px;
 }
 .platform-shell .admin-sidebar::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: rgb(var(--color-canvas));
 }
 .platform-shell .admin-sidebar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: rgb(var(--color-line-strong));
+  border-radius: 999px;
 }
 .platform-shell .admin-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgb(var(--color-ink-disabled));
 }
-.dark .platform-shell .admin-sidebar::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-.dark .platform-shell .admin-sidebar::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-

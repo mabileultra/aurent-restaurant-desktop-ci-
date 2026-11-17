@@ -1,12 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   cashierThemeClassName,
   clearCashierThemeDocument,
-  readCashierTheme,
   syncCashierThemeDocument,
-  writeCashierTheme,
 } from '../../utils/cashierTheme';
 import { syncRootTheme } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
@@ -33,7 +31,6 @@ const CATALOG_KIND = PHARMACY_CATALOG_KIND;
  * Not a fork of grocery secondary routes / bottom-nav world.
  */
 export function usePharmacyPosShell() {
-  const [cashierTheme, setCashierTheme] = useState(readCashierTheme);
   const zoom = useCashierUiScale();
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -43,12 +40,12 @@ export function usePharmacyPosShell() {
   const { shift, shiftIsOpen } = useCashierShiftView(storeId, { catalogKind: CATALOG_KIND });
 
   useLayoutEffect(() => {
-    syncCashierThemeDocument(cashierTheme);
+    syncCashierThemeDocument();
     return () => {
       clearCashierThemeDocument();
       syncRootTheme();
     };
-  }, [cashierTheme]);
+  }, []);
 
   useEffect(() => {
     resetCashierDocumentUiState();
@@ -96,14 +93,6 @@ export function usePharmacyPosShell() {
     return t(`roles.${user.role}`, { defaultValue: user.role });
   }, [t, user?.role]);
 
-  const toggleCashierTheme = () => {
-    setCashierTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      writeCashierTheme(next);
-      return next;
-    });
-  };
-
   const canOpenOffice = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   const handleLogout = () => {
@@ -116,7 +105,7 @@ export function usePharmacyPosShell() {
     navigate('/login', { replace: true });
   };
 
-  const themeClass = cashierThemeClassName(cashierTheme);
+  const themeClass = cashierThemeClassName();
   const shellClassName = [
     'cashier-app',
     'pharmacy-pos-shell',
@@ -139,8 +128,6 @@ export function usePharmacyPosShell() {
     catalogKind: CATALOG_KIND,
     shift,
     shiftIsOpen,
-    cashierTheme,
-    toggleCashierTheme,
     canOpenOffice,
     handleLogout,
     shellClassName,

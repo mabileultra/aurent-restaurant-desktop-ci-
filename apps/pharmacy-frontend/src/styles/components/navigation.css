@@ -1,0 +1,38 @@
+@layer components {
+  .ui-sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-control text-sm font-medium text-ink-muted hover:bg-canvas hover:text-ink transition-colors duration-150;
+  }
+
+  .ui-sidebar-link-active {
+    @apply bg-primary-50 text-primary-700 font-semibold hover:bg-primary-50 hover:text-primary-700;
+  }
+
+  .ui-sidebar-sublink {
+    @apply flex items-center gap-2.5 pl-9 pr-3 py-2 rounded-control text-[13px] font-medium text-ink-muted hover:bg-canvas hover:text-ink transition-colors duration-150;
+  }
+
+  .ui-sidebar-sublink-active {
+    @apply bg-primary-50 text-primary-700 font-semibold hover:bg-primary-50 hover:text-primary-700;
+  }
+
+  .ui-tabs {
+    @apply inline-flex items-center gap-1 p-1 rounded-control bg-canvas border border-line;
+  }
+
+  .ui-tab {
+    @apply inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium text-ink-muted hover:text-ink transition-colors duration-150 whitespace-nowrap;
+  }
+
+  .ui-tab-active {
+    @apply bg-surface text-primary-700 font-semibold shadow-sm;
+  }
+
+  .ui-pagination-btn {
+    @apply inline-flex items-center justify-center min-w-[36px] h-9 px-2.5 rounded-control border border-line bg-surface text-xs font-medium text-ink hover:bg-primary-50 hover:border-line-strong disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ui-pagination-btn-active {
+    @apply bg-primary-500 text-surface border-primary-500 hover:bg-primary-600 hover:border-primary-600;
+  }
+}

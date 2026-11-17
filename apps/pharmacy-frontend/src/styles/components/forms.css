@@ -1,0 +1,37 @@
+@layer components {
+  .ui-label {
+    @apply block text-xs font-medium text-ink-muted mb-1.5;
+  }
+
+  .ui-input {
+    @apply w-full h-10 px-3 rounded-control border border-line bg-surface text-sm text-ink placeholder:text-ink-disabled transition-colors duration-150 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40 disabled:bg-canvas disabled:text-ink-disabled disabled:cursor-not-allowed;
+  }
+
+  .ui-input-pos {
+    @apply w-full h-12 px-3.5 rounded-control border border-line bg-surface text-base text-ink placeholder:text-ink-disabled transition-colors duration-150 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40 disabled:bg-canvas disabled:text-ink-disabled disabled:cursor-not-allowed;
+  }
+
+  .ui-input-error {
+    @apply border-danger focus:border-danger focus:ring-danger/30;
+  }
+
+  .ui-select {
+    @apply ui-input pr-9 cursor-pointer;
+  }
+
+  .ui-select-pos {
+    @apply ui-input-pos pr-9 cursor-pointer;
+  }
+
+  .ui-textarea {
+    @apply w-full min-h-[88px] px-3 py-2.5 rounded-control border border-line bg-surface text-sm text-ink placeholder:text-ink-disabled transition-colors duration-150 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40 disabled:bg-canvas disabled:text-ink-disabled disabled:cursor-not-allowed;
+  }
+
+  .ui-field-error {
+    @apply mt-1 text-xs font-medium text-danger-text;
+  }
+
+  .ui-checkbox {
+    @apply h-4 w-4 rounded border-line-strong text-primary-500 focus:ring-2 focus:ring-primary-500/40 cursor-pointer;
+  }
+}

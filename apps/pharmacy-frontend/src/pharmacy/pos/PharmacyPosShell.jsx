@@ -34,8 +34,6 @@ function PharmacyPosShellInner() {
           storeId={p.storeId}
           canOpenOffice={p.canOpenOffice}
           onLogout={p.handleLogout}
-          cashierTheme={p.cashierTheme}
-          toggleCashierTheme={p.toggleCashierTheme}
         />
         <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
           <PharmacyShellOutlet />
