@@ -5,8 +5,8 @@
 }
 
 .cashier-app .pos-order-panel__head {
-  background: var(--pos-surface-elevated, #1c2433);
-  border-bottom: 1px solid var(--pos-border, #2a3548);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
+  border-bottom: 1px solid var(--pos-border, rgb(var(--color-surface)));
   padding: 12px 16px;
 }
 
@@ -15,7 +15,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--pos-muted, #94a3b8);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
 }
 
 .cashier-app .pos-order-panel__badge {
@@ -23,36 +23,36 @@
 }
 
 .cashier-app .pos-cart-table__head {
-  background: var(--pos-surface-elevated, #1c2433);
-  border-bottom: 1px solid var(--pos-border, #2a3548);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
+  border-bottom: 1px solid var(--pos-border, rgb(var(--color-surface)));
 }
 
 .cashier-app .pos-cart-table__head .pos-cart-table__col {
-  color: var(--pos-muted, #94a3b8);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
   font-size: 0.625rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  border-right-color: var(--pos-border, #2a3548);
+  border-right-color: var(--pos-border, rgb(var(--color-surface)));
   padding: 10px 12px;
 }
 
 .cashier-app .pos-cart-table__body {
-  background: var(--pos-surface, #151b26);
+  background: var(--pos-surface, rgb(var(--color-surface)));
 }
 
 .cashier-app .pos-cart-table__row {
-  background: var(--pos-surface, #151b26);
-  border-bottom-color: var(--pos-border, #2a3548);
+  background: var(--pos-surface, rgb(var(--color-surface)));
+  border-bottom-color: var(--pos-border, rgb(var(--color-surface)));
 }
 
 .cashier-app .pos-cart-table__col {
-  border-right-color: var(--pos-border, #2a3548);
+  border-right-color: var(--pos-border, rgb(var(--color-surface)));
 }
 
 .cashier-app .pos-cart-table__empty-hint {
   padding: 24px 16px;
   font-style: italic;
-  color: var(--pos-muted, #94a3b8);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
 }
 
 /* Текущий чек — таблица и итоги (макет) */
@@ -177,11 +177,6 @@
   height: 18px;
 }
 
-.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-cart-table__row.is-active {
-  background: rgb(46 196 182 / 0.06);
-  box-shadow: inset 3px 0 0 var(--pos-green, #2ec4b6);
-}
-
 .cashier-app.cashier-app--light .pos-order-panel--register .pos-cart-table__row.is-active {
   background: var(--pos-surface-active);
   box-shadow: inset 3px 0 0 var(--pos-ink);
@@ -198,7 +193,7 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   text-transform: none;
-  color: var(--pos-text, #f1f5f9);
+  color: var(--pos-text, rgb(var(--color-canvas)));
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__sku {
@@ -214,12 +209,12 @@
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.25;
-  color: var(--pos-green, #2ec4b6);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__price-btn,
 .cashier-app .pos-order-panel--register .pos-cart-table__price-btn span {
-  color: var(--pos-text, #f1f5f9);
+  color: var(--pos-text, rgb(var(--color-canvas)));
   font-weight: 700;
   font-size: 1.0625rem;
   line-height: 1.25;
@@ -232,7 +227,7 @@
 .cashier-app .pos-order-panel--register .pos-cart-table__sum {
   font-size: 1.0625rem;
   font-weight: 800;
-  color: var(--pos-money, #f5c842);
+  color: var(--pos-money, rgb(var(--color-warning)));
   letter-spacing: -0.01em;
   white-space: nowrap;
   text-align: right;
@@ -245,4 +240,3 @@
   font-size: 0.6875rem;
   padding: 2px 10px 6px;
 }
-

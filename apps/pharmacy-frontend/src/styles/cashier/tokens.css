@@ -29,13 +29,13 @@ html.cashier-theme--light {
   --pos-green-soft: rgb(var(--color-primary-50));
   --pos-green-gradient: linear-gradient(
     135deg,
-    rgb(var(--color-primary-50)) 0%,
-    rgb(var(--color-surface)) 100%
+    rgb(var(--color-primary-500)) 0%,
+    rgb(var(--color-primary-600)) 100%
   );
   --pos-green-gradient-hover: linear-gradient(
     135deg,
-    rgb(var(--color-primary-100)) 0%,
-    rgb(var(--color-primary-50)) 100%
+    rgb(var(--color-primary-600)) 0%,
+    rgb(var(--color-primary-700)) 100%
   );
   --pos-bg: rgb(var(--color-canvas));
   --pos-surface: rgb(var(--color-surface));
@@ -62,13 +62,13 @@ html.cashier-theme--light {
   --pos-green-soft: rgb(var(--color-primary-50));
   --pos-green-gradient: linear-gradient(
     135deg,
-    rgb(var(--color-primary-50)) 0%,
-    rgb(var(--color-surface)) 100%
+    rgb(var(--color-primary-500)) 0%,
+    rgb(var(--color-primary-600)) 100%
   );
   --pos-green-gradient-hover: linear-gradient(
     135deg,
-    rgb(var(--color-primary-100)) 0%,
-    rgb(var(--color-primary-50)) 100%
+    rgb(var(--color-primary-600)) 0%,
+    rgb(var(--color-primary-700)) 100%
   );
   --pos-bg: rgb(var(--color-canvas));
   --pos-bg-gradient: rgb(var(--color-canvas));

@@ -136,7 +136,7 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
 
   return (
     <div className="ui-modal-overlay z-[60]">
-      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
       <div className="ui-modal-panel relative max-w-lg max-h-[90vh]">
         <div className="ui-modal-header">
           <h2 className="text-base font-semibold text-ink">{t('cashRegisters.configModalTitle')}</h2>

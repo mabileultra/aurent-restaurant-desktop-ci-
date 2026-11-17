@@ -77,19 +77,19 @@
 }
 
 .cashier-sales-badge--voided {
-  background: #fde8e8;
-  color: #c92a2a;
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-sales-badge--refunded {
-  background: #fff3bf;
-  color: #e67700;
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
 }
 
 /* Карточка таблицы */
 .cashier-sales-card {
   border-radius: 12px;
-  border: 1px solid var(--pos-border, #e5e7eb);
+  border: 1px solid var(--pos-border, rgb(var(--color-line)));
   box-shadow: 0 2px 8px rgb(15 23 42 / 0.06);
   overflow: hidden;
 }
@@ -114,19 +114,19 @@
   top: 0;
   z-index: 1;
   padding: 10px 12px;
-  background: #f3f4f6;
-  border-bottom: 2px solid #e5e7eb;
+  background: rgb(var(--color-canvas));
+  border-bottom: 2px solid rgb(var(--color-line));
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #4b5563;
+  color: rgb(var(--color-ink-muted));
   white-space: nowrap;
 }
 
 .cashier-sales-table tbody td {
   padding: 10px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgb(var(--color-canvas));
   vertical-align: middle;
 }
 
@@ -136,31 +136,31 @@
 }
 
 .cashier-sales-table__row:hover {
-  background: #f8faf9;
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-sales-table__row:nth-child(even) {
-  background: #fafbfc;
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-sales-table__row:nth-child(even):hover {
-  background: #f3f7f5;
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-sales-table__empty {
   text-align: center;
-  color: #9ca3af;
+  color: rgb(var(--color-ink-disabled));
   padding: 2.5rem 1rem !important;
 }
 
 .cashier-sales-table__receipt {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 600;
-  color: #111827;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-sales-table__date {
-  color: #6b7280;
+  color: rgb(var(--color-ink-muted));
   white-space: nowrap;
 }
 
@@ -168,7 +168,7 @@
   font-weight: 700;
   text-align: right;
   white-space: nowrap;
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .cashier-sales-table__col-num {
@@ -178,7 +178,7 @@
 .cashier-sales-table__return {
   border: none;
   background: transparent;
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 8px;
@@ -187,7 +187,7 @@
 }
 
 .cashier-sales-table__return:hover:not(:disabled) {
-  background: var(--pos-green-soft, #e8f5ef);
+  background: var(--pos-green-soft, rgb(var(--color-primary-50)));
 }
 
 .cashier-sales-pill {
@@ -200,43 +200,43 @@
 }
 
 .cashier-sales-pill--cash {
-  background: #ecfdf5;
-  color: #047857;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
 }
 
 .cashier-sales-pill--card {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: rgb(var(--color-info-soft));
+  color: rgb(var(--color-info-text));
 }
 
 .cashier-sales-pill--cashless {
-  background: #ecfeff;
-  color: #0e7490;
+  background: rgb(var(--color-info-soft));
+  color: rgb(var(--color-info-text));
 }
 
 .cashier-sales-pill--mixed {
-  background: #f5f3ff;
-  color: #6d28d9;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
 }
 
 .cashier-sales-pill--mpesa {
-  background: #fef3c7;
-  color: #b45309;
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
 }
 
 .cashier-sales-pill--advance {
-  background: #fff7ed;
-  color: #c2410c;
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
 }
 
 .cashier-sales-pill--credit {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-sales-badge--completed {
-  background: #e8f5ef;
-  color: #006847;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-500));
 }
 
 .cashier-sales-pagination {
@@ -246,13 +246,13 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 14px;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background: rgb(var(--color-canvas));
+  border-top: 1px solid rgb(var(--color-line));
 }
 
 .cashier-sales-pagination__info {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: rgb(var(--color-ink-muted));
 }
 
 .cashier-sales-pagination__sep {
@@ -269,29 +269,28 @@
   min-width: 34px;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(var(--color-line-strong));
   border-radius: 8px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
+  color: rgb(var(--color-ink));
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .cashier-sales-pagination__btn:hover:not(:disabled) {
-  border-color: var(--pos-green, #006847);
-  color: var(--pos-green, #006847);
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
+  color: var(--pos-green, rgb(var(--color-primary-500)));
 }
 
 .cashier-sales-pagination__btn.is-active {
-  background: var(--pos-green, #006847);
-  border-color: var(--pos-green, #006847);
-  color: #fff;
+  background: var(--pos-green, rgb(var(--color-primary-500)));
+  border-color: var(--pos-green, rgb(var(--color-primary-500)));
+  color: rgb(var(--color-surface));
 }
 
 .cashier-sales-pagination__btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
-

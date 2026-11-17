@@ -645,7 +645,7 @@
 .billing-calendar {
   padding: 0.55rem 0.55rem 0.65rem;
   border-radius: 0.85rem;
-  border: 1px solid #dce7e1;
+  border: 1px solid rgb(var(--color-line));
   background: rgb(var(--color-surface));
 }
 
@@ -680,8 +680,8 @@
   width: 1.6rem;
   height: 1.6rem;
   border-radius: 0.45rem;
-  color: #14532d;
-  background: #ecfdf3;
+  color: rgb(var(--color-success-text));
+  background: rgb(var(--color-primary-50));
 }
 
 .billing-calendar__nav-btn:hover {
@@ -716,7 +716,7 @@
 }
 
 .billing-calendar__day:hover:not(.billing-calendar__day--empty) {
-  background: #ecfdf3;
+  background: rgb(var(--color-primary-50));
 }
 
 .billing-calendar__day--empty {

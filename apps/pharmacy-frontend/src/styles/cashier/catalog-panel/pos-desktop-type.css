@@ -29,7 +29,7 @@
   font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.3;
-  color: var(--pos-muted, #64748b);
+  color: var(--pos-muted, rgb(var(--color-ink-muted)));
 }
 
 .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen

@@ -24,14 +24,14 @@
   width: 100%;
   height: 44px;
   padding: 0 14px;
-  background: #f3f4f6;
+  background: rgb(var(--color-canvas));
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-control-radius, 12px);
 }
 
 .pos-search-bar__icon {
   flex-shrink: 0;
-  color: #9ca3af;
+  color: rgb(var(--color-ink-disabled));
 }
 
 .pos-search-bar__input {
@@ -46,7 +46,7 @@
 }
 
 .pos-search-bar__input::placeholder {
-  color: #9ca3af;
+  color: rgb(var(--color-ink-disabled));
 }
 
 .pos-search-bar__scan {
@@ -82,27 +82,27 @@
 
 .pos-category-nav__pill {
   flex-shrink: 0;
-  border: 1px solid #dbe4ee;
+  border: 1px solid rgb(var(--color-line));
   border-radius: var(--pos-control-radius, 10px);
   padding: 8px 16px;
   font-size: 0.8125rem;
   font-weight: 600;
-  background: #eef2f7;
-  color: #334155;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s;
 }
 
 .pos-category-nav__pill:hover:not(.is-active) {
-  border-color: #c5d0dc;
-  background: #e4eaf2;
+  border-color: rgb(var(--color-line-strong));
+  background: rgb(var(--color-line));
 }
 
 .pos-category-nav__pill.is-active {
   border-color: var(--pos-green);
   background: var(--pos-green);
-  color: #fff;
+  color: rgb(var(--color-surface));
   box-shadow: 0 1px 4px rgb(0 104 71 / 0.25);
 }
 
@@ -183,7 +183,7 @@
   flex-direction: row;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, var(--pos-green-soft) 0%, #fff 55%);
+  background: linear-gradient(135deg, var(--pos-green-soft) 0%, rgb(var(--color-surface)) 55%);
   border-color: rgb(0 104 71 / 0.2);
 }
 
@@ -247,7 +247,7 @@
   padding: 6px 10px 6px 6px;
   border: 1px solid var(--pos-border);
   border-radius: 8px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pos-green);
   font-size: 0.75rem;
   font-weight: 700;
@@ -278,7 +278,7 @@
   border: 1px solid var(--pos-border);
   border-radius: 8px;
   overflow: hidden;
-  background: #f3f4f6;
+  background: rgb(var(--color-canvas));
 }
 
 .pos-catalog-toolbar__view-btn {
@@ -295,7 +295,7 @@
 
 .pos-catalog-toolbar__view-btn.is-active {
   background: var(--pos-green);
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .pos-catalog-toolbar__view-btn + .pos-catalog-toolbar__view-btn {
@@ -352,7 +352,7 @@
   margin-top: 2px;
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #334155;
+  color: rgb(var(--color-ink));
   word-break: break-all;
 }
 
@@ -369,4 +369,3 @@
   width: 100%;
   box-sizing: border-box;
 }
-

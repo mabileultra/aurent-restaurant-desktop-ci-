@@ -12,7 +12,7 @@
   height: 40px;
   border: 1px solid var(--pos-border);
   border-radius: 12px;
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
   color: var(--pos-text);
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
@@ -31,13 +31,13 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #ef4444;
-  color: #fff;
+  background: rgb(var(--color-danger));
+  color: rgb(var(--color-surface));
   font-size: 0.6875rem;
   font-weight: 800;
   line-height: 18px;
   text-align: center;
-  box-shadow: 0 0 0 2px var(--pos-surface, #fff);
+  box-shadow: 0 0 0 2px var(--pos-surface, rgb(var(--color-surface)));
 }
 
 .cashier-notifications__panel {
@@ -51,7 +51,7 @@
   flex-direction: column;
   border: 1px solid var(--pos-border);
   border-radius: 16px;
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
   box-shadow: 0 16px 40px rgb(15 23 42 / 0.18);
   overflow: hidden;
 }
@@ -87,7 +87,7 @@
   gap: 10px;
   padding: 10px;
   border-radius: 12px;
-  background: var(--pos-surface, #f8fafc);
+  background: var(--pos-surface, rgb(var(--color-canvas)));
 }
 
 .cashier-notifications__item + .cashier-notifications__item {
@@ -111,7 +111,7 @@
 }
 
 .cashier-notifications__item--alert .cashier-notifications__item-icon {
-  color: #dc2626;
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-notifications__item-title {
@@ -158,7 +158,7 @@
   border: none;
   border-radius: 8px;
   background: var(--pos-green);
-  color: var(--pos-on-green, #fff);
+  color: var(--pos-on-green, rgb(var(--color-surface)));
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
@@ -181,18 +181,4 @@
 .cashier-notifications__dismiss:hover {
   background: rgb(15 23 42 / 0.06);
   color: var(--pos-text);
-}
-
-.cashier-app.cashier-app--terminal .cashier-notifications__trigger {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
-}
-
-.cashier-app.cashier-app--terminal .cashier-notifications__panel {
-  background: var(--pos-surface-elevated);
-}
-
-.cashier-app.cashier-app--terminal .cashier-notifications__item {
-  background: var(--pos-surface);
 }

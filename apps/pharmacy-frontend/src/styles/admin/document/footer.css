@@ -11,7 +11,7 @@
   padding: 12px 16px;
   border: 1px solid var(--doc-line);
   border-radius: var(--doc-radius);
-  background: #fff;
+  background: rgb(var(--color-surface));
   box-shadow: var(--doc-shadow);
 }
 
@@ -22,14 +22,14 @@
   min-width: 0;
   font-size: 13px;
   line-height: 20px;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
 }
 
 .admin-doc-footer__status--ok {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #15803d;
+  color: rgb(var(--color-success-text));
 }
 
 .admin-doc-footer__status--ok::before {
@@ -38,7 +38,7 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #16a34a;
+  background: rgb(var(--color-success));
   flex: 0 0 8px;
 }
 
@@ -46,15 +46,15 @@
   font-size: 13px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
-  color: #334155;
+  color: rgb(var(--color-ink));
 }
 
 .admin-doc-footer__total--danger {
-  color: #e11d48;
+  color: rgb(var(--color-danger-text));
 }
 
 .admin-doc-footer__total--ok {
-  color: #15803d;
+  color: rgb(var(--color-success-text));
 }
 
 .admin-doc-footer__actions {
@@ -69,8 +69,8 @@
   padding: 0 18px;
   border: 0;
   border-radius: 12px;
-  background: #0b7a4b;
-  color: #fff;
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
   font-size: 14px;
   font-weight: 650;
   letter-spacing: -0.01em;
@@ -78,7 +78,7 @@
 }
 
 .admin-doc-footer__submit:hover:not(:disabled) {
-  background: #08663e;
+  background: rgb(var(--color-primary-600));
 }
 
 .admin-doc-footer__submit:disabled {

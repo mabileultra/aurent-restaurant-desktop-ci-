@@ -33,7 +33,7 @@ export default function DashboardChartsRow({ t, periodReport, topProducts }) {
       <div className="ui-card-padded lg:col-span-2">
         <h2 className="mb-4 text-base font-semibold text-ink">{t('dashboard.revenueChart')}</h2>
         {dailyRows.length === 0 ? (
-          <EmptyState icon={TrendingUp} title={t('reports.empty')} />
+          <EmptyState icon={TrendingUp} title={t('common.noData')} />
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={dailyRows}>
@@ -78,7 +78,7 @@ export default function DashboardChartsRow({ t, periodReport, topProducts }) {
       <div className="ui-card-padded">
         <h2 className="mb-4 text-base font-semibold text-ink">{t('dashboard.topProducts')}</h2>
         {topRows.length === 0 ? (
-          <EmptyState icon={BarChart3} title={t('reports.empty')} />
+          <EmptyState icon={BarChart3} title={t('common.noData')} />
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart

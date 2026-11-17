@@ -4,7 +4,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-lock-overlay__card {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
   color: var(--pos-text);
 }

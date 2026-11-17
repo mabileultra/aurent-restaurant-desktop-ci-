@@ -11,7 +11,7 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
 
   return createPortal(
     <div className="ui-modal-overlay z-[11500]">
-      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
       <div
         className="ui-modal-panel relative max-w-lg max-h-[90vh]"
         role="dialog"

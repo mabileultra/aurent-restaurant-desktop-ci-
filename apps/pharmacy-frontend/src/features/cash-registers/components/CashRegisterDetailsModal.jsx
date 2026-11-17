@@ -43,7 +43,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
 
   return (
     <div className="ui-modal-overlay z-[70]">
-      <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
       <div
         className="cr-details-modal ui-modal-panel relative max-h-[90vh]"
         role="dialog"

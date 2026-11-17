@@ -1,5 +1,6 @@
 @layer components {
-  .ui-overlay {
+  .ui-overlay,
+  .ui-modal-overlay {
     @apply fixed inset-0 z-50 flex items-center justify-center p-4;
     background-color: var(--color-overlay);
   }

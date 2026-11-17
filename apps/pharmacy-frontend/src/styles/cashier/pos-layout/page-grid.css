@@ -151,11 +151,10 @@
 }
 
 @media (min-width: 800px) {
-  .cashier-register__split--catalog .cashier-register__catalog-col > .pos-catalog-panel {
+.cashier-register__split--catalog .cashier-register__catalog-col > .pos-catalog-panel {
     border: none;
     border-radius: 0;
     box-shadow: none;
     background: transparent;
   }
 }
-

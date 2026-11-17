@@ -1,6 +1,6 @@
 /* Light theme — topbar */
 .cashier-app.cashier-app--light .cashier-pos-topbar__cashier {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
   color: var(--pos-text);
 }
@@ -12,18 +12,18 @@
 }
 
 .cashier-app.cashier-app--light .cashier-pos-topbar__logout {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #dc2626;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.35);
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-app.cashier-app--light .cashier-topbar {
-  background: #fff !important;
+  background: rgb(var(--color-surface)) !important;
   border-bottom-color: var(--pos-border) !important;
 }
 
 .cashier-app.cashier-app--light .cashier-topbar__menu {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
   color: var(--pos-muted);
 }
@@ -55,7 +55,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-lang-switch {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
 }
 
@@ -65,13 +65,13 @@
 }
 
 .cashier-app.cashier-app--light .cashier-theme-toggle {
-  background: #f1f5f9;
+  background: rgb(var(--color-canvas));
   border-color: var(--pos-border);
 }
 
 .cashier-app.cashier-app--light .cashier-theme-toggle__opt.is-active {
-  background: #fff;
-  color: #0f172a;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
 }
 

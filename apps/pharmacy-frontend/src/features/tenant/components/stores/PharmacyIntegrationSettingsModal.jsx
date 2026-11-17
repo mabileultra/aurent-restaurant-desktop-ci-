@@ -15,7 +15,7 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
   };
 
   const modalNode = (
-    <div className="ui-modal-overlay z-[1000]">
+    <div className="ui-modal-overlay z-[1000] !bg-transparent">
       <button type="button" className="fixed inset-0 bg-ink/45" aria-label="Close" onClick={onClose} />
       <div
         className="pharm-int-settings ui-modal-panel relative max-w-lg max-h-[90vh]"

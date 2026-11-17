@@ -43,18 +43,13 @@
   font-size: 0.8125rem;
   font-weight: 700;
   gap: 6px;
-  color: var(--pos-muted, #94a3b8);
+  color: var(--pos-muted, rgb(var(--color-ink-disabled)));
 }
 
 .cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-topbar__shift-meta svg,
 .cashier-app.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__shift-meta svg {
   width: 15px;
   height: 15px;
-}
-
-.cashier-app.cashier-app--terminal.cashier-app--touch .cashier-topbar--compact .cashier-topbar__shift-meta,
-.cashier-app.cashier-app--terminal.cashier-app--desktop .cashier-topbar--compact .cashier-topbar__shift-meta {
-  color: #cbd5e1;
 }
 
 .cashier-app.cashier-app--touch .cashier-topbar--compact .cashier-pos-topbar__cashier,
@@ -149,14 +144,4 @@
   letter-spacing: 0.04em;
   border-radius: 8px;
   box-sizing: border-box;
-}
-
-.cashier-app.cashier-app--terminal.cashier-app--touch .cashier-lang-switch__btn,
-.cashier-app.cashier-app--terminal.cashier-app--desktop .cashier-lang-switch__btn {
-  color: #94a3b8;
-}
-
-.cashier-app.cashier-app--terminal.cashier-app--touch .cashier-lang-switch__btn.is-active,
-.cashier-app.cashier-app--terminal.cashier-app--desktop .cashier-lang-switch__btn.is-active {
-  color: var(--pos-on-green, #fff);
 }
