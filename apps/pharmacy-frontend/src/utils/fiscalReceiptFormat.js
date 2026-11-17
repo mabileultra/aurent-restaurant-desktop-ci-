@@ -1,7 +1,9 @@
+import { shouldPrintFiscalQr } from '@aurent/shared-fiscal';
 import { buildOfdCheckUrl, isOfdCheckUrl, isSyntheticFiscalSign, parseOfdCheckParams } from './ofdQrUrl';
 
 /** Данные для QR / фискального признака на чеке. */
 export { fmtMoney, fmtMoneyCompact, fmtQty } from './formatMoney';
+export { shouldPrintFiscalQr } from '@aurent/shared-fiscal';
 
 /** Настоящий фискальный признак Multikassa/ГНК — без локальных MK-/hash fallback. */
 export function buildFiscalSign(sale) {
@@ -44,6 +46,7 @@ export function buildQrPayload(sale) {
  */
 export function resolveReceiptQrValue(sale) {
   if (sale?.printFiscalQr === false) return '';
+  if (!shouldPrintFiscalQr(sale?.receiptType)) return '';
   return buildQrPayload(sale);
 }
 

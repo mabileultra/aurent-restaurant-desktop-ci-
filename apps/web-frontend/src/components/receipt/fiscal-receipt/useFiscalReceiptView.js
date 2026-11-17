@@ -1,4 +1,4 @@
-import { extractCardReceiptDetails, normalizeCardCategory, resolveSalePrescriptionNumber } from '@aurent/shared-fiscal';
+import { extractCardReceiptDetails, normalizeCardCategory, resolveSalePrescriptionNumber, shouldPrintFiscalQr } from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../../config/brand';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { resolveFiscalReceiptTypeLabel, splitDateTime } from '../../../utils/fiscalReceiptFormat';
@@ -66,7 +66,7 @@ export function useFiscalReceiptView(sale, t) {
     virtualRegister: env.VITE_VIRTUAL_REGISTER_ID || env.VITE_REGISTER_NO || '',
   });
   const { date, time } = splitDateTime(sale.createdAt);
-  const canPrintFiscalQr = sale.printFiscalQr !== false;
+  const canPrintFiscalQr = sale.printFiscalQr !== false && shouldPrintFiscalQr(sale?.receiptType);
 
   return {
     isOn,

@@ -146,4 +146,50 @@ describe('FiscalReceiptBody', () => {
     );
     expect(html).not.toContain('Elektron retsept');
   });
+
+  describe('FiscalReceiptBody: QR code suppression for ADVANCE and CREDIT (AUR-4)', () => {
+    const FISCAL_SALE_WITH_QR = {
+      ...MOCK_SALE,
+      fiscalQrUrl: 'https://ofd.soliq.uz/check?t=123&s=456&r=789',
+      fiscalSign: '456',
+      fiscalReceiptSeq: 789,
+      fiscalTerminalId: '123',
+    };
+
+    it('renders QR code svg for standard SALE receipt', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: { ...FISCAL_SALE_WITH_QR, receiptType: 'SALE' },
+        })
+      );
+      expect(html).toContain('<svg');
+    });
+
+    it('renders QR code svg for RETURN receipt', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: { ...FISCAL_SALE_WITH_QR, receiptType: 'RETURN' },
+        })
+      );
+      expect(html).toContain('<svg');
+    });
+
+    it('does NOT render QR code svg for ADVANCE receipt', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: { ...FISCAL_SALE_WITH_QR, receiptType: 'ADVANCE' },
+        })
+      );
+      expect(html).not.toContain('<svg');
+    });
+
+    it('does NOT render QR code svg for CREDIT receipt', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: { ...FISCAL_SALE_WITH_QR, receiptType: 'CREDIT' },
+        })
+      );
+      expect(html).not.toContain('<svg');
+    });
+  });
 });

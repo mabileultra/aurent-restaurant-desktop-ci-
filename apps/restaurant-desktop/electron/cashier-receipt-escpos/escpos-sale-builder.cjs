@@ -11,6 +11,7 @@ const {
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
+  shouldPrintFiscalQr,
 } = require('./escpos-format.cjs');
 const { logWarn } = require('./escpos-log.cjs');
 const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
@@ -428,7 +429,7 @@ async function appendQrAndFooter(printer, payload, jobId) {
   const { sale, receiptFields, qrValue: payloadQr } = payload;
   const fields = receiptFields || {};
 
-  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false) return;
+  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false || !shouldPrintFiscalQr(sale?.receiptType)) return;
 
   const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
   const isTaxQr =
