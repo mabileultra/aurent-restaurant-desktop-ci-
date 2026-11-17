@@ -1,13 +1,19 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import { saleApi, storeApi, pharmacySalesApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
 import { salePaymentLabel } from '../../../utils/salePaymentLabel';
 import { SALES_LEDGER_DEFAULT_FILTERS, SALES_PAGE_SIZE_DEFAULT } from '../constants';
+import {
+  buildSalesQueryParams,
+  buildSalesExportParams,
+  enrichSalesRowsWithStores,
+  formatSaleDateTime,
+  exportSalesExcelFile,
+} from '../utils/salesLedgerHelpers';
 
 export function useSalesLedgerPage() {
   const { t } = useTranslation();
@@ -35,37 +41,15 @@ export function useSalesLedgerPage() {
     enabled: tenantReady,
   });
 
-  const queryParams = useMemo(() => {
-    const a = applied;
-    return {
-      page,
-      size: pageSize,
-      search: search.trim() || undefined,
-      from: a.dateFrom || undefined,
-      to: a.dateTo || undefined,
-      receiptNumber: a.receiptNumber.trim() || undefined,
-      saleId: a.saleId.trim() || undefined,
-      cashierName: a.cashierName.trim() || undefined,
-      paymentMethod: a.paymentMethod || undefined,
-      paymentSettlement: a.paymentSettlement === 'ALL' ? undefined : a.paymentSettlement,
-      storeId: a.storeId === '' ? undefined : Number(a.storeId),
-    };
-  }, [search, page, pageSize, applied]);
+  const queryParams = useMemo(
+    () => buildSalesQueryParams(applied, { page, pageSize, search }),
+    [applied, page, pageSize, search]
+  );
 
-  const exportParams = useMemo(() => {
-    const a = applied;
-    return {
-      search: search.trim() || undefined,
-      from: a.dateFrom || undefined,
-      to: a.dateTo || undefined,
-      receiptNumber: a.receiptNumber.trim() || undefined,
-      saleId: a.saleId.trim() || undefined,
-      cashierName: a.cashierName.trim() || undefined,
-      paymentMethod: a.paymentMethod || undefined,
-      paymentSettlement: a.paymentSettlement === 'ALL' ? undefined : a.paymentSettlement,
-      storeId: a.storeId === '' ? undefined : Number(a.storeId),
-    };
-  }, [search, applied]);
+  const exportParams = useMemo(
+    () => buildSalesExportParams(applied, search),
+    [applied, search]
+  );
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: tenantKey('sales-ledger', catalogKind, queryParams),
@@ -73,20 +57,10 @@ export function useSalesLedgerPage() {
     enabled: tenantReady && !businessTypeLoading,
   });
 
-  const rows = useMemo(() => {
-    const content = data?.content ?? [];
-    if (!stores.length) return content;
-    const nameById = new Map(
-      stores
-        .filter((s) => s?.id != null)
-        .map((s) => [Number(s.id), s.name])
-    );
-    return content.map((row) => {
-      if (row.storeName || row.storeId == null) return row;
-      const name = nameById.get(Number(row.storeId));
-      return name ? { ...row, storeName: name } : row;
-    });
-  }, [data?.content, stores]);
+  const rows = useMemo(
+    () => enrichSalesRowsWithStores(data?.content, stores),
+    [data?.content, stores]
+  );
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
   const loading = isPending;
@@ -111,19 +85,15 @@ export function useSalesLedgerPage() {
   };
 
   const toggleSelectAllPage = () => {
-    if (allPageSelected) {
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
         pageIds.forEach((id) => next.delete(id));
-        return next;
-      });
-    } else {
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
+      } else {
         pageIds.forEach((id) => next.add(id));
-        return next;
-      });
-    }
+      }
+      return next;
+    });
   };
 
   const paymentLabel = useCallback((row) => salePaymentLabel(row, t), [t]);
@@ -134,37 +104,10 @@ export function useSalesLedgerPage() {
     []
   );
 
-  const fmtAt = useCallback((iso) => {
-    try {
-      return format(typeof iso === 'string' ? parseISO(iso) : new Date(iso), 'yyyy-MM-dd, HH:mm:ss');
-    } catch {
-      return '—';
-    }
-  }, []);
-
-  const handleExportSalesExcel = useCallback(async () => {
-    if (catalogKind === 'pharmacy') {
-      toast.error(t('salesLedger.exportPharmacySoon', {
-        defaultValue: 'Экспорт Excel для аптеки пока недоступен',
-      }));
-      return;
-    }
-    try {
-      const res = await saleApi.exportLines(exportParams);
-      const blob = new Blob([res.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sales_ledger_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success(t('salesLedger.exportDone'));
-    } catch (e) {
-      toast.error(e?.response?.data?.message ?? t('salesLedger.exportFailed'));
-    }
-  }, [catalogKind, exportParams, t]);
+  const handleExportSalesExcel = useCallback(
+    () => exportSalesExcelFile(exportParams, { isPharmacy: catalogKind === 'pharmacy', t, saleApi, toast }),
+    [catalogKind, exportParams, t]
+  );
 
   const handleSearchChange = (value) => {
     setSearch(value);
@@ -231,7 +174,7 @@ export function useSalesLedgerPage() {
     toggleSelectAllPage,
     paymentLabel,
     paymentIconMethod,
-    fmtAt,
+    fmtAt: formatSaleDateTime,
     handleSearchChange,
     handleExportSalesExcel,
     resetFilters,

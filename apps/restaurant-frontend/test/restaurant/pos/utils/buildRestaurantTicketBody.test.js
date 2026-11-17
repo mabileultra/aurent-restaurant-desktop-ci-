@@ -104,10 +104,10 @@ describe('buildRestaurantTicketBody bill', () => {
     const joined = lines.join('\n');
 
     expect(lines[0]).toMatch(/Asosiy zal/);
-    expect(lines[0]).toMatch(/Стол 2/);
+    expect(lines[0]).toMatch(/Stol 2/);
     expect(lines[0]).toContain('№729');
-    expect(joined).toContain('Официант: DILBAR');
-    expect(joined).toContain('Смена');
+    expect(joined).toContain('Ofitsiant: DILBAR');
+    expect(joined).toContain('Smena');
 
     const itemRows = lines.filter((row) => /ADRENALIN|BEHAMAD|FANTA/.test(row));
     expect(itemRows).toHaveLength(4);
@@ -123,7 +123,7 @@ describe('buildRestaurantTicketBody bill', () => {
 
     const total = lines.find((row) => String(row).startsWith(EMPH_LINE_PREFIX));
     expect(total).toBeTruthy();
-    expect(total).toMatch(/ИТОГО/i);
+    expect(total).toMatch(/TO‘LOVGA JAMI|JAMI|ИТОГО/i);
     expect(total.slice(EMPH_LINE_PREFIX.length)).toHaveLength(RECEIPT_WIDTH);
   });
 
@@ -151,8 +151,8 @@ describe('buildRestaurantTicketBody bill', () => {
     });
     const joined = lines.join('\n');
     expect(joined).not.toMatch(/Asosiy zal/);
-    expect(joined).toContain('Официант: DILBAR');
-    expect(joined).not.toContain('Спасибо за визит');
+    expect(joined).toContain('Ofitsiant: DILBAR');
+    expect(joined).not.toContain('Tashrifingiz uchun rahmat');
     expect(lines.at(-1)).toBe('---');
   });
 
@@ -185,8 +185,8 @@ describe('buildRestaurantTicketBody bill', () => {
       profile,
       t,
     });
-    expect(lines.some((row) => String(row).startsWith(BOLD_LINE_PREFIX) && /Стол 2|Asosiy/.test(row))).toBe(true);
-    expect(lines.some((row) => String(row).startsWith(BOLD_LINE_PREFIX) && /Официант: DILBAR/.test(row))).toBe(true);
+    expect(lines.some((row) => String(row).startsWith(BOLD_LINE_PREFIX) && /Stol 2|Asosiy/.test(row))).toBe(true);
+    expect(lines.some((row) => String(row).startsWith(BOLD_LINE_PREFIX) && /Ofitsiant: DILBAR/.test(row))).toBe(true);
     expect(lines.some((row) => String(row).startsWith(EMPH_LINE_PREFIX) && /ADRENALIN/.test(row))).toBe(true);
   });
 });

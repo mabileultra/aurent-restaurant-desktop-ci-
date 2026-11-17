@@ -175,6 +175,47 @@
   color: var(--pharm-brand, #245b45);
 }
 
+.pharmacy-pay-stack__prescription {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--pharm-border, #dddcd5);
+  border-radius: 10px;
+  background: var(--pharm-surface, #f2f1ec);
+  color: var(--pharm-muted, #7a817c);
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pharmacy-pay-stack__prescription strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--pharm-ink, #26332d);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Amber — только предупреждение: рецептурный препарат без номера рецепта. */
+.pharmacy-pay-stack__prescription.is-missing {
+  border-color: #d97706;
+  background: #fffbeb;
+}
+
+.pharmacy-pay-stack__prescription.is-missing strong {
+  color: #92400e;
+}
+
+.pharmacy-pay-stack__prescription:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .pharmacy-pay-stack__print {
   margin-top: auto;
   flex-shrink: 0;

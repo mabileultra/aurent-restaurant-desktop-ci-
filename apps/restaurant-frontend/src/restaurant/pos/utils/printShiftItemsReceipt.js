@@ -1,4 +1,5 @@
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { getReceiptTranslator } from '../../../utils/receiptI18n';
 import {
   getDesktopPrinterSettings,
   isDesktopPrinter,
@@ -47,17 +48,18 @@ export function groupShiftItemsByCategory(items, uncategorizedLabel) {
 export async function printShiftItemsReceipt({ report, storeName, cashierName, t } = {}) {
   if (typeof window === 'undefined' || !report) return { mode: 'skip' };
 
+  const tReceipt = getReceiptTranslator(t);
   const items = Array.isArray(report.items) ? report.items : [];
-  const title = t?.('rst.shift.itemsTitle', { defaultValue: 'Продано за смену' }) || 'Продано за смену';
+  const title = tReceipt('rst.shift.itemsTitle', { defaultValue: 'Smenada sotildi' }) || 'Smenada sotildi';
   const totalQty = items.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
   const totalAmount = items.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
   const store = report.storeName || storeName || '';
   const cashier = report.cashierName || cashierName || '';
   const period = `${ticketStamp(report.openedAt)} — ${ticketStamp(report.reportAt)}`;
-  const totalLabel = t?.('rst.order.totalDue', { defaultValue: 'ИТОГО' }) || 'ИТОГО';
-  const qtyLabel = t?.('rst.shift.itemsQty', { count: totalQty, defaultValue: `${totalQty} шт.` }) || `${totalQty} шт.`;
-  const emptyLabel = t?.('rst.shift.itemsEmpty', { defaultValue: 'Продаж нет' }) || 'Продаж нет';
-  const uncategorized = t?.('rst.shift.itemsUncategorized', { defaultValue: 'Без категории' }) || 'Без категории';
+  const totalLabel = tReceipt('rst.order.totalDue', { defaultValue: 'JAMI' }) || 'JAMI';
+  const qtyLabel = tReceipt('rst.shift.itemsQty', { count: totalQty, defaultValue: `${totalQty} dona` }) || `${totalQty} dona`;
+  const emptyLabel = tReceipt('rst.shift.itemsEmpty', { defaultValue: 'Sotuvlar yo\'q' }) || 'Sotuvlar yo\'q';
+  const uncategorized = tReceipt('rst.shift.itemsUncategorized', { defaultValue: 'Kategoriyasiz' }) || 'Kategoriyasiz';
   const divider = '-'.repeat(TICKET_WIDTH);
   const groups = groupShiftItemsByCategory(items, uncategorized);
 
@@ -67,10 +69,10 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
   const withMoney = show('totals');
   const itemLines = items.length
     ? groups.flatMap((group, index) => {
-      const catQty = t?.('rst.shift.itemsQty', {
+      const catQty = tReceipt('rst.shift.itemsQty', {
         count: group.quantity,
-        defaultValue: `${group.quantity} шт.`,
-      }) || `${group.quantity} шт.`;
+        defaultValue: `${group.quantity} dona`,
+      }) || `${group.quantity} dona`;
       const dishRows = group.items.map((row) => (
         withMoney
           ? padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount))
@@ -125,10 +127,10 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
 
   const rowsHtml = items.length
     ? groups.map((group) => {
-      const catQty = t?.('rst.shift.itemsQty', {
+      const catQty = tReceipt('rst.shift.itemsQty', {
         count: group.quantity,
-        defaultValue: `${group.quantity} шт.`,
-      }) || `${group.quantity} шт.`;
+        defaultValue: `${group.quantity} dona`,
+      }) || `${group.quantity} dona`;
       const dishRows = group.items.map((row) => (
         withMoney
           ? `<div class="rst-ord-print__row"><span>${escapeHtml(`${Number(row.quantity)} × ${row.name}`)}</span><strong>${fmtMoneyCompact(row.amount)}</strong></div>`

@@ -68,7 +68,7 @@ describe('buildCashierEscposPayload QR', () => {
     expect(isOfdCheckUrl(payload.qrValue)).toBe(true);
     expect(payload.receiptFields.qrCode).toBe(true);
     expect(payload.receiptFields.footer).toBe(true);
-    expect(payload.labels.footer).toBe('fiscalReceipt.footer');
+    expect(payload.labels.footer).toBe('Xaridingiz uchun rahmat. Chekni saqlang.');
     expect(payload.sale.printFiscalQr).toBe(true);
     expect(payload.branding.fmNumber).toBe('TERM1');
     expect(payload.paperWmm).toBe(80);
@@ -133,12 +133,57 @@ describe('buildCashierEscposPayload shift label', () => {
 });
 
 describe('buildCashierEscposPayload plastic label', () => {
-  it('appends card type to plastic payment row', () => {
+  it('appends provider to plastic payment row and exports separate card category, social card, and RRN in Uzbek', () => {
     const plain = buildCashierEscposPayload(FISCAL_SALE, t);
-    expect(plain.labels.plastic).toBe('fiscalReceipt.plastic');
+    expect(plain.labels.plastic).toBe('Plastik');
 
-    const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
-    expect(corporate.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardCorporate');
+    const humo = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'HUMO' }, t);
+    expect(humo.labels.plastic).toContain('Plastik');
+    expect(humo.labels.plastic).toContain('Humo');
+
+    const social = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'CARD',
+        cardType: 'HUMO',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(social.labels.plastic).toContain('Plastik');
+    expect(social.labels.plastic).toContain('Humo');
+    expect(social.labels.cardType).toBeTruthy();
+    expect(social.labels.socialCardNumber).toBeTruthy();
+    expect(social.labels.cardRrn).toBeTruthy();
+    expect(social.sale.cardCategoryDisplay).toBeTruthy();
+    expect(social.sale.socialCardNumber).toBe('9860********8031');
+    expect(social.sale.rrn).toBe('631810177451');
+
+    const legacyCorporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
+    expect(legacyCorporate.labels.plastic).toBe('Plastik');
+    expect(legacyCorporate.sale.cardCategoryDisplay).toBeTruthy();
+  });
+
+  it('forces locale to uz and translates labels in Uzbek', () => {
+    const payload = buildCashierEscposPayload(FISCAL_SALE, t);
+    expect(payload.locale).toBe('uz');
+    expect(payload.labels.cash).toBe('Naqd');
+    expect(payload.labels.grandTotal).toBe('Jami');
+  });
+});
+
+describe('buildCashierEscposPayload: electronic prescription number', () => {
+  it('passes the number and its label to the printer payload', () => {
+    const payload = buildCashierEscposPayload({ ...FISCAL_SALE, prescriptionNumber: 'RX-2026-0042' }, t);
+    expect(payload.sale.prescriptionNumber).toBe('RX-2026-0042');
+    expect(payload.labels.prescriptionNumber).toBe('Elektron retsept');
+  });
+
+  it('prints no prescription row for a plain sale and ignores notes', () => {
+    const payload = buildCashierEscposPayload({ ...FISCAL_SALE, notes: 'RX:RX-7777' }, t);
+    expect(payload.sale.prescriptionNumber).toBeNull();
   });
 });
 
@@ -148,5 +193,43 @@ describe('buildEscposLabels VAT rate', () => {
     expect(labels.vatLineShort).toBe('НДС {{rate}}%');
     expect(labels.vatTotalLine).toBe('НДС {{rate}}%');
     expect(labels.vatLineShort).not.toContain('12');
+  });
+});
+
+describe('buildCashierEscposPayload: QR code suppression for ADVANCE and CREDIT (AUR-4)', () => {
+  it('suppresses QR for ADVANCE receipt', () => {
+    const payload = buildCashierEscposPayload(
+      { ...FISCAL_SALE, receiptType: 'ADVANCE' },
+      t,
+    );
+    expect(payload.qrValue).toBe('');
+    expect(payload.receiptFields.qrCode).toBe(false);
+  });
+
+  it('suppresses QR for CREDIT receipt', () => {
+    const payload = buildCashierEscposPayload(
+      { ...FISCAL_SALE, receiptType: 'CREDIT' },
+      t,
+    );
+    expect(payload.qrValue).toBe('');
+    expect(payload.receiptFields.qrCode).toBe(false);
+  });
+
+  it('preserves QR for standard SALE receipt', () => {
+    const payload = buildCashierEscposPayload(
+      { ...FISCAL_SALE, receiptType: 'SALE' },
+      t,
+    );
+    expect(payload.qrValue).not.toBe('');
+    expect(payload.receiptFields.qrCode).toBe(true);
+  });
+
+  it('preserves QR for RETURN receipt', () => {
+    const payload = buildCashierEscposPayload(
+      { ...FISCAL_SALE, receiptType: 'RETURN' },
+      t,
+    );
+    expect(payload.qrValue).not.toBe('');
+    expect(payload.receiptFields.qrCode).toBe(true);
   });
 });

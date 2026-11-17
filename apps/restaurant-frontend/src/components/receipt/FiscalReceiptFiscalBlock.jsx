@@ -32,7 +32,7 @@ export default function FiscalReceiptFiscalBlock({
             ) : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
-              <span className="receipt-fiscal-sign receipt-row__value">{fiscalSign || '—'}</span>
+              <span className={fiscalSign ? 'receipt-fiscal-sign receipt-row__value' : 'receipt-row__value'}>{fiscalSign || '—'}</span>
             </div>
           </section>
         </>

@@ -11,6 +11,7 @@ const {
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
+  shouldPrintFiscalQr,
 } = require('./escpos-format.cjs');
 const { logWarn } = require('./escpos-log.cjs');
 const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
@@ -364,6 +365,15 @@ function appendPayment(printer, payload) {
   appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));
   appendRow(printer, L.cash || 'Cash', fmtMoney(cashAmt));
   appendRow(printer, L.plastic || 'Card', fmtMoney(cardAmt));
+  if (sale.cardCategoryDisplay) {
+    appendRow(printer, L.cardType || 'Card type', String(sale.cardCategoryDisplay));
+  }
+  if (sale.socialCardNumber) {
+    appendRow(printer, L.socialCardNumber || 'Social card', String(sale.socialCardNumber));
+  }
+  if (sale.rrn) {
+    appendRow(printer, L.cardRrn || 'RRN', String(sale.rrn));
+  }
   if (change > 0) {
     appendRow(printer, L.change || 'Change', fmtMoney(change), true);
   }
@@ -419,7 +429,7 @@ async function appendQrAndFooter(printer, payload, jobId) {
   const { sale, receiptFields, qrValue: payloadQr } = payload;
   const fields = receiptFields || {};
 
-  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false) return;
+  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false || !shouldPrintFiscalQr(sale?.receiptType)) return;
 
   const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
   const isTaxQr =

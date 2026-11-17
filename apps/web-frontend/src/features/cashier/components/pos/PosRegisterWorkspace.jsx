@@ -1,256 +1,82 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 import PosCatalogPanel from '../PosCatalogPanel';
 import PosOrderPanel from '../PosOrderPanel';
 import PosCustomerCardModal from '../pos-order-panel/PosCustomerCardModal';
 import CashierRegisterShell from '../shell/CashierRegisterShell';
-import { ALL_CATEGORY_ID } from '../../hooks/usePosCatalogPanel';
-import { useCartStore } from '../../../../store/cartStore';
-import { nextRegisterScanBurst } from './registerScanBurst';
+import { usePosRegisterWorkspaceState } from './usePosRegisterWorkspaceState';
 
-export default function PosRegisterWorkspace({
-  posPane,
-  searchInputRef,
-  catalog,
-  payOpen,
-  onClosePayment,
-  cart,
-  checkout,
-  shiftIsOpen,
-  onReturn,
-  onDiscount,
-  onCashIn,
-  onCashOut,
-  onOpenPaymentFlow,
-  payFlowOptions,
-  payFlowSession,
-  onPayFlowClosed,
-}) {
+export default function PosRegisterWorkspace(props) {
   const {
-    storeId,
-    search,
-    setSearch,
-    handleSearchEnter,
-    categories,
-    categoriesLoading,
-    categoriesError,
-    selectedCategoryId,
-    handleSelectCategory,
-    setSelectedCategoryId,
-    searchActive,
-    catalogBrowse,
-    setCatalogBrowse,
-    products,
-    productsLoading,
-    productsError,
-    productsLoadingMore,
-    productsHasMore,
-    fetchMoreProducts,
-    addProductToCart,
-    viewMode,
-    handleViewModeChange,
-  } = catalog;
+    posPane,
+    searchInputRef,
+    catalog,
+    cart,
+  } = props;
 
   const {
-    items,
-    total,
-    selectedLineId,
-    setSelectedLineId,
-    handleQtyDelta,
-    updateQuantity,
-    updateUnitPrice,
-    removeItem,
-    onHold,
-    onClear,
-    hasParkedCart,
-    parkedCarts,
-    onRestoreParked,
-    onRemoveParked,
-    onClearParked,
-    checkNo,
+    showRegisterFinder,
+    payProps,
+    registerFinder,
+    customerCardOpen,
+    setCustomerCardOpen,
     customerId,
     customerName,
     onSetCustomer,
-  } = cart;
-
-  const { checkoutMutation, handleConfirmPayment } = checkout;
-  const ensureCheckNo = useCartStore((s) => s.ensureCheckNo);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [hidePickerForScan, setHidePickerForScan] = useState(false);
-  const [customerCardOpen, setCustomerCardOpen] = useState(false);
-  const scanBurstRef = useRef({ at: 0, len: 0, burst: false });
-
-  useEffect(() => {
-    if (!checkNo) ensureCheckNo();
-  }, [checkNo, ensureCheckNo]);
-
-  useEffect(() => {
-    if (posPane !== 'register') setPickerOpen(false);
-  }, [posPane]);
-
-  const openPicker = useCallback(() => setPickerOpen(true), []);
-
-  const closePicker = useCallback(() => {
-    setPickerOpen(false);
-    setSearch('');
-    setSelectedCategoryId?.(ALL_CATEGORY_ID);
-    setCatalogBrowse?.('categories');
-  }, [setCatalogBrowse, setSearch, setSelectedCategoryId]);
-
-  const handleSearchChange = useCallback(
-    (value) => {
-      const next = nextRegisterScanBurst(scanBurstRef.current, value);
-      scanBurstRef.current = next;
-      setSearch(value);
-      if (next.burst) {
-        setHidePickerForScan(true);
-        setPickerOpen(false);
-        return;
-      }
-      setHidePickerForScan(false);
-      if (String(value).trim()) openPicker();
-    },
-    [openPicker, setSearch]
-  );
-
-  useEffect(() => {
-    if (String(search).trim()) return;
-    setHidePickerForScan(false);
-    // setSearch('') после скана обходит handleSearchChange — сбрасываем burst-state
-    scanBurstRef.current = { at: 0, len: 0, burst: false };
-  }, [search]);
-
-  const handleQuickFilter = useCallback(
-    (categoryId) => {
-      const sameChip =
-        pickerOpen && !searchActive && selectedCategoryId === categoryId;
-      if (sameChip) {
-        closePicker();
-        return;
-      }
-      setSearch('');
-      handleSelectCategory(categoryId);
-      openPicker();
-    },
-    [
-      closePicker,
-      handleSelectCategory,
-      openPicker,
-      pickerOpen,
-      searchActive,
-      selectedCategoryId,
-      setSearch,
-    ]
-  );
-
-  const handleAddFromPicker = useCallback(
-    (product) => {
-      addProductToCart(product);
-    },
-    [addProductToCart]
-  );
-
-  const showRegisterFinder = posPane === 'register';
-  const pickerVisible = !hidePickerForScan && (pickerOpen || searchActive);
+  } = usePosRegisterWorkspaceState(props);
 
   return (
     <CashierRegisterShell
       splitClassName={`cashier-register__split--${posPane}`}
-      pay={{
-        payOpen,
-        total,
-        onReturn,
-        onDiscount,
-        onCashIn,
-        onCashOut,
-        onConfirm: handleConfirmPayment,
-        onOpenPaymentFlow,
-        onClosePayment,
-        checkoutDisabled:
-          items.length === 0 || checkoutMutation.isPending || !shiftIsOpen,
-        isPending: checkoutMutation.isPending,
-        payFlowOptions,
-        payFlowSession,
-        onPayFlowClosed,
-        cartCustomer: customerId
-          ? { id: customerId, name: customerName || '' }
-          : null,
-      }}
+      pay={payProps}
     >
       <div className="cashier-register__catalog-col">
         <PosCatalogPanel
           ref={showRegisterFinder ? undefined : searchInputRef}
-          search={search}
-          onSearchChange={setSearch}
-          onSearchEnter={handleSearchEnter}
-          scanDisabled={!storeId}
-          categories={categories}
-          categoriesLoading={categoriesLoading}
-          categoriesError={categoriesError}
-          selectedCategoryId={selectedCategoryId}
-          onSelectCategory={handleSelectCategory}
-          searchActive={searchActive}
-          catalogBrowse={catalogBrowse}
-          onBrowseChange={setCatalogBrowse}
-          products={products}
-          productsLoading={productsLoading}
-          productsError={productsError}
-          productsLoadingMore={productsLoadingMore}
-          productsHasMore={Boolean(productsHasMore)}
-          onLoadMoreProducts={() => fetchMoreProducts()}
-          onAddProduct={addProductToCart}
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
+          search={catalog.search}
+          onSearchChange={catalog.setSearch}
+          onSearchEnter={catalog.handleSearchEnter}
+          scanDisabled={!catalog.storeId}
+          categories={catalog.categories}
+          categoriesLoading={catalog.categoriesLoading}
+          categoriesError={catalog.categoriesError}
+          selectedCategoryId={catalog.selectedCategoryId}
+          onSelectCategory={catalog.handleSelectCategory}
+          searchActive={catalog.searchActive}
+          catalogBrowse={catalog.catalogBrowse}
+          onBrowseChange={catalog.setCatalogBrowse}
+          products={catalog.products}
+          productsLoading={catalog.productsLoading}
+          productsError={catalog.productsError}
+          productsLoadingMore={catalog.productsLoadingMore}
+          productsHasMore={Boolean(catalog.productsHasMore)}
+          onLoadMoreProducts={() => catalog.fetchMoreProducts()}
+          onAddProduct={catalog.addProductToCart}
+          viewMode={catalog.viewMode}
+          onViewModeChange={catalog.handleViewModeChange}
           hideQuickFilters
         />
       </div>
 
       <div className="cashier-register__order-col">
         <PosOrderPanel
-          showTotalsFoot={items.length > 0 || hasParkedCart}
-          items={items}
-          total={total}
-          selectedLineId={selectedLineId}
-          onSelectLine={setSelectedLineId}
-          onQtyDelta={handleQtyDelta}
-          onUpdateQuantity={updateQuantity}
-          onUpdatePrice={updateUnitPrice}
-          onRemove={removeItem}
-          onHold={onHold}
-          onClear={onClear}
-          hasParkedCart={hasParkedCart}
-          parkedCarts={parkedCarts}
-          onRestoreParked={onRestoreParked}
-          onRemoveParked={onRemoveParked}
-          onClearParked={onClearParked}
+          showTotalsFoot={cart.items.length > 0 || cart.hasParkedCart}
+          items={cart.items}
+          total={cart.total}
+          selectedLineId={cart.selectedLineId}
+          onSelectLine={cart.setSelectedLineId}
+          onQtyDelta={cart.handleQtyDelta}
+          onUpdateQuantity={cart.updateQuantity}
+          onUpdatePrice={cart.updateUnitPrice}
+          onRemove={cart.removeItem}
+          onHold={cart.onHold}
+          onClear={cart.onClear}
+          hasParkedCart={cart.hasParkedCart}
+          parkedCarts={cart.parkedCarts}
+          onRestoreParked={cart.onRestoreParked}
+          onRemoveParked={cart.onRemoveParked}
+          onClearParked={cart.onClearParked}
           searchInputRef={showRegisterFinder ? searchInputRef : null}
-          registerFinder={
-            showRegisterFinder
-              ? {
-                  checkNo,
-                  customerName,
-                  onOpenCustomerCard: () => setCustomerCardOpen(true),
-                  search,
-                  onSearchChange: handleSearchChange,
-                  onSearchEnter: handleSearchEnter,
-                  scanDisabled: !storeId,
-                  categories,
-                  categoriesLoading,
-                  selectedCategoryId,
-                  searchActive,
-                  onSelectQuickFilter: handleQuickFilter,
-                  pickerOpen: pickerVisible,
-                  onClosePicker: closePicker,
-                  products,
-                  productsLoading,
-                  productsError,
-                  productsLoadingMore,
-                  productsHasMore: Boolean(productsHasMore),
-                  onLoadMoreProducts: () => fetchMoreProducts(),
-                  onAddProduct: handleAddFromPicker,
-                  viewMode: 'list',
-                }
-              : null
-          }
+          registerFinder={registerFinder}
         />
       </div>
 

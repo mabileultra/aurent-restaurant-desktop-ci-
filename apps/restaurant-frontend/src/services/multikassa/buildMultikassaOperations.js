@@ -1,3 +1,4 @@
+import { buildMultikassaCardFields } from '@aurent/shared-fiscal';
 import { lineDiscountAmount, lineSubtotal } from '../../utils/cartLineMath';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
@@ -157,6 +158,7 @@ export function buildSaleOperationBody({
     ),
     receipt_gnk_receivedcash: toTiyin(cash),
     receipt_gnk_receivedcard: toTiyin(card),
+    ...buildMultikassaCardFields(payment, card),
     receipt_gnk_time: now,
     shift_id: shiftId ? String(shiftId) : '',
     // Печать чека делает Aurent (ESC/POS). Без этого MK Fiscal падает: «Принтер не найден».

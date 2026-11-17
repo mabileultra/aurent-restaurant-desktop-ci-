@@ -87,6 +87,40 @@ test('desktop toggle off skips tax QR', async () => {
   assert.equal(callsOf(printer, 'printQR').length, 0);
 });
 
+test('advance receipt skips tax QR', async () => {
+  const printer = createFakeThermalPrinter();
+  const payload = fiscalPayload();
+  payload.sale = { ...payload.sale, receiptType: 'ADVANCE' };
+
+  await appendQrAndFooter(printer, payload, 'job-adv');
+
+  assert.equal(callsOf(printer, 'printQR').length, 0);
+});
+
+test('credit receipt skips tax QR', async () => {
+  const printer = createFakeThermalPrinter();
+  const payload = fiscalPayload();
+  payload.sale = { ...payload.sale, receiptType: 'CREDIT' };
+
+  await appendQrAndFooter(printer, payload, 'job-crd');
+
+  assert.equal(callsOf(printer, 'printQR').length, 0);
+});
+
+test('sale and return receipts print tax QR', async () => {
+  const printerSale = createFakeThermalPrinter();
+  const payloadSale = fiscalPayload();
+  payloadSale.sale = { ...payloadSale.sale, receiptType: 'SALE' };
+  await appendQrAndFooter(printerSale, payloadSale, 'job-sale');
+  assert.equal(callsOf(printerSale, 'printQR').length, 1);
+
+  const printerReturn = createFakeThermalPrinter();
+  const payloadReturn = fiscalPayload();
+  payloadReturn.sale = { ...payloadReturn.sale, receiptType: 'RETURN' };
+  await appendQrAndFooter(printerReturn, payloadReturn, 'job-ret');
+  assert.equal(callsOf(printerReturn, 'printQR').length, 1);
+});
+
 test('full receipt still prints fiscal rows and tax QR', async () => {
   const printer = createFakeThermalPrinter();
   await buildReceiptOnPrinter(printer, fiscalPayload(), 'job-full');
