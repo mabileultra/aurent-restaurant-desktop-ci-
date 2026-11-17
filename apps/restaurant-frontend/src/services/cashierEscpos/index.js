@@ -9,10 +9,6 @@ export {
   printSaleReceiptEscpos,
   resolveEscposPrintErrorMessage,
 } from './printSaleReceiptEscpos';
-export {
-  assertReceiptPrinterReady,
-  resolveReceiptPrinterErrorMessage,
-} from './assertReceiptPrinterReady';
 export { printFiscalReceipt } from './printFiscalReceipt';
 export {
   buildEscposZReportPayload,

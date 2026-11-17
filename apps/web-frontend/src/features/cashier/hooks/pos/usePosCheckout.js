@@ -9,7 +9,6 @@ import {
   isCashierEscposPrintAvailable,
   printFiscalReceipt,
   resolveEscposPrintErrorMessage,
-  resolveReceiptPrinterErrorMessage,
 } from '../../../../services/cashierEscpos';
 import { isDesktopCashier } from '../../../../utils/printReceipt';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
@@ -111,10 +110,6 @@ export function usePosCheckout({
       }
     },
     onError: (e) => {
-      if (e?.isReceiptPrinterError) {
-        toast.error(resolveReceiptPrinterErrorMessage(e, t), { id: 'pos-checkout-error' });
-        return;
-      }
       if (e?.code === 'MARK_ALREADY_SOLD') {
         toast.error(t('pos.markingSoldLocal'));
         return;

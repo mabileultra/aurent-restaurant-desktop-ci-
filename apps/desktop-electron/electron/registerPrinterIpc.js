@@ -11,7 +11,6 @@ const {
   resolveReceiptPrinterName,
   resolveLabelPrinterName,
 } = require('./printers/resolve.cjs');
-const { checkReceiptPrinterReady } = require('./printers/receipt-printer-health.cjs');
 const { getMainWindow } = require('./printers/window-ref.cjs');
 const { printTicketHtml } = require('./printers/print-ticket.cjs');
 const { registerLabelPrintIpc } = require('./labelPrintIpc');
@@ -20,7 +19,6 @@ const { warmRawPrintWorker } = require('./printers/win-raw-print.cjs');
 function registerPrinterIpc() {
   warmRawPrintWorker();
   ipcMain.handle('desktop:list-printers', async () => listSystemPrinters());
-  ipcMain.handle('desktop:check-receipt-printer-ready', async () => checkReceiptPrinterReady());
   ipcMain.handle('desktop:get-printer-settings', () => readPrinterSettings());
   ipcMain.handle('desktop:set-printer-settings', (_e, settings) =>
     writePrinterSettings(settings || {}),

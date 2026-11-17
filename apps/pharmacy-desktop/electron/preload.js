@@ -28,7 +28,6 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   showOnScreenKeyboard: () => invoke('desktop:showOnScreenKeyboard'),
 
   listPrinters: () => invoke('desktop:list-printers'),
-  checkReceiptPrinterReady: () => invoke('desktop:check-receipt-printer-ready'),
   getPrinterSettings: () => invoke('desktop:get-printer-settings'),
   setPrinterSettings: (settings) => invoke('desktop:set-printer-settings', settings),
   openPrinterPicker: () => invoke('desktop:open-printer-picker'),
