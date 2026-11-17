@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 import { formatVersionWithHash } from './appVersion.js';
 
 /**
- * Safely reads short git commit hash (`git rev-parse --short HEAD`).
+ * Safely reads 7-char short git commit hash (`git rev-parse --short=7 HEAD`).
  * Returns empty string when git is unavailable or in archive/CI builds without .git.
  * @param {{ exec?: (cmd: string) => string | Buffer }} [options]
  * @returns {string}
@@ -14,8 +14,8 @@ export function resolveGitShortHash(options = {}) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }));
-    const raw = String(run('git rev-parse --short HEAD') || '').trim();
-    return /^[0-9a-f]{6,40}$/i.test(raw) ? raw : '';
+    const raw = String(run('git rev-parse --short=7 HEAD') || '').trim();
+    return /^[0-9a-f]{6,40}$/i.test(raw) ? raw.slice(0, 7) : '';
   } catch {
     return '';
   }

@@ -176,6 +176,22 @@ function shouldPrintFiscalQr(receiptType) {
   return rt !== 'ADVANCE' && rt !== 'CREDIT' && rt !== 'AVANCE';
 }
 
+function fitVersionValueToWidth(label, value, lineWidth = 32) {
+  const lbl = String(label || '').trim();
+  let val = String(value || '').trim();
+  if (!val) return '';
+  const maxValLen = Math.max(8, (Number(lineWidth) || 32) - lbl.length - 1);
+  if (val.length <= maxValLen) return val;
+
+  val = val.replace(/\(([0-9a-f]{7})[0-9a-f]+\)/i, '($1)');
+  if (val.length <= maxValLen) return val;
+
+  val = val.replace(/\s+\(/, '(');
+  if (val.length <= maxValLen) return val;
+
+  return val.slice(0, maxValLen);
+}
+
 module.exports = {
   fmtMoney,
   fmtMoneyTable,
@@ -184,6 +200,7 @@ module.exports = {
   buildFiscalSign,
   buildQrPayload,
   shouldPrintFiscalQr,
+  fitVersionValueToWidth,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,

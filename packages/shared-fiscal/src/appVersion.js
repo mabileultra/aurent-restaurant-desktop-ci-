@@ -2,27 +2,41 @@
  * @file appVersion.js
  * Application version resolution helper across Electron and Browser runtimes.
  *
- * Source priority:
- * 1. Electron runtime: window.desktopCashier.appVersion (synced from app.getVersion() via preload)
- * 2. Browser build-time: __APP_VERSION__ (Vite `define` from package.json + short git commit hash)
- * 3. Fallback environment: import.meta.env.VITE_APP_VERSION
+ * Receipt version rows (AUR-6):
+ * - Browser (1 row):
+ *   - Dastur versiyasi: 1.0.0 (a1b2c3d)  <- UI version with 7-char short git hash
+ * - Electron (2 rows):
+ *   - Dastur versiyasi: 1.0.0 (a1b2c3d)  <- UI version with 7-char short git hash
+ *   - Desktop versiyasi: 1.3.4           <- Electron app.getVersion()
  */
+
+const SHORT_HASH_LEN = 7;
 
 /**
  * Formats base version with optional short git commit hash: "1.0.0 (a1b2c3d)".
- * If gitHash is empty or already included, returns base version without modification.
+ * Uses 7-char hash so "Dastur versiyasi" (16) + " " (1) + "1.0.0 (a1b2c3d)" (15) = 32 chars (fits 58mm paper).
+ * If gitHash is empty or already included, returns base version without duplicate hash.
  * @param {string} [version]
  * @param {string} [gitHash]
  * @returns {string}
  */
 export function formatVersionWithHash(version, gitHash) {
-  const ver = typeof version === 'string' ? version.trim() : '';
-  if (!ver) return '';
-  const hash = typeof gitHash === 'string' ? gitHash.trim() : '';
-  if (!hash || ver.includes(`(${hash})`) || /\([0-9a-f]{6,40}\)/i.test(ver)) {
-    return ver;
+  const rawVer = typeof version === 'string' ? version.trim() : '';
+  if (!rawVer) return '';
+
+  const embeddedMatch = rawVer.match(/^(.*?)\s*\(([0-9a-f]{6,40})\)$/i);
+  if (embeddedMatch) {
+    const base = embeddedMatch[1].trim();
+    const shortEmbedded = embeddedMatch[2].slice(0, SHORT_HASH_LEN);
+    return `${base} (${shortEmbedded})`;
   }
-  return `${ver} (${hash})`;
+
+  const hash = typeof gitHash === 'string' ? gitHash.trim() : '';
+  if (!hash) {
+    return rawVer;
+  }
+  const shortHash = /^[0-9a-f]{6,40}$/i.test(hash) ? hash.slice(0, SHORT_HASH_LEN) : hash;
+  return `${rawVer} (${shortHash})`;
 }
 
 /**
@@ -91,13 +105,30 @@ export function getUiVersion() {
 }
 
 /**
- * Returns resolved application version string for receipts:
- * - In Electron: desktop version (app.getVersion(), e.g. "1.3.4")
- * - In Browser: UI version with short git hash (e.g. "1.0.0 (a1b2c3d)")
+ * Resolves both receipt version rows:
+ * - `appVersion`: UI version with short hash ("1.0.0 (a1b2c3d)") — shown in both browser and Electron
+ * - `desktopVersion`: Electron app.getVersion() ("1.3.4") — shown only in Electron (empty in browser)
+ * @param {{ appVersion?: string, desktopVersion?: string }} [overrides]
+ * @returns {{ appVersion: string, desktopVersion: string }}
+ */
+export function getReceiptVersionRows(overrides = {}) {
+  const customApp = typeof overrides?.appVersion === 'string' ? overrides.appVersion.trim() : '';
+  const customDesktop =
+    typeof overrides?.desktopVersion === 'string' ? overrides.desktopVersion.trim() : '';
+
+  return {
+    appVersion: customApp || getUiVersion(),
+    desktopVersion: customDesktop || getDesktopVersion(),
+  };
+}
+
+/**
+ * Returns primary UI application version string (with short git hash when available),
+ * falling back to desktop version if UI build define is absent.
  * @returns {string}
  */
 export function getAppVersion() {
-  return getDesktopVersion() || getUiVersion();
+  return getUiVersion() || getDesktopVersion();
 }
 
 /**

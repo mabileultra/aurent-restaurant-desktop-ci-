@@ -637,6 +637,7 @@
     "virtualRegister": "Вирт. касса S/R",
     "fmNumber": "Номер ФМ",
     "appVersion": "Версия ПО",
+    "desktopVersion": "Версия десктопа",
     "fiscalReceiptNo": "Номер чека",
     "fiscalSign": "Фискальный признак",
     "qrHint": "QR-код — для проверки чека и участия в призовых играх ГНК",

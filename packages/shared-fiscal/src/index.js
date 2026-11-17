@@ -50,6 +50,7 @@ export {
   formatVersionWithHash,
   getDesktopVersion,
   getUiVersion,
+  getReceiptVersionRows,
   getAppVersion,
   getAppVersionInfo,
 } from './appVersion.js';

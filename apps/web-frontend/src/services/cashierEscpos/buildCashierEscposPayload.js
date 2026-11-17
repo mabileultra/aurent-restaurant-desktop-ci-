@@ -3,13 +3,12 @@
  */
 import {
   extractCardReceiptDetails,
-  getAppVersion,
+  getReceiptVersionRows,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
   shouldPrintFiscalQr,
 } from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
-import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
@@ -97,6 +96,7 @@ export function buildEscposLabels(t) {
     virtualRegister: t('fiscalReceipt.virtualRegister'),
     fmNumber: t('fiscalReceipt.fmNumber'),
     appVersion: t('fiscalReceipt.appVersion'),
+    desktopVersion: t('fiscalReceipt.desktopVersion'),
     fiscalReceiptNo: t('fiscalReceipt.fiscalReceiptNo'),
     fiscalSign: t('fiscalReceipt.fiscalSign'),
     footer: t('fiscalReceipt.footer'),
@@ -171,12 +171,16 @@ export function buildCashierEscposPayload(sale, t) {
     ? (cardCategoryLabel(cardDetails.cardCategory, translator) || null)
     : null;
 
-  const appVersion = String(sale.appVersion || fiscalMeta.appVersion || getAppVersion() || '').trim();
+  const { appVersion, desktopVersion } = getReceiptVersionRows({
+    appVersion: sale.appVersion || fiscalMeta.appVersion,
+    desktopVersion: sale.desktopVersion || fiscalMeta.desktopVersion,
+  });
 
   return {
     sale: {
       ...sale,
       appVersion,
+      desktopVersion,
       cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
       cardCategoryDisplay,
       socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
@@ -193,6 +197,7 @@ export function buildCashierEscposPayload(sale, t) {
     receiptFields,
     qrValue,
     appVersion,
+    desktopVersion,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
     locale: RECEIPT_LOCALE,

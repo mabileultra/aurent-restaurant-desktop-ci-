@@ -138,22 +138,56 @@ test('full receipt still prints fiscal rows and tax QR', async () => {
   assert.deepEqual(callsOf(printer, 'beep')[0].args, [1, 2]);
 });
 
-test('full receipt prints software version row (AUR-6) next to FM number', async () => {
-  const printer = createFakeThermalPrinter();
-  const payload = fiscalPayload({
+test('full receipt prints software version rows (AUR-6: 1 row in browser, 2 rows in Electron, fits 58mm/32 cols)', async () => {
+  const printerBrowser = createFakeThermalPrinter();
+  const payloadBrowser = fiscalPayload({
+    paperWmm: 58,
     labels: {
       fmNumber: 'FM',
       appVersion: 'Dastur versiyasi',
+      desktopVersion: 'Desktop versiyasi',
     },
     sale: {
       ...fiscalPayload().sale,
-      appVersion: '1.3.4',
+      appVersion: '1.0.0 (a1b2c3d)',
+      desktopVersion: '',
     },
   });
-  await buildReceiptOnPrinter(printer, payload, 'job-ver');
+  await buildReceiptOnPrinter(printerBrowser, payloadBrowser, 'job-ver-browser');
 
-  const rows = callsOf(printer, 'leftRight').map((call) => call.args.join(' '));
-  assert.ok(rows.some((row) => row.includes('Dastur versiyasi') && row.includes('1.3.4')));
-  assert.ok(rows.some((row) => row.includes('FM') && row.includes('TERM1')));
+  const browserRows = callsOf(printerBrowser, 'leftRight').map((call) => call.args.join(' '));
+  assert.ok(browserRows.some((row) => row === 'Dastur versiyasi 1.0.0 (a1b2c3d)'));
+  assert.ok(!browserRows.some((row) => row.includes('Desktop versiyasi')));
+
+  const printerDesktop = createFakeThermalPrinter();
+  const payloadDesktop = fiscalPayload({
+    paperWmm: 58,
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Dastur versiyasi',
+      desktopVersion: 'Desktop versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '1.0.0 (a1b2c3d)',
+      desktopVersion: '1.3.4',
+    },
+  });
+  await buildReceiptOnPrinter(printerDesktop, payloadDesktop, 'job-ver-desktop');
+
+  const desktopLeftRight = callsOf(printerDesktop, 'leftRight');
+  const desktopRows = desktopLeftRight.map((call) => call.args.join(' '));
+  assert.ok(desktopRows.some((row) => row === 'Dastur versiyasi 1.0.0 (a1b2c3d)'));
+  assert.ok(desktopRows.some((row) => row === 'Desktop versiyasi 1.3.4'));
+
+  for (const call of desktopLeftRight) {
+    const [left, right] = call.args;
+    if (left === 'Dastur versiyasi' || left === 'Desktop versiyasi') {
+      assert.ok(
+        left.length + 1 + right.length <= 32,
+        `58mm overflow: "${left} ${right}" is ${left.length + 1 + right.length} chars (>32)`,
+      );
+    }
+  }
 });
 

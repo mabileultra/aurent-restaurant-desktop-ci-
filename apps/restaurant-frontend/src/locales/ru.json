@@ -164,6 +164,7 @@
     "fiscalSign": "Фискальный признак",
     "fmNumber": "Номер ФМ",
     "appVersion": "Версия ПО",
+    "desktopVersion": "Версия десктопа",
     "grandTotal": "Итог",
     "lineDiscountsSum": "Скидка по позициям",
     "orderDiscountPercent": "Скидка на чек ({{percent}}%)",

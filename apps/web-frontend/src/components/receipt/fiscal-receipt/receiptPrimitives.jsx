@@ -1,9 +1,15 @@
 import React from 'react';
 
 /** Строка чека «подпись — значение». */
-export function ReceiptRow({ label, value, bold = false }) {
+export function ReceiptRow({ label, value, bold = false, nowrap = false }) {
+  const classes = [
+    'receipt-row',
+    bold ? 'receipt-row--bold' : '',
+    nowrap ? 'receipt-row--nowrap' : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`receipt-row${bold ? ' receipt-row--bold' : ''}`}>
+    <div className={classes}>
       <span className="receipt-meta-label">{label}</span>
       <span className="receipt-row__value">{value}</span>
     </div>

@@ -3,6 +3,7 @@ import {
   formatVersionWithHash,
   getAppVersion,
   getAppVersionInfo,
+  getReceiptVersionRows,
 } from './appVersion.js';
 import {
   buildAppVersionDefine,
@@ -38,8 +39,9 @@ describe('appVersion helper', () => {
     }
   });
 
-  it('formats version with short git hash when hash is present and omits parens when absent', () => {
+  it('formats version with 7-char short git hash when hash is present and omits parens when absent', () => {
     expect(formatVersionWithHash('1.0.0', 'a1b2c3d')).toBe('1.0.0 (a1b2c3d)');
+    expect(formatVersionWithHash('1.0.0', 'a1b2c3d4e5')).toBe('1.0.0 (a1b2c3d)');
     expect(formatVersionWithHash('1.0.0', '')).toBe('1.0.0');
     expect(formatVersionWithHash('1.0.0 (a1b2c3d)', 'a1b2c3d')).toBe('1.0.0 (a1b2c3d)');
     expect(formatVersionWithHash('', 'a1b2c3d')).toBe('');
@@ -48,7 +50,7 @@ describe('appVersion helper', () => {
   it('resolveGitShortHash and buildAppVersionDefine handle both git-present and git-missing (CI/archive) gracefully', () => {
     const pkgUrl = new URL('../../../apps/web-frontend/package.json', import.meta.url);
 
-    expect(resolveGitShortHash({ exec: () => 'a1b2c3d\n' })).toBe('a1b2c3d');
+    expect(resolveGitShortHash({ exec: () => 'a1b2c3d89\n' })).toBe('a1b2c3d');
     expect(
       resolveGitShortHash({
         exec: () => {
@@ -70,7 +72,29 @@ describe('appVersion helper', () => {
     expect(JSON.parse(withoutGit.__APP_GIT_HASH__)).toBe('');
   });
 
-  it('resolves version from Electron desktopCashier.appVersion and exposes both desktopVersion and uiVersion', () => {
+  it('returns 1 row (appVersion with hash, empty desktopVersion) in browser mode', () => {
+    globalThis.window = {};
+    globalThis.__APP_VERSION__ = '1.0.0';
+    globalThis.__APP_GIT_HASH__ = 'a1b2c3d';
+
+    expect(getReceiptVersionRows()).toEqual({
+      appVersion: '1.0.0 (a1b2c3d)',
+      desktopVersion: '',
+    });
+  });
+
+  it('returns 1 row without hash in browser mode when git hash is empty', () => {
+    globalThis.window = {};
+    globalThis.__APP_VERSION__ = '1.0.0';
+    globalThis.__APP_GIT_HASH__ = '';
+
+    expect(getReceiptVersionRows()).toEqual({
+      appVersion: '1.0.0',
+      desktopVersion: '',
+    });
+  });
+
+  it('returns 2 rows (appVersion with hash + desktopVersion) in Electron mode', () => {
     globalThis.window = {
       desktopCashier: {
         isDesktop: true,
@@ -79,9 +103,10 @@ describe('appVersion helper', () => {
     };
     globalThis.__APP_VERSION__ = '1.0.0 (a1b2c3d)';
 
-    // Receipt uses desktop version:
-    expect(getAppVersion()).toBe('1.3.4');
-    // About dialog gets both desktopVersion and uiVersion (with hash):
+    expect(getReceiptVersionRows()).toEqual({
+      appVersion: '1.0.0 (a1b2c3d)',
+      desktopVersion: '1.3.4',
+    });
     expect(getAppVersionInfo()).toEqual({
       version: '1.3.4',
       desktopVersion: '1.3.4',
@@ -92,66 +117,26 @@ describe('appVersion helper', () => {
     });
   });
 
-  it('resolves version from desktopCashier.getAppVersionSync if appVersion string is missing', () => {
+  it('resolves desktopVersion from desktopCashier.getAppVersionSync if appVersion string is missing', () => {
     globalThis.window = {
       desktopCashier: {
         isDesktop: true,
         getAppVersionSync: () => '0.1.37',
       },
     };
+    globalThis.__APP_VERSION__ = '1.0.0 (a1b2c3d)';
 
-    expect(getAppVersion()).toBe('0.1.37');
-    expect(getAppVersionInfo()).toEqual({
-      version: '0.1.37',
+    expect(getReceiptVersionRows()).toEqual({
+      appVersion: '1.0.0 (a1b2c3d)',
       desktopVersion: '0.1.37',
-      uiVersion: '',
-      formatted: 'v0.1.37',
-      isDesktop: true,
-      platform: 'desktop',
     });
   });
 
-  it('resolves version with short git hash in browser when hash is available', () => {
-    globalThis.window = {};
-    globalThis.__APP_VERSION__ = '1.0.0';
-    globalThis.__APP_GIT_HASH__ = 'a1b2c3d';
-
-    expect(getAppVersion()).toBe('1.0.0 (a1b2c3d)');
-    expect(getAppVersionInfo()).toEqual({
-      version: '1.0.0 (a1b2c3d)',
-      desktopVersion: '',
-      uiVersion: '1.0.0 (a1b2c3d)',
-      formatted: 'v1.0.0 (a1b2c3d)',
-      isDesktop: false,
-      platform: 'web',
-    });
-  });
-
-  it('resolves version without hash in browser when git hash is empty', () => {
-    globalThis.window = {};
-    globalThis.__APP_VERSION__ = '1.0.0';
-    globalThis.__APP_GIT_HASH__ = '';
-
-    expect(getAppVersion()).toBe('1.0.0');
-    expect(getAppVersionInfo()).toEqual({
-      version: '1.0.0',
-      desktopVersion: '',
-      uiVersion: '1.0.0',
-      formatted: 'v1.0.0',
-      isDesktop: false,
-      platform: 'web',
-    });
-  });
-
-  it('returns empty string when no version sources are available', () => {
+  it('returns empty strings when no version sources are available', () => {
     expect(getAppVersion()).toBe('');
-    expect(getAppVersionInfo()).toEqual({
-      version: '',
+    expect(getReceiptVersionRows()).toEqual({
+      appVersion: '',
       desktopVersion: '',
-      uiVersion: '',
-      formatted: '',
-      isDesktop: false,
-      platform: 'web',
     });
   });
 });

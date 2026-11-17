@@ -164,6 +164,7 @@
     "fiscalSign": "Fiskal belgi",
     "fmNumber": "FM raqami",
     "appVersion": "Dastur versiyasi",
+    "desktopVersion": "Desktop versiyasi",
     "grandTotal": "Jami",
     "lineDiscountsSum": "Pozitsiyalar bo'yicha chegirma",
     "orderDiscountPercent": "Chek chegirmasi ({{percent}}%)",

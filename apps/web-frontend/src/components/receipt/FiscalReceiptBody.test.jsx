@@ -194,13 +194,12 @@ describe('FiscalReceiptBody', () => {
   });
 
   describe('FiscalReceiptBody: Software version row on receipt (AUR-6)', () => {
-    it('renders "Dastur versiyasi" row in Uzbek next to FM number when fiscal block is present', async () => {
+    it('renders 1 row ("Dastur versiyasi" with hash) in browser mode and omits "Desktop versiyasi"', async () => {
       await i18n.changeLanguage('ru');
       const html = renderToStaticMarkup(
         React.createElement(FiscalReceiptBody, {
           sale: {
             ...MOCK_SALE,
-            appVersion: '1.3.4',
             fiscalTerminalId: 'FM998877',
             fiscalReceiptSeq: '101',
             fiscalSign: '998877665544',
@@ -209,26 +208,65 @@ describe('FiscalReceiptBody', () => {
       );
 
       expect(html).toContain('Dastur versiyasi');
-      expect(html).toContain('1.3.4');
+      expect(html).toMatch(/1\.0\.0 \([0-9a-f]{7}\)/i);
+      expect(html).not.toContain('Desktop versiyasi');
       expect(html).toContain('FM raqami');
       expect(html).toContain('FM998877');
       expect(html).not.toContain('Версия ПО');
     });
 
-    it('resolves browser version with short git hash automatically when sale.appVersion is omitted', () => {
-      const html = renderToStaticMarkup(
-        React.createElement(FiscalReceiptBody, {
-          sale: {
-            ...MOCK_SALE,
-            fiscalTerminalId: 'FM998877',
-            fiscalReceiptSeq: '101',
-            fiscalSign: '998877665544',
-          },
-        })
-      );
+    it('renders 2 rows ("Dastur versiyasi" + "Desktop versiyasi") in Electron mode under FM number', () => {
+      const prevWindow = globalThis.window;
+      globalThis.window = {
+        desktopCashier: {
+          isDesktop: true,
+          appVersion: '1.3.4',
+        },
+      };
+      try {
+        const html = renderToStaticMarkup(
+          React.createElement(FiscalReceiptBody, {
+            sale: {
+              ...MOCK_SALE,
+              fiscalTerminalId: 'FM998877',
+              fiscalReceiptSeq: '101',
+              fiscalSign: '998877665544',
+            },
+          })
+        );
 
-      expect(html).toContain('Dastur versiyasi');
-      expect(html).toMatch(/1\.0\.0 \([0-9a-f]{7,}\)/i);
+        expect(html).toContain('Dastur versiyasi');
+        expect(html).toMatch(/1\.0\.0 \([0-9a-f]{7}\)/i);
+        expect(html).toContain('Desktop versiyasi');
+        expect(html).toContain('1.3.4');
+        expect(html).toContain('receipt-row--nowrap');
+      } finally {
+        globalThis.window = prevWindow;
+      }
+    });
+
+    it('renders version without hash when git hash is absent (CI/archive)', () => {
+      globalThis.__APP_VERSION__ = '1.0.0';
+      globalThis.__APP_GIT_HASH__ = '';
+      try {
+        const html = renderToStaticMarkup(
+          React.createElement(FiscalReceiptBody, {
+            sale: {
+              ...MOCK_SALE,
+              fiscalTerminalId: 'FM998877',
+              fiscalReceiptSeq: '101',
+              fiscalSign: '998877665544',
+            },
+          })
+        );
+
+        expect(html).toContain('Dastur versiyasi');
+        expect(html).toContain('>1.0.0<');
+        expect(html).not.toContain('Desktop versiyasi');
+      } finally {
+        delete globalThis.__APP_VERSION__;
+        delete globalThis.__APP_GIT_HASH__;
+      }
     });
   });
 });

@@ -131,6 +131,14 @@ html.dark .receipt-page__card {
   white-space: nowrap;
   max-width: 100%;
 }
+.receipt-print-root .receipt-row--nowrap {
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+}
+.receipt-print-root .receipt-row--nowrap > span {
+  white-space: nowrap;
+  max-width: none;
+}
 .receipt-print-root .receipt-items-table__head,
 .receipt-print-root .receipt-items-table__row {
   display: grid;

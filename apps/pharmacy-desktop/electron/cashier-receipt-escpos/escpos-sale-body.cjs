@@ -6,6 +6,7 @@ const {
   fmtQty,
   splitDateTime,
   buildFiscalSign,
+  fitVersionValueToWidth,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
@@ -260,9 +261,27 @@ function appendFiscalBlock(printer, payload) {
     if (fmNumber) {
       appendRow(printer, L.fmNumber || 'FM', fmNumber);
     }
-    const appVersion = String(sale.appVersion || payload?.appVersion || '').trim();
+    const lineWidth =
+      Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+        ? 32
+        : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+    const appVersionLabel = L.appVersion || 'Dastur versiyasi';
+    const appVersion = fitVersionValueToWidth(
+      appVersionLabel,
+      sale.appVersion || payload?.appVersion || '',
+      lineWidth,
+    );
     if (appVersion) {
-      appendRow(printer, L.appVersion || 'Dastur versiyasi', appVersion);
+      appendRow(printer, appVersionLabel, appVersion);
+    }
+    const desktopVersionLabel = L.desktopVersion || 'Desktop versiyasi';
+    const desktopVersion = fitVersionValueToWidth(
+      desktopVersionLabel,
+      sale.desktopVersion || payload?.desktopVersion || '',
+      lineWidth,
+    );
+    if (desktopVersion) {
+      appendRow(printer, desktopVersionLabel, desktopVersion);
     }
     if (virtualRegister && virtualRegister !== '1') {
       appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);

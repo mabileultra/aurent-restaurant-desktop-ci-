@@ -210,12 +210,21 @@ describe('buildCashierEscposPayload card details', () => {
   });
 
   describe('AUR-6: software version on receipt', () => {
-    it('includes appVersion in sale, payload, and labels', () => {
-      const sale = { ...FISCAL_SALE, appVersion: '1.0.0' };
-      const payload = buildCashierEscposPayload(sale, t);
-      expect(payload.appVersion).toBe('1.0.0');
-      expect(payload.sale.appVersion).toBe('1.0.0');
-      expect(payload.labels.appVersion).toBe('Dastur versiyasi');
+    it('includes 1 version row (appVersion with hash, empty desktopVersion) in browser mode and 2 rows in Electron mode', () => {
+      const browserPayload = buildCashierEscposPayload({ ...FISCAL_SALE }, t);
+      expect(browserPayload.appVersion).toMatch(/^1\.0\.0 \([0-9a-f]{7}\)$/i);
+      expect(browserPayload.desktopVersion).toBe('');
+      expect(browserPayload.labels.appVersion).toBe('Dastur versiyasi');
+      expect(browserPayload.labels.desktopVersion).toBe('Desktop versiyasi');
+
+      const electronPayload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, appVersion: '1.0.0 (a1b2c3d)', desktopVersion: '0.1.37' },
+        t,
+      );
+      expect(electronPayload.appVersion).toBe('1.0.0 (a1b2c3d)');
+      expect(electronPayload.desktopVersion).toBe('0.1.37');
+      expect(electronPayload.sale.appVersion).toBe('1.0.0 (a1b2c3d)');
+      expect(electronPayload.sale.desktopVersion).toBe('0.1.37');
     });
   });
 });

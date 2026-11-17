@@ -1,15 +1,18 @@
 import React from 'react';
-import { getAppVersion } from '@aurent/shared-fiscal';
+import { getReceiptVersionRows } from '@aurent/shared-fiscal';
 import { ReceiptDivider, ReceiptRow } from './receiptPrimitives';
 
 const EMPTY_FISCAL_SIGN = '—';
 
-/** Фискальные реквизиты: номер чека, ФМ, версия ПО, виртуальная касса, фискальный признак. */
+/** Фискальные реквизиты: номер чека, ФМ, версия ПО / десктопа, виртуальная касса, фискальный признак. */
 export default function ReceiptFiscalSection({ fiscalMeta, isOn, t }) {
   if (!isOn('fiscalBlock')) return null;
 
   const { fiscalReceiptNo, fmNumber, virtualRegister, fiscalSign } = fiscalMeta;
-  const appVersion = String(fiscalMeta?.appVersion || getAppVersion() || '').trim();
+  const { appVersion, desktopVersion } = getReceiptVersionRows({
+    appVersion: fiscalMeta?.appVersion,
+    desktopVersion: fiscalMeta?.desktopVersion,
+  });
 
   return (
     <>
@@ -20,7 +23,12 @@ export default function ReceiptFiscalSection({ fiscalMeta, isOn, t }) {
           <ReceiptRow label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
         ) : null}
         {fmNumber ? <ReceiptRow label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
-        {appVersion ? <ReceiptRow label={t('fiscalReceipt.appVersion')} value={appVersion} /> : null}
+        {appVersion ? (
+          <ReceiptRow label={t('fiscalReceipt.appVersion')} value={appVersion} nowrap />
+        ) : null}
+        {desktopVersion ? (
+          <ReceiptRow label={t('fiscalReceipt.desktopVersion')} value={desktopVersion} nowrap />
+        ) : null}
         {virtualRegister ? (
           <ReceiptRow label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
         ) : null}

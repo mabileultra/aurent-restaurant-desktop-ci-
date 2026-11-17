@@ -1,4 +1,4 @@
-import { getAppVersion } from '@aurent/shared-fiscal';
+import { getReceiptVersionRows } from '@aurent/shared-fiscal';
 import { FiscalReceiptRow } from './FiscalReceiptRow';
 
 export default function FiscalReceiptFiscalBlock({
@@ -8,11 +8,12 @@ export default function FiscalReceiptFiscalBlock({
   fiscalReceiptNo,
   fmNumber,
   appVersion,
+  desktopVersion,
   virtualRegister,
   fiscalSign,
   receiptTypeLabel,
 }) {
-  const resolvedVersion = String(appVersion || getAppVersion() || '').trim();
+  const versions = getReceiptVersionRows({ appVersion, desktopVersion });
 
   return (
     <>
@@ -31,8 +32,11 @@ export default function FiscalReceiptFiscalBlock({
               <FiscalReceiptRow label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
             ) : null}
             {fmNumber ? <FiscalReceiptRow label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
-            {resolvedVersion ? (
-              <FiscalReceiptRow label={t('fiscalReceipt.appVersion')} value={resolvedVersion} />
+            {versions.appVersion ? (
+              <FiscalReceiptRow label={t('fiscalReceipt.appVersion')} value={versions.appVersion} nowrap />
+            ) : null}
+            {versions.desktopVersion ? (
+              <FiscalReceiptRow label={t('fiscalReceipt.desktopVersion')} value={versions.desktopVersion} nowrap />
             ) : null}
             {virtualRegister ? (
               <FiscalReceiptRow label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
