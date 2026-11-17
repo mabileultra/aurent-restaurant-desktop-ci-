@@ -4,8 +4,6 @@ import com.pos.sales.dto.cashregister.RegisterTerminalRequest;
 import com.pos.sales.entity.CashRegister;
 import com.pos.entity.Store;
 import com.pos.exception.BadRequestException;
-import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
-import com.pos.integrations.fiscal.support.FiscalModuleField;
 import com.pos.sales.repository.CashRegisterRepository;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +18,6 @@ public class CashRegisterTerminalResolver {
 
     private final CashRegisterRepository cashRegisterRepository;
     private final CashRegisterTerminalLookup lookup;
-    private final FiscalModuleBindingGuard fiscalModuleGuard;
 
     public TerminalResolveResult resolve(Store store, RegisterTerminalRequest request) {
         RegisterTerminalRequest safe = request != null
@@ -36,25 +33,22 @@ public class CashRegisterTerminalResolver {
 
         CashRegister byDevice = lookup.findByDeviceId(deviceId).orElse(null);
         if (byDevice != null && CashRegisterTerminalLookup.isActive(byDevice) && isSameStore(byDevice, storeId)) {
-            assertFiscalCardAvailable(store, safe, byDevice.getId());
             return heartbeat(byDevice, storeId, safe, deviceId);
         }
 
-        boolean releasedSameStoreInactive = byDevice != null
-            && !CashRegisterTerminalLookup.isActive(byDevice)
-            && isSameStore(byDevice, storeId);
-
-        // Целевая касса определяется только чтением: при конфликте ФМ (409) ни одна сущность
-        // не успевает измениться, а транзакция CashRegisterTerminalServiceImpl откатывается целиком.
-        CashRegister bySerial = lookup.findActiveBySerial(storeId, serial).orElse(null);
-        CashRegister unbound = bySerial == null ? lookup.findActiveUnbound(storeId).orElse(null) : null;
-        CashRegister target = bySerial != null ? bySerial : unbound;
-        assertFiscalCardAvailable(store, safe, target != null ? target.getId() : null);
-
+        boolean releasedSameStoreInactive = false;
         if (byDevice != null) {
+            releasedSameStoreInactive =
+                !CashRegisterTerminalLookup.isActive(byDevice) && isSameStore(byDevice, storeId);
             releaseBinding(byDevice, storeId, deviceId);
         }
 
+        CashRegister bySerial = lookup.findActiveBySerial(storeId, serial).orElse(null);
+        if (bySerial != null) {
+            return heartbeat(bySerial, storeId, safe, deviceId);
+        }
+
+        CashRegister unbound = lookup.findActiveUnbound(storeId).orElse(null);
         if (unbound != null) {
             LogUtil.info(
                 CashRegisterTerminalResolver.class,
@@ -63,9 +57,7 @@ public class CashRegisterTerminalResolver {
                 storeId,
                 deviceId
             );
-        }
-        if (target != null) {
-            return heartbeat(target, storeId, safe, deviceId);
+            return heartbeat(unbound, storeId, safe, deviceId);
         }
 
         if (releasedSameStoreInactive) {
@@ -73,20 +65,6 @@ public class CashRegisterTerminalResolver {
         }
 
         return createNew(store, storeId, safe, deviceId, serial);
-    }
-
-    /**
-     * AUR-19: fiscalCardId терминала не должен быть закреплён за другой кассой.
-     * {@code registerId = null} — будет создана новая касса.
-     */
-    private void assertFiscalCardAvailable(Store store, RegisterTerminalRequest request, Long registerId) {
-        Integer companyId = store.getCompany() != null ? store.getCompany().getId() : null;
-        fiscalModuleGuard.assertAvailable(
-            FiscalModuleField.CASH_REGISTER_FISCAL_CARD_ID,
-            request.fiscalCardId(),
-            registerId,
-            companyId
-        );
     }
 
     private void releaseBinding(CashRegister byDevice, Integer toStoreId, String deviceId) {

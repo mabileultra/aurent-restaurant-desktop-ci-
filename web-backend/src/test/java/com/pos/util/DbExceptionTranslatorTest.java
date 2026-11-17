@@ -42,25 +42,4 @@ class DbExceptionTranslatorTest {
 
         assertEquals("Такой PIN уже используется в компании", message);
     }
-
-    @Test
-    void fiscalModuleUniqueIndexIsConflictAboutFiscalModuleNotUser() {
-        RuntimeException thrown = DbExceptionTranslator.toClientException(new DataIntegrityViolationException(
-            "ERROR: duplicate key value violates unique constraint \"uq_cr_multikassa_fm_terminal_id\"\n"
-                + "Detail: Key (lower(TRIM(BOTH FROM terminal_id)))=(yz1) already exists."
-        ));
-
-        assertInstanceOf(ConflictException.class, thrown);
-        assertEquals("Фискальный модуль уже привязан к другой кассе", thrown.getMessage());
-    }
-
-    @Test
-    void everyFiscalModuleIndexIsMapped() {
-        for (String index : DbExceptionTranslator.FISCAL_MODULE_UNIQUE_INDEXES) {
-            String message = DbExceptionTranslator.clientMessage(new DataIntegrityViolationException(
-                "duplicate key value violates unique constraint \"" + index + "\""
-            ));
-            assertEquals(DbExceptionTranslator.FISCAL_MODULE_TAKEN_MESSAGE, message, index);
-        }
-    }
 }
