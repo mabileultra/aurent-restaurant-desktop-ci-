@@ -7,7 +7,7 @@ import {
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import { extractCardReceiptDetails, normalizeCardCategory, shouldPrintFiscalQr } from '@aurent/shared-fiscal';
 import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 import {
   resolveFiscalReceiptMeta,
@@ -70,7 +70,7 @@ export default function FiscalReceiptBody({
     fmNumber: import.meta.env.VITE_FISCAL_MODULE_NUMBER || import.meta.env.VITE_FISCAL_CARD_ID || '',
     virtualRegister: import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '',
   });
-  const printFiscalQr = sale.printFiscalQr !== false;
+  const printFiscalQr = sale.printFiscalQr !== false && shouldPrintFiscalQr(sale?.receiptType);
   const qrValue = fiscalMeta.qrValue;
   const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
 

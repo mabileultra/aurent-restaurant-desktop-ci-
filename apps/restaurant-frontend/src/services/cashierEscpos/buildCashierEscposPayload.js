@@ -1,7 +1,7 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
-import { extractCardReceiptDetails, normalizeCardCategory } from '@aurent/shared-fiscal';
+import { extractCardReceiptDetails, normalizeCardCategory, shouldPrintFiscalQr } from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
@@ -144,7 +144,8 @@ export function buildCashierEscposPayload(sale, t) {
   branding.fmNumber = fiscalMeta.fmNumber;
   branding.virtualRegister = fiscalMeta.virtualRegister;
 
-  const printFiscalQr = sale.printFiscalQr !== false;
+  const canPrintQr = shouldPrintFiscalQr(sale?.receiptType);
+  const printFiscalQr = sale.printFiscalQr !== false && canPrintQr;
   const qrValue = printFiscalQr ? fiscalMeta.qrValue : '';
   const receiptFields = readReceiptFields();
   if (!printFiscalQr || !qrValue) {

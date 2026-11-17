@@ -41,3 +41,9 @@ export {
   resolveSalePrescriptionNumber,
   withSalePrescriptionNumber,
 } from './prescriptionNumber.js';
+export {
+  shouldPrintFiscalQr,
+  isAdvanceOrCreditReceipt,
+  FISCAL_QR_SUPPRESSED_RECEIPT_TYPES,
+} from './receiptQr.js';
+

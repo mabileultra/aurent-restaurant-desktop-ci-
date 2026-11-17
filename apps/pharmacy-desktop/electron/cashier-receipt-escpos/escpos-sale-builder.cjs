@@ -8,6 +8,7 @@ const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
 const { sanitizePayloadForPrint, preparePrinterEncoding } = require('./escpos-encoding.cjs');
 const { beepAndCut } = require('./escpos-layout.cjs');
 const { withFieldStyle } = require('./escpos-field-style.cjs');
+const { shouldPrintFiscalQr } = require('./escpos-format.cjs');
 const { isOn, appendDivider } = require('./escpos-sale-layout.cjs');
 const {
   appendMeta,
@@ -101,7 +102,7 @@ async function appendQrAndFooter(printer, payload, jobId) {
   const { sale, receiptFields, qrValue: payloadQr } = payload;
   const fields = receiptFields || {};
 
-  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false) return;
+  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false || !shouldPrintFiscalQr(sale?.receiptType)) return;
 
   const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
   const isTaxQr =

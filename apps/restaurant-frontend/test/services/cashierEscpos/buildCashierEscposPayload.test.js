@@ -170,4 +170,42 @@ describe('buildCashierEscposPayload card details', () => {
     expect(mixedPayload.sale.socialCardNumber).toBe('9860********8031');
     expect(mixedPayload.sale.rrn).toBe('631810177451');
   });
+
+  describe('buildCashierEscposPayload: QR code suppression for ADVANCE and CREDIT (AUR-4)', () => {
+    it('suppresses QR for ADVANCE receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'ADVANCE' },
+        t,
+      );
+      expect(payload.qrValue).toBe('');
+      expect(payload.receiptFields.qrCode).toBe(false);
+    });
+
+    it('suppresses QR for CREDIT receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'CREDIT' },
+        t,
+      );
+      expect(payload.qrValue).toBe('');
+      expect(payload.receiptFields.qrCode).toBe(false);
+    });
+
+    it('preserves QR for standard SALE receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'SALE' },
+        t,
+      );
+      expect(payload.qrValue).not.toBe('');
+      expect(payload.receiptFields.qrCode).toBe(true);
+    });
+
+    it('preserves QR for RETURN receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'RETURN' },
+        t,
+      );
+      expect(payload.qrValue).not.toBe('');
+      expect(payload.receiptFields.qrCode).toBe(true);
+    });
+  });
 });

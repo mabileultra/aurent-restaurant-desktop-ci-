@@ -8,6 +8,7 @@ import {
   extractCardReceiptDetails,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
+  shouldPrintFiscalQr,
 } from '@aurent/shared-fiscal';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
 import {
@@ -140,7 +141,8 @@ export function buildCashierEscposPayload(sale, t) {
   branding.fmNumber = fiscalMeta.fmNumber;
   branding.virtualRegister = fiscalMeta.virtualRegister;
 
-  const printFiscalQr = sale.printFiscalQr !== false;
+  const canPrintQr = shouldPrintFiscalQr(sale?.receiptType);
+  const printFiscalQr = sale.printFiscalQr !== false && canPrintQr;
   const qrValue = printFiscalQr ? fiscalMeta.qrValue : '';
   const receiptFields = readReceiptFields();
   receiptFields.footer = true;

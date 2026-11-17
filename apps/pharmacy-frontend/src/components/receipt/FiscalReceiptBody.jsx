@@ -13,6 +13,7 @@ import {
   extractCardReceiptDetails,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
+  shouldPrintFiscalQr,
 } from '@aurent/shared-fiscal';
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
 import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
@@ -89,7 +90,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
     fmNumber: import.meta.env.VITE_FISCAL_MODULE_NUMBER || import.meta.env.VITE_FISCAL_CARD_ID || '',
     virtualRegister: import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '',
   });
-  const printFiscalQr = sale.printFiscalQr !== false;
+  const printFiscalQr = sale.printFiscalQr !== false && shouldPrintFiscalQr(sale?.receiptType);
   const qrValue = fiscalMeta.qrValue;
   const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
 

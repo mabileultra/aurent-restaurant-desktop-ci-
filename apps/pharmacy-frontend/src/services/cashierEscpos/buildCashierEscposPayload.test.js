@@ -39,4 +39,62 @@ describe('buildCashierEscposPayload (pharmacy-frontend)', () => {
     const plain = buildCashierEscposPayload(buildEscposTestSale());
     expect(plain.sale.prescriptionNumber).toBeNull();
   });
+
+  describe('QR code suppression for ADVANCE and CREDIT (AUR-4)', () => {
+    it('suppresses QR for ADVANCE receipt', () => {
+      const sale = {
+        ...buildEscposTestSale(),
+        receiptType: 'ADVANCE',
+        fiscalQrUrl: 'https://ofd.soliq.uz/check?t=123&s=456&r=789',
+        fiscalSign: '456',
+        fiscalReceiptSeq: 789,
+        fiscalTerminalId: '123',
+      };
+      const payload = buildCashierEscposPayload(sale);
+      expect(payload.qrValue).toBe('');
+      expect(payload.receiptFields.qrCode).toBe(false);
+    });
+
+    it('suppresses QR for CREDIT receipt', () => {
+      const sale = {
+        ...buildEscposTestSale(),
+        receiptType: 'CREDIT',
+        fiscalQrUrl: 'https://ofd.soliq.uz/check?t=123&s=456&r=789',
+        fiscalSign: '456',
+        fiscalReceiptSeq: 789,
+        fiscalTerminalId: '123',
+      };
+      const payload = buildCashierEscposPayload(sale);
+      expect(payload.qrValue).toBe('');
+      expect(payload.receiptFields.qrCode).toBe(false);
+    });
+
+    it('preserves QR for standard SALE receipt', () => {
+      const sale = {
+        ...buildEscposTestSale(),
+        receiptType: 'SALE',
+        fiscalQrUrl: 'https://ofd.soliq.uz/check?t=123&s=456&r=789',
+        fiscalSign: '456',
+        fiscalReceiptSeq: 789,
+        fiscalTerminalId: '123',
+      };
+      const payload = buildCashierEscposPayload(sale);
+      expect(payload.qrValue).not.toBe('');
+      expect(payload.receiptFields.qrCode).toBe(true);
+    });
+
+    it('preserves QR for RETURN receipt', () => {
+      const sale = {
+        ...buildEscposTestSale(),
+        receiptType: 'RETURN',
+        fiscalQrUrl: 'https://ofd.soliq.uz/check?t=123&s=456&r=789',
+        fiscalSign: '456',
+        fiscalReceiptSeq: 789,
+        fiscalTerminalId: '123',
+      };
+      const payload = buildCashierEscposPayload(sale);
+      expect(payload.qrValue).not.toBe('');
+      expect(payload.receiptFields.qrCode).toBe(true);
+    });
+  });
 });

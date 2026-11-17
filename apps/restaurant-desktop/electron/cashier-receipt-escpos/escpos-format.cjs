@@ -171,6 +171,11 @@ function fmtAt(iso) {
   }
 }
 
+function shouldPrintFiscalQr(receiptType) {
+  const rt = String(receiptType || 'SALE').trim().toUpperCase();
+  return rt !== 'ADVANCE' && rt !== 'CREDIT' && rt !== 'AVANCE';
+}
+
 module.exports = {
   fmtMoney,
   fmtMoneyTable,
@@ -178,6 +183,7 @@ module.exports = {
   splitDateTime,
   buildFiscalSign,
   buildQrPayload,
+  shouldPrintFiscalQr,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
