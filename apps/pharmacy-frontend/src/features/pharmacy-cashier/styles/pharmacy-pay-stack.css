@@ -55,6 +55,7 @@
 }
 
 .pharmacy-pay-stack__actions,
+.pharmacy-pay-stack__secondary-row,
 .pharmacy-pay-stack__ops {
   display: flex;
   flex-direction: column;

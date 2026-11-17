@@ -49,13 +49,13 @@
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack {
-  gap: 8px;
-  padding: 10px;
+  gap: 5px;
+  padding: 6px;
+  overflow-y: auto;
   background: rgb(var(--color-surface));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__aside,
-.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--extra,
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__ops .pharmacy-pay-stack__btn:not(.pharmacy-pay-stack__btn--sale):not(.pharmacy-pay-stack__btn--preview) {
   display: none;
 }
@@ -149,20 +149,67 @@
   color: rgb(var(--color-surface));
 }
 
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions > .pharmacy-pay-stack__btn {
+  grid-column: 1 / -1;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions > .pharmacy-pay-stack__btn--card {
+  grid-column: span 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 48px;
+  padding: 4px 2px;
+  font-size: 11px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions > .pharmacy-pay-stack__btn--card kbd {
+  display: none;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__secondary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 5px;
+  width: 100%;
+}
+
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--preview {
+  width: 100%;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
   background: rgb(var(--color-surface));
   border-color: rgb(var(--color-line));
   color: rgb(var(--color-ink));
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__ops {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-top: 2px;
+  background: rgb(var(--color-surface));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__print {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   min-height: 48px;
   margin: 0;
-  padding: 0 10px;
+  padding: 6px 8px;
+  font-size: 12px;
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   background: rgb(var(--color-surface));

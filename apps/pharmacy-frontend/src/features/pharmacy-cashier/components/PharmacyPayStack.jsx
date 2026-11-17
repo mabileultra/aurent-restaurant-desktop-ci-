@@ -204,20 +204,27 @@ export default function PharmacyPayStack({
         </div>
       ) : null}
 
-      <PrintReceiptToggle
-        checked={rail.printReceiptEnabled}
-        onChange={rail.handlePrintReceiptChange}
-        t={t}
-        className="pharmacy-pay-stack__print"
-        disabled={busy}
-      />
+      <div className="pharmacy-pay-stack__secondary-row">
+        <PrintReceiptToggle
+          checked={rail.printReceiptEnabled}
+          onChange={rail.handlePrintReceiptChange}
+          t={t}
+          className="pharmacy-pay-stack__print"
+          disabled={busy}
+        />
 
-      <div className="pharmacy-pay-stack__ops" role="group">
-        <button type="button" className="pharmacy-pay-stack__btn pharmacy-pay-stack__btn--preview" disabled={busy} onClick={onPreviewCheck}>
+        <button
+          type="button"
+          className="pharmacy-pay-stack__btn pharmacy-pay-stack__btn--preview"
+          disabled={busy}
+          onClick={onPreviewCheck}
+        >
           <FileText size={18} strokeWidth={2.1} aria-hidden />
           <span>{t('pharmacyCashier.pay.previewCheck')}</span>
         </button>
+      </div>
 
+      <div className="pharmacy-pay-stack__ops" role="group">
         <button
           type="button"
           className="pharmacy-pay-stack__btn pharmacy-pay-stack__btn--sale"
