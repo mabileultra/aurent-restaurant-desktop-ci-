@@ -11,6 +11,7 @@ import {
 } from '../../utils/fiscalReceiptFormat';
 import {
   extractCardReceiptDetails,
+  getAppVersion,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
   shouldPrintFiscalQr,
@@ -115,6 +116,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
   const fmNumber = fiscalMeta.fmNumber;
+  const appVersion = fiscalMeta.appVersion || getAppVersion();
   const virtualRegister = fiscalMeta.virtualRegister;
   const fiscalSign = fiscalMeta.fiscalSign;
   const fiscalReceiptNo = fiscalMeta.fiscalReceiptNo;
@@ -327,6 +329,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
               <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
             ) : null}
             {fmNumber ? <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
+            {appVersion ? <Row label={t('fiscalReceipt.appVersion')} value={appVersion} /> : null}
             {virtualRegister ? (
               <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
             ) : null}

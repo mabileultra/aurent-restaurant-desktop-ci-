@@ -4,26 +4,25 @@
  */
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { appendQrAndFooter } = require('../electron/cashier-receipt-escpos/escpos-sale-builder.cjs');
+const { appendQrAndFooter, buildReceiptOnPrinter } = require('../electron/cashier-receipt-escpos/escpos-sale-builder.cjs');
 
 const TAX_QR = 'https://ofd.soliq.uz/check?t=TERM1&r=42&c=20260907122636&s=SIGN99';
 
 function createFakePrinter() {
   const calls = [];
-  return {
-    calls,
-    getWidth() { return 48; },
-    alignLeft() { calls.push({ method: 'alignLeft', args: [] }); },
-    alignCenter() { calls.push({ method: 'alignCenter', args: [] }); },
-    alignRight() { calls.push({ method: 'alignRight', args: [] }); },
-    leftRight(left, right) { calls.push({ method: 'leftRight', args: [left, right] }); },
-    println(text) { calls.push({ method: 'println', args: [text] }); },
-    print(text) { calls.push({ method: 'print', args: [text] }); },
-    printQR(str, opts) { calls.push({ method: 'printQR', args: [str, opts] }); },
-    printImage(path) { calls.push({ method: 'printImage', args: [path] }); },
-    newLine() { calls.push({ method: 'newLine', args: [] }); },
-    bold(on) { calls.push({ method: 'bold', args: [on] }); },
-  };
+  const printer = new Proxy(
+    {},
+    {
+      get(_target, prop) {
+        if (prop === 'calls') return calls;
+        if (prop === 'getWidth') return () => 48;
+        return (...args) => {
+          calls.push({ method: String(prop), args });
+        };
+      },
+    },
+  );
+  return printer;
 }
 
 function fiscalPayload(overrides = {}) {
@@ -86,3 +85,25 @@ test('restaurant-desktop: credit receipt skips tax QR (AUR-4)', async () => {
   const qrCalls = printer.calls.filter((c) => c.method === 'printQR');
   assert.equal(qrCalls.length, 0);
 });
+
+test('restaurant-desktop: full receipt prints software version row (AUR-6) next to FM number', async () => {
+  const printer = createFakePrinter();
+  const payload = fiscalPayload({
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Dastur versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '1.2.0',
+    },
+  });
+  await buildReceiptOnPrinter(printer, payload, 'job-ver');
+
+  const rows = printer.calls
+    .filter((c) => c.method === 'leftRight')
+    .map((c) => c.args.join(' '));
+  assert.ok(rows.some((row) => row.includes('Dastur versiyasi') && row.includes('1.2.0')));
+  assert.ok(rows.some((row) => row.includes('FM') && row.includes('TERM1')));
+});
+

@@ -410,6 +410,10 @@ function appendFiscalBlock(printer, payload) {
   if (fmNumber) {
     appendRow(printer, L.fmNumber || 'FM', fmNumber);
   }
+  const appVersion = String(sale.appVersion || payload?.appVersion || '').trim();
+  if (appVersion) {
+    appendRow(printer, L.appVersion || 'Dastur versiyasi', appVersion);
+  }
   if (virtualRegister && virtualRegister !== '1') {
     appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
   }

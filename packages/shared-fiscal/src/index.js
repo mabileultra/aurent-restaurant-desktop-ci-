@@ -46,4 +46,8 @@ export {
   isAdvanceOrCreditReceipt,
   FISCAL_QR_SUPPRESSED_RECEIPT_TYPES,
 } from './receiptQr.js';
+export {
+  getAppVersion,
+  getAppVersionInfo,
+} from './appVersion.js';
 

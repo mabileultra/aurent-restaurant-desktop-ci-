@@ -1,3 +1,4 @@
+import { getAppVersion } from '@aurent/shared-fiscal';
 import { buildFiscalSign, resolveReceiptQrValue } from './fiscalReceiptFormat';
 import { isOfdCheckUrl, parseOfdCheckParams } from './ofdQrUrl';
 
@@ -31,6 +32,7 @@ export function resolveFiscalReceiptMeta(sale, branding = {}) {
   return {
     qrValue: taxQr,
     fmNumber,
+    appVersion: trim(sale?.appVersion) || getAppVersion(),
     fiscalReceiptNo,
     fiscalSign,
     virtualRegister,

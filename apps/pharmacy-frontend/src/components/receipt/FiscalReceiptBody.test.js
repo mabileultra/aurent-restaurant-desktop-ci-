@@ -144,4 +144,27 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
     );
     expect(html).not.toContain('Elektron retsept');
   });
+
+  describe('FiscalReceiptBody (pharmacy-frontend): Software version row (AUR-6)', () => {
+    it('renders "Dastur versiyasi" row in Uzbek next to FM number when fiscal block is present', async () => {
+      await i18n.changeLanguage('ru');
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: {
+            ...MOCK_SALE,
+            appVersion: '0.1.0',
+            fiscalTerminalId: 'FM-PHARM-01',
+            fiscalReceiptSeq: '42',
+            fiscalSign: '123456789012',
+          },
+        })
+      );
+
+      expect(html).toContain('Dastur versiyasi');
+      expect(html).toContain('0.1.0');
+      expect(html).toContain('FM raqami');
+      expect(html).toContain('FM-PHARM-01');
+      expect(html).not.toContain('Версия ПО');
+    });
+  });
 });

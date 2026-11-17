@@ -2,6 +2,14 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const invoke = (channel, ...args) => ipcRenderer.invoke(channel, ...args);
 
+function readAppVersionSync() {
+  try {
+    return String(ipcRenderer.sendSync('desktop:get-app-version-sync') || '');
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Hall UI historically talks to window.desktopCashier (cashier shell names).
  * Keep aurentRestaurant for edge bootstrap; isDesktopCashier() still false
@@ -9,6 +17,9 @@ const invoke = (channel, ...args) => ipcRenderer.invoke(channel, ...args);
  */
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
+  appVersion: readAppVersionSync(),
+  getAppVersion: () => invoke('desktop:getAppVersion'),
+  getAppVersionSync: () => readAppVersionSync(),
   getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),
   reload: () => invoke('desktop:reload'),
   toggleFullscreen: () => invoke('desktop:toggleFullscreen'),

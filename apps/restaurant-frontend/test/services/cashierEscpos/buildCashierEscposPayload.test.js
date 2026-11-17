@@ -208,4 +208,14 @@ describe('buildCashierEscposPayload card details', () => {
       expect(payload.receiptFields.qrCode).toBe(true);
     });
   });
+
+  describe('AUR-6: software version on receipt', () => {
+    it('includes appVersion in sale, payload, and labels', () => {
+      const sale = { ...FISCAL_SALE, appVersion: '1.0.0' };
+      const payload = buildCashierEscposPayload(sale, t);
+      expect(payload.appVersion).toBe('1.0.0');
+      expect(payload.sale.appVersion).toBe('1.0.0');
+      expect(payload.labels.appVersion).toBe('Dastur versiyasi');
+    });
+  });
 });

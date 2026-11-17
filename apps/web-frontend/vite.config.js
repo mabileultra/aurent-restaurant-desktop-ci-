@@ -20,6 +20,10 @@ function serviceWorkerVersionPlugin() {
   };
 }
 
+const packageJson = JSON.parse(
+  fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+);
+
 export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const identityProxy = env.VITE_DEV_IDENTITY_PROXY || process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081';
@@ -136,6 +140,9 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       alias: aurentPackageAliases(),
       dedupe: ['react', 'react-dom', 'react-router-dom', 'react-i18next'],
+    },
+    define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version),
     },
     esbuild: {
       jsx: 'automatic',

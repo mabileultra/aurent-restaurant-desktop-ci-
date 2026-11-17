@@ -6,6 +6,7 @@ import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import {
   extractCardReceiptDetails,
+  getAppVersion,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
   shouldPrintFiscalQr,
@@ -95,6 +96,7 @@ export function buildEscposLabels(t) {
     fiscalSection: tr('fiscalReceipt.fiscalSection'),
     virtualRegister: tr('fiscalReceipt.virtualRegister'),
     fmNumber: tr('fiscalReceipt.fmNumber'),
+    appVersion: tr('fiscalReceipt.appVersion'),
     fiscalReceiptNo: tr('fiscalReceipt.fiscalReceiptNo'),
     fiscalSign: tr('fiscalReceipt.fiscalSign'),
     footer: tr('fiscalReceipt.footer'),
@@ -169,9 +171,12 @@ export function buildCashierEscposPayload(sale, t) {
     ? (cardCategoryLabel(cardDetails.cardCategory, tr) || null)
     : null;
 
+  const appVersion = String(sale.appVersion || fiscalMeta.appVersion || getAppVersion() || '').trim();
+
   return {
     sale: {
       ...sale,
+      appVersion,
       cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
       cardCategoryDisplay,
       socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
@@ -187,6 +192,7 @@ export function buildCashierEscposPayload(sale, t) {
     branding,
     receiptFields,
     qrValue,
+    appVersion,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
     locale: RECEIPT_LOCALE,

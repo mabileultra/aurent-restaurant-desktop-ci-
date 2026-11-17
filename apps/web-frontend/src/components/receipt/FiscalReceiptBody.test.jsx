@@ -192,4 +192,27 @@ describe('FiscalReceiptBody', () => {
       expect(html).not.toContain('<svg');
     });
   });
+
+  describe('FiscalReceiptBody: Software version row on receipt (AUR-6)', () => {
+    it('renders "Dastur versiyasi" row in Uzbek next to FM number when fiscal block is present', async () => {
+      await i18n.changeLanguage('ru');
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: {
+            ...MOCK_SALE,
+            appVersion: '1.3.4',
+            fiscalTerminalId: 'FM998877',
+            fiscalReceiptSeq: '101',
+            fiscalSign: '998877665544',
+          },
+        })
+      );
+
+      expect(html).toContain('Dastur versiyasi');
+      expect(html).toContain('1.3.4');
+      expect(html).toContain('FM raqami');
+      expect(html).toContain('FM998877');
+      expect(html).not.toContain('Версия ПО');
+    });
+  });
 });

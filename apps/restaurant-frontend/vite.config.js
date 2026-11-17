@@ -1,6 +1,11 @@
+import fs from 'node:fs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
+
+const packageJson = JSON.parse(
+  fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+);
 
 /**
  * Local stack (same split as web-frontend):
@@ -18,6 +23,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+    },
     server: {
       port: 5174,
       proxy: {

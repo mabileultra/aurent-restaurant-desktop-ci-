@@ -19,6 +19,7 @@
     "labelPrinter": "Принтер штрих-кодов",
     "barcodePrint": "Печать штрих-кодов",
     "checkUpdates": "Проверить обновления",
+    "aboutApp": "О программе",
     "checkUpdatesLatest": "Установлена последняя версия",
     "checkUpdatesAvailable": "Доступна версия {{version}} — загрузка началась",
     "checkUpdatesFailed": "Не удалось проверить обновления",

@@ -3,3 +3,4 @@
  */
 export { inputCls, labelCls, fieldErrorCls } from './uiClasses.js';
 export { default as BaseInput } from './BaseInput.jsx';
+export { default as AboutAppModal } from './AboutAppModal.jsx';

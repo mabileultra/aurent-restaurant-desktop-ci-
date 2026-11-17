@@ -368,6 +368,14 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle('desktop:multikassaRequest', (_event, payload) => multikassaRequest(payload || {}));
   ipcMain.handle('desktop:getCompanyLoginCode', async () => getCompanyLoginCode());
+  ipcMain.handle('desktop:getAppVersion', () => app.getVersion());
+  ipcMain.on('desktop:get-app-version-sync', (event) => {
+    try {
+      event.returnValue = app.getVersion();
+    } catch {
+      event.returnValue = '';
+    }
+  });
   initAutoUpdater();
   createWindow();
   await bootStack();

@@ -1,7 +1,12 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+const packageJson = JSON.parse(
+  fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+);
 
 /**
  * Local stack mirrors restaurant/web:
@@ -17,6 +22,9 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     resolve: {
       alias: aurentPackageAliases(),
+    },
+    define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version),
     },
     server: {
       port: 5175,

@@ -391,6 +391,14 @@ app.on('before-quit', () => {
 });
 
 ipcMain.handle('desktop:getApiBaseUrl', () => refreshDesktopConfig().apiUrl);
+ipcMain.handle('desktop:getAppVersion', () => app.getVersion());
+ipcMain.on('desktop:get-app-version-sync', (event) => {
+  try {
+    event.returnValue = app.getVersion();
+  } catch {
+    event.returnValue = '';
+  }
+});
 ipcMain.on('desktop:get-offline-first-sync', (event) => {
   try {
     event.returnValue = Boolean(refreshDesktopConfig().offlineFirst);

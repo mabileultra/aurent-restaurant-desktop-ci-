@@ -137,3 +137,23 @@ test('full receipt still prints fiscal rows and tax QR', async () => {
   assert.ok(beepAt >= 0 && beepAt < cutAt);
   assert.deepEqual(callsOf(printer, 'beep')[0].args, [1, 2]);
 });
+
+test('full receipt prints software version row (AUR-6) next to FM number', async () => {
+  const printer = createFakeThermalPrinter();
+  const payload = fiscalPayload({
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Dastur versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '1.3.4',
+    },
+  });
+  await buildReceiptOnPrinter(printer, payload, 'job-ver');
+
+  const rows = callsOf(printer, 'leftRight').map((call) => call.args.join(' '));
+  assert.ok(rows.some((row) => row.includes('Dastur versiyasi') && row.includes('1.3.4')));
+  assert.ok(rows.some((row) => row.includes('FM') && row.includes('TERM1')));
+});
+

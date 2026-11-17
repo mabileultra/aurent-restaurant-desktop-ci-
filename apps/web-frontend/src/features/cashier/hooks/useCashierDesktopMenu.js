@@ -148,9 +148,7 @@ export function useCashierDesktopMenu() {
     } catch {}
   };
 
-  if (!isDesktopCashier()) {
-    return null;
-  }
+  const isDesktop = isDesktopCashier();
 
   return {
     t,
@@ -158,6 +156,7 @@ export function useCashierDesktopMenu() {
     open,
     setOpen,
     close,
+    isDesktop,
     run,
     toggleFullscreen,
     reloadUi,

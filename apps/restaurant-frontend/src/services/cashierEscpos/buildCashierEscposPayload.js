@@ -1,7 +1,12 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
-import { extractCardReceiptDetails, normalizeCardCategory, shouldPrintFiscalQr } from '@aurent/shared-fiscal';
+import {
+  extractCardReceiptDetails,
+  getAppVersion,
+  normalizeCardCategory,
+  shouldPrintFiscalQr,
+} from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
@@ -98,6 +103,7 @@ export function buildEscposLabels(t) {
     fiscalSection: tr('fiscalReceipt.fiscalSection'),
     virtualRegister: tr('fiscalReceipt.virtualRegister'),
     fmNumber: tr('fiscalReceipt.fmNumber'),
+    appVersion: tr('fiscalReceipt.appVersion'),
     fiscalReceiptNo: tr('fiscalReceipt.fiscalReceiptNo'),
     fiscalSign: tr('fiscalReceipt.fiscalSign'),
     footer: '',
@@ -171,9 +177,12 @@ export function buildCashierEscposPayload(sale, t) {
     ? (cardCategoryLabel(cardDetails.cardCategory, tReceipt) || null)
     : null;
 
+  const appVersion = String(sale.appVersion || fiscalMeta.appVersion || getAppVersion() || '').trim();
+
   return {
     sale: {
       ...sale,
+      appVersion,
       cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
       cardCategoryDisplay,
       socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
@@ -189,6 +198,7 @@ export function buildCashierEscposPayload(sale, t) {
     receiptFields,
     receiptFieldStyles: readReceiptFieldStyles(),
     qrValue,
+    appVersion,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
     locale: RECEIPT_LOCALE,
