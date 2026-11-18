@@ -86,18 +86,18 @@ test('restaurant-desktop: credit receipt skips tax QR (AUR-4)', async () => {
   assert.equal(qrCalls.length, 0);
 });
 
-test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 row in browser, 2 rows in Electron, fits 58mm/32 cols)', async () => {
+test('restaurant-desktop: full receipt prints software version rows (AUR-6: "Versiya: 1.0.0 (2026-11-18)" + "Desktop versiyasi: 0.1.37", fits 58mm/32 cols and wraps if >32)', async () => {
   const printerBrowser = createFakePrinter();
   const payloadBrowser = fiscalPayload({
     paperWmm: 58,
     labels: {
       fmNumber: 'FM',
-      appVersion: 'Dastur versiyasi',
+      appVersion: 'Versiya',
       desktopVersion: 'Desktop versiyasi',
     },
     sale: {
       ...fiscalPayload().sale,
-      appVersion: '1.0.0 (a1b2c3d)',
+      appVersion: '1.0.0 (2026-11-18)',
       desktopVersion: '',
     },
   });
@@ -106,7 +106,7 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 ro
   const browserRows = printerBrowser.calls
     .filter((c) => c.method === 'leftRight')
     .map((c) => c.args.join(' '));
-  assert.ok(browserRows.some((row) => row === 'Dastur versiyasi 1.0.0 (a1b2c3d)'));
+  assert.ok(browserRows.some((row) => row === 'Versiya 1.0.0 (2026-11-18)'));
   assert.ok(!browserRows.some((row) => row.includes('Desktop versiyasi')));
 
   const printerDesktop = createFakePrinter();
@@ -114,12 +114,12 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 ro
     paperWmm: 58,
     labels: {
       fmNumber: 'FM',
-      appVersion: 'Dastur versiyasi',
+      appVersion: 'Versiya',
       desktopVersion: 'Desktop versiyasi',
     },
     sale: {
       ...fiscalPayload().sale,
-      appVersion: '1.0.0 (a1b2c3d)',
+      appVersion: '1.0.0 (2026-11-18)',
       desktopVersion: '0.1.37',
     },
   });
@@ -127,12 +127,12 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 ro
 
   const desktopLeftRight = printerDesktop.calls.filter((c) => c.method === 'leftRight');
   const desktopRows = desktopLeftRight.map((c) => c.args.join(' '));
-  assert.ok(desktopRows.some((row) => row === 'Dastur versiyasi 1.0.0 (a1b2c3d)'));
+  assert.ok(desktopRows.some((row) => row === 'Versiya 1.0.0 (2026-11-18)'));
   assert.ok(desktopRows.some((row) => row === 'Desktop versiyasi 0.1.37'));
 
   for (const call of desktopLeftRight) {
     const [left, right] = call.args;
-    if (left === 'Dastur versiyasi' || left === 'Desktop versiyasi') {
+    if (left === 'Versiya' || left === 'Desktop versiyasi') {
       assert.ok(
         left.length + 1 + right.length <= 32,
         `58mm overflow: "${left} ${right}" is ${left.length + 1 + right.length} chars (>32)`,
@@ -146,12 +146,12 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 ro
     paperWmm: 58,
     labels: {
       fmNumber: 'FM',
-      appVersion: 'Dastur versiyasi',
+      appVersion: 'Versiya',
       desktopVersion: 'Desktop versiyasi',
     },
     sale: {
       ...fiscalPayload().sale,
-      appVersion: '1.10.12 (a1b2c3d)',
+      appVersion: '1.100.200-rc.12 (2026-11-18)',
       desktopVersion: '1.10.12',
     },
   });
@@ -163,8 +163,8 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 ro
   const lrCalls = printerLong58.calls
     .filter((c) => c.method === 'leftRight')
     .map((c) => c.args);
-  assert.ok(printlnArgs.includes('Dastur versiyasi'));
-  assert.ok(lrCalls.some(([left, right]) => left === '' && right === '1.10.12 (a1b2c3d)'));
+  assert.ok(printlnArgs.includes('Versiya'));
+  assert.ok(lrCalls.some(([left, right]) => left === '' && right === '1.100.200-rc.12 (2026-11-18)'));
   assert.ok(lrCalls.some(([left, right]) => left === 'Desktop versiyasi' && right === '1.10.12'));
 });
 

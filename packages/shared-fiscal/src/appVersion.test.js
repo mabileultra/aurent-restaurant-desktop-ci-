@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  formatVersionWithDate,
   formatVersionWithHash,
   getAppVersion,
   getAppVersionInfo,
@@ -7,16 +8,19 @@ import {
 } from './appVersion.js';
 import {
   buildAppVersionDefine,
+  resolveGitCommitDate,
   resolveGitShortHash,
 } from './resolveBuildVersionDefine.mjs';
 
 describe('appVersion helper', () => {
   const originalWindow = globalThis.window;
   const originalAppVersion = globalThis.__APP_VERSION__;
+  const originalCommitDate = globalThis.__APP_COMMIT_DATE__;
   const originalGitHash = globalThis.__APP_GIT_HASH__;
 
   beforeEach(() => {
     globalThis.__APP_VERSION__ = '';
+    globalThis.__APP_COMMIT_DATE__ = '';
     globalThis.__APP_GIT_HASH__ = '';
     delete globalThis.window;
   });
@@ -32,6 +36,11 @@ describe('appVersion helper', () => {
     } else {
       delete globalThis.__APP_VERSION__;
     }
+    if (originalCommitDate !== undefined) {
+      globalThis.__APP_COMMIT_DATE__ = originalCommitDate;
+    } else {
+      delete globalThis.__APP_COMMIT_DATE__;
+    }
     if (originalGitHash !== undefined) {
       globalThis.__APP_GIT_HASH__ = originalGitHash;
     } else {
@@ -39,28 +48,34 @@ describe('appVersion helper', () => {
     }
   });
 
-  it('formats version with 7-char short git hash when hash is present and omits parens when absent', () => {
-    expect(formatVersionWithHash('1.0.0', 'a1b2c3d')).toBe('1.0.0 (a1b2c3d)');
-    expect(formatVersionWithHash('1.0.0', 'a1b2c3d4e5')).toBe('1.0.0 (a1b2c3d)');
-    expect(formatVersionWithHash('1.0.0', '')).toBe('1.0.0');
-    expect(formatVersionWithHash('1.0.0 (a1b2c3d)', 'a1b2c3d')).toBe('1.0.0 (a1b2c3d)');
-    expect(formatVersionWithHash('', 'a1b2c3d')).toBe('');
+  it('formats receipt version with commit date and About version with date + 7-char hash', () => {
+    expect(formatVersionWithDate('1.0.0', '2026-11-18')).toBe('1.0.0 (2026-11-18)');
+    expect(formatVersionWithDate('1.0.0', '')).toBe('1.0.0');
+    expect(formatVersionWithDate('1.0.0 (2026-11-18)', '2026-11-18')).toBe('1.0.0 (2026-11-18)');
+
+    expect(formatVersionWithHash('1.0.0', 'a1b2c3d', '2026-11-18')).toBe('1.0.0 (2026-11-18, a1b2c3d)');
+    expect(formatVersionWithHash('1.0.0 (2026-11-18)', 'a1b2c3d89')).toBe('1.0.0 (2026-11-18, a1b2c3d)');
+    expect(formatVersionWithHash('1.0.0', '', '')).toBe('1.0.0');
   });
 
-  it('resolveGitShortHash and buildAppVersionDefine handle both git-present and git-missing (CI/archive) gracefully', () => {
+  it('resolveGitCommitDate, resolveGitShortHash, and buildAppVersionDefine handle git-present and git-missing gracefully', () => {
     const pkgUrl = new URL('../../../apps/web-frontend/package.json', import.meta.url);
 
+    expect(resolveGitCommitDate({ exec: () => '2026-11-18\n' })).toBe('2026-11-18');
     expect(resolveGitShortHash({ exec: () => 'a1b2c3d89\n' })).toBe('a1b2c3d');
     expect(
-      resolveGitShortHash({
+      resolveGitCommitDate({
         exec: () => {
           throw new Error('fatal: not a git repository');
         },
       }),
     ).toBe('');
 
-    const withGit = buildAppVersionDefine(pkgUrl, { exec: () => 'a1b2c3d\n' });
-    expect(JSON.parse(withGit.__APP_VERSION__)).toBe('1.0.0 (a1b2c3d)');
+    const withGit = buildAppVersionDefine(pkgUrl, {
+      exec: (cmd) => (cmd.includes('%cs') ? '2026-11-18\n' : 'a1b2c3d\n'),
+    });
+    expect(JSON.parse(withGit.__APP_VERSION__)).toBe('1.0.0 (2026-11-18)');
+    expect(JSON.parse(withGit.__APP_COMMIT_DATE__)).toBe('2026-11-18');
     expect(JSON.parse(withGit.__APP_GIT_HASH__)).toBe('a1b2c3d');
 
     const withoutGit = buildAppVersionDefine(pkgUrl, {
@@ -69,48 +84,62 @@ describe('appVersion helper', () => {
       },
     });
     expect(JSON.parse(withoutGit.__APP_VERSION__)).toBe('1.0.0');
+    expect(JSON.parse(withoutGit.__APP_COMMIT_DATE__)).toBe('');
     expect(JSON.parse(withoutGit.__APP_GIT_HASH__)).toBe('');
   });
 
-  it('returns 1 row (appVersion with hash, empty desktopVersion) in browser mode', () => {
+  it('returns 1 row (appVersion with date, empty desktopVersion) in browser mode', () => {
     globalThis.window = {};
     globalThis.__APP_VERSION__ = '1.0.0';
+    globalThis.__APP_COMMIT_DATE__ = '2026-11-18';
     globalThis.__APP_GIT_HASH__ = 'a1b2c3d';
 
     expect(getReceiptVersionRows()).toEqual({
-      appVersion: '1.0.0 (a1b2c3d)',
+      appVersion: '1.0.0 (2026-11-18)',
       desktopVersion: '',
+    });
+    expect(getAppVersionInfo()).toEqual({
+      version: '1.0.0 (2026-11-18, a1b2c3d)',
+      desktopVersion: '',
+      uiVersion: '1.0.0 (2026-11-18, a1b2c3d)',
+      formatted: 'v1.0.0 (2026-11-18, a1b2c3d)',
+      isDesktop: false,
+      platform: 'web',
     });
   });
 
-  it('returns 1 row without hash in browser mode when git hash is empty', () => {
+  it('returns 1 row without date/hash in browser mode when git is absent', () => {
     globalThis.window = {};
     globalThis.__APP_VERSION__ = '1.0.0';
+    globalThis.__APP_COMMIT_DATE__ = '';
     globalThis.__APP_GIT_HASH__ = '';
 
     expect(getReceiptVersionRows()).toEqual({
       appVersion: '1.0.0',
       desktopVersion: '',
     });
+    expect(getAppVersionInfo().uiVersion).toBe('1.0.0');
   });
 
-  it('returns 2 rows (appVersion with hash + desktopVersion) in Electron mode', () => {
+  it('returns 2 rows (appVersion with date + desktopVersion) on receipts and date+hash in About info in Electron mode', () => {
     globalThis.window = {
       desktopCashier: {
         isDesktop: true,
         appVersion: '1.3.4',
       },
     };
-    globalThis.__APP_VERSION__ = '1.0.0 (a1b2c3d)';
+    globalThis.__APP_VERSION__ = '1.0.0 (2026-11-18)';
+    globalThis.__APP_COMMIT_DATE__ = '2026-11-18';
+    globalThis.__APP_GIT_HASH__ = 'a1b2c3d';
 
     expect(getReceiptVersionRows()).toEqual({
-      appVersion: '1.0.0 (a1b2c3d)',
+      appVersion: '1.0.0 (2026-11-18)',
       desktopVersion: '1.3.4',
     });
     expect(getAppVersionInfo()).toEqual({
       version: '1.3.4',
       desktopVersion: '1.3.4',
-      uiVersion: '1.0.0 (a1b2c3d)',
+      uiVersion: '1.0.0 (2026-11-18, a1b2c3d)',
       formatted: 'v1.3.4',
       isDesktop: true,
       platform: 'desktop',
@@ -124,10 +153,11 @@ describe('appVersion helper', () => {
         getAppVersionSync: () => '0.1.37',
       },
     };
-    globalThis.__APP_VERSION__ = '1.0.0 (a1b2c3d)';
+    globalThis.__APP_VERSION__ = '1.0.0 (2026-11-18)';
+    globalThis.__APP_COMMIT_DATE__ = '2026-11-18';
 
     expect(getReceiptVersionRows()).toEqual({
-      appVersion: '1.0.0 (a1b2c3d)',
+      appVersion: '1.0.0 (2026-11-18)',
       desktopVersion: '0.1.37',
     });
   });

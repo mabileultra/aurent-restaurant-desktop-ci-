@@ -47,9 +47,11 @@ export {
   FISCAL_QR_SUPPRESSED_RECEIPT_TYPES,
 } from './receiptQr.js';
 export {
+  formatVersionWithDate,
   formatVersionWithHash,
   getDesktopVersion,
   getUiVersion,
+  getUiAboutVersion,
   getReceiptVersionRows,
   getAppVersion,
   getAppVersionInfo,

@@ -276,7 +276,7 @@ function appendFiscalBlock(printer, payload) {
         appendRow(printer, '', val);
       }
     };
-    appendVersionRow(L.appVersion || 'Dastur versiyasi', sale.appVersion || payload?.appVersion);
+    appendVersionRow(L.appVersion || 'Versiya', sale.appVersion || payload?.appVersion);
     appendVersionRow(L.desktopVersion || 'Desktop versiyasi', sale.desktopVersion || payload?.desktopVersion);
     if (virtualRegister && virtualRegister !== '1') {
       appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);

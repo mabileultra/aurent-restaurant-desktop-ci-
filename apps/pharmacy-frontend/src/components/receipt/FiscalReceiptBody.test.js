@@ -146,13 +146,13 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
   });
 
   describe('FiscalReceiptBody (pharmacy-frontend): Software version row (AUR-6)', () => {
-    it('renders 1 row ("Dastur versiyasi" with hash) in browser mode and 2 rows ("Dastur versiyasi" + "Desktop versiyasi") in Electron mode', async () => {
+    it('renders 1 row ("Versiya: 0.1.0 (2026-11-18)") in browser mode and 2 rows ("Versiya" + "Desktop versiyasi") in Electron mode', async () => {
       await i18n.changeLanguage('ru');
       const browserHtml = renderToStaticMarkup(
         React.createElement(FiscalReceiptBody, {
           sale: {
             ...MOCK_SALE,
-            appVersion: '0.1.0 (a1b2c3d)',
+            appVersion: '0.1.0 (2026-11-18)',
             fiscalTerminalId: 'FM-PHARM-01',
             fiscalReceiptSeq: '42',
             fiscalSign: '123456789012',
@@ -160,17 +160,17 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
         })
       );
 
-      expect(browserHtml).toContain('Dastur versiyasi');
-      expect(browserHtml).toContain('0.1.0 (a1b2c3d)');
+      expect(browserHtml).toContain('>Versiya<');
+      expect(browserHtml).toContain('0.1.0 (2026-11-18)');
       expect(browserHtml).not.toContain('Desktop versiyasi');
       expect(browserHtml).toContain('FM raqami');
-      expect(browserHtml).not.toContain('Версия ПО');
+      expect(browserHtml).not.toContain('Версия');
 
       const electronHtml = renderToStaticMarkup(
         React.createElement(FiscalReceiptBody, {
           sale: {
             ...MOCK_SALE,
-            appVersion: '0.1.0 (a1b2c3d)',
+            appVersion: '0.1.0 (2026-11-18)',
             desktopVersion: '0.1.0',
             fiscalTerminalId: 'FM-PHARM-01',
             fiscalReceiptSeq: '42',
@@ -179,8 +179,8 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
         })
       );
 
-      expect(electronHtml).toContain('Dastur versiyasi');
-      expect(electronHtml).toContain('0.1.0 (a1b2c3d)');
+      expect(electronHtml).toContain('>Versiya<');
+      expect(electronHtml).toContain('0.1.0 (2026-11-18)');
       expect(electronHtml).toContain('Desktop versiyasi');
       expect(electronHtml).toContain('>0.1.0<');
     });

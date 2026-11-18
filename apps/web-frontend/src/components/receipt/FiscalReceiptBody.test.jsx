@@ -194,7 +194,7 @@ describe('FiscalReceiptBody', () => {
   });
 
   describe('FiscalReceiptBody: Software version row on receipt (AUR-6)', () => {
-    it('renders 1 row ("Dastur versiyasi" with hash) in browser mode and omits "Desktop versiyasi"', async () => {
+    it('renders 1 row ("Versiya: 1.0.0 (YYYY-MM-DD)") in browser mode and omits "Desktop versiyasi"', async () => {
       await i18n.changeLanguage('ru');
       const html = renderToStaticMarkup(
         React.createElement(FiscalReceiptBody, {
@@ -207,15 +207,15 @@ describe('FiscalReceiptBody', () => {
         })
       );
 
-      expect(html).toContain('Dastur versiyasi');
-      expect(html).toMatch(/1\.0\.0 \([0-9a-f]{7}\)/i);
+      expect(html).toContain('>Versiya<');
+      expect(html).toMatch(/1\.0\.0 \(\d{4}-\d{2}-\d{2}\)/);
       expect(html).not.toContain('Desktop versiyasi');
       expect(html).toContain('FM raqami');
       expect(html).toContain('FM998877');
-      expect(html).not.toContain('Версия ПО');
+      expect(html).not.toContain('Версия');
     });
 
-    it('renders 2 rows ("Dastur versiyasi" + "Desktop versiyasi") in Electron mode under FM number', () => {
+    it('renders 2 rows ("Versiya: 1.0.0 (YYYY-MM-DD)" + "Desktop versiyasi: 1.3.4") in Electron mode under FM number', () => {
       const prevWindow = globalThis.window;
       globalThis.window = {
         desktopCashier: {
@@ -235,8 +235,8 @@ describe('FiscalReceiptBody', () => {
           })
         );
 
-        expect(html).toContain('Dastur versiyasi');
-        expect(html).toMatch(/1\.0\.0 \([0-9a-f]{7}\)/i);
+        expect(html).toContain('>Versiya<');
+        expect(html).toMatch(/1\.0\.0 \(\d{4}-\d{2}-\d{2}\)/);
         expect(html).toContain('Desktop versiyasi');
         expect(html).toContain('1.3.4');
         expect(html).toContain('receipt-row--nowrap');
@@ -245,8 +245,9 @@ describe('FiscalReceiptBody', () => {
       }
     });
 
-    it('renders version without hash when git hash is absent (CI/archive)', () => {
+    it('renders version without date when git info is absent (CI/archive)', () => {
       globalThis.__APP_VERSION__ = '1.0.0';
+      globalThis.__APP_COMMIT_DATE__ = '';
       globalThis.__APP_GIT_HASH__ = '';
       try {
         const html = renderToStaticMarkup(
@@ -260,21 +261,22 @@ describe('FiscalReceiptBody', () => {
           })
         );
 
-        expect(html).toContain('Dastur versiyasi');
+        expect(html).toContain('>Versiya<');
         expect(html).toContain('>1.0.0<');
         expect(html).not.toContain('Desktop versiyasi');
       } finally {
         delete globalThis.__APP_VERSION__;
+        delete globalThis.__APP_COMMIT_DATE__;
         delete globalThis.__APP_GIT_HASH__;
       }
     });
 
-    it('renders long version ("1.10.12 (a1b2c3d)") in full without truncation', () => {
+    it('renders long version ("1.100.200-rc.12 (2026-11-18)") in full without truncation', () => {
       const html = renderToStaticMarkup(
         React.createElement(FiscalReceiptBody, {
           sale: {
             ...MOCK_SALE,
-            appVersion: '1.10.12 (a1b2c3d)',
+            appVersion: '1.100.200-rc.12 (2026-11-18)',
             desktopVersion: '1.10.12',
             fiscalTerminalId: 'FM998877',
             fiscalReceiptSeq: '101',
@@ -283,8 +285,8 @@ describe('FiscalReceiptBody', () => {
         })
       );
 
-      expect(html).toContain('Dastur versiyasi');
-      expect(html).toContain('1.10.12 (a1b2c3d)');
+      expect(html).toContain('>Versiya<');
+      expect(html).toContain('1.100.200-rc.12 (2026-11-18)');
       expect(html).toContain('Desktop versiyasi');
       expect(html).toContain('>1.10.12<');
     });

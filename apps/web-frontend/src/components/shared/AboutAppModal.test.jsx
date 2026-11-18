@@ -7,6 +7,7 @@ import { AboutAppModal } from '@aurent/shared-ui';
 describe('AboutAppModal component', () => {
   const originalDesktopCashier = window.desktopCashier;
   const originalAppVersion = globalThis.__APP_VERSION__;
+  const originalCommitDate = globalThis.__APP_COMMIT_DATE__;
   const originalGitHash = globalThis.__APP_GIT_HASH__;
 
   afterEach(() => {
@@ -20,6 +21,11 @@ describe('AboutAppModal component', () => {
       globalThis.__APP_VERSION__ = originalAppVersion;
     } else {
       delete globalThis.__APP_VERSION__;
+    }
+    if (originalCommitDate !== undefined) {
+      globalThis.__APP_COMMIT_DATE__ = originalCommitDate;
+    } else {
+      delete globalThis.__APP_COMMIT_DATE__;
     }
     if (originalGitHash !== undefined) {
       globalThis.__APP_GIT_HASH__ = originalGitHash;
@@ -35,7 +41,7 @@ describe('AboutAppModal component', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders dialog with UI version (including git hash) and web platform in browser mode', () => {
+  it('renders dialog with UI version (including commit date + short git hash) and web platform in browser mode', () => {
     delete window.desktopCashier;
     render(
       <AboutAppModal
@@ -49,12 +55,13 @@ describe('AboutAppModal component', () => {
     expect(screen.getByText('Aurent POS')).toBeTruthy();
     expect(screen.getByText('Dastur versiyasi')).toBeTruthy();
     expect(screen.getByText('Veb versiya')).toBeTruthy();
-    expect(screen.getByText(/^1\.0\.0 \([0-9a-f]{7,}\)$/i)).toBeTruthy();
+    expect(screen.getByText(/^1\.0\.0 \(\d{4}-\d{2}-\d{2}, [0-9a-f]{7}\)$/i)).toBeTruthy();
   });
 
-  it('renders browser version without hash when git hash is absent (CI/archive)', () => {
+  it('renders browser version without date/hash when git info is absent (CI/archive)', () => {
     delete window.desktopCashier;
     globalThis.__APP_VERSION__ = '1.0.0';
+    globalThis.__APP_COMMIT_DATE__ = '';
     globalThis.__APP_GIT_HASH__ = '';
     render(
       <AboutAppModal
@@ -66,7 +73,7 @@ describe('AboutAppModal component', () => {
     expect(screen.getByText('1.0.0')).toBeTruthy();
   });
 
-  it('renders both Desktop version and UI version (with hash) in Electron desktop mode', () => {
+  it('renders both Desktop version and UI version (with date + hash) in Electron desktop mode', () => {
     window.desktopCashier = {
       isDesktop: true,
       appVersion: '1.3.4',
@@ -83,7 +90,7 @@ describe('AboutAppModal component', () => {
     expect(screen.getByText('Desktop versiyasi')).toBeTruthy();
     expect(screen.getByText('1.3.4')).toBeTruthy();
     expect(screen.getByText('UI versiyasi')).toBeTruthy();
-    expect(screen.getByText(/^1\.0\.0 \([0-9a-f]{7,}\)$/i)).toBeTruthy();
+    expect(screen.getByText(/^1\.0\.0 \(\d{4}-\d{2}-\d{2}, [0-9a-f]{7}\)$/i)).toBeTruthy();
     expect(screen.getByText('Desktop ilova')).toBeTruthy();
   });
 
