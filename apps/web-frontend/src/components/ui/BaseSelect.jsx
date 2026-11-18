@@ -24,6 +24,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     disabled = false,
     className,
     menuClassName,
+    menuMinWidth = 280,
     size = 'md',
     variant = 'default',
     emptyValue = '',
@@ -67,6 +68,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     onChange,
     onSearchQueryChange,
     searchable,
+    menuMinWidth,
     forwardedRef,
     id,
   });

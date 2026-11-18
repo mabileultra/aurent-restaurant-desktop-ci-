@@ -12,6 +12,7 @@ export function useBaseSelectTriggerState({
   onChange,
   onSearchQueryChange,
   searchable = true,
+  menuMinWidth = 280,
   forwardedRef,
   id,
 }) {
@@ -67,6 +68,7 @@ export function useBaseSelectTriggerState({
     name,
     value: effectiveValue,
     onSelectOption: commitSelection,
+    minWidth: menuMinWidth,
   });
 
   const closeMenu = (opts) => {
@@ -78,8 +80,18 @@ export function useBaseSelectTriggerState({
   closeMenuRef.current = closeMenu;
 
   useEffect(() => {
+    if (!open) {
+      setQuery('');
+      onSearchQueryChange?.('');
+    }
+  }, [open, onSearchQueryChange]);
+
+  useEffect(() => {
     if (!open || !searchable) return undefined;
-    const timeoutId = window.setTimeout(() => searchRef.current?.focus?.(), 0);
+    const timeoutId = window.setTimeout(() => {
+      searchRef.current?.focus?.();
+      searchRef.current?.select?.();
+    }, 0);
     return () => window.clearTimeout(timeoutId);
   }, [open, searchable]);
 

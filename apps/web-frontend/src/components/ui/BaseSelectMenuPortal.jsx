@@ -25,7 +25,7 @@ export default function BaseSelectMenuPortal({
   emptyTextFallback,
   effectiveValue,
 }) {
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
@@ -38,7 +38,7 @@ export default function BaseSelectMenuPortal({
         top: menuStyle.top,
         left: menuStyle.left,
         width: menuStyle.width,
-        minWidth: Math.max(menuStyle.triggerWidth || 0, 240),
+        minWidth: menuStyle.width,
       }}
     >
       {searchable ? (

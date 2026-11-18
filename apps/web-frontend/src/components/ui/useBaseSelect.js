@@ -9,7 +9,17 @@ function getEnabledIndexes(options) {
   }, []);
 }
 
-export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, value, onSelectOption }) {
+export function useBaseSelect({
+  options,
+  open,
+  setOpen,
+  disabled,
+  onBlur,
+  name,
+  value,
+  onSelectOption,
+  minWidth = 280,
+}) {
   const listId = useId();
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
@@ -61,12 +71,12 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
       let top = openUpward ? rect.top - menuHeight - gap : rect.bottom + gap;
       top = Math.max(edgePadding, Math.min(top, window.innerHeight - menuHeight - edgePadding));
 
-      const menuWidth = Math.max(rect.width, 240);
-      const width = Math.min(menuWidth, window.innerWidth - edgePadding * 2);
+      const effectiveMin = Math.max(minWidth || 280, rect.width);
+      const width = Math.min(effectiveMin, window.innerWidth - edgePadding * 2);
       let left = rect.left;
       left = Math.max(edgePadding, Math.min(left, window.innerWidth - width - edgePadding));
 
-      setMenuStyle({ top, left, width, triggerWidth: rect.width });
+      setMenuStyle({ top, left, width, triggerWidth: rect.width, minWidth: effectiveMin });
     };
 
     updatePosition();
