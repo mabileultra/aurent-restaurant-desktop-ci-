@@ -72,4 +72,54 @@ class UzInvoiceDocumentIdExtractorTest {
         grid.add(Arrays.asList("13.04.2024 даги IS-00008429-сонли", "", ""));
         assertEquals("IS-00008429", UzInvoiceDocumentIdExtractor.extractFromGrid(grid));
     }
+
+    @Test
+    void matchesNumericSonliInvoiceNumber() {
+        assertEquals(
+            "2683",
+            UzInvoiceDocumentIdExtractor.extractFromPlainText("23.05.2026 даги 2683-сонли")
+        );
+    }
+
+    @Test
+    void ignoresSonliContractShartnoma() {
+        assertNull(
+            UzInvoiceDocumentIdExtractor.extractFromPlainText(
+                "14.01.2026 даги 481-сонли шартномага"
+            )
+        );
+    }
+
+    @Test
+    void prefersInvoiceSonliOverContractInGrid() {
+        List<List<String>> grid = new ArrayList<>();
+        grid.add(Arrays.asList("14.01.2026 даги 481-сонли шартномага", "", ""));
+        grid.add(Arrays.asList("23.05.2026 даги 2683-сонли", "", ""));
+        grid.add(Arrays.asList("Ҳисобварақ-фактура", "", ""));
+        assertEquals("2683", UzInvoiceDocumentIdExtractor.extractFromGrid(grid));
+    }
+
+    @Test
+    void doesNotMatchBareDidoxPortalId() {
+        assertNull(UzInvoiceDocumentIdExtractor.extractFromPlainText("2031222256"));
+        assertNull(UzInvoiceDocumentIdExtractor.extractFromPlainText("№2031222256 Юборилган"));
+    }
+
+    @Test
+    void prefersIsOverNumericSonli() {
+        assertEquals(
+            "IS-00008429",
+            UzInvoiceDocumentIdExtractor.extractFromPlainText("23.05.2026 даги IS-00008429-сонли")
+        );
+    }
+
+    @Test
+    void buildsScopedSkuFromNumericSonli() {
+        var row = UzInvoiceProductRowMapper.toCatalogRow(
+            "Сок", "02202002001544001 - Описание", null, "dona", "1", "1500", "12", 2, "2683"
+        );
+        assertNotNull(row);
+        assertEquals("2683-L-2", row.get("sku"));
+        assertEquals("2683", row.get(UzInvoiceDocumentIdExtractor.ROW_KEY_UZ_INVOICE_DOCUMENT_ID));
+    }
 }

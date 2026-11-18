@@ -1,0 +1,13 @@
+# UZ invoice document id (Didox Excel)
+
+## Must
+
+- Prefer `IS-########` when present in the header.
+- Else take numeric factura from `… даги N-сонли` / `… dagi N-sonli` → id `N`, SKU `N-L-{row}`.
+- Skip contract lines: `… сонли шартномага` / `shartnoma` / `договор`.
+- Do **not** use Didox portal / operator ids like bare `2031222256`.
+
+## Must NOT
+
+- Fall back to colliding `INV-{row}` when a sonli factura number is in the Excel header.
+- Treat `CLI-*` or contract sonli as `uz_invoice_document_id`.

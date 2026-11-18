@@ -9,11 +9,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Номер электронного счёт-фактуры (напр. Didox/Soliq): {@code IS-00008429} в тексте заголовка
- * («… даги IS-00008429-сонли»).
- * <p>
- * Не путать с кодом клиента/договора вроде {@code CLI-12937} — он встречается на многих
- * накладных одного покупателя и ломал защиту от повторного импорта.
+ * Номер электронного счёт-фактуры (напр. Didox/Soliq):
+ * <ul>
+ *   <li>{@code IS-00008429} — «… даги IS-00008429-сонли»</li>
+ *   <li>числовой «… даги 2683-сонли» из Excel (без портального ID Didox)</li>
+ * </ul>
+ * Не путать с договором «… даги 481-сонли шартномага» и кодом клиента {@code CLI-12937}.
  */
 public final class UzInvoiceDocumentIdExtractor {
 
@@ -28,6 +29,14 @@ public final class UzInvoiceDocumentIdExtractor {
 
     /** Вариант без пробела между IS и номером. */
     private static final Pattern IS_COMPACT = Pattern.compile("(?i)\\b(IS\\d{6,})\\b");
+
+    /**
+     * Excel Didox: «23.05.2026 даги 2683-сонли».
+     * Не матчит договор: «14.01.2026 даги 481-сонли шартномага».
+     */
+    private static final Pattern SONLI_INVOICE = Pattern.compile(
+        "(?iu)даги\\s+(\\d{1,12})-(?:сонли|sonli)(?!\\s*(?:шартном|shartnom|договор|dogovor|contract))"
+    );
 
     /**
      * Другие префиксы документов (не клиентские коды): ≥6 цифр после дефиса,
@@ -103,6 +112,10 @@ public final class UzInvoiceDocumentIdExtractor {
         if (!StringUtils.hasText(text)) {
             return null;
         }
+        String sonli = extractSonliInvoice(text);
+        if (sonli != null) {
+            return sonli;
+        }
         Matcher gen = PREFIX_DIGITS_ID.matcher(text);
         while (gen.find()) {
             String token = normalizeToken(gen.group(1));
@@ -117,6 +130,22 @@ public final class UzInvoiceDocumentIdExtractor {
             return token;
         }
         return null;
+    }
+
+    /**
+     * Номер фактуры из «даги N-сонли». Договор («… сонли шартномага») и голый портальный ID Didox
+     * не извлекаются.
+     */
+    private static String extractSonliInvoice(String text) {
+        Matcher m = SONLI_INVOICE.matcher(text);
+        if (!m.find()) {
+            return null;
+        }
+        String num = m.group(1);
+        if (!StringUtils.hasText(num)) {
+            return null;
+        }
+        return num.trim();
     }
 
     private static String normalizeToken(String raw) {
