@@ -24,6 +24,8 @@ export function useBaseSelect({
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [menuStyle, setMenuStyle] = useState({ top: 0, left: 0, width: 0 });
 
@@ -33,8 +35,13 @@ export function useBaseSelect({
     if (options.restoreFocus) {
       triggerRef.current?.focus();
     }
-    onBlur?.({ target: { value, name } });
-  }, [name, onBlur, setOpen, value]);
+    const nextValue = options.value !== undefined ? options.value : valueRef.current;
+    onBlur?.({
+      type: 'blur',
+      target: { value: nextValue, name },
+      currentTarget: { value: nextValue, name },
+    });
+  }, [name, onBlur, setOpen]);
 
   const openMenu = useCallback(() => {
     if (disabled) return;

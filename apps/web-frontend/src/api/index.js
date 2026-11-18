@@ -55,3 +55,4 @@ export { publicSiteApi } from './publicSite.api';
 export { pharmacyIntegrationApi } from './pharmacyIntegration.api';
 export { multikassaApi } from './multikassa.api';
 export { operatorBrvApi } from './operatorBrv.api';
+export { fiscalDriveApi } from './fiscalDrive.api';

@@ -74,6 +74,22 @@
   color: rgb(var(--color-primary-600));
 }
 
+.multikassa-settings__error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.dark .multikassa-settings__error {
+  border-color: rgb(127 29 29 / 0.7);
+  background: rgb(69 10 10 / 0.5);
+  color: #fecaca;
+}
+
 .multikassa-settings__actions {
   display: flex;
   flex-wrap: wrap;

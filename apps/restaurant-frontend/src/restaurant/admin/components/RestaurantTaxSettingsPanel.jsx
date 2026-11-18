@@ -200,6 +200,11 @@ export default function RestaurantTaxSettingsPanel({
 
           {p.printersNote ? <p className="rst-int-form__test">{p.printersNote}</p> : null}
           {p.testMessage ? <p className="rst-int-form__test">{p.testMessage}</p> : null}
+          {p.saveError ? (
+            <div className="rst-int-form__error" role="alert">
+              {p.saveError}
+            </div>
+          ) : null}
 
           <div className="rst-int-form__actions">
             <BaseButton

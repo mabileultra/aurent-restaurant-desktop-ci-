@@ -185,6 +185,11 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
               {p.printersNote ? <p className="multikassa-settings__test">{p.printersNote}</p> : null}
 
               {p.testMessage ? <p className="multikassa-settings__test">{p.testMessage}</p> : null}
+              {p.saveError ? (
+                <div className="multikassa-settings__error" role="alert">
+                  {p.saveError}
+                </div>
+              ) : null}
 
               <div className="multikassa-settings__actions">
                 <button
