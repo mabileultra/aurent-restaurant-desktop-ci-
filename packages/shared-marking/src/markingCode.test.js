@@ -21,6 +21,14 @@ describe('@aurent/shared-marking markingCode', () => {
     expect(isCompleteMarkingScan('010478001234567821SERIAL€91CRYPT')).toBe(true);
   });
 
+  it('strips ↔ (U+2194) the same as GS — Filatoff / Didox scanner layout', () => {
+    const withArrow = '0104780021711739217hhgo*h\u219493guia';
+    const withGs = '0104780021711739217hhgo*h\u001d93guia';
+    expect(normalizeMarkingCode(withArrow)).toBe('0104780021711739217hhgo*h93guia');
+    expect(normalizeMarkingCode(withGs)).toBe('0104780021711739217hhgo*h93guia');
+    expect(isMarkingCode(withArrow)).toBe(true);
+  });
+
   it('builds EAN-13 and GTIN-14 candidates from a DataMatrix', () => {
     const candidates = markingBarcodeCandidates(MARK);
     expect(candidates).toContain('04780012345678');

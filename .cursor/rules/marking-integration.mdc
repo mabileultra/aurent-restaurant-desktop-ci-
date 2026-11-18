@@ -25,5 +25,6 @@ alwaysApply: false
    - FiscalDrive GetTXID: `Labels[]` = the same identification KM.
    - ASL Belgisi is off: sold-gate is local/journal only; circulation is Tasnif; withdraw is OFD Labels.
    - Tasnif VALID = cashier «в обороте». 401/timeout = UNAVAILABLE, sale not hard-blocked. REJECTED (1016/2070/2010) still blocks. Do not turn ASL back on for circulation.
+   - Scanner GS / FNC1 may arrive as `\u001D`, `€`, or `↔` (U+2194). Normalize all three before OFD Labels and identity keys — otherwise tax never sees a clean КИ and «вышел из оборота» never comes.
    - Sold-gate is per KM, not per card: a punched mark stays sold even if the cashier is on another product.
    - Grocery checkout writes `sale_sold_marks` (`MarkingSoldJournalService`) before/after the receipt; scan checks that journal first. Failed fiscal does not write. Return/void unregisters.

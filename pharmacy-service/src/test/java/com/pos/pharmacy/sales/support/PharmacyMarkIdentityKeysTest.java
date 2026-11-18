@@ -41,4 +41,14 @@ class PharmacyMarkIdentityKeysTest {
         assertTrue(PharmacyMarkIdentityKeys.keysOf("   ").isEmpty());
         assertTrue(PharmacyMarkIdentityKeys.keysOf(null).isEmpty());
     }
+
+    @Test
+    void arrowSeparatorMatchesRealGsKeys() {
+        String withArrow = "0104780021711739217hhgo*h\u219493guia";
+        String withGs = "0104780021711739217hhgo*h\u001d93guia";
+        Set<String> arrowKeys = PharmacyMarkIdentityKeys.keysOf(withArrow);
+        Set<String> gsKeys = PharmacyMarkIdentityKeys.keysOf(withGs);
+        assertTrue(arrowKeys.stream().filter(k -> k.startsWith("id:")).anyMatch(gsKeys::contains));
+        assertTrue(arrowKeys.stream().noneMatch(k -> k.contains("\u2194")));
+    }
 }

@@ -6,10 +6,11 @@ export function normalizeMarkingCode(raw) {
     .trim()
     // AIM prefix ]d2 / ]C1 …
     .replace(/^\][A-Za-z0-9]{2}/, '')
-    // GS / FNC1: сканеры часто отдают как \u001d, либо как € / ¦ на раскладке
+    // GS / FNC1: сканеры часто отдают как \u001d, либо как € / ¦ / ↔ на раскладке
     .replace(/\u001d/g, '')
     .replace(/\u001e/g, '')
     .replace(/\u0000/g, '')
+    .replace(/\u2194/g, '') // ↔ — частый «рисунок» GS в Excel/сканере
     .replace(/€/g, '')
     .replace(/¦/g, '')
     .replace(/\u00a4/g, '') // ¤
@@ -38,8 +39,8 @@ export function isMarkingCode(raw) {
   if (/^\d{14,17}$/.test(code)) return false;
 
   const source = String(raw);
-  // GS1 separator в сыром скане (или € вместо GS) — типичный DataMatrix
-  if (source.includes('\u001d') || source.includes('€')) return true;
+  // GS1 separator в сыром скане (или € / ↔ вместо GS) — типичный DataMatrix
+  if (source.includes('\u001d') || source.includes('€') || source.includes('\u2194')) return true;
 
   // Типичный EAN-8/13 — не маркировка (14 уже отсекли выше как возможный GTIN/ИКПУ)
   if (/^\d{8}$/.test(code) || /^\d{12,13}$/.test(code)) return false;

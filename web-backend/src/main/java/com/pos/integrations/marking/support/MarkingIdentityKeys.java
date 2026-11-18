@@ -26,7 +26,8 @@ public final class MarkingIdentityKeys {
         if (!StringUtils.hasText(raw)) {
             return keys;
         }
-        String mark = raw.replace("\u001D", "").replace(" ", "").trim();
+        // \u001D = GS; \u2194 (↔) — тот же разделитель с части сканеров/раскладок.
+        String mark = raw.replace("\u001D", "").replace("\u2194", "").replace(" ", "").trim();
         if (!StringUtils.hasText(mark)) {
             return keys;
         }
