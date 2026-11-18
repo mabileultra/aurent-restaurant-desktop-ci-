@@ -54,3 +54,4 @@ export { platformBillingApi, tenantBillingApi } from './platform/billing.api';
 export { publicSiteApi } from './publicSite.api';
 export { pharmacyIntegrationApi } from './pharmacyIntegration.api';
 export { multikassaApi } from './multikassa.api';
+export { fiscalDriveApi } from './fiscalDrive.api';
