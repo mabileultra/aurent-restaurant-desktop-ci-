@@ -22,7 +22,7 @@ export function buildCompanySelectOptions(companies = [], { emptyLabel, includeL
     return {
       value: String(company.id),
       label: includeLoginCode && code ? `${name} (${code})` : name,
-      keywords: [name, code, company.legalName, company.tin].filter(Boolean).join(' '),
+      keywords: [name, code, company.legalName, company.tin, company.phone].filter(Boolean).join(' '),
     };
   });
 
