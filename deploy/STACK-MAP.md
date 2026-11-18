@@ -94,4 +94,9 @@ Handoff на aurent: `router/restaurant.routes.jsx` + `RestaurantSpaHandoff` + `
 - `https://r-aurent.uz` → title Aurent Restaurant  
 - Health: `http://127.0.0.1:8080/api/v1/actuator/health` → UP  
 
-**Заметка:** в `.env` на сервере могут отсутствовать явные `VITE_*` / `APP_CORS` — тогда берутся defaults из `docker-compose.prod.yml` и `apps/*/.env.production` **на момент build** (включая `VITE_LICENSE_NUMBER=1.3` для печати номера лицензии на чеке и в окне «О программе»). После смены `VITE_*` (например `VITE_LICENSE_NUMBER` в `/opt/aurent-pos/.env`) — обязателен rebuild `frontend`, `restaurant-frontend` и `pharmacy-frontend`.
+**Заметка:** в `.env` на сервере могут отсутствовать явные `VITE_*` / `APP_CORS` — тогда берутся defaults из `docker-compose.prod.yml` **на момент build**. После смены `VITE_*` — обязателен rebuild.
+
+**Litsenziya raqami (`VITE_LICENSE_NUMBER`, AUR-6):**
+- Litsenziya raqami o‘zgarsa — **faqat shu joy(lar)ni o‘zgartiring**:
+  1. Repo’da (shablon va lokal/Electron build manbai): ildizdagi `.env.example` (va lokal `.env` bo‘lsa — ildizdagi `.env`) ichidagi `VITE_LICENSE_NUMBER=...` qatori;
+  2. Serverda (prod): `/opt/aurent-pos/.env` ichidagi `VITE_LICENSE_NUMBER=...` qatori, so‘ng uchala frontendni qayta yig‘ing (`docker compose -f docker-compose.prod.yml --env-file .env up -d --build frontend restaurant-frontend pharmacy-frontend`).

@@ -9,6 +9,7 @@ import {
 } from './appVersion.js';
 import {
   buildAppVersionDefine,
+  resolveBuildLicenseNumber,
   resolveGitCommitDate,
   resolveGitShortHash,
 } from './resolveBuildVersionDefine.mjs';
@@ -187,5 +188,9 @@ describe('appVersion helper', () => {
     expect(getLicenseNumber()).toBeNull();
     expect(getLicenseNumber('')).toBeNull();
     expect(getLicenseNumber(null)).toBeNull();
+
+    const pkgUrl = new URL('../../../apps/web-frontend/package.json', import.meta.url);
+    expect(resolveBuildLicenseNumber(pkgUrl, { env: {} })).toBe('1.3');
+    expect(resolveBuildLicenseNumber(pkgUrl, { env: { VITE_LICENSE_NUMBER: '2.0' } })).toBe('2.0');
   });
 });
