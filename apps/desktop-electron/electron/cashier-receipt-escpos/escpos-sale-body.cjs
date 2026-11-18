@@ -6,6 +6,8 @@ const {
   fmtQty,
   splitDateTime,
   formatCardNumberForReceipt,
+  resolveItemBarcode,
+  resolveItemMarkingLabel,
   buildFiscalSign,
   doesVersionRowFitSingleLine,
   resolveItemCommittent,
@@ -121,6 +123,42 @@ function appendItems(printer, payload) {
     if (isOn(fields, 'itemIkpu') && item.ikpu) {
       withFieldStyle(printer, styles, 'itemIkpu', () => {
         printer.println(`${L.ikpuLine || 'MXIK'}: ${item.ikpu}`);
+      });
+    }
+    const barcode = resolveItemBarcode(item);
+    if (barcode) {
+      const barcodeLabel = L.barcode || 'ShT.kod';
+      const fullBarcode = `${barcodeLabel}: ${barcode}`;
+      const lineWidth =
+        Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+          ? 32
+          : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+      withFieldStyle(printer, styles, 'itemBarcode', () => {
+        if (fullBarcode.length <= lineWidth) {
+          printer.println(fullBarcode);
+        } else {
+          printer.println(`${barcodeLabel}:`);
+          printer.println(barcode);
+        }
+      });
+    }
+    const mk = resolveItemMarkingLabel(item);
+    if (mk) {
+      const markingLabel = L.marking || 'MK';
+      const fullMarking = `${markingLabel}: ${mk}`;
+      const lineWidth =
+        Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+          ? 32
+          : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+      withFieldStyle(printer, styles, 'itemMarking', () => {
+        if (fullMarking.length <= lineWidth) {
+          printer.println(fullMarking);
+        } else {
+          printer.println(`${markingLabel}:`);
+          for (let i = 0; i < mk.length; i += lineWidth) {
+            printer.println(mk.slice(i, i + lineWidth));
+          }
+        }
       });
     }
     const committent = resolveItemCommittent(item);

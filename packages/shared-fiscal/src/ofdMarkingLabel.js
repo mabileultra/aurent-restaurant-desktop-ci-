@@ -50,3 +50,24 @@ export function toOfdMarkingLabel(raw) {
     ? identification.slice(0, OFD_LABEL_MAX)
     : identification;
 }
+
+export function resolveItemBarcode(item) {
+  if (!item) return '';
+  const raw = item.barcode || item.barCode || item.sku || '';
+  return raw ? String(raw).trim() : '';
+}
+
+export function resolveItemMarkingLabel(item) {
+  if (!item) return '';
+  const raw =
+    item.markingCode ||
+    item.productMark ||
+    item.markCode ||
+    (Array.isArray(item.productMarks) && item.productMarks[0]) ||
+    item.productLabel ||
+    item.km ||
+    item.mark ||
+    '';
+  return toOfdMarkingLabel(raw);
+}
+

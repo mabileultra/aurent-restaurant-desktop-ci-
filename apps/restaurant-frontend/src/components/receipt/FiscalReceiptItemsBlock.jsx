@@ -1,5 +1,9 @@
 import React from 'react';
-import { formatItemCommittentReceiptLine } from '@aurent/shared-fiscal';
+import {
+  formatItemCommittentReceiptLine,
+  resolveItemBarcode,
+  resolveItemMarkingLabel,
+} from '@aurent/shared-fiscal';
 import { fmtMoneyCompact, fmtQty } from '../../utils/fiscalReceiptFormat';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
 import { FiscalReceiptDivider, FiscalReceiptRow } from './FiscalReceiptRow';
@@ -39,6 +43,24 @@ export default function FiscalReceiptItemsBlock({ items, isOn, fs, t }) {
                   {t('receipt.ikpuLine')}: {item.ikpu}
                 </p>
               ) : null}
+              {(() => {
+                const barcode = resolveItemBarcode(item);
+                if (!barcode) return null;
+                return (
+                  <p {...fs('itemBarcode', 'break-all receipt-secondary')}>
+                    {t('fiscalReceipt.barcode', { defaultValue: 'ShT.kod' })}: {barcode}
+                  </p>
+                );
+              })()}
+              {(() => {
+                const mk = resolveItemMarkingLabel(item);
+                if (!mk) return null;
+                return (
+                  <p {...fs('itemMarking', 'break-all receipt-secondary')}>
+                    {t('fiscalReceipt.marking', { defaultValue: 'MK' })}: {mk}
+                  </p>
+                );
+              })()}
               {(() => {
                 const committent = formatItemCommittentReceiptLine(item, {
                   committentTin: t('receipt.committentTin'),

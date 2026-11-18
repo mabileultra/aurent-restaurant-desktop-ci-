@@ -2,7 +2,12 @@
  * @aurent/shared-fiscal — pure OFD / fiscal helpers (no cart/store imports).
  * Provider adapters and marked-line expansion stay in apps.
  */
-export { toIdentificationMarkingCode, toOfdMarkingLabel } from './ofdMarkingLabel.js';
+export {
+  toIdentificationMarkingCode,
+  toOfdMarkingLabel,
+  resolveItemBarcode,
+  resolveItemMarkingLabel,
+} from './ofdMarkingLabel.js';
 export {
   toTiyin,
   isFiscalDateTime,

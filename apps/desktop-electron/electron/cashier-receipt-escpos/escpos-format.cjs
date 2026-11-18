@@ -252,12 +252,83 @@ function formatCardNumberForReceipt(value) {
   return s;
 }
 
+const CRYPTO_TAIL = /(91|92|93).{1,64}$/;
+const MIN_CODE_LENGTH = 20;
+const OFD_LABEL_MAX = 63;
+
+function stripScannerPrefix(raw) {
+  if (raw == null) return '';
+  let value = String(raw).replace(/^\uFEFF/, '').replace(/\u0000/g, '').trim();
+  if (value.startsWith(']') && value.length > 3) {
+    value = value.slice(3).trim();
+  }
+  return value;
+}
+
+function toIdentificationMarkingCode(raw) {
+  let value = stripScannerPrefix(raw);
+  if (!value) return '';
+
+  const gs = value.indexOf('\u001d');
+  if (gs >= 0) {
+    value = value.slice(0, gs);
+  }
+
+  if (value.length > 18 && value.startsWith('01') && value.startsWith('21', 16)) {
+    const serialAndTail = value.slice(18);
+    const match = serialAndTail.match(CRYPTO_TAIL);
+    if (match && match.index != null) {
+      return value.slice(0, 18 + match.index);
+    }
+    return value;
+  }
+
+  const match = value.match(CRYPTO_TAIL);
+  if (match && match.index != null && match.index >= MIN_CODE_LENGTH) {
+    return value.slice(0, match.index);
+  }
+  return value;
+}
+
+function toOfdMarkingLabel(raw) {
+  const identification = toIdentificationMarkingCode(raw);
+  if (!identification || identification.length < MIN_CODE_LENGTH) {
+    return '';
+  }
+  return identification.length > OFD_LABEL_MAX
+    ? identification.slice(0, OFD_LABEL_MAX)
+    : identification;
+}
+
+function resolveItemBarcode(item) {
+  if (!item) return '';
+  const raw = item.barcode || item.barCode || item.sku || '';
+  return raw ? String(raw).trim() : '';
+}
+
+function resolveItemMarkingLabel(item) {
+  if (!item) return '';
+  const raw =
+    item.markingCode ||
+    item.productMark ||
+    item.markCode ||
+    (Array.isArray(item.productMarks) && item.productMarks[0]) ||
+    item.productLabel ||
+    item.km ||
+    item.mark ||
+    '';
+  return toOfdMarkingLabel(raw);
+}
+
 module.exports = {
   fmtMoney,
   fmtMoneyTable,
   fmtQty,
   splitDateTime,
   formatCardNumberForReceipt,
+  toOfdMarkingLabel,
+  resolveItemBarcode,
+  resolveItemMarkingLabel,
   buildFiscalSign,
   buildQrPayload,
   shouldPrintFiscalQr,

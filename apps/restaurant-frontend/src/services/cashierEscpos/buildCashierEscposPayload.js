@@ -6,6 +6,8 @@ import {
   getLicenseNumber,
   getReceiptVersionRows,
   normalizeCardCategory,
+  resolveItemBarcode,
+  resolveItemMarkingLabel,
   shouldPrintFiscalQr,
 } from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
@@ -191,9 +193,16 @@ export function buildCashierEscposPayload(sale, t) {
   });
   const licenseNumber = getLicenseNumber(sale.licenseNumber ?? fiscalMeta.licenseNumber) || '';
 
+  const items = (sale.items || []).map((item) => ({
+    ...item,
+    barcode: resolveItemBarcode(item),
+    markingCode: resolveItemMarkingLabel(item),
+  }));
+
   return {
     sale: {
       ...sale,
+      items,
       appVersion,
       desktopVersion,
       licenseNumber,

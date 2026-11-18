@@ -325,5 +325,38 @@ describe('FiscalReceiptBody', () => {
         delete globalThis.__APP_LICENSE_NUMBER__;
       }
     });
+
+    it('renders ShT.kod and MK under item row when present, and omits them when absent', async () => {
+      await i18n.changeLanguage('uz');
+      const FULL_KM =
+        '0108906002059409218MTGE3S706TDT91UZF092enFQOcSQ9jQzKA16EsBIzjMGF9RCYf1JZd2ReSG6eiU=';
+
+      const saleWithCodes = {
+        ...MOCK_SALE,
+        items: [
+          {
+            id: 'item-1',
+            productName: 'Suv 0.5L',
+            quantity: 1,
+            price: 4000,
+            lineTotal: 4000,
+            barcode: '4780012345678',
+            markingCode: FULL_KM,
+          },
+        ],
+      };
+
+      const htmlWithCodes = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, { sale: saleWithCodes })
+      );
+      expect(htmlWithCodes).toContain('ShT.kod: 4780012345678');
+      expect(htmlWithCodes).toContain('MK: 0108906002059409218MTGE3S706TDT');
+
+      const htmlWithoutCodes = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, { sale: MOCK_SALE })
+      );
+      expect(htmlWithoutCodes).not.toContain('ShT.kod');
+      expect(htmlWithoutCodes).not.toContain('MK:');
+    });
   });
 });
