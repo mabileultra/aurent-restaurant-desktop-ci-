@@ -13,8 +13,9 @@
   ],
   "sideEffects": false,
   "peerDependencies": {
-    "react": "^18.2.0",
-    "clsx": "^2.1.0"
+    "react": "^18.2.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "clsx": "^2.1.0"
+  }
 }
