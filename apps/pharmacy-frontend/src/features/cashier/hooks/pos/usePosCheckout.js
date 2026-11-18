@@ -9,7 +9,6 @@ import {
   isCashierEscposPrintAvailable,
   printFiscalReceipt,
   resolveEscposPrintErrorMessage,
-  resolveReceiptPrinterErrorMessage,
 } from '../../../../services/cashierEscpos';
 import { isDesktopCashier } from '../../../../utils/printReceipt';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
@@ -24,8 +23,6 @@ import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
 import { FISCAL_STATUS } from '../../../../services/fiscal';
 import { collectMarksFromCartItems, rememberSoldMarks } from '../../../marking';
-import { PRESCRIPTION_NUMBER_REQUIRED_CODE } from '@aurent/shared-fiscal';
-import { usePrescriptionCheckoutGate } from './usePrescriptionCheckoutGate';
 
 export function usePosCheckout({
   storeId,
@@ -47,7 +44,6 @@ export function usePosCheckout({
   const getCheckoutLineItems = getCheckoutLineItemsOverride ?? defaultGetCheckoutLineItems;
   const getCheckoutOrderDiscountAmount = useCartStore((s) => s.getCheckoutOrderDiscountAmount);
   const getCheckoutOrderDiscountPercent = useCartStore((s) => s.getCheckoutOrderDiscountPercent);
-  const prescriptionGate = usePrescriptionCheckoutGate();
 
   const checkoutMutation = useMutation({
     mutationFn: async (payment) => {
@@ -117,14 +113,6 @@ export function usePosCheckout({
       }
     },
     onError: (e) => {
-      if (e?.isReceiptPrinterError) {
-        toast.error(resolveReceiptPrinterErrorMessage(e, t), { id: 'pos-checkout-error' });
-        return;
-      }
-      if (e?.code === PRESCRIPTION_NUMBER_REQUIRED_CODE) {
-        toast.error(t('pos.prescriptionRequiredBeforePay'));
-        return;
-      }
       if (e?.code === 'MARK_ALREADY_SOLD') {
         toast.error(t('pos.markingSoldLocal'));
         return;
@@ -172,21 +160,16 @@ export function usePosCheckout({
     },
   });
 
-  const handleConfirmPayment = (rawPayment) => {
+  const handleConfirmPayment = (payment) => {
     if (checkoutMutation.isPending) return;
-    if ((rawPayment.receiptType === 'CREDIT' || rawPayment.receiptType === 'ADVANCE') && !rawPayment.customerId) {
+    if ((payment.receiptType === 'CREDIT' || payment.receiptType === 'ADVANCE') && !payment.customerId) {
       toast.error(
-        rawPayment.receiptType === 'ADVANCE'
+        payment.receiptType === 'ADVANCE'
           ? t('pos.advanceCustomerRequired')
           : t('pos.creditCustomerRequired'),
       );
       return;
     }
-    // Единая точка всех оплат (нал, карта, смешанная, долг, аванс, горячие клавиши).
-    if (!prescriptionGate.ensurePrescriptionReady(() => handleConfirmPayment(rawPayment), rawPayment)) {
-      return;
-    }
-    const payment = prescriptionGate.attachToPayment(rawPayment);
     const payTotal = round2(total);
     if (payment.paymentMethod === 'MIXED' && payment.cashAmount != null) {
       const cash = clampPayAmount(payment.cashAmount, payTotal);
@@ -202,5 +185,5 @@ export function usePosCheckout({
     checkoutMutation.mutate(payment);
   };
 
-  return { checkoutMutation, handleConfirmPayment, prescriptionGate };
+  return { checkoutMutation, handleConfirmPayment };
 }

@@ -7,7 +7,6 @@ import {
   isCashierEscposPrintAvailable,
   printFiscalReceipt,
   resolveEscposPrintErrorMessage,
-  resolveReceiptPrinterErrorMessage,
 } from '../../../services/cashierEscpos';
 import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
@@ -53,9 +52,6 @@ export function useFloorPayMutations({
         amountTendered: payload.amountTendered,
         changeGiven: payload.changeGiven,
         cardType: payload.cardType || null,
-        cardCategory: payload.cardCategory || null,
-        rrn: payload.rrn || null,
-        socialCardNumber: payload.socialCardNumber || null,
         debtPhone: payload.debtPhone,
         debtComment: payload.debtComment,
         advancePaid: payload.advancePaid,
@@ -108,10 +104,6 @@ export function useFloorPayMutations({
     },
     onError: (err) => {
       playPosSound('error');
-      if (err?.isReceiptPrinterError) {
-        toast.error(resolveReceiptPrinterErrorMessage(err, t));
-        return;
-      }
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {
         toast.error(t('cashRegisters.multikassa.fiscalOfflineBlocked'));
         return;

@@ -15,7 +15,6 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   quit: () => invoke('desktop:quit'),
 
   listPrinters: () => invoke('desktop:list-printers'),
-  checkReceiptPrinterReady: () => invoke('desktop:check-receipt-printer-ready'),
   getPrinterSettings: () => invoke('desktop:get-printer-settings'),
   setPrinterSettings: (settings) => invoke('desktop:set-printer-settings', settings),
   printTicketHtml: (payload) => invoke('desktop:print-ticket-html', payload || {}),

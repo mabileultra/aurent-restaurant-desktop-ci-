@@ -131,20 +131,13 @@ export function usePharmacyPayRail({
   }, []);
 
   const submitCard = useCallback(
-    (type, cardDetails = null) => {
+    (type) => {
       if (!guardCheckout()) return;
       const resolved = type || cardType;
       if (!resolved) return;
       if (cardPayBlocked && method !== 'mixed') return;
 
       setSelectedCardType(resolved);
-      const cardMeta = cardDetails
-        ? {
-            cardCategory: cardDetails.cardCategory || undefined,
-            rrn: cardDetails.rrn || undefined,
-            socialCardNumber: cardDetails.socialCardNumber || undefined,
-          }
-        : {};
 
       if (hasPartialCash || method === 'mixed') {
         if (!hasPartialCash) {
@@ -156,7 +149,6 @@ export function usePharmacyPayRail({
           paymentMethod: 'MIXED',
           receiptType: 'SALE',
           cardType: resolved,
-          ...cardMeta,
           cashAmount: entered,
           cardAmount: cardRemainder,
           amountTendered: entered,
@@ -170,7 +162,6 @@ export function usePharmacyPayRail({
         paymentMethod: 'CARD',
         receiptType: 'SALE',
         cardType: resolved,
-        ...cardMeta,
         amountTendered: toPay,
         printReceipt: printReceiptEnabled,
         ...extras,
@@ -300,8 +291,6 @@ export function usePharmacyPayRail({
     cashInput,
     setCashInput,
     selectedCardType,
-    /** Выбранный провайдер карты или первый доступный — для F12 до нажатия кнопки карты. */
-    cardType,
     pinfl,
     setPinfl,
     loyaltyPhone,

@@ -3,7 +3,6 @@ package com.pos.integrations.fiscaldrive.service.impl;
 import com.pos.entity.Store;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.integrations.fiscal.domain.FiscalProvider;
-import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
 import com.pos.integrations.fiscaldrive.dto.FiscalDriveSettingsResponse;
 import com.pos.integrations.fiscaldrive.dto.SaveFiscalDriveSettingsRequest;
 import com.pos.integrations.fiscaldrive.entity.CashRegisterFiscalDriveSettings;
@@ -35,7 +34,6 @@ class FiscalDriveSettingsServiceImplTest {
     @Mock private CashRegisterFiscalDriveSettingsRepository settingsRepository;
     @Mock private TenantAccessSupport tenantAccess;
     @Mock private MultikassaCashierRegisterGuard registerGuard;
-    @Mock private FiscalModuleBindingGuard fiscalModuleGuard;
 
     @InjectMocks private FiscalDriveSettingsServiceImpl service;
 

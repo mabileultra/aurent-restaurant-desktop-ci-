@@ -1,63 +1,23 @@
-import { useEffect, useState } from 'react';
 import PosModalPortal from '../../../components/shared/PosModalPortal';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
 import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../cashier/constants/paymentCardProviders';
-import PharmacyCardFields, {
-  createInitialCardDetails,
-  validateAndNormalizeCardDetails,
-} from './PharmacyCardFields';
 import PharmacyPayQuickCash from './PharmacyPayQuickCash';
 import '../styles/pharmacy-mixed-pay-modal.css';
 
-/** Смешанная оплата: наличные в модалке, остаток — выбранной картой с реквизитами. */
+/** Смешанная оплата: наличные в модалке, остаток — выбранной картой. */
 export default function PharmacyMixedPayModal({ open, onClose, rail, busy, t }) {
   const received = parseTenderedInput(rail.cashInput);
-  const [selectedCardType, setSelectedCardType] = useState(null);
-  const [cardForm, setCardForm] = useState(createInitialCardDetails);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!open) return;
-    setSelectedCardType(null);
-    setCardForm(createInitialCardDetails());
-    setError(null);
-  }, [open]);
-
-  useEffect(() => {
-    if (!rail.hasPartialCash && selectedCardType) {
-      setSelectedCardType(null);
-      setError(null);
-    }
-  }, [rail.hasPartialCash, selectedCardType]);
 
   const pickCard = (cardType) => {
-    setSelectedCardType(cardType);
-    setError(null);
-  };
-
-  const handleConfirm = (e) => {
-    e?.preventDefault?.();
-    if (!selectedCardType || busy) return;
-    const result = validateAndNormalizeCardDetails(cardForm, t);
-    if (!result.ok) {
-      setError(result);
-      return;
-    }
-    setError(null);
-    rail.submitCard(selectedCardType, result.data);
-    onClose();
+    const ready = rail.hasPartialCash;
+    rail.submitCard(cardType);
+    if (ready) onClose();
   };
 
   return (
     <PosModalPortal open={open} onClose={onClose}>
-      <form
-        className="pharmacy-modal pharmacy-modal__panel pharmacy-mixed-pay"
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('pharmacyCashier.pay.methodMixed')}
-        onSubmit={handleConfirm}
-      >
+      <div className="pharmacy-modal pharmacy-modal__panel pharmacy-mixed-pay" role="dialog" aria-modal="true" aria-label={t('pharmacyCashier.pay.methodMixed')}>
         <header className="pharmacy-modal__head">
           <h2 className="pharmacy-modal__title">{t('pharmacyCashier.pay.methodMixed')}</h2>
           <button type="button" className="pharmacy-modal__close" onClick={onClose} aria-label="Закрыть">×</button>
@@ -88,48 +48,21 @@ export default function PharmacyMixedPayModal({ open, onClose, rail, busy, t }) 
             resetLabel={t('pharmacyCashier.pay.reset')}
           />
           <div className="pharmacy-mixed-pay__cards">
-            {ENABLED_PAYMENT_CARD_PROVIDERS.map((card) => {
-              const active = selectedCardType === card.cardType;
-              return (
-                <button
-                  key={card.id}
-                  type="button"
-                  className={`pharmacy-mixed-pay__card${active ? ' is-active' : ''}`}
-                  disabled={busy}
-                  aria-pressed={active}
-                  onClick={() => pickCard(card.cardType)}
-                >
-                  <img src={card.logoSrc} alt="" />
-                  <span>{t(card.labelKey)}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {selectedCardType && rail.hasPartialCash ? (
-            <div className="pharmacy-mixed-pay__card-details">
-              <PharmacyCardFields
-                value={cardForm}
-                onChange={(next) => {
-                  setCardForm(next);
-                  if (error) setError(null);
-                }}
-                error={error}
-                disabled={busy}
-                autoFocusRrn
-                t={t}
-              />
+            {ENABLED_PAYMENT_CARD_PROVIDERS.map((card) => (
               <button
-                type="submit"
-                className="pharmacy-card-modal__btn pharmacy-card-modal__btn--primary"
+                key={card.id}
+                type="button"
+                className="pharmacy-mixed-pay__card"
                 disabled={busy}
+                onClick={() => pickCard(card.cardType)}
               >
-                {t('pos.cardConfirmPay', { defaultValue: 'Подтвердить и пробить' })}
+                <img src={card.logoSrc} alt="" />
+                <span>{t(card.labelKey)}</span>
               </button>
-            </div>
-          ) : null}
+            ))}
+          </div>
         </div>
-      </form>
+      </div>
     </PosModalPortal>
   );
 }

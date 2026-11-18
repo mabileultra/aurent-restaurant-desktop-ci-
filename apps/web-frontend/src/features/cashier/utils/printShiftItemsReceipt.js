@@ -1,5 +1,4 @@
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
-import { getReceiptTranslator, RECEIPT_LOCALE } from '../../../utils/receiptI18n';
 
 const TICKET_WIDTH = 32;
 
@@ -40,17 +39,16 @@ function escapeHtml(value) {
  * @param {{ report: object, t?: Function }} opts
  */
 export function buildShiftItemsReceiptLines({ report, t } = {}) {
-  const tr = typeof t === 'function' ? t : getReceiptTranslator();
   const items = Array.isArray(report?.items) ? report.items : [];
-  const title = tr('pos.shiftItemsTitle') || 'Smena davomida sotilgan';
+  const title = t?.('pos.shiftItemsTitle') || 'Продано за смену';
   const totalQty = items.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
   const totalAmount = items.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
   const store = report?.storeName || '';
   const cashier = report?.cashierName || '';
   const period = `${ticketStamp(report?.openedAt)} — ${ticketStamp(report?.reportAt)}`;
-  const totalLabel = tr('pos.shiftItemsTotal') || 'JAMI';
-  const qtyLabel = tr('pos.shiftItemsQty', { count: fmtQty(totalQty) }) || `${fmtQty(totalQty)} dona`;
-  const emptyLabel = tr('pos.shiftItemsEmpty') || 'Sotuvlar yo‘q';
+  const totalLabel = t?.('pos.shiftItemsTotal') || 'ИТОГО';
+  const qtyLabel = t?.('pos.shiftItemsQty', { count: fmtQty(totalQty) }) || `${fmtQty(totalQty)} шт.`;
+  const emptyLabel = t?.('pos.shiftItemsEmpty') || 'Продаж нет';
   const divider = '-'.repeat(TICKET_WIDTH);
   const lines = [
     title.toUpperCase(),
@@ -79,7 +77,7 @@ async function printDesktop(title, lines) {
     title: title || '',
     lines,
     paperWmm: /58/.test(printerName) ? 58 : 80,
-    locale: RECEIPT_LOCALE,
+    locale: (typeof document !== 'undefined' && document.documentElement.lang) || 'ru',
   };
   if (typeof desk.printPlainEscpos === 'function') {
     await desk.printPlainEscpos(payload);

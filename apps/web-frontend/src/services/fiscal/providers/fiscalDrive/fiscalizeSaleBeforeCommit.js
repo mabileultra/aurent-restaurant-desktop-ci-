@@ -36,6 +36,11 @@ export async function fiscalizeSaleBeforeCommit({
   offline = false,
 }) {
   if (!isFiscalDriveCaps(capabilities)) return null;
+  // «Fiskal QR» off = без ОФД / Labels / вывода КМ — только обычный чек.
+  if (capabilities.printFiscalQr === false) {
+    logFiscal('FiscalDrive пропущен: printFiscalQr=false', null, 'info');
+    return null;
+  }
 
   // FiscalDrive: QR с ofd.soliq.uz только после RegisterTXID — не наследуем soft-fail Multikassa.
   const requireBeforeSale = !offline;

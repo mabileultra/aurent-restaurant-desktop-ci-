@@ -4,7 +4,6 @@
  */
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { extractVatFromInclusive, round2 } from '../../../utils/taxAmounts';
-import { getReceiptTranslator } from '../../../utils/receiptI18n';
 import { footerLines } from '../../shared/printProfile/applyPrintProfile';
 import { resolveRestaurantPayTotal, resolveServicePreview } from './restaurantPayAmount';
 import {
@@ -70,10 +69,10 @@ function vatTotalFromItems(items) {
 
 function paymentMethodLabel(method, t) {
   const m = String(method || 'CASH').toUpperCase();
-  if (m === 'CARD') return t?.('sales.paymentCard', { defaultValue: 'Karta' }) || 'Karta';
-  if (m === 'CASHLESS') return t?.('sales.paymentCashless', { defaultValue: 'Naqdsiz' }) || 'Naqdsiz';
-  if (m === 'MIXED') return t?.('salesLedger.filters.mixed', { defaultValue: 'Aralash' }) || 'Aralash';
-  return t?.('sales.paymentCash', { defaultValue: 'Naqd' }) || 'Naqd';
+  if (m === 'CARD') return t?.('sales.paymentCard', { defaultValue: 'Карта' }) || 'Карта';
+  if (m === 'CASHLESS') return t?.('sales.paymentCashless', { defaultValue: 'Безналичная' }) || 'Безналичная';
+  if (m === 'MIXED') return t?.('salesLedger.filters.mixed', { defaultValue: 'Смешанная' }) || 'Смешанная';
+  return t?.('sales.paymentCash', { defaultValue: 'Наличные' }) || 'Наличные';
 }
 
 function resolvePlaceLine(order, t, header) {
@@ -84,13 +83,13 @@ function resolvePlaceLine(order, t, header) {
     return t?.('rst.order.ticketTitle', {
       code: order.tableCode,
       hall,
-      defaultValue: `${hall} · Stol ${order.tableCode}`,
-    }) || `${hall} · Stol ${order.tableCode}`;
+      defaultValue: `${hall} · Стол ${order.tableCode}`,
+    }) || `${hall} · Стол ${order.tableCode}`;
   }
   return t?.('rst.order.tableHeading', {
     code: order.tableCode,
-    defaultValue: `Stol ${order.tableCode}`,
-  }) || `Stol ${order.tableCode}`;
+    defaultValue: `Стол ${order.tableCode}`,
+  }) || `Стол ${order.tableCode}`;
 }
 
 /**
@@ -109,7 +108,6 @@ export function buildRestaurantTicketBody({
   header = null,
   profile = null,
 } = {}) {
-  const tReceipt = getReceiptTranslator(t);
   const isSale = kind === 'sale' && sale;
   const items = isSale
     ? (sale.items || []).filter((row) => !row.isServiceLine)
@@ -139,11 +137,11 @@ export function buildRestaurantTicketBody({
     lines.push(`№${sale.receiptNumber || sale.id || '—'} · ${ticketStamp(sale.createdAt)}`);
     if (sale.customerName) lines.push(String(sale.customerName));
     if (show('waiter') && (sale.cashierName || sale.employeeName)) {
-      const label = tReceipt('fiscalReceipt.cashier', { defaultValue: 'Kassir' }) || 'Kassir';
+      const label = t?.('fiscalReceipt.cashier', { defaultValue: 'Кассир' }) || 'Кассир';
       pushProfileLine(lines, `${label}: ${sale.cashierName || sale.employeeName}`, profile, 'waiter');
     }
   } else if (show('hallTable')) {
-    const place = resolvePlaceLine(order, tReceipt, header);
+    const place = resolvePlaceLine(order, t, header);
     if (place || order?.orderNo != null) {
       pushProfileLine(
         lines,
@@ -156,7 +154,7 @@ export function buildRestaurantTicketBody({
 
   if (show('time')) {
     if (shift?.openedAt) {
-      const shiftLabel = tReceipt('rst.order.shiftLine', { defaultValue: 'Smena' }) || 'Smena';
+      const shiftLabel = t?.('rst.order.shiftLine', { defaultValue: 'Смена' }) || 'Смена';
       pushProfileLine(lines, `${shiftLabel} · ${ticketStamp(shift.openedAt)}`, profile, 'time');
     } else if (!isSale) {
       pushProfileLine(lines, ticketStamp(), profile, 'time');
@@ -164,7 +162,7 @@ export function buildRestaurantTicketBody({
   }
 
   if (show('waiter') && waiterName) {
-    const waiterLabel = tReceipt('rst.order.waiter', { defaultValue: 'Ofitsiant' }) || 'Ofitsiant';
+    const waiterLabel = t?.('rst.order.waiter', { defaultValue: 'Официант' }) || 'Официант';
     pushProfileLine(lines, `${waiterLabel}: ${waiterName}`, profile, 'waiter');
   }
 
@@ -183,21 +181,21 @@ export function buildRestaurantTicketBody({
       profile,
     );
     const sub = money(
-      tReceipt('rst.order.subtotalShort', { defaultValue: 'Jami' }) || 'Jami',
+      t?.('rst.order.subtotalShort', { defaultValue: 'Подытог' }) || 'Подытог',
       subtotal,
     );
     if (sub) lines.push(sub);
     if (service.amount > 0) {
       const svcLabel = service.percent > 0
-        ? (tReceipt('rst.order.serviceLine', { percent: service.percent, defaultValue: `Xizmat ${service.percent}%` })
-          || `Xizmat ${service.percent}%`)
-        : (tReceipt('rst.order.serviceShort', { defaultValue: 'Xizmat' }) || 'Xizmat');
+        ? (t?.('rst.order.serviceLine', { percent: service.percent, defaultValue: `Обслуживание ${service.percent}%` })
+          || `Обслуживание ${service.percent}%`)
+        : (t?.('rst.order.serviceShort', { defaultValue: 'Обслуживание' }) || 'Обслуживание');
       const svc = money(svcLabel, service.amount);
       if (svc) lines.push(svc);
     }
     if (discount > 0) {
       const disc = money(
-        tReceipt('rst.order.discount', { defaultValue: 'Chegirma' }) || 'Chegirma',
+        t?.('rst.order.discount', { defaultValue: 'Скидка' }) || 'Скидка',
         -discount,
       );
       if (disc) lines.push(disc);
@@ -205,11 +203,11 @@ export function buildRestaurantTicketBody({
   }
 
   if (isSale || paymentMethod) {
-    const method = paymentMethodLabel(paymentMethod || sale?.paymentMethod, tReceipt);
-    const formLabel = tReceipt('rst.order.paymentFormLine', {
+    const method = paymentMethodLabel(paymentMethod || sale?.paymentMethod, t);
+    const formLabel = t?.('rst.order.paymentFormLine', {
       method,
-      defaultValue: `To'lov: ${method}`,
-    }) || `To'lov: ${method}`;
+      defaultValue: `Форма оплаты: ${method}`,
+    }) || `Форма оплаты: ${method}`;
     lines.push(formLabel);
   }
 
@@ -217,7 +215,7 @@ export function buildRestaurantTicketBody({
     if (vat > 0) {
       const vatRow = styleTotalsRow(
         moneyRow(
-          tReceipt('rst.order.vatShort', { defaultValue: 'QQS' }) || 'QQS',
+          t?.('rst.order.vatShort', { defaultValue: 'НДС' }) || 'НДС',
           vat,
           RECEIPT_WIDTH,
         ),
@@ -227,10 +225,10 @@ export function buildRestaurantTicketBody({
     }
 
     lines.push('---');
-    const totalLabel = tReceipt('rst.order.totalDue', { defaultValue: 'JAMI' }) || 'JAMI';
+    const totalLabel = t?.('rst.order.totalDue', { defaultValue: 'ИТОГО' }) || 'ИТОГО';
     const totalsStyle = fieldStyle(profile, GUEST_SLIP, 'totals');
     const totalPlain = padRow(totalLabel.toUpperCase(), fmtMoneyCompact(grand), RECEIPT_WIDTH);
-    // Keep JAMI standout when style is default; respect bold/lg when set in profile.
+    // Keep ИТОГО standout when style is default; respect bold/lg when set in profile.
     if (totalsStyle.bold || totalsStyle.size === 'lg') {
       lines.push(styleLine(totalPlain, totalsStyle));
     } else {
@@ -240,7 +238,7 @@ export function buildRestaurantTicketBody({
 
   if (isSale && Number(sale.changeGiven) > 0) {
     lines.push(moneyRow(
-      tReceipt('fiscalReceipt.change', { defaultValue: 'Qaytim' }) || 'Qaytim',
+      t?.('fiscalReceipt.change', { defaultValue: 'Сдача' }) || 'Сдача',
       sale.changeGiven,
       RECEIPT_WIDTH,
     ));
@@ -249,13 +247,13 @@ export function buildRestaurantTicketBody({
   const qr = String(qrValue || '').trim();
   if (qr) {
     lines.push('---');
-    lines.push(tReceipt('rst.order.ofdQrHint', { defaultValue: 'OFD / QR' }) || 'OFD / QR');
+    lines.push(t?.('rst.order.ofdQrHint', { defaultValue: 'ОФД / QR' }) || 'ОФД / QR');
     lines.push(qr.length > TICKET_WIDTH ? qr.slice(0, TICKET_WIDTH) : qr);
   }
 
   lines.push('---');
   if (!footerLines(profile, GUEST_SLIP).length) {
-    lines.push(tReceipt('rst.order.billFooter', { defaultValue: 'Tashrifingiz uchun rahmat!' }) || 'Tashrifingiz uchun rahmat!');
+    lines.push(t?.('rst.order.billFooter', { defaultValue: 'Спасибо за визит!' }) || 'Спасибо за визит!');
   }
   return lines;
 }

@@ -3,50 +3,48 @@
  */
 import i18n from '../../i18n/config';
 import { APP_NAME } from '../../config/brand';
-import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 
 /**
  * @param {Function} t
  */
 export function buildEscposZReportLabels(t) {
-  const tr = getReceiptTranslator(t);
   return {
-    zReportTitle: tr('pos.zReport'),
-    terminalSerial: tr('zReports.printTerminalSerial'),
-    appletVer: tr('zReports.printAppletVer'),
-    employee: tr('zReports.printEmployee'),
-    storeName: tr('zReports.printStoreName'),
-    fiscalCard: tr('cashRegisters.colFiscal'),
-    zNumber: tr('zReports.printZNumber'),
-    phoneLabel: tr('fiscalReceipt.phoneLabel'),
-    stir: tr('fiscalReceipt.stir'),
-    sectionSale: tr('zReports.sectionSale'),
-    saleCash: tr('zReports.saleCash'),
-    saleCard: tr('zReports.saleCard'),
-    saleHumo: tr('zReports.saleHumo'),
-    saleUzcard: tr('zReports.saleUzcard'),
-    saleCashless: tr('zReports.saleCashless'),
-    saleVat: tr('zReports.saleVat'),
-    saleCount: tr('zReports.saleCount'),
-    lineDiscountsSum: tr('fiscalReceipt.lineDiscountsSum'),
-    orderDiscountSum: tr('fiscalReceipt.orderDiscountSum'),
-    discountsSum: tr('fiscalReceipt.discountsSum'),
-    sectionReturn: tr('zReports.sectionReturn'),
-    returnTotal: tr('zReports.sectionReturn'),
-    returnCash: tr('zReports.returnCash'),
-    returnCard: tr('zReports.returnCard'),
-    returnHumo: tr('zReports.returnHumo'),
-    returnUzcard: tr('zReports.returnUzcard'),
-    returnCashless: tr('zReports.returnCashless'),
-    returnVat: tr('zReports.returnVat'),
-    returnCount: tr('zReports.returnCount'),
-    openedAt: tr('zReports.openedAt'),
-    closedAt: tr('zReports.closedAt'),
-    firstReceipt: tr('zReports.firstReceipt'),
-    lastReceipt: tr('zReports.lastReceipt'),
-    grandTotal: tr('zReports.grandTotal'),
-    currency: tr('fiscalReceipt.currency'),
+    zReportTitle: t('pos.zReport'),
+    terminalSerial: t('zReports.printTerminalSerial'),
+    appletVer: t('zReports.printAppletVer'),
+    employee: t('zReports.printEmployee'),
+    storeName: t('zReports.printStoreName'),
+    fiscalCard: t('cashRegisters.colFiscal'),
+    zNumber: t('zReports.printZNumber'),
+    phoneLabel: t('fiscalReceipt.phoneLabel'),
+    stir: t('fiscalReceipt.stir'),
+    sectionSale: t('zReports.sectionSale'),
+    saleCash: t('zReports.saleCash'),
+    saleCard: t('zReports.saleCard'),
+    saleHumo: t('zReports.saleHumo'),
+    saleUzcard: t('zReports.saleUzcard'),
+    saleCashless: t('zReports.saleCashless'),
+    saleVat: t('zReports.saleVat'),
+    saleCount: t('zReports.saleCount'),
+    lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),
+    orderDiscountSum: t('fiscalReceipt.orderDiscountSum'),
+    discountsSum: t('fiscalReceipt.discountsSum'),
+    sectionReturn: t('zReports.sectionReturn'),
+    returnTotal: t('zReports.sectionReturn'),
+    returnCash: t('zReports.returnCash'),
+    returnCard: t('zReports.returnCard'),
+    returnHumo: t('zReports.returnHumo'),
+    returnUzcard: t('zReports.returnUzcard'),
+    returnCashless: t('zReports.returnCashless'),
+    returnVat: t('zReports.returnVat'),
+    returnCount: t('zReports.returnCount'),
+    openedAt: t('zReports.openedAt'),
+    closedAt: t('zReports.closedAt'),
+    firstReceipt: t('zReports.firstReceipt'),
+    lastReceipt: t('zReports.lastReceipt'),
+    grandTotal: t('zReports.grandTotal'),
+    currency: t('fiscalReceipt.currency'),
   };
 }
 
@@ -84,7 +82,6 @@ function readZReportBranding(z) {
  */
 export function buildEscposZReportPayload(z, t) {
   if (!z) return null;
-  const tReceipt = getReceiptTranslator(t);
   const branding = readZReportBranding(z);
   return {
     z: {
@@ -95,8 +92,8 @@ export function buildEscposZReportPayload(z, t) {
       companyAddress: branding.companyAddress || z.companyAddress,
       tin: branding.stir || z.tin,
     },
-    labels: buildEscposZReportLabels(tReceipt),
-    locale: RECEIPT_LOCALE,
+    labels: buildEscposZReportLabels(t),
+    locale: String(i18n.language || 'ru').split('-')[0],
     branding,
     receiptFields: readReceiptFields(),
   };

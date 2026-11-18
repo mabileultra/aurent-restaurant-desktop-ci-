@@ -1,6 +1,5 @@
 package com.pos.sales.service.impl;
 
-import com.pos.integrations.fiscal.support.FiscalModuleBindingGuard;
 import com.pos.sales.dto.cashregister.UpsertCashRegisterRequest;
 import com.pos.sales.entity.CashRegister;
 import com.pos.entity.Company;
@@ -38,8 +37,6 @@ class CashRegisterServiceDeviceIdTest {
     private TenantAccessSupport tenantAccess;
     @Mock
     private CashRegisterStatusToggle cashRegisterStatusToggle;
-    @Mock
-    private FiscalModuleBindingGuard fiscalModuleGuard;
 
     @InjectMocks
     private CashRegisterServiceImpl service;

@@ -1,11 +1,6 @@
 package com.pos.exception;
 
 import com.pos.shared.api.ApiErrorResponse;
-import com.pos.integrations.fiscal.support.FiscalModuleField;
-import com.pos.integrations.fiscal.support.InMemoryFiscalModuleOwners;
-import com.pos.sales.entity.CashRegister;
-import com.pos.entity.Company;
-import com.pos.entity.Store;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,58 +63,5 @@ class GlobalExceptionHandlerTest {
         assertThat(res.getBody().code()).isEqualTo("INTERNAL_ERROR");
         assertThat(res.getBody().message()).isEqualTo("An unexpected error occurred");
         assertThat(res.getBody().context()).isNull();
-    }
-
-    @Test
-    void fiscalModuleConflict_foreignCompanyDetailsNotLeakedEvenWithContextEnabled() {
-        ReflectionTestUtils.setField(handler, "includeContextInResponse", true);
-        ConflictException ex = fiscalModuleConflict(2);
-
-        ResponseEntity<ApiErrorResponse> res = handler.handleConflict(ex, request);
-
-        assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(res.getBody().message())
-            .isEqualTo("Фискальный модуль «YZ1» уже привязан к кассе другой компании");
-        assertThat(res.getBody().context())
-            .containsOnlyKeys("field", "conflictField", "conflictScope")
-            .containsEntry("conflictScope", "OTHER_COMPANY");
-        assertThat(res.getBody().toString()).doesNotContain("Чужой магазин").doesNotContain("№7");
-    }
-
-    @Test
-    void fiscalModuleConflict_sameCompanyContextReturnedWhenFlagEnabled() {
-        ReflectionTestUtils.setField(handler, "includeContextInResponse", true);
-        ConflictException ex = fiscalModuleConflict(1);
-
-        ResponseEntity<ApiErrorResponse> res = handler.handleConflict(ex, request);
-
-        assertThat(res.getBody().message())
-            .isEqualTo("Фискальный модуль «YZ1» уже привязан к кассе №7 (Магазин: «Чужой магазин»)");
-        assertThat(res.getBody().context())
-            .containsEntry("conflictRegisterId", 3L)
-            .containsEntry("conflictRegisterNumber", 7)
-            .containsEntry("conflictStoreName", "Чужой магазин");
-    }
-
-    /** Касса №7 (id=3) компании 2 владеет ФМ «YZ1»; сохраняем кассу id=1 компании {@code currentCompanyId}. */
-    private static ConflictException fiscalModuleConflict(int currentCompanyId) {
-        com.pos.entity.Store store = Store.builder()
-            .id(30).name("Чужой магазин").active(true)
-            .company(Company.builder().id(currentCompanyId == 1 ? 1 : 9).build())
-            .build();
-        com.pos.sales.entity.CashRegister owner = CashRegister.builder()
-            .id(3L).registerNumber(7).store(store).status("ACTIVE").build();
-        var state = new InMemoryFiscalModuleOwners()
-            .register(owner)
-            .bind(FiscalModuleField.CASH_REGISTER_FISCAL_CARD_ID, 3L, "yz1");
-        try {
-            state.guard().assertAvailable(
-                FiscalModuleField.CASH_REGISTER_FISCAL_CARD_ID,
-                "YZ1", 1L, currentCompanyId
-            );
-        } catch (ConflictException ex) {
-            return ex;
-        }
-        throw new AssertionError("expected ConflictException");
     }
 }

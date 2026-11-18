@@ -54,6 +54,32 @@ class SaleFiscalApplierTest {
     }
 
     @Test
+    void apply_printFiscalQrOff_skipsRequireEvenWhenRequireBeforeSale() {
+        Sale sale = new Sale();
+        sale.setPrintFiscalQr(false);
+        CashierShift shift = shiftWithRegister(17L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(17L))
+            .thenReturn(Optional.of(enabledSettings(true, false)));
+
+        applier.apply(sale, shift, null);
+
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_NOT_REQUIRED);
+    }
+
+    @Test
+    void apply_salePrintFiscalQrOff_skipsRequireWhenSettingsStillOn() {
+        Sale sale = new Sale();
+        sale.setPrintFiscalQr(false);
+        CashierShift shift = shiftWithRegister(18L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(18L))
+            .thenReturn(Optional.of(enabledSettings(true, true)));
+
+        applier.apply(sale, shift, null);
+
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_NOT_REQUIRED);
+    }
+
+    @Test
     void apply_enabledRequireBeforeSale_rejectsPendingWithoutProof() {
         Sale sale = new Sale();
         CashierShift shift = shiftWithRegister(12L);
@@ -174,10 +200,15 @@ class SaleFiscalApplierTest {
     }
 
     private static CashRegisterMultikassaSettings enabledSettings(boolean requireBeforeSale) {
+        return enabledSettings(requireBeforeSale, true);
+    }
+
+    private static CashRegisterMultikassaSettings enabledSettings(boolean requireBeforeSale, boolean printFiscalQr) {
         return CashRegisterMultikassaSettings.builder()
             .enabled(true)
             .baseUrl("http://localhost:8080")
             .requireBeforeSale(requireBeforeSale)
+            .printFiscalQr(printFiscalQr)
             .build();
     }
 }

@@ -12,12 +12,12 @@ const PRINTER_KIND = {
 const LIST_TTL_MS = 10_000;
 let listCache = { at: 0, printers: null, pending: null };
 
-async function listSystemPrinters({ forceRefresh = false } = {}) {
+async function listSystemPrinters() {
   const now = Date.now();
-  if (!forceRefresh && listCache.printers && now - listCache.at < LIST_TTL_MS) {
+  if (listCache.printers && now - listCache.at < LIST_TTL_MS) {
     return listCache.printers;
   }
-  if (!forceRefresh && listCache.pending) return listCache.pending;
+  if (listCache.pending) return listCache.pending;
   listCache.pending = (async () => {
     const mainWindow = getMainWindow();
     const wc = mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents : null;

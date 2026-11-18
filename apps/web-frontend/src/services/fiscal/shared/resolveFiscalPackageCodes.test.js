@@ -4,6 +4,7 @@ import {
   enrichFiscalPackageCodes,
   isRealFiscalPackageCode,
   packageMeasureKind,
+  pickTasnifBlockPackage,
   pickTasnifPackage,
   resolveFiscalPackageName,
 } from './resolveFiscalPackageCodes';
@@ -58,6 +59,18 @@ describe('pickTasnifPackage', () => {
       ],
     });
     expect(pkg.code).toBe('1546941');
+  });
+
+  it('picks the smallest multipack for a block sale', () => {
+    const row = pickTasnifBlockPackage({
+      packages: [
+        { code: '1', nameRu: 'шт' },
+        { code: '15001', nameRu: 'блок = 15 шт' },
+        { code: '15002', nameRu: 'коробка = 240 шт' },
+      ],
+    });
+    expect(row).toMatchObject({ count: 15 });
+    expect(row.pkg.code).toBe('15001');
   });
 });
 

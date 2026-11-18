@@ -40,19 +40,6 @@
   cursor: pointer;
 }
 
-.pharmacy-mixed-pay__card.is-active {
-  border-color: var(--pm-accent, #146c43);
-  background: rgba(20, 108, 67, 0.1);
-}
-
-.pharmacy-mixed-pay__card-details {
-  padding-top: 8px;
-  border-top: 1px solid var(--pm-border, #dddcd5);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .pharmacy-mixed-pay__card img {
   width: auto;
   height: 20px;

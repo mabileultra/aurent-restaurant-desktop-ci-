@@ -38,7 +38,14 @@ function existingLineMarks(line) {
   return single ? [single] : [];
 }
 
-/** Следующий чек после скана: новая маркировка +1, повтор — duplicate. */
+/** Шт за один КМ: блок (sellAsBlock) → unitsInPack, иначе 1. */
+export function markStockUnits(productOrLine) {
+  const units = Number(productOrLine?.unitsInPack);
+  if (productOrLine?.sellAsBlock === true && units > 1) return units;
+  return 1;
+}
+
+/** Следующий чек после скана: новая маркировка +N шт (блок) / +1, повтор — duplicate. */
 export function planMarkedScan(items, product, rawMark) {
   const mark = preserveMarkingCodeForFiscal(rawMark);
   const key = markingIdentityKey(mark);
@@ -48,16 +55,21 @@ export function planMarkedScan(items, product, rawMark) {
     return { status: 'duplicate', key, mark };
   }
 
+  const addQty = markStockUnits(product);
   const stock = Number(product?.stockQuantity ?? product?.maxStock ?? 0);
-  if (stock > 0 && productQty(items, product.id) + 1 > stock) {
-    return { status: 'stock', key, mark };
+  if (stock > 0 && productQty(items, product.id) + addQty > stock) {
+    return { status: 'stock', key, mark, quantity: addQty };
   }
 
   const markedLine = items.find(
-    (line) => line.productId === product.id && isMarkCountedLine(line),
+    (line) =>
+      line.productId === product.id
+      && isMarkCountedLine(line)
+      && Boolean(line.sellAsBlock) === Boolean(product.sellAsBlock)
+      && Number(line.unitsInPack || 1) === Number(product.unitsInPack || 1),
   );
   if (!markedLine) {
-    return { status: 'create', key, mark, quantity: 1 };
+    return { status: 'create', key, mark, quantity: addQty };
   }
 
   const productMarks = [...existingLineMarks(markedLine), mark];
@@ -67,7 +79,7 @@ export function planMarkedScan(items, product, rawMark) {
     lineId: markedLine.lineId,
     mark,
     productMarks,
-    quantity: productMarks.length,
+    quantity: productMarks.length * addQty,
   };
 }
 
@@ -85,11 +97,12 @@ export function removeMarking(rawMark) {
     useCartStore.getState().removeItem(line.lineId);
     return true;
   }
+  const perMark = markStockUnits(line);
   useCartStore.getState().patchCartLine(line.lineId, {
     productMarks,
     productMark: productMarks[0],
     markCode: productMarks[0],
-    quantity: productMarks.length,
+    quantity: productMarks.length * perMark,
     markedProduct: true,
     pharmacySellByPiece: false,
     packUnitPrice: null,
@@ -108,12 +121,21 @@ export function applyMarkingScan(product, rawMark) {
         productMark: plan.mark,
         markCode: plan.mark,
         productMarks: [plan.mark],
+        sellAsBlock: product.sellAsBlock === true,
+        unitsInPack: product.unitsInPack ?? null,
+        packageCode: product.packageCode ?? null,
         pharmacySellByPiece: false,
         packUnitPrice: null,
       },
-      1,
+      plan.quantity,
     );
-    return { status: 'added', lineId, quantity: 1, key: plan.key, mark: plan.mark };
+    return {
+      status: 'added',
+      lineId,
+      quantity: plan.quantity,
+      key: plan.key,
+      mark: plan.mark,
+    };
   }
   if (plan.status === 'append') {
     useCartStore.getState().patchCartLine(plan.lineId, {
@@ -122,6 +144,9 @@ export function applyMarkingScan(product, rawMark) {
       markCode: plan.productMarks[0],
       quantity: plan.quantity,
       markedProduct: true,
+      sellAsBlock: product.sellAsBlock === true,
+      unitsInPack: product.unitsInPack ?? null,
+      packageCode: product.packageCode ?? null,
       pharmacySellByPiece: false,
       packUnitPrice: null,
     });

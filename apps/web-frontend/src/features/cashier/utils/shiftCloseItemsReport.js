@@ -31,6 +31,14 @@ export async function printSoldItemsOnShiftClose(closedShift, { storeName, cashi
 /**
  * Close shift print for pharmacy and grocery: Z totals first, then sold-items slip.
  */
+function shiftReportHasTotals(report) {
+  if (!report) return false;
+  const sales = Number(report.saleCount) || 0;
+  const total = Number(report.totalAmount) || 0;
+  const returns = Number(report.returnsCount) || 0;
+  return sales > 0 || total !== 0 || returns > 0;
+}
+
 export async function printCloseShiftReports(closedShift, { storeName, cashierName, t } = {}) {
   const zReport = buildShiftPrintReport(closedShift, {
     reportType: 'Z',
@@ -39,7 +47,8 @@ export async function printCloseShiftReports(closedShift, { storeName, cashierNa
   });
   let zPrinted = false;
   let zError = null;
-  if (zReport && isCashierEscposReportPrintAvailable()) {
+  // После mid-Z период пустой — не печатаем POS Z с 0/0 (фискальный Z уже с модуля).
+  if (zReport && shiftReportHasTotals(zReport) && isCashierEscposReportPrintAvailable()) {
     try {
       await printReportEscpos({ shiftReport: zReport, t });
       zPrinted = true;

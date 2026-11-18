@@ -1,6 +1,5 @@
 import { rstOrderApi } from '../../api/order.api';
 import { FISCAL_STATUS, loadFiscalContext, resolveFiscalProvider } from '../../../services/fiscal';
-import { assertReceiptPrinterReady } from '../../../services/cashierEscpos';
 import {
   buildRestaurantFiscalSale,
   fiscalPaymentForCart,
@@ -41,9 +40,6 @@ export async function payRestaurantOrderWithFiscal({
   amountTendered,
   changeGiven,
   cardType = null,
-  cardCategory = null,
-  rrn = null,
-  socialCardNumber = null,
   debtPhone = null,
   debtComment = null,
   advancePaid = null,
@@ -89,15 +85,9 @@ export async function payRestaurantOrderWithFiscal({
 
   const skipFiscal = isNonFiscalPayMethod(payMethod);
 
-  await assertReceiptPrinterReady();
-
   const payment = {
     paymentMethod: payMethod,
     receiptType: 'SALE',
-    cardType,
-    cardCategory,
-    rrn,
-    socialCardNumber,
     cashAmount: cash,
     cardAmount: card,
     amountTendered: tendered,
@@ -199,9 +189,6 @@ export async function payRestaurantOrderWithFiscal({
     amountTendered: tendered,
     changeGiven: change,
     cardType,
-    cardCategory,
-    rrn,
-    socialCardNumber,
     fiscal: fiscalPayload,
     cashierName,
     waiterName,

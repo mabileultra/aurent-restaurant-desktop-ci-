@@ -211,28 +211,10 @@ function appendPayment(printer, payload) {
     appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));
     appendRow(printer, L.cash || 'Cash', fmtMoney(cashAmt));
     appendRow(printer, L.plastic || 'Card', fmtMoney(cardAmt));
-    if (sale.cardCategoryDisplay) {
-      appendRow(printer, L.cardType || 'Card type', String(sale.cardCategoryDisplay));
-    }
-    if (sale.socialCardNumber) {
-      appendRow(printer, L.socialCardNumber || 'Social card', String(sale.socialCardNumber));
-    }
-    if (sale.rrn) {
-      appendRow(printer, L.cardRrn || 'RRN', String(sale.rrn));
-    }
     if (change > 0) {
       appendRow(printer, L.change || 'Change', fmtMoney(change), true);
     }
   });
-  appendDivider(printer);
-}
-
-/** Номер электронного рецепта — отдельной строкой, независимо от настроек полей чека. */
-function appendPrescription(printer, payload) {
-  const { sale, labels } = payload;
-  const prescriptionNumber = String(sale?.prescriptionNumber || '').trim();
-  if (!prescriptionNumber) return;
-  appendRow(printer, (labels || {}).prescriptionNumber || 'Elektron retsept', prescriptionNumber, true);
   appendDivider(printer);
 }
 
@@ -286,7 +268,6 @@ module.exports = {
   appendItems,
   appendTotals,
   appendPayment,
-  appendPrescription,
   appendFiscalBlock,
   appendProfileFooter,
 };

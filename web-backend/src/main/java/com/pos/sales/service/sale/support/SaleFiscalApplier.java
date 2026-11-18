@@ -45,13 +45,15 @@ public class SaleFiscalApplier {
         }
 
         CashRegisterMultikassaSettings settings = enabled.get();
-        boolean requireFiscal = enforceRequired && settings.isRequireBeforeSale();
+        // Cashier «Fiskal QR» off = skip OFD entirely (no Multikassa/Labels). SoT: settings + sale flag.
+        boolean ofdOff = !settings.isPrintFiscalQr() || !sale.isPrintFiscalQr();
+        boolean requireFiscal = enforceRequired && settings.isRequireBeforeSale() && !ofdOff;
         if (requireFiscal) {
             requireFiscalizedPayload(fiscal);
         }
 
         if (fiscal == null) {
-            sale.setFiscalStatus(STATUS_PENDING);
+            sale.setFiscalStatus(ofdOff ? STATUS_NOT_REQUIRED : STATUS_PENDING);
             return;
         }
 

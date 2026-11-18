@@ -1,19 +1,12 @@
 import { useMemo, useState, useCallback } from 'react';
-import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import { returnApi, storeApi, pharmacySalesApi } from '../../../api';
 import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { RETURNS_DEFAULT_FILTERS, SALES_PAGE_SIZE_DEFAULT } from '../constants';
-import {
-  buildReturnsQueryParams,
-  buildReturnsExportParams,
-  enrichReturnsRowsWithStores,
-  formatReturnDateTime,
-  exportReturnsExcelFile,
-} from '../utils/returnsPageHelpers';
-import { useReturnMutations } from './useReturnMutations';
 
 export function useReturnsPage() {
   const { t } = useTranslation();
@@ -48,13 +41,27 @@ export function useReturnsPage() {
   });
 
   const queryParams = useMemo(
-    () => buildReturnsQueryParams(applied, { page, pageSize, search }),
-    [applied, page, pageSize, search]
+    () => ({
+      page,
+      size: pageSize,
+      fiscalSearch: search.trim() || undefined,
+      from: applied.dateFrom || undefined,
+      to: applied.dateTo || undefined,
+      cashierName: applied.cashierName.trim() || undefined,
+      storeId: applied.storeId === '' ? undefined : Number(applied.storeId),
+    }),
+    [search, page, pageSize, applied]
   );
 
   const exportParams = useMemo(
-    () => buildReturnsExportParams(applied, search),
-    [applied, search]
+    () => ({
+      fiscalSearch: search.trim() || undefined,
+      from: applied.dateFrom || undefined,
+      to: applied.dateTo || undefined,
+      cashierName: applied.cashierName.trim() || undefined,
+      storeId: applied.storeId === '' ? undefined : Number(applied.storeId),
+    }),
+    [search, applied]
   );
 
   const { data, isPending, isError, error } = useQuery({
@@ -68,27 +75,97 @@ export function useReturnsPage() {
     placeholderData: keepPreviousData,
   });
 
-  const { updateReasonMutation, cancelReturnMutation } = useReturnMutations({
-    catalogKind,
-    qc,
-    t,
-    setEditRow,
-    setMenuOpenId,
+  const updateReasonMutation = useMutation({
+    mutationFn: ({ id, reason }) => {
+      if (catalogKind === 'pharmacy') {
+        return Promise.reject(new Error(t('returnsModule.pharmacyReasonSoon', {
+          defaultValue: 'Изменение причины возврата для аптеки пока недоступно',
+        })));
+      }
+      return returnApi.updateReason(id, { reason });
+    },
+    onSuccess: () => {
+      toast.success(t('returnsModule.updateReasonSuccess'));
+      qc.invalidateQueries({ queryKey: ['returns'] });
+      setEditRow(null);
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? e.message ?? t('returnsModule.updateReasonFailed')),
   });
 
-  const rows = useMemo(
-    () => enrichReturnsRowsWithStores(data?.content, stores),
-    [data?.content, stores]
-  );
+  const cancelReturnMutation = useMutation({
+    mutationFn: (id) => {
+      if (catalogKind === 'pharmacy') {
+        return Promise.reject(new Error(t('returnsModule.pharmacyCancelSoon', {
+          defaultValue: 'Отмена возврата для аптеки пока недоступна из журнала',
+        })));
+      }
+      return returnApi.delete(id);
+    },
+    onSuccess: () => {
+      toast.success(t('returnsModule.cancelReturnSuccess'));
+      qc.invalidateQueries({ queryKey: ['returns'] });
+      setMenuOpenId(null);
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? e.message ?? t('returnsModule.cancelReturnFailed')),
+  });
+
+  const rows = useMemo(() => {
+    const content = data?.content ?? [];
+    if (!stores.length) return content;
+    const nameById = new Map(
+      stores
+        .filter((s) => s?.id != null)
+        .map((s) => [Number(s.id), s.name])
+    );
+    return content.map((row) => {
+      if (row.storeName || row.storeId == null) return row;
+      const name = nameById.get(Number(row.storeId));
+      return name ? { ...row, storeName: name } : row;
+    });
+  }, [data?.content, stores]);
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
   const loading = isPending;
   const showEmptyHint = !loading && !isError && rows.length === 0;
 
-  const handleExportExcel = useCallback(
-    () => exportReturnsExcelFile(exportParams, { applied, isPharmacy: catalogKind === 'pharmacy', t, returnApi, toast, setExporting }),
-    [catalogKind, exportParams, applied, t]
-  );
+  const fmtAt = useCallback((iso) => {
+    try {
+      return format(typeof iso === 'string' ? parseISO(iso) : new Date(iso), 'dd.MM.yyyy HH:mm');
+    } catch {
+      return '—';
+    }
+  }, []);
+
+  const handleExportExcel = useCallback(async () => {
+    if (catalogKind === 'pharmacy') {
+      toast.error(t('returnsModule.exportPharmacySoon', {
+        defaultValue: 'Экспорт Excel для аптеки пока недоступен',
+      }));
+      return;
+    }
+    setExporting(true);
+    try {
+      const res = await returnApi.exportExcel(exportParams);
+      const blob = new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const suffix =
+        applied.dateFrom && applied.dateTo
+          ? `${applied.dateFrom}_${applied.dateTo}`
+          : new Date().toISOString().slice(0, 10);
+      a.download = `returns_report_${suffix}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(t('returnsModule.exportDone'));
+    } catch (e) {
+      toast.error(e?.response?.data?.message ?? t('returnsModule.exportFailed'));
+    } finally {
+      setExporting(false);
+    }
+  }, [catalogKind, exportParams, applied.dateFrom, applied.dateTo, t]);
 
   const handleSearchChange = (value) => {
     setSearch(value);
@@ -168,7 +245,7 @@ export function useReturnsPage() {
     isError,
     errorMessage,
     showEmptyHint,
-    fmtAt: formatReturnDateTime,
+    fmtAt,
     handleSearchChange,
     handleExportExcel,
     resetFilters,

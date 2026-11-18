@@ -1,44 +1,43 @@
 /**
  * Payload X/Z отчёта смены для ESC/POS.
  */
+import i18n from '../../i18n/config';
 import { APP_NAME } from '../../config/brand';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
-import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 
 /**
- * @param {Function} [t]
+ * @param {Function} t
  */
 export function buildEscposShiftReportLabels(t) {
-  const tr = getReceiptTranslator();
   return {
-    xReportTitle: tr('pos.xReport'),
-    zReportTitle: tr('pos.zReport'),
-    openedAt: tr('zReports.openedAt'),
-    reportAt: tr('pos.reportAt'),
-    cashier: tr('users.roleCashier'),
-    phoneLabel: tr('fiscalReceipt.phoneLabel'),
-    stir: tr('fiscalReceipt.stir'),
-    shiftSales: tr('pos.shiftSales'),
-    shiftTotal: tr('pos.shiftTotal'),
-    shiftCash: tr('pos.shiftCash'),
-    shiftCard: tr('pos.shiftCard'),
-    shiftHumo: tr('pos.shiftHumo'),
-    shiftUzcard: tr('pos.shiftUzcard'),
-    shiftCashless: tr('pos.shiftCashless'),
-    shiftVat: tr('pos.shiftVat'),
-    lineDiscountsSum: tr('fiscalReceipt.lineDiscountsSum'),
-    orderDiscountSum: tr('fiscalReceipt.orderDiscountSum'),
-    discountsSum: tr('fiscalReceipt.discountsSum'),
-    sectionReturn: tr('zReports.sectionReturn'),
-    returnTotal: tr('zReports.sectionReturn'),
-    returnCash: tr('zReports.returnCash'),
-    returnCard: tr('zReports.returnCard'),
-    returnHumo: tr('zReports.returnHumo'),
-    returnUzcard: tr('zReports.returnUzcard'),
-    returnCashless: tr('zReports.returnCashless'),
-    returnVat: tr('zReports.returnVat'),
-    returnCount: tr('zReports.returnCount'),
-    currency: tr('fiscalReceipt.currency'),
+    xReportTitle: t('pos.xReport'),
+    zReportTitle: t('pos.zReport'),
+    openedAt: t('zReports.openedAt'),
+    reportAt: t('pos.reportAt'),
+    cashier: t('users.roleCashier'),
+    phoneLabel: t('fiscalReceipt.phoneLabel'),
+    stir: t('fiscalReceipt.stir'),
+    shiftSales: t('pos.shiftSales'),
+    shiftTotal: t('pos.shiftTotal'),
+    shiftCash: t('pos.shiftCash'),
+    shiftCard: t('pos.shiftCard'),
+    shiftHumo: t('pos.shiftHumo'),
+    shiftUzcard: t('pos.shiftUzcard'),
+    shiftCashless: t('pos.shiftCashless'),
+    shiftVat: t('pos.shiftVat'),
+    lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),
+    orderDiscountSum: t('fiscalReceipt.orderDiscountSum'),
+    discountsSum: t('fiscalReceipt.discountsSum'),
+    sectionReturn: t('zReports.sectionReturn'),
+    returnTotal: t('zReports.sectionReturn'),
+    returnCash: t('zReports.returnCash'),
+    returnCard: t('zReports.returnCard'),
+    returnHumo: t('zReports.returnHumo'),
+    returnUzcard: t('zReports.returnUzcard'),
+    returnCashless: t('zReports.returnCashless'),
+    returnVat: t('zReports.returnVat'),
+    returnCount: t('zReports.returnCount'),
+    currency: t('fiscalReceipt.currency'),
   };
 }
 
@@ -81,7 +80,7 @@ export function buildEscposShiftReportPayload(report, t) {
   return {
     report,
     labels: buildEscposShiftReportLabels(t),
-    locale: RECEIPT_LOCALE,
+    locale: String(i18n.language || 'ru').split('-')[0],
     branding: readShiftReportBranding(report.storeName),
     receiptFields: readReceiptFields(),
   };

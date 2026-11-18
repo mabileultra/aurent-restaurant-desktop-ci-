@@ -22,4 +22,19 @@ describe('planMarkedScan', () => {
     expect(second).toMatchObject({ status: 'append', quantity: 2 });
     expect(planMarkedScan(items, product, '010478001234567821AAAA').status).toBe('duplicate');
   });
+
+  it('block KM adds unitsInPack pieces and refuses when stock is short', () => {
+    const block = {
+      id: 'p1',
+      stockQuantity: 20,
+      sellAsBlock: true,
+      unitsInPack: 15,
+    };
+    expect(planMarkedScan([], block, '0114780131183003217AAAA')).toMatchObject({
+      status: 'create',
+      quantity: 15,
+    });
+    expect(planMarkedScan([], { ...block, stockQuantity: 10 }, '0114780131183003217AAAA').status)
+      .toBe('stock');
+  });
 });

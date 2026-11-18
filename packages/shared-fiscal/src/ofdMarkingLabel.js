@@ -16,8 +16,14 @@ export function toIdentificationMarkingCode(raw) {
   let value = stripScannerPrefix(raw);
   if (!value) return '';
 
-  const gs = value.indexOf('\u001d');
-  if (gs >= 0) {
+  // Настоящий GS или «↔» (U+2194) вместо FNC1 — режем до криптохвоста 91/92/93.
+  const gs = Math.min(
+    ...['\u001d', '\u2194']
+      .map((ch) => value.indexOf(ch))
+      .filter((i) => i >= 0),
+    Number.POSITIVE_INFINITY,
+  );
+  if (Number.isFinite(gs)) {
     value = value.slice(0, gs);
   }
 
