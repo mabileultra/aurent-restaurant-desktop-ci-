@@ -39,11 +39,15 @@ describe('companySelectOptions', () => {
       expect(options[0]).toEqual({
         value: '1',
         label: 'Aurent POS (67890)',
+        name: 'Aurent POS',
+        legalName: '',
         keywords: 'Aurent POS 67890',
       });
       expect(options[1]).toEqual({
         value: '2',
         label: 'Ziyo Savdo (12345)',
+        name: 'Ziyo Savdo',
+        legalName: '',
         keywords: 'Ziyo Savdo 12345',
       });
     });
@@ -66,6 +70,8 @@ describe('companySelectOptions', () => {
       expect(options[0].keywords).toContain('TURAN GROUP MCHJ');
       expect(options[0].keywords).toContain('309121333');
       expect(options[0].keywords).toContain('+998889344444');
+      expect(options[0].name).toBe('Makon Mobile');
+      expect(options[0].legalName).toBe('TURAN GROUP MCHJ');
     });
 
     it('adds emptyLabel option at the start when provided', () => {

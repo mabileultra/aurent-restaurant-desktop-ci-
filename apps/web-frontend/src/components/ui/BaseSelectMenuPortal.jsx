@@ -38,6 +38,7 @@ export default function BaseSelectMenuPortal({
         top: menuStyle.top,
         left: menuStyle.left,
         width: menuStyle.width,
+        minWidth: Math.max(menuStyle.triggerWidth || 0, 240),
       }}
     >
       {searchable ? (
@@ -57,6 +58,13 @@ export default function BaseSelectMenuPortal({
               onQueryChange(event.target.value);
             }}
             onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                event.nativeEvent?.stopImmediatePropagation?.();
+                closeMenu({ restoreFocus: true });
+                return;
+              }
               if (event.key === 'Enter') {
                 event.preventDefault();
                 event.stopPropagation();
@@ -70,7 +78,7 @@ export default function BaseSelectMenuPortal({
                 closeMenu();
                 return;
               }
-              if (['ArrowDown', 'ArrowUp', 'Escape'].includes(event.key)) {
+              if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
                 return;
               }
               event.stopPropagation();
@@ -88,6 +96,13 @@ export default function BaseSelectMenuPortal({
             const optionValue = toOptionValue(option.value);
             const isSelected = optionValue !== '' && optionValue === effectiveValue;
             const isHighlighted = index === highlightIndex;
+
+            const q = (query || '').trim().toLowerCase();
+            const legalNameStr = option.legalName ? String(option.legalName).trim() : '';
+            const isLegalMatched = q.length > 0 && legalNameStr.toLowerCase().includes(q);
+            const isLegalDifferent = legalNameStr && legalNameStr.toLowerCase() !== String(option.name || '').trim().toLowerCase();
+            const shouldShowLegalName = Boolean(option.subLabel || (isLegalMatched && isLegalDifferent));
+            const subLabelText = option.subLabel || (shouldShowLegalName ? legalNameStr : null);
 
             return (
               <button
@@ -111,7 +126,16 @@ export default function BaseSelectMenuPortal({
                 }}
               >
                 <Check size={14} className="base-select__check" aria-hidden />
-                <span className="base-select__option-label">{option.label}</span>
+                <div className="flex flex-col min-w-0 text-left">
+                  <span className="base-select__option-label truncate" title={option.label}>
+                    {option.label}
+                  </span>
+                  {subLabelText ? (
+                    <span className="text-[11px] text-aa-ink-muted truncate" title={subLabelText}>
+                      {subLabelText}
+                    </span>
+                  ) : null}
+                </div>
               </button>
             );
           })

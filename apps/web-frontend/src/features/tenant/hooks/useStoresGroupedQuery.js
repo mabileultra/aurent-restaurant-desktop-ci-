@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
-import { storeApi } from '../../../api';
+import { storeApi, companyApi } from '../../../api';
 import { useDelayedLoading } from '../../../hooks/useDelayedLoading';
 import { buildStoresGroupedGroups } from '../utils/buildStoresGroupedGroups';
 
@@ -35,6 +35,19 @@ export function useStoresGroupedQuery({
 
   const singleCompanyMode = companyId != null && companyId !== '';
 
+  const selectedNumId = singleCompanyMode ? Number(companyId) : null;
+  const isSelectedMissingFromList = useMemo(() => {
+    if (!selectedNumId) return false;
+    return !(companies || []).some((c) => Number(c?.id) === selectedNumId);
+  }, [companies, selectedNumId]);
+
+  const { data: directCompanyData } = useQuery({
+    queryKey: ['company-direct', selectedNumId],
+    queryFn: () => companyApi.getById(selectedNumId).then((r) => r.data).catch(() => null),
+    enabled: enabled && singleCompanyMode && Boolean(selectedNumId) && isSelectedMissingFromList,
+    staleTime: 300_000,
+  });
+
   const byCompanyQuery = useQuery({
     queryKey: ['stores-by-company', byCompanyParams],
     queryFn: () => storeApi.getByCompany(byCompanyParams).then((r) => r.data),
@@ -48,20 +61,22 @@ export function useStoresGroupedQuery({
     if (singleCompanyMode) {
       const id = Number(companyId);
       const fromList = (companies || []).find((c) => Number(c.id) === id);
+      const fromDirect = directCompanyData && Number(directCompanyData.id) === id ? directCompanyData : null;
+      const effectiveCompany = fromList || fromDirect;
       const fromPage = (byCompanyQuery.data?.content || []).find(
         (c) => Number(c.companyId) === id
       );
       return [
         {
           companyId: id,
-          companyName: fromList?.name || fromPage?.companyName || `Company #${id}`,
-          loginCode: fromList?.loginCode || fromPage?.loginCode,
-          businessType: fromList?.businessType || fromPage?.businessType || businessType,
-          regionCode: fromList?.regionCode || fromPage?.regionCode || regionCode,
-          districtCode: fromList?.districtCode || fromPage?.districtCode,
-          active: fromList?.active !== false,
-          tin: fromList?.tin,
-          phone: fromList?.phone,
+          companyName: effectiveCompany?.name || fromPage?.companyName || `Company #${id}`,
+          loginCode: effectiveCompany?.loginCode || fromPage?.loginCode,
+          businessType: effectiveCompany?.businessType || fromPage?.businessType || businessType,
+          regionCode: effectiveCompany?.regionCode || fromPage?.regionCode || regionCode,
+          districtCode: effectiveCompany?.districtCode || fromPage?.districtCode,
+          active: effectiveCompany?.active !== false,
+          tin: effectiveCompany?.tin,
+          phone: effectiveCompany?.phone,
           storeCount: fromPage?.storeCount ?? 0,
           activeStoreCount: fromPage?.activeStoreCount ?? 0,
         },
@@ -73,6 +88,7 @@ export function useStoresGroupedQuery({
     singleCompanyMode,
     companyId,
     companies,
+    directCompanyData,
     byCompanyQuery.data,
     businessType,
     regionCode,

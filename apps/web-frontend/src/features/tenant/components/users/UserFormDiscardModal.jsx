@@ -22,7 +22,7 @@ export default function UserFormDiscardModal({
     >
       <div
         ref={dialogRef}
-        className="w-full max-w-sm rounded-aa-lg bg-aa-surface p-6 shadow-aa-modal border border-aa-line space-y-4 animate-in zoom-in-95 duration-150"
+        className="w-full max-w-md rounded-aa-lg bg-aa-surface p-6 shadow-aa-modal border border-aa-line space-y-4 animate-in zoom-in-95 duration-150"
       >
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-aa-md bg-aa-warning-soft text-aa-warning shrink-0">
@@ -37,19 +37,19 @@ export default function UserFormDiscardModal({
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2.5 pt-2">
+        <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
           <button
             ref={keepEditingBtnRef}
             type="button"
             onClick={onCancel}
-            className="aa-btn aa-btn--secondary aa-size-md cursor-pointer"
+            className="aa-btn aa-btn--secondary aa-size-md cursor-pointer whitespace-nowrap"
           >
             {t('users.discardChangesKeepEditing', { defaultValue: 'Tahrirlashda qolish' })}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="aa-btn aa-btn--danger aa-size-md cursor-pointer"
+            className="aa-btn aa-btn--danger aa-size-md cursor-pointer whitespace-nowrap"
           >
             {t('users.discardChangesDiscard', { defaultValue: 'O‘zgarishlarni bekor qilish' })}
           </button>

@@ -18,6 +18,7 @@ export default function StoresCompanyFilter({
   return (
     <BaseSelect
       className="stores-filters__company"
+      menuClassName="min-w-[280px] max-w-[440px]"
       variant={variant}
       size={size}
       label={t('stores.colCompany')}
