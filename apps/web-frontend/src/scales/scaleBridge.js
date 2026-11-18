@@ -153,3 +153,36 @@ export async function scalePushPlu(items) {
     return { ok: false, message: e?.message || 'PLU push failed' };
   }
 }
+
+export async function scaleProbeDevices() {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scaleProbeDevices !== 'function') {
+    return { ok: false, message: 'Desktop bridge missing', devices: [] };
+  }
+  try {
+    return await desktopApi().scaleProbeDevices();
+  } catch (e) {
+    return { ok: false, message: e?.message || 'Probe failed', devices: [] };
+  }
+}
+
+export async function scaleGetSettings() {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scaleGetSettings !== 'function') {
+    return null;
+  }
+  try {
+    return await desktopApi().scaleGetSettings();
+  } catch {
+    return null;
+  }
+}
+
+export async function scaleSetSettings(patch) {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scaleSetSettings !== 'function') {
+    return null;
+  }
+  try {
+    return await desktopApi().scaleSetSettings(patch || {});
+  } catch {
+    return null;
+  }
+}

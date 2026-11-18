@@ -41,6 +41,43 @@
   align-items: flex-start;
 }
 
+.scales-plu-sync__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.scales-plu-sync__devices {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  list-style: none;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.scales-plu-sync__devices .is-online {
+  color: #047857;
+}
+
+.scales-plu-sync__devices .is-offline {
+  color: #be123c;
+}
+
+.scales-plu-sync__password {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  max-width: 280px;
+}
+
+.scales-plu-sync__password .scales-plu-sync__select {
+  flex: 1;
+  letter-spacing: 0.2em;
+}
+
 .scales-plu-sync__title {
   margin: 0;
   font-size: 1.05rem;

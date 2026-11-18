@@ -41,9 +41,17 @@ export default function ScalesPluPage() {
         adapters={sync.adapters}
         active={sync.active}
         syncing={sync.syncing}
+        probing={sync.probing}
         lastExport={sync.lastExport}
+        probeResult={sync.probeResult}
+        pushDevices={sync.pushDevices}
+        password={sync.password}
+        onPasswordChange={sync.setPassword}
+        onPasswordSave={sync.onPasswordSave}
+        lastSync={sync.lastSync}
         onSelectAdapter={sync.onSelectAdapter}
         onExportToScale={sync.onExportToScale}
+        onProbeDevices={sync.onProbeDevices}
       />
 
       {loading ? (
