@@ -108,8 +108,12 @@ export function buildEscposLabels(t) {
     receiptType: t('fiscalReceipt.receiptType'),
     receiptTypeSale: t('fiscalReceipt.receiptTypeSale'),
     receiptTypeReturn: t('fiscalReceipt.receiptTypeReturn'),
-    receiptTypeAdvance: t('pos.receiptType.ADVANCE'),
-    receiptTypeCredit: t('pos.receiptType.CREDIT'),
+    receiptTypeAdvance: t('fiscalReceipt.receiptTypeAdvance', { defaultValue: 'Avans cheki' }),
+    receiptTypeCredit: t('fiscalReceipt.receiptTypeCredit', { defaultValue: 'Kredit cheki' }),
+    qrPayment: t('fiscalReceipt.qrPayment', { defaultValue: 'QR-kodli to‘lov' }),
+    cardNumber: t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' }),
+    barcode: t('fiscalReceipt.barcode', { defaultValue: 'ShT.kod' }),
+    marking: t('fiscalReceipt.marking', { defaultValue: 'MK' }),
     originalReceiptNo: t('fiscalReceipt.originalReceiptNo'),
   };
 }

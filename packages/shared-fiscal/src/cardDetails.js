@@ -97,6 +97,23 @@ export function maskSocialCardNumber(value) {
 }
 
 /**
+ * Форматирует номер карты для печати на чеке по образцу ГНК: «5614 **** **** 8956».
+ * Не меняет внутренний формат хранения или отправки в ОФД («5614********8956»).
+ * @param {unknown} value
+ * @returns {string}
+ */
+export function formatCardNumberForReceipt(value) {
+  if (value == null) return '';
+  const masked = maskSocialCardNumber(value) || String(value).trim();
+  if (!masked) return '';
+  const match = masked.match(/^(\d{4})[^\s\d]*(\d{4})$/);
+  if (match) {
+    return `${match[1]} **** **** ${match[2]}`;
+  }
+  return masked;
+}
+
+/**
  * Проверяет корректность введённого номера социальной карты (достаточно для маски 4+4).
  * @param {unknown} value
  * @returns {boolean}

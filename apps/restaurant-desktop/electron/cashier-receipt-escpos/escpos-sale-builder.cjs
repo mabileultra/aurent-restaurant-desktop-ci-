@@ -7,6 +7,7 @@ const {
   fmtMoney,
   fmtQty,
   splitDateTime,
+  formatCardNumberForReceipt,
   buildFiscalSign,
   lineVatAmount,
   interpolateLabel,
@@ -36,7 +37,7 @@ function resolveReceiptTypeDisplay(sale, L) {
     return String(sale.receiptTypeDisplay);
   }
   if (sale?.receiptDocumentType === 'RETURN') {
-    return labels.receiptTypeReturn || 'Return';
+    return labels.receiptTypeReturn || 'Qaytarish cheki';
   }
   const rt = String(sale?.receiptType || 'SALE').toUpperCase();
   const byType = {
@@ -45,7 +46,7 @@ function resolveReceiptTypeDisplay(sale, L) {
     ADVANCE: labels.receiptTypeAdvance,
     CREDIT: labels.receiptTypeCredit,
   };
-  return byType[rt] || labels.receiptTypeSale || 'Sale';
+  return byType[rt] || labels.receiptTypeSale || 'Sotuv cheki';
 }
 
 /**
@@ -197,10 +198,13 @@ function appendMeta(printer, payload) {
 
   const { date, time } = splitDateTime(sale.createdAt);
   if (isOn(fields, 'dateTime')) {
-    printer.leftRight(`${L.time || 'Time'}: ${time}`, `${L.date || 'Date'}: ${date}`);
+    printer.leftRight(`${L.date || 'Sana'}: ${date}`, `${L.time || 'Vaqt'}: ${time}`);
   }
-  if (hasReceiptNo) {
-    appendRow(printer, L.receiptNoShort || 'Receipt', String(sale.receiptNumber));
+  const seq = String(sale.fiscalReceiptSeq || sale.receiptNumber || '').replace(/^№\s*/, '');
+  if (seq && isOn(fields, 'receiptNo')) {
+    appendRow(printer, L.receiptNoShort || 'Chek raqami', `№${seq}`);
+  } else if (seq) {
+    appendRow(printer, L.receiptNoShort || 'Chek raqami', `№${seq}`);
   }
   if (sale.originalReceiptNumber) {
     appendRow(
@@ -276,7 +280,7 @@ function appendItems(printer, payload) {
 
   for (const item of sale.items || []) {
     printer.println(String(item.productName || ''));
-    const qty = fmtQty(item.quantity, item.saleType);
+    const qty = fmtQty(item.quantity, item.saleType, item.unitOfMeasure);
     printer.println(`${qty} * ${fmtMoney(itemUnitPrice(item))} = ${fmtMoney(item.lineTotal)}`);
     if (isOn(fields, 'itemVatLine')) {
       const rate = item.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
@@ -361,41 +365,59 @@ function appendPayment(printer, payload) {
   const total = Number(sale.totalAmount) || 0;
   const cashExplicit = Number(sale.cashAmount);
   const cardExplicit = Number(sale.cardAmount);
+  const qrExplicit = Number(sale.qrAmount ?? sale.cashlessAmount);
   const tendered = Number(sale.amountTendered);
   const hasCash = Number.isFinite(cashExplicit) && cashExplicit > 0;
   const hasCard = Number.isFinite(cardExplicit) && cardExplicit > 0;
-  // CASH: cashAmount в API = выручка (total), amountTendered = сколько дали.
-  // На чеке в «Наличные» — полученное, иначе сдача выглядит сломанной.
+  const hasQr = Number.isFinite(qrExplicit) && qrExplicit > 0;
   let cashAmt = 0;
   let cardAmt = 0;
-  if (method === 'CASH' && !hasCard) {
+  let qrAmt = 0;
+  if (method === 'CASH' && !hasCard && !hasQr) {
     cashAmt = Number.isFinite(tendered) && tendered > 0
       ? tendered
       : hasCash
         ? cashExplicit
         : total;
-  } else if (hasCash || hasCard) {
+  } else if (hasCash || hasCard || hasQr) {
     cashAmt = hasCash ? cashExplicit : 0;
     cardAmt = hasCard ? cardExplicit : 0;
-  } else if (method === 'CARD' || method === 'CASHLESS' || method === 'MPESA') {
+    qrAmt = hasQr ? qrExplicit : 0;
+  } else if (method === 'CASHLESS' || method === 'QR') {
+    qrAmt = Number.isFinite(tendered) && tendered > 0 ? tendered : total;
+  } else if (method === 'CARD') {
     cardAmt = Number.isFinite(tendered) && tendered > 0 ? tendered : total;
   }
   const change = Number(sale.changeGiven) || 0;
 
-  appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));
-  appendRow(printer, L.cash || 'Cash', fmtMoney(cashAmt));
-  appendRow(printer, L.plastic || 'Card', fmtMoney(cardAmt));
-  if (sale.cardCategoryDisplay) {
-    appendRow(printer, L.cardType || 'Card type', String(sale.cardCategoryDisplay));
+  printer.println(`${L.paymentForm || 'To‘lov shakli'}:`);
+  if (cashAmt > 0) {
+    appendRow(printer, L.cash || 'Naqd', fmtMoney(cashAmt));
   }
-  if (sale.socialCardNumber) {
-    appendRow(printer, L.socialCardNumber || 'Social card', String(sale.socialCardNumber));
+  if (cardAmt > 0) {
+    appendRow(printer, L.plastic || 'Bank kartasi', fmtMoney(cardAmt));
   }
-  if (sale.rrn) {
-    appendRow(printer, L.cardRrn || 'RRN', String(sale.rrn));
+  if (qrAmt > 0) {
+    appendRow(printer, L.qrPayment || 'QR-kodli to‘lov', fmtMoney(qrAmt));
+  }
+  if (cashAmt <= 0 && cardAmt <= 0 && qrAmt <= 0) {
+    appendRow(printer, L.cash || 'Naqd', fmtMoney(total));
+  }
+  if (cardAmt > 0) {
+    if (sale.cardCategoryDisplay || sale.cardType) {
+      appendRow(printer, L.cardType || 'Bank kartasi turi', String(sale.cardCategoryDisplay || sale.cardType));
+    }
+    const rawCard = sale.socialCardNumber || sale.cardNumber;
+    if (rawCard) {
+      const formatted = formatCardNumberForReceipt(rawCard);
+      appendRow(printer, sale.socialCardNumber ? (L.socialCardNumber || 'Ijtimoiy karta') : (L.cardNumber || 'Karta raqami'), formatted);
+    }
+    if (sale.rrn) {
+      appendRow(printer, L.cardRrn || 'RRN kodi', String(sale.rrn));
+    }
   }
   if (change > 0) {
-    appendRow(printer, L.change || 'Change', fmtMoney(change), true);
+    appendRow(printer, L.change || 'Qaytim', fmtMoney(change), true);
   }
   appendDivider(printer);
 }
@@ -413,7 +435,7 @@ function appendFiscalBlock(printer, payload) {
   if (!isOn(fields, 'fiscalBlock')) return;
 
   printer.bold(true);
-  printer.println(L.fiscalSection || 'Fiscal');
+  printer.println(L.fiscalSection || 'Fiskal ma’lumotlar');
   printer.bold(false);
 
   const qrParts = String(sale?.fiscalQrUrl || payload?.qrValue || '');
@@ -424,11 +446,14 @@ function appendFiscalBlock(printer, payload) {
   const fiscalReceiptNo = String(sale.fiscalReceiptSeq || seqFromQr || '').trim();
   const fiscalSign = buildFiscalSign(sale);
 
-  if (fiscalReceiptNo) {
-    appendRow(printer, L.fiscalReceiptNo || 'Fiscal #', fiscalReceiptNo);
+  if (virtualRegister && virtualRegister !== '1') {
+    appendRow(printer, L.virtualRegister || 'Virtual kassa S/R', virtualRegister);
   }
   if (fmNumber) {
-    appendRow(printer, L.fmNumber || 'FM', fmNumber);
+    appendRow(printer, L.fmNumber || 'FM raqami', fmNumber);
+  }
+  if (fiscalReceiptNo) {
+    appendRow(printer, L.fiscalReceiptNo || 'Chek raqami', fiscalReceiptNo);
   }
   const lineWidth =
     Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
@@ -448,11 +473,8 @@ function appendFiscalBlock(printer, payload) {
   appendVersionRow(L.appVersion || 'Versiya', sale.appVersion || payload?.appVersion);
   appendVersionRow(L.desktopVersion || 'Desktop versiyasi', sale.desktopVersion || payload?.desktopVersion);
   appendVersionRow(L.licenseNumber || 'Litsenziya raqami', sale.licenseNumber || payload?.licenseNumber);
-  if (virtualRegister && virtualRegister !== '1') {
-    appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
-  }
   if (fiscalSign) {
-    appendRow(printer, L.fiscalSign || 'Sign', fiscalSign);
+    appendRow(printer, L.fiscalSign || 'Fiskal belgi', fiscalSign);
   }
   appendDivider(printer);
 }

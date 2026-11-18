@@ -37,7 +37,7 @@ test('appendPayment prints card category, masked social card, and RRN rows when 
 
   const text = printedText(printer);
   assert.equal(text.includes('Тип карты') && text.includes('Социальная'), true);
-  assert.equal(text.includes('Социальная карта') && text.includes('9860********8031'), true);
+  assert.equal(text.includes('Социальная карта') && text.includes('9860 **** **** 8031'), true);
   assert.equal(text.includes('RRN') && text.includes('631810177451'), true);
 });
 

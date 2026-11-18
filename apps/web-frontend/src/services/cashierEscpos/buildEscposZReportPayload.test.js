@@ -32,7 +32,7 @@ describe('buildEscposZReportPayload', () => {
     expect(payload.labels.zReportTitle).toBe('Z-hisobot');
     expect(payload.labels.saleCash).toBe('Naqd hisob-kitob summasi');
     expect(payload.labels.grandTotal).toBe('Jami');
-    expect(payload.labels.stir).toBe('STIR');
+    expect(payload.labels.stir).toBe('STIR/JSHSHIR');
   });
 
   it('buildEscposZReportLabels returns Uzbek labels directly', () => {

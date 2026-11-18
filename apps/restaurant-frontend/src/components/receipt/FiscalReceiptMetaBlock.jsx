@@ -11,23 +11,25 @@ export default function FiscalReceiptMetaBlock({
   shiftNo,
   labels,
 }) {
+  const receiptSeq = String(receiptNumber || '').replace(/^№\s*/, '');
+
   return (
     <section className="receipt-section mt-2 space-y-0.5">
       {isOn('dateTime') ? (
         <div {...fs('dateTime', 'receipt-row receipt-row--datetime')}>
           <span>
-            <span className="receipt-meta-label">{labels.time}: </span>
-            {time}
-          </span>
-          <span className="receipt-row__value">
             <span className="receipt-meta-label">{labels.date}: </span>
             {date}
           </span>
+          <span className="receipt-row__value">
+            <span className="receipt-meta-label">{labels.time}: </span>
+            {time}
+          </span>
         </div>
       ) : null}
-      {isOn('receiptNo') ? (
+      {isOn('receiptNo') && receiptSeq ? (
         <div {...fs('receiptNo')}>
-          <FiscalReceiptRow label={labels.receiptNo} value={`№${receiptNumber}`} />
+          <FiscalReceiptRow label={labels.receiptNo} value={`№${receiptSeq}`} />
         </div>
       ) : null}
       {originalReceiptNumber ? (

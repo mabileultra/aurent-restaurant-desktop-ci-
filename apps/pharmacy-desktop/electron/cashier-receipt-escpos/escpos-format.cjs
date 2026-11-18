@@ -34,9 +34,14 @@ function fmtMoneyTable(value) {
  */
 function weightUnitLabel(unitOfMeasure) {
   const u = String(unitOfMeasure || '').trim().toLowerCase();
-  if (u === 'g' || u === 'г' || u === 'гр' || u === 'грамм' || u === 'gram' || u === 'gramm') return 'г';
-  if (u === 'mg' || u === 'мг') return 'мг';
-  return 'кг';
+  if (u === 'g' || u === 'г' || u === 'гр' || u === 'грамм' || u === 'gram' || u === 'gramm') return 'g';
+  if (u === 'mg' || u === 'мг') return 'mg';
+  if (u === 'l' || u === 'л' || u === 'litr' || u === 'liter') return 'litr';
+  if (u === 'ml' || u === 'мл') return 'ml';
+  if (u === 'm' || u === 'м' || u === 'metr') return 'm';
+  if (u === 'm2' || u === 'м2' || u === 'm²') return 'm²';
+  if (u === 'm3' || u === 'м3' || u === 'm³') return 'm³';
+  return 'kg';
 }
 
 /**
@@ -67,10 +72,11 @@ function fmtQty(value, saleType, unitOfMeasure) {
 function splitDateTime(iso) {
   try {
     const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return { date: '—', time: '—' };
     const pad = (n) => String(n).padStart(2, '0');
     return {
       date: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`,
-      time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+      time: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
     };
   } catch {
     return { date: '—', time: '—' };
@@ -234,11 +240,24 @@ function resolveItemCommittent(item) {
   return null;
 }
 
+function formatCardNumberForReceipt(value) {
+  if (value == null) return '';
+  const s = String(value).trim();
+  if (!s) return '';
+  const cleaned = s.replace(/[\s-]+/g, '');
+  const match = cleaned.match(/^(\d{4})[^\s\d]*(\d{4})$/);
+  if (match) {
+    return `${match[1]} **** **** ${match[2]}`;
+  }
+  return s;
+}
+
 module.exports = {
   fmtMoney,
   fmtMoneyTable,
   fmtQty,
   splitDateTime,
+  formatCardNumberForReceipt,
   buildFiscalSign,
   buildQrPayload,
   shouldPrintFiscalQr,

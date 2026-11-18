@@ -64,22 +64,26 @@ export function resolveFiscalReceiptTypeLabel(sale, t) {
     return t('fiscalReceipt.receiptTypeReturn');
   }
   const rt = String(sale?.receiptType || 'SALE').toUpperCase();
-  if (rt === 'SALE') {
-    return t('fiscalReceipt.receiptTypeSale');
+  if (rt === 'RETURN') {
+    return t('fiscalReceipt.receiptTypeReturn');
   }
-  const key = `pos.receiptType.${rt}`;
-  const translated = t(key);
-  if (translated !== key) return translated;
+  if (rt === 'CREDIT') {
+    return t('fiscalReceipt.receiptTypeCredit', { defaultValue: 'Kredit cheki' });
+  }
+  if (rt === 'ADVANCE') {
+    return t('fiscalReceipt.receiptTypeAdvance', { defaultValue: 'Avans cheki' });
+  }
   return t('fiscalReceipt.receiptTypeSale');
 }
 
 export function splitDateTime(iso) {
   try {
     const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return { date: '—', time: '—' };
     const pad = (n) => String(n).padStart(2, '0');
     return {
       date: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`,
-      time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+      time: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
     };
   } catch {
     return { date: '—', time: '—' };

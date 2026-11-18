@@ -30,10 +30,13 @@ export default function FiscalReceiptFiscalBlock({
           <div className="receipt-divider my-2 border-t border-dotted border-black" />
           <section {...fs('fiscalBlock', 'receipt-section space-y-1')}>
             <p className="receipt-section-title">{t('fiscalReceipt.fiscalSection')}</p>
+            {virtualRegister ? (
+              <FiscalReceiptRow label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
+            ) : null}
+            {fmNumber ? <FiscalReceiptRow label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
             {fiscalReceiptNo ? (
               <FiscalReceiptRow label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
             ) : null}
-            {fmNumber ? <FiscalReceiptRow label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
             {versions.appVersion ? (
               <FiscalReceiptRow label={t('fiscalReceipt.appVersion')} value={versions.appVersion} nowrap />
             ) : null}
@@ -42,9 +45,6 @@ export default function FiscalReceiptFiscalBlock({
             ) : null}
             {resolvedLicense ? (
               <FiscalReceiptRow label={t('fiscalReceipt.licenseNumber')} value={resolvedLicense} nowrap />
-            ) : null}
-            {virtualRegister ? (
-              <FiscalReceiptRow label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
             ) : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>

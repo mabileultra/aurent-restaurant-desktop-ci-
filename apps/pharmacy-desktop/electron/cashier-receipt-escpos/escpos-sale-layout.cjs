@@ -48,7 +48,7 @@ function resolveReceiptTypeDisplay(sale, L) {
     return String(sale.receiptTypeDisplay);
   }
   if (sale?.receiptDocumentType === 'RETURN') {
-    return labels.receiptTypeReturn || 'Return';
+    return labels.receiptTypeReturn || 'Qaytarish cheki';
   }
   const rt = String(sale?.receiptType || 'SALE').toUpperCase();
   const byType = {
@@ -57,7 +57,7 @@ function resolveReceiptTypeDisplay(sale, L) {
     ADVANCE: labels.receiptTypeAdvance,
     CREDIT: labels.receiptTypeCredit,
   };
-  return byType[rt] || labels.receiptTypeSale || 'Sale';
+  return byType[rt] || labels.receiptTypeSale || 'Sotuv cheki';
 }
 
 function brandingShift(payload) {

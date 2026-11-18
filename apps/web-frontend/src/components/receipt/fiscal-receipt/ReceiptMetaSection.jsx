@@ -8,22 +8,24 @@ export default function ReceiptMetaSection({ sale, view, isOn, t }) {
 
   if (!isVisible) return null;
 
+  const receiptSeq = String(sale?.fiscalReceiptSeq || sale?.receiptNumber || '').replace(/^№\s*/, '');
+
   return (
     <section className="receipt-section mt-2 space-y-0.5">
       {isOn('dateTime') ? (
         <div className="receipt-row receipt-row--datetime">
           <span>
-            <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
-            {view.time}
-          </span>
-          <span className="receipt-row__value">
             <span className="receipt-meta-label">{t('fiscalReceipt.date')}: </span>
             {view.date}
           </span>
+          <span className="receipt-row__value">
+            <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
+            {view.time}
+          </span>
         </div>
       ) : null}
-      {isOn('receiptNo') ? (
-        <ReceiptRow label={t('fiscalReceipt.receiptNoShort')} value={`№${sale.receiptNumber}`} />
+      {isOn('receiptNo') && receiptSeq ? (
+        <ReceiptRow label={t('fiscalReceipt.receiptNoShort')} value={`№${receiptSeq}`} />
       ) : null}
       {sale.originalReceiptNumber ? (
         <ReceiptRow

@@ -28,10 +28,11 @@ function resolveBranding(sale, custom) {
 function resolvePaymentView(sale, t) {
   const pay = resolveReceiptPaymentAmounts(sale);
   const cardDetails = extractCardReceiptDetails(sale);
-  const hasCardPayment = Number(pay.cardAmt) > 0 || CARD_PAYMENT_METHODS.includes(pay.method);
+  const hasCardPayment = Number(pay.cardAmt) > 0;
   return {
     cashAmt: pay.cashAmt,
     cardAmt: pay.cardAmt,
+    qrAmt: pay.qrAmt,
     paidTotal: pay.paidTotal,
     change: pay.change,
     method: pay.method,

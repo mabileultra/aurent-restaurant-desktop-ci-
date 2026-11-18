@@ -137,13 +137,13 @@ describe('buildCashierEscposPayload shift label', () => {
 describe('buildCashierEscposPayload plastic label', () => {
   it('appends provider to plastic payment row and exports separate card category, social card, and RRN in Uzbek', () => {
     const plain = buildCashierEscposPayload(FISCAL_SALE, t);
-    expect(plain.labels.plastic).toBe('Plastik');
+    expect(plain.labels.plastic).toBe('Bank kartasi');
 
     const humo = buildCashierEscposPayload(
       { ...FISCAL_SALE, paymentMethod: 'CARD', cardType: 'HUMO' },
       t,
     );
-    expect(humo.labels.plastic).toBe('Plastik · Humo');
+    expect(humo.labels.plastic).toBe('Bank kartasi · Humo');
 
     const social = buildCashierEscposPayload(
       {
@@ -156,10 +156,10 @@ describe('buildCashierEscposPayload plastic label', () => {
       },
       t,
     );
-    expect(social.labels.plastic).toBe('Plastik · Humo');
-    expect(social.labels.cardType).toBe('Karta turi');
+    expect(social.labels.plastic).toBe('Bank kartasi · Humo');
+    expect(social.labels.cardType).toBe('Bank kartasi turi');
     expect(social.labels.socialCardNumber).toBe('Ijtimoiy karta');
-    expect(social.labels.cardRrn).toBe('RRN');
+    expect(social.labels.cardRrn).toBe('RRN kodi');
     expect(social.sale.cardCategoryDisplay).toBe('Ijtimoiy');
     expect(social.sale.socialCardNumber).toBe('9860********8031');
     expect(social.sale.rrn).toBe('631810177451');
@@ -168,7 +168,7 @@ describe('buildCashierEscposPayload plastic label', () => {
       { ...FISCAL_SALE, paymentMethod: 'CARD', cardType: 'CORPORATE' },
       t,
     );
-    expect(legacyCorporate.labels.plastic).toBe('Plastik');
+    expect(legacyCorporate.labels.plastic).toBe('Bank kartasi');
     expect(legacyCorporate.sale.cardCategoryDisplay).toBe('Korporativ');
 
     const plainCash = buildCashierEscposPayload(
@@ -184,7 +184,7 @@ describe('buildCashierEscposPayload plastic label', () => {
     const payload = buildCashierEscposPayload(FISCAL_SALE, t);
     expect(payload.locale).toBe('uz');
     expect(payload.labels.cash).toBe('Naqd');
-    expect(payload.labels.grandTotal).toBe('Jami');
+    expect(payload.labels.grandTotal).toBe('JAMI');
   });
 });
 

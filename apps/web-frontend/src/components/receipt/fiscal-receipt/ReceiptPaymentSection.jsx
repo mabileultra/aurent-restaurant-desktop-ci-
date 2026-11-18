@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCardNumberForReceipt } from '@aurent/shared-fiscal';
 import { fmtMoneyCompact } from '../../../utils/fiscalReceiptFormat';
 import { ReceiptDivider, ReceiptRow } from './receiptPrimitives';
 
@@ -11,9 +12,6 @@ const PAYMENT_I18N = {
 };
 const DEFAULT_PAYMENT_I18N = 'sales.paymentCash';
 
-/** Способы оплаты, уже показанные строками «наличные» / «пластик». */
-const METHODS_COVERED_BY_CASH_AND_CARD_ROWS = ['CASH', 'MIXED', 'CARD', 'CASHLESS', 'MPESA'];
-
 /** Форма оплаты: наличные, пластик, реквизиты карты, сдача. */
 export default function ReceiptPaymentSection({ payment, isOn, t }) {
   if (!isOn('payment')) return null;
@@ -21,6 +19,7 @@ export default function ReceiptPaymentSection({ payment, isOn, t }) {
   const {
     cashAmt,
     cardAmt,
+    qrAmt,
     paidTotal,
     change,
     method,
@@ -31,32 +30,48 @@ export default function ReceiptPaymentSection({ payment, isOn, t }) {
     cardProviderText,
     cardCategoryText,
   } = payment;
-  const plasticLabel = cardProviderText
-    ? `${t('fiscalReceipt.plastic')} · ${cardProviderText}`
-    : t('fiscalReceipt.plastic');
-  const hasOtherMethodRow = !METHODS_COVERED_BY_CASH_AND_CARD_ROWS.includes(method);
+
+  const rawCardNum = cardDetails?.socialCardNumber || payment?.cardNumber;
+  const formattedCardNumber = formatCardNumberForReceipt(rawCardNum);
+  const cardTypeDisplay = cardProviderText || cardCategoryText;
+
+  const hasAnyExplicitMethod =
+    Number(cashAmt) > 0 || Number(cardAmt) > 0 || Number(qrAmt) > 0;
 
   return (
     <>
       <ReceiptDivider dotted />
       <section className="receipt-section space-y-0.5">
-        <ReceiptRow label={t('fiscalReceipt.paymentForm')} value={fmtMoneyCompact(paidTotal || total)} />
-        <ReceiptRow label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
-        <ReceiptRow label={plasticLabel} value={fmtMoneyCompact(cardAmt)} />
-        {cardCategoryText ? (
-          <ReceiptRow label={t('fiscalReceipt.cardType')} value={cardCategoryText} />
+        <p className="font-semibold text-xs text-black">{t('fiscalReceipt.paymentForm')}:</p>
+        {Number(cashAmt) > 0 ? (
+          <ReceiptRow label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
         ) : null}
-        {isSocialCategory && cardDetails.socialCardNumber ? (
-          <ReceiptRow label={t('fiscalReceipt.socialCardNumber')} value={cardDetails.socialCardNumber} />
+        {Number(cardAmt) > 0 ? (
+          <ReceiptRow label={t('fiscalReceipt.plastic')} value={fmtMoneyCompact(cardAmt)} />
+        ) : null}
+        {Number(qrAmt) > 0 ? (
+          <ReceiptRow
+            label={t('fiscalReceipt.qrPayment', { defaultValue: 'QR-kodli to‘lov' })}
+            value={fmtMoneyCompact(qrAmt)}
+          />
+        ) : null}
+        {!hasAnyExplicitMethod ? (
+          <ReceiptRow
+            label={t(PAYMENT_I18N[method] ?? DEFAULT_PAYMENT_I18N)}
+            value={fmtMoneyCompact(paidTotal || total)}
+          />
+        ) : null}
+        {hasCardPayment && cardTypeDisplay ? (
+          <ReceiptRow label={t('fiscalReceipt.cardType')} value={cardTypeDisplay} />
+        ) : null}
+        {hasCardPayment && formattedCardNumber ? (
+          <ReceiptRow
+            label={isSocialCategory ? t('fiscalReceipt.socialCardNumber') : t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
+            value={formattedCardNumber}
+          />
         ) : null}
         {hasCardPayment && cardDetails.rrn ? (
           <ReceiptRow label={t('fiscalReceipt.cardRrn')} value={cardDetails.rrn} />
-        ) : null}
-        {hasOtherMethodRow ? (
-          <ReceiptRow
-            label={t(PAYMENT_I18N[method] ?? DEFAULT_PAYMENT_I18N)}
-            value={fmtMoneyCompact(total)}
-          />
         ) : null}
         {change > 0 ? (
           <ReceiptRow label={t('receipt.change')} value={fmtMoneyCompact(change)} bold />

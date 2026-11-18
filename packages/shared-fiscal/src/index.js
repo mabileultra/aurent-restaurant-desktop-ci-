@@ -16,6 +16,7 @@ export {
   normalizeRrn,
   isValidRrn,
   maskSocialCardNumber,
+  formatCardNumberForReceipt,
   isValidSocialCardInput,
   extractCardReceiptDetails,
   withCardReceiptDetails,

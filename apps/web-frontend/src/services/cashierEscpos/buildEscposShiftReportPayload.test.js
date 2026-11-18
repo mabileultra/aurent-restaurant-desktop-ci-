@@ -30,7 +30,7 @@ describe('buildEscposShiftReportPayload', () => {
     expect(payload.labels.zReportTitle).toBe('Z-hisobot');
     expect(payload.labels.shiftSales).toBe('Sotuvlar');
     expect(payload.labels.shiftCash).toBe('Naqd');
-    expect(payload.labels.stir).toBe('STIR');
+    expect(payload.labels.stir).toBe('STIR/JSHSHIR');
   });
 
   it('buildEscposShiftReportLabels returns Uzbek labels directly', () => {

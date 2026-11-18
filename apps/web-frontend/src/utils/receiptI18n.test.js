@@ -13,15 +13,15 @@ describe('receiptI18n', () => {
 
     const tReceipt = getReceiptTranslator();
     expect(tReceipt('fiscalReceipt.cash')).toBe('Naqd');
-    expect(tReceipt('fiscalReceipt.plastic')).toBe('Plastik');
-    expect(tReceipt('fiscalReceipt.grandTotal')).toBe('Jami');
-    expect(tReceipt('fiscalReceipt.stir')).toBe('STIR');
+    expect(tReceipt('fiscalReceipt.plastic')).toBe('Bank kartasi');
+    expect(tReceipt('fiscalReceipt.grandTotal')).toBe('JAMI');
+    expect(tReceipt('fiscalReceipt.stir')).toBe('STIR/JSHSHIR');
   });
 
   it('translates receipt keys strictly in Uzbek when i18n language is Uzbek', async () => {
     await i18n.changeLanguage('uz');
     const tReceipt = getReceiptTranslator();
     expect(tReceipt('fiscalReceipt.cash')).toBe('Naqd');
-    expect(tReceipt('fiscalReceipt.paymentForm')).toBe("To'lov shakli");
+    expect(tReceipt('fiscalReceipt.paymentForm')).toBe('To‘lov shakli');
   });
 });

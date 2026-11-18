@@ -76,8 +76,7 @@ export default function FiscalReceiptBody({
 
   const pay = resolveReceiptPaymentAmounts(sale);
   const cardDetails = extractCardReceiptDetails(sale);
-  const hasCardPayment =
-    Number(pay.cardAmt) > 0 || pay.method === 'CARD' || pay.method === 'MIXED';
+  const hasCardPayment = Number(pay.cardAmt) > 0;
   const isSocial = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
   const cardTypeText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
     ? cardTypeLabel(sale.cardType, tReceipt)
@@ -164,9 +163,11 @@ export default function FiscalReceiptBody({
         total={total}
         cashAmt={pay.cashAmt}
         cardAmt={pay.cardAmt}
+        qrAmt={pay.qrAmt}
         cardTypeText={cardTypeText}
         cardCategoryText={cardCategoryText}
         socialCardNumber={isSocial ? cardDetails.socialCardNumber : null}
+        cardNumber={sale?.cardNumber}
         rrn={hasCardPayment ? cardDetails.rrn : null}
         method={pay.method}
         change={pay.change}

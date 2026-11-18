@@ -37,12 +37,12 @@ export default function PharmacyReceiptFiscalFooter({
           <div className="receipt-divider my-2 border-t border-dotted border-black" />
           <section className="receipt-section space-y-1">
             <p className="receipt-section-title">{t('fiscalReceipt.fiscalSection')}</p>
-            {fiscalReceiptNo ? <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} /> : null}
+            {virtualRegister ? <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} /> : null}
             {fmNumber ? <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
+            {fiscalReceiptNo ? <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} /> : null}
             {appVersion ? <Row label={t('fiscalReceipt.appVersion')} value={appVersion} nowrap /> : null}
             {desktopVersion ? <Row label={t('fiscalReceipt.desktopVersion')} value={desktopVersion} nowrap /> : null}
             {licenseNumber ? <Row label={t('fiscalReceipt.licenseNumber')} value={licenseNumber} nowrap /> : null}
-            {virtualRegister ? <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} /> : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
               <span className={fiscalSign ? 'receipt-fiscal-sign receipt-row__value' : 'receipt-row__value'}>

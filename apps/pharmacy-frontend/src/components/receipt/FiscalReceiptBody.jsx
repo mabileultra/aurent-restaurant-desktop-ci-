@@ -13,6 +13,7 @@ import {
 } from '../../utils/fiscalReceiptFormat';
 import {
   extractCardReceiptDetails,
+  formatCardNumberForReceipt,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
   shouldPrintFiscalQr,
@@ -66,11 +67,17 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const cardDetails = extractCardReceiptDetails(sale);
   const prescriptionNumber = resolveSalePrescriptionNumber(sale);
-  const hasCardPayment = Number(cardAmt) > 0 || method === 'CARD' || method === 'MIXED';
+  const hasCardPayment = Number(cardAmt) > 0;
   const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
   const cardProviderText =
     hasCardPayment && !normalizeCardCategory(sale.cardType) ? cardTypeLabel(sale.cardType, t) : null;
   const cardCategoryText = hasCardPayment ? cardCategoryLabel(cardDetails.cardCategory, t) : null;
+  const rawCardNum = cardDetails?.socialCardNumber || sale?.cardNumber;
+  const formattedCardNumber = formatCardNumberForReceipt(rawCardNum);
+  const cardTypeDisplay = cardProviderText || cardCategoryText;
+  const receiptSeq = String(sale?.fiscalReceiptSeq || sale?.receiptNumber || '').replace(/^№\s*/, '');
+  const qrAmt = Number(pay?.qrAmt) || 0;
+  const hasAnyExplicitMethod = Number(cashAmt) > 0 || Number(cardAmt) > 0 || qrAmt > 0;
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
@@ -123,17 +130,17 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
           {isOn('dateTime') ? (
             <div className="receipt-row receipt-row--datetime">
               <span>
-                <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
-                {time}
-              </span>
-              <span className="receipt-row__value">
                 <span className="receipt-meta-label">{t('fiscalReceipt.date')}: </span>
                 {date}
               </span>
+              <span className="receipt-row__value">
+                <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
+                {time}
+              </span>
             </div>
           ) : null}
-          {isOn('receiptNo') ? (
-            <Row label={t('fiscalReceipt.receiptNoShort')} value={`№${sale.receiptNumber}`} />
+          {isOn('receiptNo') && receiptSeq ? (
+            <Row label={t('fiscalReceipt.receiptNoShort')} value={`№${receiptSeq}`} />
           ) : null}
           {sale.originalReceiptNumber ? (
             <Row label={t('fiscalReceipt.originalReceiptNo')} value={`№${sale.originalReceiptNumber}`} />
@@ -151,19 +158,33 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         <>
           <div className="receipt-divider my-2 border-t border-dotted border-black" />
           <section className="receipt-section space-y-0.5">
-            <Row label={t('fiscalReceipt.paymentForm')} value={fmtMoneyCompact(paidTotal || total)} />
-            <Row label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
-            <Row
-              label={cardProviderText ? `${t('fiscalReceipt.plastic')} · ${cardProviderText}` : t('fiscalReceipt.plastic')}
-              value={fmtMoneyCompact(cardAmt)}
-            />
-            {cardCategoryText ? <Row label={t('fiscalReceipt.cardType')} value={cardCategoryText} /> : null}
-            {isSocialCategory && cardDetails.socialCardNumber ? (
-              <Row label={t('fiscalReceipt.socialCardNumber')} value={cardDetails.socialCardNumber} />
+            <p className="font-semibold text-xs text-black">{t('fiscalReceipt.paymentForm')}:</p>
+            {Number(cashAmt) > 0 ? (
+              <Row label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
             ) : null}
-            {hasCardPayment && cardDetails.rrn ? <Row label={t('fiscalReceipt.cardRrn')} value={cardDetails.rrn} /> : null}
-            {method !== 'CASH' && method !== 'MIXED' && method !== 'CARD' && method !== 'CASHLESS' && method !== 'MPESA' ? (
-              <Row label={payLabel(method)} value={fmtMoneyCompact(total)} />
+            {Number(cardAmt) > 0 ? (
+              <Row label={t('fiscalReceipt.plastic')} value={fmtMoneyCompact(cardAmt)} />
+            ) : null}
+            {qrAmt > 0 ? (
+              <Row
+                label={t('fiscalReceipt.qrPayment', { defaultValue: 'QR-kodli to‘lov' })}
+                value={fmtMoneyCompact(qrAmt)}
+              />
+            ) : null}
+            {!hasAnyExplicitMethod ? (
+              <Row label={payLabel(method)} value={fmtMoneyCompact(paidTotal || total)} />
+            ) : null}
+            {hasCardPayment && cardTypeDisplay ? (
+              <Row label={t('fiscalReceipt.cardType')} value={cardTypeDisplay} />
+            ) : null}
+            {hasCardPayment && formattedCardNumber ? (
+              <Row
+                label={isSocialCategory ? t('fiscalReceipt.socialCardNumber') : t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
+                value={formattedCardNumber}
+              />
+            ) : null}
+            {hasCardPayment && cardDetails.rrn ? (
+              <Row label={t('fiscalReceipt.cardRrn')} value={cardDetails.rrn} />
             ) : null}
             {change > 0 ? <Row label={t('receipt.change')} value={fmtMoneyCompact(change)} bold /> : null}
           </section>

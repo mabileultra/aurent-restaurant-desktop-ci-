@@ -4,6 +4,7 @@ import {
   buildFiscalDriveCardFields,
   buildMultikassaCardFields,
   extractCardReceiptDetails,
+  formatCardNumberForReceipt,
   isValidRrn,
   isValidSocialCardInput,
   maskSocialCardNumber,
@@ -144,5 +145,13 @@ describe('@aurent/shared-fiscal cardDetails', () => {
     });
 
     expect(buildMultikassaCardFields({ paymentMethod: 'CASH' }, 0)).toEqual({});
+  });
+
+  it('formats card number for receipt print as «5614 **** **** 8956»', () => {
+    expect(formatCardNumberForReceipt('5614********8956')).toBe('5614 **** **** 8956');
+    expect(formatCardNumberForReceipt('5614123456788956')).toBe('5614 **** **** 8956');
+    expect(formatCardNumberForReceipt('5614 **** **** 8956')).toBe('5614 **** **** 8956');
+    expect(formatCardNumberForReceipt(null)).toBe('');
+    expect(formatCardNumberForReceipt('')).toBe('');
   });
 });

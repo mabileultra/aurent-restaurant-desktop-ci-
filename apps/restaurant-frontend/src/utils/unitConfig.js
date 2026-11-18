@@ -4,13 +4,13 @@ const WEIGHT_CATEGORIES = new Set(['MASS', 'VOLUME', 'LENGTH', 'AREA']);
 const PIECE_CATEGORIES = new Set(['COUNT', 'TIME']);
 
 const FALLBACK_CONFIG = {
-  PCS: { code: 'PCS', label: 'шт', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'COUNT' },
-  KG: { code: 'KG', label: 'кг', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
-  G: { code: 'G', label: 'г', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
-  L: { code: 'L', label: 'л', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'VOLUME' },
-  M: { code: 'M', label: 'м', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'LENGTH' },
-  MM: { code: 'MM', label: 'мм', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'LENGTH' },
-  M2: { code: 'M2', label: 'м²', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'AREA' },
+  PCS: { code: 'PCS', label: 'dona', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'COUNT' },
+  KG: { code: 'KG', label: 'kg', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
+  G: { code: 'G', label: 'g', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
+  L: { code: 'L', label: 'litr', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'VOLUME' },
+  M: { code: 'M', label: 'm', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'LENGTH' },
+  MM: { code: 'MM', label: 'mm', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'LENGTH' },
+  M2: { code: 'M2', label: 'm²', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'AREA' },
 };
 
 /** @type {Record<string, object>} */
@@ -122,7 +122,7 @@ export function convertUnitQuantity(fromCode, toCode, quantity) {
 }
 
 const LABEL_TO_CODE = {
-  pcs: 'PCS', kg: 'KG', g: 'G', l: 'L', m: 'M', mm: 'MM', m2: 'M2',
+  pcs: 'PCS', dona: 'PCS', шт: 'PCS', kg: 'KG', g: 'G', l: 'L', litr: 'L', m: 'M', metr: 'M', mm: 'MM', m2: 'M2',
   кг: 'KG', г: 'G', л: 'L', м: 'M', мм: 'MM', 'м²': 'M2',
 };
 
