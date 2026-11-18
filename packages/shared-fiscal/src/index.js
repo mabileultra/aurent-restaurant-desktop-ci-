@@ -67,4 +67,10 @@ export {
   formatItemCommittentReceiptLine,
   withSaleCommittentDetails,
 } from './committentDetails.js';
+export {
+  FORBIDDEN_MXIK_REASON_CODE,
+  FORBIDDEN_MXIK_CODES,
+  normalizeMxik,
+  isForbiddenMxik,
+} from './forbiddenMxik.js';
 
