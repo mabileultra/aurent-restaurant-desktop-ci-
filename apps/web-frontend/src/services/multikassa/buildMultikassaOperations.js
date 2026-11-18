@@ -185,7 +185,8 @@ export function buildXReportBody({ capabilities, cashierName }) {
       capabilities?.cashierNameOverride || cashierName || 'CASHIER',
     ),
     receipt_gnk_time: formatMultikassaDateTime(),
-    force_to_print: false,
+    // X с кассы должен печататься на ФМ; false часто даёт пустой/нулевой слип.
+    force_to_print: true,
   };
 }
 

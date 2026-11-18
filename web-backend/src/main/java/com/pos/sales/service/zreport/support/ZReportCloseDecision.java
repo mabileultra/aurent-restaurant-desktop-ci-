@@ -38,7 +38,7 @@ public final class ZReportCloseDecision {
         return opened != null && period != null && period.isAfter(opened);
     }
 
-    static boolean isEmptyPeriod(ShiftReportResponse report) {
+    public static boolean isEmptyPeriod(ShiftReportResponse report) {
         return report.saleCount() == 0
             && isZero(report.totalAmount())
             && report.returnsCount() == 0
