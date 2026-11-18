@@ -46,13 +46,22 @@ function fiscalPayload(overrides = {}) {
   };
 }
 
-test('restaurant-desktop: tax QR is printed for standard SALE', async () => {
-  const printer = createFakePrinter();
-  await appendQrAndFooter(printer, fiscalPayload(), 'job-1');
+test('restaurant-desktop: tax QR is printed for standard SALE with enlarged size', async () => {
+  const printer80 = createFakePrinter();
+  await appendQrAndFooter(printer80, fiscalPayload({ paperWmm: 80 }), 'job-1');
 
-  const qrCalls = printer.calls.filter((c) => c.method === 'printQR');
-  assert.equal(qrCalls.length, 1);
-  assert.equal(qrCalls[0].args[0], TAX_QR);
+  const qrCalls80 = printer80.calls.filter((c) => c.method === 'printQR');
+  assert.equal(qrCalls80.length, 1);
+  assert.equal(qrCalls80[0].args[0], TAX_QR);
+  assert.deepEqual(qrCalls80[0].args[1], { cellSize: 10, correction: 'M', model: 2 });
+
+  const printer58 = createFakePrinter();
+  await appendQrAndFooter(printer58, fiscalPayload({ paperWmm: 58 }), 'job-2');
+
+  const qrCalls58 = printer58.calls.filter((c) => c.method === 'printQR');
+  assert.equal(qrCalls58.length, 1);
+  assert.equal(qrCalls58[0].args[0], TAX_QR);
+  assert.deepEqual(qrCalls58[0].args[1], { cellSize: 8, correction: 'M', model: 2 });
 });
 
 test('restaurant-desktop: tax QR is printed for RETURN receipt', async () => {
