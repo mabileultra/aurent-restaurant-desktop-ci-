@@ -78,6 +78,10 @@ export function usePosCartHandlers({
       productMark: product.productMark ?? product.markCode ?? null,
       markCode: product.markCode ?? product.productMark ?? null,
       productMarks: Array.isArray(product.productMarks) ? [...product.productMarks] : null,
+      // Block KM: resolveCashierMarking sets these; without them qty stays 1.
+      sellAsBlock: product.sellAsBlock === true,
+      unitsInPack: product.unitsInPack ?? null,
+      packageName: product.packageName ?? null,
     }),
     [storeId]
   );

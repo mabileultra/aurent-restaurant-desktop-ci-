@@ -21,7 +21,9 @@ export async function resolveBlockPackFromTasnif({ ikpu, mark }) {
 
   try {
     const res = await tasnifApi.detail({ mxik });
-    const picked = pickTasnifBlockPackage(res?.data);
+    // axios body is res.data; some callers already unwrap — accept both.
+    const item = res?.data?.packages ? res.data : (res?.packages ? res : res?.data);
+    const picked = pickTasnifBlockPackage(item);
     if (!picked?.pkg || !(picked.count > 1)) return null;
     return {
       sellAsBlock: true,
