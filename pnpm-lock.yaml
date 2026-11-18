@@ -386,7 +386,7 @@ importers:
   packages/shared-ui:
     dependencies:
       clsx:
-        specifier: ^2.1.0
+        specifier: ^2.1.1
         version: 2.1.1
       react:
         specifier: ^18.2.0
