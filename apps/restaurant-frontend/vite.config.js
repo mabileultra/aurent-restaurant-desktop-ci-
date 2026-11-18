@@ -91,7 +91,7 @@ export default defineConfig(({ mode }) => {
       // shared-ui sources import clsx; resolve from this app's node_modules (pnpm Docker).
       alias: {
         ...aurentPackageAliases(),
-        clsx: path.dirname(require.resolve('clsx/package.json')),
+        clsx: require.resolve('clsx'),
       },
       dedupe: ['clsx', 'react'],
     },
