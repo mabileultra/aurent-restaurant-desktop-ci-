@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   extractGtinFromMarkingCode,
+  gtinPackagingIndicator,
   isCompleteMarkingScan,
   isMarkingCode,
   markingBarcodeCandidates,
@@ -27,6 +28,13 @@ describe('@aurent/shared-marking markingCode', () => {
     expect(normalizeMarkingCode(withArrow)).toBe('0104780021711739217hhgo*h93guia');
     expect(normalizeMarkingCode(withGs)).toBe('0104780021711739217hhgo*h93guia');
     expect(isMarkingCode(withArrow)).toBe(true);
+  });
+
+  it('reads GTIN-14 packaging indicator (0=piece, 1+=pack)', () => {
+    expect(gtinPackagingIndicator('04780131183003')).toBe(0);
+    expect(gtinPackagingIndicator('14780131183003')).toBe(1);
+    expect(gtinPackagingIndicator(extractGtinFromMarkingCode('0114780131183003217Mj=?rFdu+Eg+\u2194931vcj'))).toBe(1);
+    expect(gtinPackagingIndicator('478013118300')).toBeNull();
   });
 
   it('builds EAN-13 and GTIN-14 candidates from a DataMatrix', () => {

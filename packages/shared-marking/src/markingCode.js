@@ -73,6 +73,17 @@ export function markingScanKey(raw) {
     .toLowerCase();
 }
 
+/**
+ * Indicator digit GTIN-14 (первая цифра): 0 = штука, 1–8 = уровень упаковки (блок/короб).
+ * Без 14 цифр — null.
+ */
+export function gtinPackagingIndicator(gtin) {
+  const digits = String(gtin ?? '').replace(/\D/g, '');
+  if (digits.length !== 14) return null;
+  const n = Number(digits[0]);
+  return Number.isFinite(n) ? n : null;
+}
+
 /** Извлечь GTIN из GS1-строки маркировки. */
 export function extractGtinFromMarkingCode(raw) {
   const code = normalizeMarkingCode(raw);

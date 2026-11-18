@@ -7,6 +7,7 @@ export {
   isMarkingCode,
   isCompleteMarkingScan,
   markingScanKey,
+  gtinPackagingIndicator,
   extractGtinFromMarkingCode,
   barcodeLookupVariants,
   markingBarcodeCandidates,

@@ -9,6 +9,8 @@ export {
   isRealFiscalPackageCode,
   realTasnifPackages,
   pickTasnifPackage,
+  pickTasnifBlockPackage,
+  packageCount,
   enrichFiscalPackageCodes,
 } from './shared/resolveFiscalPackageCodes';
 export { expandMarkedFiscalItems } from './shared/expandMarkedFiscalItems';
