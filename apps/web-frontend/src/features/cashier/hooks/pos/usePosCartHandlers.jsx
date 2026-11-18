@@ -47,6 +47,7 @@ export function usePosCartHandlers({
       unitMeasureCode: product.unitMeasureCode ?? null,
       unitOfMeasure: product.unitOfMeasure ?? null,
       commissionTin: product.commissionTin ?? null,
+      commissionPinfl: product.commissionPinfl ?? null,
       attributes: product.attributes ?? null,
       saleType: product.saleType || 'PIECE',
       unitCode: product.unitCode,

@@ -30,6 +30,8 @@ const t = (key, opts = {}) => {
   const templates = {
     'fiscalReceipt.vatLineShort': 'НДС {{rate}}%',
     'fiscalReceipt.vatTotalLine': 'НДС {{rate}}%',
+    'receipt.committentTin': 'Komitent (STIR)',
+    'receipt.committentPinfl': 'Komitent (JShShIR)',
   };
   let s = templates[key] || key;
   for (const [k, v] of Object.entries(opts)) {
@@ -243,5 +245,13 @@ describe('buildCashierEscposPayload: QR code suppression for ADVANCE and CREDIT 
     );
     expect(payload.qrValue).not.toBe('');
     expect(payload.receiptFields.qrCode).toBe(true);
+  });
+});
+
+describe('buildEscposLabels committent (AUR-7)', () => {
+  it('includes committent labels in Uzbek', () => {
+    const labels = buildEscposLabels(t);
+    expect(labels.committentTin).toBe('Komitent (STIR)');
+    expect(labels.committentPinfl).toBe('Komitent (JShShIR)');
   });
 });

@@ -1,4 +1,4 @@
-import { buildMultikassaCardFields } from '@aurent/shared-fiscal';
+import { buildMultikassaCardFields, resolveMultikassaCommitentTin } from '@aurent/shared-fiscal';
 import { lineDiscountAmount, lineSubtotal } from '../../utils/cartLineMath';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
@@ -111,7 +111,7 @@ function buildItem(line) {
     product_discount: discount,
     total_product_price: total,
     count: Number(line.quantity) || 0,
-    commitent_tin: line.commissionTin || line.commitentTin || '',
+    commitent_tin: resolveMultikassaCommitentTin(line),
     product_vat_percent: Number(line.taxRate ?? 12),
     // «1» фискальный модуль не принимает: это не код упаковки Tasnif.
     product_package: packageCode || (ikpu ? '' : '1'),

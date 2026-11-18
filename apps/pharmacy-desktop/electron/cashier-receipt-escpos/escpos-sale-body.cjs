@@ -7,6 +7,7 @@ const {
   splitDateTime,
   buildFiscalSign,
   doesVersionRowFitSingleLine,
+  resolveItemCommittent,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
@@ -118,6 +119,26 @@ function appendItems(printer, payload) {
     if (isOn(fields, 'itemIkpu') && item.ikpu) {
       withFieldStyle(printer, styles, 'itemIkpu', () => {
         printer.println(`${L.ikpuLine || 'MXIK'}: ${item.ikpu}`);
+      });
+    }
+    const committent = resolveItemCommittent(item);
+    if (committent) {
+      const label =
+        committent.kind === 'PINFL'
+          ? (L.committentPinfl || 'Komitent (JShShIR)')
+          : (L.committentTin || 'Komitent (STIR)');
+      const fullText = `${label}: ${committent.value}`;
+      const lineWidth =
+        Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+          ? 32
+          : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+      withFieldStyle(printer, styles, 'itemCommittent', () => {
+        if (fullText.length <= lineWidth) {
+          printer.println(fullText);
+        } else {
+          printer.println(`${label}:`);
+          printer.println(committent.value);
+        }
       });
     }
   }

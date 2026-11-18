@@ -61,6 +61,7 @@ const buildLine = (product, quantity) => {
     packageCode: product.packageCode ?? null,
     unitMeasureCode: product.unitMeasureCode ?? null,
     commissionTin: product.commissionTin ?? null,
+    commissionPinfl: product.commissionPinfl ?? null,
     markedProduct: product.markedProduct === true,
     productMark: product.productMark ?? product.markCode ?? null,
     productMarks: Array.isArray(product.productMarks) ? [...product.productMarks] : null,

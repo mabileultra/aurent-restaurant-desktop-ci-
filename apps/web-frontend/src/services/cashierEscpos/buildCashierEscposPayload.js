@@ -78,6 +78,8 @@ export function buildEscposLabels(t) {
     qtyShort: t('receipt.qtyShort'),
     lineTotalShort: t('receipt.lineTotalShort'),
     ikpuLine: t('receipt.ikpuLine'),
+    committentTin: t('receipt.committentTin', 'Komitent (STIR)'),
+    committentPinfl: t('receipt.committentPinfl', 'Komitent (JShShIR)'),
     vatLineShort: t('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
     currency: t('fiscalReceipt.currency'),
     lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),

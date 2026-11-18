@@ -1,3 +1,5 @@
+import React from 'react';
+import { formatItemCommittentReceiptLine } from '@aurent/shared-fiscal';
 import { fmtMoneyCompact, fmtQty } from '../../utils/fiscalReceiptFormat';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
 import { FiscalReceiptDivider, FiscalReceiptRow } from './FiscalReceiptRow';
@@ -37,6 +39,18 @@ export default function FiscalReceiptItemsBlock({ items, isOn, fs, t }) {
                   {t('receipt.ikpuLine')}: {item.ikpu}
                 </p>
               ) : null}
+              {(() => {
+                const committent = formatItemCommittentReceiptLine(item, {
+                  committentTin: t('receipt.committentTin'),
+                  committentPinfl: t('receipt.committentPinfl'),
+                });
+                if (!committent) return null;
+                return (
+                  <p {...fs('itemCommittent', 'break-all receipt-secondary')}>
+                    {committent.text}
+                  </p>
+                );
+              })()}
             </div>
           ))}
         </div>

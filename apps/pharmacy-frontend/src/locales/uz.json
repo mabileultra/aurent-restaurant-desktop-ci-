@@ -2971,6 +2971,8 @@
     "vat": "QQS",
     "vatIncludedLine": "QQS {{rate}} % ni o‘z ichiga olgan holda",
     "ikpuLine": "IKPU",
+    "committentTin": "Komitent (STIR)",
+    "committentPinfl": "Komitent (JShShIR)",
     "total": "JAMI",
     "payment": "To‘lov ({{method}})",
     "change": "Qaytim",

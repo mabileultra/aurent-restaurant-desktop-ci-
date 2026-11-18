@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatItemCommittentReceiptLine } from '@aurent/shared-fiscal';
 import { fmtMoneyCompact, fmtQty } from '../../utils/fiscalReceiptFormat';
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
@@ -79,6 +80,18 @@ export default function PharmacyReceiptItemsAndTotals({ sale, isOn, vatRateLabel
                       {t('receipt.ikpuLine')}: {item.ikpu}
                     </p>
                   ) : null}
+                  {(() => {
+                    const committent = formatItemCommittentReceiptLine(item, {
+                      committentTin: t('receipt.committentTin'),
+                      committentPinfl: t('receipt.committentPinfl'),
+                    });
+                    if (!committent) return null;
+                    return (
+                      <p className="break-all receipt-secondary">
+                        {committent.text}
+                      </p>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

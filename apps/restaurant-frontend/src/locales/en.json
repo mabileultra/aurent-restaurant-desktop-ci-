@@ -400,6 +400,8 @@
   "receipt": {
     "change": "Change",
     "ikpuLine": "IKPU",
+    "committentTin": "Committent (TIN)",
+    "committentPinfl": "Committent (PINFL)",
     "item": "Item",
     "lineTotalShort": "Amt",
     "print": "Print receipt",

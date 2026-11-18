@@ -25,6 +25,7 @@ import { resolvePosRoute } from './posRouteResolver';
 import {
   assertSalePrescriptionNumber,
   withCardReceiptDetails,
+  withSaleCommittentDetails,
   withSalePrescriptionNumber,
 } from '@aurent/shared-fiscal';
 import { loadFiscalContext, wrapFiscalError } from '../fiscal';
@@ -529,7 +530,10 @@ export async function posCreateSale({
     );
     return {
       ...res,
-      data: withSalePrescriptionNumber(withCardReceiptDetails(res?.data, payment), payment),
+      data: withSaleCommittentDetails(
+        withSalePrescriptionNumber(withCardReceiptDetails(res?.data, payment), payment),
+        cartItems,
+      ),
     };
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {

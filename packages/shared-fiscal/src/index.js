@@ -57,4 +57,14 @@ export {
   getAppVersion,
   getAppVersionInfo,
 } from './appVersion.js';
+export {
+  COMMITTENT_TIN_LENGTH,
+  COMMITTENT_PINFL_LENGTH,
+  parseCommittentIdentifier,
+  resolveItemCommittent,
+  resolveMultikassaCommitentTin,
+  buildFiscalDriveCommissionInfo,
+  formatItemCommittentReceiptLine,
+  withSaleCommittentDetails,
+} from './committentDetails.js';
 

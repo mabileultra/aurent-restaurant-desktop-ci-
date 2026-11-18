@@ -1,3 +1,4 @@
+import { buildFiscalDriveCommissionInfo } from '@aurent/shared-fiscal';
 import { lineDiscountAmount, lineGross } from '../../../../store/cartStore';
 import { toTiyin } from '../../shared/fiscalMoney';
 import { toOfdMarkingLabel } from '../../shared/ofdMarkingLabel';
@@ -27,10 +28,7 @@ function inclusiveVatTiyin(amountTiyin, vatPercent) {
 }
 
 function commissionInfo(line) {
-  const id = digitsOnly(line.commissionTin || line.commitentTin);
-  if (id.length === 9) return { TIN: id };
-  if (id.length === 14) return { PINFL: id };
-  return null;
+  return buildFiscalDriveCommissionInfo(line);
 }
 
 /**

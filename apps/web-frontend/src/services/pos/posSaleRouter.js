@@ -10,8 +10,9 @@ import { buildPharmacySaleExtras } from '../../features/cashier/utils/buildPharm
 import { assertCartMarksNotPunched } from '../../features/marking';
 import {
   assertSalePrescriptionNumber,
-  withSalePrescriptionNumber,
   withCardReceiptDetails,
+  withSaleCommittentDetails,
+  withSalePrescriptionNumber,
 } from '@aurent/shared-fiscal';
 import { routeFor } from './posRouterShared';
 
@@ -126,7 +127,13 @@ export async function posCreateSale({
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
     return res && res.data
-      ? { ...res, data: withSalePrescriptionNumber(withCardReceiptDetails(res.data, payment), payment) }
+      ? {
+          ...res,
+          data: withSaleCommittentDetails(
+            withSalePrescriptionNumber(withCardReceiptDetails(res.data, payment), payment),
+            cartItems,
+          ),
+        }
       : res;
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {

@@ -580,6 +580,8 @@
     "vat": "НДС",
     "vatIncludedLine": "Включая НДС ({{rate}} %)",
     "ikpuLine": "ИКПУ",
+    "committentTin": "Комитент (ИНН)",
+    "committentPinfl": "Комитент (ПИНФЛ)",
     "total": "ИТОГО",
     "payment": "Оплата ({{method}})",
     "change": "Сдача",

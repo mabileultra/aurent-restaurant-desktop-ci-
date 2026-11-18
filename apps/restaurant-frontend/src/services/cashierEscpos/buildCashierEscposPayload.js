@@ -84,6 +84,8 @@ export function buildEscposLabels(t) {
     qtyShort: tr('receipt.qtyShort'),
     lineTotalShort: tr('receipt.lineTotalShort'),
     ikpuLine: tr('receipt.ikpuLine'),
+    committentTin: tr('receipt.committentTin', 'Komitent (STIR)'),
+    committentPinfl: tr('receipt.committentPinfl', 'Komitent (JShShIR)'),
     vatLineShort: tr('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
     currency: tr('fiscalReceipt.currency'),
     serviceLine: tr('rst.order.serviceLine', { percent: '{{percent}}' }),

@@ -408,6 +408,8 @@
   "receipt": {
     "change": "Сдача",
     "ikpuLine": "ИКПУ",
+    "committentTin": "Комитент (ИНН)",
+    "committentPinfl": "Комитент (ПИНФЛ)",
     "item": "Товар",
     "lineTotalShort": "Сум.",
     "print": "Печать чека",

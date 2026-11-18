@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function FiscalReceiptRow({ label, value, bold = false, nowrap = false, className = '', style }) {
   const classes = [
     'receipt-row',

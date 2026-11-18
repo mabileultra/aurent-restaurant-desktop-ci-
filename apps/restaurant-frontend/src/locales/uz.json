@@ -408,6 +408,8 @@
   "receipt": {
     "change": "Qaytim",
     "ikpuLine": "IKPU",
+    "committentTin": "Komitent (STIR)",
+    "committentPinfl": "Komitent (JShShIR)",
     "item": "Mahsulot",
     "lineTotalShort": "Jami",
     "print": "Chek chop etish",
