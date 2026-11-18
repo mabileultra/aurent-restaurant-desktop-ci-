@@ -1,3 +1,4 @@
+import { getLicenseNumber, getReceiptVersionRows } from '@aurent/shared-fiscal';
 import { FiscalReceiptRow } from './FiscalReceiptRow';
 
 export default function FiscalReceiptFiscalBlock({
@@ -6,10 +7,16 @@ export default function FiscalReceiptFiscalBlock({
   t,
   fiscalReceiptNo,
   fmNumber,
+  appVersion,
+  desktopVersion,
+  licenseNumber,
   virtualRegister,
   fiscalSign,
   receiptTypeLabel,
 }) {
+  const versions = getReceiptVersionRows({ appVersion, desktopVersion });
+  const resolvedLicense = getLicenseNumber(licenseNumber);
+
   return (
     <>
       {isOn('receiptType') ? (
@@ -27,12 +34,21 @@ export default function FiscalReceiptFiscalBlock({
               <FiscalReceiptRow label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
             ) : null}
             {fmNumber ? <FiscalReceiptRow label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
+            {versions.appVersion ? (
+              <FiscalReceiptRow label={t('fiscalReceipt.appVersion')} value={versions.appVersion} nowrap />
+            ) : null}
+            {versions.desktopVersion ? (
+              <FiscalReceiptRow label={t('fiscalReceipt.desktopVersion')} value={versions.desktopVersion} nowrap />
+            ) : null}
+            {resolvedLicense ? (
+              <FiscalReceiptRow label={t('fiscalReceipt.licenseNumber')} value={resolvedLicense} nowrap />
+            ) : null}
             {virtualRegister ? (
               <FiscalReceiptRow label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
             ) : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
-              <span className="receipt-fiscal-sign receipt-row__value">{fiscalSign || '—'}</span>
+              <span className={fiscalSign ? 'receipt-fiscal-sign receipt-row__value' : 'receipt-row__value'}>{fiscalSign || '—'}</span>
             </div>
           </section>
         </>

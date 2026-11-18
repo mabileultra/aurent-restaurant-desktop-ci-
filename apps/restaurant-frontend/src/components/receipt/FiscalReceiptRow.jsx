@@ -1,6 +1,15 @@
-export function FiscalReceiptRow({ label, value, bold = false }) {
+import React from 'react';
+
+export function FiscalReceiptRow({ label, value, bold = false, nowrap = false, className = '', style }) {
+  const classes = [
+    'receipt-row',
+    bold ? 'receipt-row--bold' : '',
+    nowrap ? 'receipt-row--nowrap' : '',
+    className,
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`receipt-row${bold ? ' receipt-row--bold' : ''}`}>
+    <div className={classes} style={style}>
       <span className="receipt-meta-label">{label}</span>
       <span className="receipt-row__value">{value}</span>
     </div>

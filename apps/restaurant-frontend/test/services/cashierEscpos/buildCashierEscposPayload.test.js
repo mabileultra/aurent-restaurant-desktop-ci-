@@ -121,3 +121,127 @@ describe('buildCashierEscposPayload shift label', () => {
     expect(withRegister.branding.shiftNo).toBe('2');
   });
 });
+
+describe('buildCashierEscposPayload card details', () => {
+  it('exports provider on plastic label and separate cardType, socialCardNumber, and RRN in Uzbek', () => {
+    const payload = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'CARD',
+        cardType: 'UZCARD',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(payload.labels.plastic).toBe('Plastik · Uzcard');
+    expect(payload.labels.cardType).toBe('Karta turi');
+    expect(payload.labels.socialCardNumber).toBe('Ijtimoiy karta');
+    expect(payload.labels.cardRrn).toBe('RRN');
+    expect(payload.sale.cardCategoryDisplay).toBe('Ijtimoiy');
+    expect(payload.sale.socialCardNumber).toBe('9860********8031');
+    expect(payload.sale.rrn).toBe('631810177451');
+  });
+
+  it('leaves card details null for pure cash payment and populates for mixed payment', () => {
+    const cashPayload = buildCashierEscposPayload(
+      { ...FISCAL_SALE, paymentMethod: 'CASH', cardAmount: 0, cashAmount: 50000 },
+      t,
+    );
+    expect(cashPayload.sale.cardCategoryDisplay).toBeNull();
+    expect(cashPayload.sale.socialCardNumber).toBeNull();
+    expect(cashPayload.sale.rrn).toBeNull();
+
+    const mixedPayload = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        paymentMethod: 'MIXED',
+        cashAmount: 20000,
+        cardAmount: 30000,
+        cardType: 'UZCARD',
+        cardCategory: 'SOCIAL',
+        socialCardNumber: '9860031122338031',
+        rrn: '631810177451',
+      },
+      t,
+    );
+    expect(mixedPayload.sale.cardCategoryDisplay).toBe('Ijtimoiy');
+    expect(mixedPayload.sale.socialCardNumber).toBe('9860********8031');
+    expect(mixedPayload.sale.rrn).toBe('631810177451');
+  });
+
+  describe('buildCashierEscposPayload: QR code suppression for ADVANCE and CREDIT (AUR-4)', () => {
+    it('suppresses QR for ADVANCE receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'ADVANCE' },
+        t,
+      );
+      expect(payload.qrValue).toBe('');
+      expect(payload.receiptFields.qrCode).toBe(false);
+    });
+
+    it('suppresses QR for CREDIT receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'CREDIT' },
+        t,
+      );
+      expect(payload.qrValue).toBe('');
+      expect(payload.receiptFields.qrCode).toBe(false);
+    });
+
+    it('preserves QR for standard SALE receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'SALE' },
+        t,
+      );
+      expect(payload.qrValue).not.toBe('');
+      expect(payload.receiptFields.qrCode).toBe(true);
+    });
+
+    it('preserves QR for RETURN receipt', () => {
+      const payload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, receiptType: 'RETURN' },
+        t,
+      );
+      expect(payload.qrValue).not.toBe('');
+      expect(payload.receiptFields.qrCode).toBe(true);
+    });
+  });
+
+  describe('AUR-6: software version on receipt', () => {
+    it('includes 1 version row (appVersion with date, empty desktopVersion) in browser mode and 2 rows in Electron mode', () => {
+      const browserPayload = buildCashierEscposPayload({ ...FISCAL_SALE }, t);
+      expect(browserPayload.appVersion).toMatch(/^1\.0\.0 \(\d{4}-\d{2}-\d{2}\)$/);
+      expect(browserPayload.desktopVersion).toBe('');
+      expect(browserPayload.labels.appVersion).toBe('Versiya');
+      expect(browserPayload.labels.desktopVersion).toBe('Desktop versiyasi');
+
+      const electronPayload = buildCashierEscposPayload(
+        { ...FISCAL_SALE, appVersion: '1.0.0 (2026-11-18)', desktopVersion: '0.1.37' },
+        t,
+      );
+      expect(electronPayload.appVersion).toBe('1.0.0 (2026-11-18)');
+      expect(electronPayload.desktopVersion).toBe('0.1.37');
+      expect(electronPayload.sale.appVersion).toBe('1.0.0 (2026-11-18)');
+      expect(electronPayload.sale.desktopVersion).toBe('0.1.37');
+    });
+
+    it('includes licenseNumber "1.3" when present and empty string when absent', () => {
+      globalThis.__APP_LICENSE_NUMBER__ = '1.3';
+      try {
+        const withLicense = buildCashierEscposPayload({ ...FISCAL_SALE }, t);
+        expect(withLicense.licenseNumber).toBe('1.3');
+        expect(withLicense.sale.licenseNumber).toBe('1.3');
+        expect(withLicense.labels.licenseNumber).toBe('Litsenziya raqami');
+
+        globalThis.__APP_LICENSE_NUMBER__ = '';
+        const withoutLicense = buildCashierEscposPayload({ ...FISCAL_SALE }, t);
+        expect(withoutLicense.licenseNumber).toBe('');
+        expect(withoutLicense.sale.licenseNumber).toBe('');
+      } finally {
+        delete globalThis.__APP_LICENSE_NUMBER__;
+      }
+    });
+  });
+});

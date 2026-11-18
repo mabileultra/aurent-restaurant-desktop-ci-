@@ -37,8 +37,8 @@ html.dark .receipt-page__card {
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
   text-rendering: geometricPrecision;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 .receipt-print-root .receipt-title {
   font-size: 1.15em;
@@ -102,17 +102,46 @@ html.dark .receipt-page__card {
   object-fit: contain;
 }
 .receipt-print-root .receipt-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  column-gap: 0.35rem;
-  row-gap: 0.15rem;
-  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.receipt-print-root .receipt-row > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 .receipt-print-root .receipt-row__value {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 65%;
   text-align: right;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
   font-variant-numeric: tabular-nums;
+}
+.receipt-print-root .receipt-row--datetime {
+  flex-wrap: wrap;
+  row-gap: 0.15rem;
+}
+.receipt-print-root .receipt-row--datetime > span {
+  white-space: nowrap;
+  max-width: 100%;
+}
+.receipt-print-root .receipt-row--nowrap {
+  flex-wrap: wrap;
+  column-gap: 0.35rem;
+  row-gap: 0.1rem;
+}
+.receipt-print-root .receipt-row--nowrap > :first-child {
+  white-space: nowrap;
+}
+.receipt-print-root .receipt-row--nowrap > .receipt-row__value {
+  white-space: nowrap;
+  max-width: 100%;
+  margin-left: auto;
 }
 .receipt-print-root .receipt-items-table__head,
 .receipt-print-root .receipt-items-table__row {

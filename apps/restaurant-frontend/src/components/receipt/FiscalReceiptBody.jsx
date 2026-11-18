@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../../config/brand';
+import { getReceiptTranslator } from '../../utils/receiptI18n';
 import { receiptFieldStyleProps } from '../../receiptProfile/receiptFieldStyles';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import {
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { extractCardReceiptDetails, normalizeCardCategory, shouldPrintFiscalQr } from '@aurent/shared-fiscal';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 import {
   resolveFiscalReceiptMeta,
   resolveReceiptPaymentAmounts,
@@ -28,6 +30,7 @@ export default function FiscalReceiptBody({
   className = '',
 }) {
   const { t } = useTranslation();
+  const tReceipt = getReceiptTranslator(t);
   const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
   const fieldStyles = useTenantDisplayStore((s) => s.committed.receiptFieldStyles);
   const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
@@ -67,12 +70,19 @@ export default function FiscalReceiptBody({
     fmNumber: import.meta.env.VITE_FISCAL_MODULE_NUMBER || import.meta.env.VITE_FISCAL_CARD_ID || '',
     virtualRegister: import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '',
   });
-  const printFiscalQr = sale.printFiscalQr !== false;
+  const printFiscalQr = sale.printFiscalQr !== false && shouldPrintFiscalQr(sale?.receiptType);
   const qrValue = fiscalMeta.qrValue;
   const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
 
   const pay = resolveReceiptPaymentAmounts(sale);
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
+  const cardDetails = extractCardReceiptDetails(sale);
+  const hasCardPayment =
+    Number(pay.cardAmt) > 0 || pay.method === 'CARD' || pay.method === 'MIXED';
+  const isSocial = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
+  const cardTypeText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
+    ? cardTypeLabel(sale.cardType, tReceipt)
+    : null;
+  const cardCategoryText = hasCardPayment ? cardCategoryLabel(cardDetails.cardCategory, tReceipt) : null;
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
   });
@@ -84,7 +94,7 @@ export default function FiscalReceiptBody({
       .filter((r) => r > 0),
   );
   const vatRateLabel = vatRates.size === 1 ? `${[...vatRates][0].toFixed(0)}` : '—';
-  const receiptTypeLabel = resolveFiscalReceiptTypeLabel(sale, t);
+  const receiptTypeLabel = resolveFiscalReceiptTypeLabel(sale, tReceipt);
 
   const showHeader =
     showLogo || showName || showAddress || showPhone || (isOn('stir') && stir);
@@ -111,8 +121,8 @@ export default function FiscalReceiptBody({
           companyPhone={companyPhone}
           showStir={isOn('stir')}
           stir={stir}
-          phoneLabel={t('fiscalReceipt.phoneLabel')}
-          stirLabel={t('fiscalReceipt.stir')}
+          phoneLabel={tReceipt('fiscalReceipt.phoneLabel')}
+          stirLabel={tReceipt('fiscalReceipt.stir')}
           fs={fs}
         />
       ) : null}
@@ -128,33 +138,36 @@ export default function FiscalReceiptBody({
           cashierName={sale.cashierName}
           shiftNo={shiftNo}
           labels={{
-            time: t('fiscalReceipt.time'),
-            date: t('fiscalReceipt.date'),
-            receiptNo: t('fiscalReceipt.receiptNoShort'),
-            originalReceiptNo: t('fiscalReceipt.originalReceiptNo'),
-            employee: t('fiscalReceipt.employee'),
-            shift: t('fiscalReceipt.shift'),
+            time: tReceipt('fiscalReceipt.time'),
+            date: tReceipt('fiscalReceipt.date'),
+            receiptNo: tReceipt('fiscalReceipt.receiptNoShort'),
+            originalReceiptNo: tReceipt('fiscalReceipt.originalReceiptNo'),
+            employee: tReceipt('fiscalReceipt.employee'),
+            shift: tReceipt('fiscalReceipt.shift'),
           }}
         />
       ) : null}
 
       {isOn('items') ? (
-        <FiscalReceiptItemsBlock items={sale.items} isOn={isOn} fs={fs} t={t} />
+        <FiscalReceiptItemsBlock items={sale.items} isOn={isOn} fs={fs} t={tReceipt} />
       ) : null}
 
       {showTotals ? (
-        <FiscalReceiptTotalsBlock sale={sale} isOn={isOn} fs={fs} t={t} vatRateLabel={vatRateLabel} />
+        <FiscalReceiptTotalsBlock sale={sale} isOn={isOn} fs={fs} t={tReceipt} vatRateLabel={vatRateLabel} />
       ) : null}
 
       <FiscalReceiptPaymentBlock
         isOn={isOn}
         fs={fs}
-        t={t}
+        t={tReceipt}
         paidTotal={pay.paidTotal}
         total={total}
         cashAmt={pay.cashAmt}
         cardAmt={pay.cardAmt}
         cardTypeText={cardTypeText}
+        cardCategoryText={cardCategoryText}
+        socialCardNumber={isSocial ? cardDetails.socialCardNumber : null}
+        rrn={hasCardPayment ? cardDetails.rrn : null}
         method={pay.method}
         change={pay.change}
       />
@@ -162,9 +175,12 @@ export default function FiscalReceiptBody({
       <FiscalReceiptFiscalBlock
         isOn={isOn}
         fs={fs}
-        t={t}
+        t={tReceipt}
         fiscalReceiptNo={fiscalMeta.fiscalReceiptNo}
         fmNumber={fiscalMeta.fmNumber}
+        appVersion={fiscalMeta.appVersion}
+        desktopVersion={fiscalMeta.desktopVersion}
+        licenseNumber={fiscalMeta.licenseNumber}
         virtualRegister={fiscalMeta.virtualRegister}
         fiscalSign={fiscalMeta.fiscalSign}
         receiptTypeLabel={receiptTypeLabel}

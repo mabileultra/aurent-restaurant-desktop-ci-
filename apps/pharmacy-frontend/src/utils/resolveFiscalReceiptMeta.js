@@ -1,3 +1,4 @@
+import { getLicenseNumber, getReceiptVersionRows } from '@aurent/shared-fiscal';
 import { buildFiscalSign, resolveReceiptQrValue } from './fiscalReceiptFormat';
 import { isOfdCheckUrl, parseOfdCheckParams } from './ofdQrUrl';
 
@@ -28,9 +29,18 @@ export function resolveFiscalReceiptMeta(sale, branding = {}) {
     ? trim(branding.virtualRegister)
     : trim(sale?.fiscalVirtualSn);
 
+  const { appVersion, desktopVersion } = getReceiptVersionRows({
+    appVersion: sale?.appVersion,
+    desktopVersion: sale?.desktopVersion,
+  });
+  const licenseNumber = getLicenseNumber(sale?.licenseNumber) || '';
+
   return {
     qrValue: taxQr,
     fmNumber,
+    appVersion,
+    desktopVersion,
+    licenseNumber,
     fiscalReceiptNo,
     fiscalSign,
     virtualRegister,

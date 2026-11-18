@@ -8,28 +8,18 @@ import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayou
 import {
   normalizeCompanyLoginCode,
   persistCompanyLoginCode,
-  cashierSessionMatchesCompany,
   resolveCashierCompanyCode,
   shouldShowCashierCompanyCodeField,
 } from '../../../utils/authLogin';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
-import { resolveCashierPostLoginPath } from '../../../utils/cashierPostLoginPath';
-import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { normalizePin, PIN_MAX } from '../utils/cashierPinUtils';
 import { logAuth } from '../../../services/desktop/activityLog';
-
-async function resolvePinHomePath(role) {
-  if (role === 'WAITER' || role === 'COOK') {
-    return { path: resolveCashierPostLoginPath(role), access: { ok: false, reason: 'restaurant_role' }, fetchError: false };
-  }
-  const { access, businessPayload, fetchError } = await fetchMainAppAccess(role);
-  return {
-    path: resolveCashierPostLoginPath(role, businessPayload?.defaultTypeCode),
-    access,
-    fetchError,
-  };
-}
+import {
+  resolvePinHomePath,
+  useCashierPinSessionAutoRedirect,
+  useCashierPinKeyboard,
+} from '../utils/cashierPinLoginHelpers';
 
 export function useCashierPinLoginPage() {
   const { t } = useTranslation();
@@ -49,39 +39,17 @@ export function useCashierPinLoginPage() {
   const freshLoginRef = useRef(false);
   const touchLayout = useCashierPosTouchLayout();
 
-  useEffect(() => {
-    if (!hasHydrated || !token || !['CASHIER', 'WAITER'].includes(user?.role)) return;
-    if (freshLoginRef.current) return;
-
-    let cancelled = false;
-    (async () => {
-      const expectedCode = await resolveCashierCompanyCode(searchParams);
-      if (cancelled || freshLoginRef.current) return;
-      if (!cashierSessionMatchesCompany(user, expectedCode)) {
-        logout();
-        setPin('');
-        toast.error(t('cashierLogin.companyChanged', {
-          defaultValue: 'Код компании изменён — войдите с PIN снова',
-        }));
-        return;
-      }
-      if (!window.location.pathname.startsWith('/cashier/login')) return;
-
-      const { path, access, fetchError } = await resolvePinHomePath(user.role);
-      if (cancelled || freshLoginRef.current) return;
-      // Transport / 403 while user is missing from pos_db must not kick off login.
-      if (!access.ok && !fetchError) {
-        logoutAndResetSession();
-        toast.error(t('login.wrongAppUnknown'));
-        return;
-      }
-      navigate(path.startsWith('/cashier') ? path : '/cashier', { replace: true });
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hasHydrated, token, user, navigate, logout, searchParams, t]);
+  useCashierPinSessionAutoRedirect({
+    hasHydrated,
+    token,
+    user,
+    searchParams,
+    freshLoginRef,
+    logout,
+    setPin,
+    navigate,
+    t,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -120,11 +88,7 @@ export function useCashierPinLoginPage() {
         pin: normalizePin(pin),
       });
       const { token: accessToken, ...profile } = res.data;
-      if (!accessToken) {
-        setPinError(t('login.failed'));
-        return;
-      }
-      if (profile.role !== 'CASHIER' && profile.role !== 'WAITER') {
+      if (!accessToken || (profile.role !== 'CASHIER' && profile.role !== 'WAITER')) {
         setPinError(t('login.failed'));
         return;
       }
@@ -187,32 +151,7 @@ export function useCashierPinLoginPage() {
     setPin('');
   }, []);
 
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (loading) return;
-      const target = e.target;
-      if (
-        target instanceof HTMLInputElement
-        || target instanceof HTMLTextAreaElement
-        || target?.isContentEditable
-      ) {
-        return;
-      }
-      if (e.key >= '0' && e.key <= '9') {
-        pressDigit(e.key);
-        return;
-      }
-      if (e.key === 'Backspace') {
-        backspace();
-        return;
-      }
-      if (e.key === 'Enter') {
-        submit();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [loading, pressDigit, backspace, submit]);
+  useCashierPinKeyboard({ loading, pressDigit, backspace, submit });
 
   const dots = normalizePin(pin);
   const dotCount = PIN_MAX;

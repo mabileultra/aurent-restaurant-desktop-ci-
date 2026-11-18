@@ -68,6 +68,7 @@ export function usePharmacyCartHandlers({
       additionalBarcodes: product.additionalBarcodes ?? null,
       packageCode: product.packageCode ?? null,
       commissionTin: product.commissionTin ?? null,
+      commissionPinfl: product.commissionPinfl ?? null,
       markedProduct: product.markedProduct === true || Boolean(product.productMark || product.markCode),
       productMark: product.productMark ?? product.markCode ?? null,
       markCode: product.markCode ?? product.productMark ?? null,

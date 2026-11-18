@@ -19,10 +19,13 @@ export function buildCompanySelectOptions(companies = [], { emptyLabel, includeL
   const options = sorted.map((company) => {
     const name = company.name || `#${company.id}`;
     const code = company.loginCode ? String(company.loginCode) : '';
+    const legalName = company.legalName ? String(company.legalName).trim() : '';
     return {
       value: String(company.id),
       label: includeLoginCode && code ? `${name} (${code})` : name,
-      keywords: [name, code, company.legalName, company.tin].filter(Boolean).join(' '),
+      name,
+      legalName,
+      keywords: [name, code, legalName, company.tin, company.phone].filter(Boolean).join(' '),
     };
   });
 

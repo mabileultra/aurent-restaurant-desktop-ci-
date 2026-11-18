@@ -10,9 +10,19 @@ function readOfflineFirstFlag() {
   }
 }
 
+function readAppVersionSync() {
+  try {
+    return String(ipcRenderer.sendSync('desktop:get-app-version-sync') || '');
+  } catch {
+    return '';
+  }
+}
 
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
+  appVersion: readAppVersionSync(),
+  getAppVersion: () => invoke('desktop:getAppVersion'),
+  getAppVersionSync: () => readAppVersionSync(),
   /** grocery | pharmacy | restaurant — для force-update аптек на старом клиенте */
   product: 'grocery',
   // Snapshot at load (compat). Prefer *Flag() after LF toggle — booleans freeze at expose.

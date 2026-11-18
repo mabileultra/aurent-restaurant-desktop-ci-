@@ -6,6 +6,8 @@ const {
   fmtQty,
   splitDateTime,
   buildFiscalSign,
+  doesVersionRowFitSingleLine,
+  resolveItemCommittent,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
@@ -119,6 +121,26 @@ function appendItems(printer, payload) {
         printer.println(`${L.ikpuLine || 'MXIK'}: ${item.ikpu}`);
       });
     }
+    const committent = resolveItemCommittent(item);
+    if (committent) {
+      const label =
+        committent.kind === 'PINFL'
+          ? (L.committentPinfl || 'Komitent (JShShIR)')
+          : (L.committentTin || 'Komitent (STIR)');
+      const fullText = `${label}: ${committent.value}`;
+      const lineWidth =
+        Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+          ? 32
+          : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+      withFieldStyle(printer, styles, 'itemCommittent', () => {
+        if (fullText.length <= lineWidth) {
+          printer.println(fullText);
+        } else {
+          printer.println(`${label}:`);
+          printer.println(committent.value);
+        }
+      });
+    }
   }
   appendDivider(printer);
 }
@@ -211,10 +233,28 @@ function appendPayment(printer, payload) {
     appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));
     appendRow(printer, L.cash || 'Cash', fmtMoney(cashAmt));
     appendRow(printer, L.plastic || 'Card', fmtMoney(cardAmt));
+    if (sale.cardCategoryDisplay) {
+      appendRow(printer, L.cardType || 'Card type', String(sale.cardCategoryDisplay));
+    }
+    if (sale.socialCardNumber) {
+      appendRow(printer, L.socialCardNumber || 'Social card', String(sale.socialCardNumber));
+    }
+    if (sale.rrn) {
+      appendRow(printer, L.cardRrn || 'RRN', String(sale.rrn));
+    }
     if (change > 0) {
       appendRow(printer, L.change || 'Change', fmtMoney(change), true);
     }
   });
+  appendDivider(printer);
+}
+
+/** Номер электронного рецепта — отдельной строкой, независимо от настроек полей чека. */
+function appendPrescription(printer, payload) {
+  const { sale, labels } = payload;
+  const prescriptionNumber = String(sale?.prescriptionNumber || '').trim();
+  if (!prescriptionNumber) return;
+  appendRow(printer, (labels || {}).prescriptionNumber || 'Elektron retsept', prescriptionNumber, true);
   appendDivider(printer);
 }
 
@@ -242,6 +282,24 @@ function appendFiscalBlock(printer, payload) {
     if (fmNumber) {
       appendRow(printer, L.fmNumber || 'FM', fmNumber);
     }
+    const lineWidth =
+      Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+        ? 32
+        : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+    const appendVersionRow = (label, rawValue) => {
+      const lbl = String(label || '').trim();
+      const val = String(rawValue || '').trim();
+      if (!val) return;
+      if (doesVersionRowFitSingleLine(lbl, val, lineWidth)) {
+        appendRow(printer, lbl, val);
+      } else {
+        printer.println(lbl);
+        appendRow(printer, '', val);
+      }
+    };
+    appendVersionRow(L.appVersion || 'Versiya', sale.appVersion || payload?.appVersion);
+    appendVersionRow(L.desktopVersion || 'Desktop versiyasi', sale.desktopVersion || payload?.desktopVersion);
+    appendVersionRow(L.licenseNumber || 'Litsenziya raqami', sale.licenseNumber || payload?.licenseNumber);
     if (virtualRegister && virtualRegister !== '1') {
       appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
     }
@@ -268,6 +326,7 @@ module.exports = {
   appendItems,
   appendTotals,
   appendPayment,
+  appendPrescription,
   appendFiscalBlock,
   appendProfileFooter,
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { BaseSelect } from '../../../../components/ui';
-import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
+import { useCompanySearchOptions } from '../../hooks/useCompanySearchOptions';
 import UserFormStoreSelect from './UserFormStoreSelect';
 
 /**
@@ -35,6 +35,13 @@ export default function UserFormOrgSection({
   authCompanyId,
   storeIds,
 }) {
+  const companySearch = useCompanySearchOptions({
+    initialCompanies: companies,
+    selectedCompanyId: companyId,
+    enabled: isPlatform,
+    emptyLabel: undefined,
+  });
+
   return (
     <div className="space-y-4">
       <h3 className="text-[13px] font-semibold text-aa-ink-muted">
@@ -60,7 +67,8 @@ export default function UserFormOrgSection({
               disabled={isEdit}
               placeholder={t('stores.selectCompany')}
               searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Kompaniyani qidirish…' })}
-              options={buildCompanySelectOptions(companies)}
+              options={companySearch.options}
+              onSearchQueryChange={companySearch.onSearchQueryChange}
             />
             {!isEdit && companyLoginCode ? (
               <p className="mt-1.5 text-xs text-aa-ink-muted flex items-center gap-1">

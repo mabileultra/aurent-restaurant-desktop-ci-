@@ -8,6 +8,7 @@ import {
   printTicketLines,
 } from './desktopPrinters';
 import { buildRestaurantTicketBody } from './buildRestaurantTicketBody';
+import { getReceiptTranslator } from '../../../utils/receiptI18n';
 import { resolvePrintWaiterName } from './printWaiterNames';
 import {
   resolveTicketTitle,
@@ -34,7 +35,8 @@ export async function printGuestBill({
   const printer = settings?.billPrinterName || '';
   if (!printer) return { mode: 'missing' };
 
-  const title = t?.('rst.order.requestBill', { defaultValue: 'Счёт' }) || 'Счёт';
+  const tReceipt = getReceiptTranslator(t);
+  const title = tReceipt('rst.order.billTitle', { defaultValue: 'Hisob' }) || tReceipt('rst.order.requestBill', { defaultValue: 'Hisob' }) || 'Hisob';
   const resolvedShift = shift || await loadCurrentShift(order.storeId);
   const waiterName = await resolvePrintWaiterName(
     order.storeId,
@@ -47,7 +49,7 @@ export async function printGuestBill({
   const body = buildRestaurantTicketBody({
     kind: 'bill',
     order,
-    t,
+    t: tReceipt,
     shift: resolvedShift,
     waiterName,
     header,

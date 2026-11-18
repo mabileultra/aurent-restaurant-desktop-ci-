@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
-import {
-  isCashierEscposPrintAvailable,
-  printFiscalReceipt,
-  resolveEscposPrintErrorMessage,
-} from '../../../services/cashierEscpos';
-import { buildEscposTestSale } from '../../../services/cashierEscpos/mockTestSale';
 import { isDesktopCashier } from '../utils/isDesktopCashier';
+import {
+  fetchDesktopHardwareSettings,
+  executeEscposTestPrint,
+  executeDesktopUpdateCheck,
+  executeDesktopUiReload,
+} from '../utils/cashierDesktopMenuHelpers';
 
 export function useCashierDesktopMenu() {
   const { t } = useTranslation();
@@ -22,20 +21,10 @@ export function useCashierDesktopMenu() {
   const close = useCallback(() => setOpen(false), []);
 
   const refreshPrinter = useCallback(async () => {
-    if (!isDesktopCashier() || typeof window.desktopCashier.getPrinterSettings !== 'function') {
-      return;
-    }
-    try {
-      const s = await window.desktopCashier.getPrinterSettings();
-      setPrinterName(s?.receiptPrinterName || '');
-      setLabelPrinterName(s?.labelPrinterName || '');
-      if (typeof window.desktopCashier.scaleGetSettings === 'function') {
-        const sc = await window.desktopCashier.scaleGetSettings();
-        setScalePort(sc?.port || '');
-      }
-    } catch {
-      /* ignore */
-    }
+    const s = await fetchDesktopHardwareSettings();
+    setPrinterName(s.receiptPrinterName);
+    setLabelPrinterName(s.labelPrinterName);
+    setScalePort(s.scalePort);
   }, []);
 
   useEffect(() => {
@@ -70,7 +59,6 @@ export function useCashierDesktopMenu() {
     }
   };
 
-  /** Fullscreen: не ждать close/IPC — иначе меню ещё fade'ится, потом окно «догоняет». */
   const toggleFullscreen = () => {
     close();
     try {
@@ -80,29 +68,7 @@ export function useCashierDesktopMenu() {
     }
   };
 
-  /** «Обновить»: спиннер сразу, reload без долгого ожидания ensureStartUrl. */
-  const reloadUi = () => {
-    if (reloadingUi) return;
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      toast.error(t('desktop.reloadNeedsInternet'));
-      return;
-    }
-    if (typeof window.desktopCashier?.reload !== 'function') return;
-    setReloadingUi(true);
-    void window.desktopCashier
-      .reload()
-      .then((result) => {
-        if (result?.ok === false && result?.reason === 'offline') {
-          setReloadingUi(false);
-          toast.error(t('desktop.reloadNeedsInternet'));
-        }
-        // ok: страница уходит в reload — спиннер остаётся до unload
-      })
-      .catch(() => {
-        setReloadingUi(false);
-        toast.error(t('desktop.reloadNeedsInternet'));
-      });
-  };
+  const reloadUi = () => executeDesktopUiReload({ t, setReloadingUi, reloadingUi });
 
   const openPrinterPicker = async () => {
     close();
@@ -111,9 +77,7 @@ export function useCashierDesktopMenu() {
       const next = settings?.receiptPrinterName || '';
       setPrinterName(next);
       setLabelPrinterName(settings?.labelPrinterName || '');
-      if (next) {
-        toast.success(t('desktop.printerSaved'));
-      }
+      if (next) toast.success(t('desktop.printerSaved'));
     } catch {
       /* ignore */
     }
@@ -127,9 +91,7 @@ export function useCashierDesktopMenu() {
       const next = settings?.labelPrinterName || '';
       setLabelPrinterName(next);
       setPrinterName(settings?.receiptPrinterName || '');
-      if (next) {
-        toast.success(t('desktop.printerSaved'));
-      }
+      if (next) toast.success(t('desktop.printerSaved'));
     } catch {
       /* ignore */
     }
@@ -137,18 +99,7 @@ export function useCashierDesktopMenu() {
 
   const runTestPrint = async () => {
     close();
-    if (!isCashierEscposPrintAvailable()) {
-      toast.error(t('desktop.testReceiptFailed'));
-      return;
-    }
-    try {
-      await printFiscalReceipt({ sale: buildEscposTestSale(), t });
-      toast.success(t('desktop.testReceiptSent'), { id: CASHIER_ESCPOS_TOAST.toastId });
-    } catch (e) {
-      toast.error(resolveEscposPrintErrorMessage(e, t) ?? t('desktop.testReceiptFailed'), {
-        id: CASHIER_ESCPOS_TOAST.toastId,
-      });
-    }
+    await executeEscposTestPrint(t);
   };
 
   const openScalePicker = async () => {
@@ -157,9 +108,7 @@ export function useCashierDesktopMenu() {
     try {
       const s = await window.desktopCashier.openScalePicker();
       setScalePort(s?.port || '');
-      if (s?.port) {
-        toast.success(t('desktop.scaleSaved'));
-      }
+      if (s?.port) toast.success(t('desktop.scaleSaved'));
     } catch {
       /* ignore */
     }
@@ -168,27 +117,13 @@ export function useCashierDesktopMenu() {
   const openBarcodePage = () => {
     close();
     if (typeof window.desktopCashier?.openBarcodePage === 'function') {
-      window.desktopCashier.openBarcodePage().catch(() => {
-        /* ignore */
-      });
+      window.desktopCashier.openBarcodePage().catch(() => {});
     }
   };
 
   const checkAppUpdates = async () => {
     close();
-    if (typeof window.desktopCashier?.checkForUpdates !== 'function') return;
-    try {
-      const result = await window.desktopCashier.checkForUpdates();
-      if (result?.updateAvailable) {
-        toast.success(t('desktop.checkUpdatesAvailable', { version: result.version }));
-      } else if (result?.ok && result?.reason !== 'signature') {
-        toast.success(t('desktop.checkUpdatesLatest'));
-      } else if (result?.reason !== 'dev' && result?.reason !== 'signature') {
-        toast.error(t('desktop.checkUpdatesFailed'));
-      }
-    } catch {
-      toast.error(t('desktop.checkUpdatesFailed'));
-    }
+    await executeDesktopUpdateCheck(t);
   };
 
   useEffect(() => {
@@ -197,9 +132,7 @@ export function useCashierDesktopMenu() {
       if ((e.metaKey || e.ctrlKey) && e.key === ',') {
         e.preventDefault();
         if (typeof window.desktopCashier?.openServerSetup === 'function') {
-          window.desktopCashier.openServerSetup().catch(() => {
-            /* cancelled */
-          });
+          window.desktopCashier.openServerSetup().catch(() => {});
         }
       }
     };
@@ -212,14 +145,10 @@ export function useCashierDesktopMenu() {
     if (typeof window.desktopCashier?.openServerSetup !== 'function') return;
     try {
       await window.desktopCashier.openServerSetup();
-    } catch {
-      /* cancelled */
-    }
+    } catch {}
   };
 
-  if (!isDesktopCashier()) {
-    return null;
-  }
+  const isDesktop = isDesktopCashier();
 
   return {
     t,
@@ -227,6 +156,7 @@ export function useCashierDesktopMenu() {
     open,
     setOpen,
     close,
+    isDesktop,
     run,
     toggleFullscreen,
     reloadUi,

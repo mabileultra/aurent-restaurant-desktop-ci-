@@ -1,6 +1,9 @@
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
+import { buildAppVersionDefine } from '../../packages/shared-fiscal/src/resolveBuildVersionDefine.mjs';
+
+const appVersionDefine = buildAppVersionDefine(new URL('./package.json', import.meta.url));
 
 /**
  * Prefer new tests under /test (mirror of src).
@@ -9,6 +12,9 @@ import { aurentPackageAliases } from '../../packages/aurentAliases.mjs';
 export default defineConfig({
   resolve: {
     alias: aurentPackageAliases(),
+  },
+  define: {
+    ...appVersionDefine,
   },
   test: {
     environment: 'node',

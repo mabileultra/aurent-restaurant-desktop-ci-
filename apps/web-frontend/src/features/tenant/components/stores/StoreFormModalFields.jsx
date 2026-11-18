@@ -1,7 +1,7 @@
 import React from 'react';
 import { BaseInput, BaseSelect, BaseCheckbox } from '../../../../components/ui';
 import RegionDistrictFields from '../../../shared/geo/RegionDistrictFields';
-import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
+import { useCompanySearchOptions } from '../../hooks/useCompanySearchOptions';
 import { formatUzPhone, digitsAfter998 } from '../../../../utils/phoneUz';
 
 export default function StoreFormModalFields({
@@ -21,6 +21,14 @@ export default function StoreFormModalFields({
   businessTypeOptions,
   isCreate,
 }) {
+  const companySearch = useCompanySearchOptions({
+    initialCompanies: companies,
+    selectedCompanyId: watchedCompanyId,
+    businessType: watchedBusinessType,
+    enabled: showCompanySelect,
+    emptyLabel: t('stores.selectCompany'),
+  });
+
   return (
     <>
       {showCompanySelect ? (
@@ -35,7 +43,7 @@ export default function StoreFormModalFields({
             onChange={(e) => {
               const compId = e.target.value;
               setValue('companyId', compId, { shouldValidate: true });
-              const found = companies.find((c) => String(c.id) === String(compId));
+              const found = companySearch.companies.find((c) => String(c.id) === String(compId));
               if (found?.regionCode && !watchedRegionCode) {
                 setValue('regionCode', found.regionCode, { shouldValidate: true });
                 setValue('districtCode', found.districtCode || '', { shouldValidate: true });
@@ -44,7 +52,8 @@ export default function StoreFormModalFields({
             error={errors.companyId?.message}
             placeholder={t('stores.selectCompany')}
             searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
-            options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
+            options={companySearch.options}
+            onSearchQueryChange={companySearch.onSearchQueryChange}
             helperText={!isCreate ? t('platform.branchCompanyLocked', { defaultValue: 'Tahrirlashda filial kompaniyasini o‘zgartirib bo‘lmaydi' }) : undefined}
           />
         </>

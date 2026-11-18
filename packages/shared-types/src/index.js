@@ -12,5 +12,7 @@ export {
 export {
   FISCAL_PROVIDER,
   DEFAULT_FISCAL_PROVIDER,
+  CARD_CATEGORY,
+  OFD_CARD_TYPE_CODE,
   isFiscalDriveProvider,
 } from './fiscal.js';

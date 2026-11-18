@@ -138,11 +138,64 @@ describe('restaurantPayForm — drawer methods unchanged', () => {
     expect(payload).not.toHaveProperty('advancePaid');
   });
 
-  it('card still requires a card type', () => {
+  it('card requires card type, RRN, and social card number when SOCIAL', () => {
     expect(deriveRestaurantPay(DUE, { method: 'CARD' }).canSubmit).toBe(false);
-    const d = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO' });
-    expect(d.canSubmit).toBe(true);
-    expect(buildRestaurantPayPayload(d, 'CARD', 'HUMO').cardType).toBe('HUMO');
+    const noRrn = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO' });
+    expect(noRrn.canSubmit).toBe(false);
+    expect(noRrn.hintKey).toBe('pos.cardRrnRequired');
+
+    // RRN validation: 11, 13 digits and mixed letters must fail
+    const rrn11 = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO', rrn: '12345678901' });
+    expect(rrn11.canSubmit).toBe(false);
+    expect(rrn11.hintKey).toBe('pos.cardRrnRequired');
+
+    const rrn13 = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO', rrn: '1234567890123' });
+    expect(rrn13.canSubmit).toBe(false);
+    expect(rrn13.hintKey).toBe('pos.cardRrnRequired');
+
+    const rrnAlpha = deriveRestaurantPay(DUE, { method: 'CARD', cardType: 'HUMO', rrn: '63181017745A' });
+    expect(rrnAlpha.canSubmit).toBe(false);
+    expect(rrnAlpha.hintKey).toBe('pos.cardRrnRequired');
+
+    const okPersonal = deriveRestaurantPay(DUE, {
+      method: 'CARD',
+      cardType: 'HUMO',
+      cardCategory: 'PERSONAL',
+      rrn: '631810177451',
+    });
+    expect(okPersonal.canSubmit).toBe(true);
+    expect(buildRestaurantPayPayload(okPersonal, 'CARD', 'HUMO')).toMatchObject({
+      cardType: 'HUMO',
+      cardCategory: 'PERSONAL',
+      rrn: '631810177451',
+    });
+
+    const missingSocial = deriveRestaurantPay(DUE, {
+      method: 'CARD',
+      cardType: 'HUMO',
+      cardCategory: 'SOCIAL',
+      rrn: '631810177451',
+      socialCardInput: '123',
+    });
+    expect(missingSocial.canSubmit).toBe(false);
+    expect(missingSocial.hintKey).toBe('pos.socialCardRequired');
+
+    const okSocial = deriveRestaurantPay(DUE, {
+      method: 'MIXED',
+      cardType: 'HUMO',
+      cashPart: '20000',
+      cardCategory: 'SOCIAL',
+      rrn: '631810177451',
+      socialCardInput: '986003******8031',
+    });
+    expect(okSocial.canSubmit).toBe(true);
+    expect(buildRestaurantPayPayload(okSocial, 'MIXED', 'HUMO')).toMatchObject({
+      method: 'MIXED',
+      cardType: 'HUMO',
+      cardCategory: 'SOCIAL',
+      rrn: '631810177451',
+      socialCardNumber: '9860********8031',
+    });
   });
 
   it('only credit and advance are non-fiscal', () => {

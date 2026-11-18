@@ -271,6 +271,15 @@
 }
 
 .pharmacy-pos-settings {
+  --pos-text: #0f172a;
+  --pos-muted: #475569;
+  --pos-border: #e2e8f0;
+  --pos-surface: #f8fafc;
+  --pos-surface-elevated: #f8fafc;
+  --pos-surface-hover: #f1f5f9;
+  --pos-green: #134842;
+  --pos-green-hover: #0f3a35;
+  --pos-green-soft: rgb(19 72 66 / 0.1);
   position: relative;
   z-index: 1;
   display: flex;
@@ -278,6 +287,7 @@
   width: min(440px, 100%);
   max-height: min(88vh, 760px);
   background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-card);
   overflow: auto;
@@ -346,4 +356,30 @@
   box-shadow: none;
   padding: 8px;
   background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+}
+
+.pharmacy-pos-settings .cashier-desktop-menu__item,
+.pharmacy-pos-settings .cashier-desktop-menu__item-text > span:first-child {
+  color: rgb(var(--color-ink));
+}
+
+.pharmacy-pos-settings .cashier-desktop-menu__item svg {
+  color: rgb(var(--color-ink-muted));
+}
+
+.pharmacy-pos-settings .cashier-desktop-menu__item:hover,
+.pharmacy-pos-settings .cashier-desktop-menu__item:hover .cashier-desktop-menu__item-text > span:first-child,
+.pharmacy-pos-settings .cashier-desktop-menu__item:hover svg {
+  color: var(--pos-green);
+}
+
+.pharmacy-pos-settings .cashier-desktop-menu__item-meta {
+  color: rgb(var(--color-ink-muted));
+}
+
+.pharmacy-pos-settings .cashier-desktop-menu__mode {
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-line));
+  color: rgb(var(--color-ink));
 }

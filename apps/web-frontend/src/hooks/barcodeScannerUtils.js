@@ -57,6 +57,26 @@ export function clearInputElement(el) {
   el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+const MODAL_SELECTOR = '[role="dialog"], [aria-modal="true"], .modal.show';
+const OPEN_MODAL_SELECTOR = '[aria-modal="true"]:not([aria-hidden="true"]), .modal.show';
+
 export function isRefTarget(target, refs = []) {
   return refs.some((ref) => ref?.current && target === ref.current);
+}
+
+/**
+ * Не перехватывает быстрый ввод (RRN, номер карты и др.) и не запускает сканер поверх открытой модалки.
+ */
+export function isScannerBlockedByModal(
+  target,
+  dedicatedInput = null,
+  doc = typeof document !== 'undefined' ? document : null,
+) {
+  const dialog = target && typeof target.closest === 'function' ? target.closest(MODAL_SELECTOR) : null;
+  if (dialog) {
+    return !dedicatedInput || typeof dialog.contains !== 'function' || !dialog.contains(dedicatedInput);
+  }
+  const openModal = doc?.querySelector?.(OPEN_MODAL_SELECTOR);
+  if (!openModal) return false;
+  return !dedicatedInput || typeof openModal.contains !== 'function' || !openModal.contains(dedicatedInput);
 }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import CashierDesktopMenuConnectivity from './CashierDesktopMenuConnectivity';
 import CashierFiscalTheme from '../../../fiscal/CashierFiscalTheme';
+import CashierDesktopMenuAbout from './CashierDesktopMenuAbout';
 
 export default function CashierDesktopMenuPanel({
   menu,
@@ -23,6 +24,7 @@ export default function CashierDesktopMenuPanel({
     rootRef,
     open,
     setOpen,
+    isDesktop = true,
     run,
     toggleFullscreen,
     printerLabel,
@@ -136,15 +138,18 @@ export default function CashierDesktopMenuPanel({
           </span>
         </button>
         <div className="cashier-desktop-menu__sep" role="separator" />
-        <button
-          type="button"
-          className="cashier-desktop-menu__item"
-          role="menuitem"
-          onClick={checkAppUpdates}
-        >
-          <Download size={15} strokeWidth={2} aria-hidden />
-          <span>{t('desktop.checkUpdates')}</span>
-        </button>
+        <CashierDesktopMenuAbout t={t} onCloseMenu={() => setOpen(false)} />
+        {isDesktop ? (
+          <button
+            type="button"
+            className="cashier-desktop-menu__item"
+            role="menuitem"
+            onClick={checkAppUpdates}
+          >
+            <Download size={15} strokeWidth={2} aria-hidden />
+            <span>{t('desktop.checkUpdates')}</span>
+          </button>
+        ) : null}
         <button
           type="button"
           className="cashier-desktop-menu__item"

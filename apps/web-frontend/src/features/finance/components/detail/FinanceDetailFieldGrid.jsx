@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function FinanceDetailFieldCard({ label, value, icon: Icon, mono = false }) {
   if (value === null || value === undefined || value === '') return null;
 

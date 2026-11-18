@@ -1,4 +1,5 @@
 import { fmtMoney } from '../../../../utils/formatMoney';
+import { getReceiptTranslator } from '../../../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../../../store/tenantDisplayStore';
 import '../../styles/shift-report-print.css';
 
@@ -40,13 +41,14 @@ function MoneyRow({ label, amount, currency, bold = false, always = false }) {
  * Thermal X/Z body for restaurant shift reports.
  */
 export default function ShiftReportPrintBody({ report, t }) {
+  const tReceipt = getReceiptTranslator(t);
   const committed = useTenantDisplayStore((s) => s.committed);
   const isReceiptFieldOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
 
   if (!report) return null;
 
-  const title = report.reportType === 'X' ? t('pos.xReport') : t('pos.zReport');
-  const currency = t('fiscalReceipt.currency');
+  const title = report.reportType === 'X' ? tReceipt('pos.xReport') : tReceipt('pos.zReport');
+  const currency = tReceipt('fiscalReceipt.currency');
   const companyName =
     String(committed.receiptCompanyName || '').trim() ||
     String(report.storeName || '').trim() ||
@@ -75,12 +77,12 @@ export default function ShiftReportPrintBody({ report, t }) {
         ) : null}
         {isReceiptFieldOn('companyPhone') && phone ? (
           <p className="rst-shift-report__meta">
-            {t('fiscalReceipt.phoneLabel')}: {phone}
+            {tReceipt('fiscalReceipt.phoneLabel')}: {phone}
           </p>
         ) : null}
         {isReceiptFieldOn('stir') && stir ? (
           <p className="rst-shift-report__meta">
-            {t('fiscalReceipt.stir')}: {stir}
+            {tReceipt('fiscalReceipt.stir')}: {stir}
           </p>
         ) : null}
         {storeName && storeName.toLowerCase() !== companyName.toLowerCase() ? (
@@ -90,25 +92,25 @@ export default function ShiftReportPrintBody({ report, t }) {
 
       {report.cashierName ? (
         <section className="rst-shift-report__section">
-          <Row label={t('users.roleCashier')} value={report.cashierName} />
+          <Row label={tReceipt('users.roleCashier')} value={report.cashierName} />
         </section>
       ) : null}
 
       <section className="rst-shift-report__section">
-        <Row label={t('zReports.openedAt')} value={fmtAt(report.openedAt)} />
-        <Row label={t('pos.reportAt')} value={fmtAt(report.reportAt)} />
+        <Row label={tReceipt('zReports.openedAt')} value={fmtAt(report.openedAt)} />
+        <Row label={tReceipt('pos.reportAt')} value={fmtAt(report.reportAt)} />
       </section>
 
       <div className="rst-shift-report__divider" />
 
       <section className="rst-shift-report__section">
-        <Row label={t('pos.shiftSales')} value={String(report.saleCount ?? 0)} />
-        <MoneyRow label={t('pos.shiftTotal')} amount={report.totalAmount} currency={currency} bold always />
-        <MoneyRow label={t('pos.shiftCash')} amount={report.cashAmount} currency={currency} always />
-        <MoneyRow label={t('pos.shiftCard')} amount={report.cardAmount} currency={currency} always />
-        <MoneyRow label={t('rst.shift.openingCash')} amount={report.openingCash} currency={currency} always />
+        <Row label={tReceipt('pos.shiftSales')} value={String(report.saleCount ?? 0)} />
+        <MoneyRow label={tReceipt('pos.shiftTotal')} amount={report.totalAmount} currency={currency} bold always />
+        <MoneyRow label={tReceipt('pos.shiftCash')} amount={report.cashAmount} currency={currency} always />
+        <MoneyRow label={tReceipt('pos.shiftCard')} amount={report.cardAmount} currency={currency} always />
+        <MoneyRow label={tReceipt('rst.shift.openingCash')} amount={report.openingCash} currency={currency} always />
         {report.reportType === 'Z' ? (
-          <MoneyRow label={t('rst.shift.closingCash')} amount={report.closingCash} currency={currency} always />
+          <MoneyRow label={tReceipt('rst.shift.closingCash')} amount={report.closingCash} currency={currency} always />
         ) : null}
       </section>
 
@@ -117,13 +119,13 @@ export default function ShiftReportPrintBody({ report, t }) {
           <div className="rst-shift-report__divider" />
           <section className="rst-shift-report__section">
             <MoneyRow
-              label={t('zReports.sectionReturn')}
+              label={tReceipt('zReports.sectionReturn')}
               amount={returnsTotal}
               currency={currency}
               bold
               always
             />
-            <Row label={t('zReports.returnCount')} value={String(report.returnsCount ?? 0)} />
+            <Row label={tReceipt('zReports.returnCount')} value={String(report.returnsCount ?? 0)} />
           </section>
         </>
       ) : null}

@@ -171,6 +171,55 @@ function fmtAt(iso) {
   }
 }
 
+function shouldPrintFiscalQr(receiptType) {
+  const rt = String(receiptType || 'SALE').trim().toUpperCase();
+  return rt !== 'ADVANCE' && rt !== 'CREDIT' && rt !== 'AVANCE';
+}
+
+function doesVersionRowFitSingleLine(label, value, lineWidth = 32) {
+  const lbl = String(label || '').trim();
+  const val = String(value || '').trim();
+  if (!val) return true;
+  const width = Number(lineWidth) || 32;
+  return lbl.length + 1 + val.length <= width;
+}
+
+const STRICT_DIGITS_RE = /^\d+$/;
+const ALL_ZEROS_RE = /^0+$/;
+
+function parseCommittentIdentifier(rawValue) {
+  if (rawValue === null || rawValue === undefined) return null;
+  const trimmed = String(rawValue).trim();
+  if (!trimmed || !STRICT_DIGITS_RE.test(trimmed) || ALL_ZEROS_RE.test(trimmed)) {
+    return null;
+  }
+  if (trimmed.length === 9) {
+    return { kind: 'TIN', value: trimmed };
+  }
+  if (trimmed.length === 14) {
+    return { kind: 'PINFL', value: trimmed };
+  }
+  return null;
+}
+
+function resolveItemCommittent(item) {
+  if (!item || typeof item !== 'object') return null;
+  const candidates = [
+    item.commissionTin,
+    item.commitentTin,
+    item.commitent_tin,
+    item.commissionPinfl,
+    item.commitentPinfl,
+    item.CommissionInfo?.TIN,
+    item.CommissionInfo?.PINFL,
+  ];
+  for (const candidate of candidates) {
+    const parsed = parseCommittentIdentifier(candidate);
+    if (parsed) return parsed;
+  }
+  return null;
+}
+
 module.exports = {
   fmtMoney,
   fmtMoneyTable,
@@ -178,6 +227,10 @@ module.exports = {
   splitDateTime,
   buildFiscalSign,
   buildQrPayload,
+  shouldPrintFiscalQr,
+  doesVersionRowFitSingleLine,
+  parseCommittentIdentifier,
+  resolveItemCommittent,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,

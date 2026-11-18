@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import FinanceDetailFieldGrid from './FinanceDetailFieldGrid';
 

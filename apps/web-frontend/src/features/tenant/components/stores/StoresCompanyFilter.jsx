@@ -1,5 +1,5 @@
 import { BaseSelect } from '../../../../components/ui';
-import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
+import { useCompanySearchOptions } from '../../hooks/useCompanySearchOptions';
 
 export default function StoresCompanyFilter({
   t,
@@ -9,9 +9,17 @@ export default function StoresCompanyFilter({
   variant = 'default',
   size = 'sm',
 }) {
+  const companySearch = useCompanySearchOptions({
+    initialCompanies: companies,
+    selectedCompanyId: companyId,
+    emptyLabel: t('stores.allCompanies'),
+  });
+
   return (
     <BaseSelect
       className="stores-filters__company"
+      menuClassName="min-w-[280px] max-w-[440px]"
+      menuMinWidth={280}
       variant={variant}
       size={size}
       label={t('stores.colCompany')}
@@ -19,7 +27,8 @@ export default function StoresCompanyFilter({
       onChange={(e) => onChange(e.target.value)}
       placeholder={t('stores.allCompanies')}
       searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
-      options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.allCompanies') })}
+      options={companySearch.options}
+      onSearchQueryChange={companySearch.onSearchQueryChange}
     />
   );
 }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import CashierDesktopMenuConnectivity from './CashierDesktopMenuConnectivity';
 import CashierFiscalTheme from '../../../fiscal/CashierFiscalTheme';
+import CashierDesktopMenuAbout from './CashierDesktopMenuAbout';
 
 export default function CashierDesktopMenuPanel({
   menu,
@@ -139,6 +140,7 @@ export default function CashierDesktopMenuPanel({
           </span>
         </button>
         <div className="cashier-desktop-menu__sep" role="separator" />
+        <CashierDesktopMenuAbout t={t} onCloseMenu={() => setOpen(false)} />
         <button
           type="button"
           className="cashier-desktop-menu__item"

@@ -1,3 +1,4 @@
+import { assertSalePrescriptionNumber } from '@aurent/shared-fiscal';
 import { refreshConnectivityStatus, useConnectivityStore } from '../../store/connectivityStore';
 import { hasLocalPosCatalog } from '../offline/connectivityRules';
 import { isDesktopOfflineBridge, offlineCompleteCheckout } from '../offline/desktopOfflineBridge';
@@ -39,6 +40,9 @@ export async function processOfflineCheckout({
   fiscal = null,
   printFiscalQr = true,
 }) {
+  // Офлайн-продажа рецептурного препарата без номера рецепта не сохраняется.
+  assertSalePrescriptionNumber(items, payment);
+
   if (!isDesktopOfflineBridge()) {
     throw new Error('OFFLINE_SALE_SAVE_FAILED');
   }

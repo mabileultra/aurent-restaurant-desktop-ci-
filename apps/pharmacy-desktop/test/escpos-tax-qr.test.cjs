@@ -87,6 +87,40 @@ test('desktop toggle off skips tax QR', async () => {
   assert.equal(callsOf(printer, 'printQR').length, 0);
 });
 
+test('advance receipt skips tax QR', async () => {
+  const printer = createFakeThermalPrinter();
+  const payload = fiscalPayload();
+  payload.sale = { ...payload.sale, receiptType: 'ADVANCE' };
+
+  await appendQrAndFooter(printer, payload, 'job-adv');
+
+  assert.equal(callsOf(printer, 'printQR').length, 0);
+});
+
+test('credit receipt skips tax QR', async () => {
+  const printer = createFakeThermalPrinter();
+  const payload = fiscalPayload();
+  payload.sale = { ...payload.sale, receiptType: 'CREDIT' };
+
+  await appendQrAndFooter(printer, payload, 'job-crd');
+
+  assert.equal(callsOf(printer, 'printQR').length, 0);
+});
+
+test('sale and return receipts print tax QR', async () => {
+  const printerSale = createFakeThermalPrinter();
+  const payloadSale = fiscalPayload();
+  payloadSale.sale = { ...payloadSale.sale, receiptType: 'SALE' };
+  await appendQrAndFooter(printerSale, payloadSale, 'job-sale');
+  assert.equal(callsOf(printerSale, 'printQR').length, 1);
+
+  const printerReturn = createFakeThermalPrinter();
+  const payloadReturn = fiscalPayload();
+  payloadReturn.sale = { ...payloadReturn.sale, receiptType: 'RETURN' };
+  await appendQrAndFooter(printerReturn, payloadReturn, 'job-ret');
+  assert.equal(callsOf(printerReturn, 'printQR').length, 1);
+});
+
 test('full receipt still prints fiscal rows and tax QR', async () => {
   const printer = createFakeThermalPrinter();
   await buildReceiptOnPrinter(printer, fiscalPayload(), 'job-full');
@@ -103,3 +137,108 @@ test('full receipt still prints fiscal rows and tax QR', async () => {
   assert.ok(beepAt >= 0 && beepAt < cutAt);
   assert.deepEqual(callsOf(printer, 'beep')[0].args, [1, 2]);
 });
+
+test('full receipt prints software version rows (AUR-6: "Versiya: 0.1.0 (2026-11-18)" + "Desktop versiyasi: 0.1.0", fits 58mm/32 cols and wraps if >32)', async () => {
+  const printerBrowser = createFakeThermalPrinter();
+  const payloadBrowser = fiscalPayload({
+    paperWmm: 58,
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Versiya',
+      desktopVersion: 'Desktop versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '0.1.0 (2026-11-18)',
+      desktopVersion: '',
+    },
+  });
+  await buildReceiptOnPrinter(printerBrowser, payloadBrowser, 'job-ver-browser');
+
+  const browserRows = callsOf(printerBrowser, 'leftRight').map((call) => call.args.join(' '));
+  assert.ok(browserRows.some((row) => row === 'Versiya 0.1.0 (2026-11-18)'));
+  assert.ok(!browserRows.some((row) => row.includes('Desktop versiyasi')));
+
+  const printerDesktop = createFakeThermalPrinter();
+  const payloadDesktop = fiscalPayload({
+    paperWmm: 58,
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Versiya',
+      desktopVersion: 'Desktop versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '0.1.0 (2026-11-18)',
+      desktopVersion: '0.1.0',
+    },
+  });
+  await buildReceiptOnPrinter(printerDesktop, payloadDesktop, 'job-ver-desktop');
+
+  const desktopLeftRight = callsOf(printerDesktop, 'leftRight');
+  const desktopRows = desktopLeftRight.map((call) => call.args.join(' '));
+  assert.ok(desktopRows.some((row) => row === 'Versiya 0.1.0 (2026-11-18)'));
+  assert.ok(desktopRows.some((row) => row === 'Desktop versiyasi 0.1.0'));
+
+  for (const call of desktopLeftRight) {
+    const [left, right] = call.args;
+    if (left === 'Versiya' || left === 'Desktop versiyasi') {
+      assert.ok(
+        left.length + 1 + right.length <= 32,
+        `58mm overflow: "${left} ${right}" is ${left.length + 1 + right.length} chars (>32)`,
+      );
+    }
+  }
+
+  // Long version (> 32 chars with label on 58mm): label on line 1, full uncut value on line 2
+  const printerLong58 = createFakeThermalPrinter();
+  const payloadLong58 = fiscalPayload({
+    paperWmm: 58,
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Versiya',
+      desktopVersion: 'Desktop versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '1.100.200-rc.12 (2026-11-18)',
+      desktopVersion: '1.10.12',
+    },
+  });
+  await buildReceiptOnPrinter(printerLong58, payloadLong58, 'job-ver-long58');
+
+  const printlnArgs = callsOf(printerLong58, 'println').map((call) => call.args[0]);
+  const lrCalls = callsOf(printerLong58, 'leftRight').map((call) => call.args);
+  assert.ok(printlnArgs.includes('Versiya'));
+  assert.ok(lrCalls.some(([left, right]) => left === '' && right === '1.100.200-rc.12 (2026-11-18)'));
+  assert.ok(lrCalls.some(([left, right]) => left === 'Desktop versiyasi' && right === '1.10.12'));
+
+  // License number present ("1.3") and absent ("")
+  const printerLic = createFakeThermalPrinter();
+  await buildReceiptOnPrinter(
+    printerLic,
+    fiscalPayload({
+      paperWmm: 58,
+      labels: { licenseNumber: 'Litsenziya raqami' },
+      sale: { ...fiscalPayload().sale, licenseNumber: '1.3' },
+    }),
+    'job-lic-present',
+  );
+  const licRows = callsOf(printerLic, 'leftRight').map((call) => call.args.join(' '));
+  assert.ok(licRows.some((row) => row === 'Litsenziya raqami 1.3'));
+  assert.ok('Litsenziya raqami 1.3'.length <= 32);
+
+  const printerNoLic = createFakeThermalPrinter();
+  await buildReceiptOnPrinter(
+    printerNoLic,
+    fiscalPayload({
+      paperWmm: 58,
+      labels: { licenseNumber: 'Litsenziya raqami' },
+      sale: { ...fiscalPayload().sale, licenseNumber: '' },
+    }),
+    'job-lic-absent',
+  );
+  const noLicRows = callsOf(printerNoLic, 'leftRight').map((call) => call.args.join(' '));
+  assert.ok(!noLicRows.some((row) => row.includes('Litsenziya raqami')));
+});
+

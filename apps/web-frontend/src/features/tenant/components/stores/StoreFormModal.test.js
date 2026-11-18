@@ -43,6 +43,23 @@ vi.mock('../../../shared/geo/RegionDistrictFields', () => ({
   default: () => React.createElement('div', { 'data-testid': 'region-district-fields' }),
 }));
 
+vi.mock('../../hooks/useCompanySearchOptions', () => ({
+  useCompanySearchOptions: ({ initialCompanies = [], emptyLabel }) => ({
+    options: [
+      ...(emptyLabel ? [{ value: '', label: emptyLabel }] : []),
+      ...initialCompanies.map((c) => ({
+        value: String(c.id),
+        label: c.name || `#${c.id}`,
+        keywords: c.name || '',
+      })),
+    ],
+    companies: initialCompanies,
+    searchQuery: '',
+    onSearchQueryChange: vi.fn(),
+    isSearching: false,
+  }),
+}));
+
 describe('StoreFormModal', () => {
   const defaultProps = {
     open: true,

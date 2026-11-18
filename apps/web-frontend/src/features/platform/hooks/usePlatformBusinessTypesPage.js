@@ -1,42 +1,15 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
 import { platformBusinessTypeApi, platformReferenceBookApi } from '../../../api';
-import {
-  EMPTY_BUSINESS_FIELD_FORM,
-  EMPTY_BUSINESS_TYPE_FORM,
-  fieldToForm,
-  parseOptionsText,
-} from '../utils/businessTypeUtils';
-import { CATALOG_FORM_FIELD_DEFS } from '../../../config/productCatalogFormFields';
-
-function mergeFormFieldsState(rows) {
-  const byKey = Object.fromEntries((rows ?? []).map((row) => [row.ruleKey, row]));
-  return CATALOG_FORM_FIELD_DEFS.map((def) => {
-    const row = byKey[def.ruleKey];
-    const enabled = row ? row.enabled !== false : true;
-    return {
-      ruleKey: def.ruleKey,
-      ruleValue: enabled ? 'true' : 'false',
-      enabled,
-    };
-  });
-}
+import { mergeFormFieldsState } from '../utils/businessTypeUtils';
+import { usePlatformBusinessTypeRules } from './usePlatformBusinessTypeRules';
+import { usePlatformBusinessTypeModals } from './usePlatformBusinessTypeModals';
 
 export function usePlatformBusinessTypesPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState(null);
-  const [typeModal, setTypeModal] = useState(null);
-  const [fieldModal, setFieldModal] = useState(null);
-  const [fieldForm, setFieldForm] = useState(EMPTY_BUSINESS_FIELD_FORM);
-  const [unitCodes, setUnitCodes] = useState([]);
-  const [defaultUnitCode, setDefaultUnitCode] = useState('PCS');
-  const [rules, setRules] = useState([]);
-  const [formFields, setFormFields] = useState([]);
-  const [priceRules, setPriceRules] = useState([]);
-  const [displayRules, setDisplayRules] = useState([]);
 
   const { data: types = [], isLoading } = useQuery({
     queryKey: ['platform-business-types'],
@@ -63,310 +36,42 @@ export function usePlatformBusinessTypesPage() {
     enabled: !!activeTypeId,
   });
 
-  useEffect(() => {
-    if (!detail) return;
-    const codes = detail.units?.map((u) => u.unitCode) ?? [];
-    setUnitCodes(codes);
-    setDefaultUnitCode(detail.units?.find((u) => u.defaultUnit)?.unitCode ?? codes[0] ?? 'PCS');
-    setRules(detail.rules ?? []);
-    setFormFields(mergeFormFieldsState(detail.formFields));
-    setPriceRules(detail.priceRules ?? []);
-    setDisplayRules(detail.displayRules ?? []);
-  }, [detail]);
-
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['platform-business-types'] });
     if (activeTypeId) qc.invalidateQueries({ queryKey: ['platform-business-type', activeTypeId] });
     qc.invalidateQueries({ queryKey: ['business-config'] });
   };
 
-  const saveTypeMutation = useMutation({
-    mutationFn: (payload) =>
-      payload.id
-        ? platformBusinessTypeApi.update(payload.id, payload.body)
-        : platformBusinessTypeApi.create(payload.body),
-    onSuccess: (res) => {
-      invalidate();
-      setSelectedId(res.data.id);
-      setTypeModal(null);
-      toast.success(t('platform.businessTypes.saved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const deleteTypeMutation = useMutation({
-    mutationFn: (id) => platformBusinessTypeApi.delete(id),
-    onSuccess: () => {
-      invalidate();
-      setSelectedId(null);
-      toast.success(t('platform.businessTypes.deleted'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const saveFieldMutation = useMutation({
-    mutationFn: ({ typeId, fieldId, body }) =>
-      fieldId
-        ? platformBusinessTypeApi.updateField(typeId, fieldId, body)
-        : platformBusinessTypeApi.addField(typeId, body),
-    onSuccess: () => {
-      invalidate();
-      setFieldModal(null);
-      toast.success(t('platform.businessTypes.fieldSaved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const deleteFieldMutation = useMutation({
-    mutationFn: ({ typeId, fieldId }) => platformBusinessTypeApi.deleteField(typeId, fieldId),
-    onSuccess: () => {
-      invalidate();
-      toast.success(t('platform.businessTypes.fieldDeleted'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const saveUnitsMutation = useMutation({
-    mutationFn: () => platformBusinessTypeApi.setUnits(activeTypeId, {
-      unitCodes,
-      defaultUnitCode,
-    }),
-    onSuccess: () => {
-      invalidate();
-      toast.success(t('platform.businessTypes.unitsSaved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const saveRulesMutation = useMutation({
-    mutationFn: () => platformBusinessTypeApi.setRules(activeTypeId, {
-      rules: rules.map((rule) => ({
-        ruleKey: rule.ruleKey,
-        ruleValue: rule.enabled ? 'true' : 'false',
-      })),
-    }),
-    onSuccess: () => {
-      invalidate();
-      toast.success(t('platform.businessTypes.rulesSaved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const saveFormFieldsMutation = useMutation({
-    mutationFn: () => platformBusinessTypeApi.setFormFields(activeTypeId, {
-      rules: formFields.map((rule) => ({
-        ruleKey: rule.ruleKey,
-        ruleValue: rule.enabled ? 'true' : 'false',
-      })),
-    }),
-    onSuccess: () => {
-      invalidate();
-      toast.success(t('platform.businessTypes.formFieldsSaved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const savePriceRulesMutation = useMutation({
-    mutationFn: () => platformBusinessTypeApi.setPriceRules(activeTypeId, {
-      rules: priceRules.map((rule) => ({
-        ruleKey: rule.ruleKey,
-        ruleValue: rule.numeric ? String(rule.ruleValue) : (rule.enabled ? 'true' : 'false'),
-      })),
-    }),
-    onSuccess: () => {
-      invalidate();
-      toast.success(t('platform.businessTypes.priceRulesSaved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
-  const saveDisplayRulesMutation = useMutation({
-    mutationFn: () => platformBusinessTypeApi.setDisplayRules(activeTypeId, {
-      rules: displayRules.map((rule, index) => ({
-        targetFieldKey: rule.targetFieldKey,
-        triggerFieldKey: rule.triggerFieldKey,
-        operator: rule.operator,
-        triggerValue: rule.triggerValue || null,
-        effect: rule.effect,
-        sortOrder: rule.sortOrder ?? (index + 1) * 10,
-      })),
-    }),
-    onSuccess: () => {
-      invalidate();
-      toast.success(t('platform.businessTypes.displayRulesSaved'));
-    },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
-  });
-
   const fields = useMemo(
     () => [...(detail?.fields ?? [])].sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
     [detail?.fields]
   );
 
-  const openCreateType = () => {
-    setTypeModal({ mode: 'create', form: { ...EMPTY_BUSINESS_TYPE_FORM } });
-  };
+  const rules = usePlatformBusinessTypeRules({
+    activeTypeId,
+    fields,
+    invalidate,
+    t,
+  });
 
-  const openEditType = () => {
+  const modals = usePlatformBusinessTypeModals({
+    activeTypeId,
+    detail,
+    setSelectedId,
+    invalidate,
+    t,
+  });
+
+  useEffect(() => {
     if (!detail) return;
-    setTypeModal({
-      mode: 'edit',
-      id: detail.id,
-      form: {
-        name: detail.name,
-        description: detail.description ?? '',
-        active: detail.active,
-        sortOrder: detail.sortOrder,
-      },
-    });
-  };
-
-  const closeTypeModal = () => setTypeModal(null);
-
-  const updateTypeForm = (patch) => {
-    setTypeModal((prev) => (prev ? { ...prev, form: { ...prev.form, ...patch } } : prev));
-  };
-
-  const saveType = () => {
-    if (!typeModal) return;
-    saveTypeMutation.mutate({ id: typeModal.id, body: typeModal.form });
-  };
-
-  const tryDeleteType = () => {
-    if (!detail) return;
-    if (window.confirm(t('platform.businessTypes.deleteConfirm', { name: detail.name }))) {
-      deleteTypeMutation.mutate(detail.id);
-    }
-  };
-
-  const openCreateField = () => {
-    setFieldForm(EMPTY_BUSINESS_FIELD_FORM);
-    setFieldModal({ mode: 'create' });
-  };
-
-  const openFieldEdit = (field) => {
-    setFieldForm(fieldToForm(field));
-    setFieldModal({ mode: 'edit', field });
-  };
-
-  const closeFieldModal = () => setFieldModal(null);
-
-  const updateFieldForm = (patch) => {
-    setFieldForm((prev) => ({ ...prev, ...patch }));
-  };
-
-  const submitField = () => {
-    const body = {
-      label: fieldForm.label.trim(),
-      fieldType: fieldForm.fieldType,
-      required: fieldForm.required,
-      enabled: fieldForm.enabled,
-      filterable: fieldForm.filterable,
-      sortOrder: Number(fieldForm.sortOrder) || 100,
-      placeholder: fieldForm.placeholder.trim() || null,
-      hint: fieldForm.hint.trim() || null,
-      referenceBookId: fieldForm.referenceBookId ? Number(fieldForm.referenceBookId) : null,
-      options: fieldForm.fieldType === 'LIST' && !fieldForm.referenceBookId
-        ? parseOptionsText(fieldForm.optionsText)
-        : [],
-    };
-    if (fieldModal?.mode === 'edit') {
-      saveFieldMutation.mutate({ typeId: activeTypeId, fieldId: fieldModal.field.id, body });
-      return;
-    }
-    saveFieldMutation.mutate({
-      typeId: activeTypeId,
-      body: { ...body, fieldKey: fieldForm.fieldKey.trim().toLowerCase() },
-    });
-  };
-
-  const tryDeleteField = (field) => {
-    if (window.confirm(t('platform.businessTypes.deleteFieldConfirm', { name: field.label }))) {
-      deleteFieldMutation.mutate({ typeId: activeTypeId, fieldId: field.id });
-    }
-  };
-
-  const toggleUnit = (code) => {
-    setUnitCodes((prev) => {
-      const exists = prev.includes(code);
-      const next = exists ? prev.filter((c) => c !== code) : [...prev, code];
-      if (!next.includes(defaultUnitCode)) {
-        setDefaultUnitCode(next[0] ?? 'PCS');
-      }
-      if (!exists && next.length === 1) {
-        setDefaultUnitCode(code);
-      }
-      return next;
-    });
-  };
-
-  const setDefaultUnit = (code) => {
-    setDefaultUnitCode(code);
-  };
-
-  const toggleRule = (ruleKey) => {
-    setRules((prev) => prev.map((rule) => (
-      rule.ruleKey === ruleKey ? { ...rule, enabled: !rule.enabled } : rule
-    )));
-  };
-
-  const toggleFormField = (ruleKey) => {
-    setFormFields((prev) => {
-      const exists = prev.some((rule) => rule.ruleKey === ruleKey);
-      if (!exists) {
-        return [...prev, { ruleKey, ruleValue: 'false', enabled: false }];
-      }
-      return prev.map((rule) => (
-        rule.ruleKey === ruleKey ? { ...rule, enabled: !rule.enabled } : rule
-      ));
-    });
-  };
-
-  const setFormFieldGroup = (ruleKeys, enabled) => {
-    setFormFields((prev) => {
-      const byKey = new Map(prev.map((rule) => [rule.ruleKey, rule]));
-      for (const ruleKey of ruleKeys) {
-        byKey.set(ruleKey, {
-          ruleKey,
-          ruleValue: enabled ? 'true' : 'false',
-          enabled,
-        });
-      }
-      return mergeFormFieldsState(Array.from(byKey.values()));
-    });
-  };
-
-  const changePriceRule = (ruleKey, value) => {
-    setPriceRules((prev) => prev.map((rule) => {
-      if (rule.ruleKey !== ruleKey) return rule;
-      if (rule.numeric) return { ...rule, ruleValue: value, enabled: false };
-      return { ...rule, enabled: value === 'true', ruleValue: value };
-    }));
-  };
-
-  const addDisplayRule = () => {
-    const first = fields[0]?.fieldKey ?? '';
-    const second = fields[1]?.fieldKey ?? first;
-    setDisplayRules((prev) => [
-      ...prev,
-      {
-        targetFieldKey: first,
-        triggerFieldKey: second,
-        operator: 'EQUALS',
-        triggerValue: '',
-        effect: 'SHOW',
-        sortOrder: (prev.length + 1) * 10,
-      },
-    ]);
-  };
-
-  const changeDisplayRule = (index, patch) => {
-    setDisplayRules((prev) => prev.map((rule, i) => (i === index ? { ...rule, ...patch } : rule)));
-  };
-
-  const removeDisplayRule = (index) => {
-    setDisplayRules((prev) => prev.filter((_, i) => i !== index));
-  };
+    const codes = detail.units?.map((u) => u.unitCode) ?? [];
+    rules.setUnitCodes(codes);
+    rules.setDefaultUnitCode(detail.units?.find((u) => u.defaultUnit)?.unitCode ?? codes[0] ?? 'PCS');
+    rules.setRules(detail.rules ?? []);
+    rules.setFormFields(mergeFormFieldsState(detail.formFields));
+    rules.setPriceRules(detail.priceRules ?? []);
+    rules.setDisplayRules(detail.displayRules ?? []);
+  }, [detail]);
 
   return {
     t,
@@ -379,42 +84,42 @@ export function usePlatformBusinessTypesPage() {
     fields,
     catalogUnits,
     referenceBooks,
-    unitCodes,
-    defaultUnitCode,
-    rules,
-    formFields,
-    priceRules,
-    displayRules,
-    typeModal,
-    openCreateType,
-    openEditType,
-    closeTypeModal,
-    updateTypeForm,
-    saveType,
-    tryDeleteType,
-    saveTypeMutation,
-    fieldModal,
-    fieldForm,
-    openCreateField,
-    openFieldEdit,
-    closeFieldModal,
-    updateFieldForm,
-    submitField,
-    tryDeleteField,
-    saveFieldMutation,
-    toggleUnit,
-    setDefaultUnit,
-    toggleRule,
-    toggleFormField,
-    setFormFieldGroup,
-    changePriceRule,
-    addDisplayRule,
-    changeDisplayRule,
-    removeDisplayRule,
-    saveUnitsMutation,
-    saveRulesMutation,
-    saveFormFieldsMutation,
-    savePriceRulesMutation,
-    saveDisplayRulesMutation,
+    unitCodes: rules.unitCodes,
+    defaultUnitCode: rules.defaultUnitCode,
+    rules: rules.rules,
+    formFields: rules.formFields,
+    priceRules: rules.priceRules,
+    displayRules: rules.displayRules,
+    typeModal: modals.typeModal,
+    openCreateType: modals.openCreateType,
+    openEditType: modals.openEditType,
+    closeTypeModal: modals.closeTypeModal,
+    updateTypeForm: modals.updateTypeForm,
+    saveType: modals.saveType,
+    tryDeleteType: modals.tryDeleteType,
+    saveTypeMutation: modals.saveTypeMutation,
+    fieldModal: modals.fieldModal,
+    fieldForm: modals.fieldForm,
+    openCreateField: modals.openCreateField,
+    openFieldEdit: modals.openFieldEdit,
+    closeFieldModal: modals.closeFieldModal,
+    updateFieldForm: modals.updateFieldForm,
+    submitField: modals.submitField,
+    tryDeleteField: modals.tryDeleteField,
+    saveFieldMutation: modals.saveFieldMutation,
+    toggleUnit: rules.toggleUnit,
+    setDefaultUnit: rules.setDefaultUnit,
+    toggleRule: rules.toggleRule,
+    toggleFormField: rules.toggleFormField,
+    setFormFieldGroup: rules.setFormFieldGroup,
+    changePriceRule: rules.changePriceRule,
+    addDisplayRule: rules.addDisplayRule,
+    changeDisplayRule: rules.changeDisplayRule,
+    removeDisplayRule: rules.removeDisplayRule,
+    saveUnitsMutation: rules.saveUnitsMutation,
+    saveRulesMutation: rules.saveRulesMutation,
+    saveFormFieldsMutation: rules.saveFormFieldsMutation,
+    savePriceRulesMutation: rules.savePriceRulesMutation,
+    saveDisplayRulesMutation: rules.saveDisplayRulesMutation,
   };
 }

@@ -1,3 +1,4 @@
+import { resolveItemCommittent } from '@aurent/shared-fiscal';
 import { toOfdMarkingLabel } from '../../../services/fiscal/shared/ofdMarkingLabel';
 import { resolveLinePackageCode } from '../../../services/fiscal/shared/resolveLinePackageCode';
 
@@ -27,14 +28,14 @@ export function buildMarkingValidationProducts(cartItems = []) {
     }
     if (kmIds.length === 0) continue;
 
-    const commitentTin = digitsOnly(line.commissionTin || line.commitentTin);
+    const committent = resolveItemCommittent(line);
     products.push({
       productCode: digitsOnly(line.ikpu || line.mxik),
       packageCode: digitsOnly(resolveLinePackageCode(line)) || null,
       amount: Number(line.quantity) || 0,
       kmIds,
       fullKmIds,
-      commitentTin: commitentTin.length === 9 || commitentTin.length === 14 ? commitentTin : null,
+      commitentTin: committent ? committent.value : null,
     });
   }
   return products;

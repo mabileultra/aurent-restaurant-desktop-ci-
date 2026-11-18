@@ -9,7 +9,17 @@ function getEnabledIndexes(options) {
   }, []);
 }
 
-export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, value, onSelectOption }) {
+export function useBaseSelect({
+  options,
+  open,
+  setOpen,
+  disabled,
+  onBlur,
+  name,
+  value,
+  onSelectOption,
+  minWidth = 280,
+}) {
   const listId = useId();
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
@@ -61,11 +71,12 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
       let top = openUpward ? rect.top - menuHeight - gap : rect.bottom + gap;
       top = Math.max(edgePadding, Math.min(top, window.innerHeight - menuHeight - edgePadding));
 
+      const effectiveMin = Math.max(minWidth || 280, rect.width);
+      const width = Math.min(effectiveMin, window.innerWidth - edgePadding * 2);
       let left = rect.left;
-      const width = Math.max(rect.width, 80);
       left = Math.max(edgePadding, Math.min(left, window.innerWidth - width - edgePadding));
 
-      setMenuStyle({ top, left, width });
+      setMenuStyle({ top, left, width, triggerWidth: rect.width, minWidth: effectiveMin });
     };
 
     updatePosition();
@@ -100,6 +111,8 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation?.();
         close({ restoreFocus: true });
         return;
       }
@@ -136,8 +149,8 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
       }
     };
 
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
   }, [close, highlightIndex, onSelectOption, open, options]);
 
   useEffect(() => {

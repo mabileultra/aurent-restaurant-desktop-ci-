@@ -11,6 +11,9 @@ const {
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
+  shouldPrintFiscalQr,
+  doesVersionRowFitSingleLine,
+  resolveItemCommittent,
 } = require('./escpos-format.cjs');
 const { logWarn } = require('./escpos-log.cjs');
 const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
@@ -285,6 +288,24 @@ function appendItems(printer, payload) {
     if (isOn(fields, 'itemIkpu') && item.ikpu) {
       printer.println(`${L.ikpuLine || 'MXIK'}: ${item.ikpu}`);
     }
+    const committent = resolveItemCommittent(item);
+    if (committent) {
+      const label =
+        committent.kind === 'PINFL'
+          ? (L.committentPinfl || 'Komitent (JShShIR)')
+          : (L.committentTin || 'Komitent (STIR)');
+      const fullText = `${label}: ${committent.value}`;
+      const lineWidth =
+        Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+          ? 32
+          : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
+      if (fullText.length <= lineWidth) {
+        printer.println(fullText);
+      } else {
+        printer.println(`${label}:`);
+        printer.println(committent.value);
+      }
+    }
   }
   appendDivider(printer);
 }
@@ -364,6 +385,15 @@ function appendPayment(printer, payload) {
   appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));
   appendRow(printer, L.cash || 'Cash', fmtMoney(cashAmt));
   appendRow(printer, L.plastic || 'Card', fmtMoney(cardAmt));
+  if (sale.cardCategoryDisplay) {
+    appendRow(printer, L.cardType || 'Card type', String(sale.cardCategoryDisplay));
+  }
+  if (sale.socialCardNumber) {
+    appendRow(printer, L.socialCardNumber || 'Social card', String(sale.socialCardNumber));
+  }
+  if (sale.rrn) {
+    appendRow(printer, L.cardRrn || 'RRN', String(sale.rrn));
+  }
   if (change > 0) {
     appendRow(printer, L.change || 'Change', fmtMoney(change), true);
   }
@@ -400,6 +430,24 @@ function appendFiscalBlock(printer, payload) {
   if (fmNumber) {
     appendRow(printer, L.fmNumber || 'FM', fmNumber);
   }
+  const lineWidth =
+    Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
+      ? 32
+      : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 48;
+  const appendVersionRow = (label, rawValue) => {
+    const lbl = String(label || '').trim();
+    const val = String(rawValue || '').trim();
+    if (!val) return;
+    if (doesVersionRowFitSingleLine(lbl, val, lineWidth)) {
+      appendRow(printer, lbl, val);
+    } else {
+      printer.println(lbl);
+      appendRow(printer, '', val);
+    }
+  };
+  appendVersionRow(L.appVersion || 'Versiya', sale.appVersion || payload?.appVersion);
+  appendVersionRow(L.desktopVersion || 'Desktop versiyasi', sale.desktopVersion || payload?.desktopVersion);
+  appendVersionRow(L.licenseNumber || 'Litsenziya raqami', sale.licenseNumber || payload?.licenseNumber);
   if (virtualRegister && virtualRegister !== '1') {
     appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
   }
@@ -419,7 +467,7 @@ async function appendQrAndFooter(printer, payload, jobId) {
   const { sale, receiptFields, qrValue: payloadQr } = payload;
   const fields = receiptFields || {};
 
-  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false) return;
+  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false || !shouldPrintFiscalQr(sale?.receiptType)) return;
 
   const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
   const isTaxQr =

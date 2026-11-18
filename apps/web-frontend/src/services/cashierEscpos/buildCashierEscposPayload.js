@@ -1,14 +1,25 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
+import {
+  extractCardReceiptDetails,
+  getLicenseNumber,
+  getReceiptVersionRows,
+  normalizeCardCategory,
+  resolveSalePrescriptionNumber,
+  shouldPrintFiscalQr,
+} from '@aurent/shared-fiscal';
 import { APP_NAME } from '../../config/brand';
-import i18n from '../../i18n/config';
+import { getReceiptTranslator, RECEIPT_LOCALE } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
-import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
+import {
+  resolveFiscalReceiptMeta,
+  resolveReceiptPaymentAmounts,
+} from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
-import { cardTypeLabel } from '../../utils/salePaymentLabel';
+import { cardCategoryLabel, cardTypeLabel } from '../../utils/salePaymentLabel';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -67,6 +78,8 @@ export function buildEscposLabels(t) {
     qtyShort: t('receipt.qtyShort'),
     lineTotalShort: t('receipt.lineTotalShort'),
     ikpuLine: t('receipt.ikpuLine'),
+    committentTin: t('receipt.committentTin', 'Komitent (STIR)'),
+    committentPinfl: t('receipt.committentPinfl', 'Komitent (JShShIR)'),
     vatLineShort: t('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
     currency: t('fiscalReceipt.currency'),
     lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),
@@ -77,10 +90,17 @@ export function buildEscposLabels(t) {
     paymentForm: t('fiscalReceipt.paymentForm'),
     cash: t('fiscalReceipt.cash'),
     plastic: t('fiscalReceipt.plastic'),
+    cardType: t('fiscalReceipt.cardType'),
+    cardRrn: t('fiscalReceipt.cardRrn'),
+    socialCardNumber: t('fiscalReceipt.socialCardNumber'),
+    prescriptionNumber: t('fiscalReceipt.prescriptionNumber'),
     change: t('receipt.change'),
     fiscalSection: t('fiscalReceipt.fiscalSection'),
     virtualRegister: t('fiscalReceipt.virtualRegister'),
     fmNumber: t('fiscalReceipt.fmNumber'),
+    appVersion: t('fiscalReceipt.appVersion'),
+    desktopVersion: t('fiscalReceipt.desktopVersion'),
+    licenseNumber: t('fiscalReceipt.licenseNumber'),
     fiscalReceiptNo: t('fiscalReceipt.fiscalReceiptNo'),
     fiscalSign: t('fiscalReceipt.fiscalSign'),
     footer: t('fiscalReceipt.footer'),
@@ -127,7 +147,8 @@ export function buildCashierEscposPayload(sale, t) {
   branding.fmNumber = fiscalMeta.fmNumber;
   branding.virtualRegister = fiscalMeta.virtualRegister;
 
-  const printFiscalQr = sale.printFiscalQr !== false;
+  const canPrintQr = shouldPrintFiscalQr(sale?.receiptType);
+  const printFiscalQr = sale.printFiscalQr !== false && canPrintQr;
   const qrValue = printFiscalQr ? fiscalMeta.qrValue : '';
   const receiptFields = readReceiptFields();
   receiptFields.footer = true;
@@ -136,27 +157,56 @@ export function buildCashierEscposPayload(sale, t) {
   }
 
   const printSettings = usePrintSettingsStore.getState();
-  const labels = buildEscposLabels(t);
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
-  if (cardTypeText) {
-    labels.plastic = `${labels.plastic} · ${cardTypeText}`;
+  const translator = getReceiptTranslator();
+  const labels = buildEscposLabels(translator);
+  const cardDetails = extractCardReceiptDetails(sale);
+  const pay = resolveReceiptPaymentAmounts(sale);
+  const hasCardPayment =
+    Number(pay.cardAmt) > 0 || sale.paymentMethod === 'CARD' || sale.paymentMethod === 'MIXED';
+  const isSocialCategory = hasCardPayment && cardDetails.cardCategory === 'SOCIAL';
+
+  const cardProviderText = (hasCardPayment && !normalizeCardCategory(sale.cardType))
+    ? cardTypeLabel(sale.cardType, translator)
+    : null;
+  if (cardProviderText) {
+    labels.plastic = `${labels.plastic} · ${cardProviderText}`;
   }
+  const cardCategoryDisplay = hasCardPayment
+    ? (cardCategoryLabel(cardDetails.cardCategory, translator) || null)
+    : null;
+
+  const { appVersion, desktopVersion } = getReceiptVersionRows({
+    appVersion: sale.appVersion || fiscalMeta.appVersion,
+    desktopVersion: sale.desktopVersion || fiscalMeta.desktopVersion,
+  });
+  const licenseNumber = getLicenseNumber(sale.licenseNumber ?? fiscalMeta.licenseNumber) || '';
 
   return {
     sale: {
       ...sale,
+      appVersion,
+      desktopVersion,
+      licenseNumber,
+      cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
+      cardCategoryDisplay,
+      socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
+      rrn: hasCardPayment ? cardDetails.rrn : null,
+      prescriptionNumber: resolveSalePrescriptionNumber(sale),
       printFiscalQr,
       fiscalQrUrl: qrValue || null,
       fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,
       fiscalTerminalId: sale.fiscalTerminalId || fiscalMeta.fmNumber || null,
       fiscalSign: sale.fiscalSign || fiscalMeta.fiscalSign || null,
-      receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, t),
+      receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, translator),
     },
     branding,
     receiptFields,
     qrValue,
+    appVersion,
+    desktopVersion,
+    licenseNumber,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
-    locale: String(i18n.language || 'ru').split('-')[0],
+    locale: RECEIPT_LOCALE,
   };
 }
