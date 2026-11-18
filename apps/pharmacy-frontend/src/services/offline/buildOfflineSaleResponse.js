@@ -128,10 +128,12 @@ export function buildOfflineSaleResponse({
       multikassaSaleId: fiscal?.multikassaSaleId || null,
       fiscalQrUrl: fiscal?.fiscalQrUrl || null,
       fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
+      fiscalProvider: fiscal?.fiscalProvider || (fiscal?.multikassaSaleId ? 'MULTIKASSA' : null),
       fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? createdAt : null,
       printFiscalQr: printFiscalQr !== false,
     }, payment), payment),
     cartItems,
+    { fiscalProvider: fiscal?.fiscalProvider },
   );
 }
 

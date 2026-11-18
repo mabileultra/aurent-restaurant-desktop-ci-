@@ -279,5 +279,7 @@ export function buildRestaurantFiscalSale({
     printFiscalQr: fiscal?.fiscalStatus === 'FISCALIZED',
   }, { cardType, cardCategory, rrn, socialCardNumber });
 
-  return withSaleCommittentDetails(sale, order?.items || []);
+  return withSaleCommittentDetails(sale, order?.items || [], {
+    fiscalProvider: fiscal?.fiscalProvider || (fiscal?.multikassaSaleId ? 'MULTIKASSA' : 'MULTIKASSA'),
+  });
 }

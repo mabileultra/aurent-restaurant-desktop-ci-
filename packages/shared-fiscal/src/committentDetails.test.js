@@ -7,10 +7,12 @@ import {
   parseCommittentIdentifier,
   resolveItemCommittent,
   resolveMultikassaCommitentTin,
+  resolveProviderItemCommittent,
+  resolveSaleFiscalProvider,
   withSaleCommittentDetails,
 } from './committentDetails.js';
 
-describe('committentDetails (AUR-7)', () => {
+describe('committentDetails (AUR-7 provider-aligned)', () => {
   describe('parseCommittentIdentifier', () => {
     it('accepts valid 9-digit TIN', () => {
       expect(parseCommittentIdentifier('200523221')).toEqual({
@@ -50,147 +52,168 @@ describe('committentDetails (AUR-7)', () => {
     });
   });
 
-  describe('resolveItemCommittent', () => {
-    it('resolves TIN from commissionTin or commitentTin or commitent_tin', () => {
-      expect(resolveItemCommittent({ commissionTin: '200523221' })).toEqual({
-        kind: 'TIN',
-        value: '200523221',
-      });
-      expect(resolveItemCommittent({ commitentTin: '200523221' })).toEqual({
-        kind: 'TIN',
-        value: '200523221',
-      });
-      expect(resolveItemCommittent({ commitent_tin: '200523221' })).toEqual({
-        kind: 'TIN',
-        value: '200523221',
-      });
+  describe('resolveMultikassaCommitentTin (criterion 2)', () => {
+    it('sends 9-digit TIN from commissionTin or commitentTin', () => {
+      expect(resolveMultikassaCommitentTin({ commissionTin: '200523221' })).toBe('200523221');
+      expect(resolveMultikassaCommitentTin({ commitentTin: '200523221' })).toBe('200523221');
+      expect(resolveMultikassaCommitentTin({ commitent_tin: '200523221' })).toBe('200523221');
     });
 
-    it('resolves PINFL from commissionPinfl or commitentPinfl', () => {
-      expect(resolveItemCommittent({ commissionPinfl: '12345678901234' })).toEqual({
-        kind: 'PINFL',
-        value: '12345678901234',
-      });
-      expect(resolveItemCommittent({ commitentPinfl: '12345678901234' })).toEqual({
-        kind: 'PINFL',
-        value: '12345678901234',
-      });
+    it('sends 14-digit PINFL when present in legacy commissionTin/commitentTin', () => {
+      expect(resolveMultikassaCommitentTin({ commissionTin: '12345678901234' })).toBe(
+        '12345678901234',
+      );
+      expect(resolveMultikassaCommitentTin({ commitentTin: '12345678901234' })).toBe(
+        '12345678901234',
+      );
     });
 
-    it('resolves from nested CommissionInfo object', () => {
-      expect(resolveItemCommittent({ CommissionInfo: { TIN: '200523221' } })).toEqual({
-        kind: 'TIN',
-        value: '200523221',
-      });
-      expect(resolveItemCommittent({ CommissionInfo: { PINFL: '12345678901234' } })).toEqual({
-        kind: 'PINFL',
-        value: '12345678901234',
-      });
+    it('DOES NOT send new commissionPinfl / commitentPinfl to Multikassa (returns empty string)', () => {
+      expect(resolveMultikassaCommitentTin({ commissionPinfl: '12345678901234' })).toBe('');
+      expect(resolveMultikassaCommitentTin({ commitentPinfl: '12345678901234' })).toBe('');
     });
 
-    it('returns null when item is empty or invalid', () => {
-      expect(resolveItemCommittent(null)).toBeNull();
-      expect(resolveItemCommittent({})).toBeNull();
-      expect(resolveItemCommittent({ commissionTin: 'bad' })).toBeNull();
+    it('returns empty string for missing or invalid values', () => {
+      expect(resolveMultikassaCommitentTin({})).toBe('');
+      expect(resolveMultikassaCommitentTin({ commissionTin: 'bad' })).toBe('');
+      expect(resolveMultikassaCommitentTin({ commissionTin: '12345' })).toBe('');
     });
   });
 
-  describe('fiscal payload adapters', () => {
-    it('resolveMultikassaCommitentTin produces string or empty', () => {
-      expect(resolveMultikassaCommitentTin({ commissionTin: '200523221' })).toBe('200523221');
-      expect(resolveMultikassaCommitentTin({ commissionPinfl: '12345678901234' })).toBe(
-        '12345678901234',
-      );
-      expect(resolveMultikassaCommitentTin({})).toBe('');
-      expect(resolveMultikassaCommitentTin({ commissionTin: 'bad' })).toBe('');
-    });
-
-    it('buildFiscalDriveCommissionInfo produces TIN or PINFL object or null', () => {
+  describe('buildFiscalDriveCommissionInfo (criterion 3 - legacy 1:1)', () => {
+    it('produces TIN object for 9-digit identifier', () => {
       expect(buildFiscalDriveCommissionInfo({ commissionTin: '200523221' })).toEqual({
         TIN: '200523221',
       });
+      expect(buildFiscalDriveCommissionInfo({ commitentTin: '200523221' })).toEqual({
+        TIN: '200523221',
+      });
+    });
+
+    it('produces PINFL object for 14-digit identifier (including new commissionPinfl)', () => {
       expect(buildFiscalDriveCommissionInfo({ commissionPinfl: '12345678901234' })).toEqual({
         PINFL: '12345678901234',
       });
+      expect(buildFiscalDriveCommissionInfo({ commissionTin: '12345678901234' })).toEqual({
+        PINFL: '12345678901234',
+      });
+    });
+
+    it('returns null when absent or invalid', () => {
       expect(buildFiscalDriveCommissionInfo({})).toBeNull();
-      expect(buildFiscalDriveCommissionInfo({ commissionTin: '123' })).toBeNull();
+      expect(buildFiscalDriveCommissionInfo({ commissionTin: 'bad' })).toBeNull();
     });
   });
 
-  describe('formatItemCommittentReceiptLine', () => {
-    it('formats Uzbek TIN line correctly', () => {
-      const line = formatItemCommittentReceiptLine({ commissionTin: '200523221' });
-      expect(line).toEqual({
-        kind: 'TIN',
-        label: 'Komitent (STIR)',
-        value: '200523221',
-        text: 'Komitent (STIR): 200523221',
-      });
+  describe('resolveProviderItemCommittent (criterion 1 & 2: payload value == receipt value)', () => {
+    it('for MULTIKASSA: returns null when only new commissionPinfl is present (payload has nothing)', () => {
+      const item = { commissionPinfl: '12345678901234' };
+      expect(resolveMultikassaCommitentTin(item)).toBe('');
+      expect(resolveProviderItemCommittent(item, 'MULTIKASSA')).toBeNull();
     });
 
-    it('formats Uzbek PINFL line correctly', () => {
-      const line = formatItemCommittentReceiptLine({ commissionPinfl: '12345678901234' });
-      expect(line).toEqual({
-        kind: 'PINFL',
-        label: 'Komitent (JShShIR)',
-        value: '12345678901234',
-        text: 'Komitent (JShShIR): 12345678901234',
-      });
+    it('for MULTIKASSA: returns TIN when commissionTin (9 digits) is present (payload == receipt)', () => {
+      const item = { commissionTin: '200523221' };
+      const payloadVal = resolveMultikassaCommitentTin(item);
+      const receiptResolved = resolveProviderItemCommittent(item, 'MULTIKASSA');
+      expect(payloadVal).toBe('200523221');
+      expect(receiptResolved).toEqual({ kind: 'TIN', value: '200523221' });
+      expect(payloadVal).toBe(receiptResolved.value);
     });
 
-    it('supports custom i18n labels', () => {
-      const line = formatItemCommittentReceiptLine(
-        { commissionTin: '200523221' },
-        { committentTin: 'Комитент (ИНН)' },
-      );
-      expect(line).toEqual({
-        kind: 'TIN',
-        label: 'Комитент (ИНН)',
-        value: '200523221',
-        text: 'Комитент (ИНН): 200523221',
-      });
+    it('for MULTIKASSA: returns PINFL when commissionTin (14 digits) is present (payload == receipt)', () => {
+      const item = { commissionTin: '12345678901234' };
+      const payloadVal = resolveMultikassaCommitentTin(item);
+      const receiptResolved = resolveProviderItemCommittent(item, 'MULTIKASSA');
+      expect(payloadVal).toBe('12345678901234');
+      expect(receiptResolved).toEqual({ kind: 'PINFL', value: '12345678901234' });
+      expect(payloadVal).toBe(receiptResolved.value);
     });
 
-    it('returns null when no committent info is present', () => {
-      expect(formatItemCommittentReceiptLine({})).toBeNull();
-      expect(formatItemCommittentReceiptLine({ commissionTin: 'bad' })).toBeNull();
+    it('for FISCAL_DRIVE: returns PINFL when commissionPinfl is present (payload == receipt)', () => {
+      const item = { commissionPinfl: '12345678901234' };
+      const payloadObj = buildFiscalDriveCommissionInfo(item);
+      const receiptResolved = resolveProviderItemCommittent(item, 'FISCAL_DRIVE');
+      expect(payloadObj).toEqual({ PINFL: '12345678901234' });
+      expect(receiptResolved).toEqual({ kind: 'PINFL', value: '12345678901234' });
+      expect(payloadObj.PINFL).toBe(receiptResolved.value);
+    });
+
+    it('for FISCAL_DRIVE: returns TIN when commissionTin is present (payload == receipt)', () => {
+      const item = { commissionTin: '200523221' };
+      const payloadObj = buildFiscalDriveCommissionInfo(item);
+      const receiptResolved = resolveProviderItemCommittent(item, 'FISCAL_DRIVE');
+      expect(payloadObj).toEqual({ TIN: '200523221' });
+      expect(receiptResolved).toEqual({ kind: 'TIN', value: '200523221' });
+      expect(payloadObj.TIN).toBe(receiptResolved.value);
     });
   });
 
-  describe('withSaleCommittentDetails', () => {
-    it('attaches committent from cartItems to sale.items', () => {
+  describe('withSaleCommittentDetails end-to-end alignment (criterion 4)', () => {
+    it('Multikassa + commissionPinfl -> payload has NO committent, receipt has NO committent', () => {
       const sale = {
-        id: 10,
-        items: [
-          { productId: 101, productName: 'Tovar A', lineTotal: 50000 },
-          { productId: 102, productName: 'Tovar B', lineTotal: 25000 },
-        ],
+        id: 1,
+        fiscalProvider: 'MULTIKASSA',
+        items: [{ productId: 10, productName: 'Test Tovar' }],
       };
-      const cartItems = [
-        { productId: 101, name: 'Tovar A', commissionTin: '200523221' },
-        { productId: 102, name: 'Tovar B' },
-      ];
+      const cartItems = [{ productId: 10, commissionPinfl: '12345678901234' }];
 
-      const enriched = withSaleCommittentDetails(sale, cartItems);
+      // Verify payload is empty
+      expect(resolveMultikassaCommitentTin(cartItems[0])).toBe('');
+
+      // Verify enriched sale item has no committent
+      const enriched = withSaleCommittentDetails(sale, cartItems, { fiscalProvider: 'MULTIKASSA' });
+      expect(enriched.items[0].commissionTin).toBeNull();
+      expect(enriched.items[0].commissionPinfl).toBeNull();
+      expect(formatItemCommittentReceiptLine(enriched.items[0])).toBeNull();
+    });
+
+    it('Multikassa + commissionTin (9 digits) -> payload has TIN, receipt has TIN', () => {
+      const sale = {
+        id: 2,
+        fiscalProvider: 'MULTIKASSA',
+        items: [{ productId: 20, productName: 'Agent tovari' }],
+      };
+      const cartItems = [{ productId: 20, commissionTin: '200523221' }];
+
+      expect(resolveMultikassaCommitentTin(cartItems[0])).toBe('200523221');
+
+      const enriched = withSaleCommittentDetails(sale, cartItems, { fiscalProvider: 'MULTIKASSA' });
       expect(enriched.items[0].commissionTin).toBe('200523221');
-      expect(enriched.items[0].commitentTin).toBe('200523221');
-      expect(enriched.items[1].commissionTin).toBeFalsy();
+      const line = formatItemCommittentReceiptLine(enriched.items[0]);
+      expect(line.text).toBe('Komitent (STIR): 200523221');
     });
 
-    it('preserves existing sale item committent if already present', () => {
+    it('FiscalDrive + commissionPinfl -> payload has PINFL, receipt has PINFL', () => {
       const sale = {
-        id: 11,
-        items: [
-          { productId: 201, commissionPinfl: '12345678901234', lineTotal: 10000 },
-        ],
+        id: 3,
+        fiscalProvider: 'FISCAL_DRIVE',
+        items: [{ productId: 30, productName: 'Jismoniy shaxs tovari' }],
       };
-      const enriched = withSaleCommittentDetails(sale, []);
+      const cartItems = [{ productId: 30, commissionPinfl: '12345678901234' }];
+
+      expect(buildFiscalDriveCommissionInfo(cartItems[0])).toEqual({ PINFL: '12345678901234' });
+
+      const enriched = withSaleCommittentDetails(sale, cartItems, { fiscalProvider: 'FISCAL_DRIVE' });
       expect(enriched.items[0].commissionPinfl).toBe('12345678901234');
+      const line = formatItemCommittentReceiptLine(enriched.items[0]);
+      expect(line.text).toBe('Komitent (JShShIR): 12345678901234');
     });
 
-    it('handles empty or non-array inputs safely', () => {
-      expect(withSaleCommittentDetails(null)).toBeNull();
-      expect(withSaleCommittentDetails({})).toEqual({});
+    it('FiscalDrive + commissionTin (9 digits) -> payload has TIN, receipt has TIN', () => {
+      const sale = {
+        id: 4,
+        fiscalProvider: 'FISCAL_DRIVE',
+        items: [{ productId: 40, productName: 'Kompaniya tovari' }],
+      };
+      const cartItems = [{ productId: 40, commissionTin: '200523221' }];
+
+      expect(buildFiscalDriveCommissionInfo(cartItems[0])).toEqual({ TIN: '200523221' });
+
+      const enriched = withSaleCommittentDetails(sale, cartItems, { fiscalProvider: 'FISCAL_DRIVE' });
+      expect(enriched.items[0].commissionTin).toBe('200523221');
+      const line = formatItemCommittentReceiptLine(enriched.items[0]);
+      expect(line.text).toBe('Komitent (STIR): 200523221');
     });
   });
 });

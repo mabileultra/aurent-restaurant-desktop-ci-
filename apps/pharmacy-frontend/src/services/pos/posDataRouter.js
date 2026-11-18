@@ -533,6 +533,7 @@ export async function posCreateSale({
       data: withSaleCommittentDetails(
         withSalePrescriptionNumber(withCardReceiptDetails(res?.data, payment), payment),
         cartItems,
+        { fiscalProvider: capabilities?.fiscalProvider },
       ),
     };
   } catch (err) {
