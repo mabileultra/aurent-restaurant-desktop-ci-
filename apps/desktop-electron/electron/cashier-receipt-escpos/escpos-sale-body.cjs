@@ -6,7 +6,7 @@ const {
   fmtQty,
   splitDateTime,
   buildFiscalSign,
-  fitVersionValueToWidth,
+  doesVersionRowFitSingleLine,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
@@ -265,24 +265,19 @@ function appendFiscalBlock(printer, payload) {
       Number(payload?.paperWmm) && Number(payload.paperWmm) <= 58
         ? 32
         : (typeof printer?.getWidth === 'function' && Number(printer.getWidth())) || 42;
-    const appVersionLabel = L.appVersion || 'Dastur versiyasi';
-    const appVersion = fitVersionValueToWidth(
-      appVersionLabel,
-      sale.appVersion || payload?.appVersion || '',
-      lineWidth,
-    );
-    if (appVersion) {
-      appendRow(printer, appVersionLabel, appVersion);
-    }
-    const desktopVersionLabel = L.desktopVersion || 'Desktop versiyasi';
-    const desktopVersion = fitVersionValueToWidth(
-      desktopVersionLabel,
-      sale.desktopVersion || payload?.desktopVersion || '',
-      lineWidth,
-    );
-    if (desktopVersion) {
-      appendRow(printer, desktopVersionLabel, desktopVersion);
-    }
+    const appendVersionRow = (label, rawValue) => {
+      const lbl = String(label || '').trim();
+      const val = String(rawValue || '').trim();
+      if (!val) return;
+      if (doesVersionRowFitSingleLine(lbl, val, lineWidth)) {
+        appendRow(printer, lbl, val);
+      } else {
+        printer.println(lbl);
+        appendRow(printer, '', val);
+      }
+    };
+    appendVersionRow(L.appVersion || 'Dastur versiyasi', sale.appVersion || payload?.appVersion);
+    appendVersionRow(L.desktopVersion || 'Desktop versiyasi', sale.desktopVersion || payload?.desktopVersion);
     if (virtualRegister && virtualRegister !== '1') {
       appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
     }

@@ -268,5 +268,25 @@ describe('FiscalReceiptBody', () => {
         delete globalThis.__APP_GIT_HASH__;
       }
     });
+
+    it('renders long version ("1.10.12 (a1b2c3d)") in full without truncation', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(FiscalReceiptBody, {
+          sale: {
+            ...MOCK_SALE,
+            appVersion: '1.10.12 (a1b2c3d)',
+            desktopVersion: '1.10.12',
+            fiscalTerminalId: 'FM998877',
+            fiscalReceiptSeq: '101',
+            fiscalSign: '998877665544',
+          },
+        })
+      );
+
+      expect(html).toContain('Dastur versiyasi');
+      expect(html).toContain('1.10.12 (a1b2c3d)');
+      expect(html).toContain('Desktop versiyasi');
+      expect(html).toContain('>1.10.12<');
+    });
   });
 });

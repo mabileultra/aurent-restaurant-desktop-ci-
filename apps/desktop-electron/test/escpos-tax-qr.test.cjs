@@ -189,5 +189,28 @@ test('full receipt prints software version rows (AUR-6: 1 row in browser, 2 rows
       );
     }
   }
+
+  // Long version (> 32 chars with label on 58mm): label on line 1, full uncut value on line 2
+  const printerLong58 = createFakeThermalPrinter();
+  const payloadLong58 = fiscalPayload({
+    paperWmm: 58,
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Dastur versiyasi',
+      desktopVersion: 'Desktop versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '1.10.12 (a1b2c3d)',
+      desktopVersion: '1.10.12',
+    },
+  });
+  await buildReceiptOnPrinter(printerLong58, payloadLong58, 'job-ver-long58');
+
+  const printlnArgs = callsOf(printerLong58, 'println').map((call) => call.args[0]);
+  const lrCalls = callsOf(printerLong58, 'leftRight').map((call) => call.args);
+  assert.ok(printlnArgs.includes('Dastur versiyasi'));
+  assert.ok(lrCalls.some(([left, right]) => left === '' && right === '1.10.12 (a1b2c3d)'));
+  assert.ok(lrCalls.some(([left, right]) => left === 'Desktop versiyasi' && right === '1.10.12'));
 });
 

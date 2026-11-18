@@ -139,5 +139,32 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: 1 ro
       );
     }
   }
+
+  // Long version (> 32 chars with label on 58mm): label on line 1, full uncut value on line 2
+  const printerLong58 = createFakePrinter();
+  const payloadLong58 = fiscalPayload({
+    paperWmm: 58,
+    labels: {
+      fmNumber: 'FM',
+      appVersion: 'Dastur versiyasi',
+      desktopVersion: 'Desktop versiyasi',
+    },
+    sale: {
+      ...fiscalPayload().sale,
+      appVersion: '1.10.12 (a1b2c3d)',
+      desktopVersion: '1.10.12',
+    },
+  });
+  await buildReceiptOnPrinter(printerLong58, payloadLong58, 'job-ver-long58');
+
+  const printlnArgs = printerLong58.calls
+    .filter((c) => c.method === 'println')
+    .map((c) => c.args[0]);
+  const lrCalls = printerLong58.calls
+    .filter((c) => c.method === 'leftRight')
+    .map((c) => c.args);
+  assert.ok(printlnArgs.includes('Dastur versiyasi'));
+  assert.ok(lrCalls.some(([left, right]) => left === '' && right === '1.10.12 (a1b2c3d)'));
+  assert.ok(lrCalls.some(([left, right]) => left === 'Desktop versiyasi' && right === '1.10.12'));
 });
 

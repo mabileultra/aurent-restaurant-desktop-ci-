@@ -132,12 +132,17 @@ html.dark .receipt-page__card {
   max-width: 100%;
 }
 .receipt-print-root .receipt-row--nowrap {
-  flex-wrap: nowrap;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  column-gap: 0.35rem;
+  row-gap: 0.1rem;
 }
-.receipt-print-root .receipt-row--nowrap > span {
+.receipt-print-root .receipt-row--nowrap > :first-child {
   white-space: nowrap;
-  max-width: none;
+}
+.receipt-print-root .receipt-row--nowrap > .receipt-row__value {
+  white-space: nowrap;
+  max-width: 100%;
+  margin-left: auto;
 }
 .receipt-print-root .receipt-items-table__head,
 .receipt-print-root .receipt-items-table__row {
