@@ -221,7 +221,7 @@
     "fiscalDriveInactive": "FiscalDrive не выбран — продажи через Multikassa",
     "multikassaPrintQr": "Печатать фискальный QR",
     "multikassaPrintQrOn": "вкл — на чеке будет QR ОФД",
-    "multikassaPrintQrOff": "выкл — обычный чек без QR",
+    "multikassaPrintQrOff": "выкл — без ОФД, обычный чек, КМ не выводятся",
     "multikassaQrOnToast": "Фискальный QR включён",
     "multikassaQrOffToast": "Фискальный QR выключен — чек без QR",
     "multikassaQrSaveFailed": "Не удалось сохранить настройку QR"
@@ -696,7 +696,7 @@
       "requireBeforeSale": "Блокировать продажу без фискализации Multikassa",
       "requireBeforeSaleHint": "Выкл — при офлайне / нет связи с ФМ продажа и обычный чек без QR всё равно проходят.",
       "printFiscalQr": "Печатать фискальный QR на чеке",
-      "printFiscalQrHint": "Выкл — чек печатается без QR (удобно без Multikassa / в офлайне).",
+      "printFiscalQrHint": "Выкл — продажа без ОФД: обычный чек, QR нет, коды маркировки в налоговую не уходят.",
       "test": "Проверить связь",
       "testing": "Проверка…",
       "testOk": "Contragents OK{{extra}}",

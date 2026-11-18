@@ -216,4 +216,20 @@ describe('fiscalizeSaleBeforeCommit → QR from Multikassa', () => {
     expect(payload).toBeNull();
     expect(runMultikassaOperation).not.toHaveBeenCalled();
   });
+
+  it('returns null when printFiscalQr=false — no OFD and no marking Labels', async () => {
+    const payload = await fiscalizeSaleBeforeCommit({
+      capabilities: {
+        enabled: true,
+        printFiscalQr: false,
+        baseUrl: 'http://127.0.0.1:19998',
+        terminalId: 'ZZ000000000000',
+      },
+      cartItems: CART,
+      payment: { paymentMethod: 'CASH', amountTendered: 1000 },
+      total: 1000,
+    });
+    expect(payload).toBeNull();
+    expect(runMultikassaOperation).not.toHaveBeenCalled();
+  });
 });

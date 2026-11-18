@@ -210,7 +210,7 @@
     "fiscalDriveInactive": "FiscalDrive tanlanmagan — savdo Multikassa orqali",
     "multikassaPrintQr": "Fiskal QR chop etish",
     "multikassaPrintQrOn": "yoqilgan — chekda OFD QR bo‘ladi",
-    "multikassaPrintQrOff": "o‘chirilgan — oddiy chek, QR yo‘q",
+    "multikassaPrintQrOff": "o‘chirilgan — OFD yo‘q, oddiy chek, KM chiqarilmaydi",
     "multikassaQrOnToast": "Fiskal QR yoqildi",
     "multikassaQrOffToast": "Fiskal QR o‘chirildi — chek QRsiz",
     "multikassaQrSaveFailed": "QR sozlamasini saqlab bo‘lmadi"
@@ -684,7 +684,7 @@
       "requireBeforeSale": "Multikassa fiskalizatsiyasisiz sotuvni bloklash",
       "requireBeforeSaleHint": "O‘chiq — offline / FM yo‘q bo‘lsa ham sotuv va oddiy chek (QR’siz) o‘tadi.",
       "printFiscalQr": "Chekda fiskal QR chop etish",
-      "printFiscalQrHint": "O‘chiq — chek QR’siz chop etiladi (Multikassa/offline uchun).",
+      "printFiscalQrHint": "O‘chiq — OFD yo‘q: oddiy chek, QR yo‘q, markirovka soliqqa ketmaydi.",
       "test": "Aloqani tekshirish",
       "testing": "Tekshirilmoqda…",
       "testOk": "Contragents OK{{extra}}",

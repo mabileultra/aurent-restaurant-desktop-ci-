@@ -32,9 +32,9 @@
     "fiscalDriveInactive": "FiscalDrive tanlanmagan — savdo Multikassa orqali",
     "multikassaPrintQr": "Fiskal QR chop etish",
     "multikassaPrintQrOn": "yoqilgan — chekda OFD QR bo‘ladi",
-    "multikassaPrintQrOff": "o‘chirilgan — oddiy chek, QR yo‘q",
+    "multikassaPrintQrOff": "o‘chirilgan — OFD yo‘q, oddiy chek, KM chiqarilmaydi",
     "multikassaQrOnToast": "Fiskal QR yoqildi",
-    "multikassaQrOffToast": "Fiskal QR o‘chirildi — chek QRsiz",
+    "multikassaQrOffToast": "OFD o‘chirildi — chek QRsiz, markirovka soliqqa ketmaydi",
     "multikassaQrSaveFailed": "QR sozlamasini saqlab bo‘lmadi"
   },
   "installer": {

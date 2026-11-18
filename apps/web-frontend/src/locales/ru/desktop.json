@@ -32,9 +32,9 @@
     "fiscalDriveInactive": "FiscalDrive не выбран — продажи через Multikassa",
     "multikassaPrintQr": "Печатать фискальный QR",
     "multikassaPrintQrOn": "вкл — на чеке будет QR ОФД",
-    "multikassaPrintQrOff": "выкл — обычный чек без QR",
+    "multikassaPrintQrOff": "выкл — без ОФД, обычный чек, КМ не выводятся",
     "multikassaQrOnToast": "Фискальный QR включён",
-    "multikassaQrOffToast": "Фискальный QR выключен — чек без QR",
+    "multikassaQrOffToast": "ОФД выкл — чек без QR, маркировка в налоговую не уходит",
     "multikassaQrSaveFailed": "Не удалось сохранить настройку QR"
   },
   "installer": {
