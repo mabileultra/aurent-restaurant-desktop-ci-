@@ -165,6 +165,7 @@
     "fmNumber": "FM raqami",
     "appVersion": "Versiya",
     "desktopVersion": "Desktop versiyasi",
+    "licenseNumber": "Litsenziya raqami",
     "grandTotal": "Jami",
     "lineDiscountsSum": "Pozitsiyalar bo'yicha chegirma",
     "orderDiscountPercent": "Chek chegirmasi ({{percent}}%)",

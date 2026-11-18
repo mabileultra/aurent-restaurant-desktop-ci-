@@ -180,6 +180,7 @@ export default function FiscalReceiptBody({
         fmNumber={fiscalMeta.fmNumber}
         appVersion={fiscalMeta.appVersion}
         desktopVersion={fiscalMeta.desktopVersion}
+        licenseNumber={fiscalMeta.licenseNumber}
         virtualRegister={fiscalMeta.virtualRegister}
         fiscalSign={fiscalMeta.fiscalSign}
         receiptTypeLabel={receiptTypeLabel}

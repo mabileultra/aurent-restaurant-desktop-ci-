@@ -1,10 +1,10 @@
 import React from 'react';
-import { getReceiptVersionRows } from '@aurent/shared-fiscal';
+import { getLicenseNumber, getReceiptVersionRows } from '@aurent/shared-fiscal';
 import { ReceiptDivider, ReceiptRow } from './receiptPrimitives';
 
 const EMPTY_FISCAL_SIGN = '—';
 
-/** Фискальные реквизиты: номер чека, ФМ, версия ПО / десктопа, виртуальная касса, фискальный признак. */
+/** Фискальные реквизиты: номер чека, ФМ, версия ПО / десктопа, лицензия, виртуальная касса, фискальный признак. */
 export default function ReceiptFiscalSection({ fiscalMeta, isOn, t }) {
   if (!isOn('fiscalBlock')) return null;
 
@@ -13,6 +13,7 @@ export default function ReceiptFiscalSection({ fiscalMeta, isOn, t }) {
     appVersion: fiscalMeta?.appVersion,
     desktopVersion: fiscalMeta?.desktopVersion,
   });
+  const licenseNumber = getLicenseNumber(fiscalMeta?.licenseNumber);
 
   return (
     <>
@@ -28,6 +29,9 @@ export default function ReceiptFiscalSection({ fiscalMeta, isOn, t }) {
         ) : null}
         {desktopVersion ? (
           <ReceiptRow label={t('fiscalReceipt.desktopVersion')} value={desktopVersion} nowrap />
+        ) : null}
+        {licenseNumber ? (
+          <ReceiptRow label={t('fiscalReceipt.licenseNumber')} value={licenseNumber} nowrap />
         ) : null}
         {virtualRegister ? (
           <ReceiptRow label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />

@@ -4,6 +4,7 @@ import {
   formatVersionWithHash,
   getAppVersion,
   getAppVersionInfo,
+  getLicenseNumber,
   getReceiptVersionRows,
 } from './appVersion.js';
 import {
@@ -17,11 +18,13 @@ describe('appVersion helper', () => {
   const originalAppVersion = globalThis.__APP_VERSION__;
   const originalCommitDate = globalThis.__APP_COMMIT_DATE__;
   const originalGitHash = globalThis.__APP_GIT_HASH__;
+  const originalLicenseNumber = globalThis.__APP_LICENSE_NUMBER__;
 
   beforeEach(() => {
     globalThis.__APP_VERSION__ = '';
     globalThis.__APP_COMMIT_DATE__ = '';
     globalThis.__APP_GIT_HASH__ = '';
+    globalThis.__APP_LICENSE_NUMBER__ = '';
     delete globalThis.window;
   });
 
@@ -45,6 +48,11 @@ describe('appVersion helper', () => {
       globalThis.__APP_GIT_HASH__ = originalGitHash;
     } else {
       delete globalThis.__APP_GIT_HASH__;
+    }
+    if (originalLicenseNumber !== undefined) {
+      globalThis.__APP_LICENSE_NUMBER__ = originalLicenseNumber;
+    } else {
+      delete globalThis.__APP_LICENSE_NUMBER__;
     }
   });
 
@@ -168,5 +176,16 @@ describe('appVersion helper', () => {
       appVersion: '',
       desktopVersion: '',
     });
+  });
+
+  it('resolves getLicenseNumber() as string when present and null when empty', () => {
+    globalThis.__APP_LICENSE_NUMBER__ = '1.3';
+    expect(getLicenseNumber()).toBe('1.3');
+    expect(getLicenseNumber('  1.3  ')).toBe('1.3');
+
+    globalThis.__APP_LICENSE_NUMBER__ = '   ';
+    expect(getLicenseNumber()).toBeNull();
+    expect(getLicenseNumber('')).toBeNull();
+    expect(getLicenseNumber(null)).toBeNull();
   });
 });

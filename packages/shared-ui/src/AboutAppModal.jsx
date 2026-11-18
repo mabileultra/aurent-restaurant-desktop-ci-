@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { getAppVersionInfo } from '@aurent/shared-fiscal';
+import { getAppVersionInfo, getLicenseNumber } from '@aurent/shared-fiscal';
 
 /**
  * Universal «Dastur haqida» (About Dialog) oynasi.
@@ -9,7 +9,7 @@ import { getAppVersionInfo } from '@aurent/shared-fiscal';
  * @param {() => void} props.onClose - yopish callbacki
  * @param {string} [props.appName] - ilova nomi
  * @param {string} [props.fmNumber] - fiskal modul raqami
- * @param {string} [props.licenseNumber] - litsenziya raqami (agar bo'sh bo'lsa qator ko'rsatilmaydi)
+ * @param {string | null} [props.licenseNumber] - litsenziya raqami (bo'sh bo'lsa «—» ko'rsatiladi)
  * @param {Function} [props.t] - i18n tarjimon funksiyasi
  */
 export default function AboutAppModal({
@@ -17,7 +17,7 @@ export default function AboutAppModal({
   onClose,
   appName = 'Aurent POS',
   fmNumber = '',
-  licenseNumber = '',
+  licenseNumber,
   t,
 }) {
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function AboutAppModal({
     tr('about.uiVersion', 'UI versiyasi')
   );
   const fmLabel = tr('fiscalReceipt.fmNumber', tr('about.fmNumber', 'FM raqami'));
-  const licenseLabel = tr('about.licenseNumber', 'Litsenziya raqami');
+  const licenseLabel = tr('fiscalReceipt.licenseNumber', tr('about.licenseNumber', 'Litsenziya raqami'));
   const platformLabel = versionInfo.isDesktop
     ? tr('about.platformDesktop', 'Desktop ilova')
     : tr('about.platformWeb', 'Veb versiya');
@@ -65,7 +65,7 @@ export default function AboutAppModal({
     ''
   ).trim();
 
-  const resolvedLicense = String(licenseNumber || '').trim();
+  const resolvedLicense = getLicenseNumber(licenseNumber);
 
   return (
     <div
@@ -174,14 +174,12 @@ export default function AboutAppModal({
             </div>
           ) : null}
 
-          {resolvedLicense ? (
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
-              <span className="text-slate-500 dark:text-slate-400">{licenseLabel}</span>
-              <span className="font-mono text-slate-900 dark:text-slate-100 font-medium">
-                {resolvedLicense}
-              </span>
-            </div>
-          ) : null}
+          <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+            <span className="text-slate-500 dark:text-slate-400">{licenseLabel}</span>
+            <span className="font-mono text-slate-900 dark:text-slate-100 font-medium">
+              {resolvedLicense || '—'}
+            </span>
+          </div>
         </div>
 
         <div className="pt-2">

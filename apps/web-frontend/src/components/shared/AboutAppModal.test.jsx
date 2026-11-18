@@ -9,6 +9,7 @@ describe('AboutAppModal component', () => {
   const originalAppVersion = globalThis.__APP_VERSION__;
   const originalCommitDate = globalThis.__APP_COMMIT_DATE__;
   const originalGitHash = globalThis.__APP_GIT_HASH__;
+  const originalLicenseNumber = globalThis.__APP_LICENSE_NUMBER__;
 
   afterEach(() => {
     cleanup();
@@ -31,6 +32,11 @@ describe('AboutAppModal component', () => {
       globalThis.__APP_GIT_HASH__ = originalGitHash;
     } else {
       delete globalThis.__APP_GIT_HASH__;
+    }
+    if (originalLicenseNumber !== undefined) {
+      globalThis.__APP_LICENSE_NUMBER__ = originalLicenseNumber;
+    } else {
+      delete globalThis.__APP_LICENSE_NUMBER__;
     }
   });
 
@@ -94,7 +100,8 @@ describe('AboutAppModal component', () => {
     expect(screen.getByText('Desktop ilova')).toBeTruthy();
   });
 
-  it('hides license row when licenseNumber is omitted or empty', () => {
+  it('shows "—" for license row when licenseNumber is empty or absent', () => {
+    globalThis.__APP_LICENSE_NUMBER__ = '';
     render(
       <AboutAppModal
         open={true}
@@ -103,20 +110,21 @@ describe('AboutAppModal component', () => {
       />
     );
 
-    expect(screen.queryByText('Litsenziya raqami')).toBeNull();
+    expect(screen.getByText('Litsenziya raqami')).toBeTruthy();
+    expect(screen.getByText('—')).toBeTruthy();
   });
 
-  it('shows license row when licenseNumber is provided', () => {
+  it('shows license row with "1.3" when licenseNumber is provided or resolved from env', () => {
+    globalThis.__APP_LICENSE_NUMBER__ = '1.3';
     render(
       <AboutAppModal
         open={true}
         onClose={vi.fn()}
-        licenseNumber="LIC-9988-UZ"
       />
     );
 
-    expect(screen.getByText('LIC-9988-UZ')).toBeTruthy();
     expect(screen.getByText('Litsenziya raqami')).toBeTruthy();
+    expect(screen.getByText('1.3')).toBeTruthy();
   });
 
   it('calls onClose when close button is clicked', () => {

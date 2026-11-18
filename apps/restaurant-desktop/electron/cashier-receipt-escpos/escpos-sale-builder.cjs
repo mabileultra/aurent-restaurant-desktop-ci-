@@ -428,6 +428,7 @@ function appendFiscalBlock(printer, payload) {
   };
   appendVersionRow(L.appVersion || 'Versiya', sale.appVersion || payload?.appVersion);
   appendVersionRow(L.desktopVersion || 'Desktop versiyasi', sale.desktopVersion || payload?.desktopVersion);
+  appendVersionRow(L.licenseNumber || 'Litsenziya raqami', sale.licenseNumber || payload?.licenseNumber);
   if (virtualRegister && virtualRegister !== '1') {
     appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
   }

@@ -14,8 +14,10 @@ COPY apps/pharmacy-frontend ./apps/pharmacy-frontend
 WORKDIR /repo/apps/pharmacy-frontend
 ARG VITE_API_URL=/api/v1
 ARG VITE_MAIN_APP_URL=https://aurent.uz
+ARG VITE_LICENSE_NUMBER=1.3
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_MAIN_APP_URL=$VITE_MAIN_APP_URL
+ENV VITE_LICENSE_NUMBER=$VITE_LICENSE_NUMBER
 RUN pnpm run build
 
 FROM nginx:1.27-alpine

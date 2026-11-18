@@ -184,5 +184,40 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
       expect(electronHtml).toContain('Desktop versiyasi');
       expect(electronHtml).toContain('>0.1.0<');
     });
+
+    it('renders "Litsenziya raqami: 1.3" in fiscalBlock when present and hides the row when empty', async () => {
+      await i18n.changeLanguage('ru');
+      globalThis.__APP_LICENSE_NUMBER__ = '1.3';
+      try {
+        const htmlWithLicense = renderToStaticMarkup(
+          React.createElement(FiscalReceiptBody, {
+            sale: {
+              ...MOCK_SALE,
+              fiscalTerminalId: 'FM-PHARM-01',
+              fiscalReceiptSeq: '42',
+              fiscalSign: '123456789012',
+            },
+          })
+        );
+        expect(htmlWithLicense).toContain('Litsenziya raqami');
+        expect(htmlWithLicense).toContain('>1.3<');
+        expect(htmlWithLicense).not.toContain('Номер лицензии');
+
+        globalThis.__APP_LICENSE_NUMBER__ = '';
+        const htmlWithoutLicense = renderToStaticMarkup(
+          React.createElement(FiscalReceiptBody, {
+            sale: {
+              ...MOCK_SALE,
+              fiscalTerminalId: 'FM-PHARM-01',
+              fiscalReceiptSeq: '42',
+              fiscalSign: '123456789012',
+            },
+          })
+        );
+        expect(htmlWithoutLicense).not.toContain('Litsenziya raqami');
+      } finally {
+        delete globalThis.__APP_LICENSE_NUMBER__;
+      }
+    });
   });
 });

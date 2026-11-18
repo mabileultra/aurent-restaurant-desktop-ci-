@@ -50,6 +50,7 @@ export {
   formatVersionWithDate,
   formatVersionWithHash,
   getDesktopVersion,
+  getLicenseNumber,
   getUiVersion,
   getUiAboutVersion,
   getReceiptVersionRows,

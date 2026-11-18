@@ -167,6 +167,48 @@ export function getDesktopVersion() {
 }
 
 /**
+ * Resolves software license number from `VITE_LICENSE_NUMBER` (or explicit override / test global).
+ * Returns `null` when empty or unset — never hardcoded in source code.
+ * @param {string | null} [override]
+ * @returns {string | null}
+ */
+export function getLicenseNumber(override) {
+  if (override !== undefined) {
+    if (override === null) return null;
+    const custom = typeof override === 'string' ? override.trim() : '';
+    return custom || null;
+  }
+
+  if (
+    typeof globalThis !== 'undefined' &&
+    Object.prototype.hasOwnProperty.call(globalThis, '__APP_LICENSE_NUMBER__')
+  ) {
+    const rawGlobal = String(globalThis.__APP_LICENSE_NUMBER__ ?? '').trim();
+    return rawGlobal || null;
+  }
+
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_LICENSE_NUMBER !== undefined) {
+      const rawVite = String(import.meta.env.VITE_LICENSE_NUMBER ?? '').trim();
+      return rawVite || null;
+    }
+  } catch {
+    // ignore
+  }
+
+  try {
+    if (typeof process !== 'undefined' && process?.env?.VITE_LICENSE_NUMBER !== undefined) {
+      const rawEnv = String(process.env.VITE_LICENSE_NUMBER ?? '').trim();
+      return rawEnv || null;
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+
+/**
  * Resolves UI version for receipts: "1.0.0 (2026-11-18)" (or "1.0.0" if git date is absent).
  * @returns {string}
  */

@@ -3,6 +3,7 @@
  */
 import {
   extractCardReceiptDetails,
+  getLicenseNumber,
   getReceiptVersionRows,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
@@ -97,6 +98,7 @@ export function buildEscposLabels(t) {
     fmNumber: t('fiscalReceipt.fmNumber'),
     appVersion: t('fiscalReceipt.appVersion'),
     desktopVersion: t('fiscalReceipt.desktopVersion'),
+    licenseNumber: t('fiscalReceipt.licenseNumber'),
     fiscalReceiptNo: t('fiscalReceipt.fiscalReceiptNo'),
     fiscalSign: t('fiscalReceipt.fiscalSign'),
     footer: t('fiscalReceipt.footer'),
@@ -175,12 +177,14 @@ export function buildCashierEscposPayload(sale, t) {
     appVersion: sale.appVersion || fiscalMeta.appVersion,
     desktopVersion: sale.desktopVersion || fiscalMeta.desktopVersion,
   });
+  const licenseNumber = getLicenseNumber(sale.licenseNumber ?? fiscalMeta.licenseNumber) || '';
 
   return {
     sale: {
       ...sale,
       appVersion,
       desktopVersion,
+      licenseNumber,
       cardCategory: hasCardPayment ? cardDetails.cardCategory : null,
       cardCategoryDisplay,
       socialCardNumber: isSocialCategory ? cardDetails.socialCardNumber : null,
@@ -198,6 +202,7 @@ export function buildCashierEscposPayload(sale, t) {
     qrValue,
     appVersion,
     desktopVersion,
+    licenseNumber,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels,
     locale: RECEIPT_LOCALE,

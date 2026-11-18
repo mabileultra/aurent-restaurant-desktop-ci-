@@ -2,7 +2,7 @@ import React from 'react';
 import { APP_NAME } from '../../config/brand';
 import { getReceiptTranslator } from '../../utils/receiptI18n';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
-import ReceiptQrCode from './ReceiptQrCode';
+import PharmacyReceiptFiscalFooter from './PharmacyReceiptFiscalFooter';
 import PharmacyReceiptItemsAndTotals, {
   PharmacyReceiptRow as Row,
 } from './PharmacyReceiptItemsAndTotals';
@@ -13,7 +13,6 @@ import {
 } from '../../utils/fiscalReceiptFormat';
 import {
   extractCardReceiptDetails,
-  getReceiptVersionRows,
   normalizeCardCategory,
   resolveSalePrescriptionNumber,
   shouldPrintFiscalQr,
@@ -74,11 +73,6 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const cardCategoryText = hasCardPayment ? cardCategoryLabel(cardDetails.cardCategory, t) : null;
   const shiftNo = resolveReceiptShiftLabel(sale, {
     envShiftNo: import.meta.env.VITE_SHIFT_NO,
-  });
-  const { fmNumber, virtualRegister, fiscalSign, fiscalReceiptNo } = fiscalMeta;
-  const { appVersion, desktopVersion } = getReceiptVersionRows({
-    appVersion: fiscalMeta.appVersion,
-    desktopVersion: fiscalMeta.desktopVersion,
   });
 
   const vatRates = new Set(
@@ -176,48 +170,14 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         </>
       ) : null}
 
-      {prescriptionNumber ? (
-        <section className="receipt-section mt-1">
-          <Row label={t('fiscalReceipt.prescriptionNumber')} value={prescriptionNumber} bold />
-        </section>
-      ) : null}
-
-      {isOn('receiptType') ? (
-        <section className="receipt-section mt-1">
-          <Row label={t('fiscalReceipt.receiptType')} value={receiptTypeLabel} bold />
-        </section>
-      ) : null}
-
-      {isOn('fiscalBlock') ? (
-        <>
-          <div className="receipt-divider my-2 border-t border-dotted border-black" />
-          <section className="receipt-section space-y-1">
-            <p className="receipt-section-title">{t('fiscalReceipt.fiscalSection')}</p>
-            {fiscalReceiptNo ? <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} /> : null}
-            {fmNumber ? <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
-            {appVersion ? <Row label={t('fiscalReceipt.appVersion')} value={appVersion} nowrap /> : null}
-            {desktopVersion ? <Row label={t('fiscalReceipt.desktopVersion')} value={desktopVersion} nowrap /> : null}
-            {virtualRegister ? <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} /> : null}
-            <div className="receipt-row">
-              <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
-              <span className={fiscalSign ? 'receipt-fiscal-sign receipt-row__value' : 'receipt-row__value'}>
-                {fiscalSign || '—'}
-              </span>
-            </div>
-          </section>
-        </>
-      ) : null}
-
-      {showQrBlock ? (
-        <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
-          {qrValue ? <ReceiptQrCode value={qrValue} sizePx={280} /> : null}
-          <p className="receipt-subtitle mt-2">{t('fiscalReceipt.footer')}</p>
-        </footer>
-      ) : isOn('footer') ? (
-        <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
-          <p className="receipt-subtitle">{t('fiscalReceipt.footer')}</p>
-        </footer>
-      ) : null}
+      <PharmacyReceiptFiscalFooter
+        fiscalMeta={fiscalMeta}
+        prescriptionNumber={prescriptionNumber}
+        receiptTypeLabel={receiptTypeLabel}
+        showQrBlock={showQrBlock}
+        isOn={isOn}
+        t={t}
+      />
     </div>
   );
 }

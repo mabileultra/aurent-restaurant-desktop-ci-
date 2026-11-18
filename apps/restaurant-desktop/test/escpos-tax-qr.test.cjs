@@ -166,5 +166,37 @@ test('restaurant-desktop: full receipt prints software version rows (AUR-6: "Ver
   assert.ok(printlnArgs.includes('Versiya'));
   assert.ok(lrCalls.some(([left, right]) => left === '' && right === '1.100.200-rc.12 (2026-11-18)'));
   assert.ok(lrCalls.some(([left, right]) => left === 'Desktop versiyasi' && right === '1.10.12'));
+
+  // License number present ("1.3") and absent ("")
+  const printerLic = createFakePrinter();
+  await buildReceiptOnPrinter(
+    printerLic,
+    fiscalPayload({
+      paperWmm: 58,
+      labels: { licenseNumber: 'Litsenziya raqami' },
+      sale: { ...fiscalPayload().sale, licenseNumber: '1.3' },
+    }),
+    'job-lic-present',
+  );
+  const licRows = printerLic.calls
+    .filter((c) => c.method === 'leftRight')
+    .map((c) => c.args.join(' '));
+  assert.ok(licRows.some((row) => row === 'Litsenziya raqami 1.3'));
+  assert.ok('Litsenziya raqami 1.3'.length <= 32);
+
+  const printerNoLic = createFakePrinter();
+  await buildReceiptOnPrinter(
+    printerNoLic,
+    fiscalPayload({
+      paperWmm: 58,
+      labels: { licenseNumber: 'Litsenziya raqami' },
+      sale: { ...fiscalPayload().sale, licenseNumber: '' },
+    }),
+    'job-lic-absent',
+  );
+  const noLicRows = printerNoLic.calls
+    .filter((c) => c.method === 'leftRight')
+    .map((c) => c.args.join(' '));
+  assert.ok(!noLicRows.some((row) => row.includes('Litsenziya raqami')));
 });
 

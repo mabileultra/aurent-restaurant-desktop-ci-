@@ -226,5 +226,22 @@ describe('buildCashierEscposPayload card details', () => {
       expect(electronPayload.sale.appVersion).toBe('1.0.0 (2026-11-18)');
       expect(electronPayload.sale.desktopVersion).toBe('0.1.37');
     });
+
+    it('includes licenseNumber "1.3" when present and empty string when absent', () => {
+      globalThis.__APP_LICENSE_NUMBER__ = '1.3';
+      try {
+        const withLicense = buildCashierEscposPayload({ ...FISCAL_SALE }, t);
+        expect(withLicense.licenseNumber).toBe('1.3');
+        expect(withLicense.sale.licenseNumber).toBe('1.3');
+        expect(withLicense.labels.licenseNumber).toBe('Litsenziya raqami');
+
+        globalThis.__APP_LICENSE_NUMBER__ = '';
+        const withoutLicense = buildCashierEscposPayload({ ...FISCAL_SALE }, t);
+        expect(withoutLicense.licenseNumber).toBe('');
+        expect(withoutLicense.sale.licenseNumber).toBe('');
+      } finally {
+        delete globalThis.__APP_LICENSE_NUMBER__;
+      }
+    });
   });
 });

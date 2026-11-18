@@ -165,6 +165,7 @@
     "fmNumber": "Номер ФМ",
     "appVersion": "Версия",
     "desktopVersion": "Версия десктопа",
+    "licenseNumber": "Номер лицензии",
     "grandTotal": "Итог",
     "lineDiscountsSum": "Скидка по позициям",
     "orderDiscountPercent": "Скидка на чек ({{percent}}%)",
