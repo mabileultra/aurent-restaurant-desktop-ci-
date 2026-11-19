@@ -140,10 +140,10 @@ public class EdgeCatalogKitchenBootstrapWriter {
             jdbc.update("""
                 INSERT INTO floor_order_payments (
                   id, order_id, method, amount, cash_amount, card_amount,
-                  amount_tendered, change_given, card_type,
+                  amount_tendered, change_given, card_type, card_category, rrn, social_card_number,
                   debt_phone, debt_comment, advance_paid, debt_remaining,
                   paid_by_user_id, paid_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (id) DO UPDATE SET
                   order_id = EXCLUDED.order_id,
                   method = EXCLUDED.method,
@@ -153,6 +153,9 @@ public class EdgeCatalogKitchenBootstrapWriter {
                   amount_tendered = EXCLUDED.amount_tendered,
                   change_given = EXCLUDED.change_given,
                   card_type = EXCLUDED.card_type,
+                  card_category = COALESCE(EXCLUDED.card_category, floor_order_payments.card_category),
+                  rrn = COALESCE(EXCLUDED.rrn, floor_order_payments.rrn),
+                  social_card_number = COALESCE(EXCLUDED.social_card_number, floor_order_payments.social_card_number),
                   debt_phone = EXCLUDED.debt_phone,
                   debt_comment = EXCLUDED.debt_comment,
                   advance_paid = EXCLUDED.advance_paid,
@@ -171,6 +174,9 @@ public class EdgeCatalogKitchenBootstrapWriter {
                     : row.amountTendered(),
                 row.changeGiven() == null ? BigDecimal.ZERO : row.changeGiven(),
                 row.cardType(),
+                row.cardCategory(),
+                row.rrn(),
+                row.socialCardNumber(),
                 row.debtPhone(),
                 row.debtComment(),
                 row.advancePaid(),

@@ -268,6 +268,10 @@ public record EdgeCatalogSnapshot(
         BigDecimal advancePaid,
         BigDecimal debtRemaining,
         UUID paidByUserId,
-        Instant paidAt
+        Instant paidAt,
+        /** AUR-17; узел старой версии их не присылает — получатель тогда не затирает свои значения. */
+        String cardCategory,
+        String rrn,
+        String socialCardNumber
     ) {}
 }

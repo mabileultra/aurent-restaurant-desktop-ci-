@@ -488,7 +488,8 @@ public class EdgeCatalogExportService {
             p.getAdvancePaid(),
             p.getDebtRemaining(),
             p.getPaidByUserId(),
-            p.getPaidAt()
+            p.getPaidAt(),
+            p.getCardCategory() == null ? null : p.getCardCategory().name(), p.getRrn(), p.getSocialCardNumber()
         );
     }
 }

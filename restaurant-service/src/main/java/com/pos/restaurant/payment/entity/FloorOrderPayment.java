@@ -1,5 +1,6 @@
 package com.pos.restaurant.payment.entity;
 
+import com.pos.shared.payment.CardCategory;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.payment.domain.PaymentCardType;
 import com.pos.restaurant.payment.domain.PaymentMethod;
@@ -69,6 +70,19 @@ public class FloorOrderPayment {
     @Enumerated(EnumType.STRING)
     @Column(name = "card_type", length = 16)
     private PaymentCardType cardType;
+
+    /** AUR-17: категория карты со слип-чека (ОФД ExtraInfo.CardType). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_category", length = 20)
+    private CardCategory cardCategory;
+
+    /** AUR-17: RRN транзакции, 12 цифр (ОФД ExtraInfo.PPTID). */
+    @Column(name = "rrn", length = 12)
+    private String rrn;
+
+    /** AUR-17: маска номера социальной карты 8600********1234; полный номер не хранится. */
+    @Column(name = "social_card_number", length = 16)
+    private String socialCardNumber;
 
     /** CREDIT / ADVANCE: debtor phone and cashier note. */
     @Column(name = "debt_phone", length = 32)

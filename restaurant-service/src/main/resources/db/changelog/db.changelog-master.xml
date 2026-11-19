@@ -69,6 +69,7 @@
     <include file="db/changelog/v63-allow-foreign-table-orders.xml"/>
     <include file="db/changelog/v64-hall-presence.xml"/>
     <include file="db/changelog/v65-payment-fiscal-proof.xml"/>
+    <include file="db/changelog/v66-payment-card-details.xml"/>
 
 </databaseChangeLog>
 
