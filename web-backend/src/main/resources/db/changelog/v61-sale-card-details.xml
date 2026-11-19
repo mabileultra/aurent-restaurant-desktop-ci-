@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        AUR-17: реквизиты оплаты картой со слип-чека терминала (ОФД ExtraInfo: CardType, PPTID, CardNumber).
+        Номер соцкарты хранится только маской 4 цифры + 8 звёздочек + 4 цифры; CHECK не даёт записать полный номер.
+        v60 пропущен намеренно: этот номер занят веткой AUR-19.
+    -->
+    <changeSet id="v61-sale-card-details-columns" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="sales" columnName="card_category"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="sales">
+            <column name="card_category" type="VARCHAR(20)"/>
+            <column name="rrn" type="VARCHAR(12)"/>
+            <column name="social_card_number" type="VARCHAR(16)"/>
+        </addColumn>
+        <sql>
+            ALTER TABLE sales ADD CONSTRAINT ck_sales_card_category
+                CHECK (card_category IS NULL OR card_category IN ('CORPORATE', 'PERSONAL', 'SOCIAL'));
+            ALTER TABLE sales ADD CONSTRAINT ck_sales_rrn
+                CHECK (rrn IS NULL OR rrn ~ '^[0-9]{12}$');
+            ALTER TABLE sales ADD CONSTRAINT ck_sales_social_card_number_masked
+                CHECK (social_card_number IS NULL OR social_card_number ~ '^[0-9]{4}[*]{8}[0-9]{4}$');
+        </sql>
+    </changeSet>
+</databaseChangeLog>

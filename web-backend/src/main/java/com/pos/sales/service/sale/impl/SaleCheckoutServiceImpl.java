@@ -25,6 +25,7 @@ import com.pos.integrations.marking.service.MarkingAfterSaleService;
 import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.sales.service.sale.SaleCheckoutService;
 import com.pos.sales.service.sale.support.CheckoutProductLoader;
+import com.pos.sales.service.sale.support.SaleCardDetailsApplier;
 import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
@@ -88,6 +89,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final MarkingSoldJournalService markingSoldJournalService;
     private final CashPaymentRestrictionGuard cashPaymentRestrictionGuard;
     private final ForbiddenMxikGuard forbiddenMxikGuard;
+    private final SaleCardDetailsApplier cardDetailsApplier;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -219,6 +221,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             .notes(req.notes())
             .printFiscalQr(req.printFiscalQr() == null || Boolean.TRUE.equals(req.printFiscalQr()))
             .build();
+        cardDetailsApplier.apply(sale, req);
 
         items.forEach(item -> item.setSale(sale));
         sale.setItems(items);
