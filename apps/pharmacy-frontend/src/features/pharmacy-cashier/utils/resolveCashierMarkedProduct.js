@@ -24,8 +24,10 @@ export async function resolveCashierMarkedProduct({
       }
       try {
         return await resolvePharmacyProductByMarking({ products, rawCode: mark, storeId });
-      } catch {
-        return null;
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 404 || status === 400) return null;
+        throw error;
       }
     },
   });

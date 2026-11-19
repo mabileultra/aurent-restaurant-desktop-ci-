@@ -1,4 +1,4 @@
-/* Supplier filter cards on Products — same density as inventory KPIs */
+/* Supplier filter cards on Products — Pharma Green light */
 
 .pharm-supplier-cards {
   display: grid;
@@ -12,32 +12,34 @@
   flex-direction: column;
   align-items: flex-start;
   min-height: 4.35rem;
-  padding: 0.6rem 0.75rem 0.55rem;
-  border: 1px solid var(--pharm-line, #e2e8f0);
-  border-radius: 0.55rem;
-  background: #fff;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-card);
   text-align: left;
   cursor: pointer;
   transition: border-color 0.12s ease, background 0.12s ease;
 }
 
 .pharm-supplier-card:hover {
-  border-color: #94a3b8;
+  border-color: rgb(var(--color-line-strong));
+  background: rgb(var(--color-primary-50) / 0.45);
 }
 
 .pharm-supplier-card.is-active {
-  border-color: #10b981;
-  background: #ecfdf5;
+  border-color: rgb(var(--color-primary-500));
+  background: rgb(var(--color-primary-50));
 }
 
 .pharm-supplier-card__label {
   margin: 0;
-  font-size: 0.68rem;
-  font-weight: 650;
+  font-size: 0.6875rem;
+  font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1.2;
   text-transform: uppercase;
-  color: var(--pharm-muted, #64748b);
+  color: rgb(var(--color-ink-muted));
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -48,32 +50,19 @@
   margin: 0.2rem 0 0;
   font-size: 1.35rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1.2;
-  color: #0f172a;
+  color: rgb(var(--color-ink));
 }
 
 .pharm-supplier-card__hint {
   margin: 0.15rem 0 0;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.25;
-  color: var(--pharm-muted, #64748b);
+  color: rgb(var(--color-ink-muted));
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.dark .pharm-supplier-card {
-  background: #0f172a;
-  border-color: rgba(148, 163, 184, 0.25);
-}
-
-.dark .pharm-supplier-card.is-active {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: #34d399;
-}
-
-.dark .pharm-supplier-card__value {
-  color: #f8fafc;
 }

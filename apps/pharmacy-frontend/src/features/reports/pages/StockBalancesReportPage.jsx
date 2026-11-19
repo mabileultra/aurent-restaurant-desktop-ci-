@@ -1,4 +1,6 @@
+import { Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState, PageHeader } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
@@ -13,16 +15,16 @@ export default function StockBalancesReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.balancesTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.balancesSubtitle')}</p>
-        </div>
-        <ReportExportButton
-          fetchBlob={r.fetchExportBlob}
-          filenamePrefix="pharmacy_stock_balances"
-        />
-      </div>
+      <PageHeader
+        title={t('stockReports.balancesTitle')}
+        subtitle={t('stockReports.balancesSubtitle')}
+        actions={(
+          <ReportExportButton
+            fetchBlob={r.fetchExportBlob}
+            filenamePrefix="pharmacy_stock_balances"
+          />
+        )}
+      />
 
       <StockBalancesFilters
         t={t}
@@ -45,28 +47,34 @@ export default function StockBalancesReportPage() {
           onPageSizeChange: r.setPageSize,
         }}
       >
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
+        <table className="ui-table">
+          <thead>
             <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
-              <th className="px-4 py-3">{t('pharmacyStock.colManufacturer')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colStock')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colMin')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colStockValue')}</th>
+              <th className="ui-th">{t('stockReports.colProduct')}</th>
+              <th className="ui-th">{t('pharmacyStock.colManufacturer')}</th>
+              <th className="ui-th text-right">{t('stockReports.colStock')}</th>
+              <th className="ui-th text-right">{t('stockReports.colMin')}</th>
+              <th className="ui-th text-right">{t('stockReports.colStockValue')}</th>
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
+            {r.isPending && <tr><td colSpan={7} className="ui-td py-8 text-center text-ink-muted">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && (
+              <tr>
+                <td colSpan={7} className="p-0">
+                  <EmptyState icon={Package} title={t('common.noData')} />
+                </td>
+              </tr>
+            )}
             {r.rows.map((row, index) => (
-              <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
+              <tr key={row.productId} className="ui-tr">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
                 <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
-                <td className="px-4 py-3">{row.manufacturer || '—'}</td>
-                <td className="px-4 py-3 text-right">{row.stockQuantity}</td>
-                <td className="px-4 py-3 text-right">{row.lowStockAlert}</td>
-                <td className="px-4 py-3 text-right">{fmtMoney(row.stockValue)}</td>
+                <td className="ui-td text-ink-muted">{row.manufacturer || '—'}</td>
+                <td className="ui-td-nowrap text-right">{row.stockQuantity}</td>
+                <td className="ui-td-nowrap text-right text-ink-muted">{row.lowStockAlert}</td>
+                <td className="ui-td-nowrap text-right font-semibold">{fmtMoney(row.stockValue)}</td>
               </tr>
             ))}
           </tbody>

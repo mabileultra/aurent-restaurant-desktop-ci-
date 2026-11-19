@@ -7,6 +7,7 @@ import { fmtMoney as fmt } from '../../../../utils/formatMoney';
 import { isMeasuredProduct } from '../../../../utils/quantityFormat';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { isMarkingOnlyProduct } from '../../../marking';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 import { usePosWeightLineModal } from './usePosWeightLineModal';
 import { usePosMarkingScan } from './usePosMarkingScan';
 import { usePosBarcodeScannerHandler } from './usePosBarcodeScannerHandler';
@@ -62,6 +63,10 @@ export function usePosCartHandlers({
       productMark: product.productMark ?? product.markCode ?? null,
       markCode: product.markCode ?? product.productMark ?? null,
       productMarks: Array.isArray(product.productMarks) ? [...product.productMarks] : null,
+      // Block KM: resolveCashierMarking sets these; without them qty stays 1.
+      sellAsBlock: product.sellAsBlock === true,
+      unitsInPack: product.unitsInPack ?? null,
+      packageName: product.packageName ?? null,
     }),
     [storeId]
   );
@@ -138,10 +143,15 @@ export function usePosCartHandlers({
         weight.setWeightModalProduct(payload);
         return;
       }
-      const lineId = addPieceItem(payload, 1);
-      const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
-      if (line) showLineAddedToast(line, product.name);
-      setSelectedLineId(lineId);
+      try {
+        const lineId = addPieceItem(payload, 1);
+        const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
+        if (line) showLineAddedToast(line, product.name);
+        setSelectedLineId(lineId);
+      } catch (err) {
+        const msg = resolveForbiddenMxikError(err, t);
+        toast.error(msg || err?.message || t('pos.saleFailed'));
+      }
     },
     [addPieceItem, cartProductPayload, shiftIsOpen, showLineAddedToast, t, setSelectedLineId, weight]
   );

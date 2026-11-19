@@ -1,0 +1,23 @@
+---
+description: AUR-13 cash payment category + BRV limit invariants
+globs:
+  - web-backend/src/main/java/com/pos/sales/support/cashlimit/**
+  - web-backend/src/main/java/com/pos/operator/OperatorBrv*
+  - apps/web-frontend/src/features/cashier/utils/resolveCashPaymentRestrictionError*
+---
+
+# Cash payment restriction (AUR-13)
+
+## Must
+
+- Server enforces cash limits in `CashPaymentRestrictionGuard` on grocery checkout when `cashAmount > 0` (CASH / MIXED).
+- Absolute cash ban categories via product attr `cashRestrictionCategory`: ELECTRICITY, NATURAL_GAS, WATER_SUPPLY, GOVERNMENT_SERVICES, ALCOHOL, TOBACCO, FUEL, EV_CHARGING, REAL_ESTATE.
+- VEHICLE_MNOG: ban cash if age &lt; 10 years (`vehicleManufactureYear`).
+- AGRICULTURAL / `agriculturalProduct=true`: cash allowed (skips amount limit when entire cart is agri).
+- BRV from `GET /operator/brv`; limit = `brvAmount × cashLimitBrvUnits` (default 340000×74 ≈ 25.16M UZS).
+- API errors include `context.reasonCode` for the frontend.
+
+## Must NOT
+
+- Bypass the guard for online checkout with cash.
+- Soften category bans without an explicit product-rule change.

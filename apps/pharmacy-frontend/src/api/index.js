@@ -37,3 +37,4 @@ export { platformBusinessTypeApi } from './platform/businessType.api';
 export { platformBillingApi, tenantBillingApi } from './platform/billing.api';
 export { pharmacyIntegrationApi } from './pharmacyIntegration.api';
 export { multikassaApi } from './multikassa.api';
+export { fiscalDriveApi } from './fiscalDrive.api';

@@ -4,11 +4,9 @@ import { formatUzPhone } from '../../../../utils/phoneUz';
 import { formatSupplierAccount } from '../../../../utils/supplierAccountUz';
 import { useSupplierModalForm } from '../../hooks/useSupplierModalForm';
 
-const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500
-                  dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
+const inputCls = 'ui-input';
 
-const labelCls = 'mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400';
+const labelCls = 'ui-label mb-1';
 
 export default function SupplierModal({ open, onClose, onCreated, supplier = null }) {
   const { t } = useTranslation();
@@ -22,25 +20,26 @@ export default function SupplierModal({ open, onClose, onCreated, supplier = nul
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
-      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+    <div className="ui-modal-overlay z-[60]">
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
+      <div className="ui-modal-panel relative max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="ui-modal-header">
+          <h2 className="text-base font-semibold text-ink">
             {isEdit ? t('suppliersModule.modal.editTitle') : t('suppliersModule.modal.title')}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="ui-icon-btn"
+            aria-label={t('common.close')}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
-        <form onSubmit={submit} className="space-y-4 p-4">
+        <form onSubmit={submit} className="space-y-4 p-5">
           <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
             <label className={labelCls}>
-              <span className="text-red-600">*</span> {t('suppliersModule.modal.name')}
+              <span className="text-danger">*</span> {t('suppliersModule.modal.name')}
             </label>
             <input
               className={inputCls}
@@ -50,7 +49,7 @@ export default function SupplierModal({ open, onClose, onCreated, supplier = nul
           </div>
           <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
             <label className={labelCls}>
-              <span className="text-red-600">*</span> {t('suppliersModule.modal.taxId')}
+              <span className="text-danger">*</span> {t('suppliersModule.modal.taxId')}
             </label>
             <input
               className={inputCls}
@@ -60,10 +59,10 @@ export default function SupplierModal({ open, onClose, onCreated, supplier = nul
           </div>
           <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
             <label className={labelCls}>
-              <span className="text-red-600">*</span> {t('suppliersModule.modal.accountNumber')}
+              <span className="text-danger">*</span> {t('suppliersModule.modal.accountNumber')}
             </label>
             <input
-              className={`${inputCls} font-mono`}
+              className={`${inputCls} font-mono ui-tabular`}
               value={form.accountNumber}
               onChange={(e) => setField('accountNumber', formatSupplierAccount(e.target.value))}
               placeholder="2020 8000 1234 5678 9012"
@@ -73,7 +72,7 @@ export default function SupplierModal({ open, onClose, onCreated, supplier = nul
           </div>
           <div className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
             <label className={labelCls}>
-              <span className="text-red-600">*</span> {t('suppliersModule.modal.phone')}
+              <span className="text-danger">*</span> {t('suppliersModule.modal.phone')}
             </label>
             <input
               className={inputCls}
@@ -82,18 +81,18 @@ export default function SupplierModal({ open, onClose, onCreated, supplier = nul
               placeholder="+998 (__) ___-__-__"
             />
           </div>
-          <div className="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="flex justify-end gap-2 border-t border-line pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="ui-btn-secondary"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={pending}
-              className="admin-btn-primary px-4 py-2 text-sm"
+              className="ui-btn-primary"
             >
               {pending
                 ? t('common.processing')

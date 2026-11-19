@@ -7,7 +7,7 @@
   padding: 14px 16px;
   border-radius: 12px;
   border: 1px solid rgb(0 104 71 / 0.2);
-  background: linear-gradient(135deg, #e8f5ef 0%, #f8fffb 55%, #fff 100%);
+  background: linear-gradient(135deg, rgb(var(--color-primary-50)) 0%, rgb(var(--color-canvas)) 55%, rgb(var(--color-surface)) 100%);
   box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
 }
 
@@ -18,15 +18,15 @@
   width: 44px;
   flex-shrink: 0;
   border-radius: 10px;
-  background: var(--pos-green, #006847);
-  color: #fff;
+  background: var(--pos-green, rgb(var(--color-primary-500)));
+  color: rgb(var(--color-surface));
 }
 
 .cashier-sales-shift-stats__title {
   margin: 0 0 10px;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .cashier-sales-shift-stats__grid {
@@ -41,22 +41,22 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: rgb(var(--color-ink-muted));
   margin-bottom: 2px;
 }
 
 .cashier-sales-shift-stats__value {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--pos-text, #111827);
+  color: var(--pos-text, rgb(var(--color-ink)));
 }
 
 .cashier-sales-shift-stats__value--sum {
-  color: var(--pos-green, #006847);
+  color: var(--pos-green, rgb(var(--color-primary-500)));
   font-weight: 800;
 }
 @media (max-width: 767px) {
-  .cashier-sales-shift-stats__grid {
+.cashier-sales-shift-stats__grid {
     grid-template-columns: 1fr;
   }
 }

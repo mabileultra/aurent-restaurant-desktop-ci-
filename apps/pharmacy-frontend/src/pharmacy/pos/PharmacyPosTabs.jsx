@@ -43,7 +43,7 @@ export default function PharmacyPosTabs({ onOpenShift }) {
         if (tab.action === 'shift') {
           return (
             <button key={tab.id} type="button" className="pharmacy-pos-tabs__item" onClick={onOpenShift}>
-              <Icon size={15} strokeWidth={2} aria-hidden />
+              <Icon size={15} strokeWidth={1.75} aria-hidden />
               <span>{tab.label}</span>
             </button>
           );
@@ -56,7 +56,7 @@ export default function PharmacyPosTabs({ onOpenShift }) {
               className="pharmacy-pos-tabs__item"
               onClick={() => actions?.run(tab.action)}
             >
-              <Icon size={15} strokeWidth={2} aria-hidden />
+              <Icon size={15} strokeWidth={1.75} aria-hidden />
               <span>{tab.label}</span>
               {tab.id === 'parked' && parkedCount > 0 ? (
                 <span className="pharmacy-pos-tabs__count">{parkedCount}</span>
@@ -71,7 +71,7 @@ export default function PharmacyPosTabs({ onOpenShift }) {
             end={tab.end}
             className={({ isActive }) => `pharmacy-pos-tabs__item${isActive ? ' is-active' : ''}`}
           >
-            <Icon size={15} strokeWidth={2} aria-hidden />
+            <Icon size={15} strokeWidth={1.75} aria-hidden />
             <span>{tab.label}</span>
           </NavLink>
         );

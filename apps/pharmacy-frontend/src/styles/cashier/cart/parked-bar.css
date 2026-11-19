@@ -7,7 +7,7 @@
   gap: 8px;
   padding: 10px 12px;
   border-top: 1px solid var(--pos-border);
-  background: color-mix(in srgb, var(--pos-green-soft, #e8f5ef) 70%, var(--pos-surface, #fff));
+  background: color-mix(in srgb, var(--pos-green-soft, rgb(var(--color-primary-50))) 70%, var(--pos-surface, rgb(var(--color-surface))));
 }
 
 .pos-parked-bar__head {
@@ -36,7 +36,7 @@
   padding: 0 6px;
   border-radius: var(--pos-control-radius, 10px);
   background: var(--pos-green-gradient, var(--pos-green));
-  color: var(--pos-on-green, #fff);
+  color: var(--pos-on-green, rgb(var(--color-surface)));
   font-size: 0.6875rem;
   font-weight: 800;
 }
@@ -53,7 +53,7 @@
 }
 
 .pos-parked-bar__clear-all:hover {
-  color: var(--pos-danger, #dc2626);
+  color: var(--pos-danger, rgb(var(--color-danger-text)));
 }
 
 .pos-parked-bar__list {
@@ -83,7 +83,7 @@
   padding: 8px 10px;
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-control-radius, 10px);
-  background: var(--pos-surface-elevated, #fff);
+  background: var(--pos-surface-elevated, rgb(var(--color-surface)));
   color: var(--pos-text);
   text-align: left;
   cursor: pointer;
@@ -121,32 +121,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #fecaca;
+  border: 1px solid rgb(var(--color-danger) / 0.35);
   border-radius: var(--pos-control-radius, 10px);
-  background: #fef2f2;
-  color: #dc2626;
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
   cursor: pointer;
 }
 
 .pos-parked-bar__remove:hover {
-  background: #fee2e2;
-}
-
-.cashier-app.cashier-app--terminal .pos-parked-bar {
-  background: rgba(46, 196, 182, 0.08);
-  border-top-color: rgba(255, 255, 255, 0.08);
-}
-
-.cashier-app.cashier-app--terminal .pos-parked-bar__restore {
-  background: rgba(15, 23, 42, 0.55);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #f3f4f6;
-}
-
-.cashier-app.cashier-app--terminal .pos-parked-bar__remove {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
-  color: #fca5a5;
+  background: rgb(var(--color-danger-soft));
 }
 
 /* Компактные отложенные чеки на POS */

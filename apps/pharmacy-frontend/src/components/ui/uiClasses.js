@@ -1,2 +1,3 @@
-/** @deprecated import from `@aurent/shared-ui` */
-export { inputCls, labelCls, fieldErrorCls } from '@aurent/shared-ui';
+export const inputCls = 'ui-input';
+export const labelCls = 'ui-label';
+export const fieldErrorCls = 'ui-field-error';

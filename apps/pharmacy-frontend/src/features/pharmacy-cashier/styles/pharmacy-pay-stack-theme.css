@@ -1,34 +1,34 @@
-/* Краски колонки оплаты и пустого чека. Размеры не меняем. */
+/* Pharmacy pay stack overrides — Pharma Green */
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__btn {
-  border-color: #c3c7d2;
-  color: #1f2024;
-  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  border-color: rgb(var(--color-line));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
   font-weight: 600;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__btn kbd {
-  color: #8b9198;
+  color: rgb(var(--color-ink-muted));
   font-weight: 600;
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier__cart-pane {
-  border-color: #c3c7d2;
-  box-shadow: 0 1px 3px rgb(19 72 66 / 0.08);
+  border-color: rgb(var(--color-line));
+  box-shadow: var(--shadow-card);
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head {
-  border-bottom-color: #e4e7ec;
+  border-bottom-color: rgb(var(--color-line));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head__title,
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head__count {
-  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
-  color: #1f2024;
+  font-family: var(--font-ui);
+  color: rgb(var(--color-ink));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head__status.is-idle {
-  background: #f4f6f8;
-  border-color: #c3c7d2;
-  color: #3b3e45;
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-line));
+  color: rgb(var(--color-ink-muted));
 }

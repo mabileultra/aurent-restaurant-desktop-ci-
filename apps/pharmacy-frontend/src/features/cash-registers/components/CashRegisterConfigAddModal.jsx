@@ -11,9 +11,7 @@ import { BaseSelect } from '../../../components/ui';
 import { cashRegisterConfigApi } from '../../../services/api';
 import '../../../styles/cash-registers/config.css';
 
-const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500
-                  dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
+const inputCls = 'ui-input';
 
 export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
   const { t } = useTranslation();
@@ -137,38 +135,38 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
-      <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('cashRegisters.configModalTitle')}</h2>
-          <button type="button" onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400">
-            <X size={20} />
+    <div className="ui-modal-overlay z-[60]">
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
+      <div className="ui-modal-panel relative max-w-lg max-h-[90vh]">
+        <div className="ui-modal-header">
+          <h2 className="text-base font-semibold text-ink">{t('cashRegisters.configModalTitle')}</h2>
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label={t('common.close')}>
+            <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+          <div className="ui-modal-body flex-1 space-y-4 overflow-y-auto">
             {isError && (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+              <p className="ui-alert-danger">
                 {t('cashRegisters.configCreateFailed')}
               </p>
             )}
 
             {isPending ? (
-              <p className="text-sm text-slate-500">{t('common.loading')}</p>
+              <p className="text-sm text-ink-muted">{t('common.loading')}</p>
             ) : (
               <>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                  <label className="ui-label mb-1">
                     * {t('cashRegisters.configNameLabel')}
                   </label>
-                  <input {...register('name')} className={`${inputCls} ${errors.name ? 'border-red-500' : ''}`} />
-                  {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+                  <input {...register('name')} className={`${inputCls} ${errors.name ? 'ui-input-error' : ''}`} />
+                  {errors.name && <p className="mt-1 text-xs text-danger-text">{errors.name.message}</p>}
                 </div>
 
                 <div>
-                  <div className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                  <div className="ui-label mb-2">
                     {t('cashRegisters.configStoresLabel')}
                   </div>
                   <div className="crc-modal__pick-list">
@@ -186,7 +184,7 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
                 </div>
 
                 <div>
-                  <div className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                  <div className="ui-label mb-2">
                     {t('cashRegisters.configRegistersLabel')}
                   </div>
                   <div className="crc-modal__pick-list">
@@ -211,7 +209,7 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
                 </div>
 
                 <div>
-                  <div className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                  <div className="ui-label mb-2">
                     {t('cashRegisters.configCategoriesLabel')}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -233,7 +231,7 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
                       type="button"
                       onClick={addPickedCategory}
                       disabled={!pickCategoryId}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                      className="ui-btn-secondary"
                     >
                       {t('cashRegisters.configAddCategory')}
                     </button>
@@ -277,7 +275,7 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
                               <span className="truncate">{c.name}</span>
                               <button
                                 type="button"
-                                className="shrink-0 text-red-600 hover:text-red-700"
+                                className="shrink-0 text-danger-text hover:text-danger"
                                 onClick={() => removeCategory(c.id)}
                                 aria-label={t('common.delete')}
                               >
@@ -294,18 +292,18 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
             )}
           </div>
 
-          <div className="flex gap-2 border-t border-slate-200 p-4 dark:border-slate-800">
+          <div className="ui-modal-footer">
             <button
               type="button"
               onClick={onClose}
-              className="admin-btn-secondary flex-1 py-2.5 text-sm"
+              className="ui-btn-secondary"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="admin-btn-primary flex-1 py-2.5 text-sm"
+              className="ui-btn-primary"
             >
               {t('cashRegisters.configModalAdd')}
             </button>

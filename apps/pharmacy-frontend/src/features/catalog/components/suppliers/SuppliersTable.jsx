@@ -1,4 +1,5 @@
-import { Info } from 'lucide-react';
+import { Truck } from 'lucide-react';
+import { EmptyState } from '../../../../components/ui';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { formatSupplierAccount } from '../../../../utils/supplierAccountUz';
@@ -26,39 +27,39 @@ export default function SuppliersTable({
   deletingId,
 }) {
   return (
-    <div className="admin-table-shell">
+    <div className="ui-table-wrap">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="ui-table">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300">
+            <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3">{t('suppliersModule.colDate')}</th>
-              <th className="px-4 py-3">{t('suppliersModule.colName')}</th>
-              <th className="px-4 py-3">{t('suppliersModule.colTax')}</th>
-              <th className="px-4 py-3">{t('suppliersModule.colAccount')}</th>
-              <th className="px-4 py-3">{t('suppliersModule.colPhone')}</th>
-              {manage ? <th className="px-4 py-3 text-right">{t('common.actions')}</th> : null}
+              <th className="ui-th">{t('suppliersModule.colDate')}</th>
+              <th className="ui-th">{t('suppliersModule.colName')}</th>
+              <th className="ui-th">{t('suppliersModule.colTax')}</th>
+              <th className="ui-th">{t('suppliersModule.colAccount')}</th>
+              <th className="ui-th">{t('suppliersModule.colPhone')}</th>
+              {manage ? <th className="ui-th text-right">{t('common.actions')}</th> : null}
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={COL_COUNT} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={COL_COUNT} className="ui-td py-8 text-center text-ink-muted">
                   {t('common.loading')}
                 </td>
               </tr>
             )}
             {!loading &&
               rows.map((row, index) => (
-                <tr key={row.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800/80">
+                <tr key={row.id} className="ui-tr">
                   <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtDate(row.createdAt)}</td>
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">{row.taxId}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                  <td className="ui-td-nowrap text-ink-muted">{fmtDate(row.createdAt)}</td>
+                  <td className="ui-td font-medium">{row.name}</td>
+                  <td className="ui-td-nowrap text-ink-muted">{row.taxId}</td>
+                  <td className="ui-td-nowrap text-ink-muted">
                     {row.accountNumber ? formatSupplierAccount(row.accountNumber) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.phone ?? '—'}</td>
+                  <td className="ui-td-nowrap text-ink-muted">{row.phone ?? '—'}</td>
                   {manage ? (
                     <SuppliersRowActionsCell
                       t={t}
@@ -76,9 +77,8 @@ export default function SuppliersTable({
         </table>
       </div>
       {showEmptyHint && (
-        <div className="flex items-start gap-3 border-t border-sky-100 bg-sky-50 px-4 py-4 text-sm text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
-          <Info size={18} className="mt-0.5 shrink-0 text-sky-600 dark:text-sky-400" />
-          <span>{t('suppliersModule.empty')}</span>
+        <div className="border-t border-line">
+          <EmptyState icon={Truck} title={t('suppliersModule.empty')} />
         </div>
       )}
 

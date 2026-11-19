@@ -15,14 +15,6 @@ export function isKitchenChannelPlaceLine(text) {
   return /^(НА ВЫНОС|ДОСТАВКА|TAKEAWAY|DELIVERY)(?=$|[\s·#№])/i.test(s);
 }
 
-function orderNoMark(order) {
-  const no = order?.orderNo;
-  if (no == null || no === '' || no === '—') return '';
-  const n = Number(no);
-  if (!Number.isFinite(n) || n <= 0) return '';
-  return `№${n}`;
-}
-
 function counterChannelLabel(channel, t) {
   const ch = String(channel || '').toUpperCase();
   if (ch === 'DELIVERY') {
@@ -55,20 +47,17 @@ export function normalizeKitchenHeader(header, order, t) {
  */
 export function formatKitchenPlaceLine({ order, t } = {}) {
   const channel = String(order?.channel || 'DINE_IN').toUpperCase();
-  const mark = orderNoMark(order);
 
   if (channel === 'TAKEAWAY' || channel === 'DELIVERY') {
     const label = counterChannelLabel(channel, t).toUpperCase();
-    const parts = [label];
-    if (mark) parts.push(mark);
     const name = String(order?.clientName || '').trim();
-    if (name) parts.push(name);
-    return parts.join(' · ');
+    // Order № is a separate profile field (`orderNo`) — do not bury it here.
+    return name ? `${label} · ${name}` : label;
   }
 
   const code = order?.tableCode || '—';
   const hall = order?.hallName || null;
-  const place = hall
+  return hall
     ? (t?.('rst.order.ticketTitle', {
       code,
       hall,
@@ -78,8 +67,6 @@ export function formatKitchenPlaceLine({ order, t } = {}) {
       code,
       defaultValue: `Стол ${code}`,
     }) || `Стол ${code}`);
-  if (mark && !String(place).includes(mark)) return `${place} · ${mark}`;
-  return place;
 }
 
 /** Extra lines under the place row (delivery only). */

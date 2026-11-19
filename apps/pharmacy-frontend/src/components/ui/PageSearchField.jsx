@@ -10,7 +10,7 @@ export default function PageSearchField({
 }) {
   return (
     <label className={clsx('page-search-field', className)}>
-      <Search size={16} className="page-search-field__icon" aria-hidden />
+      <Search size={16} strokeWidth={1.75} className="page-search-field__icon" aria-hidden />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}

@@ -13,21 +13,16 @@ export default function BaseTable({
   tableClassName,
 }) {
   return (
-    <div
-      className={clsx(
-        'admin-table-shell',
-        className
-      )}
-    >
+    <div className={clsx('admin-table-shell ui-table-wrap', className)}>
       <div className="overflow-x-auto">
         <table
-          className={clsx('w-full text-sm', tableClassName)}
+          className={clsx('ui-table', tableClassName)}
           style={minWidth ? { minWidth } : undefined}
         >
           {isLoading || isEmpty ? (
             <tbody>
               <tr>
-                <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={colSpan} className="px-4 py-10 text-center text-ink-muted">
                   {isLoading ? loadingMessage : emptyMessage}
                 </td>
               </tr>
@@ -38,7 +33,7 @@ export default function BaseTable({
         </table>
       </div>
       {footer ? (
-        <div className="base-table__footer relative z-20 overflow-visible bg-white dark:bg-slate-900">
+        <div className="base-table__footer relative z-20 overflow-visible bg-surface border-t border-line">
           {footer}
         </div>
       ) : null}

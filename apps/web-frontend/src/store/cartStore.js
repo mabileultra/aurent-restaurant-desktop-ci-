@@ -1,7 +1,12 @@
 // src/store/cartStore.js
 import { create } from 'zustand';
 import { round2 } from '../utils/taxAmounts';
-import { normalizePrescriptionNumber } from '@aurent/shared-fiscal';
+import {
+  FORBIDDEN_MXIK_REASON_CODE,
+  isForbiddenMxik,
+  normalizeMxik,
+  normalizePrescriptionNumber,
+} from '@aurent/shared-fiscal';
 import {
   buildCheckoutLineItems,
   calculateCartTotals,
@@ -34,6 +39,15 @@ export {
   MAX_PARKED_CARTS,
 };
 
+function assertProductMxikAllowed(product) {
+  const raw = product?.ikpu ?? product?.mxik;
+  if (!isForbiddenMxik(raw)) return;
+  const err = new Error(`FORBIDDEN_MXIK:${normalizeMxik(raw)}`);
+  err.code = FORBIDDEN_MXIK_REASON_CODE;
+  err.mxik = normalizeMxik(raw);
+  throw err;
+}
+
 export const useCartStore = create((set, get) => ({
   items: [],
   orderDiscountAmount: 0,
@@ -64,6 +78,7 @@ export const useCartStore = create((set, get) => ({
   clearCustomer: () => set({ customerId: null, customerName: null }),
 
   addPieceItem: (product, qty = 1) => {
+    assertProductMxikAllowed(product);
     get().ensureCheckNo();
     const result = addPieceItemToCart(get().items, product, qty, get().orderDiscountAmount);
     set({ items: result.items, orderDiscountAmount: result.orderDiscountAmount });
@@ -71,6 +86,7 @@ export const useCartStore = create((set, get) => ({
   },
 
   insertSeparatePieceItem: (product, qty = 1) => {
+    assertProductMxikAllowed(product);
     get().ensureCheckNo();
     const result = insertSeparatePieceItemToCart(get().items, product, qty, get().orderDiscountAmount);
     set({ items: result.items, orderDiscountAmount: result.orderDiscountAmount });
@@ -80,6 +96,7 @@ export const useCartStore = create((set, get) => ({
   patchCartLine: (lineId, patch) => set(patchCartLineInCart(get().items, lineId, patch, get().orderDiscountAmount)),
 
   addWeightLine: (product, quantityKg) => {
+    assertProductMxikAllowed(product);
     get().ensureCheckNo();
     const result = addWeightLineToCart(get().items, product, quantityKg, get().orderDiscountAmount);
     set({ items: result.items, orderDiscountAmount: result.orderDiscountAmount });

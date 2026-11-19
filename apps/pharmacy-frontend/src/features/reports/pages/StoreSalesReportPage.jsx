@@ -1,5 +1,7 @@
+import { Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { reportApi } from '../../../api';
+import { EmptyState, PageHeader } from '../../../components/ui';
 import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
@@ -13,17 +15,17 @@ export default function StoreSalesReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.salesByStoresTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.salesByStoresSubtitle')}</p>
-        </div>
-        <ReportExportButton
-          fetchBlob={() => reportApi.exportSalesByStores(r.exportParams)}
-          filenamePrefix="sales_by_stores"
-          disabled={!r.rangeEnabled}
-        />
-      </div>
+      <PageHeader
+        title={t('stockReports.salesByStoresTitle')}
+        subtitle={t('stockReports.salesByStoresSubtitle')}
+        actions={(
+          <ReportExportButton
+            fetchBlob={() => reportApi.exportSalesByStores(r.exportParams)}
+            filenamePrefix="sales_by_stores"
+            disabled={!r.rangeEnabled}
+          />
+        )}
+      />
       <ReportDateBar from={r.from} to={r.to} onFrom={r.setFrom} onTo={r.setTo} />
       <ReportTableCard
         pagination={{
@@ -35,28 +37,34 @@ export default function StoreSalesReportPage() {
           onPageSizeChange: r.setPageSize,
         }}
       >
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
+        <table className="ui-table">
+          <thead>
             <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3">{t('stockReports.colStore')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colReceipts')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colNet')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colRevenue')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colMargin')}</th>
+              <th className="ui-th">{t('stockReports.colStore')}</th>
+              <th className="ui-th text-right">{t('stockReports.colReceipts')}</th>
+              <th className="ui-th text-right">{t('stockReports.colNet')}</th>
+              <th className="ui-th text-right">{t('stockReports.colRevenue')}</th>
+              <th className="ui-th text-right">{t('stockReports.colMargin')}</th>
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
+            {r.isPending && <tr><td colSpan={7} className="ui-td py-8 text-center text-ink-muted">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && (
+              <tr>
+                <td colSpan={7} className="p-0">
+                  <EmptyState icon={Building2} title={t('common.noData')} />
+                </td>
+              </tr>
+            )}
             {r.rows.map((row, index) => (
-              <tr key={row.storeId} className="border-b border-slate-100 dark:border-slate-800">
+              <tr key={row.storeId} className="ui-tr">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.storeId} />
-                <td className="px-4 py-3 font-medium">{row.storeName}</td>
-                <td className="px-4 py-3 text-right">{row.receiptCount}</td>
-                <td className="px-4 py-3 text-right">{row.netQuantity}</td>
-                <td className="px-4 py-3 text-right">{fmtMoney(row.revenue)}</td>
-                <td className="px-4 py-3 text-right text-emerald-700">{fmtMoney(row.margin)}</td>
+                <td className="ui-td font-medium">{row.storeName}</td>
+                <td className="ui-td-nowrap text-right">{row.receiptCount}</td>
+                <td className="ui-td-nowrap text-right">{row.netQuantity}</td>
+                <td className="ui-td-nowrap text-right font-semibold">{fmtMoney(row.revenue)}</td>
+                <td className="ui-td-nowrap text-right font-semibold text-success-text">{fmtMoney(row.margin)}</td>
               </tr>
             ))}
           </tbody>

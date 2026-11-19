@@ -6,8 +6,8 @@
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  border: 1px solid #a3cfbb;
-  background: #d1e7dd;
-  color: #0a3622;
+  border: 1px solid rgb(var(--color-primary-200));
+  background: rgb(var(--color-primary-100));
+  color: rgb(var(--color-primary-800));
   font-size: 0.875rem;
 }

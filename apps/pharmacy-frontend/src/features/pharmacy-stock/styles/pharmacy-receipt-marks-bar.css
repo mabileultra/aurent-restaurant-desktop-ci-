@@ -5,20 +5,15 @@
   gap: 0.5rem 0.65rem;
   margin: 0 0 0.85rem;
   padding: 0.55rem 0.65rem;
-  border: 1px solid var(--pharm-line, #e2e8f0);
-  border-radius: 0.75rem;
-  background: #f8fafc;
-}
-
-.dark .pharmacy-receipt-document-toolbar {
-  background: rgba(30, 41, 59, 0.75);
-  border-color: rgba(148, 163, 184, 0.22);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-canvas));
 }
 
 .pharmacy-receipt-document-toolbar .pharmacy-stock__tb-btn {
-  height: 2.15rem;
+  height: 2.25rem;
   padding: 0 0.85rem;
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
 }
 
 .pharmacy-receipt-document-toolbar .pharmacy-receipt-marks-bar {
@@ -37,15 +32,16 @@
   margin-left: 4px;
   padding: 1px 7px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--pharm-brand, #006847) 12%, #fff);
-  color: var(--pharm-brand, #006847);
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .pharmacy-receipt-marks-bar__meta {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--pharm-muted, #64748b);
+  color: rgb(var(--color-ink-muted));
   white-space: nowrap;
 }

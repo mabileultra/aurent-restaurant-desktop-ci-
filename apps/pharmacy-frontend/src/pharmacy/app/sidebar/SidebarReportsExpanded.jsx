@@ -33,7 +33,8 @@ export default function SidebarReportsExpanded({
         </span>
         <ChevronDown
           size={16}
-          className={`flex-shrink-0 opacity-80 transition-transform dark:opacity-70 ${reportsOpen ? '' : '-rotate-90'}`}
+          strokeWidth={1.75}
+          className={`flex-shrink-0 opacity-80 transition-transform ${reportsOpen ? '' : '-rotate-90'}`}
         />
       </button>
       {reportsOpen ? (

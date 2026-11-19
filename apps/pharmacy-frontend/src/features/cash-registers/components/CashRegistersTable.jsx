@@ -1,4 +1,5 @@
-import { Play, Pause } from 'lucide-react';
+import { Monitor, Play, Pause } from 'lucide-react';
+import { EmptyState } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 
 const COL_COUNT = 8;
@@ -13,58 +14,58 @@ export default function CashRegistersTable({
 }) {
   return (
     <div className="admin-data-table-wrap overflow-x-auto">
-      <table className="admin-data-table admin-data-table--wide w-full text-sm">
+      <table className="ui-table admin-data-table admin-data-table--wide">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+          <tr>
             <AdminTableNoIdHeaders />
-            <th className="px-4 py-3">{t('cashRegisters.colStore')}</th>
-            <th className="px-4 py-3">{t('cashRegisters.colRegisterNo')}</th>
-            <th className="px-4 py-3">{t('cashRegisters.colModel')}</th>
-            <th className="px-4 py-3">{t('cashRegisters.colSerial')}</th>
-            <th className="px-4 py-3">{t('cashRegisters.colFiscal')}</th>
-            <th className="w-24 px-4 py-3 text-center">{t('cashRegisters.colStatus')}</th>
+            <th className="ui-th">{t('cashRegisters.colStore')}</th>
+            <th className="ui-th">{t('cashRegisters.colRegisterNo')}</th>
+            <th className="ui-th">{t('cashRegisters.colModel')}</th>
+            <th className="ui-th">{t('cashRegisters.colSerial')}</th>
+            <th className="ui-th">{t('cashRegisters.colFiscal')}</th>
+            <th className="ui-th w-28 text-center">{t('cashRegisters.colStatus')}</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+        <tbody>
           {loading ? (
             <tr>
-              <td colSpan={COL_COUNT} className="px-4 py-10 text-center text-slate-500">
+              <td colSpan={COL_COUNT} className="ui-td py-10 text-center text-ink-muted">
                 {t('common.loading')}
               </td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={COL_COUNT} className="px-4 py-10 text-center text-slate-500">
-                {t('cashRegisters.empty')}
+              <td colSpan={COL_COUNT} className="p-0">
+                <EmptyState icon={Monitor} title={t('cashRegisters.empty')} />
               </td>
             </tr>
           ) : (
             rows.map((row, index) => (
               <tr
                 key={row.id}
-                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                className="ui-tr cursor-pointer"
                 onClick={() => onRowClick(row.id)}
               >
                 <AdminTableNoIdCells page={0} pageSize={rows.length || 1} index={index} id={row.id} />
-                <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.storeName}</td>
-                <td className="px-4 py-3 text-slate-800 dark:text-slate-200">{row.registerNumber}</td>
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{row.equipmentModel ?? '—'}</td>
-                <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                <td className="ui-td font-medium">{row.storeName}</td>
+                <td className="ui-td-nowrap">{row.registerNumber}</td>
+                <td className="ui-td text-ink-muted">{row.equipmentModel ?? '—'}</td>
+                <td className="ui-td-nowrap text-xs text-ink-muted">
                   {row.equipmentSerial ?? '—'}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                <td className="ui-td-nowrap text-xs text-ink-muted">
                   {row.fiscalCardId ?? '—'}
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="ui-td text-center">
                   {row.status === 'ACTIVE' ? (
                     <button
                       type="button"
                       disabled={togglingId === row.id}
                       title={t('cashRegisters.statusToggleActive')}
                       onClick={(e) => onToggleStatus(e, row)}
-                      className="admin-pill disabled:opacity-50"
+                      className="ui-badge-success cursor-pointer disabled:opacity-50"
                     >
-                      <Play size={12} className="shrink-0" strokeWidth={2.5} aria-hidden />
+                      <Play size={11} className="shrink-0" strokeWidth={2.25} aria-hidden />
                       {t('cashRegisters.statusActive')}
                     </button>
                   ) : (
@@ -73,9 +74,9 @@ export default function CashRegistersTable({
                       disabled={togglingId === row.id}
                       title={t('cashRegisters.statusToggleInactive')}
                       onClick={(e) => onToggleStatus(e, row)}
-                      className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      className="ui-badge-neutral cursor-pointer hover:border-line-strong disabled:opacity-50"
                     >
-                      <Pause size={12} className="shrink-0" aria-hidden />
+                      <Pause size={11} className="shrink-0" aria-hidden />
                       {t('cashRegisters.statusInactive')}
                     </button>
                   )}

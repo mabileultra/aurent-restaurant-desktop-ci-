@@ -1,6 +1,14 @@
-import { EMPH_LINE_PREFIX, BOLD_LINE_PREFIX } from '../../pos/utils/ticketLayout';
+import {
+  BOLD_LINE_PREFIX,
+  EMPH_LINE_PREFIX,
+  HUGE_LINE_PREFIX,
+} from '../../pos/utils/ticketLayout';
 import { isKitchenChannelPlaceLine } from '../../pos/utils/kitchenPlaceLine';
 import { factoryPrintProfile, fieldStyle, fontCss } from './printProfileDefaults';
+
+export function isKitchenOrderNoLine(text) {
+  return /^[№#]\s*\d+\s*$/u.test(String(text || '').trim());
+}
 
 const HEADER_KEYS = new Set(['logo', 'storeName', 'address', 'phone', 'footer']);
 
@@ -84,15 +92,24 @@ export function wrapSlipLines(lines, profile, slipType) {
 
 export function plainSlipLine(line) {
   const raw = String(line ?? '');
-  if (raw.startsWith(EMPH_LINE_PREFIX) || raw.startsWith(BOLD_LINE_PREFIX)) return raw.slice(3);
+  if (
+    raw.startsWith(EMPH_LINE_PREFIX)
+    || raw.startsWith(BOLD_LINE_PREFIX)
+    || raw.startsWith(HUGE_LINE_PREFIX)
+  ) {
+    return raw.slice(3);
+  }
   return raw;
 }
 
 export function styleLine(text, style) {
   const body = String(text ?? '');
   if (!body) return body;
-  if (style?.size === 'lg' && style?.bold) return `${EMPH_LINE_PREFIX}${body}`;
-  if (style?.size === 'lg') return `${EMPH_LINE_PREFIX}${body}`;
+  // xl/xxl → §E§ so current (old) Electron ESC/POS works without rebuild.
+  // §X§ (double W+H) stays for a future desktop that understands it.
+  if (style?.size === 'xxl' || style?.size === 'xl' || style?.size === 'lg') {
+    return `${EMPH_LINE_PREFIX}${body}`;
+  }
   if (style?.bold) return `${BOLD_LINE_PREFIX}${body}`;
   return body;
 }
@@ -104,24 +121,36 @@ export function styleDishLine(line, profile, slipType) {
   const raw = String(line ?? '');
   if (!raw || raw.startsWith('   ') || raw === '---' || raw.startsWith('≫')) return raw;
   // Already marked by caller — keep.
-  if (raw.startsWith(EMPH_LINE_PREFIX) || raw.startsWith(BOLD_LINE_PREFIX)) {
-    if (style.size === 'lg' && style.bold) {
+  if (
+    raw.startsWith(EMPH_LINE_PREFIX)
+    || raw.startsWith(BOLD_LINE_PREFIX)
+    || raw.startsWith(HUGE_LINE_PREFIX)
+  ) {
+    if (style.size === 'xxl' || style.size === 'xl' || style.size === 'lg') {
       return raw.startsWith(EMPH_LINE_PREFIX) ? raw : `${EMPH_LINE_PREFIX}${stripPrefix(raw)}`;
     }
     if (style.bold) {
-      return raw.startsWith(BOLD_LINE_PREFIX) || raw.startsWith(EMPH_LINE_PREFIX)
+      return raw.startsWith(BOLD_LINE_PREFIX) || raw.startsWith(EMPH_LINE_PREFIX) || raw.startsWith(HUGE_LINE_PREFIX)
         ? raw
         : `${BOLD_LINE_PREFIX}${stripPrefix(raw)}`;
     }
     return stripPrefix(raw);
   }
-  if (style.size === 'lg') return `${EMPH_LINE_PREFIX}${raw}`;
+  if (style.size === 'xxl' || style.size === 'xl' || style.size === 'lg') {
+    return `${EMPH_LINE_PREFIX}${raw}`;
+  }
   if (style.bold) return `${BOLD_LINE_PREFIX}${raw}`;
   return raw;
 }
 
 function stripPrefix(line) {
-  if (line.startsWith(EMPH_LINE_PREFIX) || line.startsWith(BOLD_LINE_PREFIX)) return line.slice(3);
+  if (
+    line.startsWith(EMPH_LINE_PREFIX)
+    || line.startsWith(BOLD_LINE_PREFIX)
+    || line.startsWith(HUGE_LINE_PREFIX)
+  ) {
+    return line.slice(3);
+  }
   return line;
 }
 
@@ -153,6 +182,12 @@ export function filterMetaLines(metaLines, profile, slipType) {
     if (isKitchenChannelPlaceLine(text)) {
       const hall = fieldStyle(profile, slipType, 'hallTable');
       out.push(styleLine(text, { ...hall, on: true, bold: true, size: hall.size === 'sm' ? 'md' : hall.size }));
+      return;
+    }
+    if (isKitchenOrderNoLine(text)) {
+      const style = fieldStyle(profile, slipType, 'orderNo');
+      if (!style.on) return;
+      out.push(styleLine(text, style));
       return;
     }
     let key = 'time';

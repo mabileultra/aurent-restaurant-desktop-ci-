@@ -187,7 +187,7 @@ export function buildXReportBody({ capabilities, cashierName }) {
       capabilities?.cashierNameOverride || cashierName || 'CASHIER',
     ),
     receipt_gnk_time: formatMultikassaDateTime(),
-    force_to_print: false,
+    force_to_print: true,
   };
 }
 

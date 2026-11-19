@@ -204,14 +204,17 @@ async function printTicketLinesNow({
         return '<hr style="border:none;border-top:1px dashed #000;margin:6px 0"/>';
       }
       const raw = String(line);
-      const emph = raw.startsWith('§E§');
-      const boldOnly = !emph && raw.startsWith('§B§');
-      const text = emph || boldOnly ? raw.slice(3) : raw;
-      const style = emph
-        ? 'white-space:pre;margin:0;font-weight:800;font-size:17px'
-        : boldOnly
-          ? 'white-space:pre;margin:0;font-weight:700;font-size:14px'
-          : 'white-space:pre;margin:0';
+      const huge = raw.startsWith('§X§');
+      const emph = !huge && raw.startsWith('§E§');
+      const boldOnly = !huge && !emph && raw.startsWith('§B§');
+      const text = huge || emph || boldOnly ? raw.slice(3) : raw;
+      const style = huge
+        ? 'white-space:pre;margin:2px 0;font-weight:900;font-size:28px;letter-spacing:0.04em;text-align:center'
+        : emph
+          ? 'white-space:pre;margin:0;font-weight:800;font-size:17px'
+          : boldOnly
+            ? 'white-space:pre;margin:0;font-weight:700;font-size:14px'
+            : 'white-space:pre;margin:0';
       return `<p style="${style}">${escapeHtml(text)}</p>`;
     }),
     '</div>',

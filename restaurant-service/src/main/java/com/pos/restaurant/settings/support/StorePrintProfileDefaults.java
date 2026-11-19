@@ -20,6 +20,7 @@ public final class StorePrintProfileDefaults {
         "phone",
         "headerTitle",
         "hallTable",
+        "orderNo",
         "waiter",
         "time",
         "items",
@@ -105,17 +106,20 @@ public final class StorePrintProfileDefaults {
     private static Map<String, Object> defaultField(String slip, String key) {
         Map<String, Object> field = new LinkedHashMap<>();
         boolean pickup = "PICKUP_LABEL".equals(slip);
+        boolean kitchenOrderNo = "orderNo".equals(key)
+            && ("KITCHEN".equals(slip) || "CANCEL".equals(slip));
         boolean on = switch (key) {
             case "logo", "storeName", "address", "phone", "footer" -> false;
             case "totals" -> "GUEST_BILL".equals(slip) || "SHIFT_ITEMS".equals(slip);
             case "waiter" -> !pickup;
+            case "orderNo" -> kitchenOrderNo;
             default -> true;
         };
         // CANCEL: match current ESC/POS (large title + emphasized dish lines).
         boolean cancelEmph = "CANCEL".equals(slip) && ("headerTitle".equals(key) || "items".equals(key));
         boolean pickupTitle = pickup && "headerTitle".equals(key);
-        String size = cancelEmph || pickupTitle ? "lg" : "md";
-        boolean bold = cancelEmph || "headerTitle".equals(key);
+        String size = kitchenOrderNo ? "xl" : (cancelEmph || pickupTitle ? "lg" : "md");
+        boolean bold = cancelEmph || "headerTitle".equals(key) || kitchenOrderNo;
         field.put("on", on);
         field.put("bold", bold);
         field.put("size", size);
@@ -150,7 +154,8 @@ public final class StorePrintProfileDefaults {
             out.put("bold", Boolean.TRUE.equals(incoming.get("bold")) || "true".equals(String.valueOf(incoming.get("bold"))));
         }
         String size = stringVal(incoming.get("size"));
-        if ("sm".equals(size) || "md".equals(size) || "lg".equals(size)) {
+        if ("sm".equals(size) || "md".equals(size) || "lg".equals(size)
+            || "xl".equals(size) || "xxl".equals(size)) {
             out.put("size", size);
         }
         String font = stringVal(incoming.get("font"));

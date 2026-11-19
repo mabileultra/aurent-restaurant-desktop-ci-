@@ -17,8 +17,8 @@ function fmtAt(iso) {
 function InfoRow({ label, value }) {
   return (
     <div>
-      <dt className="text-xs text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">{value}</dd>
+      <dt className="text-xs text-ink-muted">{label}</dt>
+      <dd className="mt-0.5 font-medium text-ink">{value}</dd>
     </div>
   );
 }
@@ -44,18 +44,18 @@ export default function ReturnDetailModal({
   const reason = reasonPreview?.trim() || '—';
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('returnsModule.detailTitle')}</h2>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-slate-400" aria-label="Close">
-            <X size={20} />
+    <div className="ui-modal-overlay z-[70]">
+      <div className="ui-modal-panel max-w-2xl">
+        <div className="ui-modal-header">
+          <h2 className="text-base font-semibold text-ink">{t('returnsModule.detailTitle')}</h2>
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label="Close">
+            <X size={18} />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto p-5">
-          {isPending && <p className="py-8 text-center text-sm text-slate-500">{t('common.loading')}</p>}
+        <div className="ui-modal-body max-h-[70vh] overflow-y-auto">
+          {isPending && <p className="py-8 text-center text-sm text-ink-muted">{t('common.loading')}</p>}
           {isError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+            <p className="ui-alert-danger">
               {error?.response?.data?.message ?? t('returnsModule.loadError')}
             </p>
           )}
@@ -74,10 +74,10 @@ export default function ReturnDetailModal({
                 />
               </dl>
               {sale.items?.length > 0 && (
-                <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
-                  <table className="w-full text-xs">
+                <div className="ui-table-wrap overflow-x-auto">
+                  <table className="ui-table text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-left dark:border-slate-700 dark:bg-slate-800/50">
+                      <tr>
                         <th className="px-3 py-2">{t('products.colName')}</th>
                         <th className="px-3 py-2 text-right">{t('pos.returnSold')}</th>
                         <th className="px-3 py-2 text-right">{t('pos.returnAlready')}</th>
@@ -95,11 +95,11 @@ export default function ReturnDetailModal({
                               ? Number(line.lineTotal) / soldQty
                               : Number(line.unitPrice) || 0;
                           return (
-                            <tr key={line.id ?? i} className="border-b border-slate-100 dark:border-slate-800">
-                              <td className="px-3 py-2">{line.productName || line.productSku || '—'}</td>
-                              <td className="px-3 py-2 text-right">{line.quantity}</td>
-                              <td className="px-3 py-2 text-right">{retQty}</td>
-                              <td className="px-3 py-2 text-right">{fmtMoney(unit * retQty)}</td>
+                            <tr key={line.id ?? i} className="ui-tr">
+                              <td className="px-3 py-2 text-ink">{line.productName || line.productSku || '—'}</td>
+                              <td className="px-3 py-2 text-right ui-tabular">{line.quantity}</td>
+                              <td className="px-3 py-2 text-right ui-tabular">{retQty}</td>
+                              <td className="px-3 py-2 text-right ui-tabular font-medium">{fmtMoney(unit * retQty)}</td>
                             </tr>
                           );
                         })}

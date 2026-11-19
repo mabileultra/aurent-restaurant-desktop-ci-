@@ -8,11 +8,16 @@ import CashRegistersFiltersDrawer from '../components/CashRegistersFiltersDrawer
 import CashRegisterDetailsModal from '../components/CashRegisterDetailsModal';
 import CashRegisterFormModal from '../components/CashRegisterFormModal';
 import MultikassaSettingsModal from '../components/MultikassaSettingsModal';
+import FiscalDriveSettingsModal from '../components/FiscalDriveSettingsModal';
 import { useCashRegistersListPage } from '../hooks/useCashRegistersListPage';
+
+// Переключатель: включить после снятия заглушки FiscalDrive.
+const FISCAL_DRIVE_SETTINGS_ENABLED = false;
 
 export default function CashRegistersListPage() {
   const p = useCashRegistersListPage();
   const [multikassaRegisterId, setMultikassaRegisterId] = useState(null);
+  const [fiscalDriveRegisterId, setFiscalDriveRegisterId] = useState(null);
 
   const errorMessage =
     p.error?.response?.data?.message ?? p.error?.message ?? p.t('cashRegisters.loadError');
@@ -21,7 +26,7 @@ export default function CashRegistersListPage() {
     <div className="space-y-4">
       {p.isError && <CashRegisterErrorBanner message={errorMessage} />}
 
-      <h1 className="text-xl font-bold text-slate-900 dark:text-white">{p.t('cashRegisters.title')}</h1>
+      <h1 className="text-xl font-bold text-ink">{p.t('cashRegisters.title')}</h1>
 
       <CashRegisterHintBanner
         title={p.t('cashRegisters.listHintTitle')}
@@ -38,7 +43,7 @@ export default function CashRegistersListPage() {
         onAdd={p.openCreateForm}
       />
 
-      <div className="admin-table-shell">
+      <div className="ui-table-wrap">
         <CashRegistersTable
           t={p.t}
           rows={p.rows}
@@ -70,12 +75,25 @@ export default function CashRegistersListPage() {
         onMultikassa={(id) => {
           setMultikassaRegisterId(id);
         }}
+        onFiscalDrive={
+          FISCAL_DRIVE_SETTINGS_ENABLED
+            ? (id) => {
+                setFiscalDriveRegisterId(id);
+              }
+            : undefined
+        }
       />
 
       <MultikassaSettingsModal
         open={Boolean(multikassaRegisterId)}
         cashRegisterId={multikassaRegisterId}
         onClose={() => setMultikassaRegisterId(null)}
+      />
+
+      <FiscalDriveSettingsModal
+        open={FISCAL_DRIVE_SETTINGS_ENABLED && Boolean(fiscalDriveRegisterId)}
+        cashRegisterId={fiscalDriveRegisterId}
+        onClose={() => setFiscalDriveRegisterId(null)}
       />
 
       <CashRegisterFormModal open={p.formOpen} registerId={p.formRegisterId} onClose={p.closeForm} />

@@ -16,24 +16,25 @@ export default function TasnifPackagePickerModal({ open, item, lang, onSelect, o
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
+    <div className="ui-modal-overlay z-[120]">
       <div
-        className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="ui-modal-panel max-w-md"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="tasnif-package-title"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <h3 id="tasnif-package-title" className="text-base font-semibold text-slate-900 dark:text-white">
+        <div className="ui-modal-header">
+          <h3 id="tasnif-package-title" className="text-base font-semibold text-ink">
             {t('productCatalog.selectPackage')}
           </h3>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label={t('common.close')}>
             <X size={18} />
           </button>
         </div>
-        <p className="px-4 pt-3 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{item.name}</p>
-        <div className="p-4">
+        <p className="px-5 pt-3 text-xs text-ink-muted line-clamp-2">{item.name}</p>
+        <div className="ui-modal-body">
           {packages.length === 0 ? (
-            <p className="text-sm text-slate-600 dark:text-slate-400">{t('productCatalog.noPackages')}</p>
+            <p className="text-sm text-ink-muted">{t('productCatalog.noPackages')}</p>
           ) : (
             <div className="tasnif-package-modal__list">
               {packages.map((pkg) => (

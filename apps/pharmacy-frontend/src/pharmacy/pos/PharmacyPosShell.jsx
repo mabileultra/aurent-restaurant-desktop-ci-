@@ -11,7 +11,6 @@ import OfflineSyncProgressBanner from '../../features/cashier/components/Offline
 import { usePharmacyPosShell } from './usePharmacyPosShell';
 import PharmacyPosTopbar from './PharmacyPosTopbar';
 import { PharmacyPosActionsProvider } from './pharmacyPosActions';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/cashier/index.css';
 import './pharmacy-pos-shell.css';
 
@@ -21,26 +20,24 @@ function PharmacyPosShellInner() {
   return (
     <div className={p.shellClassName} style={p.zoom.rootStyle}>
       <PharmacyPosActionsProvider>
-      <div className="cashier-app__body d-flex flex-column flex-grow-1 min-vw-0 min-h-0 w-100">
-        <PharmacyPosTopbar
-          t={p.t}
-          storeName={p.storeName}
-          shiftOpenBadge={p.shiftOpenBadge}
-          shift={p.shift}
-          shiftIsOpen={p.shiftIsOpen}
-          cashierName={p.displayCashierName()}
-          cashierRoleLabel={p.cashierRoleLabel}
-          openShift={p.openShift}
-          storeId={p.storeId}
-          canOpenOffice={p.canOpenOffice}
-          onLogout={p.handleLogout}
-          cashierTheme={p.cashierTheme}
-          toggleCashierTheme={p.toggleCashierTheme}
-        />
-        <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
-          <PharmacyShellOutlet />
-        </main>
-      </div>
+        <div className="cashier-app__body flex flex-col flex-1 min-w-0 min-h-0 w-full">
+          <PharmacyPosTopbar
+            t={p.t}
+            storeName={p.storeName}
+            shiftOpenBadge={p.shiftOpenBadge}
+            shift={p.shift}
+            shiftIsOpen={p.shiftIsOpen}
+            cashierName={p.displayCashierName()}
+            cashierRoleLabel={p.cashierRoleLabel}
+            openShift={p.openShift}
+            storeId={p.storeId}
+            canOpenOffice={p.canOpenOffice}
+            onLogout={p.handleLogout}
+          />
+          <main className="cashier-app__main flex-1 overflow-hidden p-2 lg:p-3 flex flex-col min-h-0">
+            <PharmacyShellOutlet />
+          </main>
+        </div>
       </PharmacyPosActionsProvider>
 
       <OfflineSyncProgressBanner />
@@ -60,8 +57,7 @@ function PharmacyPosShellInner() {
 }
 
 /**
- * Pharmacy POS application chrome (Phase 4).
- * Replaces grocery CashierLayout for /pos — no bottom-nav grocery world.
+ * Pharmacy POS application chrome.
  */
 export default function PharmacyPosShell() {
   return (

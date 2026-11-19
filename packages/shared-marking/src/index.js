@@ -7,7 +7,9 @@ export {
   isMarkingCode,
   isCompleteMarkingScan,
   markingScanKey,
+  gtinPackagingIndicator,
   extractGtinFromMarkingCode,
+  ean13FromPackGtin14,
   barcodeLookupVariants,
   markingBarcodeCandidates,
 } from './markingCode.js';

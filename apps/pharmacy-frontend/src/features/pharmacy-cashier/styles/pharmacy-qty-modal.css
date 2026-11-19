@@ -5,22 +5,22 @@
 
 .pharmacy-qty-modal {
   /* Портал: молочные токены ТЗ с оболочки .pharmacy-modal */
-  --pqm-ink: var(--pm-ink, #26332d);
-  --pqm-muted: var(--pm-muted, #7a817c);
-  --pqm-line: var(--pm-border, #dddcd5);
-  --pqm-surface: var(--pm-surface, #fff);
-  --pqm-elevated: var(--pm-elevated, #fff);
-  --pqm-cell: var(--pm-card, #fff);
-  --pqm-hover: var(--pm-hover, #e7f6ec);
-  --pqm-brand: var(--pm-brand, #245b45);
-  --pqm-brand-hover: var(--pm-brand-hover, #174936);
+  --pqm-ink: var(--pm-ink, rgb(var(--color-ink)));
+  --pqm-muted: var(--pm-muted, rgb(var(--color-ink-muted)));
+  --pqm-line: var(--pm-border, rgb(var(--color-line)));
+  --pqm-surface: var(--pm-surface, rgb(var(--color-surface)));
+  --pqm-elevated: var(--pm-elevated, rgb(var(--color-surface)));
+  --pqm-cell: var(--pm-card, rgb(var(--color-surface)));
+  --pqm-hover: var(--pm-hover, rgb(var(--color-primary-50)));
+  --pqm-brand: var(--pm-brand, rgb(var(--color-primary-500)));
+  --pqm-brand-hover: var(--pm-brand-hover, rgb(var(--color-primary-700)));
   --pqm-brand-soft: var(--pm-brand-soft, rgb(36 91 69 / 0.12));
-  --pqm-teal: var(--pm-teal, #245b45);
+  --pqm-teal: var(--pm-teal, rgb(var(--color-primary-500)));
   --pqm-teal-soft: rgb(36 91 69 / 0.1);
   --pqm-focus-ring: rgb(36 91 69 / 0.22);
-  --pqm-ok-text: var(--pm-ok-text, #174936);
-  --pqm-warn-text: var(--pm-warn-text, #8a5a12);
-  --pqm-danger-text: var(--pm-danger-text, #a33b35);
+  --pqm-ok-text: var(--pm-ok-text, rgb(var(--color-primary-700)));
+  --pqm-warn-text: var(--pm-warn-text, rgb(var(--color-warning-text)));
+  --pqm-danger-text: var(--pm-danger-text, rgb(var(--color-danger-text)));
   --pqm-radius: var(--pm-radius, 12px);
   --pqm-radius-sm: var(--pm-radius-sm, 8px);
   --pqm-shadow: var(--pm-shadow, 0 20px 48px rgb(38 51 45 / 0.18), 0 0 0 1px rgb(36 91 69 / 0.12));
@@ -42,7 +42,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--pqm-ink);
   border: 1px solid var(--pqm-line);
   border-radius: calc(var(--pqm-radius) + 2px);
@@ -55,9 +55,9 @@
   justify-content: space-between;
   flex-shrink: 0;
   padding: 0.7rem 0.9rem;
-  background: #134842;
+  background: rgb(var(--color-primary-600));
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .pharmacy-qty-modal__title {
@@ -66,13 +66,13 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #fff;
+  color: rgb(var(--color-surface));
 }
 
 .pharmacy-qty-modal__x {
   border: 0;
-  background: rgb(255 255 255 / 0.12);
-  color: #fff;
+  background: rgb(var(--color-surface) / 0.12);
+  color: rgb(var(--color-surface));
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 999px;
@@ -87,7 +87,7 @@
 }
 
 .pharmacy-qty-modal__x:hover {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(var(--color-surface) / 0.22);
 }
 
 .pharmacy-qty-modal__name-bar {
@@ -426,7 +426,7 @@
   color: var(--pqm-ink);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 1px 0 rgb(var(--color-surface) / 0.06);
 }
 
 .pharmacy-qty-modal__error {
@@ -497,7 +497,7 @@
 
 .pharmacy-qty-modal__btn--ok {
   background: var(--pqm-brand);
-  color: #fff;
+  color: rgb(var(--color-surface));
   border-color: var(--pqm-brand);
   box-shadow: 0 6px 16px rgb(0 104 71 / 0.28);
 }
@@ -523,7 +523,7 @@
 }
 
 @media (max-width: 420px) {
-  .pharmacy-qty-modal__pair,
+.pharmacy-qty-modal__pair,
   .pharmacy-qty-modal__metrics {
     grid-template-columns: 1fr;
   }

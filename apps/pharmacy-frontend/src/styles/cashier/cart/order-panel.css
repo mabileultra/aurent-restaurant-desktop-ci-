@@ -21,7 +21,7 @@
   padding: 14px 18px 12px;
   border-bottom: 1px solid var(--pos-border);
   flex-shrink: 0;
-  background: #fff;
+  background: rgb(var(--color-surface));
 }
 
 .pos-order-panel__title {
@@ -39,12 +39,12 @@
 .pos-order-panel__badge {
   padding: 4px 10px;
   border-radius: var(--pos-control-radius, 10px);
-  background: #ede9fe;
-  border: 1px solid #ddd6fe;
+  background: rgb(var(--color-primary-50));
+  border: 1px solid rgb(var(--color-primary-100));
   font-size: 0.6875rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #6d28d9;
+  color: rgb(var(--color-primary-700));
 }
 
 .pos-order-panel__actions {
@@ -67,25 +67,25 @@
 }
 
 .pos-order-panel__btn--warn {
-  color: #92400e;
-  background: #fff7ed;
-  border-color: #fdba74;
+  color: rgb(var(--color-warning-text));
+  background: rgb(var(--color-warning-soft));
+  border-color: rgb(var(--color-warning) / 0.45);
 }
 
 .pos-order-panel__btn--warn:hover {
-  background: #ffedd5;
-  border-color: #fb923c;
+  background: rgb(var(--color-warning-soft));
+  border-color: rgb(var(--color-warning));
 }
 
 .pos-order-panel__btn--clear {
-  color: #b91c1c;
-  background: #fef2f2;
-  border-color: #fca5a5;
+  color: rgb(var(--color-danger-text));
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger) / 0.4);
 }
 
 .pos-order-panel__btn--clear:hover {
-  background: #fee2e2;
-  border-color: #f87171;
+  background: rgb(var(--color-danger-soft));
+  border-color: rgb(var(--color-danger));
 }
 
 .pos-order-panel__list {
@@ -95,4 +95,3 @@
   display: flex;
   flex-direction: column;
 }
-

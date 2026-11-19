@@ -5,18 +5,10 @@
   color: rgb(71 85 105);
 }
 
-.dark .pharm-int-settings__lead {
-  color: rgb(148 163 184);
-}
-
 .pharm-int-settings__section + .pharm-int-settings__section {
   margin-top: 8px;
   padding-top: 12px;
   border-top: 1px solid rgb(226 232 240);
-}
-
-.dark .pharm-int-settings__section + .pharm-int-settings__section {
-  border-top-color: rgb(30 41 59);
 }
 
 .pharm-int-settings__section-title {
@@ -24,10 +16,6 @@
   font-size: 0.875rem;
   font-weight: 700;
   color: rgb(15 23 42);
-}
-
-.dark .pharm-int-settings__section-title {
-  color: rgb(248 250 252);
 }
 
 .pharm-int-settings__label {
@@ -45,12 +33,6 @@
   border: 1px solid rgb(203 213 225);
   border-radius: 8px;
   font-size: 0.875rem;
-}
-
-.dark .pharm-int-settings__input {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42);
-  color: rgb(248 250 252);
 }
 
 .pharm-int-settings__check {
@@ -81,8 +63,8 @@
 
 .pharm-int-settings__btn--primary {
   border: 0;
-  background: #2f6fed;
-  color: #fff;
+  background: rgb(var(--color-info));
+  color: rgb(var(--color-surface));
 }
 
 .pharm-int-settings__btn--primary:disabled {

@@ -52,9 +52,7 @@ export default function UserFormModalFields({
   const [storeSearch, setStoreSearch] = useState('');
 
   const getInputCls = (hasError) =>
-    hasError
-      ? `${userFormInputCls} !border-red-500 focus:!ring-red-500 !text-slate-900 dark:!border-red-500`
-      : userFormInputCls;
+    hasError ? `${userFormInputCls} ui-input-error` : userFormInputCls;
 
   const filteredStoreOptions = useMemo(() => {
     const q = storeSearch.trim().toLowerCase();
@@ -105,25 +103,25 @@ export default function UserFormModalFields({
         
         {/* Existing User Platform Credentials Summary (Edit mode) */}
         {isPlatform && isEdit ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-800/40">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="rounded-card border border-line bg-canvas px-4 py-3.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {t('users.currentCredentialsTitle', { defaultValue: 'Joriy hisob xulosasi' })}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
               {companyLoginCode ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500">{t('users.platformCompanyCode')}:</span>
-                  <span className="font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                  <span className="text-ink-muted">{t('users.platformCompanyCode')}:</span>
+                  <span className="font-mono font-semibold px-1.5 py-0.5 rounded bg-primary-50 text-primary-700 border border-primary-200 ui-tabular text-xs">
                     #{companyLoginCode}
                   </span>
                 </div>
               ) : null}
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500">{t('users.credentialsLogin')}:</span>
-                <span className="font-mono font-semibold text-slate-900 dark:text-white">{user?.username}</span>
+                <span className="text-ink-muted">{t('users.credentialsLogin')}:</span>
+                <span className="font-mono font-semibold text-ink">{user?.username}</span>
               </div>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-ink-muted">
               {isPinRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
             </p>
           </div>
@@ -131,7 +129,7 @@ export default function UserFormModalFields({
 
         {/* 1. TASHKILOT VA ROL (Company & Role) */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
             {t('users.sectionOrganization', { defaultValue: 'Tashkilot va Rol' })}
           </h3>
 
@@ -155,9 +153,9 @@ export default function UserFormModalFields({
                   options={buildCompanySelectOptions(companies)}
                 />
                 {!isEdit && companyLoginCode ? (
-                  <p className="mt-1.5 text-xs text-slate-500 flex items-center gap-1">
+                  <p className="mt-1.5 text-xs text-ink-muted flex items-center gap-1">
                     <span>{t('users.platformCompanyCode')}:</span>
-                    <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">#{companyLoginCode}</span>
+                    <span className="font-mono font-semibold ui-tabular text-primary-600">#{companyLoginCode}</span>
                   </p>
                 ) : null}
               </div>
@@ -235,14 +233,14 @@ export default function UserFormModalFields({
                       keywords: [s.name, s.code].filter(Boolean).join(' '),
                     }))}
                   />
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-xs text-ink-muted">
                     {t('users.cashierStoreHint', { defaultValue: 'Kassir va ofitsiantlar faqat bitta filialga biriktiriladi' })}
                   </p>
                   {storesError ? (
-                    <p className="mt-1 text-xs text-red-500">{t('users.storesLoadFailed')}</p>
+                    <p className="mt-1 text-xs text-danger-text">{t('users.storesLoadFailed')}</p>
                   ) : null}
                   {!isRoleDisabled && !storesLoading && !storesError && storeOptions.length === 0 ? (
-                    <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                    <p className="mt-1 text-xs text-warning-text">
                       {isPlatform
                         ? t('users.noStoresForSelectedCompany', { defaultValue: 'Tanlangan kompaniyada filiallar mavjud emas. Avval filial yarating.' })
                         : t('users.noStoresForYourCompany', {
@@ -253,7 +251,7 @@ export default function UserFormModalFields({
                 </>
               ) : (
                 <>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  <label className="ui-label mb-1.5">
                     {t('platform.stores', { defaultValue: 'Filiallar' })}
                   </label>
                   {storeOptions.length > 8 ? (
@@ -265,15 +263,15 @@ export default function UserFormModalFields({
                       className={`${userFormInputCls} mb-2`}
                     />
                   ) : null}
-                  <div className="max-h-36 space-y-2 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/50 dark:bg-slate-900/40">
+                  <div className="max-h-36 space-y-2 overflow-y-auto rounded-card border border-line p-3 bg-canvas">
                     {isRoleDisabled ? (
-                      <p className="text-xs text-slate-400">{t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })}</p>
+                      <p className="text-xs text-ink-muted">{t('users.selectCompanyFirst', { defaultValue: 'Avval kompaniyani tanlang' })}</p>
                     ) : storesLoading ? (
-                      <p className="text-xs text-slate-500">{t('common.loading')}</p>
+                      <p className="text-xs text-ink-muted">{t('common.loading')}</p>
                     ) : storeOptions.length === 0 ? (
-                      <p className="text-xs text-slate-500">{t('users.noStoresAvailable', { defaultValue: 'Filiallar mavjud emas' })}</p>
+                      <p className="text-xs text-ink-muted">{t('users.noStoresAvailable', { defaultValue: 'Filiallar mavjud emas' })}</p>
                     ) : filteredStoreOptions.length === 0 ? (
-                      <p className="text-xs text-slate-500">{t('platform.noSearchResults')}</p>
+                      <p className="text-xs text-ink-muted">{t('platform.noSearchResults')}</p>
                     ) : (
                       filteredStoreOptions.map((s) => (
                         <label key={s.id} className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
@@ -281,9 +279,9 @@ export default function UserFormModalFields({
                             type="checkbox"
                             checked={storeIds.has(Number(s.id))}
                             onChange={() => toggleStore(s.id)}
-                            className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 dark:border-slate-700"
+                            className="rounded border-line-strong text-primary-600 accent-primary-600 focus:ring-primary-500"
                           />
-                          <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200'}>
+                          <span className={s.active === false ? 'text-warning-text' : 'text-ink'}>
                             {s.name}
                             {s.active === false ? ` (${t('users.storeInactive', { defaultValue: 'Faol emas' })})` : ''}
                           </span>
@@ -298,15 +296,15 @@ export default function UserFormModalFields({
         </div>
 
         {/* 2. SHAXSIY MA'LUMOTLAR (Personal info) */}
-        <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <div className="space-y-4 pt-2 border-t border-line">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
             {t('users.sectionPersonalInfo', { defaultValue: 'Shaxsiy ma\'lumotlar' })}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="user-first-name" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-                {t('users.firstName')} <span className="text-red-500">*</span>
+              <label htmlFor="user-first-name" className="ui-label mb-1">
+                {t('users.firstName')} <span className="text-danger">*</span>
               </label>
               <input
                 id="user-first-name"
@@ -316,12 +314,12 @@ export default function UserFormModalFields({
                 aria-describedby={errors.firstName ? 'user-first-name-error' : undefined}
                 placeholder="Ism"
               />
-              {errors.firstName && <p id="user-first-name-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+              {errors.firstName && <p id="user-first-name-error" className="mt-1 text-xs text-danger-text">{t('validation.required')}</p>}
             </div>
 
             <div>
-              <label htmlFor="user-last-name" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-                {t('users.lastName')} <span className="text-red-500">*</span>
+              <label htmlFor="user-last-name" className="ui-label mb-1">
+                {t('users.lastName')} <span className="text-danger">*</span>
               </label>
               <input
                 id="user-last-name"
@@ -331,15 +329,15 @@ export default function UserFormModalFields({
                 aria-describedby={errors.lastName ? 'user-last-name-error' : undefined}
                 placeholder="Familiya"
               />
-              {errors.lastName && <p id="user-last-name-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+              {errors.lastName && <p id="user-last-name-error" className="mt-1 text-xs text-danger-text">{t('validation.required')}</p>}
             </div>
           </div>
 
           {fieldOn('patronymic') && (
             <div>
-              <label htmlFor="user-patronymic" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label htmlFor="user-patronymic" className="ui-label mb-1">
                 {t('users.patronymic')}{' '}
-                <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+                <span className="text-xs font-normal text-ink-muted">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
               </label>
               <input
                 id="user-patronymic"
@@ -352,15 +350,15 @@ export default function UserFormModalFields({
         </div>
 
         {/* 3. KIRISH VA XAVFSIZLIK (Credentials & Security) */}
-        <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <div className="space-y-4 pt-2 border-t border-line">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
             {t('users.sectionSecurity', { defaultValue: 'Kirish ma\'lumotlari' })}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="user-username" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
-                {t('users.colUsername')} <span className="text-red-500">*</span>
+              <label htmlFor="user-username" className="ui-label mb-1">
+                {t('users.colUsername')} <span className="text-danger">*</span>
               </label>
               <input
                 id="user-username"
@@ -374,13 +372,13 @@ export default function UserFormModalFields({
                 aria-describedby={errors.username ? 'user-username-error' : undefined}
                 placeholder="login_nomi"
               />
-              {errors.username && <p id="user-username-error" className="mt-1 text-xs text-red-500">{t('validation.required')}</p>}
+              {errors.username && <p id="user-username-error" className="mt-1 text-xs text-danger-text">{t('validation.required')}</p>}
             </div>
 
             <div>
-              <label htmlFor="user-phone" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label htmlFor="user-phone" className="ui-label mb-1">
                 {t('users.phone', { defaultValue: 'Telefon raqam' })}{' '}
-                <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+                <span className="text-xs font-normal text-ink-muted">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
               </label>
               <input
                 id="user-phone"
@@ -399,9 +397,9 @@ export default function UserFormModalFields({
 
           {fieldOn('email') && (
             <div>
-              <label htmlFor="user-email" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label htmlFor="user-email" className="ui-label mb-1">
                 {t('users.email')}{' '}
-                <span className="text-xs font-normal text-slate-400">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
+                <span className="text-xs font-normal text-ink-muted">({t('common.optional', { defaultValue: 'Ixtiyoriy' })})</span>
               </label>
               <input
                 id="user-email"
@@ -416,9 +414,9 @@ export default function UserFormModalFields({
           {/* PIN field for cashier/cook/waiter */}
           {isPinRole ? (
             <div>
-              <label htmlFor="user-pin" className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label htmlFor="user-pin" className="ui-label mb-1">
                 {pinFieldLabel || t('users.pin', { defaultValue: 'PIN-kod' })}
-                {pinRequired ? <span className="text-red-500"> *</span> : null}
+                {pinRequired ? <span className="text-danger"> *</span> : null}
               </label>
               <div className="relative">
                 <input
@@ -443,7 +441,7 @@ export default function UserFormModalFields({
                 <button
                   type="button"
                   tabIndex={-1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-muted hover:text-ink"
                   onClick={() => setPinVisible((v) => !v)}
                   aria-label={pinVisible ? t('users.hidePin', { defaultValue: 'PIN-kodni yashirish' }) : t('users.showPin', { defaultValue: 'PIN-kodni ko\'rsatish' })}
                 >
@@ -451,11 +449,11 @@ export default function UserFormModalFields({
                 </button>
               </div>
               {errors.pin ? (
-                <p id="user-pin-error" className="mt-1 text-xs text-red-500">
+                <p id="user-pin-error" className="mt-1 text-xs text-danger-text">
                   {t('validation.required', { defaultValue: 'Majburiy maydon' })}
                 </p>
               ) : (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-ink-muted">
                   {pinRequired
                     ? t('users.pinHint', { defaultValue: '4–6 xonali raqam. Kassa ekraniga tezkor kirish uchun ishlatiladi.' })
                     : t('users.pinEditHint', { defaultValue: 'O\'zgartirish shart bo\'lmasa bo\'sh qoldiring' })}
@@ -468,15 +466,15 @@ export default function UserFormModalFields({
           {showPasswordField ? (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="user-password" className="block text-xs font-medium text-slate-600 dark:text-slate-300">
+                <label htmlFor="user-password" className="ui-label">
                   {t('users.password')}
-                  {!isEdit ? <span className="text-red-500"> *</span> : null}
+                  {!isEdit ? <span className="text-danger"> *</span> : null}
                 </label>
                 {!isEdit && (
                   <button
                     type="button"
                     onClick={handleGeneratePassword}
-                    className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-primary-600 hover:text-primary-700"
                   >
                     <Sparkles size={12} />
                     {t('users.generatePassword', { defaultValue: 'Parol generatsiya qilish' })}
@@ -497,7 +495,7 @@ export default function UserFormModalFields({
                 <button
                   type="button"
                   tabIndex={-1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-muted hover:text-ink"
                   onClick={() => setPasswordVisible((v) => !v)}
                   aria-label={passwordVisible ? t('users.hidePassword') : t('users.showPassword')}
                 >
@@ -505,12 +503,12 @@ export default function UserFormModalFields({
                 </button>
               </div>
               {isEdit && (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-ink-muted">
                   {isPlatform ? t('users.passwordHiddenHint') : t('users.passwordEditHint')}
                 </p>
               )}
               {!isEdit && errors.password && (
-                <p id="user-password-error" className="mt-1 text-xs text-red-500">
+                <p id="user-password-error" className="mt-1 text-xs text-danger-text">
                   {errors.password.type === 'required'
                     ? t('validation.required', { defaultValue: 'Majburiy maydon' })
                     : t('users.passwordMinLength', { defaultValue: 'Parol kamida 6 belgidan iborat bo‘lishi kerak' })}
@@ -522,11 +520,11 @@ export default function UserFormModalFields({
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-line bg-surface px-6 py-4">
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+          className="ui-btn-secondary"
         >
           {t('common.cancel')}
         </button>
@@ -534,7 +532,7 @@ export default function UserFormModalFields({
           type="submit"
           disabled={isPending || isActionBlocked}
           title={isActionBlocked ? blockReason : undefined}
-          className="admin-btn-primary px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ui-btn-primary"
         >
           {isPending && <Loader size={15} className="mr-2 inline animate-spin" />}
           {isEdit ? t('common.save') : t('users.createUser')}

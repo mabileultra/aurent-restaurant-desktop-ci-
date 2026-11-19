@@ -280,6 +280,7 @@ export default function OrderWorkspace({
         </div>
 
         <div className={`rst-order__footer${footerVariant === 'waiter' ? ' rst-order__footer--waiter' : ''}`}>
+          {/* Desktop/admin: always 3 rows — KDS, bill, then secondary (pay/discount/cancel). */}
           {footerVariant !== 'waiter' && canSendKitchen ? (
             <button
               type="button"
@@ -300,8 +301,28 @@ export default function OrderWorkspace({
               {t('rst.order.reprintPickup')}
             </button>
           ) : null}
+          {footerVariant !== 'waiter' && canRequestBill ? (
+            <button
+              type="button"
+              className="rst-order__hero rst-order__hero--bill"
+              onClick={onRequestBill}
+              disabled={billingPending}
+            >
+              {t('rst.order.requestBill')}
+            </button>
+          ) : null}
 
           <div className="rst-order__actions">
+            {footerVariant !== 'waiter' && canPay ? (
+              <button
+                type="button"
+                className="rst-order__action rst-order__action--pay"
+                onClick={onPay}
+                disabled={paying}
+              >
+                {t('rst.order.pay')}
+              </button>
+            ) : null}
             {canEditDiscount && onDiscount ? (
               <button
                 type="button"
@@ -322,7 +343,7 @@ export default function OrderWorkspace({
                 {t('rst.order.sendKitchenKds')}
               </button>
             ) : null}
-            {canRequestBill ? (
+            {footerVariant === 'waiter' && canRequestBill ? (
               <button
                 type="button"
                 className="rst-order__action rst-order__action--bill"
@@ -332,7 +353,7 @@ export default function OrderWorkspace({
                 {t('rst.order.requestBill')}
               </button>
             ) : null}
-            {canPay ? (
+            {footerVariant === 'waiter' && canPay ? (
               <button
                 type="button"
                 className="rst-order__action rst-order__action--pay"

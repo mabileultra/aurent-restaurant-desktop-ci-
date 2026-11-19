@@ -1,4 +1,4 @@
-/* Центральная рабочая область аптечной кассы */
+/* Pharmacy context pane */
 
 .pharmacy-cashier__context-pane {
   min-height: 0;
@@ -7,9 +7,9 @@
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
-  border: 1px solid var(--pharm-border, #dddcd5);
-  border-radius: var(--pharm-radius, 10px);
-  background: var(--pharm-elevated, #f8f7f3);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-surface));
 }
 
 .pharmacy-cashier__context-pane--empty {
@@ -21,18 +21,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 16px;
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
   text-align: center;
 }
 
 .pharmacy-cashier__context-empty p {
   margin: 0;
   font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: var(--pharm-ink, #26332d);
+  font-weight: 600;
+  color: rgb(var(--color-ink));
 }
 
 .pharmacy-cashier__context-empty span {
@@ -53,7 +52,7 @@
   margin: 0 0 8px;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--pharm-ink, #26332d);
+  color: rgb(var(--color-ink));
 }
 
 .pharmacy-cashier__context-meta {
@@ -65,28 +64,29 @@
 }
 
 .pharmacy-cashier__context-meta dt {
-  color: var(--pharm-muted, #7a817c);
+  color: rgb(var(--color-ink-muted));
   font-weight: 600;
 }
 
 .pharmacy-cashier__context-meta dd {
   margin: 0;
-  color: var(--pharm-ink, #26332d);
+  color: rgb(var(--color-ink));
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .pharmacy-cashier__context-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.6875rem;
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
 }
 
 .pharmacy-cashier__context-notice {
   margin: 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--pharm-ink, #26332d);
+  color: rgb(var(--color-ink));
   line-height: 1.4;
   white-space: pre-wrap;
 }

@@ -94,7 +94,7 @@ html.cashier-shell--desktop #root {
 }
 
 @media (min-width: 1600px) and (min-height: 900px) {
-  .cashier-app.cashier-app--desktop.cashier-app--pos-screen {
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen {
     --cashier-pay-w: clamp(300px, 22%, 400px);
     --cashier-gap: 5px;
     --cashier-bottom-nav-h: 48px;

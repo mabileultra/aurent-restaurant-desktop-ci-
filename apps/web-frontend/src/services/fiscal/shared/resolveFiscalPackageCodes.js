@@ -14,10 +14,20 @@ function packageLabel(pkg) {
   return `${pkg?.nameRu || ''} ${pkg?.nameUz || ''} ${pkg?.nameLat || ''}`.toLowerCase();
 }
 
-function packageCount(pkg) {
+export function packageCount(pkg) {
   const text = packageLabel(pkg);
   const match = text.match(/=\s*(\d+)/) || text.match(/(\d+)\s*(шт|dona|pcs)/);
   return match ? Number(match[1]) : null;
+}
+
+/** Самый мелкий multipack (блок 9/12/15…), не штука и не крупная коробка если есть меньший. */
+export function pickTasnifBlockPackage(item) {
+  const ranked = realTasnifPackages(item)
+    .map((pkg) => ({ pkg, count: packageCount(pkg) }))
+    .filter((row) => row.count != null && row.count > 1);
+  if (ranked.length === 0) return null;
+  ranked.sort((a, b) => a.count - b.count);
+  return ranked[0];
 }
 
 function packCountFromLine(line) {

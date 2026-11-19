@@ -1,5 +1,7 @@
 import { forwardRef, useEffect, useRef } from 'react';
+import { PackageSearch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState, PlatformErrorState } from '../../../components/ui';
 import PharmacyProductSearchTableRow from './PharmacyProductSearchTableRow';
 import '../styles/pharmacy-search-table.css';
 import '../styles/pharmacy-search-table-fiscal.css';
@@ -74,15 +76,15 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
 
       <div className="pharmacy-search__scroll">
         {productsError ? (
-          <p className="pharmacy-search__status" role="alert">{t('common.loadError')}</p>
+          <PlatformErrorState error={productsError} title={t('common.loadError')} size="sm" />
         ) : productsLoading && products.length === 0 ? (
           <p className="pharmacy-search__status">{t('common.loading')}</p>
         ) : products.length === 0 ? (
-          <p className="pharmacy-search__empty">
-            {search.trim()
-              ? t('pharmacyCashier.noProductsMatch')
-              : t('pharmacyCashier.searchHint')}
-          </p>
+          <EmptyState
+            icon={PackageSearch}
+            title={search.trim() ? t('pharmacyCashier.noProductsMatch') : t('pharmacyCashier.searchHint')}
+            compact
+          />
         ) : (
           <table className="pharmacy-search__table pharmacy-search__table--stock">
             <colgroup>

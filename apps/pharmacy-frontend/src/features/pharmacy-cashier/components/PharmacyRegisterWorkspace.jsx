@@ -51,7 +51,8 @@ export default function PharmacyRegisterWorkspace({
   useEffect(() => {
     if (!autoRefresh || !onRefreshCatalog) return undefined;
     const id = window.setInterval(() => {
-      onRefreshCatalog();
+      // Без force desktop bootstrap — иначе полный каталог каждую минуту.
+      onRefreshCatalog({ syncDesktop: false });
     }, CATALOG_AUTO_REFRESH_MS);
     return () => window.clearInterval(id);
   }, [autoRefresh, onRefreshCatalog]);
@@ -96,7 +97,7 @@ export default function PharmacyRegisterWorkspace({
     if (!onRefreshCatalog) return;
     setRefreshing(true);
     try {
-      await onRefreshCatalog();
+      await onRefreshCatalog({ syncDesktop: true });
     } finally {
       setRefreshing(false);
     }

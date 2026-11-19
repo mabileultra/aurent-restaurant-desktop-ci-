@@ -34,4 +34,14 @@ class MarkingIdentityKeysTest {
         assertTrue(MarkingIdentityKeys.keysOf(null).isEmpty());
         assertFalse(MarkingIdentityKeys.keysOf(NALEYKA_KM).isEmpty());
     }
+
+    @Test
+    void arrowSeparatorMatchesRealGsKeys() {
+        String withArrow = "0104780021711739217hhgo*h\u219493guia";
+        String withGs = "0104780021711739217hhgo*h\u001d93guia";
+        Set<String> arrowKeys = MarkingIdentityKeys.keysOf(withArrow);
+        Set<String> gsKeys = MarkingIdentityKeys.keysOf(withGs);
+        assertTrue(arrowKeys.stream().filter(k -> k.startsWith("id:")).anyMatch(gsKeys::contains));
+        assertTrue(arrowKeys.stream().noneMatch(k -> k.contains("\u2194")));
+    }
 }

@@ -37,4 +37,34 @@ class UzInvoiceDocumentIdExtractorTest {
     void normalizesCompactIsWithoutHyphen() {
         assertEquals("IS-00008429", UzInvoiceDocumentIdExtractor.extractFromPlainText("№ IS00008429 дата"));
     }
+
+    @Test
+    void matchesNumericSonliInvoiceNumber() {
+        assertEquals(
+            "2683",
+            UzInvoiceDocumentIdExtractor.extractFromPlainText("23.05.2026 даги 2683-сонли")
+        );
+    }
+
+    @Test
+    void ignoresSonliContractShartnoma() {
+        assertNull(
+            UzInvoiceDocumentIdExtractor.extractFromPlainText(
+                "14.01.2026 даги 481-сонли шартномага"
+            )
+        );
+    }
+
+    @Test
+    void prefersInvoiceSonliOverContractInGrid() {
+        List<List<String>> grid = new ArrayList<>();
+        grid.add(Arrays.asList("14.01.2026 даги 481-сонли шартномага", "", ""));
+        grid.add(Arrays.asList("23.05.2026 даги 2683-сонли", "", ""));
+        assertEquals("2683", UzInvoiceDocumentIdExtractor.extractFromGrid(grid));
+    }
+
+    @Test
+    void doesNotMatchBareDidoxPortalId() {
+        assertNull(UzInvoiceDocumentIdExtractor.extractFromPlainText("2031222256"));
+    }
 }

@@ -80,9 +80,17 @@ export default function PharmacyCartTableRow({
         <span className="pharmacy-cart-table__cell-text">{markShort}</span>
       </td>
       <td>
-        <span className={`pharmacy-cart-table__mark-status${marksCounted ? ' is-ok' : ''}`}>
-          {markStatusLabel(item, t)}
-        </span>
+        {marksCounted ? (
+          <span className="ui-badge-success whitespace-nowrap">
+            {markStatusLabel(item, t)}
+          </span>
+        ) : markStatusLabel(item, t) === '—' ? (
+          <span className="text-ink-muted">—</span>
+        ) : (
+          <span className="ui-badge-neutral whitespace-nowrap">
+            {markStatusLabel(item, t)}
+          </span>
+        )}
       </td>
       <td className="pharmacy-cart-table__name" title={item.name}>
         <span className="pharmacy-cart-table__cell-text pharmacy-cart-table__cell-text--name">
@@ -130,7 +138,7 @@ export default function PharmacyCartTableRow({
             disabled={marksCounted}
             onClick={() => onQtyDelta(item.lineId, -1)}
           >
-            <Minus size={12} strokeWidth={2.5} aria-hidden />
+            <Minus size={13} strokeWidth={1.75} aria-hidden />
           </button>
           <span className="pharmacy-cart-table__qty-val">
             {item.pharmacySellByPiece && Number(item.unitsInPack) > 1
@@ -147,7 +155,7 @@ export default function PharmacyCartTableRow({
             disabled={marksCounted}
             onClick={() => onQtyDelta(item.lineId, 1)}
           >
-            <Plus size={12} strokeWidth={2.5} aria-hidden />
+            <Plus size={13} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
       </td>
@@ -176,7 +184,7 @@ export default function PharmacyCartTableRow({
           aria-label={t('common.delete')}
           onClick={() => onRemove(item.lineId)}
         >
-          <Trash2 size={13} strokeWidth={2.25} aria-hidden />
+          <Trash2 size={14} strokeWidth={1.75} aria-hidden />
         </button>
       </td>
     </tr>

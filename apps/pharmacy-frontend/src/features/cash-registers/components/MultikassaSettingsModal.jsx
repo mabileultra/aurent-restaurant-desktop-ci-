@@ -10,26 +10,26 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
   if (!open || !cashRegisterId || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[11500] flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-[#26332d]/30" aria-label="Close" onClick={onClose} />
+    <div className="ui-modal-overlay z-[11500]">
+      <button type="button" className="fixed inset-0 bg-transparent" aria-label="Close" onClick={onClose} />
       <div
-        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-[#e4e7ec] bg-white font-[Inter,Segoe_UI,system-ui,sans-serif] text-[#1f2024] shadow-2xl"
+        className="ui-modal-panel relative max-w-lg max-h-[90vh]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="multikassa-settings-title"
       >
-        <div className="flex items-center justify-between bg-[#134842] px-5 py-4 text-white">
-          <h2 id="multikassa-settings-title" className="text-lg font-semibold text-white">
+        <div className="ui-modal-header bg-primary-50">
+          <h2 id="multikassa-settings-title" className="text-base font-semibold text-ink">
             {p.t('cashRegisters.multikassa.title')}
           </h2>
-          <button type="button" onClick={onClose} className="p-1 text-white">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="ui-icon-btn" aria-label={p.t('common.close')}>
+            <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={p.submit} className="overflow-y-auto px-5 py-4">
+        <form onSubmit={p.submit} className="ui-modal-body overflow-y-auto">
           {p.isLoading ? (
-            <p className="py-8 text-center text-sm text-slate-500">{p.t('common.loading')}</p>
+            <p className="py-8 text-center text-sm text-ink-muted">{p.t('common.loading')}</p>
           ) : (
             <div className="multikassa-settings">
               <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.hint')}</p>
@@ -185,6 +185,11 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
               {p.printersNote ? <p className="multikassa-settings__test">{p.printersNote}</p> : null}
 
               {p.testMessage ? <p className="multikassa-settings__test">{p.testMessage}</p> : null}
+              {p.saveError ? (
+                <div className="multikassa-settings__error" role="alert">
+                  {p.saveError}
+                </div>
+              ) : null}
 
               <div className="multikassa-settings__actions">
                 <button

@@ -1,4 +1,4 @@
-/* Узкие фискальные колонки в таблице остатков */
+/* Narrow fiscal columns in pharmacy stock search table */
 
 .pharmacy-search__table--stock .pharmacy-search__fiscal {
   max-width: 7.5rem;
@@ -9,22 +9,22 @@
   align-items: center;
   justify-content: center;
   min-width: 2rem;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 5px;
-  font-size: 0.625rem;
-  font-weight: 800;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
 .pharmacy-search__mark-badge.is-yes {
-  background: color-mix(in srgb, #0b5c3a 14%, transparent);
-  color: #0b5c3a;
+  background: rgb(var(--color-success-soft));
+  color: rgb(var(--color-success-text));
 }
 
 .pharmacy-search__mark-badge.is-no {
-  background: var(--pharm-surface);
-  color: var(--pharm-muted);
-  border: 1px solid var(--pharm-border);
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
+  border: 1px solid rgb(var(--color-line));
 }

@@ -1,8 +1,9 @@
+import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
-import { PageSearchField } from '../../../components/ui';
+import { EmptyState, PageHeader, PageSearchField } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { useLowStockReportPage } from '../hooks/useLowStockReportPage';
@@ -16,9 +17,8 @@ export default function LowStockReportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.lowStockTitle')}</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.lowStockSubtitle')}</p>
-        <Link to={paths.stockDashboard} className="admin-link mt-2 inline-block text-sm">
+        <PageHeader title={t('stockReports.lowStockTitle')} subtitle={t('stockReports.lowStockSubtitle')} />
+        <Link to={paths.stockDashboard} className="mt-2 inline-block text-sm font-medium text-primary-600 hover:underline">
           ← {t('stockReports.backDashboard')}
         </Link>
       </div>
@@ -42,37 +42,43 @@ export default function LowStockReportPage() {
           onPageSizeChange: r.setPageSize,
         }}
       >
-        <table className="w-full text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-600 dark:border-slate-700 dark:bg-slate-800/80">
+        <table className="ui-table">
+          <thead>
+            <tr>
+              <AdminTableNoIdHeaders />
+              <th className="ui-th">{t('stockReports.colProduct')}</th>
+              <th className="ui-th text-right">{t('stockReports.colStock')}</th>
+              <th className="ui-th text-right">{t('stockReports.colMin')}</th>
+              <th className="ui-th text-right">{t('stockReports.colDeficit')}</th>
+              <th className="ui-th text-right">{t('stockReports.colStockValue')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.isPending && (
+              <tr><td colSpan={7} className="ui-td py-8 text-center text-ink-muted">{t('common.loading')}</td></tr>
+            )}
+            {r.isError && (
+              <tr><td colSpan={7} className="ui-td py-8 text-center text-danger-text">{r.error?.response?.data?.message ?? t('common.error')}</td></tr>
+            )}
+            {!r.isPending && !r.isError && r.rows.length === 0 && (
               <tr>
-                <AdminTableNoIdHeaders />
-                <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
-                <th className="px-4 py-3 text-right">{t('stockReports.colStock')}</th>
-                <th className="px-4 py-3 text-right">{t('stockReports.colMin')}</th>
-                <th className="px-4 py-3 text-right">{t('stockReports.colDeficit')}</th>
-                <th className="px-4 py-3 text-right">{t('stockReports.colStockValue')}</th>
+                <td colSpan={7} className="p-0">
+                  <EmptyState icon={AlertTriangle} title={t('common.noData')} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {r.isPending && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">{t('common.loading')}</td></tr>
-              )}
-              {r.isError && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-red-600">{r.error?.response?.data?.message ?? t('common.error')}</td></tr>
-              )}
-              {!r.isPending && !r.isError && r.rows.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">{t('common.noData')}</td></tr>
-              )}
-              {r.rows.map((row, index) => (
-                <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
-                  <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
-                  <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
-                  <td className="px-4 py-3 text-right">{row.stockQuantity}</td>
-                  <td className="px-4 py-3 text-right">{row.lowStockAlert}</td>
-                  <td className="px-4 py-3 text-right text-red-600">{row.deficit}</td>
-                  <td className="px-4 py-3 text-right">{fmtMoney(row.stockValueEstimate)}</td>
-                </tr>
-              ))}
+            )}
+            {r.rows.map((row, index) => (
+              <tr key={row.productId} className="ui-tr">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
+                <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
+                <td className="ui-td-nowrap text-right">{row.stockQuantity}</td>
+                <td className="ui-td-nowrap text-right text-ink-muted">{row.lowStockAlert}</td>
+                <td className="ui-td-nowrap text-right">
+                  <span className="ui-badge-danger">{row.deficit}</span>
+                </td>
+                <td className="ui-td-nowrap text-right font-semibold">{fmtMoney(row.stockValueEstimate)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </ReportTableCard>

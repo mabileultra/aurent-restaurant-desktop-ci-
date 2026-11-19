@@ -211,7 +211,7 @@
 }
 
 @media (max-width: 1024px) {
-  .cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar {
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -221,7 +221,7 @@
 }
 
 @media (max-width: 640px) {
-  .cashier-app .cashier-page--my-sales .cashier-sales-list-card.is-view-cards .cashier-sales-mobile-list {
+.cashier-app .cashier-page--my-sales .cashier-sales-list-card.is-view-cards .cashier-sales-mobile-list {
     grid-template-columns: 1fr 1fr;
     gap: 4px;
   }

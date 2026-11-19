@@ -91,12 +91,12 @@ export default function UsersTable({
 
   const renderSortIcon = (field) => {
     if (sortField !== field) {
-      return <ArrowUpDown size={13} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" />;
+      return <ArrowUpDown size={13} className="text-ink-muted group-hover:text-ink" />;
     }
     return sortDirection === 'asc' ? (
-      <ArrowUp size={13} className="text-purple-600 dark:text-purple-400" />
+      <ArrowUp size={13} className="text-primary-600" />
     ) : (
-      <ArrowDown size={13} className="text-purple-600 dark:text-purple-400" />
+      <ArrowDown size={13} className="text-primary-600" />
     );
   };
 
@@ -107,11 +107,11 @@ export default function UsersTable({
 
   return (
     <div className="relative">
-      <div className="admin-table-shell overflow-hidden rounded-2xl bg-white shadow-2xs dark:bg-slate-900 relative">
-        {/* Indeterminate purple progress line during background refetching */}
+      <div className="ui-table-wrap relative">
+        {/* Indeterminate primary progress line during background refetching */}
         {isRefreshing && (
-          <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-purple-100 dark:bg-purple-950 overflow-hidden rounded-t-2xl">
-            <div className="h-full bg-purple-600 animate-pulse w-full motion-reduce:animate-none" />
+          <div className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-primary-100 overflow-hidden rounded-t-card">
+            <div className="h-full bg-primary-500 animate-pulse w-full motion-reduce:animate-none" />
           </div>
         )}
 
@@ -120,12 +120,12 @@ export default function UsersTable({
           <Spinner overlay size="sm" text={t('common.loading')} />
         )}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-left text-sm table-fixed border-collapse min-w-[760px]">
+          <table className="ui-table table-fixed min-w-[760px]">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/90 backdrop-blur-xs text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-400 sticky top-0 z-10">
+              <tr>
                 
                 {/* Checkbox select */}
-                <th className="w-12 px-3 py-3.5 text-center">
+                <th className="w-12 px-3 py-3 text-center">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -134,7 +134,7 @@ export default function UsersTable({
                     }}
                     onChange={(e) => onToggleSelectAll?.(e.target.checked)}
                     aria-label={t('common.selectAll', { defaultValue: 'Barchasini tanlash' })}
-                    className="rounded border-slate-300 text-purple-600 focus:ring-purple-500 dark:border-slate-700"
+                    className="rounded border-line-strong text-primary-600 accent-primary-600 focus:ring-primary-500"
                   />
                 </th>
 
@@ -150,7 +150,7 @@ export default function UsersTable({
                       onSort?.('fullName');
                     }
                   }}
-                  className="w-[34%] min-w-[220px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+                  className="w-[34%] min-w-[220px] px-4 py-3 cursor-pointer select-none group focus:outline-none focus:bg-primary-50"
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
                     <span>{t('users.colUser')}</span>
@@ -170,7 +170,7 @@ export default function UsersTable({
                       onSort?.('role');
                     }
                   }}
-                  className="w-[18%] min-w-[120px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+                  className="w-[18%] min-w-[120px] px-4 py-3 cursor-pointer select-none group focus:outline-none focus:bg-primary-50"
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
                     <span>{t('users.colRole')}</span>
@@ -190,7 +190,7 @@ export default function UsersTable({
                       onSort?.('company');
                     }
                   }}
-                  className="w-[32%] min-w-[200px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+                  className="w-[32%] min-w-[200px] px-4 py-3 cursor-pointer select-none group focus:outline-none focus:bg-primary-50"
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
                     <span>{isPlatform ? t('users.colCompany') : t('users.colStores', { defaultValue: 'Filiallar' })}</span>
@@ -210,7 +210,7 @@ export default function UsersTable({
                       onSort?.('status');
                     }
                   }}
-                  className="w-[16%] min-w-[100px] px-4 py-3.5 cursor-pointer select-none group focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800"
+                  className="w-[16%] min-w-[100px] px-4 py-3 cursor-pointer select-none group focus:outline-none focus:bg-primary-50"
                 >
                   <div className="flex items-center gap-1.5 font-semibold">
                     <span>{t('users.colActive')}</span>
@@ -219,48 +219,48 @@ export default function UsersTable({
                 </th>
 
                 {/* Actions */}
-                <th className="admin-table-sticky-end w-12 px-3 py-3.5 text-right" />
+                <th className="admin-table-sticky-end w-12 px-3 py-3 text-right" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-line">
               {isLoading ? (
                 Array.from({ length: Math.min(pageSize || 10, 10) }).map((_, idx) => (
                   <tr key={`user-skeleton-${idx}`} className="animate-pulse motion-reduce:animate-none">
                     <td className="w-12 px-3 py-3.5 text-center">
-                      <div className="h-4 w-4 mx-auto rounded bg-slate-200 dark:bg-slate-700/60" />
+                      <div className="h-4 w-4 mx-auto rounded bg-primary-100" />
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700/60 shrink-0" />
+                        <div className="w-9 h-9 rounded-xl bg-primary-100 shrink-0" />
                         <div className="space-y-1.5 flex-1 min-w-0">
-                          <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
-                          <div className="h-3 w-20 rounded bg-slate-100 dark:bg-slate-800" />
+                          <div className="h-4 w-32 rounded bg-primary-100" />
+                          <div className="h-3 w-20 rounded bg-canvas" />
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="h-5 w-20 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                      <div className="h-5 w-20 rounded-full bg-primary-100" />
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="space-y-1.5">
-                        <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700/60" />
-                        <div className="h-3 w-16 rounded bg-slate-100 dark:bg-slate-800" />
+                        <div className="h-4 w-28 rounded bg-primary-100" />
+                        <div className="h-3 w-16 rounded bg-canvas" />
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-slate-700/60" />
+                      <div className="h-5 w-14 rounded-full bg-primary-100" />
                     </td>
                     <td className="w-12 px-3 py-3.5" />
                   </tr>
                 ))
               ) : pageRows.length === 0 ? (
                 <tr>
-                  <td colSpan={colSpan} className="px-4 py-12 text-center text-slate-500">
+                  <td colSpan={colSpan} className="px-4 py-12 text-center text-ink-muted">
                     <div className="max-w-xs mx-auto space-y-1">
-                      <p className="font-medium text-slate-700 dark:text-slate-300">
+                      <p className="font-medium text-ink">
                         {t('platform.noSearchResults')}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-ink-muted">
                         {t('users.emptyFilterHint', { defaultValue: 'Qidiruv so\'rovi yoki filtrlarni o\'zgartirib ko\'ring' })}
                       </p>
                     </div>
@@ -294,9 +294,7 @@ export default function UsersTable({
                         }
                       }}
                       className={`group cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-950/30'
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                        isSelected ? 'bg-primary-50/70 hover:bg-primary-100/60' : 'hover:bg-primary-50'
                       }`}
                     >
                       {/* Checkbox */}
@@ -306,31 +304,31 @@ export default function UsersTable({
                           checked={isSelected}
                           onChange={() => onToggleSelectUser?.(user.id)}
                           aria-label={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
-                          className="rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                          className="rounded border-line-strong text-primary-600 accent-primary-600 focus:ring-primary-500 cursor-pointer"
                         />
                       </td>
 
                       {/* Foydalanuvchi (Ism, username · phone) */}
                       <td className="px-4 py-3">
                         <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-slate-900 dark:text-white truncate">
+                          <span className="font-semibold text-ink truncate">
                             {displayName}
                           </span>
-                          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                            <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">
+                          <div className="flex items-center gap-1.5 text-xs text-ink-muted mt-0.5 truncate">
+                            <span className="font-mono text-ink font-medium">
                               {user.username}
                             </span>
                             {user.phone ? (
                               <>
-                                <span className="text-slate-300 dark:text-slate-600">·</span>
-                                <span className="text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                                <span className="text-line-strong">·</span>
+                                <span className="text-ink-muted font-mono text-[11px] ui-tabular">
                                   {user.phone}
                                 </span>
                               </>
                             ) : user.email ? (
                               <>
-                                <span className="text-slate-300 dark:text-slate-600">·</span>
-                                <span className="text-slate-500 dark:text-slate-400 truncate max-w-[140px]">
+                                <span className="text-line-strong">·</span>
+                                <span className="text-ink-muted truncate max-w-[140px]">
                                   {user.email}
                                 </span>
                               </>
@@ -338,10 +336,10 @@ export default function UsersTable({
                           </div>
                           {/* Compact security credential badge with title */}
                           <div
-                            className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500"
+                            className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-ink-muted"
                             title={securityTooltip}
                           >
-                            <KeyRound size={11} className="text-slate-400 shrink-0" />
+                            <KeyRound size={11} className="text-ink-muted shrink-0" />
                             <span className="truncate">{securityTooltip}</span>
                           </div>
                         </div>
@@ -350,8 +348,8 @@ export default function UsersTable({
                       {/* Rol */}
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                            USER_ROLE_BADGE[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            USER_ROLE_BADGE[user.role] ?? 'ui-badge-neutral'
                           }`}
                         >
                           {t(`roles.${user.role}`, user.role)}
@@ -363,12 +361,12 @@ export default function UsersTable({
                         <div className="flex flex-col min-w-0">
                           {isPlatform && (
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-medium text-slate-900 dark:text-white truncate">
+                              <span className="font-medium text-ink truncate">
                                 {user.companyName || company?.name || '—'}
                               </span>
                               {loginCode ? (
                                 <span
-                                  className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-slate-100 dark:bg-slate-800 text-purple-700 dark:text-purple-300 border border-slate-200 dark:border-slate-700"
+                                  className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-primary-50 text-primary-700 border border-primary-200 ui-tabular"
                                   title={`${t('users.companyLoginCode', { defaultValue: 'Kompaniya kodi' })}: #${loginCode}`}
                                 >
                                   #{loginCode}
@@ -376,18 +374,18 @@ export default function UsersTable({
                               ) : null}
                             </div>
                           )}
-                          <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          <div className="flex items-center gap-1 text-xs text-ink-muted mt-0.5">
                             {user.storeNames?.length ? (
                               <span className="truncate" title={user.storeNames.join(', ')}>
                                 {user.storeNames.join(', ')}
                               </span>
                             ) : (
-                              <span className="text-slate-400">Filialsiz</span>
+                              <span className="text-ink-muted">Filialsiz</span>
                             )}
                             {isPlatform && (
                               <>
-                                <span className="text-slate-300 dark:text-slate-600">·</span>
-                                <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                                <span className="text-line-strong">·</span>
+                                <span className="text-[11px] text-ink-muted">
                                   {businessTypeLabel(user)}
                                 </span>
                               </>
@@ -397,15 +395,13 @@ export default function UsersTable({
                       </td>
 
                       {/* Holat (Active / Inactive badge) */}
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                            user.active
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60'
-                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                          className={`gap-1.5 ${
+                            user.active ? 'ui-badge-success' : 'ui-badge-neutral'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-success' : 'bg-ink-disabled'}`} />
                           {user.active ? t('users.activeStatus', { defaultValue: 'Faol' }) : t('users.inactiveStatus', { defaultValue: 'Nofaol' })}
                         </span>
                       </td>
@@ -472,18 +468,18 @@ export default function UsersTable({
         <div className="sm:hidden p-3 space-y-3">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, idx) => (
-              <div key={`user-card-skeleton-${idx}`} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 animate-pulse">
+              <div key={`user-card-skeleton-${idx}`} className="p-3.5 rounded-card border border-line bg-surface animate-pulse">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700/60" />
+                  <div className="w-4 h-4 rounded bg-primary-100" />
                   <div className="space-y-1.5 flex-1">
-                    <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700/60" />
-                    <div className="h-3 w-20 rounded bg-slate-100 dark:bg-slate-800" />
+                    <div className="h-4 w-32 rounded bg-primary-100" />
+                    <div className="h-3 w-20 rounded bg-canvas" />
                   </div>
                 </div>
               </div>
             ))
           ) : pageRows.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="p-8 text-center text-sm text-ink-muted">
               {t('platform.noSearchResults')}
             </div>
           ) : (
@@ -507,10 +503,10 @@ export default function UsersTable({
                   key={user.id}
                   id={`user-card-${user.id}`}
                   onClick={() => onRowClick?.(user)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-card border transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700'
+                      ? 'border-primary-300 bg-primary-50/70'
+                      : 'border-line bg-surface hover:border-line-strong'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -520,13 +516,13 @@ export default function UsersTable({
                         checked={isSelected}
                         onChange={() => onToggleSelectUser?.(user.id)}
                         aria-label={t('users.selectUser', { name: displayName, defaultValue: 'Foydalanuvchini tanlash' })}
-                        className="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                        className="mt-1 h-4 w-4 rounded border-line-strong text-primary-600 accent-primary-600 focus:ring-primary-500 cursor-pointer"
                       />
                       <div className="min-w-0">
-                        <p className="font-semibold text-slate-900 dark:text-white truncate text-sm">
+                        <p className="font-semibold text-ink truncate text-sm">
                           {displayName}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
+                        <p className="text-xs text-ink-muted font-mono ui-tabular mt-0.5 truncate">
                           {user.username} {user.phone ? `· ${user.phone}` : ''}
                         </p>
                       </div>
@@ -580,25 +576,23 @@ export default function UsersTable({
 
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                     <span
-                      className={`inline-flex items-center rounded-lg px-2 py-0.5 text-xs font-semibold ${
-                        USER_ROLE_BADGE[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        USER_ROLE_BADGE[user.role] ?? 'ui-badge-neutral'
                       }`}
                     >
                       {t(`roles.${user.role}`, user.role)}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${
-                        user.active
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                          : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                      className={`gap-1.5 ${
+                        user.active ? 'ui-badge-success' : 'ui-badge-neutral'
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-success' : 'bg-ink-disabled'}`} />
                       {user.active ? t('users.activeStatus', { defaultValue: 'Faol' }) : t('users.inactiveStatus', { defaultValue: 'Nofaol' })}
                     </span>
                     {compName ? (
                       <span
-                        className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[140px]"
+                        className="text-ink-muted font-medium truncate max-w-[140px]"
                         title={compName}
                       >
                         {compName}
@@ -606,15 +600,15 @@ export default function UsersTable({
                     ) : null}
                     {loginCode ? (
                       <span
-                        className="font-mono text-[10px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-200/60 dark:border-purple-800 shrink-0"
+                        className="font-mono text-[10px] font-semibold text-primary-700 bg-primary-50 px-1.5 py-0.5 rounded border border-primary-200 ui-tabular shrink-0"
                         title={`${t('users.companyLoginCode', { defaultValue: 'Kompaniya kodi' })}: #${loginCode}`}
                       >
                         #{loginCode}
                       </span>
                     ) : null}
                     {userLocation ? (
-                      <span className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 text-[11px] truncate max-w-full">
-                        <MapPin size={11} className="shrink-0 text-slate-400" aria-hidden="true" />
+                      <span className="inline-flex items-center gap-1 text-ink-muted text-[11px] truncate max-w-full">
+                        <MapPin size={11} className="shrink-0 text-ink-muted" aria-hidden="true" />
                         <span className="truncate">{userLocation}</span>
                       </span>
                     ) : null}
@@ -640,9 +634,9 @@ export default function UsersTable({
       {/* Bulk Actions Floating Bar */}
       {selectedUserIds.size > 0 && (
         <div className="sticky bottom-6 flex justify-center z-30 pointer-events-none mt-4">
-          <div className="pointer-events-auto flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 dark:bg-slate-800/95 text-white shadow-2xl border border-slate-700/80 backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-full">
-            <div className="flex items-center gap-2 pr-2 border-r border-slate-700 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+          <div className="pointer-events-auto flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2.5 rounded-card bg-surface text-ink shadow-elevated border border-line-strong max-w-full">
+            <div className="flex items-center gap-2 pr-2 border-r border-line text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
               <span>
                 {t('users.selectedCount', { count: selectedUserIds.size, defaultValue: `${selectedUserIds.size} ta tanlandi` })}
               </span>
@@ -651,12 +645,12 @@ export default function UsersTable({
                   <button
                     type="button"
                     onClick={onSelectAllMatching}
-                    className="ml-1 text-[11px] text-purple-300 hover:text-purple-200 underline underline-offset-2 transition-colors cursor-pointer"
+                    className="ml-1 text-[11px] font-medium text-primary-600 hover:text-primary-700 underline underline-offset-2 transition-colors cursor-pointer"
                   >
                     {t('users.selectAllMatching', { total: totalMatching, defaultValue: `Barcha ${totalMatching} tasini tanlash` })}
                   </button>
                 ) : (
-                  <span className="ml-1 text-[11px] text-emerald-400 font-medium">
+                  <span className="ml-1 text-[11px] text-success-text font-medium">
                     {t('users.allMatchingSelected', { total: totalMatching, defaultValue: `Barcha ${totalMatching} ta tanlangan` })}
                   </span>
                 )
@@ -667,9 +661,9 @@ export default function UsersTable({
               <button
                 type="button"
                 onClick={() => onBulkToggleActive?.(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-300 border border-slate-700 hover:border-emerald-500/40 transition-colors cursor-pointer"
+                className="ui-btn-secondary h-8 px-3 text-xs text-success-text border-success/30 hover:bg-success-soft"
               >
-                <UserCheck size={14} className="text-emerald-400" />
+                <UserCheck size={14} className="text-success" />
                 <span>{t('users.activate', { defaultValue: 'Faollashtirish' })}</span>
               </button>
             )}
@@ -678,9 +672,9 @@ export default function UsersTable({
               <button
                 type="button"
                 onClick={() => onBulkToggleActive?.(false)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-300 border border-slate-700 hover:border-amber-500/40 transition-colors cursor-pointer"
+                className="ui-btn-secondary h-8 px-3 text-xs text-warning-text border-warning/30 hover:bg-warning-soft"
               >
-                <UserX size={14} className="text-amber-400" />
+                <UserX size={14} className="text-warning" />
                 <span>{t('users.deactivate', { defaultValue: 'Faolsizlantirish' })}</span>
               </button>
             )}
@@ -688,16 +682,16 @@ export default function UsersTable({
             <button
               type="button"
               onClick={onExportSelectedCsv}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 hover:border-slate-500 transition-colors cursor-pointer"
+              className="ui-btn-secondary h-8 px-3 text-xs"
             >
-              <Download size={14} className="text-purple-400" />
+              <Download size={14} className="text-primary-600" />
               <span>{t('common.exportCsv', { defaultValue: 'Eksport (CSV)' })}</span>
             </button>
 
             <button
               type="button"
               onClick={onClearSelection}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1 cursor-pointer"
+              className="ui-icon-btn h-8 w-8 ml-1"
               aria-label={t('common.cancel', { defaultValue: 'Bekor qilish' })}
             >
               <X size={16} />

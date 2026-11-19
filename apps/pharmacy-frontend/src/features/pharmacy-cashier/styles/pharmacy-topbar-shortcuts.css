@@ -1,4 +1,4 @@
-/* Хоткеи в topbar — только аптека; адаптив под ширину */
+/* Pharmacy topbar shortcuts — responsive breakpoints */
 
 .pharmacy-topbar-shortcuts {
   display: inline-flex;
@@ -15,9 +15,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--pharm-muted, var(--pos-muted, #64748b));
-  font-size: 0.625rem;
-  font-weight: 600;
+  color: rgb(var(--color-ink-muted));
+  font-size: 0.6875rem;
+  font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -28,36 +28,28 @@
   justify-content: center;
   min-width: 1.55rem;
   height: 22px;
-  padding: 0 5px;
-  border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
-  border-radius: 5px;
-  background: var(--pharm-elevated, var(--pos-surface-elevated, #fff));
-  color: var(--pharm-ink, var(--pos-text, #1a2e28));
+  padding: 0 6px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
   font-family: inherit;
-  font-size: 0.5625rem;
-  font-weight: 800;
+  font-size: 0.625rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
-  box-shadow: 0 1px 0 rgb(15 40 30 / 0.06);
 }
 
 .pharmacy-topbar-shortcuts__kbd--pay {
   min-width: 2.5rem;
-  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
-  background: var(--pharm-brand-soft, rgb(0 104 71 / 0.12));
-  color: var(--pharm-brand, #006847);
-  box-shadow: none;
+  border-color: rgb(var(--color-primary-200));
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
 }
 
 .pharmacy-topbar-shortcuts__item--pay .pharmacy-topbar-shortcuts__label {
-  color: var(--pharm-brand, #006847);
-  font-weight: 700;
-}
-
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pharmacy-topbar-shortcuts__kbd:not(.pharmacy-topbar-shortcuts__kbd--pay) {
-  background: #fff;
-  border-color: #d8e0dc;
-  color: #334155;
+  color: rgb(var(--color-primary-700));
+  font-weight: 600;
 }
 
 .cashier-app.cashier-app--pharmacy-pos .cashier-topbar__terminal-strip {
@@ -75,11 +67,11 @@
   gap: 6px;
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 10px;
-  border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
+  border: 1px solid rgb(var(--color-line));
   border-radius: 8px;
-  background: var(--pharm-elevated, #fff);
-  color: var(--pharm-muted, var(--pos-muted, #64748b));
-  font-size: 0.6875rem;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink-muted));
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
@@ -87,17 +79,11 @@
 
 .cashier-app--pharmacy-pos .cashier-topbar__shift-chip svg {
   flex-shrink: 0;
-  width: 13px;
-  height: 13px;
-  color: var(--pharm-muted, var(--pos-muted, #64748b));
+  width: 14px;
+  height: 14px;
+  color: rgb(var(--color-ink-muted));
 }
 
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__shift-chip {
-  background: #fff;
-  border-color: #d8e0dc;
-}
-
-/* Адаптив: сначала прячем подписи хоткеев, потом часть хоткеев, потом смену */
 @media (max-width: 1480px) {
   .pharmacy-topbar-shortcuts__label {
     display: none;

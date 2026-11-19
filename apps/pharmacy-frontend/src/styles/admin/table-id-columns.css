@@ -12,7 +12,7 @@
 
 .admin-table-col-no--cell {
   font-variant-numeric: tabular-nums;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
 }
 
 .admin-table-col-id {
@@ -32,13 +32,5 @@
   text-overflow: ellipsis;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.75rem;
-  color: #475569;
-}
-
-html.dark .admin-table-col-no--cell {
-  color: #94a3b8;
-}
-
-html.dark .admin-table-col-id--cell {
-  color: #94a3b8;
+  color: rgb(var(--color-ink-muted));
 }

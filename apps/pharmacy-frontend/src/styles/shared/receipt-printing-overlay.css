@@ -1,4 +1,4 @@
-/* Модалка «Печатается чек…» — без превью чека на экране */
+/* Modal "Receipt printing..." — no receipt preview on screen */
 .receipt-printing-overlay {
   z-index: 2147483647;
   background: transparent !important;
@@ -6,7 +6,6 @@
 }
 
 .receipt-printing-overlay .pos-pay-overlay__backdrop {
-  /* Пользователь не должен видеть затемнение/фон — только модалку. */
   background: transparent;
   backdrop-filter: none;
 }
@@ -14,11 +13,10 @@
 .receipt-printing-modal {
   width: min(420px, calc(100vw - 2rem));
   padding: 2rem 2.25rem 2.1rem;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow:
-    0 24px 48px rgba(15, 23, 42, 0.18),
-    0 0 0 1px rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-card);
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-elevated);
   text-align: center;
 }
 
@@ -30,7 +28,7 @@
   width: 4.5rem;
   height: 4.5rem;
   margin: 0 auto 1.25rem;
-  color: #047857;
+  color: rgb(var(--color-primary-700));
 }
 
 .receipt-printing-modal__icon svg:first-child {
@@ -42,7 +40,7 @@
   position: absolute;
   inset: 0;
   margin: auto;
-  color: #10b981;
+  color: rgb(var(--color-primary-500));
   animation: receipt-printing-spin 0.85s linear infinite;
 }
 
@@ -57,12 +55,12 @@
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #0f172a;
+  color: rgb(var(--color-ink));
 }
 
 .receipt-printing-modal__hint {
   margin: 0;
   font-size: 0.9375rem;
   line-height: 1.45;
-  color: #64748b;
+  color: rgb(var(--color-ink-muted));
 }

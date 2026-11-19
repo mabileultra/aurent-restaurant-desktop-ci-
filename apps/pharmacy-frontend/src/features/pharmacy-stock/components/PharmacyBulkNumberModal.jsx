@@ -48,7 +48,7 @@ export default function PharmacyBulkNumberModal({
       )}
     >
       <div className="pharmacy-stock">
-        {hint ? <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">{hint}</p> : null}
+        {hint ? <p className="mb-3 text-sm text-ink-muted">{hint}</p> : null}
         <label className="pharm-line-modal__field">
           <span className="pharm-line-modal__label">{fieldLabel}</span>
           <input
@@ -66,7 +66,7 @@ export default function PharmacyBulkNumberModal({
               if (e.key === 'Enter') submit();
             }}
           />
-          {error ? <span className="mt-1 text-xs text-red-600">{error}</span> : null}
+          {error ? <span className="mt-1 text-xs text-danger-text">{error}</span> : null}
         </label>
       </div>
     </BaseModal>

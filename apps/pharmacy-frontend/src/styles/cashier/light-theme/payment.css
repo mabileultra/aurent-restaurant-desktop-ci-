@@ -5,12 +5,12 @@
 
 .cashier-app.cashier-app--light .pos-pay-register-rail__head,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__actions-wrap {
-  background: #f9fafb;
+  background: rgb(var(--color-canvas));
   border-color: var(--pos-border);
 }
 
 .cashier-app.cashier-app--light .pos-pay-register-rail__back {
-  background: #fff;
+  background: rgb(var(--color-surface));
   border-color: var(--pos-border);
   color: var(--pos-muted);
 }
@@ -56,10 +56,10 @@
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--row,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--tile,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--register {
-  background: #fff;
-  border: 1.5px solid #c5ccd6;
+  background: rgb(var(--color-surface));
+  border: 1.5px solid rgb(var(--color-line-strong));
   border-left-width: 4px;
-  border-left-color: #374151;
+  border-left-color: rgb(var(--color-ink));
   color: var(--pos-text);
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
 }
@@ -69,21 +69,21 @@
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--row:hover,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--tile:hover,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--register:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-  border-left-color: #374151;
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-ink-disabled));
+  border-left-color: rgb(var(--color-ink));
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-method-card--row svg,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-method-card--register svg,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--row svg,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--register .pos-pay-card-type__icon {
-  color: #374151;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-card-type--register .pos-pay-card-type__icon {
-  background: #f3f4f6;
-  border-color: #c5ccd6;
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-line-strong));
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary {
@@ -96,13 +96,13 @@
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary:disabled {
-  background: #d1d5db;
-  color: #9ca3af;
+  background: rgb(var(--color-line-strong));
+  color: rgb(var(--color-ink-disabled));
 }
 
 .cashier-app.cashier-app--light .pos-pay-cash-panel--terminal .pos-pay-cash__received-box {
-  border: 1.5px solid #c5ccd6;
-  background: #f3f4f6;
+  border: 1.5px solid rgb(var(--color-line-strong));
+  background: rgb(var(--color-canvas));
 }
 
 .cashier-app.cashier-app--light .pos-pay-cash-panel--terminal .pos-pay-cash__received-label {
@@ -114,7 +114,7 @@
 }
 
 .cashier-app.cashier-app--light .pos-pay-cash-panel--terminal .pos-pay-cash__change-value .auto-fit-text__inner {
-  color: #166534;
+  color: rgb(var(--color-success-text));
 }
 
 .cashier-app.cashier-app--light .pos-pay-cash-panel--terminal .pos-pay-cash__hint {
@@ -122,13 +122,13 @@
 }
 
 .cashier-app.cashier-app--light .pos-pay-cash-panel--terminal .pos-pay-cash__shortfall {
-  color: #b91c1c;
+  color: rgb(var(--color-danger-text));
 }
 
 .cashier-app.cashier-app--light .pos-register-pay-rail .pos-pay-cash__change-box--remainder,
 .cashier-app.cashier-app--light .pos-register-pay-rail .pos-pay-cash__card-remainder-value,
 .cashier-app.cashier-app--light .pos-register-pay-rail .pos-pay-cash__hint--card-remainder {
-  color: #1d4ed8;
+  color: rgb(var(--color-info-text));
 }
 
 

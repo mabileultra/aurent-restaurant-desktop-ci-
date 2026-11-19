@@ -1,5 +1,7 @@
+import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { reportApi } from '../../../api';
+import { EmptyState, PageHeader } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
@@ -12,42 +14,48 @@ export default function CashierPerformanceReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.cashierPerfTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.cashierPerfSubtitle')}</p>
-        </div>
-        <ReportExportButton
-          fetchBlob={() => reportApi.exportCashierPerf(r.from, r.to)}
-          filenamePrefix="cashier_performance"
-          disabled={!r.rangeEnabled}
-        />
-      </div>
+      <PageHeader
+        title={t('stockReports.cashierPerfTitle')}
+        subtitle={t('stockReports.cashierPerfSubtitle')}
+        actions={(
+          <ReportExportButton
+            fetchBlob={() => reportApi.exportCashierPerf(r.from, r.to)}
+            filenamePrefix="cashier_performance"
+            disabled={!r.rangeEnabled}
+          />
+        )}
+      />
       <ReportDateBar from={r.from} to={r.to} onFrom={r.setFrom} onTo={r.setTo} />
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
+      <div className="ui-table-wrap">
+        <table className="ui-table">
+          <thead>
             <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3">{t('stockReports.colCashier')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colReceipts')}</th>
-              <th className="px-4 py-3 text-right">{t('stockReports.colRevenue')}</th>
+              <th className="ui-th">{t('stockReports.colCashier')}</th>
+              <th className="ui-th text-right">{t('stockReports.colReceipts')}</th>
+              <th className="ui-th text-right">{t('stockReports.colRevenue')}</th>
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
+            {r.isPending && <tr><td colSpan={5} className="ui-td py-8 text-center text-ink-muted">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-0">
+                  <EmptyState icon={Users} title={t('common.noData')} />
+                </td>
+              </tr>
+            )}
             {r.rows.map((row, index) => (
-              <tr key={row.cashierId ?? row.id ?? index} className="border-b border-slate-100 dark:border-slate-800">
+              <tr key={row.cashierId ?? row.id ?? index} className="ui-tr">
                 <AdminTableNoIdCells
                   page={0}
                   pageSize={r.rows.length || 1}
                   index={index}
                   id={row.cashierId ?? row.id}
                 />
-                <td className="px-4 py-3 font-medium">{row.cashierName ?? row.name}</td>
-                <td className="px-4 py-3 text-right">{row.transactionCount ?? '—'}</td>
-                <td className="px-4 py-3 text-right">{fmtMoney(row.revenue)}</td>
+                <td className="ui-td font-medium">{row.cashierName ?? row.name}</td>
+                <td className="ui-td-nowrap text-right">{row.transactionCount ?? '—'}</td>
+                <td className="ui-td-nowrap text-right font-semibold">{fmtMoney(row.revenue)}</td>
               </tr>
             ))}
           </tbody>

@@ -1,7 +1,7 @@
-/* Typography — чёткий рендер на POS и admin */
+/* Typography — self-hosted Inter Variable for offline & web */
 
 :root {
-  --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-ui: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: var(--font-ui);
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;

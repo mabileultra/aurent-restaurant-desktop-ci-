@@ -3,9 +3,9 @@ export default function ReportProductNameCell({ name, sku, barcode, className = 
   const meta = metaParts.join(' · ');
 
   return (
-    <td className={`px-4 py-3 ${className}`.trim()}>
-      <div className="font-medium text-slate-900 dark:text-white">{name}</div>
-      {meta ? <div className="text-xs text-slate-500">{meta}</div> : null}
+    <td className={`ui-td ${className}`.trim()}>
+      <div className="font-medium text-ink">{name}</div>
+      {meta ? <div className="ui-tabular text-xs text-ink-muted">{meta}</div> : null}
     </td>
   );
 }

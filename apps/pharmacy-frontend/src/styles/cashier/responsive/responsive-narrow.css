@@ -88,7 +88,7 @@
     --cashier-gap: 8px;
   }
 
-  .cashier-app main.flex-grow-1 {
+  .cashier-app main.cashier-app__main {
     padding: 6px !important;
   }
 
@@ -100,7 +100,7 @@
     padding-right: 8px !important;
   }
 
-  .cashier-topbar > .d-flex:last-child {
+  .cashier-topbar > :last-child {
     width: 100%;
     justify-content: space-between;
   }

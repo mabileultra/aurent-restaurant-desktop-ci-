@@ -56,6 +56,7 @@ export const buildLine = (product, quantity) => {
     discountPercent: Number(product.defaultDiscountPercent ?? 0),
     discount: 0,
     pharmacySellByPiece: product.pharmacySellByPiece === true,
+    sellAsBlock: product.sellAsBlock === true,
     unitsInPack: product.unitsInPack ?? null,
     packUnitPrice: product.packUnitPrice ?? null,
     pieceStep: product.pieceStep ?? null,

@@ -14,8 +14,7 @@ import LogoUploadField from './LogoUploadField';
 import SettingsFieldToggles from './SettingsFieldToggles';
 import TenantSettingsSaveBar from './TenantSettingsSaveBar';
 
-const inputCls =
-  'mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100';
+const inputCls = 'ui-input mt-1';
 
 export default function ReceiptPrinterSettingsPanel() {
   const { t } = useTranslation();
@@ -42,10 +41,10 @@ export default function ReceiptPrinterSettingsPanel() {
   }, [fetchFromServer]);
 
   return (
-    <section className="admin-card">
-      <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        <Printer size={18} className="text-emerald-600 dark:text-emerald-400" />
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+    <section className="ui-card">
+      <div className="flex items-center gap-2 border-b border-line px-4 py-3">
+        <Printer size={18} strokeWidth={1.75} className="text-primary-600" />
+        <h2 className="text-sm font-semibold text-ink">
           {t('tenantSettings.printerTitle')}
         </h2>
       </div>
@@ -60,7 +59,7 @@ export default function ReceiptPrinterSettingsPanel() {
         />
 
         <div>
-          <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+          <label className="ui-label">
             {t('tenantSettings.receiptLogoMaxHeight')}
           </label>
           <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -71,14 +70,14 @@ export default function ReceiptPrinterSettingsPanel() {
               step={1}
               value={receiptLogoMaxHeightMm}
               onChange={(e) => setReceiptLogoMaxHeightMm(e.target.value)}
-              className="min-w-[10rem] flex-1"
+              className="min-w-[10rem] flex-1 accent-primary-500"
             />
-            <span className="text-sm font-medium tabular-nums text-slate-800 dark:text-slate-200">
+            <span className="text-sm font-medium ui-tabular text-ink">
               {receiptLogoMaxHeightMm} {t('tenantSettings.receiptLogoMaxHeightUnit')}
             </span>
             {receiptLogoDataUrl ? (
               <div
-                className="flex shrink-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-white px-2 dark:border-slate-600 dark:bg-slate-800"
+                className="flex shrink-0 items-center justify-center overflow-hidden rounded-input border border-dashed border-line-strong bg-surface px-2"
                 style={{ width: 120, height: Math.min(96, receiptLogoMaxHeightMm * 2.2) }}
               >
                 <img
@@ -90,14 +89,14 @@ export default function ReceiptPrinterSettingsPanel() {
               </div>
             ) : null}
           </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-ink-muted">
             {t('tenantSettings.receiptLogoMaxHeightHint')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="ui-label">
               {t('tenantSettings.receiptCompanyName')}
             </label>
             <input
@@ -108,7 +107,7 @@ export default function ReceiptPrinterSettingsPanel() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="ui-label">
               {t('fiscalReceipt.stir')}
             </label>
             <input
@@ -119,19 +118,19 @@ export default function ReceiptPrinterSettingsPanel() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="ui-label">
               {t('tenantSettings.receiptAddress')}
             </label>
             <textarea
               rows={2}
-              className={`${inputCls} resize-none`}
+              className="ui-textarea mt-1 resize-none"
               value={receiptCompanyAddress}
               onChange={(e) => setReceiptCompanyAddress(e.target.value)}
               placeholder={t('tenantSettings.receiptAddressPh')}
             />
           </div>
           <div className="md:col-span-2">
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="ui-label">
               {t('tenantSettings.receiptPhone')}
             </label>
             <input
@@ -145,13 +144,13 @@ export default function ReceiptPrinterSettingsPanel() {
 
         <div>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {t('tenantSettings.receiptFieldsTitle')}
             </p>
             <button
               type="button"
               onClick={resetReceiptFields}
-              className="text-xs text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
+              className="text-xs font-medium text-primary-600 hover:text-primary-700"
             >
               {t('tenantSettings.resetFields')}
             </button>

@@ -121,7 +121,7 @@ export default function CashierSalesFilters({
           </div>
         </div>
         {filtering ? (
-          <p className="cashier-sales-filters-card__hint text-muted small mb-0 mt-2">{t('common.loading')}</p>
+          <p className="cashier-sales-filters-card__hint mt-2 text-xs text-ink-muted">{t('common.loading')}</p>
         ) : null}
       </form>
     </div>

@@ -89,12 +89,12 @@
   font-size: 0.8125rem;
 }
 
-.cashier-app main.flex-grow-1 {
+.cashier-app main.cashier-app__main {
   padding: var(--cashier-pad) !important;
 }
 
-.cashier-app main.flex-grow-1 > .cashier-register,
-.cashier-app main.flex-grow-1 > .cashier-page {
+.cashier-app main.cashier-app__main > .cashier-register,
+.cashier-app main.cashier-app__main > .cashier-page {
   flex: 1;
   min-height: 0;
 }

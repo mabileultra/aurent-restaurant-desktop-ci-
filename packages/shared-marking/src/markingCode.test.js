@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  barcodeLookupVariants,
+  ean13FromPackGtin14,
   extractGtinFromMarkingCode,
+  gtinPackagingIndicator,
   isCompleteMarkingScan,
   isMarkingCode,
   markingBarcodeCandidates,
@@ -19,6 +22,28 @@ describe('@aurent/shared-marking markingCode', () => {
     expect(normalizeMarkingCode('010478001234567821SERIAL€91CRYPT')).toBe('010478001234567821SERIAL91CRYPT');
     expect(isMarkingCode('010478001234567821SERIAL€91CRYPT')).toBe(true);
     expect(isCompleteMarkingScan('010478001234567821SERIAL€91CRYPT')).toBe(true);
+  });
+
+  it('strips ↔ (U+2194) the same as GS — Filatoff / Didox scanner layout', () => {
+    const withArrow = '0104780021711739217hhgo*h\u219493guia';
+    const withGs = '0104780021711739217hhgo*h\u001d93guia';
+    expect(normalizeMarkingCode(withArrow)).toBe('0104780021711739217hhgo*h93guia');
+    expect(normalizeMarkingCode(withGs)).toBe('0104780021711739217hhgo*h93guia');
+    expect(isMarkingCode(withArrow)).toBe(true);
+  });
+
+  it('reads GTIN-14 packaging indicator (0=piece, 1+=pack)', () => {
+    expect(gtinPackagingIndicator('04780131183003')).toBe(0);
+    expect(gtinPackagingIndicator('14780131183003')).toBe(1);
+    expect(gtinPackagingIndicator(extractGtinFromMarkingCode('0114780131183003217Mj=?rFdu+Eg+\u2194931vcj'))).toBe(1);
+    expect(gtinPackagingIndicator('478013118300')).toBeNull();
+  });
+
+  it('maps pack GTIN-14 to consumer EAN-13 on the product card', () => {
+    expect(ean13FromPackGtin14('14780131183003')).toBe('4780131183006');
+    const candidates = markingBarcodeCandidates('0114780131183003217Mj=?rFdu+Eg+\u2194931vcj');
+    expect(candidates).toContain('4780131183006');
+    expect(barcodeLookupVariants('14780131183003')).toContain('4780131183006');
   });
 
   it('builds EAN-13 and GTIN-14 candidates from a DataMatrix', () => {

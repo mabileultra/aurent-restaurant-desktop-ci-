@@ -88,7 +88,7 @@
 }
 
 @media (max-height: 720px) {
-  .cashier-app {
+.cashier-app {
     --cashier-bottom-nav-h: clamp(88px, 10vh, 96px);
   }
 }

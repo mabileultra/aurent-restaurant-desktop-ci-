@@ -81,6 +81,10 @@ export async function fiscalizeSaleBeforeCommit({
   if (!capabilities?.enabled) {
     return null;
   }
+  // «Fiskal QR» off = без ОФД / Labels / вывода КМ — только обычный чек.
+  if (capabilities.printFiscalQr === false) {
+    return null;
+  }
 
   const requireBeforeSale = Boolean(capabilities.requireBeforeSale);
 

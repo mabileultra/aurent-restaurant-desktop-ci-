@@ -81,6 +81,19 @@ describe('fiscalizeSaleBeforeCommit FiscalDrive', () => {
     await expect(fiscalizeSaleBeforeCommit({ capabilities: { enabled: false }, cartItems })).resolves.toBeNull();
   });
 
+  it('returns null when printFiscalQr=false — no OFD Labels', async () => {
+    await expect(
+      fiscalizeSaleBeforeCommit({
+        capabilities: { ...caps, printFiscalQr: false },
+        cartItems,
+        payment: { paymentMethod: 'CASH', cashAmount: 1000 },
+        total: 1000,
+      }),
+    ).resolves.toBeNull();
+    expect(getReceiptTxid).not.toHaveBeenCalled();
+    expect(registerReceiptTxid).not.toHaveBeenCalled();
+  });
+
   it('GetTXID then RegisterTXID and returns fiscal proof', async () => {
     getReceiptTxid.mockResolvedValue({ TXID: 15 });
     registerReceiptTxid.mockResolvedValue(REGISTERED);

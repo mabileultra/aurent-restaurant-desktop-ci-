@@ -129,4 +129,28 @@ describe('lookupProductByMarkingGtin', () => {
     });
     expect(hit.id).toBe(22);
   });
+
+  it('resolves empty-barcode card via getByBarcode(ИКПУ) after Tasnif', async () => {
+    const byIkpu = {
+      id: 'ph-1',
+      barcode: '',
+      ikpu: '03004198001006001',
+      name: 'Нистатин',
+      markedProduct: true,
+    };
+    const fetchByBarcode = vi.fn(async (code) => (
+      code === '03004198001006001' ? byIkpu : null
+    ));
+    const searchCatalog = vi.fn(async () => ({ content: [] }));
+    const hit = await lookupProductByMarkingGtin({
+      products: [],
+      mark: KM,
+      fetchByBarcode,
+      searchCatalog,
+      lookupTasnifByBarcode: vi.fn(async () => ({ mxik: '03004198001006001', name: 'Нистатин' })),
+    });
+    expect(hit.id).toBe('ph-1');
+    expect(fetchByBarcode).toHaveBeenCalledWith('03004198001006001');
+    expect(searchCatalog).not.toHaveBeenCalledWith('03004198001006001');
+  });
 });

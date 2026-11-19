@@ -9,6 +9,8 @@ import com.pos.catalog.dto.tasnif.MxikSearchResponse;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.catalog.service.tasnif.TasnifMxikService;
+import com.pos.catalog.service.tasnif.support.TasnifMxikHistoryPackagesClient;
+import com.pos.catalog.service.tasnif.support.TasnifMxikPackageMapper;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
 
     private final RestClient tasnifRestClient;
     private final TasnifProperties properties;
+    private final TasnifMxikHistoryPackagesClient historyPackagesClient;
 
     @Override
     public MxikSearchResponse search(String query, String lang, int page, int size) {
@@ -73,7 +76,7 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
         if (page.items().isEmpty()) {
             throw new ResourceNotFoundException("Товар не найден в tasnif.soliq.uz");
         }
-        return page.items().get(0);
+        return enrichPackagesFromHistory(page.items().get(0), code, resolveLang(lang));
     }
 
     @Override
@@ -173,7 +176,7 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
     }
 
     private MxikCatalogItemDto mapItem(JsonNode item, String lang) {
-        List<MxikPackageDto> packages = mapPackages(item.path("packages"), lang);
+        List<MxikPackageDto> packages = TasnifMxikPackageMapper.mapPackages(item.path("packages"));
         String name = text(item, "name");
         String description = text(item, "description");
         String barcode = resolveBarcode(item);
@@ -189,6 +192,24 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
         );
     }
 
+    private MxikCatalogItemDto enrichPackagesFromHistory(MxikCatalogItemDto item, String mxik, String lang) {
+        List<MxikPackageDto> history = historyPackagesClient.fetchPackageNames(mxik, lang);
+        if (history.isEmpty()) {
+            return item;
+        }
+        List<MxikPackageDto> merged = TasnifMxikPackageMapper.mergeByCode(item.packages(), history);
+        return new MxikCatalogItemDto(
+            item.mxik(),
+            item.name(),
+            item.description(),
+            item.barcode(),
+            item.internalCode(),
+            item.markedProduct(),
+            item.usePackage(),
+            merged
+        );
+    }
+
     private static String resolveBarcode(JsonNode item) {
         return firstNonBlank(
             text(item, "internalCode"),
@@ -196,24 +217,6 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
             text(item, "barcode"),
             text(item, "internal_code")
         );
-    }
-
-    private List<MxikPackageDto> mapPackages(JsonNode packagesNode, String lang) {
-        List<MxikPackageDto> list = new ArrayList<>();
-        if (!packagesNode.isArray()) {
-            return list;
-        }
-        for (JsonNode pkg : packagesNode) {
-            list.add(new MxikPackageDto(
-                nodeAsString(pkg.get("code")),
-                text(pkg, "mxikCode"),
-                text(pkg, "nameRu"),
-                text(pkg, "nameUz"),
-                text(pkg, "nameLat"),
-                text(pkg, "packageType")
-            ));
-        }
-        return list;
     }
 
     private MxikLookupDto toLookup(MxikCatalogItemDto item, MxikPackageDto pkg, String lang) {

@@ -166,7 +166,7 @@ export default function ProductLookupSelect({
     >
       {label ? (
         <label htmlFor={fieldId} className="product-lookup__label">
-          {required ? <span className="text-red-400">* </span> : null}
+          {required ? <span className="text-danger">* </span> : null}
           {label}
         </label>
       ) : null}

@@ -1,12 +1,14 @@
+import { CHART_PALETTE } from '../../config/chartPalette';
 import { fmtMoney } from '../../utils/formatMoney';
 
-export const DASHBOARD_CHART_GRID = '#d7e5dd';
-export const DASHBOARD_CHART_TOOLTIP_BG = '#ffffff';
-export const DASHBOARD_CHART_TOOLTIP_BORDER = '#e2e8f0';
-export const DASHBOARD_CHART_TOOLTIP_LABEL = '#64748b';
-export const DASHBOARD_CHART_ACCENT = '#006847';
+export const DASHBOARD_CHART_GRID = CHART_PALETTE.grid;
+export const DASHBOARD_CHART_TOOLTIP_BG = CHART_PALETTE.surface;
+export const DASHBOARD_CHART_TOOLTIP_BORDER = CHART_PALETTE.grid;
+export const DASHBOARD_CHART_TOOLTIP_LABEL = CHART_PALETTE.axisText;
+export const DASHBOARD_CHART_ACCENT = CHART_PALETTE.primary;
+export const DASHBOARD_CHART_AXIS = CHART_PALETTE.axisText;
 
-/** Деньги дашборда: сум (как в остальном UI), без KES. */
+/** Dashboard money format (UZS). */
 export const formatDashboardMoney = (n) => `${fmtMoney(n)} сум`;
 
 export const ellipsisLabel = (s, max = 18) => {

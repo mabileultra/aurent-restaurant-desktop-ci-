@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { reportApi } from '../../../api';
+import { PageHeader } from '../../../components/ui';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportExportButton from '../components/ReportExportButton';
 import { useDailySummaryReportPage } from '../hooks/useDailySummaryReportPage';
@@ -16,28 +17,28 @@ export default function DailySummaryReportPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.dailySummaryTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.dailySummarySubtitle')}</p>
-        </div>
-        <ReportExportButton
-          fetchBlob={() => reportApi.exportDaily({ date })}
-          filenamePrefix="daily_summary"
-        />
-      </div>
+      <PageHeader
+        title={t('stockReports.dailySummaryTitle')}
+        subtitle={t('stockReports.dailySummarySubtitle')}
+        actions={(
+          <ReportExportButton
+            fetchBlob={() => reportApi.exportDaily({ date })}
+            filenamePrefix="daily_summary"
+          />
+        )}
+      />
       <input
         type="date"
         value={date}
         onChange={(e) => setDate(e.target.value)}
-        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+        className="ui-input ui-tabular w-auto"
       />
-      {isPending && <p className="text-slate-500">{t('common.loading')}</p>}
+      {isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
       <div className="grid gap-4 sm:grid-cols-3">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs uppercase text-slate-500">{c.label}</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{c.value}</p>
+          <div key={c.label} className="ui-card-padded">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{c.label}</p>
+            <p className="ui-tabular mt-2 text-2xl font-bold text-ink">{c.value}</p>
           </div>
         ))}
       </div>

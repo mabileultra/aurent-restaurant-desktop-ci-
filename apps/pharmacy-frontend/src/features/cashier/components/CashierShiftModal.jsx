@@ -287,7 +287,7 @@ export default function CashierShiftModal({
                   disabled={busy || !sessionShift?.id}
                   onClick={() => setCashMovementDirection('IN')}
                 >
-                  <ArrowDownLeft size={16} className="text-emerald-500" />
+                  <ArrowDownLeft size={16} className="text-success" />
                   {t('pos.cashInAction', { defaultValue: 'Pul kiritish' })}
                 </button>
                 <button
@@ -296,7 +296,7 @@ export default function CashierShiftModal({
                   disabled={busy || !sessionShift?.id}
                   onClick={() => setCashMovementDirection('OUT')}
                 >
-                  <ArrowUpRight size={16} className="text-amber-500" />
+                  <ArrowUpRight size={16} className="text-warning" />
                   {t('pos.cashOutAction', { defaultValue: 'Pul yechish' })}
                 </button>
                 <button

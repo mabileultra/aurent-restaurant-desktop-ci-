@@ -96,6 +96,19 @@ function tasnifWarehouseQueries(tasnif) {
   return queries;
 }
 
+/** Коды для точечного by-barcode: ИКПУ (аптека findByScan) + штрих Tasnif. */
+function tasnifFetchCodes(tasnif) {
+  const codes = [];
+  const mxik = tasnifMxik(tasnif);
+  if (mxik) codes.push(mxik);
+  for (const barcode of barcodeLookupVariants(tasnif?.barcode)) {
+    codes.push(barcode);
+  }
+  const pack = digitsOnly(tasnif?.packageCode || tasnif?.package_code);
+  if (pack.length >= 8) codes.push(pack);
+  return codes;
+}
+
 function findByTasnif(items, tasnif) {
   const byIkpu = findByIkpu(items, tasnifMxik(tasnif));
   if (byIkpu) return byIkpu;
@@ -109,9 +122,25 @@ function findByTasnif(items, tasnif) {
   return hits.find((product) => String(product?.name || '').trim().toLowerCase() === wanted) || null;
 }
 
+async function fetchFirstByCodes(fetchByBarcode, codes) {
+  if (!fetchByBarcode) return null;
+  const unique = [...new Set((codes || []).filter(Boolean))];
+  for (const code of unique) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const hit = await fetchByBarcode(code);
+      if (hit?.id) return hit;
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status !== 404 && status !== 400) throw error;
+    }
+  }
+  return null;
+}
+
 /**
- * Товар по маркировке: GTIN из КМ → штрихкод / склад.
- * Нет карточки по штрихкоду — Tasnif (ИКПУ / имя) → снова склад.
+ * Товар по маркировке: GTIN → штрихкод; нет карточки — Tasnif ИКПУ →
+ * точечный by-barcode/ИКПУ, потом поиск склада по ИКПУ/имени.
  */
 export async function lookupProductByMarkingGtin({
   products,
@@ -127,16 +156,8 @@ export async function lookupProductByMarkingGtin({
 
   const candidates = markingBarcodeCandidates(mark, extraGtins);
 
-  for (const barcode of candidates) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const hit = await fetchByBarcode?.(barcode);
-      if (hit?.id) return hit;
-    } catch (error) {
-      const status = error?.response?.status;
-      if (status !== 404 && status !== 400) throw error;
-    }
-  }
+  const byGtinBarcode = await fetchFirstByCodes(fetchByBarcode, candidates);
+  if (byGtinBarcode) return byGtinBarcode;
 
   const byGtinCatalog = await firstCatalogHit(
     searchCatalog,
@@ -145,8 +166,7 @@ export async function lookupProductByMarkingGtin({
   );
   if (byGtinCatalog) return byGtinCatalog;
 
-  // Как склад: не стопоримся на первом ответе Tasnif — чужой MXIK / пустой
-  // shtrixCode на одном GTIN не должен хоронить остальные варианты.
+  // Не стопоримся на первом Tasnif: чужой MXIK / пустой shtrixCode на одном GTIN.
   for (const barcode of candidates) {
     let tasnif = null;
     try {
@@ -159,6 +179,11 @@ export async function lookupProductByMarkingGtin({
 
     const byTasnif = findByTasnif(products, tasnif);
     if (byTasnif) return byTasnif;
+
+    // Аптека: getByBarcode(ИКПУ) — даже если на карточке пустой barcode.
+    // eslint-disable-next-line no-await-in-loop
+    const byIkpuScan = await fetchFirstByCodes(fetchByBarcode, tasnifFetchCodes(tasnif));
+    if (byIkpuScan) return byIkpuScan;
 
     // eslint-disable-next-line no-await-in-loop
     const warehouse = await firstCatalogHit(

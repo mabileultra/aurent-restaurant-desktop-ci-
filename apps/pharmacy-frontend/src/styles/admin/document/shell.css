@@ -30,22 +30,22 @@
   height: 32px;
   border: 1px solid var(--doc-line);
   border-radius: 10px;
-  background: #fff;
+  background: rgb(var(--color-surface));
   color: var(--doc-ink);
   font-size: 14px;
 }
 
 .admin-doc__back:hover,
 .admin-doc__crumb-link:hover {
-  color: var(--admin-brand, #006847);
+  color: var(--admin-brand, rgb(var(--color-primary-500)));
 }
 
 .admin-doc__crumb-sep {
-  color: #c5ced6;
+  color: rgb(var(--color-line-strong));
 }
 
 .admin-doc__crumb-current {
-  color: #334155;
+  color: rgb(var(--color-ink));
 }
 
 .admin-doc__header {
@@ -93,8 +93,8 @@
 }
 
 .admin-doc__badge--draft {
-  background: #f6edd4;
-  color: #8a6414;
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
 }
 
 .admin-doc__actions {
@@ -103,15 +103,4 @@
   justify-content: flex-end;
   gap: 8px;
   min-height: 40px;
-}
-
-.dark .admin-doc__title,
-.dark .admin-doc__crumb-current,
-.dark .admin-doc {
-  color: #f8fafc;
-}
-
-.dark .admin-doc__back {
-  background: rgb(15 23 42);
-  color: #e2e8f0;
 }

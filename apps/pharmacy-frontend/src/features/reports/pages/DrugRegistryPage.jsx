@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '../../../components/ui';
 import { useDrugRegistryPage } from '../hooks/useDrugRegistryPage';
 
-/** Загрузка государственного реестра лекарств (ZIP/Excel с капчей на сайте). */
+/** Government drug registry upload (ZIP/Excel from captcha-gated site). */
 export default function DrugRegistryPage() {
   const { t } = useTranslation();
   const r = useDrugRegistryPage(t);
@@ -9,25 +10,20 @@ export default function DrugRegistryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-          {t('drugRegistry.title')}
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          {t('drugRegistry.subtitle')}
-        </p>
+        <PageHeader title={t('drugRegistry.title')} subtitle={t('drugRegistry.subtitle')} />
         {r.latest ? (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="ui-tabular mt-1.5 text-xs text-ink-muted">
             {t('drugRegistry.latest', {
               file: r.latest.fileName || '—',
               rows: r.latest.rowCount ?? 0,
             })}
           </p>
         ) : (
-          <p className="mt-1 text-xs text-slate-500">{t('drugRegistry.empty')}</p>
+          <p className="mt-1.5 text-xs text-ink-muted">{t('drugRegistry.empty')}</p>
         )}
       </div>
 
-      <label className="admin-btn-primary inline-flex cursor-pointer px-4 py-2 text-sm">
+      <label className="ui-btn ui-btn-primary inline-flex cursor-pointer">
         {r.uploading ? t('common.loading') : t('drugRegistry.upload')}
         <input
           type="file"
@@ -42,7 +38,7 @@ export default function DrugRegistryPage() {
         />
       </label>
 
-      <p className="max-w-xl text-sm text-slate-600 dark:text-slate-400">
+      <p className="max-w-xl text-sm text-ink-muted">
         {t('drugRegistry.hint')}
       </p>
     </div>

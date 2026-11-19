@@ -1,23 +1,23 @@
-/* Отложенные чеки — кнопка в шапке и выпадающие карточки 1, 2, 3 */
+/* Parked carts popover and slots — Pharma Green light */
 
 .pharmacy-parked-lookup__count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.15rem;
-  height: 1.15rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--pharm-brand, #006847);
-  color: #fff;
-  font-size: 0.625rem;
-  font-weight: 800;
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
+  font-size: 0.6875rem;
+  font-weight: 700;
   line-height: 1;
 }
 
 .pharmacy-parked-lookup.is-open {
-  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
-  background: color-mix(in srgb, var(--pharm-brand, #006847) 10%, #fff);
+  border-color: rgb(var(--color-primary-300));
+  background: rgb(var(--color-primary-50));
 }
 
 .pharmacy-parked-pop {
@@ -28,10 +28,10 @@
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  border: 1px solid var(--pharm-border, #d5ddd8);
-  border-radius: 12px;
-  background: var(--pharm-elevated, #fff);
-  box-shadow: 0 16px 36px rgb(15 23 42 / 0.16);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-elevated);
 }
 
 .pharmacy-parked-pop__list {
@@ -59,17 +59,17 @@
   align-items: center;
   gap: 8px;
   padding: 7px 8px;
-  border: 1px solid var(--pharm-border, #d5ddd8);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--pharm-brand, #006847) 5%, #fff);
-  color: var(--pharm-ink, #1a2e28);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
   text-align: left;
   cursor: pointer;
 }
 
 .pharmacy-parked-pop__card:hover {
-  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
-  background: color-mix(in srgb, var(--pharm-brand, #006847) 12%, #fff);
+  border-color: rgb(var(--color-primary-300));
+  background: rgb(var(--color-primary-50));
 }
 
 .pharmacy-parked-pop__slot {
@@ -80,10 +80,10 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--pharm-brand, #006847);
-  color: #fff;
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -95,9 +95,9 @@
 }
 
 .pharmacy-parked-pop__label {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: var(--pharm-brand, #006847);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgb(var(--color-primary-700));
   line-height: 1.2;
 }
 
@@ -110,14 +110,14 @@
 
 .pharmacy-parked-pop__check {
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
 }
 
 .pharmacy-parked-pop__meta {
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: var(--pharm-muted, #64748b);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink-muted));
   line-height: 1.25;
 }
 
@@ -127,63 +127,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid color-mix(in srgb, #b42318 28%, #d5ddd8);
+  border: 1px solid rgb(var(--color-danger) / 0.25);
   border-radius: 8px;
-  background: #fff5f5;
-  color: #b42318;
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
   cursor: pointer;
 }
 
 .pharmacy-parked-pop__remove:hover {
-  background: #fee2e2;
+  background: rgb(var(--color-danger) / 0.2);
 }
 
 .pharmacy-parked-pop__clear {
   align-self: flex-end;
   border: 0;
   background: transparent;
-  color: var(--pharm-muted, #64748b);
-  font-size: 0.6875rem;
-  font-weight: 700;
+  color: rgb(var(--color-ink-muted));
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .pharmacy-parked-pop__clear:hover {
-  color: #b42318;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop {
-  background: #121826;
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 16px 36px rgb(0 0 0 / 0.45);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop__card {
-  background: rgba(15, 23, 42, 0.72);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #f3f4f6;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop__card:hover {
-  background: rgba(46, 196, 182, 0.14);
-  border-color: rgba(46, 196, 182, 0.35);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop__label {
-  color: var(--pos-green, #2ec4b6);
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop__meta,
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop__clear {
-  color: #94a3b8;
-}
-
-.cashier-app.cashier-app--terminal .pharmacy-parked-pop__remove {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
-  color: #fca5a5;
+  color: rgb(var(--color-danger-text));
 }
 
 .pharmacy-parked-modal {
@@ -200,17 +168,21 @@
 .pharmacy-parked-modal__hold {
   min-height: 44px;
   border: 0;
-  border-radius: 10px;
-  background: #245b45;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
+  font-size: 0.9375rem;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.pharmacy-parked-modal__hold:hover {
+  background: rgb(var(--color-primary-600));
 }
 
 .pharmacy-parked-modal__empty {
   margin: 0;
   padding: 12px 0;
   text-align: center;
-  color: #7a817c;
+  color: rgb(var(--color-ink-muted));
 }

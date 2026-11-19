@@ -24,6 +24,12 @@ describe('@aurent/shared-fiscal ofdMarkingLabel', () => {
     expect(toOfdMarkingLabel(`${IDENT}\u001d91UZF0\u001d92abc`)).toBe(IDENT);
   });
 
+  it('cuts at ↔ (U+2194) like GS before crypto 93', () => {
+    expect(toOfdMarkingLabel('0104780021711739217hhgo*h\u219493guia')).toBe(
+      '0104780021711739217hhgo*h',
+    );
+  });
+
   it('returns empty for blank input', () => {
     expect(toOfdMarkingLabel('')).toBe('');
     expect(toOfdMarkingLabel(null)).toBe('');

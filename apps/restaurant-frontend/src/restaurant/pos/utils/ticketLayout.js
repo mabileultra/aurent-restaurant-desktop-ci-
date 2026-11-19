@@ -17,6 +17,9 @@ export const EMPH_LINE_PREFIX = '§E§';
 /** Prefix: bold only (cancel/refuse dish lines — a bit stronger than body). */
 export const BOLD_LINE_PREFIX = '§B§';
 
+/** Prefix: max ESC/POS size — bold + double width + double height. */
+export const HUGE_LINE_PREFIX = '§X§';
+
 export function emphPadRow(left, right, width = RECEIPT_WIDTH) {
   return `${EMPH_LINE_PREFIX}${padRow(left, right, width)}`;
 }
@@ -67,6 +70,15 @@ export function ticketStamp(iso) {
   return d.toLocaleString();
 }
 
+/** Dedicated order-number row for kitchen slips (styled via print profile `orderNo`). */
+export function formatKitchenOrderNoLine(order) {
+  const no = order?.orderNo;
+  if (no == null || no === '' || no === '—') return '';
+  const n = Number(no);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  return `№${n}`;
+}
+
 /** Top of kitchen / auto-print slips: hall + table (or channel), check №, waiter, time. */
 export function kitchenTicketMetaLines({
   order,
@@ -78,9 +90,11 @@ export function kitchenTicketMetaLines({
   const normalized = normalizeKitchenHeader(header, order, t);
   const tableLine = normalized
     || (header ? String(header).trim() : formatKitchenPlaceLine({ order, t }));
+  const orderNoLine = formatKitchenOrderNoLine(order);
   const waiterLabel = t?.('rst.order.waiter', { defaultValue: 'Официант' }) || 'Официант';
   const lines = [
     tableLine,
+    orderNoLine,
     ...kitchenChannelDetailLines(order),
     waiterName ? `${waiterLabel}: ${waiterName}` : '',
     ticketStamp(at),

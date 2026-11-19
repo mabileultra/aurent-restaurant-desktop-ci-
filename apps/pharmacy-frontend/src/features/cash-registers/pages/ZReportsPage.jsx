@@ -19,22 +19,22 @@ export default function ZReportsPage() {
       <CashRegisterHintBanner title={p.t('zReports.hintTitle')} body={p.t('zReports.hintBody')} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">{p.t('zReports.title')}</h1>
+        <h1 className="text-xl font-bold text-ink">{p.t('zReports.title')}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={p.handleExportAll}
-            className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            className="ui-btn ui-btn-secondary"
           >
-            <Download size={16} />
+            <Download size={16} strokeWidth={1.75} />
             {p.t('zReports.exportAll')}
           </button>
           <button
             type="button"
             onClick={() => p.setFiltersOpen(true)}
-            className="admin-btn-primary px-3 py-2 text-sm"
+            className="ui-btn ui-btn-primary"
           >
-            <Filter size={16} />
+            <Filter size={16} strokeWidth={1.75} />
             {p.t('products.toolbar.filters')}
           </button>
         </div>

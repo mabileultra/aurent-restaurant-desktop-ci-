@@ -4,6 +4,7 @@ import { inspectMarkPunched } from './inspectMarkPunched';
 import { lookupTasnifIdentity } from './lookupProductByMarkingGtin';
 import { isMarkingCode } from './markingCode';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
+import { resolveBlockPackFromTasnif } from './resolveBlockPackFromTasnif';
 
 function emptyResolve(status, mark, extras = {}) {
   return {
@@ -65,10 +66,16 @@ export async function resolveCashierMarking({
     return emptyResolve('sold', mark, { aslResult: gate.aslResult });
   }
 
+  const attached = attachMarkToProduct(product, mark);
+  const blockPack = await resolveBlockPackFromTasnif({
+    ikpu: attached.ikpu || circulationProduct?.ikpu,
+    mark,
+  });
+
   return {
     status: 'ok',
     mark,
-    product: attachMarkToProduct(product, mark),
+    product: blockPack ? { ...attached, ...blockPack } : attached,
     circulation: circulation.status,
     aslResult: gate.aslResult,
     aslError: null,

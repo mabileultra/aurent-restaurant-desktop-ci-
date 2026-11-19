@@ -96,18 +96,3 @@
 .pos-register-pay-rail__tool--cash-out:active:not(:disabled) {
   transform: scale(0.98);
 }
-
-.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-in,
-.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-out {
-  box-shadow:
-    0 1px 3px rgb(0 0 0 / 0.22),
-    inset 0 1px 0 rgb(255 255 255 / 0.06);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-in:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgb(16 185 129 / 0.28);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--cash-out:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgb(245 158 11 / 0.28);
-}

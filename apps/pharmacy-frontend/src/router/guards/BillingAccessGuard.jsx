@@ -95,10 +95,10 @@ export default function BillingAccessGuard({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-      <div className="max-w-md rounded-2xl border border-red-200 bg-white p-6 text-center shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">{t('billing.accessBlockedTitle')}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t('billing.accessBlockedBody')}</p>
+    <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
+      <div className="max-w-md rounded-card border border-danger/30 bg-surface p-6 text-center shadow-card">
+        <h1 className="text-lg font-semibold text-ink">{t('billing.accessBlockedTitle')}</h1>
+        <p className="mt-2 text-sm text-ink-muted">{t('billing.accessBlockedBody')}</p>
       </div>
     </div>
   );

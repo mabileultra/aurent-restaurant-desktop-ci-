@@ -38,6 +38,7 @@ const FIELD_LABEL = {
   phone: 'rst.admin.printFieldPhone',
   headerTitle: 'rst.admin.printFieldHeader',
   hallTable: 'rst.admin.printFieldHallTable',
+  orderNo: 'rst.admin.printFieldOrderNo',
   waiter: 'rst.admin.printFieldWaiter',
   time: 'rst.admin.printFieldTime',
   items: 'rst.admin.printFieldItems',
@@ -316,7 +317,13 @@ export default function RestaurantPrintProfilePanel({
                 options={PRINT_SIZE_OPTIONS.map((s) => ({
                   value: s.id,
                   label: t(s.labelKey, {
-                    defaultValue: s.id === 'sm' ? 'Мелкий' : s.id === 'lg' ? 'Крупный' : 'Обычный',
+                    defaultValue: ({
+                      sm: 'Мелкий',
+                      md: 'Обычный',
+                      lg: 'Крупный',
+                      xl: 'Очень крупный',
+                      xxl: 'Максимум',
+                    })[s.id] || s.id,
                   }),
                 }))}
               />

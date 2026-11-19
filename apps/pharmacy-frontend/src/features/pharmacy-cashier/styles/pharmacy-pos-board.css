@@ -1,14 +1,14 @@
-/* Каркас кассы 1:1 с макетом: узкая оплата | чек + область, остатки на всю ширину. */
+/* Pharmacy POS board layout — Pharma Green light */
 
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pharmacy-cashier__split.cashier-register__split--register .cashier-register__stage {
-  --cashier-pay-w: 152px;
+  --cashier-pay-w: 212px;
   display: grid;
-  grid-template-columns: 152px minmax(0, 1fr);
+  grid-template-columns: minmax(196px, 212px) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     "pay receipt"
     "catalog catalog";
-  gap: 8px;
+  gap: 10px;
   background: transparent;
 }
 
@@ -20,10 +20,10 @@
   max-width: none;
   flex: none;
   height: auto;
-  background: #fff;
-  border: 1px solid #e3e8e4;
-  border-radius: 12px;
-  box-shadow: none;
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier__cart-pane {
@@ -37,10 +37,10 @@
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier__cart-pane,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier__search-pane,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier__context-pane {
-  background: #fff;
-  border: 1px solid #e3e8e4;
-  border-radius: 12px;
-  box-shadow: none;
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
 .cashier-app--pharmacy-pos .cashier-register__bottom-nav,
@@ -49,13 +49,13 @@
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack {
-  gap: 8px;
-  padding: 10px;
-  background: #fff;
+  gap: 5px;
+  padding: 6px;
+  overflow-y: auto;
+  background: rgb(var(--color-surface));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__aside,
-.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--extra,
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__ops .pharmacy-pay-stack__btn:not(.pharmacy-pay-stack__btn--sale):not(.pharmacy-pay-stack__btn--preview) {
   display: none;
 }
@@ -68,15 +68,30 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
-  min-height: 52px;
-  padding: 8px 34px 8px 10px;
-  border-radius: 12px;
-  background: #fff;
-  border-color: #e3e8e4;
-  font-size: 13px;
-  line-height: 1.1;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 40px 8px 12px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  color: rgb(var(--color-ink));
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
   text-align: left;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.2;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn:hover:not(:disabled) {
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-line-strong));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__btn svg,
@@ -94,31 +109,118 @@
   top: 50%;
   transform: translateY(-50%);
   margin: 0;
+  padding: 2px 5px;
+  border-radius: 5px;
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink-muted));
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__btn.is-active {
-  background: #ecfdf5;
-  border-color: #b7e4c7;
-  color: #134842;
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-300));
+  color: rgb(var(--color-primary-700));
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn.is-active kbd {
+  background: rgb(var(--color-surface));
+  border-color: rgb(var(--color-primary-200));
+  color: rgb(var(--color-primary-700));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--sale {
-  min-height: 44px;
-  background: #05966a;
-  border-color: #05966a;
-  color: #fff;
+  min-height: 48px;
+  background: rgb(var(--color-primary-500));
+  border-color: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
+  font-weight: 600;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--sale:hover:not(:disabled) {
+  background: rgb(var(--color-primary-600));
+  border-color: rgb(var(--color-primary-600));
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--sale kbd {
+  background: rgb(var(--color-surface) / 0.16);
+  border-color: rgb(var(--color-surface) / 0.3);
+  color: rgb(var(--color-surface));
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions > .pharmacy-pay-stack__btn {
+  grid-column: 1 / -1;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions > .pharmacy-pay-stack__btn--card {
+  grid-column: span 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 48px;
+  padding: 4px 2px;
+  font-size: 11px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__actions > .pharmacy-pay-stack__btn--card kbd {
+  display: none;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__secondary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 5px;
+  width: 100%;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__btn--preview {
+  width: 100%;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  background: rgb(var(--color-surface));
+  border-color: rgb(var(--color-line));
+  color: rgb(var(--color-ink));
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__ops {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-top: 2px;
+  background: rgb(var(--color-surface));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__print {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  gap: 6px;
+  min-height: 48px;
   margin: 0;
-  padding: 0;
-  border: 1px solid #e3e8e4;
-  border-radius: 12px;
-  background: #fff;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.cashier-app--pharmacy-pos .pharmacy-pay-stack__print:hover:not(:has(input:disabled)) {
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-line-strong));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-pay-stack__print .pos-pay-print-toggle__text,
@@ -127,15 +229,16 @@
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head {
-  min-height: 40px;
+  min-height: 42px;
   padding: 8px 12px;
-  background: #fff;
-  border-bottom: 1px solid #eef1ef;
+  background: rgb(var(--color-surface));
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head__title {
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cart-pane-head__actions {
@@ -148,8 +251,9 @@
   flex-direction: row-reverse;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  background: #fff;
+  padding: 8px 12px;
+  background: rgb(var(--color-surface));
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cashier__pane-title {
@@ -162,29 +266,35 @@
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier--compact .pharmacy-search-strip__field--product {
-  height: 40px;
+  height: 42px;
   padding: 0 14px;
-  border-radius: 10px;
-  background: #fff;
-  border-color: #c3c7d2;
-  color: #1f2024;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  color: rgb(var(--color-ink));
   font-weight: 500;
   font-size: 15px;
 }
 
+.cashier-app.cashier-app--pharmacy-pos .pharmacy-cashier--compact .pharmacy-search-strip__field--product:focus {
+  border-color: rgb(var(--color-primary-500));
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__table {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.3;
+  font-variant-numeric: tabular-nums;
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__row {
-  min-height: 40px;
+  min-height: 44px;
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__name,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__num,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__mono {
-  font-size: 15px;
+  font-size: 14px;
   padding-top: 8px;
   padding-bottom: 8px;
 }
@@ -228,20 +338,17 @@
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__table thead th,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-table__table thead th {
-  font-size: 13px;
-  line-height: 1.15;
-  letter-spacing: 0.01em;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: visible;
-}
-
-.cashier-app.cashier-app--pharmacy-pos .pharmacy-search__table thead th,
-.cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-table__table thead th {
-  font-weight: 600;
-  color: #1f2024;
-  background: #fff;
+  color: rgb(var(--color-ink-muted));
+  background: rgb(var(--color-canvas));
   border: 0;
-  border-bottom: 1px solid #e4e7ec;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-search__name {
@@ -260,14 +367,15 @@
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-pane-head__title,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-pane-head__status,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-pane-head__count {
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-table__table,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-table__money,
 .cashier-app.cashier-app--pharmacy-pos .pharmacy-cart-table__cell-text--name {
-  font-size: 15px;
-  line-height: 1.2;
+  font-size: 14px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__btn span {
@@ -275,50 +383,59 @@
 }
 
 .cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__btn {
-  width: 32px;
-  min-height: 32px;
+  width: 36px;
+  min-height: 36px;
   padding: 0;
   justify-content: center;
-  border-radius: 8px;
-  background: #fff;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  border-color: rgb(var(--color-line));
+  color: rgb(var(--color-ink-muted));
+}
+
+.cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__btn:hover:not(:disabled) {
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-catalog-toolbar__auto {
   margin-left: auto;
   gap: 8px;
-  color: #3d4a44;
+  color: rgb(var(--color-primary-700));
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-stock-count {
-  margin: 8px 10px 10px;
+  margin: 8px 12px 10px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #e7f6ec;
-  border-color: #cfe8d8;
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-200));
+  align-self: flex-start;
 }
 
 .cashier-app--pharmacy-pos .pharmacy-stock-count__label {
   font-size: 12px;
   letter-spacing: 0;
   text-transform: none;
-  font-weight: 650;
-  color: #3d4a44;
+  font-weight: 500;
+  color: rgb(var(--color-ink-muted));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-stock-count__value {
   font-size: 13px;
-  color: #1b6b45;
+  font-weight: 700;
+  color: rgb(var(--color-primary-700));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cashier__context-empty p {
-  font-size: 16px;
-  font-weight: 700;
-  color: #5c6b64;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgb(var(--color-ink));
 }
 
 .cashier-app--pharmacy-pos .pharmacy-cashier__context-empty span {
-  color: #8b9690;
+  color: rgb(var(--color-ink-muted));
   font-size: 13px;
 }

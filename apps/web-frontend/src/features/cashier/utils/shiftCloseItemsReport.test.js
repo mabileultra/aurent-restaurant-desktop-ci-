@@ -146,6 +146,18 @@ describe('printCloseShiftReports', () => {
     expect(res.items.printed).toBe(true);
   });
 
+  it('skips POS Z slip when totals are zero after mid-shift Z', async () => {
+    const res = await printCloseShiftReports({
+      saleCount: 0,
+      totalAmount: 0,
+      soldItems: { from: 'a', to: 'b', items },
+    }, { t: (k) => k });
+
+    expect(res.zPrinted).toBe(false);
+    expect(printReportEscpos).not.toHaveBeenCalled();
+    expect(res.items.printed).toBe(true);
+  });
+
   it('prints sold items even when Z print fails', async () => {
     printReportEscpos.mockRejectedValue(new Error('принтер занят'));
     const res = await printCloseShiftReports({

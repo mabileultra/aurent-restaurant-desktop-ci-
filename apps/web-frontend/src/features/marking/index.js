@@ -7,6 +7,7 @@ export {
   isCompleteMarkingScan,
   normalizeMarkingCode,
   extractGtinFromMarkingCode,
+  gtinPackagingIndicator,
   markingBarcodeCandidates,
   markingScanKey,
   barcodeLookupVariants,
@@ -45,7 +46,14 @@ export {
   lookupTasnifIdentity,
   productStubFromTasnif,
 } from './lookupProductByMarkingGtin';
-export { planMarkedScan, applyMarkingScan, removeMarking, isMarkCountedLine } from './markedScanCart';
+export {
+  planMarkedScan,
+  applyMarkingScan,
+  removeMarking,
+  isMarkCountedLine,
+  markStockUnits,
+} from './markedScanCart';
+export { resolveBlockPackFromTasnif } from './resolveBlockPackFromTasnif';
 export { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 export { isAslMarkAlreadySold } from './aslMarkAlreadySold';
 export { findProductByMarkingCode, markingMatchesProduct } from './markingProductMatch';

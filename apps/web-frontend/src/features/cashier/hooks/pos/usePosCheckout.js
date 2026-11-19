@@ -25,6 +25,8 @@ import { FISCAL_STATUS } from '../../../../services/fiscal';
 import { collectMarksFromCartItems, rememberSoldMarks } from '../../../marking';
 import { PRESCRIPTION_NUMBER_REQUIRED_CODE } from '@aurent/shared-fiscal';
 import { usePrescriptionCheckoutGate } from './usePrescriptionCheckoutGate';
+import { resolveCashPaymentRestrictionError } from '../../utils/resolveCashPaymentRestrictionError';
+import { resolveForbiddenMxikError } from '../../utils/resolveForbiddenMxikError';
 
 export function usePosCheckout({
   storeId,
@@ -115,6 +117,16 @@ export function usePosCheckout({
     onError: (e) => {
       if (e?.code === PRESCRIPTION_NUMBER_REQUIRED_CODE) {
         toast.error(t('pos.prescriptionRequiredBeforePay'));
+        return;
+      }
+      const cashRestrictionMsg = resolveCashPaymentRestrictionError(e, t);
+      if (cashRestrictionMsg) {
+        toast.error(cashRestrictionMsg, { id: 'pos-checkout-error' });
+        return;
+      }
+      const forbiddenMxikMsg = resolveForbiddenMxikError(e, t);
+      if (forbiddenMxikMsg) {
+        toast.error(forbiddenMxikMsg, { id: 'pos-checkout-error' });
         return;
       }
       if (e?.code === 'MARK_ALREADY_SOLD') {

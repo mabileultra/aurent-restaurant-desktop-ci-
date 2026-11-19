@@ -1,0 +1,39 @@
+@layer components {
+  .ui-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ui-table-wrap {
+    @apply w-full overflow-x-auto bg-surface border border-line rounded-card shadow-card;
+  }
+
+  .ui-table {
+    @apply w-full border-collapse text-left text-[13px] text-ink;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ui-th {
+    @apply sticky top-0 z-10 bg-canvas border-b border-line px-3.5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-muted whitespace-nowrap;
+  }
+
+  .ui-tr {
+    @apply border-b border-line last:border-b-0 h-10 transition-colors duration-100 hover:bg-primary-50;
+  }
+
+  .ui-tr-pos {
+    @apply border-b border-line last:border-b-0 h-11 transition-colors duration-100 hover:bg-primary-50;
+  }
+
+  .ui-tr-selected {
+    @apply bg-primary-100 hover:bg-primary-100;
+  }
+
+  .ui-td {
+    @apply px-3.5 py-2 align-middle text-[13px] text-ink;
+  }
+
+  .ui-td-nowrap {
+    @apply px-3.5 py-2 align-middle text-[13px] text-ink whitespace-nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+}

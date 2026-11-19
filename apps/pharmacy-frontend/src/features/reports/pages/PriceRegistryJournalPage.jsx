@@ -1,6 +1,7 @@
+import { FileSpreadsheet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
-import { BaseSelect } from '../../../components/ui';
+import { BaseSelect, EmptyState, PageHeader } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportTableCard from '../components/ReportTableCard';
 import { fmtMoney } from '../../../utils/formatMoney';
@@ -13,41 +14,39 @@ export default function PriceRegistryJournalPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t('priceRegistry.title')}
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {t('priceRegistry.subtitle')}
+      <div>
+        <PageHeader
+          title={t('priceRegistry.title')}
+          subtitle={t('priceRegistry.subtitle')}
+          actions={(
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="ui-btn ui-btn-secondary"
+                disabled={r.syncing}
+                onClick={() => r.sync()}
+              >
+                {r.syncing ? t('common.loading') : t('priceRegistry.sync')}
+              </button>
+              <button
+                type="button"
+                className="ui-btn ui-btn-primary"
+                disabled={r.applying || r.status !== 'PENDING'}
+                onClick={() => r.apply()}
+              >
+                {r.applying ? t('common.loading') : t('priceRegistry.applyPending')}
+              </button>
+            </div>
+          )}
+        />
+        {r.latest ? (
+          <p className="ui-tabular mt-1.5 text-xs text-ink-muted">
+            {t('priceRegistry.latestSnap', {
+              date: r.latest.registryDate || '—',
+              rows: r.latest.rowCount ?? 0,
+            })}
           </p>
-          {r.latest ? (
-            <p className="mt-1 text-xs text-slate-500">
-              {t('priceRegistry.latestSnap', {
-                date: r.latest.registryDate || '—',
-                rows: r.latest.rowCount ?? 0,
-              })}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="admin-btn-secondary px-4 py-2 text-sm"
-            disabled={r.syncing}
-            onClick={() => r.sync()}
-          >
-            {r.syncing ? t('common.loading') : t('priceRegistry.sync')}
-          </button>
-          <button
-            type="button"
-            className="admin-btn-primary px-4 py-2 text-sm"
-            disabled={r.applying || r.status !== 'PENDING'}
-            onClick={() => r.apply()}
-          >
-            {r.applying ? t('common.loading') : t('priceRegistry.applyPending')}
-          </button>
-        </div>
+        ) : null}
       </div>
 
       <div className="max-w-xs">
@@ -72,51 +71,55 @@ export default function PriceRegistryJournalPage() {
           onPageSizeChange: r.setPageSize,
         }}
       >
-        <table className="w-full text-sm price-registry-journal__table">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
+        <table className="ui-table price-registry-journal__table">
+          <thead>
             <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-4 py-3">{t('priceRegistry.colProduct')}</th>
-              <th className="px-4 py-3">{t('priceRegistry.colBarcode')}</th>
-              <th className="px-4 py-3 text-right">{t('priceRegistry.colOld')}</th>
-              <th className="px-4 py-3 text-right">{t('priceRegistry.colLimit')}</th>
-              <th className="px-4 py-3 text-right">{t('priceRegistry.colNew')}</th>
-              <th className="px-4 py-3">{t('priceRegistry.colStatus')}</th>
-              <th className="px-4 py-3">{t('priceRegistry.colWhen')}</th>
+              <th className="ui-th">{t('priceRegistry.colProduct')}</th>
+              <th className="ui-th">{t('priceRegistry.colBarcode')}</th>
+              <th className="ui-th text-right">{t('priceRegistry.colOld')}</th>
+              <th className="ui-th text-right">{t('priceRegistry.colLimit')}</th>
+              <th className="ui-th text-right">{t('priceRegistry.colNew')}</th>
+              <th className="ui-th">{t('priceRegistry.colStatus')}</th>
+              <th className="ui-th">{t('priceRegistry.colWhen')}</th>
             </tr>
           </thead>
           <tbody>
             {r.isPending && (
-              <tr><td colSpan={9} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>
+              <tr><td colSpan={9} className="ui-td py-8 text-center text-ink-muted">{t('common.loading')}</td></tr>
             )}
             {!r.isPending && r.rows.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>
+              <tr>
+                <td colSpan={9} className="p-0">
+                  <EmptyState icon={FileSpreadsheet} title={t('common.noData')} />
+                </td>
+              </tr>
             )}
             {r.rows.map((row, index) => (
               <tr
                 key={row.id}
-                className={`border-b border-slate-100 dark:border-slate-800${
+                className={`ui-tr${
                   row.status === 'PENDING' ? ' price-registry-journal__row--pending' : ''
                 }`}
               >
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
-                <td className="px-4 py-3 font-medium">{row.productName || '—'}</td>
-                <td className="px-4 py-3">{row.barcode || row.pharmId || '—'}</td>
-                <td className="px-4 py-3 text-right tabular-nums">
+                <td className="ui-td font-medium">{row.productName || '—'}</td>
+                <td className="ui-td-nowrap text-ink-muted">{row.barcode || row.pharmId || '—'}</td>
+                <td className="ui-td-nowrap text-right">
                   {row.oldSellingPrice != null ? fmtMoney(row.oldSellingPrice) : '—'}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums font-semibold">
+                <td className="ui-td-nowrap text-right font-semibold">
                   {fmtMoney(row.limitPrice)}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">
+                <td className="ui-td-nowrap text-right">
                   {row.newSellingPrice != null ? fmtMoney(row.newSellingPrice) : '—'}
                 </td>
-                <td className="px-4 py-3">
+                <td className="ui-td-nowrap">
                   <span className={`price-registry-journal__badge is-${String(row.status || '').toLowerCase()}`}>
                     {t(`priceRegistry.status${statusKey(row.status)}`)}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-xs text-slate-500">
+                <td className="ui-td-nowrap text-xs text-ink-muted">
                   {row.appliedAt
                     ? fmtDate(new Date(row.appliedAt), 'dd.MM.yyyy HH:mm')
                     : row.createdAt

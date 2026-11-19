@@ -19,6 +19,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   const qc = useQueryClient();
   const [form, setForm] = useState(EMPTY_FORM);
   const [drives, setDrives] = useState([]);
+  const [saveError, setSaveError] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['multikassa-admin', cashRegisterId],
@@ -27,6 +28,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   });
 
   const updateField = (field, value) => {
+    setSaveError('');
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -54,6 +56,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     hw.setTestMessage('');
     hw.setPrintersNote('');
     hw.setMkPrinterReady(false);
+    setSaveError('');
   }, [data]);
 
   useEffect(() => {
@@ -98,15 +101,20 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   }, [open, form.baseUrl, t]);
 
   const saveMutation = useMutation({
+    meta: { suppressGlobalError: true },
     mutationFn: (payload) =>
       multikassaApi.saveAdminSettings(cashRegisterId, payload).then((r) => r.data),
     onSuccess: () => {
+      setSaveError('');
       qc.invalidateQueries({ queryKey: ['multikassa-admin', cashRegisterId] });
       toast.success(t('cashRegisters.multikassa.saved'));
       onSaved?.();
     },
-    onError: (e) =>
-      toast.error(e.response?.data?.message ?? t('cashRegisters.multikassa.saveFailed')),
+    onError: (e) => {
+      const msg = e?.response?.data?.message ?? t('cashRegisters.multikassa.saveFailed');
+      setSaveError(msg);
+      toast.error(msg);
+    },
   });
 
   const applyPreset = (key) => {
@@ -116,6 +124,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
 
   const submit = (e) => {
     e.preventDefault();
+    setSaveError('');
     const terminalId = normalizeGnkTerminalId(form.terminalId) || null;
     const moduleNumber = normalizeGnkTerminalId(form.moduleNumber) || terminalId;
     saveMutation.mutate({
@@ -151,6 +160,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     saving: saveMutation.isPending,
     testing: hw.testing,
     testMessage: hw.testMessage,
+    saveError,
     presets: {
       local8080: data?.suggestedLocalUrl8080 || MULTIKASSA_BASE_URL_PRESETS.local8080,
       local12346: data?.suggestedLocalUrl12346 || MULTIKASSA_BASE_URL_PRESETS.local12346,

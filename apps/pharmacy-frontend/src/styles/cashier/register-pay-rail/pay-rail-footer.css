@@ -19,8 +19,8 @@
   padding: clamp(8px, 2.2cqi, 12px) clamp(10px, 2.4cqi, 14px);
   border: none;
   border-radius: 14px;
-  background: var(--pos-green-gradient, var(--pos-green, #006847));
-  color: var(--pos-on-green, #fff);
+  background: var(--pos-green-gradient, var(--pos-green, rgb(var(--color-primary-500))));
+  color: var(--pos-on-green, rgb(var(--color-surface)));
   font-size: clamp(0.8125rem, 3.2cqi, 0.9375rem);
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -31,7 +31,7 @@
 }
 
 .pos-register-pay-footer__sale:hover:not(:disabled) {
-  background: var(--pos-green-gradient-hover, var(--pos-green-hover, #005538));
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover, rgb(var(--color-primary-700))));
   filter: brightness(1.03);
 }
 

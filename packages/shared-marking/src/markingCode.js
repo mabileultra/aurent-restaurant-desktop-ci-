@@ -6,10 +6,11 @@ export function normalizeMarkingCode(raw) {
     .trim()
     // AIM prefix ]d2 / ]C1 …
     .replace(/^\][A-Za-z0-9]{2}/, '')
-    // GS / FNC1: сканеры часто отдают как \u001d, либо как € / ¦ на раскладке
+    // GS / FNC1: сканеры часто отдают как \u001d, либо как € / ¦ / ↔ на раскладке
     .replace(/\u001d/g, '')
     .replace(/\u001e/g, '')
     .replace(/\u0000/g, '')
+    .replace(/\u2194/g, '') // ↔ — частый «рисунок» GS в Excel/сканере
     .replace(/€/g, '')
     .replace(/¦/g, '')
     .replace(/\u00a4/g, '') // ¤
@@ -38,8 +39,8 @@ export function isMarkingCode(raw) {
   if (/^\d{14,17}$/.test(code)) return false;
 
   const source = String(raw);
-  // GS1 separator в сыром скане (или € вместо GS) — типичный DataMatrix
-  if (source.includes('\u001d') || source.includes('€')) return true;
+  // GS1 separator в сыром скане (или € / ↔ вместо GS) — типичный DataMatrix
+  if (source.includes('\u001d') || source.includes('€') || source.includes('\u2194')) return true;
 
   // Типичный EAN-8/13 — не маркировка (14 уже отсекли выше как возможный GTIN/ИКПУ)
   if (/^\d{8}$/.test(code) || /^\d{12,13}$/.test(code)) return false;
@@ -70,6 +71,17 @@ export function markingScanKey(raw) {
   return normalizeMarkingCode(raw)
     .replace(/\s+/g, '')
     .toLowerCase();
+}
+
+/**
+ * Indicator digit GTIN-14 (первая цифра): 0 = штука, 1–8 = уровень упаковки (блок/короб).
+ * Без 14 цифр — null.
+ */
+export function gtinPackagingIndicator(gtin) {
+  const digits = String(gtin ?? '').replace(/\D/g, '');
+  if (digits.length !== 14) return null;
+  const n = Number(digits[0]);
+  return Number.isFinite(n) ? n : null;
 }
 
 /** Извлечь GTIN из GS1-строки маркировки. */
@@ -107,15 +119,50 @@ export function extractGtinFromMarkingCode(raw) {
   return null;
 }
 
+/**
+ * Из GTIN-14 уровня упаковки (indicator 1–8) — потребительский EAN-13:
+ * цифры 2–13 + пересчитанный check digit (карточка часто хранит штучный штрихкод).
+ */
+export function ean13FromPackGtin14(gtin14) {
+  const digits = String(gtin14 ?? '').replace(/\D/g, '');
+  if (digits.length !== 14) return null;
+  const indicator = Number(digits[0]);
+  if (!(indicator >= 1 && indicator <= 8)) return null;
+  const body12 = digits.slice(1, 13);
+  let sum = 0;
+  for (let i = 0; i < 12; i += 1) {
+    const weight = ((11 - i) % 2 === 0) ? 3 : 1;
+    sum += Number(body12[i]) * weight;
+  }
+  const check = (10 - (sum % 10)) % 10;
+  return `${body12}${check}`;
+}
+
 export function barcodeLookupVariants(gtin) {
   const digits = String(gtin ?? '').replace(/\D/g, '');
   if (digits.length < 8 || digits.length > 14) return [];
   const variants = new Set([digits]);
+
+  // Блок/короб GTIN-14 → штучный EAN-13 карточки (check digit другой, чем у pack GTIN).
+  const consumerEan13 = ean13FromPackGtin14(digits);
+  if (consumerEan13) {
+    variants.add(consumerEan13);
+    variants.add(`0${consumerEan13}`);
+    variants.add(`0${digits.slice(1)}`);
+  }
+
   // GTIN-14 с ведущими нулями → EAN-13 / EAN-12 / EAN-8 (как в карточке: 00000047804357 → 47804357)
   let stripped = digits;
   while (stripped.startsWith('0') && stripped.length > 8) {
     stripped = stripped.slice(1);
     variants.add(stripped);
+  }
+  if (consumerEan13) {
+    let consumerStripped = consumerEan13;
+    while (consumerStripped.startsWith('0') && consumerStripped.length > 8) {
+      consumerStripped = consumerStripped.slice(1);
+      variants.add(consumerStripped);
+    }
   }
   if (digits.length < 14) variants.add(digits.padStart(14, '0'));
   if (digits.length === 13) variants.add(`0${digits}`);

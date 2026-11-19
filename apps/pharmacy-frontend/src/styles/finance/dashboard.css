@@ -38,10 +38,10 @@
   color: var(--admin-ink, rgb(15 23 42));
 }
 
-.finance-kpi--income .finance-kpi__value { color: var(--color-brand, #006847); }
-.finance-kpi--expense .finance-kpi__value { color: rgb(220 38 38); }
-.finance-kpi--profit .finance-kpi__value { color: var(--color-brand-deep, #043d2c); }
-.finance-kpi--neutral .finance-kpi__value { color: var(--admin-ink, rgb(15 23 42)); }
+.finance-kpi--income .finance-kpi__value { color: rgb(var(--color-primary-600)); }
+.finance-kpi--expense .finance-kpi__value { color: rgb(var(--color-danger-text)); }
+.finance-kpi--profit .finance-kpi__value { color: rgb(var(--color-primary-700)); }
+.finance-kpi--neutral .finance-kpi__value { color: rgb(var(--color-ink)); }
 
 .finance-dashboard-panels {
   display: grid;
@@ -55,7 +55,7 @@
 }
 
 @media (min-width: 1280px) {
-  .finance-dashboard-panels {
+.finance-dashboard-panels {
     grid-template-columns: 1.1fr 0.9fr;
   }
 }
@@ -69,9 +69,9 @@
 .finance-integration-kpi {
   border-radius: 0.75rem;
   border: 1px solid rgb(226 232 240);
-  background: linear-gradient(180deg, rgb(248 250 252) 0%, #fff 100%);
+  background: linear-gradient(180deg, rgb(248 250 252) 0%, rgb(var(--color-surface)) 100%);
   padding: 1rem 1.125rem;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  box-shadow: 0 1px 2px rgb(var(--color-ink) / 0.04);
 }
 
 .finance-integration-kpi__label {
@@ -102,7 +102,7 @@
   border: 1px solid rgb(226 232 240);
   background: white;
   padding: 1.125rem 1.25rem;
-  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  box-shadow: 0 1px 3px rgb(var(--color-ink) / 0.06);
 }
 
 .finance-top-expenses__title {

@@ -207,7 +207,7 @@ describe('UsersTable', () => {
       React.createElement(UsersTable, { ...defaultProps, isRefreshing: true })
     );
 
-    expect(html).toContain('bg-purple-600 animate-pulse');
+    expect(html).toContain('bg-primary-500 animate-pulse');
     expect(html).toContain('Ali Valiyev');
   });
 

@@ -51,18 +51,18 @@ export default function PharmacyReceiptPaymentFields({ t, form, onChange, totalC
             return (
               <label
                 key={method}
-                className="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 px-2.5 py-2 dark:border-slate-700"
+                className="flex cursor-pointer items-start gap-2 rounded-control border border-line bg-surface px-2.5 py-2 hover:bg-primary-50/50"
               >
                 <input
                   type="radio"
-                  className="mt-1"
+                  className="mt-1 accent-primary-500"
                   name="pharm-receipt-pay"
                   checked={form.paymentType === method}
                   onChange={() => setType(method)}
                 />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium">{t(meta.labelKey)}</span>
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">{t(meta.hintKey)}</span>
+                  <span className="block text-sm font-medium text-ink">{t(meta.labelKey)}</span>
+                  <span className="block text-xs text-ink-muted">{t(meta.hintKey)}</span>
                 </span>
               </label>
             );
@@ -76,7 +76,7 @@ export default function PharmacyReceiptPaymentFields({ t, form, onChange, totalC
               <label key={method} className="pharm-line-modal__field">
                 <span className="pharm-line-modal__label">
                   {t(meta.labelKey)}
-                  <span className="ml-1 font-normal text-slate-500">· {t(meta.hintKey)}</span>
+                  <span className="ml-1 font-normal text-ink-muted">· {t(meta.hintKey)}</span>
                 </span>
                 <input
                   type="number"
@@ -90,16 +90,16 @@ export default function PharmacyReceiptPaymentFields({ t, form, onChange, totalC
               </label>
             );
           })}
-          <div className="rounded-lg border border-dashed border-slate-300 px-2.5 py-2 text-sm dark:border-slate-600">
+          <div className="rounded-control border border-dashed border-line-strong bg-canvas px-2.5 py-2 text-sm">
             <div className="flex justify-between gap-2">
               <span>{t('pharmacyStock.paymentDebt')}</span>
-              <span className="font-medium">{formatMoney(debt)}</span>
+              <span className="ui-tabular font-semibold text-ink">{formatMoney(debt)}</span>
             </div>
-            <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-0.5 text-xs text-ink-muted">
               {t('pharmacyStock.paymentDebtAutoHint')}
             </div>
             {total > 0 ? (
-              <div className="mt-1 flex justify-between gap-2 text-xs text-slate-500">
+              <div className="ui-tabular mt-1 flex justify-between gap-2 text-xs text-ink-muted">
                 <span>{t('pharmacyStock.paymentPaidOfTotal')}</span>
                 <span>{formatMoney(paid)} / {formatMoney(total)}</span>
               </div>

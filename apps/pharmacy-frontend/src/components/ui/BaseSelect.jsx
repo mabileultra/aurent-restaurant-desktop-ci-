@@ -52,11 +52,14 @@ const BaseSelect = forwardRef(function BaseSelect(
   const effectiveValue = isControlled
     ? toOptionValue(value ?? emptyValue)
     : uncontrolledValue;
+  const valueRef = useRef(effectiveValue);
+  valueRef.current = effectiveValue;
 
   const closeMenuRef = useRef(() => {});
 
   const commitSelection = (optionValue) => {
     const next = toOptionValue(optionValue);
+    valueRef.current = next;
     if (!isControlled) {
       setUncontrolledValue(next);
     }
@@ -68,7 +71,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     });
     setQuery('');
     onSearchQueryChange?.('');
-    closeMenuRef.current({ restoreFocus: true });
+    closeMenuRef.current({ restoreFocus: true, value: next });
   };
 
   const selectedOption = useMemo(
@@ -136,10 +139,11 @@ const BaseSelect = forwardRef(function BaseSelect(
 
   useImperativeHandle(forwardedRef, () => ({
     get value() {
-      return effectiveValue;
+      return valueRef.current;
     },
     set value(next) {
       const normalized = toOptionValue(next ?? emptyValue);
+      valueRef.current = normalized;
       if (!isControlled) {
         setUncontrolledValue(normalized);
       }
@@ -158,7 +162,7 @@ const BaseSelect = forwardRef(function BaseSelect(
     get name() {
       return name;
     },
-  }), [effectiveValue, emptyValue, isControlled, name]);
+  }), [emptyValue, isControlled, name]);
 
   const hasEmptyOption = options.some((option) => toOptionValue(option.value) === '');
   const searchPh = searchPlaceholder || t('common.search', { defaultValue: 'Поиск…' });
@@ -184,7 +188,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         >
           {searchable ? (
             <div className="base-select__search-wrap">
-              <Search size={14} className="base-select__search-icon" aria-hidden />
+              <Search size={14} strokeWidth={1.75} className="base-select__search-icon" aria-hidden />
               <input
                 ref={searchRef}
                 type="search"
@@ -255,7 +259,7 @@ const BaseSelect = forwardRef(function BaseSelect(
                       commitSelection(optionValue);
                     }}
                   >
-                    <Check size={14} className="base-select__check" aria-hidden />
+                    <Check size={14} strokeWidth={1.75} className="base-select__check" aria-hidden />
                     <span className="base-select__option-label">{option.label}</span>
                   </button>
                 );
@@ -282,7 +286,7 @@ const BaseSelect = forwardRef(function BaseSelect(
       {label ? (
         <label htmlFor={fieldId} className="base-select__label">
           {label}
-          {required ? <span className="text-red-500"> *</span> : null}
+          {required ? <span className="text-danger"> *</span> : null}
         </label>
       ) : null}
 
@@ -317,7 +321,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         >
           {displayLabel || placeholder || ''}
         </span>
-        <ChevronDown size={16} className="base-select__chevron" aria-hidden />
+        <ChevronDown size={16} strokeWidth={1.75} className="base-select__chevron" aria-hidden />
       </button>
 
       <select

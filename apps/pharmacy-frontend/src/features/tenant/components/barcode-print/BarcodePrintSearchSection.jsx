@@ -33,26 +33,26 @@ export default function BarcodePrintSearchSection({
         />
         <button
           type="button"
-          className="admin-btn-primary shrink-0 px-4 py-2 text-sm"
+          className="ui-btn ui-btn-primary shrink-0"
           onClick={() => onLookup()}
           disabled={loading}
         >
-          {loading ? <Loader size={18} className="animate-spin" /> : <Search size={18} />}
+          {loading ? <Loader size={18} className="animate-spin" /> : <Search size={18} strokeWidth={1.75} />}
         </button>
       </div>
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t('usersBarcodePrint.searchHint')}</p>
+      <p className="mt-2 text-xs text-ink-muted">{t('usersBarcodePrint.searchHint')}</p>
 
       {catalogResults.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-primary-700">
             {t('usersBarcodePrint.catalogResultsTitle')}
           </p>
-          <div className="tasnif-search__results rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <div className="tasnif-search__results rounded-control border border-primary-200">
             {catalogResults.map((product) => (
               <button
                 key={product.id}
                 type="button"
-                className="tasnif-search__item flex w-full flex-col border-b border-slate-100 text-left dark:border-slate-700"
+                className="tasnif-search__item flex w-full flex-col border-b border-line text-left"
                 onClick={() => onCatalogPick(product)}
               >
                 <div className="tasnif-search__item-name font-medium">{product.name}</div>
@@ -67,15 +67,15 @@ export default function BarcodePrintSearchSection({
 
       {tasnifResults.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
             {t('usersBarcodePrint.tasnifResultsTitle')}
           </p>
-          <div className="tasnif-search__results rounded-lg border border-slate-200 dark:border-slate-600">
+          <div className="tasnif-search__results rounded-control border border-line">
             {tasnifResults.map((item) => (
               <button
                 key={`${item.mxik}-${item.name}`}
                 type="button"
-                className="tasnif-search__item flex w-full flex-col border-b border-slate-100 text-left dark:border-slate-700"
+                className="tasnif-search__item flex w-full flex-col border-b border-line text-left"
                 onClick={() => onTasnifPick(item)}
               >
                 <div className="tasnif-search__item-name font-medium">{item.name}</div>

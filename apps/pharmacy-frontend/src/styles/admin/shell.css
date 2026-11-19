@@ -1,64 +1,46 @@
-/* Admin shell chrome — sidebar, header, main canvas */
+/* Admin shell chrome — light-only Pharma Green sidebar, topbar, main canvas */
 
 .admin-shell .admin-sidebar {
-  background: var(--admin-surface);
-  border-right: 1px solid var(--admin-line);
-  color: var(--admin-text);
-}
-
-.dark .admin-shell .admin-sidebar {
-  background: #0f1a15;
-  border-right-color: rgb(0 104 71 / 0.35);
+  background: rgb(var(--color-surface));
+  border-right: 1px solid rgb(var(--color-line));
+  color: rgb(var(--color-ink));
 }
 
 .admin-shell .admin-sidebar__brand {
-  border-bottom: 1px solid var(--admin-line);
-}
-
-.dark .admin-shell .admin-sidebar__brand {
-  border-bottom-color: rgb(0 104 71 / 0.35);
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .admin-shell .admin-sidebar__brand-name {
-  color: var(--admin-ink);
+  color: rgb(var(--color-ink));
   font-weight: 700;
-}
-
-.dark .admin-shell .admin-sidebar__brand-name {
-  color: #f8fafc;
 }
 
 .admin-shell .admin-nav-link {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border-radius: var(--admin-radius-sm);
+  border-radius: var(--radius-control);
   padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #334155;
+  color: rgb(var(--color-ink-muted));
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .admin-shell .admin-nav-link:hover {
-  background: var(--admin-brand-soft);
-  color: var(--admin-brand-deep);
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
 }
 
 .admin-shell .admin-nav-link--active {
-  background: var(--admin-brand-soft);
-  color: var(--admin-brand-deep);
-  box-shadow: inset 3px 0 0 var(--admin-brand);
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
+  font-weight: 600;
 }
 
-.dark .admin-shell .admin-nav-link {
-  color: #cbd5e1;
-}
-
-.dark .admin-shell .admin-nav-link:hover,
-.dark .admin-shell .admin-nav-link--active {
-  background: rgb(0 104 71 / 0.22);
-  color: #a7f3d0;
+.admin-shell .admin-nav-link--active:hover {
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
 }
 
 .admin-shell .admin-nav-group-btn {
@@ -67,46 +49,31 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  border-radius: var(--admin-radius-sm);
+  border-radius: var(--radius-control);
   padding: 0.625rem 0.75rem;
   text-align: left;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #334155;
+  color: rgb(var(--color-ink-muted));
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .admin-shell .admin-nav-group-btn:hover {
-  background: rgb(226 232 240 / 0.8);
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
 }
 
 .admin-shell .admin-nav-group-btn--active {
-  background: var(--admin-brand-soft);
-  color: var(--admin-brand-deep);
-}
-
-.dark .admin-shell .admin-nav-group-btn {
-  color: #e2e8f0;
-}
-
-.dark .admin-shell .admin-nav-group-btn:hover {
-  background: rgb(0 104 71 / 0.18);
-}
-
-.dark .admin-shell .admin-nav-group-btn--active {
-  background: rgb(0 104 71 / 0.28);
-  color: #fff;
+  background: rgb(var(--color-primary-50) / 0.7);
+  color: rgb(var(--color-primary-700));
+  font-weight: 600;
 }
 
 .admin-shell .admin-nav-group-rail {
   margin-left: 1rem;
   margin-top: 0.25rem;
-  border-left: 1px solid var(--admin-line);
+  border-left: 1px solid rgb(var(--color-line));
   padding-left: 0.25rem;
-}
-
-.dark .admin-shell .admin-nav-group-rail {
-  border-left-color: rgb(0 104 71 / 0.35);
 }
 
 .admin-shell .admin-nav-sublink {
@@ -115,54 +82,34 @@
   align-items: center;
   gap: 0.5rem;
   border: 1px solid transparent;
-  border-radius: var(--admin-radius-sm);
+  border-radius: var(--radius-control);
   padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  color: #475569;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  color: rgb(var(--color-ink-muted));
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .admin-shell .admin-nav-sublink:hover {
-  background: rgb(226 232 240 / 0.7);
-  color: #0f172a;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
 }
 
 .admin-shell .admin-nav-sublink--active {
-  border-color: var(--admin-brand);
-  background: var(--admin-surface);
-  color: var(--admin-brand-deep);
-  box-shadow: var(--admin-shadow);
-}
-
-.dark .admin-shell .admin-nav-sublink {
-  color: #cbd5e1;
-}
-
-.dark .admin-shell .admin-nav-sublink:hover {
-  background: rgb(30 41 59 / 0.6);
-  color: #fff;
-}
-
-.dark .admin-shell .admin-nav-sublink--active {
-  border-color: var(--admin-brand-mid, #0a7a52);
-  background: #020617;
-  color: #fff;
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-700));
+  font-weight: 600;
 }
 
 .admin-shell .admin-sidebar__footer {
-  border-top: 1px solid var(--admin-line);
-}
-
-.dark .admin-shell .admin-sidebar__footer {
-  border-top-color: rgb(0 104 71 / 0.35);
+  border-top: 1px solid rgb(var(--color-line));
 }
 
 .admin-shell .admin-topbar {
   min-height: var(--admin-header-h);
   height: auto;
-  border-bottom: 1px solid var(--admin-line);
-  background: var(--admin-surface);
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface));
 }
 
 @media (min-width: 640px) {
@@ -171,29 +118,22 @@
   }
 }
 
-.dark .admin-shell .admin-topbar {
-  background: #0f172a;
-  border-bottom-color: #1e293b;
-}
-
 .admin-shell .admin-topbar__avatar {
   display: flex;
-  height: 2rem;
-  width: 2rem;
+  height: 2.25rem;
+  width: 2.25rem;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background: var(--admin-gradient);
+  background: rgb(var(--color-primary-50));
+  border: 1px solid rgb(var(--color-primary-200));
+  font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--admin-brand-on);
+  color: rgb(var(--color-primary-700));
 }
 
 .admin-shell .admin-main {
-  background: var(--admin-canvas) !important;
-}
-
-.dark .admin-shell .admin-main {
-  background: var(--admin-canvas) !important;
+  background: rgb(var(--color-canvas)) !important;
 }
 
 /* Primary / secondary actions inside admin */
@@ -203,18 +143,26 @@ html.app-theme--admin .admin-btn-primary {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  height: 2.5rem;
+  padding: 0 1rem;
   border: 0;
-  border-radius: var(--admin-radius-sm, 0.5rem);
-  background: var(--admin-gradient, var(--color-brand-gradient));
-  color: var(--color-brand-on);
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
+  font-size: 0.875rem;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgb(15 42 31 / 0.12);
-  transition: filter 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 1px 2px rgb(var(--color-ink) / 0.08);
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .admin-shell .admin-btn-primary:hover:not(:disabled),
 html.app-theme--admin .admin-btn-primary:hover:not(:disabled) {
-  filter: brightness(1.06);
+  background: rgb(var(--color-primary-600));
+}
+
+.admin-shell .admin-btn-primary:active:not(:disabled),
+html.app-theme--admin .admin-btn-primary:active:not(:disabled) {
+  background: rgb(var(--color-primary-700));
 }
 
 .admin-shell .admin-btn-primary:disabled,
@@ -230,7 +178,7 @@ html.app-theme--admin .admin-btn-primary svg {
 
 .admin-shell .admin-btn-secondary svg,
 html.app-theme--admin .admin-btn-secondary svg {
-  color: var(--admin-brand, var(--color-brand));
+  color: rgb(var(--color-primary-600));
 }
 
 .admin-shell .admin-btn-secondary,
@@ -239,49 +187,54 @@ html.app-theme--admin .admin-btn-secondary {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 1px solid var(--admin-line, var(--color-border));
-  border-radius: var(--admin-radius-sm, 0.5rem);
-  background: var(--admin-surface, #fff);
-  color: var(--admin-text, #0f172a);
+  height: 2.5rem;
+  padding: 0 0.875rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  font-size: 0.875rem;
   font-weight: 500;
-  box-shadow: var(--admin-shadow);
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .admin-shell .admin-btn-secondary:hover:not(:disabled),
 html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
-  background: var(--admin-brand-soft, var(--color-brand-soft));
-  border-color: rgb(0 104 71 / 0.25);
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-line-strong));
 }
 
 .admin-shell .admin-chip {
-  border-radius: var(--admin-radius-sm, 0.5rem);
-  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  padding: 0.4375rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  background: var(--admin-surface-2, #f1f5f9);
-  color: var(--admin-text);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink-muted));
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .admin-shell .admin-chip:hover {
-  background: var(--admin-brand-soft);
-  color: var(--admin-brand-deep);
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-200));
+  color: rgb(var(--color-primary-700));
 }
 
 .admin-shell .admin-chip--active {
-  background: var(--admin-gradient, var(--color-brand));
-  color: var(--admin-brand-on);
+  background: rgb(var(--color-primary-50));
+  border-color: rgb(var(--color-primary-300));
+  color: rgb(var(--color-primary-700));
 }
 
 .admin-shell .admin-table-shell {
   overflow-x: auto;
   overflow-y: auto;
   max-height: none;
-  border: 1px solid var(--admin-line);
-  border-radius: var(--admin-radius);
-  background: var(--admin-surface);
-  box-shadow: var(--admin-shadow);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-surface));
+  box-shadow: var(--shadow-card);
 }
 
 .admin-shell .admin-table-sticky-end,
@@ -289,45 +242,30 @@ html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
   position: sticky;
   right: 0;
   z-index: 2;
-  background: var(--admin-surface, #fff);
-  box-shadow: -8px 0 8px -8px rgb(15 23 42 / 0.16);
+  background: rgb(var(--color-surface));
+  box-shadow: -8px 0 8px -8px rgb(var(--color-ink) / 0.1);
   transition: background-color 0.15s ease;
 }
 
 .admin-shell thead .admin-table-sticky-end,
 .admin-table-shell thead .admin-table-sticky-end {
   z-index: 3;
-  background: #f8fafc;
+  background: rgb(var(--color-canvas));
 }
 
 .admin-shell tr:hover td.admin-table-sticky-end,
 .admin-table-shell tr:hover td.admin-table-sticky-end {
-  background: rgb(248 250 252);
+  background: rgb(var(--color-primary-50));
 }
 
-.dark .admin-shell .admin-table-sticky-end,
-.dark .admin-table-shell .admin-table-sticky-end {
-  background: var(--admin-surface, #0f172a);
-}
-
-.dark .admin-shell thead .admin-table-sticky-end,
-.dark .admin-table-shell thead .admin-table-sticky-end {
-  background: rgb(30 41 59 / 0.5);
-}
-
-.dark .admin-shell tr:hover td.admin-table-sticky-end,
-.dark .admin-table-shell tr:hover td.admin-table-sticky-end {
-  background: rgb(30 41 59 / 0.7);
-}
-
-/* Icons — единый язык для плиток, ссылок и навигации */
+/* Unified icon language */
 .admin-shell .admin-icon {
-  color: var(--admin-brand);
+  color: rgb(var(--color-primary-600));
   flex-shrink: 0;
 }
 
 .admin-shell .admin-icon--muted {
-  color: var(--admin-muted);
+  color: rgb(var(--color-ink-muted));
 }
 
 .admin-shell .admin-icon-tile {
@@ -337,9 +275,9 @@ html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: var(--admin-radius-sm);
-  background: var(--admin-brand-soft);
-  color: var(--admin-brand);
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-600));
 }
 
 .admin-shell .admin-icon-tile--sm {
@@ -347,29 +285,25 @@ html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
   width: 2rem;
 }
 
-.admin-shell .admin-icon-tile--amber {
-  background: rgb(245 158 11 / 0.14);
-  color: #d97706;
+.admin-shell .admin-icon-tile--amber,
+.admin-shell .admin-icon-tile--warn {
+  background: rgb(var(--color-warning-soft));
+  color: rgb(var(--color-warning-text));
 }
 
 .admin-shell .admin-icon-tile--red {
-  background: rgb(239 68 68 / 0.12);
-  color: #dc2626;
-}
-
-.admin-shell .admin-icon-tile--warn {
-  background: rgb(245 158 11 / 0.14);
-  color: #d97706;
+  background: rgb(var(--color-danger-soft));
+  color: rgb(var(--color-danger-text));
 }
 
 .admin-shell .admin-link {
-  color: var(--admin-brand);
+  color: rgb(var(--color-primary-600));
   font-weight: 500;
   text-decoration: none;
 }
 
 .admin-shell .admin-link:hover {
-  color: var(--admin-brand-hover);
+  color: rgb(var(--color-primary-700));
   text-decoration: underline;
 }
 
@@ -377,92 +311,74 @@ html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
 .admin-shell .admin-nav-sublink svg,
 .admin-shell .admin-nav-group-btn svg {
   color: inherit;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .admin-shell .admin-nav-link--active svg,
 .admin-shell .admin-nav-sublink--active svg,
 .admin-shell .admin-nav-group-btn--active svg {
-  color: var(--admin-brand);
+  color: rgb(var(--color-primary-500));
   opacity: 1;
-}
-
-.dark .admin-shell .admin-nav-link--active svg,
-.dark .admin-shell .admin-nav-sublink--active svg,
-.dark .admin-shell .admin-nav-group-btn--active svg {
-  color: #6ee7b7;
 }
 
 .admin-shell .admin-hub-card {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  border: 1px solid var(--admin-line);
-  border-radius: var(--admin-radius);
-  background: var(--admin-surface);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-surface));
   padding: 1rem;
-  box-shadow: var(--admin-shadow);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .admin-shell .admin-hub-card:hover {
-  border-color: rgb(0 104 71 / 0.35);
-  box-shadow: var(--admin-shadow-md);
+  border-color: rgb(var(--color-primary-300));
+  box-shadow: var(--shadow-elevated);
 }
 
 .admin-shell .admin-soft-panel {
-  border: 1px solid rgb(0 104 71 / 0.2);
-  border-radius: var(--admin-radius);
-  background: var(--admin-brand-soft);
-  color: var(--admin-brand-deep);
-}
-
-.dark .admin-shell .admin-soft-panel {
-  border-color: rgb(0 104 71 / 0.4);
-  background: rgb(0 104 71 / 0.2);
-  color: #d1fae5;
+  border: 1px solid rgb(var(--color-primary-200));
+  border-radius: var(--radius-card);
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-800));
 }
 
 .admin-shell .admin-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  border: 1px solid rgb(0 104 71 / 0.35);
+  border: 1px solid rgb(var(--color-primary-200));
   border-radius: 9999px;
-  background: var(--admin-brand-soft);
-  padding: 0.125rem 0.5rem;
+  background: rgb(var(--color-primary-50));
+  padding: 0.125rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--admin-brand-deep);
+  color: rgb(var(--color-primary-700));
 }
 
 .admin-shell .admin-pill:hover {
-  background: var(--color-brand-soft-2);
-}
-
-.dark .admin-shell .admin-pill {
-  border-color: rgb(16 185 129 / 0.4);
-  background: rgb(0 104 71 / 0.28);
-  color: #a7f3d0;
+  background: rgb(var(--color-primary-100));
 }
 
 .admin-shell .on-screen-keyboard-btn--header {
-  border: 1px solid var(--admin-line);
-  border-radius: var(--admin-radius-sm);
-  background: var(--admin-surface);
-  color: var(--admin-brand-deep);
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
 }
 
 .admin-shell .on-screen-keyboard-btn--header:hover {
-  background: var(--admin-brand-soft);
-  border-color: rgb(0 104 71 / 0.28);
+  background: rgb(var(--color-canvas));
+  border-color: rgb(var(--color-line-strong));
 }
 
 html.app-theme--admin .base-btn--primary {
-  background: var(--color-brand);
-  color: var(--color-brand-on);
+  background: rgb(var(--color-primary-500));
+  color: rgb(var(--color-surface));
 }
 
 html.app-theme--admin .base-btn--primary:hover:not(:disabled) {
-  background: var(--color-brand-hover);
+  background: rgb(var(--color-primary-600));
 }

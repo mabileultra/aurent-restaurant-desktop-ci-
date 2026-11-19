@@ -22,6 +22,7 @@ After pharmacy cutover, shifts live in **pharmacy-service**; Multikassa settings
 5. **Guard** (`MultikassaCashierRegisterGuard`): cashiers without grocery open shift may still configure Multikassa for a store they can sell at (pharmacy path). Do not restore “grocery shift only”.
 6. **Fiscal open already open** (`posOpenShift`): if Multikassa says the fiscal shift is already open, keep the POS shift. Do not `close` it as rollback — that loop shows «откройте смену», then «смена открыта», and the row is CLOSED ~1s later. A register without Multikassa must still open normally.
 7. **Shift close print (pharmacy + grocery)**: X/Z payload must use `reportType` (`X`/`Z`), never `kind`. On close print Z totals first, then the sold-items slip (`printCloseShiftReports`). A failed Z print must not skip the sold-items slip. Offline close (`posCloseShift` local route) must still return `soldItems` built from local sales.
+8. **X vs mid-Z period**: X aggregates from `openedAt` (full open shift). Mid-shift Z uses `periodStartedAt` and must not print/finalize an empty period (0/0). After mid-Z, close may skip empty POS Z slip; sold-items fall back to `openedAt`. Multikassa X uses `force_to_print: true`.
 
 ## Do not
 
