@@ -24,6 +24,7 @@ import com.pos.pharmacy.sales.support.CheckoutMarkGuard;
 import com.pos.pharmacy.sales.support.CheckoutOrderPricing;
 import com.pos.pharmacy.sales.support.CheckoutQuantityResolver;
 import com.pos.pharmacy.sales.support.CheckoutSaleFactory;
+import com.pos.pharmacy.sales.support.PharmacySalePrescriptionGuard;
 import com.pos.pharmacy.sales.support.PharmacySaleCardDetailsApplier;
 import com.pos.pharmacy.sales.support.OfflineSaleContext;
 import com.pos.pharmacy.sales.support.SaleEnumParser;
@@ -64,6 +65,7 @@ public class PharmacySaleCheckoutService {
     private final CheckoutMarkGuard checkoutMarkGuard;
     private final CheckoutLineAssembler checkoutLineAssembler;
     private final CheckoutSaleFactory checkoutSaleFactory;
+    private final PharmacySalePrescriptionGuard prescriptionGuard;
     private final SaleFiscalApplier saleFiscalApplier;
     private final SaleMapper saleMapper;
     private final PharmacyRevenuePublicationService revenuePublicationService;
@@ -89,6 +91,7 @@ public class PharmacySaleCheckoutService {
 
         Map<UUID, Product> productsById = loadProducts(companyId, req.items());
         Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(req.items());
+        String prescriptionNumber = prescriptionGuard.resolve(req, attributesByProductId, offline);
         CheckoutLineAssembler.AssembledLines assembled = checkoutLineAssembler.assemble(
             req.items(),
             productsById,
@@ -128,6 +131,7 @@ public class PharmacySaleCheckoutService {
         List<SaleItem> items = assembled.items();
         items.forEach(item -> item.setSale(sale));
         sale.setItems(items);
+        sale.setPrescriptionNumber(prescriptionNumber);
         saleFiscalApplier.apply(sale, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
