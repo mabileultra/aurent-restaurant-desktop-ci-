@@ -214,15 +214,15 @@ for (const paperMm of [58, 80]) {
     assert.ok(output.includes('150 000') || output.includes('150000'), '16: Jami summa chiqishi kerak');
     // 17: sh.j. jami QQS 12%
     assert.ok(output.includes('sh.j. jami QQS 12%'), '17: Jami QQS qatori chiqishi kerak');
-    // 18: To'lov shakli (Naqd, Bank kartasi, QR-kodli to'lov)
+    // 18: To'lov shakli (Naqd, Bank kartasi (Humo), QR-kodli to'lov)
     assert.ok(output.includes("To'lov shakli") || output.includes('To‘lov shakli'), '18: To‘lov shakli chiqishi kerak');
     assert.ok(output.includes('Naqd'), '18: Naqd chiqishi kerak');
-    assert.ok(output.includes('Bank kartasi'), '18: Bank kartasi chiqishi kerak');
+    assert.ok(output.includes('Bank kartasi (Humo)'), '18: Bank kartasi (Humo) chiqishi kerak');
     assert.ok(output.includes("QR-kodli to'lov") || output.includes('QR-kodli to‘lov'), '18: QR-kodli to‘lov chiqishi kerak');
-    // 19: Bank kartasi turi
-    assert.ok(output.includes('Humo') || output.includes('HUMO'), '19: Karta turi chiqishi kerak');
+    // 19: Bank kartasi turi (ijtimoiy karta toifasi)
+    assert.ok(output.includes('Bank kartasi turi') && output.includes('Ijtimoiy'), '19: Karta turi (Ijtimoiy) chiqishi kerak');
     // 20: Karta raqami (5614 **** **** 8956)
-    assert.ok(output.includes('9860 **** **** 8031'), '20: Karta raqami probelli niqob bilan chiqishi kerak');
+    assert.ok(output.includes('Karta raqami') && output.includes('9860 **** **** 8031'), '20: Karta raqami probelli niqob bilan chiqishi kerak');
     // 21: RRN kodi
     assert.ok(output.includes('631810177451'), '21: RRN kodi chiqishi kerak');
     // 22: Chek turi (Sotuv cheki)
@@ -238,3 +238,16 @@ for (const paperMm of [58, 80]) {
     assert.ok(hasQrCall, '26: Soliq QR kodi chop etilishi kerak');
   });
 }
+
+test('ESC/POS receipt omits card number row for non-social cards', async () => {
+  const printer = createFakeThermalPrinter();
+  printer.getWidth = () => 48;
+  const payload = createSample26FieldsPayload(80);
+  payload.sale.cardCategory = null;
+  payload.sale.socialCardNumber = null;
+  payload.sale.cardNumber = '8600123456781234';
+  await buildReceiptOnPrinter(printer, payload, 'job-regular-card');
+  const output = getPrintedLines(printer);
+  assert.ok(output.includes('Bank kartasi (Humo)'), 'Bank kartasi (Humo) chiqishi kerak');
+  assert.ok(!output.includes('Karta raqami'), 'Karta raqami chiqmasligi kerak');
+});

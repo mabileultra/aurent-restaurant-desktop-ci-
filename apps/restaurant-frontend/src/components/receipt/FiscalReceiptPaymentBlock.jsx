@@ -1,3 +1,4 @@
+import React from 'react';
 import { formatCardNumberForReceipt } from '@aurent/shared-fiscal';
 import { fmtMoneyCompact } from '../../utils/fiscalReceiptFormat';
 import { FiscalReceiptRow } from './FiscalReceiptRow';
@@ -23,9 +24,9 @@ export default function FiscalReceiptPaymentBlock({
   if (!isOn('payment')) return null;
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const hasCardPayment = Number(cardAmt) > 0;
-  const rawCard = socialCardNumber || cardNumber;
+  const rawCard = socialCardNumber;
   const formattedCard = formatCardNumberForReceipt(rawCard);
-  const cardTypeDisplay = cardTypeText || cardCategoryText;
+  const cardTypeDisplay = cardCategoryText;
   const hasAnyExplicitMethod = Number(cashAmt) > 0 || Number(cardAmt) > 0 || Number(qrAmt) > 0;
 
   return (
@@ -37,7 +38,10 @@ export default function FiscalReceiptPaymentBlock({
           <FiscalReceiptRow label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
         ) : null}
         {Number(cardAmt) > 0 ? (
-          <FiscalReceiptRow label={t('fiscalReceipt.plastic')} value={fmtMoneyCompact(cardAmt)} />
+          <FiscalReceiptRow
+            label={cardTypeText ? `${t('fiscalReceipt.plastic')} (${cardTypeText})` : t('fiscalReceipt.plastic')}
+            value={fmtMoneyCompact(cardAmt)}
+          />
         ) : null}
         {Number(qrAmt) > 0 ? (
           <FiscalReceiptRow
@@ -51,9 +55,9 @@ export default function FiscalReceiptPaymentBlock({
         {hasCardPayment && cardTypeDisplay ? (
           <FiscalReceiptRow label={t('fiscalReceipt.cardType')} value={cardTypeDisplay} />
         ) : null}
-        {hasCardPayment && formattedCard ? (
+        {hasCardPayment && socialCardNumber && formattedCard ? (
           <FiscalReceiptRow
-            label={socialCardNumber ? t('fiscalReceipt.socialCardNumber') : t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
+            label={t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
             value={formattedCard}
           />
         ) : null}

@@ -35,12 +35,20 @@ const PAYMENT_I18N = {
 
 export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-area', className = '' }) {
   const t = getReceiptTranslator();
-  const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
-  const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
-  const customCompanyName = useTenantDisplayStore((s) => s.committed.receiptCompanyName);
-  const customCompanyAddress = useTenantDisplayStore((s) => s.committed.receiptCompanyAddress);
-  const customCompanyPhone = useTenantDisplayStore((s) => s.committed.receiptCompanyPhone);
-  const customStir = useTenantDisplayStore((s) => s.committed.receiptStir);
+  const storeState = useTenantDisplayStore.getState?.() || {};
+  const storeCommitted = useTenantDisplayStore((s) => s.committed);
+  const committed =
+    storeCommitted &&
+    (storeCommitted.receiptCompanyName || storeCommitted.receiptStir || storeCommitted.receiptCompanyAddress)
+      ? storeCommitted
+      : (storeState.committed || {});
+  const isOnSelector = useTenantDisplayStore((s) => s.isReceiptFieldOn);
+  const isOn = (key) => (isOnSelector ? isOnSelector(key) : (storeState.isReceiptFieldOn?.(key) ?? true));
+  const receiptLogoDataUrl = committed.receiptLogoDataUrl;
+  const customCompanyName = committed.receiptCompanyName;
+  const customCompanyAddress = committed.receiptCompanyAddress;
+  const customCompanyPhone = committed.receiptCompanyPhone;
+  const customStir = committed.receiptStir;
 
   if (!sale) return null;
 
@@ -72,9 +80,9 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const cardProviderText =
     hasCardPayment && !normalizeCardCategory(sale.cardType) ? cardTypeLabel(sale.cardType, t) : null;
   const cardCategoryText = hasCardPayment ? cardCategoryLabel(cardDetails.cardCategory, t) : null;
-  const rawCardNum = cardDetails?.socialCardNumber || sale?.cardNumber;
+  const rawCardNum = isSocialCategory ? (cardDetails?.socialCardNumber || sale?.cardNumber) : null;
   const formattedCardNumber = formatCardNumberForReceipt(rawCardNum);
-  const cardTypeDisplay = cardProviderText || cardCategoryText;
+  const cardTypeDisplay = cardCategoryText;
   const receiptSeq = String(sale?.fiscalReceiptSeq || sale?.receiptNumber || '').replace(/^№\s*/, '');
   const qrAmt = Number(pay?.qrAmt) || 0;
   const hasAnyExplicitMethod = Number(cashAmt) > 0 || Number(cardAmt) > 0 || qrAmt > 0;
@@ -163,7 +171,10 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
               <Row label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
             ) : null}
             {Number(cardAmt) > 0 ? (
-              <Row label={t('fiscalReceipt.plastic')} value={fmtMoneyCompact(cardAmt)} />
+              <Row
+                label={cardProviderText ? `${t('fiscalReceipt.plastic')} (${cardProviderText})` : t('fiscalReceipt.plastic')}
+                value={fmtMoneyCompact(cardAmt)}
+              />
             ) : null}
             {qrAmt > 0 ? (
               <Row
@@ -177,9 +188,9 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             {hasCardPayment && cardTypeDisplay ? (
               <Row label={t('fiscalReceipt.cardType')} value={cardTypeDisplay} />
             ) : null}
-            {hasCardPayment && formattedCardNumber ? (
+            {hasCardPayment && isSocialCategory && formattedCardNumber ? (
               <Row
-                label={isSocialCategory ? t('fiscalReceipt.socialCardNumber') : t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
+                label={t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
                 value={formattedCardNumber}
               />
             ) : null}

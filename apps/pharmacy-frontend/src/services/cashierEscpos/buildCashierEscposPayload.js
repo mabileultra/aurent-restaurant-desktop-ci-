@@ -118,6 +118,9 @@ export function buildEscposLabels(t) {
     barcode: tr('fiscalReceipt.barcode', { defaultValue: 'ShT.kod' }),
     marking: tr('fiscalReceipt.marking', { defaultValue: 'MK' }),
     originalReceiptNo: tr('fiscalReceipt.originalReceiptNo'),
+    cardCorporate: tr('pos.cardCorporate', { defaultValue: 'Korporativ' }),
+    cardPersonal: tr('pos.cardPersonal', { defaultValue: 'Shaxsiy' }),
+    cardSocial: tr('pos.cardSocial', { defaultValue: 'Ijtimoiy' }),
   };
 }
 
@@ -176,7 +179,7 @@ export function buildCashierEscposPayload(sale, t) {
     ? cardTypeLabel(sale.cardType, tr)
     : null;
   if (cardProviderText) {
-    labels.plastic = `${labels.plastic} · ${cardProviderText}`;
+    labels.plastic = `${labels.plastic} (${cardProviderText})`;
   }
   const cardCategoryDisplay = hasCardPayment
     ? (cardCategoryLabel(cardDetails.cardCategory, tr) || null)

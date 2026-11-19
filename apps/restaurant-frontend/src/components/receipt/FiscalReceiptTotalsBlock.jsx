@@ -1,3 +1,4 @@
+import React from 'react';
 import { fmtMoneyCompact } from '../../utils/fiscalReceiptFormat';
 import { FiscalReceiptDivider, FiscalReceiptRow } from './FiscalReceiptRow';
 

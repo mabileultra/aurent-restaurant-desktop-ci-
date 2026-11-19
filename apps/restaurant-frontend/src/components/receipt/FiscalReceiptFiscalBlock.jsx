@@ -1,3 +1,4 @@
+import React from 'react';
 import { getLicenseNumber, getReceiptVersionRows } from '@aurent/shared-fiscal';
 import { FiscalReceiptRow } from './FiscalReceiptRow';
 

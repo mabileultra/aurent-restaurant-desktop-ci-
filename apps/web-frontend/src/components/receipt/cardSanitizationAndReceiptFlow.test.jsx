@@ -263,10 +263,9 @@ describe('Card Sanitization & Receipt Flow (MIXED + 0, CREDIT, ADVANCE, CARD)', 
       items: [BASE_ITEM],
     };
     const html = renderToStaticMarkup(<FiscalReceiptBody sale={sale} />);
-    expect(html).toContain('Bank kartasi');
+    expect(html).toContain('Bank kartasi (Humo)');
     expect(html).toContain('Bank kartasi turi');
-    expect(html).toContain('Humo');
-    expect(html).toContain('Ijtimoiy karta');
+    expect(html).toContain('Ijtimoiy');
     expect(html).toContain('9860 **** **** 8031');
     expect(html).toContain('RRN kodi');
     expect(html).toContain('631810177451');
@@ -282,8 +281,9 @@ describe('Card Sanitization & Receipt Flow (MIXED + 0, CREDIT, ADVANCE, CARD)', 
         receiptFields: { payment: true, items: true },
         labels: {
           paymentForm: 'To‘lov shakli:',
-          plastic: 'Bank kartasi',
+          plastic: 'Bank kartasi (Humo)',
           cardType: 'Bank kartasi turi',
+          cardNumber: 'Karta raqami',
           socialCardNumber: 'Ijtimoiy karta',
           cardRrn: 'RRN kodi',
         },
@@ -292,8 +292,8 @@ describe('Card Sanitization & Receipt Flow (MIXED + 0, CREDIT, ADVANCE, CARD)', 
       'job-card-active'
     );
     const escposOutput = getPrintedLines(printer);
-    expect(escposOutput).toContain('Bank kartasi');
-    expect(escposOutput).toContain('HUMO');
+    expect(escposOutput).toContain('Bank kartasi (Humo)');
+    expect(escposOutput).toContain('Ijtimoiy');
     expect(escposOutput).toContain('9860 **** **** 8031');
     expect(escposOutput).toContain('631810177451');
   });

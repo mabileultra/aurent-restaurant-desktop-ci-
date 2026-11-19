@@ -323,6 +323,35 @@ function resolveItemMarkingLabel(item) {
   return toOfdMarkingLabel(raw);
 }
 
+function normalizeCardCategory(value) {
+  if (value == null || value === '') return null;
+  const key = String(value).trim().toUpperCase();
+  if (key === '1' || key === 'CORPORATE') return 'CORPORATE';
+  if (key === '2' || key === 'PERSONAL') return 'PERSONAL';
+  if (key === '3' || key === 'SOCIAL') return 'SOCIAL';
+  return null;
+}
+
+function resolveCardCategoryLabel(category, L = {}) {
+  const norm = normalizeCardCategory(category);
+  if (!norm) return null;
+  if (norm === 'CORPORATE') return L.cardCorporate || 'Korporativ';
+  if (norm === 'PERSONAL') return L.cardPersonal || 'Shaxsiy';
+  if (norm === 'SOCIAL') return L.cardSocial || 'Ijtimoiy';
+  return null;
+}
+
+function resolveCardProvider(cardType) {
+  if (!cardType) return null;
+  if (normalizeCardCategory(cardType)) return null;
+  const upper = String(cardType).trim().toUpperCase();
+  if (upper === 'HUMO') return 'Humo';
+  if (upper === 'UZCARD') return 'Uzcard';
+  if (upper === 'PAYME') return 'Payme';
+  if (upper === 'CLICK') return 'Click';
+  return String(cardType).trim();
+}
+
 module.exports = {
   fmtMoney,
   fmtMoneyTable,
@@ -342,4 +371,7 @@ module.exports = {
   interpolateLabel,
   saleVatRateLabel,
   fmtAt,
+  normalizeCardCategory,
+  resolveCardCategoryLabel,
+  resolveCardProvider,
 };

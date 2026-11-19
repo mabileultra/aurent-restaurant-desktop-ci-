@@ -143,7 +143,7 @@ describe('buildCashierEscposPayload plastic label', () => {
       { ...FISCAL_SALE, paymentMethod: 'CARD', cardType: 'HUMO' },
       t,
     );
-    expect(humo.labels.plastic).toBe('Bank kartasi · Humo');
+    expect(humo.labels.plastic).toBe('Bank kartasi (Humo)');
 
     const social = buildCashierEscposPayload(
       {
@@ -156,7 +156,7 @@ describe('buildCashierEscposPayload plastic label', () => {
       },
       t,
     );
-    expect(social.labels.plastic).toBe('Bank kartasi · Humo');
+    expect(social.labels.plastic).toBe('Bank kartasi (Humo)');
     expect(social.labels.cardType).toBe('Bank kartasi turi');
     expect(social.labels.socialCardNumber).toBe('Ijtimoiy karta');
     expect(social.labels.cardRrn).toBe('RRN kodi');

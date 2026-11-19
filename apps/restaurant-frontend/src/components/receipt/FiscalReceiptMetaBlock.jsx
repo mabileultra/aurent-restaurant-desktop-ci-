@@ -1,3 +1,4 @@
+import React from 'react';
 import { FiscalReceiptRow } from './FiscalReceiptRow';
 
 export default function FiscalReceiptMetaBlock({

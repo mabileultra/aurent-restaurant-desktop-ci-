@@ -17,6 +17,9 @@ const {
   shouldPrintFiscalQr,
   doesVersionRowFitSingleLine,
   resolveItemCommittent,
+  normalizeCardCategory,
+  resolveCardCategoryLabel,
+  resolveCardProvider,
 } = require('./escpos-format.cjs');
 const { logWarn } = require('./escpos-log.cjs');
 const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
@@ -430,7 +433,14 @@ function appendPayment(printer, payload) {
     appendRow(printer, L.cash || 'Naqd', fmtMoney(cashAmt));
   }
   if (cardAmt > 0) {
-    appendRow(printer, L.plastic || 'Bank kartasi', fmtMoney(cardAmt));
+    const provider =
+      sale.cardProviderText ||
+      resolveCardProvider(sale.cardType);
+    let plasticLabel = L.plastic || 'Bank kartasi';
+    if (provider && !plasticLabel.includes(`(${provider})`)) {
+      plasticLabel = `${plasticLabel.replace(/\s*·\s*.*$/, '').replace(/\s*\(.*\)$/, '')} (${provider})`;
+    }
+    appendRow(printer, plasticLabel, fmtMoney(cardAmt));
   }
   if (qrAmt > 0) {
     appendRow(printer, L.qrPayment || 'QR-kodli to‘lov', fmtMoney(qrAmt));
@@ -439,13 +449,21 @@ function appendPayment(printer, payload) {
     appendRow(printer, L.cash || 'Naqd', fmtMoney(total));
   }
   if (cardAmt > 0) {
-    if (sale.cardCategoryDisplay || sale.cardType) {
-      appendRow(printer, L.cardType || 'Bank kartasi turi', String(sale.cardCategoryDisplay || sale.cardType));
+    const categoryLabel =
+      sale.cardCategoryDisplay ||
+      resolveCardCategoryLabel(sale.cardCategory, L) ||
+      resolveCardCategoryLabel(sale.cardType, L);
+    if (categoryLabel) {
+      appendRow(printer, L.cardType || 'Bank kartasi turi', String(categoryLabel));
     }
-    const rawCard = sale.socialCardNumber || sale.cardNumber;
+    const isSocial =
+      Boolean(sale.socialCardNumber) ||
+      normalizeCardCategory(sale.cardCategory) === 'SOCIAL' ||
+      normalizeCardCategory(sale.cardType) === 'SOCIAL';
+    const rawCard = sale.socialCardNumber || (isSocial ? sale.cardNumber : null);
     if (rawCard) {
       const formatted = formatCardNumberForReceipt(rawCard);
-      appendRow(printer, sale.socialCardNumber ? (L.socialCardNumber || 'Ijtimoiy karta') : (L.cardNumber || 'Karta raqami'), formatted);
+      appendRow(printer, L.cardNumber || L.socialCardNumber || 'Karta raqami', formatted);
     }
     if (sale.rrn) {
       appendRow(printer, L.cardRrn || 'RRN kodi', String(sale.rrn));

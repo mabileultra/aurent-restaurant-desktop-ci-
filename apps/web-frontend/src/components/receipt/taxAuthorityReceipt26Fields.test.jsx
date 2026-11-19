@@ -136,14 +136,14 @@ describe('Tax Authority (Soliq xizmati) Receipt — 26 Fields Validation', () =>
     expect(html).toContain('150 000');
     // 17: sh.j. jami QQS 12%
     expect(html).toContain('sh.j. jami QQS 12%');
-    // 18: To'lov shakli (faqat >0 bo'lgan usullar)
+    // 18: To'lov shakli (faqat >0 bo'lgan usullar, Bank kartasi (Humo))
     expect(html).toContain('To‘lov shakli:');
-    expect(html).toContain('Bank kartasi');
-    // 19: Bank kartasi turi
+    expect(html).toContain('Bank kartasi (Humo)');
+    // 19: Bank kartasi turi: Ijtimoiy (karta toifasi)
     expect(html).toContain('Bank kartasi turi');
-    expect(html).toContain('Humo');
-    // 20: Karta raqami (5614 **** **** 8956 formati)
-    expect(html).toContain('Ijtimoiy karta');
+    expect(html).toContain('Ijtimoiy');
+    // 20: Karta raqami (5614 **** **** 8956 formati — faqat ijtimoiy kartada)
+    expect(html).toContain('Karta raqami');
     expect(html).toContain('9860 **** **** 8031');
     // 21: RRN kodi
     expect(html).toContain('RRN kodi');
@@ -163,5 +163,19 @@ describe('Tax Authority (Soliq xizmati) Receipt — 26 Fields Validation', () =>
     // 26: Soliq QR kodi (svg / qr mavjudligi)
     expect(html).toContain('receipt-qr');
     expect(html).toContain('<svg');
+  });
+
+  it('omits card number row (20-band) for non-social cards', () => {
+    const regularCardSale = {
+      ...SAMPLE_SALE_26_FIELDS,
+      cardCategory: null,
+      socialCardNumber: null,
+      cardNumber: '8600123456781234',
+    };
+    const html = renderToStaticMarkup(
+      React.createElement(FiscalReceiptBody, { sale: regularCardSale })
+    );
+    expect(html).toContain('Bank kartasi (Humo)');
+    expect(html).not.toContain('Karta raqami');
   });
 });

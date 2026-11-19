@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../../config/brand';
 import { getReceiptTranslator } from '../../utils/receiptI18n';
@@ -31,13 +32,21 @@ export default function FiscalReceiptBody({
 }) {
   const { t } = useTranslation();
   const tReceipt = getReceiptTranslator(t);
-  const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
-  const fieldStyles = useTenantDisplayStore((s) => s.committed.receiptFieldStyles);
-  const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
-  const customCompanyName = useTenantDisplayStore((s) => s.committed.receiptCompanyName);
-  const customCompanyAddress = useTenantDisplayStore((s) => s.committed.receiptCompanyAddress);
-  const customCompanyPhone = useTenantDisplayStore((s) => s.committed.receiptCompanyPhone);
-  const customStir = useTenantDisplayStore((s) => s.committed.receiptStir);
+  const storeState = useTenantDisplayStore.getState?.() || {};
+  const storeCommitted = useTenantDisplayStore((s) => s.committed);
+  const committed =
+    storeCommitted &&
+    (storeCommitted.receiptCompanyName || storeCommitted.receiptStir || storeCommitted.receiptCompanyAddress)
+      ? storeCommitted
+      : (storeState.committed || {});
+  const isOnSelector = useTenantDisplayStore((s) => s.isReceiptFieldOn);
+  const isOn = (key) => (isOnSelector ? isOnSelector(key) : (storeState.isReceiptFieldOn?.(key) ?? true));
+  const fieldStyles = committed.receiptFieldStyles;
+  const receiptLogoDataUrl = committed.receiptLogoDataUrl;
+  const customCompanyName = committed.receiptCompanyName;
+  const customCompanyAddress = committed.receiptCompanyAddress;
+  const customCompanyPhone = committed.receiptCompanyPhone;
+  const customStir = committed.receiptStir;
   const fs = (key, extra = '') => {
     const p = receiptFieldStyleProps(fieldStyles?.[key]);
     return {
@@ -132,7 +141,7 @@ export default function FiscalReceiptBody({
           fs={fs}
           time={time}
           date={date}
-          receiptNumber={sale.receiptNumber}
+          receiptNumber={sale.fiscalReceiptSeq || sale.receiptNumber}
           originalReceiptNumber={sale.originalReceiptNumber}
           cashierName={sale.cashierName}
           shiftNo={shiftNo}

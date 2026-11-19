@@ -31,9 +31,9 @@ export default function ReceiptPaymentSection({ payment, isOn, t }) {
     cardCategoryText,
   } = payment;
 
-  const rawCardNum = cardDetails?.socialCardNumber || payment?.cardNumber;
+  const rawCardNum = isSocialCategory ? (cardDetails?.socialCardNumber || payment?.cardNumber) : null;
   const formattedCardNumber = formatCardNumberForReceipt(rawCardNum);
-  const cardTypeDisplay = cardProviderText || cardCategoryText;
+  const cardTypeDisplay = cardCategoryText;
 
   const hasAnyExplicitMethod =
     Number(cashAmt) > 0 || Number(cardAmt) > 0 || Number(qrAmt) > 0;
@@ -47,7 +47,10 @@ export default function ReceiptPaymentSection({ payment, isOn, t }) {
           <ReceiptRow label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
         ) : null}
         {Number(cardAmt) > 0 ? (
-          <ReceiptRow label={t('fiscalReceipt.plastic')} value={fmtMoneyCompact(cardAmt)} />
+          <ReceiptRow
+            label={cardProviderText ? `${t('fiscalReceipt.plastic')} (${cardProviderText})` : t('fiscalReceipt.plastic')}
+            value={fmtMoneyCompact(cardAmt)}
+          />
         ) : null}
         {Number(qrAmt) > 0 ? (
           <ReceiptRow
@@ -64,9 +67,9 @@ export default function ReceiptPaymentSection({ payment, isOn, t }) {
         {hasCardPayment && cardTypeDisplay ? (
           <ReceiptRow label={t('fiscalReceipt.cardType')} value={cardTypeDisplay} />
         ) : null}
-        {hasCardPayment && formattedCardNumber ? (
+        {hasCardPayment && isSocialCategory && formattedCardNumber ? (
           <ReceiptRow
-            label={isSocialCategory ? t('fiscalReceipt.socialCardNumber') : t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
+            label={t('fiscalReceipt.cardNumber', { defaultValue: 'Karta raqami' })}
             value={formattedCardNumber}
           />
         ) : null}
