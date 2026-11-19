@@ -58,6 +58,10 @@ app:
       barcode-ttl-seconds: ${PHARMACY_REDIS_BARCODE_TTL_SECONDS:180}
     mark-withdraw:
       retry-ms: ${PHARMACY_MARK_WITHDRAW_RETRY_MS:30000}
+    sales:
+      # AUR-18: 400 при продаже рецептурного препарата без номера рецепта или с неверным номером.
+      # Включать, когда все кассы аптек отправляют prescriptionNumber; до этого — сохранение и WARN.
+      prescription-number-enforced: ${PHARMACY_PRESCRIPTION_NUMBER_ENFORCED:false}
     price-registry:
       enabled: ${PHARMACY_PRICE_REGISTRY_ENABLED:true}
       page-url: ${PHARMACY_PRICE_REGISTRY_PAGE_URL:https://api.mpa.uz/drug-catalog-api/v2/referent-price/excel}

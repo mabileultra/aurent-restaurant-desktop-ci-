@@ -24,6 +24,8 @@ public record CreateSaleRequest(
     String patientPinfl,
     /** Телефон лояльности (аптека), опционально. */
     String loyaltyPhone,
+    /** AUR-18: номер электронного рецепта, обязателен при рецептурных товарах. */
+    String prescriptionNumber,
     /** Чек через DMED / страхование. */
     Boolean pharmacyDmed,
     UUID customerId,

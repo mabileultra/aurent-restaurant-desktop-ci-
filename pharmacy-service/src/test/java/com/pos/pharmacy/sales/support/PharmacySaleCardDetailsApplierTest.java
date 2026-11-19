@@ -116,7 +116,7 @@ class PharmacySaleCardDetailsApplierTest {
 
     private static CreateSaleRequest request(String category, String rrn, String socialNumber) {
         return new CreateSaleRequest(
-            List.of(), "CARD", 1, null, null, null, null, null, null, null, null, "SALE", null,
+            List.of(), "CARD", 1, null, null, null, null, null, null, null, null, null, "SALE", null,
             null, null, null, null, null, category, rrn, socialNumber
         );
     }

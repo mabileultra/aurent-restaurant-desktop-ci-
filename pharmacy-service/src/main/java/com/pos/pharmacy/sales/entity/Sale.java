@@ -121,6 +121,10 @@ public class Sale {
     @Column(name = "loyalty_phone", length = 32)
     private String loyaltyPhone;
 
+    /** AUR-18: номер электронного рецепта. */
+    @Column(name = "prescription_number", length = 64)
+    private String prescriptionNumber;
+
     @Column(name = "pharmacy_dmed", nullable = false)
     @Builder.Default
     private boolean pharmacyDmed = false;

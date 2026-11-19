@@ -40,6 +40,8 @@ public record SaleResponse(
     String notes,
     String patientPinfl,
     String loyaltyPhone,
+    /** AUR-18: номер электронного рецепта или null. */
+    String prescriptionNumber,
     Boolean pharmacyDmed,
     /** Смена кассира, в которой оформлен чек (для журнала продаж и передачи кассы). */
     UUID shiftId,

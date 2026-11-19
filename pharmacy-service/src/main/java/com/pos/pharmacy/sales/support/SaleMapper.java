@@ -78,6 +78,7 @@ public class SaleMapper {
             sale.getNotes(),
             sale.getPatientPinfl(),
             sale.getLoyaltyPhone(),
+            sale.getPrescriptionNumber(),
             sale.isPharmacyDmed(),
             sale.getCashierShiftId(),
             shiftOpenedAt,
