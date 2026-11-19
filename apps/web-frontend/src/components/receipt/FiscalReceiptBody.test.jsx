@@ -83,7 +83,7 @@ describe('FiscalReceiptBody', () => {
     expect(html).toContain('Bank kartasi');
     expect(html).toContain('Bank kartasi turi');
     expect(html).toContain('Ijtimoiy');
-    expect(html).toContain('Ijtimoiy karta');
+    expect(html).toContain('Karta raqami');
     expect(html).toContain('9860 **** **** 8031');
     expect(html).toContain('RRN kodi');
     expect(html).toContain('631810177451');
@@ -117,7 +117,7 @@ describe('FiscalReceiptBody', () => {
     expect(html).toContain('Bank kartasi');
     expect(html).toContain('Bank kartasi turi');
     expect(html).toContain('Ijtimoiy');
-    expect(html).toContain('Ijtimoiy karta');
+    expect(html).toContain('Karta raqami');
     expect(html).toContain('9860 **** **** 8031');
     expect(html).toContain('RRN kodi');
     expect(html).toContain('631810177451');

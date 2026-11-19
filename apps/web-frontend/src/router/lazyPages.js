@@ -4,6 +4,7 @@ export const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
 export const CashierPinLoginPage = lazy(() => import('../features/cashier/pages/CashierPinLoginPage'));
 export const DesktopInstallerPage = lazy(() => import('../features/desktop/pages/DesktopInstallerPage'));
 export const ReceiptPage = lazy(() => import('../features/receipt/pages/ReceiptPage'));
+export const ReceiptLivePreviewPage = lazy(() => import('../features/receipt/pages/ReceiptLivePreviewPage'));
 
 export const PosPage = lazy(() => import('../features/cashier/pages/PosPage'));
 export const CashierMySalesPage = lazy(() => import('../features/cashier/pages/CashierMySalesPage'));

@@ -1,10 +1,15 @@
 {
   "name": "aurent-pos",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "description": "Aurent multi-vertical monorepo (pnpm workspace).",
   "packageManager": "pnpm@10.18.2",
   "scripts": {
+    "prosecute": "node scripts/code-prosecutor.mjs",
+    "prosecute:watch": "node scripts/code-prosecutor.mjs --watch",
+    "audit:changes": "node scripts/code-prosecutor.mjs",
+    "test:prosecutor": "node --test tests/code-prosecutor-runner.test.js",
     "test:packages": "pnpm --filter pos-frontend exec vitest run ../../packages/*/src/**/*.test.js",
     "packages:list": "pnpm -r list --depth -1"
   },

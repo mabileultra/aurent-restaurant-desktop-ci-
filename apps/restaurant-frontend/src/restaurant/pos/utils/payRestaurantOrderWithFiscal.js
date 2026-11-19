@@ -2,7 +2,6 @@ import { rstOrderApi } from '../../api/order.api';
 import { FISCAL_STATUS, loadFiscalContext, resolveFiscalProvider } from '../../../services/fiscal';
 import { sanitizeCardPaymentFields } from '@aurent/shared-fiscal';
 import {
-  buildRestaurantFiscalSale,
   fiscalPaymentForCart,
   orderToMultikassaCartItems,
   restaurantPayTotal,
@@ -10,22 +9,10 @@ import {
 import { toPayAmountPayload } from './restaurantPayAmount';
 import { isNonFiscalPayMethod } from './restaurantPayForm';
 import { round2 } from '../../../utils/taxAmounts';
-import { enqueuePendingFiscal } from './pendingFiscalQueue';
-import { persistRestaurantPaymentFiscal } from './persistRestaurantPaymentFiscal';
-
-function pendingFiscalFromError(err) {
-  return {
-    fiscalStatus: FISCAL_STATUS.PENDING,
-    fiscalSign: null,
-    fiscalReceiptSeq: null,
-    multikassaSaleId: null,
-    fiscalQrUrl: null,
-    fiscalTerminalId: null,
-    fiscalError: err?.message || 'Pending fiscal sync',
-    multikassaRetryBody: null,
-    clientOperationId: null,
-  };
-}
+import {
+  buildRestaurantPaymentOutcome,
+  pendingFiscalFromError,
+} from './restaurantPaymentOutcome';
 
 /**
  * Оплата заказа с Multikassa.
@@ -155,6 +142,9 @@ export async function payRestaurantOrderWithFiscal({
       amountTendered: tendered,
       changeGiven: change,
       ...(payment.cardType ? { cardType: payment.cardType } : {}),
+      ...(payment.cardCategory ? { cardCategory: payment.cardCategory } : {}),
+      ...(payment.rrn ? { rrn: payment.rrn } : {}),
+      ...(payment.socialCardNumber ? { socialCardNumber: payment.socialCardNumber } : {}),
       ...(skipFiscal ? { debtPhone, debtComment, advancePaid } : {}),
     });
     paidOrder = res.data;
@@ -182,46 +172,21 @@ export async function payRestaurantOrderWithFiscal({
     }
   }
 
-  const sale = buildRestaurantFiscalSale({
-    order: {
-      ...paidOrder,
-      serviceAmount: paidOrder.serviceAmount ?? order.serviceAmount,
-      servicePercent: paidOrder.servicePercent ?? order.servicePercent,
-      commissionAmount: paidOrder.commissionAmount ?? order.commissionAmount,
-      commissionPercent: paidOrder.commissionPercent ?? order.commissionPercent,
-      items: paidOrder.items?.length ? paidOrder.items : order.items,
-    },
-    paymentMethod: payMethod,
-    amount: payAmount,
-    cashAmount: cash,
-    cardAmount: payment.cardAmount,
-    amountTendered: tendered,
-    changeGiven: change,
-    cardType: payment.cardType,
-    cardCategory: payment.cardCategory,
-    rrn: payment.rrn,
-    socialCardNumber: payment.socialCardNumber,
-    fiscal: fiscalPayload,
+  return buildRestaurantPaymentOutcome({
+    order,
+    paidOrder,
+    payMethod,
+    payAmount,
+    cash,
+    payment,
+    tendered,
+    change,
+    fiscalPayload,
     cashierName,
     waiterName,
     storeName,
     storeId,
+    cashRegisterId,
     customerLabel,
   });
-
-  if (fiscalPayload?.fiscalStatus === FISCAL_STATUS.PENDING) {
-    enqueuePendingFiscal({
-      storeId,
-      cashRegisterId,
-      orderId: order?.id,
-      fiscal: fiscalPayload,
-    });
-  }
-
-  // DB keeps OFD proof only (no QR URL). Tax-off / non-fiscal → nothing written.
-  if (order?.id && fiscalPayload) {
-    await persistRestaurantPaymentFiscal(order.id, fiscalPayload);
-  }
-
-  return { order: paidOrder, sale, fiscal: fiscalPayload };
 }

@@ -1,6 +1,6 @@
 # Maxsus Agentlar (Specialist Agents) — Aurent POS
 
-Ushbu loyiha uchun 2 ta ixtisoslashtirilgan sun'iy intellekt agenti sozlangan:
+Ushbu loyiha uchun 3 ta ixtisoslashtirilgan sun'iy intellekt agenti sozlangan:
 
 ---
 
@@ -34,5 +34,16 @@ Ushbu loyiha uchun 2 ta ixtisoslashtirilgan sun'iy intellekt agenti sozlangan:
 
 ---
 
+## 3. Code Prosecutor (`code-prosecutor`)
+* **Rol**: Murosasiz Bosh Sud Qoralovchisi (Adversarial Code Reviewer & Auditor).
+* **Mas'uliyat doirasi**:
+  - Har qanday kod o'zgarishida yashirin xatolar, zaifliklar va qoidabuzarliklarni qidirish;
+  - 8 ta ayblov moddasi bo'yicha qat'iy sud tergovi (Backend chegaralari, og'ir biznes mantiq taqiqlari, SRP >200 qator monolitlar, DRY va xom HTML elementlari, full-table va memory leaklar, sehrli sonlar va o'lik kodlar, UI/UX tap target va rang shovqini);
+  - Rasmiy sud aybnomasi (Indictment) chiqarish va nuqsonli kodni rad etish (Exit code 1 / AYBDOR);
+  - CLI runner orqali avtomatik tekshiruv (`pnpm prosecute`).
+* **Agent konfiguratsiya fayli**: `~/.gemini/config/plugins/aurent-agents/agents/code-prosecutor.md`
+
+---
+
 ## Foydalanish
-Agentlar CLI muhitida mustaqil ravishda yoki subagent sifatida chaqirilishi mumkin. Har ikkala agent loyiha talablariga muvofiq **har doim O'zbek tilida** professional, senior darajadagi tahlil va yechimlarni taqdim etadi.
+Agentlar CLI muhitida mustaqil ravishda yoki subagent sifatida chaqirilishi mumkin. Barcha agentlar loyiha talablariga muvofiq **har doim O'zbek tilida** professional, senior darajadagi tahlil va yechimlarni taqdim etadi.

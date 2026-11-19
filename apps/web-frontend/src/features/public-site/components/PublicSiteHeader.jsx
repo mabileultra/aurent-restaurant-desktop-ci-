@@ -111,6 +111,9 @@ export default function PublicSiteHeader({ showLoginCta = true }) {
                     <Link to={cashierLoginPath()} className="public-site-header__login-item">
                       {t('publicSite.loginCashier')}
                     </Link>
+                    <Link to="/receipt-preview" className="public-site-header__login-item font-medium text-emerald-600">
+                      🧾 Chek ko‘rinishi (Soliq 26 band)
+                    </Link>
                   </div>
                 ) : null}
               </div>
@@ -168,6 +171,9 @@ export default function PublicSiteHeader({ showLoginCta = true }) {
             </Link>
           );
         })}
+        <Link to="/receipt-preview" className="public-site-header__mobile-link font-semibold text-emerald-600" onClick={() => setMobileOpen(false)}>
+          🧾 Chek ko‘rinishi (Soliq 26 band)
+        </Link>
         <a href={PUBLIC_SITE_PHONE_HREF} className="public-site-header__mobile-link">
           {PUBLIC_SITE_PHONE}
         </a>

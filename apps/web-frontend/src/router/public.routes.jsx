@@ -8,11 +8,13 @@ import {
   CashierPinLoginPage,
   DesktopInstallerPage,
   ReceiptPage,
+  ReceiptLivePreviewPage,
   PublicHomePage,
 } from './lazyPages';
 
 export const publicRoutes = (
   <>
+    <Route path="/receipt-preview" element={<ReceiptLivePreviewPage />} />
     <Route
       path="/"
       element={(

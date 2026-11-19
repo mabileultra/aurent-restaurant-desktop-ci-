@@ -34,7 +34,7 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
     );
 
     // O'zbekcha so'zlar bo'lishi shart
-    expect(html).toContain('Jami');
+    expect(html).toContain('JAMI');
     expect(html).toContain('Naqd');
     expect(html).toContain('Xaridingiz uchun rahmat');
 
@@ -79,12 +79,12 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
       React.createElement(FiscalReceiptBody, { sale: cardSale })
     );
 
-    expect(html).toContain('Plastik');
-    expect(html).toContain('Karta turi');
+    expect(html).toContain('Bank kartasi');
+    expect(html).toContain('Bank kartasi turi');
     expect(html).toContain('Ijtimoiy');
-    expect(html).toContain('Ijtimoiy karta');
-    expect(html).toContain('9860********8031');
-    expect(html).toContain('RRN');
+    expect(html).toContain('Karta raqami');
+    expect(html).toContain('9860 **** **** 8031');
+    expect(html).toContain('RRN kodi');
     expect(html).toContain('631810177451');
 
     expect(html).not.toContain('Тип карты');
@@ -112,12 +112,12 @@ describe('FiscalReceiptBody (pharmacy-frontend)', () => {
     );
 
     expect(html).toContain('Naqd');
-    expect(html).toContain('Plastik');
-    expect(html).toContain('Karta turi');
+    expect(html).toContain('Bank kartasi');
+    expect(html).toContain('Bank kartasi turi');
     expect(html).toContain('Ijtimoiy');
-    expect(html).toContain('Ijtimoiy karta');
-    expect(html).toContain('9860********8031');
-    expect(html).toContain('RRN');
+    expect(html).toContain('Karta raqami');
+    expect(html).toContain('9860 **** **** 8031');
+    expect(html).toContain('RRN kodi');
     expect(html).toContain('631810177451');
   });
 
