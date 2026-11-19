@@ -65,5 +65,6 @@
     <include file="v57-api-idempotency.xml" relativeToChangelogFile="true"/>
     <include file="v58-collapse-doubled-apostrophe.xml" relativeToChangelogFile="true"/>
     <include file="v59-tax-analytics-export.xml" relativeToChangelogFile="true"/>
+    <include file="v60-sale-fiscal-error-text.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
 
