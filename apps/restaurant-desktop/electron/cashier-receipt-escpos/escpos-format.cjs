@@ -242,10 +242,13 @@ function resolveItemCommittent(item) {
 
 function formatCardNumberForReceipt(value) {
   if (value == null) return '';
-  const s = String(value).trim();
+  const s = String(value).trim().replace(/:\d{1,2}$/, '');
   if (!s) return '';
-  const cleaned = s.replace(/[\s-]+/g, '');
-  const match = cleaned.match(/^(\d{4})[^\s\d]*(\d{4})$/);
+  const digits = s.replace(/\D/g, '');
+  if (digits.length >= 8) {
+    return `${digits.slice(0, 4)} **** **** ${digits.slice(-4)}`;
+  }
+  const match = s.match(/^(\d{4})[^\s\d]*(\d{4})$/);
   if (match) {
     return `${match[1]} **** **** ${match[2]}`;
   }

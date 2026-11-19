@@ -1,5 +1,6 @@
 import { rstOrderApi } from '../../api/order.api';
 import { FISCAL_STATUS, loadFiscalContext, resolveFiscalProvider } from '../../../services/fiscal';
+import { sanitizeCardPaymentFields } from '@aurent/shared-fiscal';
 import {
   buildRestaurantFiscalSale,
   fiscalPaymentForCart,
@@ -88,7 +89,7 @@ export async function payRestaurantOrderWithFiscal({
 
   const skipFiscal = isNonFiscalPayMethod(payMethod);
 
-  const payment = {
+  const rawPayment = {
     paymentMethod: payMethod,
     receiptType: 'SALE',
     cardType,
@@ -100,6 +101,7 @@ export async function payRestaurantOrderWithFiscal({
     amountTendered: tendered,
     changeGiven: change,
   };
+  const payment = sanitizeCardPaymentFields(rawPayment);
 
   const cartItems = orderToMultikassaCartItems(order);
   const fiscalPay = fiscalPaymentForCart(cartItems, payment);
@@ -149,10 +151,10 @@ export async function payRestaurantOrderWithFiscal({
       method: payMethod,
       amount: payAmount,
       cashAmount: cash,
-      cardAmount: card,
+      cardAmount: payment.cardAmount,
       amountTendered: tendered,
       changeGiven: change,
-      ...(cardType ? { cardType } : {}),
+      ...(payment.cardType ? { cardType: payment.cardType } : {}),
       ...(skipFiscal ? { debtPhone, debtComment, advancePaid } : {}),
     });
     paidOrder = res.data;
@@ -192,13 +194,13 @@ export async function payRestaurantOrderWithFiscal({
     paymentMethod: payMethod,
     amount: payAmount,
     cashAmount: cash,
-    cardAmount: card,
+    cardAmount: payment.cardAmount,
     amountTendered: tendered,
     changeGiven: change,
-    cardType,
-    cardCategory,
-    rrn,
-    socialCardNumber,
+    cardType: payment.cardType,
+    cardCategory: payment.cardCategory,
+    rrn: payment.rrn,
+    socialCardNumber: payment.socialCardNumber,
     fiscal: fiscalPayload,
     cashierName,
     waiterName,

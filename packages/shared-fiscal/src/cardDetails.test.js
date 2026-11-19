@@ -10,6 +10,7 @@ import {
   maskSocialCardNumber,
   normalizeCardCategory,
   normalizeRrn,
+  sanitizeCardPaymentFields,
   toOfdCardTypeCode,
   withCardReceiptDetails,
 } from './cardDetails.js';
@@ -145,6 +146,116 @@ describe('@aurent/shared-fiscal cardDetails', () => {
     });
 
     expect(buildMultikassaCardFields({ paymentMethod: 'CASH' }, 0)).toEqual({});
+    // Even if residual card data is present, receivedCard <= 0 MUST yield empty object
+    expect(
+      buildMultikassaCardFields(
+        {
+          paymentMethod: 'MIXED',
+          cardType: 'HUMO',
+          cardCategory: 'SOCIAL',
+          rrn: '631810177451',
+          socialCardNumber: '986003******8031:01',
+        },
+        0
+      )
+    ).toEqual({});
+    expect(
+      buildFiscalDriveCardFields(
+        {
+          paymentMethod: 'MIXED',
+          cardType: 'HUMO',
+          cardCategory: 'SOCIAL',
+          rrn: '631810177451',
+          socialCardNumber: '986003******8031:01',
+        },
+        0
+      )
+    ).toEqual({});
+  });
+
+  describe('sanitizeCardPaymentFields', () => {
+    it('preserves card fields when cardAmount > 0 for CARD or MIXED sales', () => {
+      const cardSale = {
+        paymentMethod: 'CARD',
+        cardAmount: 50000,
+        cardType: 'HUMO',
+        cardCategory: 'SOCIAL',
+        rrn: '631810177451',
+        socialCardNumber: '986003******8031:01',
+      };
+      const sanitized = sanitizeCardPaymentFields(cardSale);
+      expect(sanitized.cardAmount).toBe(50000);
+      expect(sanitized.cardType).toBe('HUMO');
+      expect(sanitized.cardCategory).toBe('SOCIAL');
+      expect(sanitized.rrn).toBe('631810177451');
+      expect(sanitized.socialCardNumber).toBe('986003******8031:01');
+    });
+
+    it('clears card fields when paymentMethod is MIXED but cardAmount <= 0', () => {
+      const mixedZeroCard = {
+        paymentMethod: 'MIXED',
+        cashAmount: 50000,
+        cardAmount: 0,
+        cardType: 'HUMO',
+        cardCategory: 'SOCIAL',
+        rrn: '631810177451',
+        socialCardNumber: '986003******8031:01',
+      };
+      const sanitized = sanitizeCardPaymentFields(mixedZeroCard);
+      expect(sanitized.cardAmount).toBe(0);
+      expect(sanitized.cardType).toBeNull();
+      expect(sanitized.cardCategory).toBeNull();
+      expect(sanitized.rrn).toBeNull();
+      expect(sanitized.socialCardNumber).toBeNull();
+    });
+
+    it('clears card fields when receiptType or paymentMethod is CREDIT even if card fields are populated', () => {
+      const creditSale = {
+        paymentMethod: 'CREDIT',
+        receiptType: 'CREDIT',
+        cardAmount: 50000,
+        cardType: 'UZCARD',
+        cardCategory: 'PERSONAL',
+        rrn: '631810177451',
+        socialCardNumber: '8600123456789012',
+      };
+      const sanitized = sanitizeCardPaymentFields(creditSale);
+      expect(sanitized.cardAmount).toBe(0);
+      expect(sanitized.cardType).toBeNull();
+      expect(sanitized.cardCategory).toBeNull();
+      expect(sanitized.rrn).toBeNull();
+      expect(sanitized.socialCardNumber).toBeNull();
+    });
+
+    it('clears card fields when receiptType or paymentMethod is ADVANCE even if card fields are populated', () => {
+      const advanceSale = {
+        paymentMethod: 'ADVANCE',
+        receiptType: 'ADVANCE',
+        cardAmount: 50000,
+        cardType: 'UZCARD',
+        cardCategory: 'PERSONAL',
+        rrn: '631810177451',
+      };
+      const sanitized = sanitizeCardPaymentFields(advanceSale);
+      expect(sanitized.cardAmount).toBe(0);
+      expect(sanitized.cardType).toBeNull();
+      expect(sanitized.cardCategory).toBeNull();
+      expect(sanitized.rrn).toBeNull();
+    });
+
+    it('clears card fields for CASH sale with residual card fields', () => {
+      const cashWithLeftovers = {
+        paymentMethod: 'CASH',
+        cashAmount: 50000,
+        cardAmount: 0,
+        cardType: 'HUMO',
+        rrn: '631810177451',
+      };
+      const sanitized = sanitizeCardPaymentFields(cashWithLeftovers);
+      expect(sanitized.cardAmount).toBe(0);
+      expect(sanitized.cardType).toBeNull();
+      expect(sanitized.rrn).toBeNull();
+    });
   });
 
   it('formats card number for receipt print as «5614 **** **** 8956»', () => {

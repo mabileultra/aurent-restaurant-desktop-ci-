@@ -276,7 +276,8 @@ function appendPayment(printer, payload) {
   const change = Number(sale.changeGiven) || 0;
 
   withFieldStyle(printer, styles, 'payment', () => {
-    printer.println(`${L.paymentForm || 'To‘lov shakli'}:`);
+    const paymentTitle = String(L.paymentForm || 'To‘lov shakli').replace(/:$/, '') + ':';
+    printer.println(paymentTitle);
     if (cashAmt > 0) {
       appendRow(printer, L.cash || 'Naqd', fmtMoney(cashAmt));
     }

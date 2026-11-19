@@ -24,6 +24,7 @@ import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
 import {
   assertSalePrescriptionNumber,
+  sanitizeCardPaymentFields,
   withCardReceiptDetails,
   withSaleCommittentDetails,
   withSalePrescriptionNumber,
@@ -420,7 +421,7 @@ export async function posXReport(shiftId, storeId, user, shiftHint = null, { cat
 
 export async function posCreateSale({
   storeId,
-  payment,
+  payment: rawPayment,
   user,
   cachedShift,
   storeName,
@@ -430,6 +431,7 @@ export async function posCreateSale({
   items,
   catalogKind,
 }) {
+  const payment = sanitizeCardPaymentFields(rawPayment);
   const { route } = routeFor(storeId);
   const offline = route === 'local';
   const cartItems = items || [];

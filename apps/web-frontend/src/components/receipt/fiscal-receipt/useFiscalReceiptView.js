@@ -52,12 +52,22 @@ function resolvePaymentView(sale, t) {
  * настроек чека арендатора и env. Разметка — в секциях fiscal-receipt/.
  */
 export function useFiscalReceiptView(sale, t) {
-  const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
-  const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
-  const receiptCompanyName = useTenantDisplayStore((s) => s.committed.receiptCompanyName);
-  const receiptCompanyAddress = useTenantDisplayStore((s) => s.committed.receiptCompanyAddress);
-  const receiptCompanyPhone = useTenantDisplayStore((s) => s.committed.receiptCompanyPhone);
-  const receiptStir = useTenantDisplayStore((s) => s.committed.receiptStir);
+  const storeState = useTenantDisplayStore.getState();
+  const isOnSelector = useTenantDisplayStore((s) => s.isReceiptFieldOn);
+  const isOn = (key) => (isOnSelector ? isOnSelector(key) : storeState.isReceiptFieldOn(key));
+
+  const storeCommitted = useTenantDisplayStore((s) => s.committed);
+  const committed =
+    storeCommitted &&
+    (storeCommitted.receiptCompanyName || storeCommitted.receiptStir || storeCommitted.receiptCompanyAddress)
+      ? storeCommitted
+      : storeState.committed;
+
+  const receiptLogoDataUrl = committed.receiptLogoDataUrl;
+  const receiptCompanyName = committed.receiptCompanyName;
+  const receiptCompanyAddress = committed.receiptCompanyAddress;
+  const receiptCompanyPhone = committed.receiptCompanyPhone;
+  const receiptStir = committed.receiptStir;
 
   if (!sale) return null;
 

@@ -10,6 +10,7 @@ import { buildPharmacySaleExtras } from '../../features/cashier/utils/buildPharm
 import { assertCartMarksNotPunched } from '../../features/marking';
 import {
   assertSalePrescriptionNumber,
+  sanitizeCardPaymentFields,
   withCardReceiptDetails,
   withSaleCommittentDetails,
   withSalePrescriptionNumber,
@@ -18,7 +19,7 @@ import { routeFor } from './posRouterShared';
 
 export async function posCreateSale({
   storeId,
-  payment,
+  payment: rawPayment,
   user,
   cachedShift,
   storeName,
@@ -28,6 +29,7 @@ export async function posCreateSale({
   items,
   catalogKind,
 }) {
+  const payment = sanitizeCardPaymentFields(rawPayment);
   const { route } = routeFor(storeId);
   const offline = route === 'local';
   const cartItems = items || [];

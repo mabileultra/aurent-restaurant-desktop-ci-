@@ -13,7 +13,7 @@ describe('receiptI18n (restaurant-frontend)', () => {
 
     const tReceipt = getReceiptTranslator();
     expect(tReceipt('fiscalReceipt.cash')).toBe('Naqd');
-    expect(tReceipt('fiscalReceipt.grandTotal')).toBe('Jami');
+    expect(tReceipt('fiscalReceipt.grandTotal')).toBe('JAMI');
     expect(tReceipt('rst.order.requestBill')).toBe('Hisob');
     expect(tReceipt('rst.order.waiter')).toBe('Ofitsiant');
   });

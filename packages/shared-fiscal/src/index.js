@@ -23,6 +23,7 @@ export {
   maskSocialCardNumber,
   formatCardNumberForReceipt,
   isValidSocialCardInput,
+  sanitizeCardPaymentFields,
   extractCardReceiptDetails,
   withCardReceiptDetails,
   buildMultikassaCardFields,

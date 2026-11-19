@@ -135,10 +135,10 @@ describe('buildCashierEscposPayload card details', () => {
       },
       t,
     );
-    expect(payload.labels.plastic).toBe('Plastik · Uzcard');
-    expect(payload.labels.cardType).toBe('Karta turi');
+    expect(payload.labels.plastic).toBe('Bank kartasi · Uzcard');
+    expect(payload.labels.cardType).toBe('Bank kartasi turi');
     expect(payload.labels.socialCardNumber).toBe('Ijtimoiy karta');
-    expect(payload.labels.cardRrn).toBe('RRN');
+    expect(payload.labels.cardRrn).toBe('RRN kodi');
     expect(payload.sale.cardCategoryDisplay).toBe('Ijtimoiy');
     expect(payload.sale.socialCardNumber).toBe('9860********8031');
     expect(payload.sale.rrn).toBe('631810177451');

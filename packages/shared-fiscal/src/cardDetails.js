@@ -123,11 +123,106 @@ export function isValidSocialCardInput(value) {
 }
 
 /**
+ * Очищает реквизиты карты (cardType, cardCategory, rrn, socialCardNumber и т.д.),
+ * если способ оплаты CREDIT / ADVANCE либо сумма оплаты картой cardAmount <= 0.
+ * Реквизиты карты остаются ТОЛЬКО при cardAmount > 0.
+ *
+ * @param {object | null | undefined} payment
+ * @returns {object}
+ */
+export function sanitizeCardPaymentFields(payment) {
+  if (!payment || typeof payment !== 'object') {
+    return payment;
+  }
+
+  const method = String(payment.paymentMethod || payment.method || '').toUpperCase();
+  const receiptType = String(payment.receiptType || '').toUpperCase();
+  const isCreditOrAdvance =
+    receiptType === 'CREDIT' ||
+    receiptType === 'ADVANCE' ||
+    method === 'CREDIT' ||
+    method === 'ADVANCE';
+
+  const explicitCard = payment.cardAmount ?? payment.paidCard ?? payment.receivedCard;
+  let cardAmt = explicitCard !== undefined ? Number(explicitCard) : null;
+
+  if (cardAmt === null && (method === 'CARD' || method === 'CASHLESS')) {
+    const total = Number(payment.totalAmount ?? payment.amount ?? payment.total);
+    if (Number.isFinite(total) && total > 0) {
+      cardAmt = total;
+    }
+  }
+
+  const isCardZeroOrNegative = cardAmt !== null && Number.isFinite(cardAmt) && cardAmt <= 0;
+  const isCashOnly = method === 'CASH' && (explicitCard === undefined || cardAmt <= 0);
+
+  const hasCard =
+    !isCreditOrAdvance &&
+    !isCardZeroOrNegative &&
+    !isCashOnly &&
+    (cardAmt !== null ? cardAmt > 0 : true);
+
+  if (hasCard && !isCreditOrAdvance) {
+    return {
+      ...payment,
+      ...(cardAmt !== null ? { cardAmount: cardAmt } : {}),
+    };
+  }
+
+  const sanitized = { ...payment };
+  if ('cardAmount' in sanitized || sanitized.cardAmount !== undefined) {
+    sanitized.cardAmount = 0;
+  }
+  if ('paidCard' in sanitized) {
+    sanitized.paidCard = 0;
+  }
+  if ('receivedCard' in sanitized) {
+    sanitized.receivedCard = 0;
+  }
+
+  sanitized.cardType = null;
+  sanitized.cardCategory = null;
+  sanitized.rrn = null;
+  sanitized.socialCardNumber = null;
+
+  delete sanitized.pptId;
+  delete sanitized.PPTID;
+  delete sanitized.cardNumber;
+  delete sanitized.CardNumber;
+  delete sanitized.cardKind;
+  delete sanitized.ofdCardType;
+  delete sanitized.cardRrn;
+  delete sanitized.socialCardMasked;
+
+  return sanitized;
+}
+
+/**
  * Извлекает нормализованные платёжные реквизиты карты из объекта payment или sale.
  * @param {object | null | undefined} source
  */
 export function extractCardReceiptDetails(source) {
   if (!source || typeof source !== 'object') {
+    return {
+      cardCategory: null,
+      cardTypeCode: null,
+      rrn: null,
+      socialCardNumber: null,
+    };
+  }
+
+  const method = String(source.paymentMethod || source.method || '').toUpperCase();
+  const receiptType = String(source.receiptType || '').toUpperCase();
+  const isCreditOrAdvance =
+    receiptType === 'CREDIT' ||
+    receiptType === 'ADVANCE' ||
+    method === 'CREDIT' ||
+    method === 'ADVANCE';
+
+  const explicitCard = source.cardAmount ?? source.paidCard ?? source.receivedCard;
+  const isExplicitZeroOrNegative = explicitCard !== undefined && Number(explicitCard) <= 0;
+
+  if (isCreditOrAdvance || isExplicitZeroOrNegative) {
     return {
       cardCategory: null,
       cardTypeCode: null,
@@ -162,11 +257,17 @@ export function withCardReceiptDetails(sale, payment) {
   const fromSale = extractCardReceiptDetails(sale);
   const fromPayment = extractCardReceiptDetails(payment);
 
-  const cardCategory = fromSale.cardCategory || fromPayment.cardCategory || null;
-  const rrn = fromSale.rrn || fromPayment.rrn || null;
-  const socialCardNumber = fromSale.socialCardNumber || fromPayment.socialCardNumber || null;
+  const cardCategory = fromPayment.cardCategory || fromSale.cardCategory || null;
+  const rrn = fromPayment.rrn || fromSale.rrn || null;
+  const socialCardNumber = fromPayment.socialCardNumber || fromSale.socialCardNumber || null;
 
-  if (!cardCategory && !rrn && !socialCardNumber) return sale;
+  if (!cardCategory && !rrn && !socialCardNumber) {
+    const cleaned = { ...sale };
+    delete cleaned.cardCategory;
+    delete cleaned.rrn;
+    delete cleaned.socialCardNumber;
+    return cleaned;
+  }
   return {
     ...sale,
     ...(cardCategory ? { cardCategory } : {}),
@@ -183,10 +284,10 @@ export function withCardReceiptDetails(sale, payment) {
  * @returns {Record<string, string | number>}
  */
 export function buildMultikassaCardFields(payment, receivedCard = 0) {
-  const { cardTypeCode, rrn, socialCardNumber } = extractCardReceiptDetails(payment);
-  if (Number(receivedCard) <= 0 && !cardTypeCode && !rrn && !socialCardNumber) {
+  if (Number(receivedCard) <= 0) {
     return {};
   }
+  const { cardTypeCode, rrn, socialCardNumber } = extractCardReceiptDetails(payment);
   const fields = {};
   if (cardTypeCode != null) fields.card_type = cardTypeCode;
   if (rrn) fields.ppt_id = rrn;
@@ -201,10 +302,10 @@ export function buildMultikassaCardFields(payment, receivedCard = 0) {
  * @returns {Record<string, string | number>}
  */
 export function buildFiscalDriveCardFields(payment, receivedCard = 0) {
-  const { cardTypeCode, rrn, socialCardNumber } = extractCardReceiptDetails(payment);
-  if (Number(receivedCard) <= 0 && !cardTypeCode && !rrn && !socialCardNumber) {
+  if (Number(receivedCard) <= 0) {
     return {};
   }
+  const { cardTypeCode, rrn, socialCardNumber } = extractCardReceiptDetails(payment);
   const fields = {};
   if (cardTypeCode != null) fields.CardType = cardTypeCode;
   if (rrn) fields.PPTID = rrn;
