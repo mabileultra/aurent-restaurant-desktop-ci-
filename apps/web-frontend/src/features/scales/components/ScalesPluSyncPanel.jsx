@@ -1,12 +1,22 @@
+import ScalesPluSyncExtras from './ScalesPluSyncExtras';
+
 export default function ScalesPluSyncPanel({
   t,
   desktop,
   adapters,
   active,
   syncing,
+  probing,
   lastExport,
+  probeResult,
+  pushDevices,
+  password,
+  onPasswordChange,
+  onPasswordSave,
+  lastSync,
   onSelectAdapter,
   onExportToScale,
+  onProbeDevices,
 }) {
   const canPush = Boolean(active?.capabilities?.pluPush);
   const readyNow = adapters.filter((a) => a.readyNow || a.id === 'weight-generic');
@@ -19,14 +29,24 @@ export default function ScalesPluSyncPanel({
           <h2 className="scales-plu-sync__title">{t('scales.syncTitle')}</h2>
           <p className="scales-plu-sync__subtitle">{t('scales.syncSubtitle')}</p>
         </div>
-        <button
-          type="button"
-          className="scales-btn"
-          disabled={!desktop || syncing}
-          onClick={onExportToScale}
-        >
-          {syncing ? t('scales.exporting') : t('scales.exportToScale')}
-        </button>
+        <div className="scales-plu-sync__actions">
+          <button
+            type="button"
+            className="scales-btn scales-btn--ghost"
+            disabled={!desktop || probing || syncing}
+            onClick={onProbeDevices}
+          >
+            {probing ? t('scales.probing') : t('scales.probeDevices')}
+          </button>
+          <button
+            type="button"
+            className="scales-btn"
+            disabled={!desktop || syncing || probing}
+            onClick={onExportToScale}
+          >
+            {syncing ? t('scales.exporting') : t('scales.exportToScale')}
+          </button>
+        </div>
       </div>
 
       {!desktop ? (
@@ -71,6 +91,27 @@ export default function ScalesPluSyncPanel({
           </p>
         </div>
       ) : null}
+
+      {probeResult?.devices?.length ? (
+        <ul className="scales-plu-sync__devices">
+          {probeResult.devices.map((d) => (
+            <li key={`${d.host}:${d.udpPort}`} className={d.ok ? 'is-online' : 'is-offline'}>
+              {(d.label ? `${d.label} · ` : '') + d.host + ':' + d.udpPort}
+              {d.ok ? ` — ${t('scales.probeOnline')}` : ` — ${d.error || t('scales.probeOffline')}`}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <ScalesPluSyncExtras
+        t={t}
+        desktop={desktop}
+        password={password}
+        onPasswordChange={onPasswordChange}
+        onPasswordSave={onPasswordSave}
+        lastSync={lastSync}
+        pushDevices={pushDevices}
+      />
 
       {lastExport ? (
         <p className="scales-plu-sync__stats">

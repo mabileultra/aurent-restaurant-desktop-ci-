@@ -20,6 +20,13 @@ function readScaleSettings() {
     tcpPort: Number(cfg.scaleTcpPort || primary?.udpPort || 1111) || 1111,
     hosts,
     family: String(cfg.scaleFamily || (transport === 'ethernet' ? 'family-shtrih-print' : 'weight-generic')).trim(),
+    password: String(cfg.scalePassword || process.env.POS_SCALE_PASSWORD || '0030')
+      .replace(/\D/g, '')
+      .padStart(4, '0')
+      .slice(-4),
+    lastPluSyncAt: String(cfg.scaleLastPluSyncAt || '').trim() || null,
+    lastPluSyncPushed: Number(cfg.scaleLastPluSyncPushed) || 0,
+    lastPluSyncDevices: Number(cfg.scaleLastPluSyncDevices) || 0,
     mock: cfg.scaleMock === true,
     stableOnly: cfg.scaleStableOnly !== false,
   };
@@ -37,6 +44,18 @@ function writeScaleSettings(patch) {
   if (typeof patch?.scaleHost === 'string') scalePatch.scaleHost = patch.scaleHost.trim();
   if (patch?.scaleTcpPort != null) scalePatch.scaleTcpPort = Number(patch.scaleTcpPort) || 1111;
   if (typeof patch?.scaleFamily === 'string') scalePatch.scaleFamily = patch.scaleFamily.trim();
+  if (typeof patch?.scalePassword === 'string') {
+    scalePatch.scalePassword = patch.scalePassword.replace(/\D/g, '').padStart(4, '0').slice(-4);
+  }
+  if (typeof patch?.scaleLastPluSyncAt === 'string') {
+    scalePatch.scaleLastPluSyncAt = patch.scaleLastPluSyncAt.trim();
+  }
+  if (patch?.scaleLastPluSyncPushed != null) {
+    scalePatch.scaleLastPluSyncPushed = Number(patch.scaleLastPluSyncPushed) || 0;
+  }
+  if (patch?.scaleLastPluSyncDevices != null) {
+    scalePatch.scaleLastPluSyncDevices = Number(patch.scaleLastPluSyncDevices) || 0;
+  }
   if (typeof patch?.scaleMock === 'boolean') scalePatch.scaleMock = patch.scaleMock;
   if (typeof patch?.scaleStableOnly === 'boolean') scalePatch.scaleStableOnly = patch.scaleStableOnly;
 

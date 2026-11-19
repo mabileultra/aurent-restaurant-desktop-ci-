@@ -12,6 +12,7 @@ const {
   getActiveAdapter,
   setActiveAdapter,
   pushPlu,
+  probeDevices,
 } = require('./scale-adapters.cjs');
 
 function registerScaleIpc(ipcMain, getMainWindow) {
@@ -55,6 +56,7 @@ function registerScaleIpc(ipcMain, getMainWindow) {
     setActiveAdapter(String(adapterId || ''))
   );
   ipcMain.handle('desktop:scale-push-plu', (_e, items) => pushPlu(items || []));
+  ipcMain.handle('desktop:scale-probe-devices', () => probeDevices());
 }
 
 module.exports = {
@@ -68,6 +70,7 @@ module.exports = {
   getActiveAdapter,
   setActiveAdapter,
   pushPlu,
+  probeDevices,
 };
 
 module.exports.autoDetectEthernet = require('./scale-ethernet.cjs').autoDetectEthernet;

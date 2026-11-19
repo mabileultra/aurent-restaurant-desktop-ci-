@@ -72,6 +72,7 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   scaleGetActiveAdapter: () => invoke('desktop:scale-get-active-adapter'),
   scaleSetActiveAdapter: (adapterId) => invoke('desktop:scale-set-active-adapter', adapterId),
   scalePushPlu: (items) => invoke('desktop:scale-push-plu', items),
+  scaleProbeDevices: () => invoke('desktop:scale-probe-devices'),
   onScaleWeight: (callback) => {
     if (typeof callback !== 'function') return () => {};
     const handler = (_event, payload) => callback(payload);

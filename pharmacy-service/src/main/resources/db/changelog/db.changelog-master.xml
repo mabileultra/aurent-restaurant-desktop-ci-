@@ -28,6 +28,7 @@
     <include file="db/changelog/v21-pharmacy-product-score-ref.xml"/>
     <include file="db/changelog/v22-pharmacy-drug-registry.xml"/>
     <include file="db/changelog/v23-sale-card-details.xml"/>
+    <include file="db/changelog/v23-sale-fiscal-error-text.xml"/>
 
 </databaseChangeLog>
 

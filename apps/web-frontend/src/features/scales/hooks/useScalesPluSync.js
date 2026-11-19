@@ -4,9 +4,12 @@ import { scalesApi } from '../../../api/scales.api';
 import {
   isDesktopScaleBridge,
   scaleGetActiveAdapter,
+  scaleGetSettings,
   scaleListAdapters,
+  scaleProbeDevices,
   scalePushPlu,
   scaleSetActiveAdapter,
+  scaleSetSettings,
 } from '../../../scales/scaleBridge';
 
 function mapFamilyToAdapter(row) {
@@ -25,12 +28,26 @@ function mapFamilyToAdapter(row) {
   };
 }
 
+function formatSyncAt(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString();
+  } catch {
+    return String(iso);
+  }
+}
+
 export function useScalesPluSync(t) {
   const desktop = isDesktopScaleBridge();
   const [adapters, setAdapters] = useState([]);
   const [active, setActive] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  const [probing, setProbing] = useState(false);
   const [lastExport, setLastExport] = useState(null);
+  const [probeResult, setProbeResult] = useState(null);
+  const [pushDevices, setPushDevices] = useState(null);
+  const [password, setPassword] = useState('0030');
+  const [lastSync, setLastSync] = useState(null);
 
   const refreshAdapters = useCallback(async () => {
     try {
@@ -51,9 +68,24 @@ export function useScalesPluSync(t) {
     }
   }, [desktop]);
 
+  const refreshSettings = useCallback(async () => {
+    if (!desktop) return;
+    const s = await scaleGetSettings();
+    if (!s) return;
+    if (s.password) setPassword(String(s.password));
+    if (s.lastPluSyncAt) {
+      setLastSync({
+        at: formatSyncAt(s.lastPluSyncAt),
+        pushed: s.lastPluSyncPushed || 0,
+        devices: s.lastPluSyncDevices || 0,
+      });
+    }
+  }, [desktop]);
+
   useEffect(() => {
     refreshAdapters();
-  }, [refreshAdapters]);
+    refreshSettings();
+  }, [refreshAdapters, refreshSettings]);
 
   const onSelectAdapter = useCallback(
     async (adapterId) => {
@@ -69,6 +101,35 @@ export function useScalesPluSync(t) {
     },
     [adapters, desktop, t]
   );
+
+  const onPasswordSave = useCallback(async () => {
+    const next = String(password || '').replace(/\D/g, '').padStart(4, '0').slice(-4);
+    setPassword(next);
+    const saved = await scaleSetSettings({ scalePassword: next });
+    if (saved?.password) {
+      toast.success(t('scales.passwordSaved'));
+    } else {
+      toast.error(t('scales.passwordSaveFailed'));
+    }
+  }, [password, t]);
+
+  const onProbeDevices = useCallback(async () => {
+    if (!desktop) {
+      toast.error(t('scales.desktopRequired'));
+      return;
+    }
+    setProbing(true);
+    try {
+      const result = await scaleProbeDevices();
+      setProbeResult(result);
+      if (result?.ok) toast.success(result.message || t('scales.probeOk'));
+      else toast.error(result?.message || t('scales.probeFailed'));
+    } catch (e) {
+      toast.error(e?.message || t('scales.probeFailed'));
+    } finally {
+      setProbing(false);
+    }
+  }, [desktop, t]);
 
   const onExportToScale = useCallback(async () => {
     if (!desktop) {
@@ -94,15 +155,22 @@ export function useScalesPluSync(t) {
         return;
       }
       const result = await scalePushPlu(items);
+      setPushDevices(Array.isArray(result?.devices) ? result.devices : null);
       if (result?.ok) {
         const devices = result.deviceCount || result.deviceTotal || 1;
         toast.success(
           t('scales.exportOkDevices', {
             count: result.pushed ?? items.length,
             devices,
-            defaultValue: `Выгружено PLU: ${result.pushed ?? items.length} → весов: ${devices}`,
           })
         );
+        if (result.syncedAt || result.pushed != null) {
+          setLastSync({
+            at: formatSyncAt(result.syncedAt || new Date().toISOString()),
+            pushed: result.pushed ?? items.length,
+            devices,
+          });
+        }
         if (result.message && result.deviceCount < result.deviceTotal) {
           toast.error(result.message);
         }
@@ -121,9 +189,17 @@ export function useScalesPluSync(t) {
     adapters,
     active,
     syncing,
+    probing,
     lastExport,
+    probeResult,
+    pushDevices,
+    password,
+    setPassword,
+    lastSync,
     onSelectAdapter,
     onExportToScale,
+    onProbeDevices,
+    onPasswordSave,
     refreshAdapters,
   };
 }

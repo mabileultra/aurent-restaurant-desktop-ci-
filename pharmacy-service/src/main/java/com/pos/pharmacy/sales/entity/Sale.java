@@ -154,7 +154,7 @@ public class Sale {
     @Column(name = "fiscalized_at")
     private Instant fiscalizedAt;
 
-    @Column(name = "fiscal_error", length = 1000)
+    @Column(name = "fiscal_error", columnDefinition = "TEXT")
     private String fiscalError;
 
     @Column(name = "print_fiscal_qr", nullable = false)

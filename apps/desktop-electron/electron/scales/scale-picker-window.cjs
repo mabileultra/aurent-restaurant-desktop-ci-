@@ -106,7 +106,7 @@ function buildPickerHtml() {
     <!-- ═══ Ethernet ═══ -->
     <section class="panel" id="panel-eth">
       <h2>2. Ethernet — список ШТРИХ</h2>
-      <p class="sub">Добавьте все весы (IP + UDP <b>1111</b>). Выгрузка PLU из Aurent пойдёт на весь список.</p>
+      <p class="sub">IP + UDP <b>1111</b>. ПК шлёт с порта <b>2000</b> (как драйвер ШТРИХ). Пароль PLU по умолчанию <b>0030</b>. Выгрузка — на весь список.</p>
       <div id="hosts-list" class="list" style="max-height:120px;margin-bottom:8px"></div>
       <div class="grid3">
         <div>

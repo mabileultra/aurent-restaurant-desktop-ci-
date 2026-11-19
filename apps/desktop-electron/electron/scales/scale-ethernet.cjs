@@ -1,29 +1,16 @@
 /**
  * Ethernet-весы (ШТРИХ-ПРИНТ и совместимые): TCP + текстовый вес, как COM.
- * Автопоиск: локальная /24 + типичные порты.
+ * Автопоиск: known IP → /24 UDP 1111 → TCP fallback.
  */
 const net = require('net');
-const os = require('os');
 const { parseScaleLine } = require('./scale-parser.cjs');
 const { readScaleSettings, writeScaleSettings } = require('./scale-config.cjs');
-const { probeShtrihUdp, DEFAULT_UDP_PORT } = require('./scale-shtrih-udp.cjs');
+const { DEFAULT_UDP_PORT } = require('./scale-shtrih-packet.cjs');
+const { localIpv4Subnets } = require('./scale-ethernet-net.cjs');
+const { discoverShtrihUdp } = require('./scale-shtrih-discover.cjs');
 
 /** Порты, которые часто слушают label/print-весы (ШТРИХ, CAS host и т.п.). */
 const COMMON_TCP_PORTS = [1001, 1111, 4001, 5001, 5555, 7778, 9100];
-
-function localIpv4Subnets() {
-  const ifaces = os.networkInterfaces();
-  const out = [];
-  for (const list of Object.values(ifaces || {})) {
-    for (const row of list || []) {
-      if (!row || row.internal || row.family !== 'IPv4') continue;
-      const parts = String(row.address || '').split('.').map(Number);
-      if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) continue;
-      out.push({ base: `${parts[0]}.${parts[1]}.${parts[2]}`, self: row.address });
-    }
-  }
-  return out;
-}
 
 function probeTcpHost(host, port, timeoutMs = 350) {
   return new Promise((resolve) => {
@@ -121,40 +108,10 @@ async function scanLanScaleCandidates({ concurrency = 48 } = {}) {
 }
 
 /**
- * ШТРИХ-ПРИНТ 4.5 слушает только UDP 1111. TCP-скан такие весы не видит.
- * @returns {Promise<Array<{host:string,udpPort:number,result:number}>>}
- */
-async function scanLanShtrihUdp({ concurrency = 24, timeoutMs = 400 } = {}) {
-  const subnets = localIpv4Subnets();
-  const hosts = [];
-  for (const { base, self } of subnets) {
-    for (let i = 1; i <= 254; i += 1) {
-      const host = `${base}.${i}`;
-      if (host !== self) hosts.push(host);
-    }
-  }
-  if (!hosts.length) return [];
-
-  const found = [];
-  let idx = 0;
-  async function worker() {
-    while (idx < hosts.length) {
-      const host = hosts[idx];
-      idx += 1;
-      const res = await probeShtrihUdp(host, DEFAULT_UDP_PORT, timeoutMs);
-      if (res.ok) found.push({ host: res.host, udpPort: res.udpPort || DEFAULT_UDP_PORT, result: res.result });
-    }
-  }
-  const workers = Array.from({ length: Math.min(concurrency, hosts.length) }, () => worker());
-  await Promise.all(workers);
-  return found;
-}
-
-/**
- * Автопоиск Ethernet-весов: сначала UDP 1111 (ШТРИХ-ПРИНТ), затем TCP.
+ * Автопоиск Ethernet-весов: known IP → /24 UDP 1111 → TCP.
  */
 async function autoDetectEthernet({ save = true } = {}) {
-  const udpHits = await scanLanShtrihUdp();
+  const udpHits = await discoverShtrihUdp();
   if (udpHits.length) {
     const first = udpHits[0];
     if (save) {
@@ -180,7 +137,7 @@ async function autoDetectEthernet({ save = true } = {}) {
       transport: 'ethernet',
       host: first.host,
       tcpPort: first.udpPort,
-      method: 'udp-1111',
+      method: first.method === 'known' ? 'known-udp' : 'udp-1111',
       hosts: udpHits,
       candidates: udpHits,
     };
