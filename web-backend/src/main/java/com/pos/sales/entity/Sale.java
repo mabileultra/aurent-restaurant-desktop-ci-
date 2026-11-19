@@ -1,5 +1,6 @@
 package com.pos.sales.entity;
 
+import com.pos.shared.payment.CardCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
@@ -87,6 +88,19 @@ public class Sale {
     @Column(name = "card_type", length = 20)
     @Enumerated(EnumType.STRING)
     private CardType cardType;
+
+    /** AUR-17: категория карты со слип-чека (ОФД ExtraInfo.CardType). */
+    @Column(name = "card_category", length = 20)
+    @Enumerated(EnumType.STRING)
+    private CardCategory cardCategory;
+
+    /** AUR-17: RRN транзакции, 12 цифр (ОФД ExtraInfo.PPTID). */
+    @Column(name = "rrn", length = 12)
+    private String rrn;
+
+    /** AUR-17: маска номера социальной карты 8600********1234; полный номер не хранится. */
+    @Column(name = "social_card_number", length = 16)
+    private String socialCardNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cashier_shift_id")

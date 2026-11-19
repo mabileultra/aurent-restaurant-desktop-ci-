@@ -1,5 +1,6 @@
 package com.pos.pharmacy.sales.entity;
 
+import com.pos.shared.payment.CardCategory;
 import com.pos.pharmacy.sales.domain.SaleEnums;
 import jakarta.persistence.*;
 import lombok.*;
@@ -78,6 +79,19 @@ public class Sale {
     @Enumerated(EnumType.STRING)
     @Column(name = "card_type", length = 20)
     private SaleEnums.CardType cardType;
+
+    /** AUR-17: категория карты со слип-чека (ОФД ExtraInfo.CardType). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_category", length = 20)
+    private CardCategory cardCategory;
+
+    /** AUR-17: RRN транзакции, 12 цифр (ОФД ExtraInfo.PPTID). */
+    @Column(name = "rrn", length = 12)
+    private String rrn;
+
+    /** AUR-17: маска номера социальной карты 8600********1234; полный номер не хранится. */
+    @Column(name = "social_card_number", length = 16)
+    private String socialCardNumber;
 
     @Column(name = "cash_amount", precision = 18, scale = 2, nullable = false)
     @Builder.Default

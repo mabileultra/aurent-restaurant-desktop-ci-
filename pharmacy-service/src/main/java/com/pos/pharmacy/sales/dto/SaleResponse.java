@@ -25,6 +25,12 @@ public record SaleResponse(
     BigDecimal returnAmount,
     String paymentMethod,
     String cardType,
+    /** CORPORATE / PERSONAL / SOCIAL или null. */
+    String cardCategory,
+    /** RRN транзакции, 12 цифр, или null. */
+    String rrn,
+    /** Маска номера социальной карты (8600********1234) или null. */
+    String socialCardNumber,
     BigDecimal cashAmount,
     BigDecimal cardAmount,
     String receiptType,

@@ -37,5 +37,15 @@ public record CreateSaleRequest(
     /** Печатать фискальный QR (снимок настройки кассы; null = true). */
     Boolean printFiscalQr,
     /** Результат Multikassa (касса шлёт после POST /api/v1/operations). */
-    @Valid SaleFiscalPayload fiscal
+    @Valid SaleFiscalPayload fiscal,
+    /*
+     * AUR-17: реквизиты со слип-чека терминала, только при оплате картой.
+     * Формат проверяет SaleCardDetailsApplier, а не @Pattern: «rejected value» попал бы в лог.
+     */
+    /** CORPORATE / PERSONAL / SOCIAL. */
+    String cardCategory,
+    /** RRN транзакции, 12 цифр (пробелы и дефисы допускаются). */
+    String rrn,
+    /** Маска номера социальной карты 8600********1234; полный номер — 400. */
+    String socialCardNumber
 ) {}

@@ -28,7 +28,10 @@ class PaymentSplitPolicyDebtTest {
             null,
             phone,
             comment,
-            advance == null ? null : new BigDecimal(advance)
+            advance == null ? null : new BigDecimal(advance),
+            null,
+            null,
+            null
         );
     }
 

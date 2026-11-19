@@ -24,6 +24,7 @@ import com.pos.pharmacy.sales.support.CheckoutMarkGuard;
 import com.pos.pharmacy.sales.support.CheckoutOrderPricing;
 import com.pos.pharmacy.sales.support.CheckoutQuantityResolver;
 import com.pos.pharmacy.sales.support.CheckoutSaleFactory;
+import com.pos.pharmacy.sales.support.PharmacySaleCardDetailsApplier;
 import com.pos.pharmacy.sales.support.OfflineSaleContext;
 import com.pos.pharmacy.sales.support.SaleEnumParser;
 import com.pos.pharmacy.sales.support.SaleFiscalApplier;
@@ -70,6 +71,7 @@ public class PharmacySaleCheckoutService {
     private final PharmacyStockMarkService stockMarkService;
     private final PharmacyMarkWithdrawService markWithdrawService;
     private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
+    private final PharmacySaleCardDetailsApplier cardDetailsApplier;
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
         return processSale(req, cashierId, null);
@@ -121,6 +123,7 @@ public class PharmacySaleCheckoutService {
             totals.total(),
             offline
         );
+        cardDetailsApplier.apply(sale, req, offline != null);
 
         List<SaleItem> items = assembled.items();
         items.forEach(item -> item.setSale(sale));

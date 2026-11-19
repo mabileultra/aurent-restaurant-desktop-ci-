@@ -18,7 +18,17 @@ public record PayOrderRequest(
     PaymentCardType cardType,
     @Size(max = 32) String debtPhone,
     @Size(max = 500) String debtComment,
-    BigDecimal advancePaid
+    BigDecimal advancePaid,
+    /*
+     * AUR-17: реквизиты со слип-чека терминала, только при оплате картой.
+     * Формат проверяет PaymentCardDetailsPolicy, а не @Pattern: значение не должно попасть в лог.
+     */
+    /** CORPORATE / PERSONAL / SOCIAL. */
+    String cardCategory,
+    /** RRN транзакции, 12 цифр (пробелы и дефисы допускаются). */
+    String rrn,
+    /** Маска номера социальной карты 8600********1234; полный номер — 400. */
+    String socialCardNumber
 ) {
     public PayOrderRequest {
         if (cashAmount == null) {

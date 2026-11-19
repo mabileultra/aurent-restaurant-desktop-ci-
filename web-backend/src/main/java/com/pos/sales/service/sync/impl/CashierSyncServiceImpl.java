@@ -37,6 +37,7 @@ import com.pos.sales.service.sale.support.CheckoutQuantityResolver;
 import com.pos.sales.service.sale.support.SaleItemCatalogSnapshot;
 import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
+import com.pos.sales.service.sale.support.SaleCardDetailsApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
@@ -81,6 +82,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final StockMovementPersistence stockMovementPersistence;
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SalePaymentResolver paymentResolver;
+    private final SaleCardDetailsApplier cardDetailsApplier;
     private final SaleReceiptNumberGenerator receiptNumberGenerator;
     private final StoreStockService storeStockService;
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
@@ -302,6 +304,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             .saleSource(Sale.SaleSource.OFFLINE_SYNC)
             .createdAt(item.createdAt() != null ? item.createdAt() : Instant.now())
             .build();
+        cardDetailsApplier.applyOffline(sale, req);
 
         items.forEach(saleItem -> saleItem.setSale(sale));
         sale.setItems(items);

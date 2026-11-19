@@ -17,6 +17,7 @@ public enum PharmacySaleErrors implements PharmacyErrorCode {
     PHARM_SALE_PAYMENT_UNSUPPORTED(HttpStatus.BAD_REQUEST, "Способ оплаты не поддерживается"),
     PHARM_SALE_RECEIPT_TYPE_UNKNOWN(HttpStatus.BAD_REQUEST, "Неизвестный тип чека"),
     PHARM_SALE_CARD_TYPE_UNKNOWN(HttpStatus.BAD_REQUEST, "Неизвестный тип карты"),
+    PHARM_SALE_CARD_SOCIAL_NUMBER_UNMASKED(HttpStatus.BAD_REQUEST, "Полный номер социальной карты передавать нельзя, только маску"),
     PHARM_SALE_PAYMENT_MISMATCH(HttpStatus.BAD_REQUEST, "Сумма оплаты не совпадает с итогом чека"),
     PHARM_SALE_CASH_SHORT(HttpStatus.BAD_REQUEST, "Получено наличными меньше суммы оплаты"),
     PHARM_SALE_MIXED_CASH_REQUIRED(HttpStatus.BAD_REQUEST, "Укажите сумму наличными для смешанной оплаты"),

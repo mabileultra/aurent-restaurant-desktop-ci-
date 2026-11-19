@@ -1,5 +1,7 @@
 package com.pos.restaurant.payment.service.impl;
 
+import com.pos.restaurant.payment.support.PaymentCardDetailsPolicy;
+import com.pos.shared.payment.CardDetails;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
@@ -55,6 +57,7 @@ public class PayOrderHandler {
     private final OrderLinkedTablesSupport linkedTables;
     private final ServiceChargeSupport serviceChargeSupport;
     private final TableSeatSync tableSeatSync;
+    private final PaymentCardDetailsPolicy cardDetailsPolicy;
 
     @Transactional
     public OrderResponse handle(UUID orderId, PayOrderRequest request) {
@@ -71,6 +74,7 @@ public class PayOrderHandler {
         eligibilityPolicy.assertCanPay(order, due, request.amount());
         PaymentSplitPolicy.Split split = paymentSplitPolicy.resolve(request, due);
         PaymentSplitPolicy.Debt debt = paymentSplitPolicy.resolveDebt(request, due);
+        CardDetails card = cardDetailsPolicy.resolve(orderId, request, split.cardAmount());
         FloorOrderPayment payment = paymentRepository.save(FloorOrderPayment.builder()
             .order(order)
             .method(request.method())
@@ -80,6 +84,9 @@ public class PayOrderHandler {
             .amountTendered(split.amountTendered())
             .changeGiven(split.changeGiven())
             .cardType(resolveCardType(request))
+            .cardCategory(card.category())
+            .rrn(card.rrn())
+            .socialCardNumber(card.socialCardNumber())
             .debtPhone(debt == null ? null : debt.phone())
             .debtComment(debt == null ? null : debt.comment())
             .advancePaid(debt == null ? null : debt.advancePaid())
