@@ -70,9 +70,9 @@ resilience4j:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /identity/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /identity/swagger-ui.html
 
 management:
   endpoints:

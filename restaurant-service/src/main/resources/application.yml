@@ -71,9 +71,9 @@ app:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /rst/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /rst/swagger-ui.html
 
 management:
   endpoints:

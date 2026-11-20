@@ -34,7 +34,11 @@ public class SecurityConfig {
                     "/catalog/ping",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    "/v3/api-docs/**"
+                    "/v3/api-docs/**",
+                    "/catalog/swagger-ui.html",
+                    "/catalog/swagger-ui/**",
+                    "/catalog/v3/api-docs",
+                    "/catalog/v3/api-docs/**"
                 ).permitAll()
                 .requestMatchers("/internal/**").permitAll()
                 .requestMatchers("/products/**").authenticated()

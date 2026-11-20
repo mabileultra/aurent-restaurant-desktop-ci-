@@ -651,7 +651,7 @@ echo "  Restaurant:http://${SERVER_IP:-localhost}:${RESTAURANT_HTTP_PORT:-5174}/
 echo "  Pharmacy:  http://${SERVER_IP:-localhost}:${PHARMACY_HTTP_PORT:-5175}/"
 echo "  API (gw):  http://${SERVER_IP:-localhost}:${API_PORT:-8080}/api/v1/actuator/health"
 echo "  Identity:  http://127.0.0.1:8081/api/v1/actuator/health (localhost)"
-echo "  Finance:   http://127.0.0.1:8082/api/v1/swagger-ui.html (localhost)"
+echo "  Swagger:   /api/v1/swagger-ui.html (backend), …/finance|identity|platform|reports|ai|crm|rst|pharmacy|catalog/swagger-ui.html"
 echo "  CRM:       http://127.0.0.1:8083/api/v1/actuator/health (localhost)"
 echo "  Platform:  http://127.0.0.1:8084/api/v1/actuator/health (localhost)"
 echo "  Reporting: http://127.0.0.1:8085/api/v1/actuator/health (localhost)"

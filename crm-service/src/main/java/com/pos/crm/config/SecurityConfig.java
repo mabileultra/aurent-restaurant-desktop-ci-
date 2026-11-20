@@ -28,7 +28,16 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(
+                    "/actuator/health",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/crm/swagger-ui.html",
+                    "/crm/swagger-ui/**",
+                    "/crm/v3/api-docs",
+                    "/crm/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers("/internal/crm/**").permitAll()
                 .requestMatchers("/customers/**", "/orders/**").authenticated()
                 .anyRequest().denyAll()

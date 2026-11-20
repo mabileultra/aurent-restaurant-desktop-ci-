@@ -19,6 +19,31 @@ spring:
         connect-timeout: 5000
         response-timeout: 180s
       routes:
+        # Swagger UI / OpenAPI — отдельные префиксы (identity/crm/catalog нет в catch-all API).
+        - id: swagger-identity
+          uri: ${IDENTITY_SERVICE_URL:http://127.0.0.1:8081}
+          predicates:
+            - Path=/api/v1/identity/swagger-ui.html, /api/v1/identity/swagger-ui/**, /api/v1/identity/v3/api-docs, /api/v1/identity/v3/api-docs/**
+          order: -10
+          filters:
+            - PreserveHostHeader
+
+        - id: swagger-crm
+          uri: ${CRM_SERVICE_URL:http://127.0.0.1:8083}
+          predicates:
+            - Path=/api/v1/crm/swagger-ui.html, /api/v1/crm/swagger-ui/**, /api/v1/crm/v3/api-docs, /api/v1/crm/v3/api-docs/**
+          order: -10
+          filters:
+            - PreserveHostHeader
+
+        - id: swagger-catalog
+          uri: ${CATALOG_SERVICE_URL:http://127.0.0.1:8090}
+          predicates:
+            - Path=/api/v1/catalog/swagger-ui.html, /api/v1/catalog/swagger-ui/**, /api/v1/catalog/v3/api-docs, /api/v1/catalog/v3/api-docs/**
+          order: -10
+          filters:
+            - PreserveHostHeader
+
         # Типы бизнеса компании — web-backend (не platform-service).
         - id: pos-company-business-types
           uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}

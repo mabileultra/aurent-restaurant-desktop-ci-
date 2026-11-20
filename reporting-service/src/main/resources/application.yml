@@ -68,6 +68,12 @@ resilience4j:
         ignore-exceptions:
           - org.springframework.web.client.HttpClientErrorException
 
+springdoc:
+  api-docs:
+    path: /reports/v3/api-docs
+  swagger-ui:
+    path: /reports/swagger-ui.html
+
 management:
   endpoints:
     web:

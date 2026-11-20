@@ -71,7 +71,7 @@ resilience4j:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /ai/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /ai/swagger-ui.html
     enabled: true

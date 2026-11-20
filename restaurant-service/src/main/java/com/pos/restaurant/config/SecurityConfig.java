@@ -28,7 +28,16 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(
+                    "/actuator/health",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/rst/swagger-ui.html",
+                    "/rst/swagger-ui/**",
+                    "/rst/v3/api-docs",
+                    "/rst/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers("/internal/rst/**").permitAll()
                 // Edge local auth (only beans exist when app.restaurant.edge.enabled=true)
                 .requestMatchers(

@@ -101,9 +101,9 @@ app:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /pharmacy/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /pharmacy/swagger-ui.html
 
 management:
   endpoints:

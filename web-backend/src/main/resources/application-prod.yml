@@ -46,11 +46,12 @@ logging:
     root: WARN
     com.pos: INFO
 
+# Swagger открыт по запросу (публично через gateway /api/v1/swagger-ui.html).
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
   swagger-ui:
-    enabled: false
+    enabled: true
 
 # Sentry: disabled when SENTRY_DSN is empty (default — no behavior change).
 sentry:

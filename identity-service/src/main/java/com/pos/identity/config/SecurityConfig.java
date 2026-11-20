@@ -28,7 +28,16 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(
+                    "/actuator/health",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/identity/swagger-ui.html",
+                    "/identity/swagger-ui/**",
+                    "/identity/v3/api-docs",
+                    "/identity/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/internal/pos/**").permitAll()
                 // Store POS roles need roster for waiter names / assign; CRUD stays admin/manager.

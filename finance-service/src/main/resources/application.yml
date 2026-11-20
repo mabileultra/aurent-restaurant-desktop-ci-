@@ -45,9 +45,9 @@ app:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /finance/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /finance/swagger-ui.html
 
 management:
   endpoints:
