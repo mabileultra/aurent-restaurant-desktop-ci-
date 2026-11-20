@@ -13,14 +13,14 @@ alwaysApply: false
 - `update.sh`, `deploy.sh`, `deploy-changed.sh`, `select-services.sh`
 - `server-setup.sh`, `configure-restaurant-domain.sh`
 - `backup.sh`, `smoke-check.sh`, `health-alert.sh`, `rollback.sh`
-- `publish-desktop.sh`, `nginx-host.conf.example`
+- `nginx-host.conf.example`
 - `README.md`, `RUNBOOK.md`, `STACK-MAP.md`
 
 ## Before adding ANY new file under `deploy/`
 
 1. **Stop.** Tell the user: path, why it cannot live in an existing file or in `docs/` / `scripts/`.
 2. **Wait for explicit permission** («ок», «добавь», «можно»).
-3. One-off / version-pinned helpers (`upload-*-1.2.x.sh`) → do not add; use `publish-desktop.sh` + CI or ask.
+3. One-off / version-pinned helpers (`upload-*-1.2.x.sh`) → do not add; desktop publish/CI lives in `aurent-frontend`.
 
 ## Put elsewhere
 

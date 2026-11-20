@@ -4,7 +4,7 @@
 push origin main  (Timur1019 — код для git pull на сервере)
 push mobile-ci main  (mabileultra — здесь живой Actions billing)
   → Deploy Web Stack → SSH → update.sh → deploy.sh → Docker
-apps/desktop-electron/** → Release Desktop → downloads/desktop/ на сервере
+Desktop релизы → репозиторий `Timur1019/aurent-frontend` (CI) → downloads/desktop/ на сервере
 ```
 
 Автодеплой только из **mabileultra/aurent-restaurant-desktop-ci-** (`mobile-ci`).
@@ -25,7 +25,6 @@ apps/desktop-electron/** → Release Desktop → downloads/desktop/ на сер�
 | `update.sh` | Клон или каждое обновление | *(нет)* = `git pull` + `deploy.sh` · `bootstrap` = клон в `/opt/aurent-pos` |
 | `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` | *(нет)* = полный деплой · `check` · `verify-db` · `sync-db-password` · `recreate <service>` |
 | `backup.sh` | Бэкапы Postgres | *(нет)* = создать · `restore <файл>` · `install-cron` |
-| `publish-desktop.sh` | Артефакты Electron → `downloads/desktop/` + `manifest.json` | *(нет)* |
 
 См. также: `RUNBOOK.md`, `docs/CASHIER_GUIDE.md`, `docs/CASHIER_SECURITY_CHECKLIST.md`.
 
@@ -126,15 +125,14 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 ### Десктоп (установщик + автообновление)
 
-1. Поднимите версию в `apps/desktop-electron/package.json` (`version`) **только когда готовы отдать сборку всем кассам** (автообновление)
-2. Push в `main` с изменениями в `apps/desktop-electron/**` → workflow **Release Desktop**
+1. Релиз касс — в репозитории `aurent-frontend` (тег / workflow_dispatch), не в postsystem
 3. CI собирает `.exe` (Windows) и `.dmg` + `.zip` (macOS), публикует в `/downloads/desktop/`:
    - `latest.yml` / `latest-mac.yml` — для `electron-updater` (на Mac в фиде должен быть **zip**)
    - `manifest.json` — для страницы `/install`
 4. Установленная касса проверяет обновления автоматически и через «Вид → Проверить обновления»
 5. Новые пользователи: `https://домен/install`
 
-Локально: `cd apps/desktop-electron && pnpm run dist && bash ../deploy/publish-desktop.sh`
+Локально: в `aurent-frontend` → `apps/desktop-electron` → `pnpm run dist` + CI publish.
 
 ## SSL + dual domain (aurent.uz + r-aurent.uz)
 

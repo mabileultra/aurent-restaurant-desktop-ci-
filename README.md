@@ -17,7 +17,6 @@
 
 ```
 postsystem/
-├── apps/                        # (пусто) клиент → aurent-frontend
 ├── contracts/frontend/          # снимки для backend CI sync-check
 ├── bots/
 │   ├── telegram-support-bot/    # аптечный Telegram-бот
@@ -29,7 +28,6 @@ postsystem/
 └── docker-compose.prod.yml
 ```
 
-> 📦 **Muhim (pnpm migratsiyasi)**: Loyiha barcha JS/Node qismlarida `npm`dan `pnpm`ga o'tkazilgan. Barcha OS lar (Windows, macOS, Linux) uchun o'rnatish va migratsiya qo'llanmasi: **[PNPM_MIGRATION.md](./PNPM_MIGRATION.md)**.
 
 ## Локальная разработка
 

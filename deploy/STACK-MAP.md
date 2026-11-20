@@ -22,9 +22,6 @@ Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-auren
 | Каталог | Назначение | Dev | Prod |
 |---------|------------|-----|------|
 | SPA / desktop | **Timur1019/aurent-frontend** (не в этом репо) | — | aurent.uz / r- / p- |
-| `apps/desktop-electron` | Electron grocery / main cashier → aurent | — | установщик |
-| `apps/restaurant-desktop` | Electron edge ресторана | — | установщик |
-| `apps/pharmacy-desktop` | Electron аптека → p-aurent | — | установщик |
 
 ### Legacy
 

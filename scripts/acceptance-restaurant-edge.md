@@ -1,6 +1,6 @@
 # Acceptance — restaurant desktop (edge)
 
-Prereqs: cloud deploy with `edge-staff-export`, `catalog-export`, `sync/ingest`. Local: `scripts/prepare-restaurant-desktop.sh`, Postgres via `docker-compose.restaurant-edge.yml`.
+Prereqs: cloud deploy with `edge-staff-export`, `catalog-export`, `sync/ingest`. Local restaurant desktop: clone `aurent-frontend` (prepare/bundle there), Postgres via `docker-compose.restaurant-edge.yml`.
 
 1. Start edge DB + desktop (`RESTAURANT_CLOUD_API_URL=https://r-aurent.uz/api/v1 pnpm start`).
 2. First admin login (online) → staff + catalog + stock copied.

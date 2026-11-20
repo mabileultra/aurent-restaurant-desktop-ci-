@@ -1,3 +1,0 @@
-# Client SPA/desktop moved to Timur1019/aurent-frontend.
-# Kept so accidental pnpm at repo root does not fail hard.
-packages: []
