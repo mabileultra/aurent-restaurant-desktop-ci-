@@ -18,7 +18,7 @@ alwaysApply: false
 
 ## Before adding ANY new file under `deploy/`
 
-1. **Stop.** Tell the user: path, why it cannot live in an existing file or in `docs/` / `scripts/`.
+1. **Stop.** Tell the user: path, why it cannot live in an existing file or in `scripts/` / `deploy/README.md`.
 2. **Wait for explicit permission** («ок», «добавь», «можно»).
 3. One-off / version-pinned helpers (`upload-*-1.2.x.sh`) → do not add; desktop publish/CI lives in `aurent-frontend`.
 
@@ -26,7 +26,7 @@ alwaysApply: false
 
 | Kind | Where |
 |------|--------|
-| Cashier guides, checklists | `docs/` |
+| Cashier guides, checklists | `Timur1019/aurent-frontend` (client repo) |
 | Load test, HA scale helpers | `scripts/` |
 
 ## Ship paths
