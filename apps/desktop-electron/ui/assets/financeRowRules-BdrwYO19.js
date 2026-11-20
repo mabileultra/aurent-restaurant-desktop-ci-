@@ -1,1 +1,0 @@
-const t=new Set(["MANUAL","SALARY"]),n=new Set(["MANUAL"]);function s(e){return t.has(e?.sourceType)}function E(e){return n.has(e?.sourceType)}function a(e){return!e?.system}export{s as a,a as b,E as i};

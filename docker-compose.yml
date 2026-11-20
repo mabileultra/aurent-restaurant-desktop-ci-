@@ -590,14 +590,10 @@ services:
       retries: 12
       start_period: 30s
 
+  # SPA: develop via Timur1019/aurent-frontend (pnpm dev). Optional local images only.
   frontend:
-    build:
-      context: .
-      dockerfile: apps/web-frontend/Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_RESTAURANT_APP_URL: ${VITE_RESTAURANT_APP_URL:-http://localhost:5174}
-        VITE_PHARMACY_APP_URL: ${VITE_PHARMACY_APP_URL:-http://localhost:5175}
+    image: masterpiece-pos-frontend:latest
+    profiles: ["spa-images"]
     container_name: masterpiece-pos-frontend
     depends_on:
       api-gateway:
@@ -608,12 +604,8 @@ services:
       - ./downloads:/var/downloads:ro
 
   restaurant-frontend:
-    build:
-      context: .
-      dockerfile: apps/restaurant-frontend/Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-http://localhost:5173}
+    image: masterpiece-restaurant-frontend:latest
+    profiles: ["spa-images"]
     container_name: masterpiece-restaurant-frontend
     depends_on:
       api-gateway:
@@ -622,12 +614,8 @@ services:
       - "5174:80"
 
   pharmacy-frontend:
-    build:
-      context: .
-      dockerfile: apps/pharmacy-frontend/Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-http://localhost:5173}
+    image: masterpiece-pharmacy-frontend:latest
+    profiles: ["spa-images"]
     container_name: masterpiece-pharmacy-frontend
     depends_on:
       api-gateway:

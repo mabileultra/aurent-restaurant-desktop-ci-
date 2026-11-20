@@ -1,3 +1,0 @@
-# Локальная пересборка без pull с Docker Hub (сначала: npm run build → dist/)
-FROM aurent-pos-frontend:latest
-COPY dist/ /usr/share/nginx/html/

@@ -813,20 +813,10 @@ services:
     networks:
       - pos-net
 
+  # SPA: build from Timur1019/aurent-frontend. Keep local images; do not rebuild here.
   frontend:
-    build:
-      context: .
-      dockerfile: apps/web-frontend/Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_SUPPORT_PHONE: ${VITE_SUPPORT_PHONE:-}
-        VITE_SUPPORT_TELEGRAM_BOT: ${VITE_SUPPORT_TELEGRAM_BOT:-}
-        VITE_RESTAURANT_APP_URL: ${VITE_RESTAURANT_APP_URL:-https://r-aurent.uz}
-        VITE_PHARMACY_APP_URL: ${VITE_PHARMACY_APP_URL:-https://p-aurent.uz}
-        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
-        VITE_SENTRY_ENVIRONMENT: ${VITE_SENTRY_ENVIRONMENT:-production}
-        VITE_SENTRY_TRACES_SAMPLE_RATE: ${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.05}
-        VITE_SENTRY_RELEASE: ${VITE_SENTRY_RELEASE:-}
+    image: aurent-pos-frontend:latest
+    pull_policy: never
     container_name: aurent-pos-frontend
     mem_limit: 64m
     restart: unless-stopped
@@ -841,12 +831,8 @@ services:
       - pos-net
 
   restaurant-frontend:
-    build:
-      context: .
-      dockerfile: apps/restaurant-frontend/Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-https://aurent.uz}
+    image: aurent-pos-restaurant-frontend:latest
+    pull_policy: never
     container_name: aurent-restaurant-frontend
     mem_limit: 64m
     restart: unless-stopped
@@ -861,12 +847,8 @@ services:
       - pos-net
 
   pharmacy-frontend:
-    build:
-      context: .
-      dockerfile: apps/pharmacy-frontend/Dockerfile
-      args:
-        VITE_API_URL: /api/v1
-        VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-https://aurent.uz}
+    image: aurent-pos-pharmacy-frontend:latest
+    pull_policy: never
     container_name: aurent-pharmacy-frontend
     mem_limit: 64m
     restart: unless-stopped

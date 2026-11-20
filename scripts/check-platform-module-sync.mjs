@@ -16,7 +16,7 @@ const backend = readFileSync(
   'utf8'
 );
 const nav = readFileSync(
-  join(root, 'apps/web-frontend/src/features/platform/nav/platformNav.js'),
+  join(root, 'contracts/frontend/platformNav.js'),
   'utf8'
 );
 

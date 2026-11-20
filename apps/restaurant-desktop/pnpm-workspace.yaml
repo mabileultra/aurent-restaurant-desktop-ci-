@@ -1,3 +1,0 @@
-allowBuilds:
-  '@embedded-postgres/linux-x64': true
-  electron: true

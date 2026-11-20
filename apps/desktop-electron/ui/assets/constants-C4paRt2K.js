@@ -1,1 +1,0 @@
-const e={storeId:"",paymentSettlement:"ALL",paymentMethod:"",saleId:"",receiptNumber:"",cashierName:"",dateFrom:"",dateTo:""},t={storeId:"",cashierName:"",dateFrom:"",dateTo:""},a=14;export{t as R,a as S,e as a};

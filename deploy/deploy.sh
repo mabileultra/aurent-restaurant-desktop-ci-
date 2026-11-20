@@ -610,23 +610,10 @@ wait_container_healthy aurent-api-gateway api-gateway || {
   exit 1
 }
 
-echo "==> frontend..."
-if ! recreate_service frontend; then
-  compose_logs_tail frontend 80
-  exit 1
-fi
-
-echo "==> restaurant-frontend..."
-if ! recreate_service restaurant-frontend; then
-  compose_logs_tail restaurant-frontend 80
-  exit 1
-fi
-
-echo "==> pharmacy-frontend..."
-if ! recreate_service pharmacy-frontend; then
-  compose_logs_tail pharmacy-frontend 80
-  exit 1
-fi
+echo "==> frontend / restaurant-frontend / pharmacy-frontend..."
+echo "    SKIP rebuild: client source moved to Timur1019/aurent-frontend."
+echo "    Existing SPA containers left running (images aurent-pos-*-frontend)."
+echo "    To refresh SPA: build/deploy from aurent-frontend (not this repo)."
 
 # Lab/shared hosts: set ENABLE_TELEGRAM_BOTS=false so prod-owned tokens are not polled here (409 / crash loop).
 telegram_bots_enabled=true

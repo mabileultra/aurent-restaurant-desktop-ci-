@@ -5,10 +5,7 @@ on:
     branches: [main]
     paths:
       - 'web-backend/**'
-      - 'apps/web-frontend/**'
-      - 'apps/restaurant-frontend/**'
-      - 'apps/pharmacy-frontend/**'
-      - 'packages/**'
+      - 'contracts/frontend/**'
       - 'finance-service/**'
       - 'crm-service/**'
       - 'ai-service/**'

@@ -1,9 +1,3 @@
-# SPA apps live under apps/; shared libs under packages/.
-packages:
-  - 'packages/*'
-  - 'apps/web-frontend'
-  - 'apps/restaurant-frontend'
-  - 'apps/pharmacy-frontend'
-
-allowBuilds:
-  esbuild: true
+# Client SPA/desktop moved to Timur1019/aurent-frontend.
+# Kept so accidental pnpm at repo root does not fail hard.
+packages: []

@@ -8,7 +8,7 @@
 |-------|------------|
 | Backend | Java 17, Spring Boot 3, PostgreSQL |
 | Frontend | React, Vite (main + restaurant SPA) |
-| Касса | Electron (`apps/desktop-electron/`) — оболочка вокруг web SPA |
+| Касса / SPA | Репозиторий [`aurent-frontend`](https://github.com/Timur1019/aurent-frontend) |
 | Деплой | Docker Compose |
 
 **Карта prod / что не ломать:** [`deploy/STACK-MAP.md`](deploy/STACK-MAP.md)
@@ -17,14 +17,8 @@
 
 ```
 postsystem/
-├── apps/
-│   ├── web-frontend/            # aurent.uz — платформа + grocery
-│   ├── restaurant-frontend/     # r-aurent.uz
-│   ├── pharmacy-frontend/       # p-aurent.uz
-│   ├── desktop-electron/        # Electron grocery-касса
-│   ├── restaurant-desktop/      # Electron ресторан
-│   └── pharmacy-desktop/        # Electron аптека
-├── packages/                    # @aurent/shared-*
+├── apps/                        # (пусто) клиент → aurent-frontend
+├── contracts/frontend/          # снимки для backend CI sync-check
 ├── bots/
 │   ├── telegram-support-bot/    # аптечный Telegram-бот
 │   └── telegram-web-support-bot/# поддержка web/CRM
@@ -45,13 +39,12 @@ docker compose up -d --build
 
 # Или по отдельности:
 cd web-backend && mvn spring-boot:run
-cd apps/web-frontend && pnpm install && pnpm run dev
+cd ../aurent-frontend && pnpm install && pnpm run dev:web   # отдельный репо
 ```
 
 API: `http://localhost:8080/api/v1`  
 Веб: `http://localhost:5173` (Docker: порт 5173 → nginx 80)  
-Ресторан: `cd apps/restaurant-frontend && pnpm run dev` → `http://localhost:5174`  
-Аптека: `cd apps/pharmacy-frontend && pnpm run dev` → `http://localhost:5175`
+SPA: репозиторий `aurent-frontend` (`pnpm run dev:web` / `dev:restaurant` / `dev:pharmacy`)
 
 Демо-логин после init БД: `admin` / `password`
 
@@ -84,11 +77,7 @@ bash deploy/deploy.sh
 
 ## Касса
 
-Desktop: **`apps/desktop-electron/`** (grocery), **`apps/restaurant-desktop/`**, **`apps/pharmacy-desktop/`** (аптека).
-
-```bash
-bash scripts/start-cashier-desktop.sh
-```
+Desktop: репозиторий **`aurent-frontend`** (`apps/desktop-electron`, `restaurant-desktop`, `pharmacy-desktop`).
 
 Страница загрузки: **`/install`** (публичная, без входа).
 

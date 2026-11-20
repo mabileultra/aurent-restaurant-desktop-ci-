@@ -1,1 +1,0 @@
-import{r as o}from"./vendor-DfpYFs4r.js";import{f as a,s as y}from"./cashier-my-sales-CaKefjc3.js";function f(r=6){const[t,s]=o.useState(()=>a(y(new Date,r),"yyyy-MM-dd")),[e,n]=o.useState(()=>a(new Date,"yyyy-MM-dd"));return{from:t,to:e,setFrom:s,setTo:n,rangeEnabled:!!(t&&e)}}export{f as u};

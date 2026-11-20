@@ -57,19 +57,11 @@ classify() {
       JAVA_EXPAND=1
       return 0
       ;;
-    web-frontend|web-frontend/*|apps/web-frontend|apps/web-frontend/*)
-      mark frontend
-      ;;
-    restaurant-frontend|restaurant-frontend/*|apps/restaurant-frontend|apps/restaurant-frontend/*)
-      mark restaurant-frontend
-      ;;
-    pharmacy-frontend|pharmacy-frontend/*|apps/pharmacy-frontend|apps/pharmacy-frontend/*)
-      mark pharmacy-frontend
-      ;;
-    packages|packages/*)
-      mark frontend
-      mark restaurant-frontend
-      mark pharmacy-frontend
+    # Client lives in Timur1019/aurent-frontend — do not rebuild SPA from this repo.
+    web-frontend|web-frontend/*|apps/web-frontend|apps/web-frontend/*|\
+    restaurant-frontend|restaurant-frontend/*|apps/restaurant-frontend|apps/restaurant-frontend/*|\
+    pharmacy-frontend|pharmacy-frontend/*|apps/pharmacy-frontend|apps/pharmacy-frontend/*|\
+    packages|packages/*|contracts/frontend|contracts/frontend/*)
       ;;
     web-backend|web-backend/*)
       mark backend

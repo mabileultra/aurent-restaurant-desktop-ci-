@@ -1,1 +1,0 @@
-import{u as i}from"./query-Ca5HWAPP.js";import{b4 as n}from"./cashier-weight-BHvRX4Qw.js";import{_ as r}from"./cashier-pos-C3LVJ6IA.js";function m(s){const e=r(s);return i({queryKey:["business-config",e],queryFn:()=>n.byCode(e).then(o=>o.data),staleTime:6e4})}export{m as u};
