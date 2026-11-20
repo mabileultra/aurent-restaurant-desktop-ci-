@@ -26,7 +26,7 @@ Desktop релизы → репозиторий `Timur1019/aurent-frontend` (CI)
 | `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` | *(нет)* = полный деплой · `check` · `verify-db` · `sync-db-password` · `recreate <service>` |
 | `backup.sh` | Бэкапы Postgres | *(нет)* = создать · `restore <файл>` · `install-cron` |
 
-См. также: `RUNBOOK.md`, `docs/CASHIER_GUIDE.md`, `docs/CASHIER_SECURITY_CHECKLIST.md`.
+См. также: `RUNBOOK.md`.
 
 Дополнительно: `nginx-host.conf.example` (опциональный SSL на хосте).
 
