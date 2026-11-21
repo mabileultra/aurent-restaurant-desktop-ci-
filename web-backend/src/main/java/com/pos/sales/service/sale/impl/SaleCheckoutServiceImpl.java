@@ -26,6 +26,7 @@ import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.sales.service.sale.SaleCheckoutService;
 import com.pos.sales.service.sale.support.CheckoutProductLoader;
 import com.pos.sales.service.sale.support.SaleEnumParser;
+import com.pos.sales.service.sale.support.SaleCheckoutIdempotency;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
@@ -52,6 +53,7 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
@@ -84,9 +86,15 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final SaleFiscalApplier saleFiscalApplier;
     private final MarkingAfterSaleService markingAfterSaleService;
     private final MarkingSoldJournalService markingSoldJournalService;
+    private final SaleCheckoutIdempotency saleCheckoutIdempotency;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
+        Optional<SaleResponse> existing = saleCheckoutIdempotency.findExisting(req.clientSaleId());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
         User cashier = userRepository.findByIdWithDetails(cashierId)
             .orElseThrow(() -> PosExceptions.notFound("Cashier"));
 
@@ -207,6 +215,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             .status(Sale.SaleStatus.COMPLETED)
             .notes(req.notes())
             .printFiscalQr(req.printFiscalQr() == null || Boolean.TRUE.equals(req.printFiscalQr()))
+            .clientSaleId(req.clientSaleId())
             .build();
 
         items.forEach(item -> item.setSale(sale));

@@ -38,5 +38,10 @@ public record CreateSaleRequest(
     /** Печатать фискальный QR (снимок настройки кассы; null = true). */
     Boolean printFiscalQr,
     /** Результат Multikassa (касса шлёт после POST /api/v1/operations). */
-    @Valid SaleFiscalPayload fiscal
+    @Valid SaleFiscalPayload fiscal,
+    /**
+     * Идемпотентность онлайн-чека (тот же UUID на retry после таймаута).
+     * Совпадает с Multikassa {@code client_operation_id} = {@code sale:{uuid}}.
+     */
+    UUID clientSaleId
 ) {}
