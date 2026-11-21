@@ -31,6 +31,23 @@ public final class UzInvoiceProductRowMapper {
         int rowNum,
         String uzInvoiceDocumentId
     ) {
+        return toCatalogRow(
+            name, ikpuRaw, barcodeRaw, unit, qtyRaw, priceRaw, null, vatRaw, rowNum, uzInvoiceDocumentId
+        );
+    }
+
+    public static Map<String, String> toCatalogRow(
+        String name,
+        String ikpuRaw,
+        String barcodeRaw,
+        String unit,
+        String qtyRaw,
+        String netUnitPriceRaw,
+        String lineTotalWithVatRaw,
+        String vatRaw,
+        int rowNum,
+        String uzInvoiceDocumentId
+    ) {
         if (!StringUtils.hasText(name) || TOTAL_ROW.matcher(name.trim()).matches()) {
             return null;
         }
@@ -41,7 +58,9 @@ public final class UzInvoiceProductRowMapper {
         }
 
         int qty = ProductImportParseUtil.parseIntOpt(qtyRaw).orElse(0);
-        BigDecimal price = ProductImportParseUtil.parseDecimalOpt(priceRaw).orElse(null);
+        BigDecimal price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            qtyRaw, netUnitPriceRaw, lineTotalWithVatRaw, vatRaw
+        ).orElse(null);
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
         }

@@ -7,7 +7,7 @@ import com.pos.catalog.service.imports.source.CatalogImportSourceHandler;
 import com.pos.catalog.service.imports.source.UzInvoiceImportSourceHandler;
 import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.spreadsheet.ExcelSpreadsheetReader;
+import com.pos.spreadsheet.ExcelFlexibleCatalogReader;
 import com.pos.spreadsheet.parser.CatalogJsonParser;
 import com.pos.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 class ProductImportSupportTest {
 
     @Mock ProductLookupSupport productLookup;
-    @Mock ExcelSpreadsheetReader excelSpreadsheetReader;
+    @Mock ExcelFlexibleCatalogReader excelFlexibleCatalogReader;
     @Mock CatalogJsonParser catalogJsonParser;
     @Mock UzInvoiceSpreadsheetParser uzInvoiceSpreadsheetParser;
     @Mock UzInvoiceJsonParser uzInvoiceJsonParser;
@@ -57,7 +57,7 @@ class ProductImportSupportTest {
     void setUp() {
         lenient().when(tenantAccess.requireEffectiveCompanyId()).thenReturn(COMPANY_ID);
         catalog = new CatalogImportSourceHandler(
-            excelSpreadsheetReader, catalogJsonParser, productLookup, tenantAccess
+            excelFlexibleCatalogReader, catalogJsonParser, productLookup, tenantAccess
         );
         uzInvoice = new UzInvoiceImportSourceHandler(
             uzInvoiceSpreadsheetParser, uzInvoiceJsonParser, uzInvoicePdfParser, productLookup, tenantAccess
@@ -229,7 +229,7 @@ class ProductImportSupportTest {
 
         row.remove("storage_location");
         ProductImportPreviewRow fromDefault = catalog.toPreviewRow(
-            3, row, new ProductImportParseOptions("Зона A")
+            3, row, ProductImportParseOptions.forPreview("Зона A")
         );
         assertEquals("Зона A", fromDefault.storageLocation());
     }

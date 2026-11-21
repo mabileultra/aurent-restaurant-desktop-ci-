@@ -2,9 +2,9 @@ package com.pos.sales.service.salesledger;
 
 import com.pos.cache.salesledger.SalesLedgerEntry;
 import com.pos.cache.salesledger.SalesLedgerSnapshot;
-import com.pos.sales.dto.sale.SaleResponse;
 import com.pos.dto.shared.PageResponse;
-import com.pos.sales.entity.Sale;
+import com.pos.sales.domain.SalePaymentMethodFilter;
+import com.pos.sales.dto.sale.SaleResponse;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -70,7 +70,12 @@ public final class SalesLedgerReadSupport {
                 return false;
             }
         }
-        if (q.paymentMethod() != null && !q.paymentMethod().equalsIgnoreCase(s.paymentMethod())) {
+        if (SalePaymentMethodFilter.isNonCash(q.paymentMethod())) {
+            BigDecimal card = s.cardAmount() != null ? s.cardAmount() : BigDecimal.ZERO;
+            if (card.compareTo(BigDecimal.ZERO) <= 0) {
+                return false;
+            }
+        } else if (q.paymentMethod() != null && !q.paymentMethod().equalsIgnoreCase(s.paymentMethod())) {
             return false;
         }
         if (q.status() != null && !q.status().equalsIgnoreCase(s.status())) {

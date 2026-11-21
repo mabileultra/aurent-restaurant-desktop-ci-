@@ -20,6 +20,14 @@ import java.util.Objects;
 public class ProductImportFileParser {
 
     public List<Map<String, String>> parse(MultipartFile file, ProductImportSourceHandler handler) {
+        return parse(file, handler, null);
+    }
+
+    public List<Map<String, String>> parse(
+        MultipartFile file,
+        ProductImportSourceHandler handler,
+        Map<String, String> columnMapping
+    ) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Файл не выбран");
         }
@@ -45,7 +53,7 @@ public class ProductImportFileParser {
                 return handler.parsePdf(bytes);
             }
             try (InputStream in = new ByteArrayInputStream(bytes)) {
-                return handler.parseSpreadsheet(in);
+                return handler.parseSpreadsheet(in, columnMapping);
             }
         } catch (BadRequestException e) {
             throw e;

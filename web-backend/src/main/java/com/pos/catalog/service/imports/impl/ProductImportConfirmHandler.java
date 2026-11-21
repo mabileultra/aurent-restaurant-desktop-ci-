@@ -132,7 +132,7 @@ public class ProductImportConfirmHandler {
 
     private static ProductImportConfirmRequest defaultOptions() {
         return new ProductImportConfirmRequest(
-            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, List.of()
+            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, null, List.of()
         );
     }
 

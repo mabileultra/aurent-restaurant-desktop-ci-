@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record ProductImportConfirmRequest(
@@ -21,6 +22,8 @@ public record ProductImportConfirmRequest(
     String paymentType,
     /** Комментарий к приходу; если пусто — «Импорт …». */
     String receiptNotes,
+    /** Наш ключ поля → точный заголовок колонки в Excel (только CATALOG). */
+    Map<String, String> columnMapping,
     @Valid List<ImportRowConfirm> rows
 ) {
     public record ImportRowConfirm(

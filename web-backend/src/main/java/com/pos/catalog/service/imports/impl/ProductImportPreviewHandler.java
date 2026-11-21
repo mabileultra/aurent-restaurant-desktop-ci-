@@ -35,7 +35,7 @@ public class ProductImportPreviewHandler {
         ProductImportSourceHandler handler = sourceHandlers.require(importSource);
         ProductImportParseOptions parseOpts =
             options != null ? options : ProductImportParseOptions.defaults();
-        List<Map<String, String>> rows = fileParser.parse(file, handler);
+        List<Map<String, String>> rows = fileParser.parse(file, handler, parseOpts.columnMappingOrEmpty());
         List<ProductImportPreviewRow> preview = new ArrayList<>();
         int rowNum = 2;
         for (Map<String, String> row : rows) {

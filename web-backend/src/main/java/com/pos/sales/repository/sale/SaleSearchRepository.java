@@ -18,6 +18,7 @@ public interface SaleSearchRepository {
         String cashierName,
         String q,
         Sale.PaymentMethod paymentMethod,
+        boolean nonCashOnly,
         Sale.SaleStatus status,
         UUID saleId,
         String paymentSettlement,

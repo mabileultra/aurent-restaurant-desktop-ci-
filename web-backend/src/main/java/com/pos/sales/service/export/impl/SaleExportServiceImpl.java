@@ -61,7 +61,7 @@ public class SaleExportServiceImpl implements SaleExportService {
         var f = filters.get();
         Page<Sale> sales = saleSearchRepository.searchSales(
             f.start(), f.end(), f.cashierId(), f.receipt(), f.cashierName(), f.q(),
-            f.paymentMethod(), f.status(), f.saleId(), f.paymentSettlement(), f.storeId(),
+            f.paymentMethod(), f.nonCashOnly(), f.status(), f.saleId(), f.paymentSettlement(), f.storeId(),
             tenantAccess.requireEffectiveCompanyId(),
             Pageable.unpaged()
         );

@@ -105,7 +105,8 @@ public class SaleQueryServiceImpl implements SaleQueryService {
 
         Page<Sale> page = saleSearchRepository.searchSales(
             f.start(), f.end(), f.cashierId(), f.receipt(), f.cashierName(), f.q(),
-            f.paymentMethod(), f.status(), f.saleId(), f.paymentSettlement(), f.storeId(), companyId, pageable
+            f.paymentMethod(), f.nonCashOnly(), f.status(), f.saleId(), f.paymentSettlement(),
+            f.storeId(), companyId, pageable
         );
         return PageResponse.from(page.map(saleMapper::toSummaryResponse));
     }

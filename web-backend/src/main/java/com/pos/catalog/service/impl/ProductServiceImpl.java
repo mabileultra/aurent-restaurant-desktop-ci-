@@ -16,6 +16,7 @@ import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
 import com.pos.catalog.service.ProductService;
 import com.pos.catalog.service.export.ProductExportService;
 import com.pos.catalog.service.imports.ProductImportService;
+import com.pos.catalog.service.imports.support.ProductImportHeadersInspector;
 import com.pos.catalog.service.product.ProductCommandService;
 import com.pos.catalog.service.product.ProductLifecycleService;
 import com.pos.catalog.service.product.ProductQueryService;
@@ -46,6 +47,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductStockService stockService;
     private final ProductExportService productExportService;
     private final ProductImportService productImportService;
+    private final ProductImportHeadersInspector productImportHeadersInspector;
     private final ProductLifecycleService productLifecycleService;
 
     @Override
@@ -196,15 +198,27 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public com.pos.catalog.dto.product.ProductImportHeadersResponse inspectImportHeaders(
+        MultipartFile file,
+        String source
+    ) {
+        return productImportHeadersInspector.inspect(file, source);
+    }
+
+    @Override
     public ProductImportPreviewResponse previewProductsImport(
         MultipartFile file,
         String source,
-        String defaultStorageLocation
+        String defaultStorageLocation,
+        java.util.Map<String, String> columnMapping
     ) {
         return productImportService.preview(
             file,
             source,
-            com.pos.catalog.service.imports.ProductImportParseOptions.forPreview(defaultStorageLocation)
+            com.pos.catalog.service.imports.ProductImportParseOptions.forPreview(
+                defaultStorageLocation,
+                columnMapping
+            )
         );
     }
 

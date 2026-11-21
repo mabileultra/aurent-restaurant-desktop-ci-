@@ -20,6 +20,17 @@ public interface ProductImportSourceHandler {
 
     List<Map<String, String>> parseSpreadsheet(InputStream in) throws IOException;
 
+    /**
+     * Excel с опциональным маппингом колонок (наш ключ → заголовок файла).
+     * По умолчанию — без маппинга (как {@link #parseSpreadsheet(InputStream)}).
+     */
+    default List<Map<String, String>> parseSpreadsheet(
+        InputStream in,
+        Map<String, String> columnMapping
+    ) throws IOException {
+        return parseSpreadsheet(in);
+    }
+
     List<Map<String, String>> parseJson(byte[] bytes);
 
     /**

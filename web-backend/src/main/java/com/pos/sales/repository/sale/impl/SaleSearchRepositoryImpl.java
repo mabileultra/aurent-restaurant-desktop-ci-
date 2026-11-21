@@ -26,7 +26,10 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
             LOWER(s.receiptNumber) LIKE LOWER(CONCAT('%', :q, '%'))
             OR LOWER(s.cashier.fullName) LIKE LOWER(CONCAT('%', :q, '%'))
         ))
-        AND (COALESCE(:paymentMethod, s.paymentMethod) = s.paymentMethod)
+        AND (
+            (:nonCashOnly = true AND s.cardAmount > 0)
+            OR (:nonCashOnly = false AND COALESCE(:paymentMethod, s.paymentMethod) = s.paymentMethod)
+        )
         AND (COALESCE(:status, s.status) = s.status)
         AND (COALESCE(:saleId, s.id) = s.id)
         AND (
@@ -52,7 +55,10 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
             LOWER(s.receiptNumber) LIKE LOWER(CONCAT('%', :q, '%'))
             OR LOWER(s.cashier.fullName) LIKE LOWER(CONCAT('%', :q, '%'))
         ))
-        AND (COALESCE(:paymentMethod, s.paymentMethod) = s.paymentMethod)
+        AND (
+            (:nonCashOnly = true AND s.cardAmount > 0)
+            OR (:nonCashOnly = false AND COALESCE(:paymentMethod, s.paymentMethod) = s.paymentMethod)
+        )
         AND (COALESCE(:status, s.status) = s.status)
         AND (COALESCE(:saleId, s.id) = s.id)
         AND (
@@ -161,6 +167,7 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
         String cashierName,
         String q,
         Sale.PaymentMethod paymentMethod,
+        boolean nonCashOnly,
         Sale.SaleStatus status,
         UUID saleId,
         String paymentSettlement,
@@ -173,7 +180,7 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
             SEARCH_SALES_COUNT_JPQL,
             query -> bindSearchSalesParams(
                 query, start, end, cashierId, receipt, cashierName, q,
-                paymentMethod, status, saleId, paymentSettlement, storeId, companyId
+                paymentMethod, nonCashOnly, status, saleId, paymentSettlement, storeId, companyId
             ),
             pageable,
             graph -> {
@@ -280,6 +287,7 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
         String cashierName,
         String q,
         Sale.PaymentMethod paymentMethod,
+        boolean nonCashOnly,
         Sale.SaleStatus status,
         UUID saleId,
         String paymentSettlement,
@@ -293,6 +301,7 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
         query.setParameter("cashierName", cashierName);
         query.setParameter("q", q);
         query.setParameter("paymentMethod", paymentMethod);
+        query.setParameter("nonCashOnly", nonCashOnly);
         query.setParameter("status", status);
         query.setParameter("saleId", saleId);
         query.setParameter("paymentSettlement", paymentSettlement);

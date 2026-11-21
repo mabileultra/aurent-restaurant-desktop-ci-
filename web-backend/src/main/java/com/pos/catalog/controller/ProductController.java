@@ -16,6 +16,7 @@ import com.pos.catalog.dto.product.UpdateProductRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import com.pos.dto.shared.PageResponse;
 import com.pos.catalog.service.ProductService;
@@ -234,6 +235,20 @@ public class ProductController {
         return SpreadsheetDownloadSupport.attachment(body, "products_import_template.xlsx");
     }
 
+    @PostMapping(value = "/import/headers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(
+        summary = "Заголовки Excel для маппинга",
+        description = "Читает первую строку файла и предлагает соответствие колонок полям POS (CATALOG)"
+    )
+    @ApiResponse(responseCode = "200", description = "Заголовки и подсказка маппинга")
+    public ResponseEntity<com.pos.catalog.dto.product.ProductImportHeadersResponse> importHeaders(
+        @RequestPart("file") MultipartFile file,
+        @RequestParam(value = "source", defaultValue = "CATALOG") String source
+    ) {
+        return ResponseEntity.ok(productService.inspectImportHeaders(file, source));
+    }
+
     @PostMapping(value = "/import/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Предпросмотр импорта", description = "Разбор файла импорта без сохранения в БД")
@@ -241,10 +256,11 @@ public class ProductController {
     public ResponseEntity<ProductImportPreviewResponse> importPreview(
         @RequestPart("file") MultipartFile file,
         @RequestParam(value = "source", defaultValue = "CATALOG") String source,
-        @RequestParam(value = "defaultStorageLocation", required = false) String defaultStorageLocation
+        @RequestParam(value = "defaultStorageLocation", required = false) String defaultStorageLocation,
+        @RequestPart(value = "columnMapping", required = false) Map<String, String> columnMapping
     ) {
         return ResponseEntity.ok(
-            productService.previewProductsImport(file, source, defaultStorageLocation)
+            productService.previewProductsImport(file, source, defaultStorageLocation, columnMapping)
         );
     }
 

@@ -6,6 +6,7 @@ import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductExportPreviewRow;
 import com.pos.catalog.dto.product.ProductExportRequest;
 import com.pos.catalog.dto.product.ProductImportConfirmRequest;
+import com.pos.catalog.dto.product.ProductImportHeadersResponse;
 import com.pos.catalog.dto.product.ProductImportPreviewResponse;
 import com.pos.catalog.dto.product.ProductImportResponse;
 import com.pos.catalog.dto.product.ProductLifecycleResponse;
@@ -150,10 +151,13 @@ public interface ProductService {
 
     byte[] buildImportTemplateExcel();
 
+    ProductImportHeadersResponse inspectImportHeaders(MultipartFile file, String source);
+
     ProductImportPreviewResponse previewProductsImport(
         MultipartFile file,
         String source,
-        String defaultStorageLocation
+        String defaultStorageLocation,
+        Map<String, String> columnMapping
     );
 
     ProductImportResponse importFromFile(MultipartFile file, ProductImportConfirmRequest options);

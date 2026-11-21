@@ -129,13 +129,16 @@ public class UzInvoiceSpreadsheetParser {
                 map.unit = c;
             } else if (containsAny(h, "миқдор", "miqdor", "колич")) {
                 map.qty = c;
+            } else if (isLineTotalWithVatHeader(h)) {
+                map.lineTotalWithVat = c;
             } else if (h.equals("нарх") || h.contains("нарҳ")
                 || (h.contains("цена") && !h.contains("қиймат") && !h.contains("сумма"))) {
                 map.unitPrice = c;
             } else if ((containsAny(h, "ставка") || h.equals("ққс") || h.equals("qqs") || h.contains("ндс"))
-                && !h.contains("сумма")) {
+                && !h.contains("сумма") && !isLineTotalWithVatHeader(h)) {
                 map.vatRate = c;
-            } else if (h.contains("ққс") || h.contains("qqs") || h.contains("ндс")) {
+            } else if ((h.contains("ққс") || h.contains("qqs") || h.contains("ндс"))
+                && !isLineTotalWithVatHeader(h)) {
                 if (map.vatRate < 0) {
                     map.vatRate = c;
                 }
@@ -143,6 +146,24 @@ public class UzInvoiceSpreadsheetParser {
         }
         applyDefaults(map);
         return map;
+    }
+
+    /** Колонка «қиймат ҚҚСни ҳисобга олган ҳолда» / сумма с НДС. */
+    private static boolean isLineTotalWithVatHeader(String h) {
+        if (!StringUtils.hasText(h)) {
+            return false;
+        }
+        if (containsAny(h,
+            "ҳисобга олган", "хисобга олган", "hisobga olgan",
+            "включая ндс", "с учётом ндс", "с учетом ндс",
+            "with vat", "including vat", "incl. vat", "incl vat")) {
+            return true;
+        }
+        boolean valueCol = h.contains("қиймат") || h.contains("qiymat") || h.contains("сумма постав")
+            || h.contains("стоимость");
+        boolean withVat = (h.contains("ққс") || h.contains("qqs") || h.contains("ндс"))
+            && (h.contains("олган") || h.contains("учёт") || h.contains("учет"));
+        return valueCol && withVat;
     }
 
     private void applyDefaults(ColumnMap map) {
@@ -188,6 +209,7 @@ public class UzInvoiceSpreadsheetParser {
             cell(row, cols.unit),
             cell(row, cols.qty),
             cell(row, cols.unitPrice),
+            cell(row, cols.lineTotalWithVat),
             cell(row, cols.vatRate),
             excelRowNum,
             uzInvoiceDocumentId
@@ -257,6 +279,7 @@ public class UzInvoiceSpreadsheetParser {
         int unit = -1;
         int qty = -1;
         int unitPrice = -1;
+        int lineTotalWithVat = -1;
         int vatRate = -1;
     }
 }

@@ -1,5 +1,6 @@
 package com.pos.service.support;
 
+import com.pos.sales.domain.SalePaymentMethodFilter;
 import com.pos.sales.entity.Sale;
 
 import java.time.Instant;
@@ -22,6 +23,7 @@ public final class SalesQuerySupport {
         String cashierName,
         String q,
         Sale.PaymentMethod paymentMethod,
+        boolean nonCashOnly,
         Sale.SaleStatus status,
         UUID saleId,
         String paymentSettlement,
@@ -62,7 +64,8 @@ public final class SalesQuerySupport {
                 return Optional.empty();
             }
         }
-        Sale.PaymentMethod pm = parsePaymentMethod(paymentMethodStr);
+        boolean nonCashOnly = SalePaymentMethodFilter.isNonCash(paymentMethodStr);
+        Sale.PaymentMethod pm = nonCashOnly ? null : parsePaymentMethod(paymentMethodStr);
         Sale.SaleStatus st = parseSaleStatus(statusStr);
         String q = blankToNull(search);
         String receipt = blankToNull(receiptNumber);
@@ -78,7 +81,9 @@ public final class SalesQuerySupport {
                 return Optional.empty();
             }
         }
-        return Optional.of(new SalesFilter(start, end, cid, receipt, cname, q, pm, st, saleId, ps, storeId));
+        return Optional.of(new SalesFilter(
+            start, end, cid, receipt, cname, q, pm, nonCashOnly, st, saleId, ps, storeId
+        ));
     }
 
     private static String blankToNull(String s) {

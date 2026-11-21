@@ -8,7 +8,7 @@ import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.catalog.service.imports.ProductImportSource;
 import com.pos.catalog.service.imports.ProductImportSupport;
-import com.pos.spreadsheet.ExcelSpreadsheetReader;
+import com.pos.spreadsheet.ExcelFlexibleCatalogReader;
 import com.pos.spreadsheet.ExcelTemplate;
 import com.pos.spreadsheet.parser.CatalogJsonParser;
 import com.pos.util.ProductImportParseUtil;
@@ -26,7 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CatalogImportSourceHandler implements ProductImportSourceHandler {
 
-    private final ExcelSpreadsheetReader excelSpreadsheetReader;
+    private final ExcelFlexibleCatalogReader excelFlexibleCatalogReader;
     private final CatalogJsonParser catalogJsonParser;
     private final ProductLookupSupport productLookup;
     private final TenantAccessSupport tenantAccess;
@@ -38,7 +38,15 @@ public class CatalogImportSourceHandler implements ProductImportSourceHandler {
 
     @Override
     public List<Map<String, String>> parseSpreadsheet(InputStream in) throws IOException {
-        return excelSpreadsheetReader.read(in, ExcelTemplate.PRODUCTS_CATALOG);
+        return parseSpreadsheet(in, null);
+    }
+
+    @Override
+    public List<Map<String, String>> parseSpreadsheet(
+        InputStream in,
+        Map<String, String> columnMapping
+    ) throws IOException {
+        return excelFlexibleCatalogReader.read(in, ExcelTemplate.PRODUCTS_CATALOG, columnMapping);
     }
 
     @Override

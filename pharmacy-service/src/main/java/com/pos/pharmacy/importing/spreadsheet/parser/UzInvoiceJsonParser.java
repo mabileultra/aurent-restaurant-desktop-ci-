@@ -248,12 +248,17 @@ public class UzInvoiceJsonParser {
         if (!StringUtils.hasText(price)) {
             price = firstText(item, "delivery_cost", "deliveryCost");
         }
-        if (!StringUtils.hasText(price)) {
-            price = firstText(item, "subtotal", "sum", "total", "lineTotal");
+        String lineTotalWithVat = firstText(item,
+            "totalWithVat", "total_with_vat", "deliveryCostWithVat", "delivery_cost_with_vat",
+            "sumWithVat", "sum_with_vat", "amountWithVat", "amount_with_vat",
+            "deliverysumwithvat", "totalVatInclusive", "total_vat_inclusive"
+        );
+        if (!StringUtils.hasText(lineTotalWithVat)) {
+            lineTotalWithVat = firstText(item, "subtotal", "sum", "total", "lineTotal");
         }
         String vat = firstVat(item);
         return UzInvoiceProductRowMapper.toCatalogRow(
-            name, ikpu, barcode, unit, qty, price, vat, rowNum, uzInvoiceDocumentId
+            name, ikpu, barcode, unit, qty, price, lineTotalWithVat, vat, rowNum, uzInvoiceDocumentId
         );
     }
 
@@ -268,6 +273,7 @@ public class UzInvoiceJsonParser {
         String unit = null;
         String qty = null;
         String price = null;
+        String lineTotalWithVat = null;
         String vat = null;
 
         Iterable<JsonNode> colNodes = columns.isArray() ? columns : List.of(columns);
@@ -299,17 +305,22 @@ public class UzInvoiceJsonParser {
                     barcode = value;
                 } else if (key.contains("quantity") || key.contains("miqdor") || key.contains("volume")) {
                     qty = value;
+                } else if (key.contains("hisobga") || key.contains("ҳисобга") || key.contains("with_vat")
+                    || key.contains("with vat") || key.contains("including vat")) {
+                    lineTotalWithVat = value;
                 } else if (key.contains("price") || key.contains("narx")) {
                     price = value;
                 } else if (key.contains("unit") || key.contains("measure") || key.contains("olchov")) {
                     unit = value;
-                } else if (key.contains("vat") || key.contains("qqs") || key.contains("nds")) {
+                } else if ((key.contains("vat") || key.contains("qqs") || key.contains("nds"))
+                    && (key.contains("rate") || key.contains("stavka") || key.contains("percent")
+                    || key.contains("%") || !key.contains("sum"))) {
                     vat = value;
                 }
             }
         }
         return UzInvoiceProductRowMapper.toCatalogRow(
-            name, ikpu, barcode, unit, qty, price, vat, rowNum, uzInvoiceDocumentId
+            name, ikpu, barcode, unit, qty, price, lineTotalWithVat, vat, rowNum, uzInvoiceDocumentId
         );
     }
 

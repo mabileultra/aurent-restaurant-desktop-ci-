@@ -31,6 +31,23 @@ public final class UzInvoiceProductRowMapper {
         int rowNum,
         String uzInvoiceDocumentId
     ) {
+        return toCatalogRow(
+            name, ikpuRaw, barcodeRaw, unit, qtyRaw, priceRaw, null, vatRaw, rowNum, uzInvoiceDocumentId
+        );
+    }
+
+    public static Map<String, String> toCatalogRow(
+        String name,
+        String ikpuRaw,
+        String barcodeRaw,
+        String unit,
+        String qtyRaw,
+        String netUnitPriceRaw,
+        String lineTotalWithVatRaw,
+        String vatRaw,
+        int rowNum,
+        String uzInvoiceDocumentId
+    ) {
         if (!StringUtils.hasText(name) || TOTAL_ROW.matcher(name.trim()).matches()) {
             return null;
         }
@@ -45,7 +62,9 @@ public final class UzInvoiceProductRowMapper {
         if (qty.signum() < 0) {
             qty = BigDecimal.ZERO;
         }
-        BigDecimal price = ProductImportParseUtil.parseDecimalOpt(priceRaw).orElse(null);
+        BigDecimal price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            qtyRaw, netUnitPriceRaw, lineTotalWithVatRaw, vatRaw
+        ).orElse(null);
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
         }
@@ -73,7 +92,7 @@ public final class UzInvoiceProductRowMapper {
         map.put("unit_of_measure", unit.trim());
         map.put("stock_quantity", qty.toPlainString());
         map.put("selling_price", price.toPlainString());
-        // Закуп для прихода: в фактуре отдельной себестоимости нет — та же «Нарх».
+        // Закуп для прихода: цена с НДС (сумма поставки с ҚҚС / кол-во).
         map.put("cost_price", price.toPlainString());
         map.put("tax_rate_percent_nds", vat.toPlainString());
         map.put("active", "1");
