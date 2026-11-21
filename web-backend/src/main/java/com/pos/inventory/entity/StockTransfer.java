@@ -3,6 +3,7 @@ package com.pos.inventory.entity;
 import jakarta.persistence.*;
 import com.pos.entity.Store;
 import com.pos.entity.User;
+import com.pos.inventory.domain.StockTransferStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -26,6 +27,10 @@ public class StockTransfer {
 
     @Column(name = "transfer_number", nullable = false, unique = true, length = 40)
     private String transferNumber;
+
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String status = StockTransferStatus.DRAFT;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_store_id", nullable = false)
@@ -55,6 +60,9 @@ public class StockTransfer {
     void prePersist() {
         if (createdAt == null) {
             createdAt = Instant.now();
+        }
+        if (status == null) {
+            status = StockTransferStatus.DRAFT;
         }
     }
 }

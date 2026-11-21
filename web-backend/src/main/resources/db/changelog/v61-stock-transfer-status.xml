@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v61-stock-transfer-status" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="stock_transfers"/>
+            <not>
+                <columnExists tableName="stock_transfers" columnName="status"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stock_transfers">
+            <column name="status" type="VARCHAR(20)" defaultValue="POSTED">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <createIndex tableName="stock_transfers" indexName="idx_stock_transfers_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -66,5 +66,6 @@
     <include file="v58-collapse-doubled-apostrophe.xml" relativeToChangelogFile="true"/>
     <include file="v59-tax-analytics-export.xml" relativeToChangelogFile="true"/>
     <include file="v60-sale-fiscal-error-text.xml" relativeToChangelogFile="true"/>
+    <include file="v61-stock-transfer-status.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
 

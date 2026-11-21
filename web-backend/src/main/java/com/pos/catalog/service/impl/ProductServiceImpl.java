@@ -77,10 +77,11 @@ public class ProductServiceImpl implements ProductService {
         Boolean markedProduct,
         String businessTypeCode,
         Integer storeId,
+        String receiptNumber,
         Pageable pageable
     ) {
         return queryService.getWarehouseProducts(
-            search, barcodeContains, markedProduct, businessTypeCode, storeId, pageable
+            search, barcodeContains, markedProduct, businessTypeCode, storeId, receiptNumber, pageable
         );
     }
 

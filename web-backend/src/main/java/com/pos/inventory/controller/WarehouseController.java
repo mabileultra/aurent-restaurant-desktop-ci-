@@ -14,6 +14,7 @@ import com.pos.inventory.dto.warehouse.StockProductionResponse;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.inventory.dto.warehouse.StockTransferResponse;
 import com.pos.inventory.dto.warehouse.UpdateStockReceiptRequest;
+import com.pos.inventory.dto.warehouse.UpdateStockTransferRequest;
 import com.pos.inventory.dto.stock.CreateWriteOffRequest;
 import com.pos.inventory.dto.stock.WriteOffRowResponse;
 import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
@@ -72,10 +73,13 @@ public class WarehouseController {
         @RequestParam(required = false) String barcode,
         @RequestParam(required = false) Boolean markedProduct,
         @RequestParam(required = false) Integer storeId,
+        @RequestParam(required = false) String receiptNumber,
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(
-            productService.getWarehouseProducts(search, barcode, markedProduct, null, storeId, pageable)
+            productService.getWarehouseProducts(
+                search, barcode, markedProduct, null, storeId, receiptNumber, pageable
+            )
         );
     }
 
@@ -166,12 +170,31 @@ public class WarehouseController {
 
     @PostMapping("/transfers")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Создать перемещение", description = "Перемещение товара между складами/магазинами")
+    @Operation(summary = "Создать перемещение", description = "Черновик или сразу проведение (post=true по умолчанию)")
     @ApiResponse(responseCode = "200", description = "Перемещение создано")
     public ResponseEntity<StockTransferResponse> createTransfer(
         @Valid @RequestBody CreateStockTransferRequest request
     ) {
         return ResponseEntity.ok(stockTransferService.create(request));
+    }
+
+    @PutMapping("/transfers/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Обновить черновик перемещения")
+    @ApiResponse(responseCode = "200", description = "Черновик обновлён")
+    public ResponseEntity<StockTransferResponse> updateTransfer(
+        @PathVariable UUID id,
+        @Valid @RequestBody UpdateStockTransferRequest request
+    ) {
+        return ResponseEntity.ok(stockTransferService.update(id, request));
+    }
+
+    @PostMapping("/transfers/{id}/post")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Провести черновик перемещения")
+    @ApiResponse(responseCode = "200", description = "Перемещение проведено")
+    public ResponseEntity<StockTransferResponse> postTransfer(@PathVariable UUID id) {
+        return ResponseEntity.ok(stockTransferService.post(id));
     }
 
     @GetMapping("/transfers")

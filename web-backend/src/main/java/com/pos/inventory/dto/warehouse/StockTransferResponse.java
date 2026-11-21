@@ -8,6 +8,7 @@ import java.util.UUID;
 public record StockTransferResponse(
     UUID id,
     String transferNumber,
+    String status,
     Integer fromStoreId,
     String fromStoreName,
     Integer toStoreId,

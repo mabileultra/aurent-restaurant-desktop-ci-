@@ -106,7 +106,19 @@ public class ProductResponseAssembler {
             base.storePrices(),
             extensionMapper.toDto(product.getServiceDetails()),
             extensionMapper.toDto(product.getRetailDetails()),
-            productAttributeService.getAttributes(product.getId())
+            productAttributeService.getAttributes(product.getId()),
+            base.lastReceiptNumber()
+        );
+    }
+
+    public ProductResponse withLastReceiptNumber(ProductResponse base, String lastReceiptNumber) {
+        return copy(
+            base,
+            base.stockQuantity(),
+            base.stockDispatched(),
+            base.lowStock(),
+            base.sellingPrice(),
+            lastReceiptNumber
         );
     }
 
@@ -142,6 +154,17 @@ public class ProductResponseAssembler {
         int stockDispatched,
         boolean lowStock,
         BigDecimal sellingPrice
+    ) {
+        return copy(r, stockQuantity, stockDispatched, lowStock, sellingPrice, r.lastReceiptNumber());
+    }
+
+    private static ProductResponse copy(
+        ProductResponse r,
+        BigDecimal stockQuantity,
+        int stockDispatched,
+        boolean lowStock,
+        BigDecimal sellingPrice,
+        String lastReceiptNumber
     ) {
         return new ProductResponse(
             r.id(),
@@ -186,7 +209,8 @@ public class ProductResponseAssembler {
             r.storePrices(),
             r.serviceDetails(),
             r.retailExtras(),
-            r.attributes()
+            r.attributes(),
+            lastReceiptNumber
         );
     }
 }

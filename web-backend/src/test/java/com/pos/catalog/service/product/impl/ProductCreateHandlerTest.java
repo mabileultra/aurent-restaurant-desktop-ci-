@@ -187,7 +187,8 @@ class ProductCreateHandlerTest {
             List.of(),
             null,
             null,
-            Map.of()
+            Map.of(),
+            null
         );
     }
 }

@@ -17,6 +17,7 @@ import com.pos.catalog.service.product.support.ProductBarcodeScanVariants;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductCatalogTotalsSupport;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
+import com.pos.catalog.service.product.support.ProductWarehouseReceiptSupport;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.scales.codec.WeightBarcodeCodec;
 import com.pos.service.support.CatalogIsolationSupport;
@@ -53,6 +54,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final WeightBarcodeCodec weightBarcodeCodec;
     private final CatalogIsolationSupport catalogIsolation;
     private final CatalogRemoteReadinessGuard catalogRemoteReadinessGuard;
+    private final ProductWarehouseReceiptSupport warehouseReceiptSupport;
 
     @Override
     public PageResponse<ProductResponse> getProducts(
@@ -86,16 +88,28 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         Boolean markedProduct,
         String businessTypeCode,
         Integer storeId,
+        String receiptNumber,
         Pageable pageable
     ) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         if (storeId != null) {
             storeStockService.requireStoreForCompany(companyId, storeId);
         }
+        java.util.List<UUID> receiptProductIds =
+            warehouseReceiptSupport.productIdsForReceiptFilter(companyId, receiptNumber);
         Specification<Product> spec = ProductSpecifications.warehouseFilter(
-            companyId, search, barcodeContains, markedProduct, businessTypeCode
+            companyId, search, barcodeContains, markedProduct, businessTypeCode, receiptProductIds
         );
-        return mapPage(productRepository.findAll(spec, pageable), storeId);
+        PageResponse<ProductResponse> page = mapPage(productRepository.findAll(spec, pageable), storeId);
+        java.util.List<ProductResponse> enriched =
+            warehouseReceiptSupport.withLatestReceiptNumbers(companyId, page.content());
+        return new PageResponse<>(
+            enriched,
+            page.totalPages(),
+            page.totalElements(),
+            page.size(),
+            page.number()
+        );
     }
 
     @Override

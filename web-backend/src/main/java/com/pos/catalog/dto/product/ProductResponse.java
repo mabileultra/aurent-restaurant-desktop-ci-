@@ -58,5 +58,7 @@ public record ProductResponse(
     List<ProductStorePriceRow> storePrices,
     ServiceProductDetailsDto serviceDetails,
     RetailExtrasDto retailExtras,
-    Map<String, String> attributes
+    Map<String, String> attributes,
+    /** Latest posted stock receipt number (warehouse list); null elsewhere. */
+    String lastReceiptNumber
 ) {}

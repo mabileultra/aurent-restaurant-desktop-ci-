@@ -1,25 +1,21 @@
 package com.pos.inventory.service.stock.impl;
 
-import com.pos.domain.StockMovementType;
 import com.pos.dto.shared.PageResponse;
-import com.pos.inventory.dto.warehouse.CreateStockTransferRequest;
-import com.pos.inventory.dto.warehouse.StockTransferLineRequest;
-import com.pos.inventory.dto.warehouse.StockTransferLineResponse;
-import com.pos.inventory.dto.warehouse.StockTransferResponse;
-import com.pos.catalog.entity.Product;
-import com.pos.inventory.entity.StockMovement;
-import com.pos.inventory.entity.StockTransfer;
-import com.pos.inventory.entity.StockTransferLine;
-import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
+import com.pos.inventory.domain.StockTransferStatus;
+import com.pos.inventory.dto.warehouse.CreateStockTransferRequest;
+import com.pos.inventory.dto.warehouse.StockTransferLineResponse;
+import com.pos.inventory.dto.warehouse.StockTransferResponse;
+import com.pos.inventory.dto.warehouse.UpdateStockTransferRequest;
+import com.pos.inventory.entity.StockTransfer;
 import com.pos.inventory.repository.StockTransferRepository;
-import com.pos.repository.StoreRepository;
-import com.pos.security.CurrentUserProvider;
 import com.pos.inventory.service.stock.StockTransferService;
-import com.pos.service.event.PosDomainEventService;
 import com.pos.inventory.service.stock.support.StockDocumentSupport;
-import com.pos.inventory.service.stock.support.StockMovementPersistence;
+import com.pos.inventory.service.stock.support.StockTransferLineWriter;
+import com.pos.inventory.service.stock.support.StockTransferPostSupport;
+import com.pos.inventory.service.stock.support.StockTransferStoreGuard;
+import com.pos.security.CurrentUserProvider;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,17 +24,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.pos.util.QuantityUtil;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import com.pos.inventory.service.stock.support.StockLineCatalogSnapshot;
 
 @Service
 @RequiredArgsConstructor
@@ -48,104 +40,66 @@ public class StockTransferServiceImpl implements StockTransferService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockTransferRepository stockTransferRepository;
-    private final StockMovementPersistence stockMovementPersistence;
-    private final StoreRepository storeRepository;
     private final CurrentUserProvider currentUserProvider;
     private final TenantAccessSupport tenantAccess;
     private final StockDocumentSupport stockDocument;
-    private final PosDomainEventService posDomainEventService;
+    private final StockTransferStoreGuard storeGuard;
+    private final StockTransferLineWriter lineWriter;
+    private final StockTransferPostSupport postSupport;
 
     @Override
     public StockTransferResponse create(CreateStockTransferRequest request) {
-        if (request.fromStoreId().equals(request.toStoreId())) {
-            throw PosExceptions.badRequest("From and to store must differ");
-        }
         stockDocument.requireLines(request.lines());
         User user = currentUserProvider.requireCurrentUser();
-        Store fromStore = storeRepository.findById(request.fromStoreId())
-            .orElseThrow(() -> PosExceptions.notFound("From store"));
-        Store toStore = storeRepository.findById(request.toStoreId())
-            .orElseThrow(() -> PosExceptions.notFound("To store"));
-        tenantAccess.assertCanAccessStore(fromStore);
-        tenantAccess.assertCanAccessStore(toStore);
-        if (fromStore.getCompany() == null
-            || toStore.getCompany() == null
-            || !fromStore.getCompany().getId().equals(toStore.getCompany().getId())) {
-            throw PosExceptions.badRequest("Transfer is allowed only between stores of the same company");
-        }
+        var stores = storeGuard.requireSameCompanyPair(request.fromStoreId(), request.toStoreId());
 
-        String number = nextTransferNumber();
         StockTransfer transfer = stockTransferRepository.save(StockTransfer.builder()
-            .transferNumber(number)
-            .fromStore(fromStore)
-            .toStore(toStore)
+            .transferNumber(nextTransferNumber())
+            .status(StockTransferStatus.DRAFT)
+            .fromStore(stores.fromStore())
+            .toStore(stores.toStore())
             .notes(trimToNull(request.notes()))
             .createdBy(user)
             .totalQuantity(BigDecimal.ZERO)
             .build());
-        UUID transferId = transfer.getId();
-
-        BigDecimal totalQty = BigDecimal.ZERO;
-        List<StockTransferLine> lines = new ArrayList<>();
-
-        for (StockTransferLineRequest lineReq : request.lines()) {
-            Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
-            BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
-            stockDocument.requirePositiveQuantity(q);
-            com.pos.util.QuantityValidator.validate(
-                com.pos.catalog.service.product.ProductQuantityRulesResolver.fromProduct(product), q);
-            if (product.getStockQuantity().compareTo(q) < 0) {
-                throw PosExceptions.badRequest("Insufficient stock for " + product.getName());
-            }
-
-            var card = com.pos.inventory.service.stock.support.StockLineCatalogSnapshot.Card.of(product);
-            lines.add(StockTransferLine.builder()
-                .transfer(transfer)
-                .productId(card.productId())
-                .productName(card.productName())
-                .productSku(card.productSku())
-                .quantity(q)
-                .build());
-
-            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
-                
-                .store(fromStore)
-                .movementType(StockMovementType.ADJUSTMENT)
-                .quantity(q.negate())
-                .referenceId(transferId)
-                .notes("Перемещение " + number + " → " + toStore.getName())
-                .createdBy(user)
-                .build());
-            stockMovementPersistence.save(StockLineCatalogSnapshot.apply(StockMovement.builder(), product)
-                
-                .store(toStore)
-                .movementType(StockMovementType.RESTOCK)
-                .quantity(q)
-                .referenceId(transferId)
-                .notes("Перемещение " + number + " ← " + fromStore.getName())
-                .createdBy(user)
-                .build());
-
-            totalQty = QuantityUtil.add(totalQty, q);
-        }
-
-        transfer.getLines().clear();
-        transfer.getLines().addAll(lines);
-        transfer.setTotalQuantity(totalQty);
+        lineWriter.replaceLines(transfer, request.lines());
         stockTransferRepository.save(transfer);
 
-        StockTransfer detailed = stockTransferRepository.findDetailedById(transferId).orElseThrow();
-        posDomainEventService.publishStockTransferAfterCommit(detailed);
-        return toResponse(detailed);
+        boolean postNow = request.post() == null || Boolean.TRUE.equals(request.post());
+        if (postNow) {
+            postSupport.post(transfer, user);
+            stockTransferRepository.save(transfer);
+        }
+        return toResponse(requireDetailed(transfer.getId()));
+    }
+
+    @Override
+    public StockTransferResponse update(UUID id, UpdateStockTransferRequest request) {
+        StockTransfer transfer = requireAccessible(id);
+        requireDraft(transfer);
+        stockDocument.requireLines(request.lines());
+        var stores = storeGuard.requireSameCompanyPair(request.fromStoreId(), request.toStoreId());
+        transfer.setFromStore(stores.fromStore());
+        transfer.setToStore(stores.toStore());
+        transfer.setNotes(trimToNull(request.notes()));
+        lineWriter.replaceLines(transfer, request.lines());
+        stockTransferRepository.save(transfer);
+        return toResponse(requireDetailed(id));
+    }
+
+    @Override
+    public StockTransferResponse post(UUID id) {
+        StockTransfer transfer = requireAccessible(id);
+        User user = currentUserProvider.requireCurrentUser();
+        postSupport.post(transfer, user);
+        stockTransferRepository.save(transfer);
+        return toResponse(requireDetailed(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public StockTransferResponse getById(UUID id) {
-        StockTransfer transfer = stockTransferRepository.findDetailedById(id)
-            .orElseThrow(() -> PosExceptions.notFound("Transfer"));
-        tenantAccess.assertCanAccessStore(transfer.getFromStore());
-        return toResponse(transfer);
+        return toResponse(requireAccessible(id));
     }
 
     @Override
@@ -166,6 +120,23 @@ public class StockTransferServiceImpl implements StockTransferService {
         return PageResponse.from(page.map(this::toSummary));
     }
 
+    private StockTransfer requireAccessible(UUID id) {
+        StockTransfer transfer = requireDetailed(id);
+        tenantAccess.assertCanAccessStore(transfer.getFromStore());
+        return transfer;
+    }
+
+    private StockTransfer requireDetailed(UUID id) {
+        return stockTransferRepository.findDetailedById(id)
+            .orElseThrow(() -> PosExceptions.notFound("Transfer"));
+    }
+
+    private void requireDraft(StockTransfer transfer) {
+        if (!StockTransferStatus.DRAFT.equals(transfer.getStatus())) {
+            throw PosExceptions.badRequest("Only DRAFT transfer can be updated");
+        }
+    }
+
     private String nextTransferNumber() {
         LocalDate today = LocalDate.now(ZONE);
         Instant dayStart = today.atStartOfDay(ZONE).toInstant();
@@ -184,6 +155,7 @@ public class StockTransferServiceImpl implements StockTransferService {
         return new StockTransferResponse(
             t.getId(),
             t.getTransferNumber(),
+            t.getStatus(),
             t.getFromStore().getId(),
             t.getFromStore().getName(),
             t.getToStore().getId(),
@@ -209,6 +181,7 @@ public class StockTransferServiceImpl implements StockTransferService {
         return new StockTransferResponse(
             t.getId(),
             t.getTransferNumber(),
+            t.getStatus(),
             t.getFromStore().getId(),
             t.getFromStore().getName(),
             t.getToStore().getId(),

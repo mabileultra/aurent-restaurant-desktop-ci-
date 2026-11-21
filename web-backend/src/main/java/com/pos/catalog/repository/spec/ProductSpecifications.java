@@ -17,8 +17,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public final class ProductSpecifications {
 
@@ -175,11 +177,29 @@ public final class ProductSpecifications {
         Boolean markedProduct,
         String businessTypeCode
     ) {
+        return warehouseFilter(companyId, search, barcodeContains, markedProduct, businessTypeCode, null);
+    }
+
+    public static Specification<Product> warehouseFilter(
+        Integer companyId,
+        String search,
+        String barcodeContains,
+        Boolean markedProduct,
+        String businessTypeCode,
+        Collection<UUID> productIds
+    ) {
         return (root, query, cb) -> {
             List<Predicate> parts = new ArrayList<>();
             parts.add(cb.isTrue(root.get("isActive")));
             if (companyId != null) {
                 parts.add(cb.equal(root.get("company").get("id"), companyId));
+            }
+            if (productIds != null) {
+                if (productIds.isEmpty()) {
+                    parts.add(cb.disjunction());
+                } else {
+                    parts.add(root.get("id").in(productIds));
+                }
             }
 
             String q = search != null ? search.trim() : "";
