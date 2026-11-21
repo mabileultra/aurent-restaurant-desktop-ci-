@@ -14,6 +14,10 @@ public final class NativeQueryParamSupport {
         return categoryId != null ? categoryId : OPTIONAL_INT_ABSENT;
     }
 
+    /**
+     * Null store → {@code -1}. Matching SQL must use {@code (:storeId < 0 OR store_id = :storeId)},
+     * not {@code IS NULL} (binder never sends JDBC null).
+     */
     public static int optionalStoreId(Integer storeId) {
         return storeId != null ? storeId : OPTIONAL_INT_ABSENT;
     }

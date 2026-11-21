@@ -1,6 +1,8 @@
 package com.pos.reporting.dto;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record ProductSalesRowResponse(
@@ -14,6 +16,11 @@ public record ProductSalesRowResponse(
     long netQuantity,
     BigDecimal revenue,
     BigDecimal costEstimate,
-    BigDecimal margin
+    BigDecimal margin,
+    LocalDate firstSaleDate,
+    LocalDate lastSaleDate,
+    Instant lastActivityAt,
+    Integer storeId,
+    String storeName
 ) {
 }

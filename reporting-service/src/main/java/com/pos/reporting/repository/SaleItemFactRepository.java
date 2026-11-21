@@ -47,8 +47,15 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
                COALESCE(SUM(i.quantity - i.quantity_returned), 0) AS net_qty,
                COALESCE(SUM(i.quantity_returned), 0) AS returned_qty,
                COALESCE(SUM(i.revenue), 0) AS revenue,
-               COALESCE(SUM(i.cost_estimate), 0) AS cost_estimate
+               COALESCE(SUM(i.cost_estimate), 0) AS cost_estimate,
+               MIN(i.transaction_date) AS first_sale_date,
+               MAX(i.transaction_date) AS last_sale_date,
+               MAX(i.ingested_at) AS last_activity_at,
+               (array_agg(i.store_id ORDER BY i.ingested_at DESC NULLS LAST, i.transaction_date DESC))[1] AS last_store_id,
+               (array_agg(COALESCE(s.store_name, CONCAT('Store #', i.store_id))
+                          ORDER BY i.ingested_at DESC NULLS LAST, i.transaction_date DESC))[1] AS last_store_name
         FROM sale_item_facts i
+        LEFT JOIN sale_facts s ON s.sale_id = i.sale_id
         WHERE i.company_id = :companyId
           AND i.transaction_date BETWEEN :from AND :to
           AND (:storeId IS NULL OR i.store_id = :storeId)
@@ -62,7 +69,7 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
         GROUP BY COALESCE(CAST(i.product_id AS varchar), i.product_name)
         HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
             OR COALESCE(SUM(i.quantity_returned), 0) > 0
-        ORDER BY net_qty DESC
+        ORDER BY last_activity_at DESC NULLS LAST, last_sale_date DESC, product_name ASC
         """,
         countQuery = """
         SELECT COUNT(*) FROM (

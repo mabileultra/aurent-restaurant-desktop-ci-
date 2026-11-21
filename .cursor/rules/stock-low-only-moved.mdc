@@ -1,0 +1,17 @@
+---
+description: Low-stock counts only SKUs with stock movements in scope
+alwaysApply: false
+---
+
+# Low stock — only moved SKUs
+
+## Rule
+
+- «Ниже минимума» counts a product only if it has **stock movement facts in the selected scope** (store or company).
+- Empty store / never received there → **0**, not the whole catalog at qty 0.
+- Implementation: `INNER JOIN` movement balance (`low-stock-count.sql` / `low-stock-page.sql`), not `LEFT JOIN` with `COALESCE(..., 0)`.
+
+## Do not
+
+- Treat “no `store_stock` / no movements” as low stock for a store filter.
+- Use `LEFT JOIN` + zero fill for store-scoped low-stock KPIs.

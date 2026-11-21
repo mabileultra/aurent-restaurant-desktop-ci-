@@ -21,10 +21,16 @@ public class SalesExportRowMapper {
         List<Map<String, Object>> data = new ArrayList<>();
         for (ProductSalesRowResponse row : rows) {
             Map<String, Object> mapped = new LinkedHashMap<>();
+            mapped.put("product_id", row.productId());
             mapped.put("product_name", row.productName());
             mapped.put("sku", row.sku());
             mapped.put("barcode", row.barcode());
             mapped.put("category", row.categoryName());
+            mapped.put("store_id", row.storeId());
+            mapped.put("store", row.storeName());
+            mapped.put("first_sale_date", row.firstSaleDate());
+            mapped.put("last_sale_date", row.lastSaleDate());
+            mapped.put("last_activity_at", row.lastActivityAt());
             mapped.put("sold_qty", row.quantitySold());
             mapped.put("returned_qty", row.quantityReturned());
             mapped.put("net_qty", row.netQuantity());
@@ -56,7 +62,11 @@ public class SalesExportRowMapper {
         List<Map<String, Object>> data = new ArrayList<>();
         for (StoreSalesRowResponse row : rows) {
             Map<String, Object> mapped = new LinkedHashMap<>();
+            mapped.put("store_id", row.storeId());
             mapped.put("store", row.storeName());
+            mapped.put("first_sale_date", row.firstSaleDate());
+            mapped.put("last_sale_date", row.lastSaleDate());
+            mapped.put("last_activity_at", row.lastActivityAt());
             mapped.put("receipt_count", row.receiptCount());
             mapped.put("net_qty", row.netQuantity());
             mapped.put("returned_qty", row.quantityReturned());

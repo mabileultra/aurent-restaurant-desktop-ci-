@@ -1,6 +1,7 @@
 package com.pos.dto.report.stock;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public record LowStockRowResponse(
@@ -12,5 +13,6 @@ public record LowStockRowResponse(
     int lowStockAlert,
     BigDecimal deficit,
     BigDecimal costPrice,
-    BigDecimal stockValueEstimate
+    BigDecimal stockValueEstimate,
+    Instant stockUpdatedAt
 ) {}

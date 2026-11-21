@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +69,22 @@ public class StoreStockService {
                 continue;
             }
             map.put((UUID) row[0], QuantityUtil.normalizeFromNumber((Number) row[1]));
+        }
+        return map;
+    }
+
+    /** Last store_stock.updated_at per product (optional store filter). */
+    @Transactional(readOnly = true)
+    public Map<UUID, Instant> maxUpdatedAt(Collection<UUID> productIds, Integer storeId) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, Instant> map = new HashMap<>();
+        for (Object[] row : storeStockRepository.maxUpdatedAtByProductIds(productIds, storeId)) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            map.put((UUID) row[0], (Instant) row[1]);
         }
         return map;
     }

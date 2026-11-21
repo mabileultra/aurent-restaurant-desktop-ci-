@@ -6,14 +6,20 @@ import com.pos.dto.report.stock.LowStockRowResponse;
 import com.pos.dto.report.stock.StockBalanceRowResponse;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 public final class LiveStockBalanceRowMapper {
 
     private LiveStockBalanceRowMapper() {}
 
-    public static StockBalanceRowResponse toBalance(Product product, BigDecimal rawQty) {
+    public static StockBalanceRowResponse toBalance(
+        Product product,
+        BigDecimal rawQty,
+        Instant stockUpdatedAt
+    ) {
         BigDecimal qty = StockRetailValueMath.displayQty(rawQty);
         BigDecimal cost = product.getCostPrice() != null ? product.getCostPrice() : BigDecimal.ZERO;
+        BigDecimal retail = product.getSellingPrice() != null ? product.getSellingPrice() : BigDecimal.ZERO;
         return new StockBalanceRowResponse(
             product.getId(),
             product.getName(),
@@ -23,11 +29,16 @@ public final class LiveStockBalanceRowMapper {
             StockRetailValueMath.scaleQty(qty),
             product.getLowStockAlert(),
             cost,
-            StockRetailValueMath.scaleMoney(StockRetailValueMath.lineValue(cost, rawQty))
+            StockRetailValueMath.scaleMoney(StockRetailValueMath.lineValue(retail, rawQty)),
+            stockUpdatedAt
         );
     }
 
-    public static LowStockRowResponse toLowStock(Product product, BigDecimal rawQty) {
+    public static LowStockRowResponse toLowStock(
+        Product product,
+        BigDecimal rawQty,
+        Instant stockUpdatedAt
+    ) {
         BigDecimal qty = StockRetailValueMath.displayQty(rawQty);
         int alert = product.getLowStockAlert();
         BigDecimal deficit = BigDecimal.valueOf(alert).subtract(qty).max(BigDecimal.ZERO);
@@ -41,7 +52,8 @@ public final class LiveStockBalanceRowMapper {
             alert,
             StockRetailValueMath.scaleQty(deficit),
             cost,
-            StockRetailValueMath.scaleMoney(StockRetailValueMath.lineValue(cost, rawQty))
+            StockRetailValueMath.scaleMoney(StockRetailValueMath.lineValue(cost, rawQty)),
+            stockUpdatedAt
         );
     }
 }
