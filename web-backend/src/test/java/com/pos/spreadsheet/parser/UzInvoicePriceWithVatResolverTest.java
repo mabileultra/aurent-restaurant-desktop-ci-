@@ -26,4 +26,23 @@ class UzInvoicePriceWithVatResolverTest {
         assertTrue(price.isPresent());
         assertEquals(new BigDecimal("32000.00"), price.get());
     }
+
+    @Test
+    void blankVatRateKeepsNetWithoutDefault12Percent() {
+        var price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            "10", "100.00", "", ""
+        );
+        assertTrue(price.isPresent());
+        assertEquals(new BigDecimal("100.00"), price.get());
+    }
+
+    @Test
+    void nullVatRateKeepsNet() {
+        var price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            "10", "100.00", null, null
+        );
+        assertTrue(price.isPresent());
+        assertEquals(new BigDecimal("100.00"), price.get());
+    }
 }
+

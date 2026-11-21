@@ -248,14 +248,12 @@ public class UzInvoiceJsonParser {
         if (!StringUtils.hasText(price)) {
             price = firstText(item, "delivery_cost", "deliveryCost");
         }
+        // Только явные with-VAT поля — иначе net×rate. Не fallback на subtotal/sum/total.
         String lineTotalWithVat = firstText(item,
             "totalWithVat", "total_with_vat", "deliveryCostWithVat", "delivery_cost_with_vat",
             "sumWithVat", "sum_with_vat", "amountWithVat", "amount_with_vat",
             "deliverysumwithvat", "totalVatInclusive", "total_vat_inclusive"
         );
-        if (!StringUtils.hasText(lineTotalWithVat)) {
-            lineTotalWithVat = firstText(item, "subtotal", "sum", "total", "lineTotal");
-        }
         String vat = firstVat(item);
         return UzInvoiceProductRowMapper.toCatalogRow(
             name, ikpu, barcode, unit, qty, price, lineTotalWithVat, vat, rowNum, uzInvoiceDocumentId

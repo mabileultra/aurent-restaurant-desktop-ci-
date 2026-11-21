@@ -87,12 +87,29 @@ public final class ExcelCatalogColumnAliases {
                     continue;
                 }
                 String n = ExcelSpreadsheetReader.normHeader(h);
-                if (n.equals(a) || n.contains(a) || a.contains(n)) {
+                if (aliasMatches(n, a)) {
                     return h;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Exact always; substring only for longer aliases so short ones
+     * ({@code code}, {@code цена}) do not steal {@code Barcode} / {@code Цена закупки}.
+     */
+    static boolean aliasMatches(String headerNorm, String aliasNorm) {
+        if (!StringUtils.hasText(headerNorm) || !StringUtils.hasText(aliasNorm)) {
+            return false;
+        }
+        if (headerNorm.equals(aliasNorm)) {
+            return true;
+        }
+        if (aliasNorm.length() < 5) {
+            return false;
+        }
+        return headerNorm.contains(aliasNorm) || aliasNorm.contains(headerNorm);
     }
 
     public static String normalizeLabel(String s) {

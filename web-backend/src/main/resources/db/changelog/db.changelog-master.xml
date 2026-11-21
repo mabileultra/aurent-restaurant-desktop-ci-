@@ -67,5 +67,6 @@
     <include file="v59-tax-analytics-export.xml" relativeToChangelogFile="true"/>
     <include file="v60-sale-fiscal-error-text.xml" relativeToChangelogFile="true"/>
     <include file="v61-stock-transfer-status.xml" relativeToChangelogFile="true"/>
+    <include file="v62-stock-receipt-lines-product-id-index.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
 

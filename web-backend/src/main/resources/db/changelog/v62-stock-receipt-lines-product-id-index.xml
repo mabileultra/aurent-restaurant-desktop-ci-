@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v62-stock-receipt-lines-product-id-index" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="stock_receipt_lines"/>
+            <not>
+                <indexExists tableName="stock_receipt_lines" indexName="idx_stock_receipt_lines_product"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="stock_receipt_lines" indexName="idx_stock_receipt_lines_product">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -10,6 +10,7 @@ import com.pos.inventory.entity.StockTransfer;
 import com.pos.inventory.entity.StockTransferLine;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.event.PosDomainEventService;
+import com.pos.service.support.TenantAccessSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,6 +37,7 @@ class StockTransferPostSupportTest {
     @Mock StoreStockService storeStockService;
     @Mock StockMovementPersistence stockMovementPersistence;
     @Mock PosDomainEventService posDomainEventService;
+    @Mock TenantAccessSupport tenantAccess;
     @InjectMocks StockTransferPostSupport postSupport;
 
     @Test
@@ -54,12 +57,13 @@ class StockTransferPostSupportTest {
             .productId(product.getId())
             .quantity(new BigDecimal("2"))
             .build());
-        when(catalogManagedProductLoader.requireById(product.getId())).thenReturn(product);
+        when(catalogManagedProductLoader.requireActiveWithCompany(any())).thenReturn(Map.of(product.getId(), product));
         when(stockMovementPersistence.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         postSupport.post(transfer, User.builder().id(UUID.randomUUID()).build());
 
         assertEquals(StockTransferStatus.POSTED, transfer.getStatus());
+        verify(tenantAccess).assertProductBelongsToTenant(product);
         verify(storeStockService).requireAvailable(product, from, new BigDecimal("2"));
         verify(storeStockService).decrease(product, from, new BigDecimal("2"));
         verify(storeStockService).increase(product, to, new BigDecimal("2"));
@@ -95,7 +99,7 @@ class StockTransferPostSupportTest {
             .productId(product.getId())
             .quantity(new BigDecimal("5"))
             .build());
-        when(catalogManagedProductLoader.requireById(product.getId())).thenReturn(product);
+        when(catalogManagedProductLoader.requireActiveWithCompany(any())).thenReturn(Map.of(product.getId(), product));
         doThrow(new BadRequestException("Insufficient stock"))
             .when(storeStockService).requireAvailable(eq(product), eq(from), any());
 

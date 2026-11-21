@@ -39,7 +39,7 @@ public interface StockReceiptLineRepository extends JpaRepository<StockReceiptLi
         INNER JOIN stores s ON s.id = r.store_id
         WHERE s.company_id = :companyId
           AND r.status = 'POSTED'
-          AND LOWER(r.receipt_number) LIKE LOWER(CAST(:pattern AS text))
+          AND LOWER(r.receipt_number) LIKE LOWER(CAST(:pattern AS text)) ESCAPE '\'
         """, nativeQuery = true)
     List<UUID> findProductIdsByReceiptNumberContains(
         @Param("companyId") Integer companyId,

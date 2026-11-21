@@ -167,20 +167,7 @@ public class UzInvoiceSpreadsheetParser {
 
     /** Колонка «қиймат ҚҚСни ҳисобга олган ҳолда» / сумма с НДС. */
     private static boolean isLineTotalWithVatHeader(String h) {
-        if (!StringUtils.hasText(h)) {
-            return false;
-        }
-        if (containsAny(h,
-            "ҳисобга олган", "хисобга олган", "hisobga olgan",
-            "включая ндс", "с учётом ндс", "с учетом ндс",
-            "with vat", "including vat", "incl. vat", "incl vat")) {
-            return true;
-        }
-        boolean valueCol = h.contains("қиймат") || h.contains("qiymat") || h.contains("сумма постав")
-            || h.contains("стоимость");
-        boolean withVat = (h.contains("ққс") || h.contains("qqs") || h.contains("ндс"))
-            && (h.contains("олган") || h.contains("учёт") || h.contains("учет"));
-        return valueCol && withVat;
+        return UzInvoiceLineTotalWithVatHeaders.matches(h);
     }
 
     private void applyDefaults(ColumnMap map) {

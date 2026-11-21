@@ -3,6 +3,7 @@ package com.pos.catalog.service.product.support;
 import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.inventory.repository.StockReceiptLineRepository;
+import com.pos.util.SqlLikeEscaper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -24,7 +25,7 @@ public class ProductWarehouseReceiptSupport {
         if (companyId == null || !StringUtils.hasText(receiptNumber)) {
             return null;
         }
-        String pattern = "%" + receiptNumber.trim() + "%";
+        String pattern = "%" + SqlLikeEscaper.escape(receiptNumber.trim()) + "%";
         return stockReceiptLineRepository.findProductIdsByReceiptNumberContains(companyId, pattern);
     }
 

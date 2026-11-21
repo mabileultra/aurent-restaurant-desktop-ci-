@@ -152,14 +152,27 @@ public class StoreStockService {
         if (!com.pos.util.StockCalculator.tracksStock(product.getSaleType())) {
             return;
         }
+        if (store == null) {
+            throw PosExceptions.badRequest("Store is required for stock operations");
+        }
         BigDecimal q = QuantityUtil.normalize(quantity);
-        StoreStock stock = storeStockRepository.findByProductIdAndStoreId(product.getId(), store.getId())
+        StoreStock stock = storeStockRepository
+            .findByProductIdAndStoreIdForUpdate(product.getId(), store.getId())
             .orElseGet(() -> StoreStock.builder()
                 .productId(product.getId())
                 .store(store)
                 .quantity(BigDecimal.ZERO)
                 .build());
-        stock.setQuantity(QuantityUtil.normalize(stock.getQuantity().subtract(q)));
+        BigDecimal available = QuantityUtil.normalize(stock.getQuantity());
+        if (available.compareTo(q) < 0) {
+            String unit = product.getSaleType() == SaleType.WEIGHT
+                ? " " + (product.getUnitCode() != null ? product.getUnitCode().displayLabel() : "kg")
+                : "";
+            throw PosExceptions.badRequest(
+                "Insufficient stock for: " + product.getName() + ". Available: " + available + unit
+            );
+        }
+        stock.setQuantity(QuantityUtil.normalize(available.subtract(q)));
         storeStockRepository.save(stock);
         syncProductTotal(product);
     }

@@ -1,7 +1,9 @@
 package com.pos.inventory.repository;
 
 import com.pos.entity.StoreStock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +16,16 @@ import java.util.UUID;
 public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
 
     Optional<StoreStock> findByProductIdAndStoreId(UUID productId, Integer storeId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT ss FROM StoreStock ss
+        WHERE ss.productId = :productId AND ss.store.id = :storeId
+        """)
+    Optional<StoreStock> findByProductIdAndStoreIdForUpdate(
+        @Param("productId") UUID productId,
+        @Param("storeId") Integer storeId
+    );
 
     List<StoreStock> findByProductIdInAndStoreId(Collection<UUID> productIds, Integer storeId);
 

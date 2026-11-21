@@ -1,10 +1,12 @@
 package com.pos.inventory.repository;
 
 import com.pos.inventory.entity.StockTransfer;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,6 +23,12 @@ public interface StockTransferRepository extends JpaRepository<StockTransfer, UU
     @EntityGraph(attributePaths = {"fromStore", "toStore", "createdBy", "lines"})
     @Query("SELECT t FROM StockTransfer t WHERE t.id = :id")
     Optional<StockTransfer> findDetailedById(@Param("id") UUID id);
+
+    /** Pessimistic lock so concurrent POST …/post cannot double-move stock. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @EntityGraph(attributePaths = {"fromStore", "toStore", "createdBy", "lines"})
+    @Query("SELECT t FROM StockTransfer t WHERE t.id = :id")
+    Optional<StockTransfer> findDetailedByIdForUpdate(@Param("id") UUID id);
 
     @EntityGraph(attributePaths = {"fromStore", "toStore", "createdBy"})
     @Query("""

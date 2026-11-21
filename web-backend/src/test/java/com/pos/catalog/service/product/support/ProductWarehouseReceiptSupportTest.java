@@ -45,6 +45,15 @@ class ProductWarehouseReceiptSupportTest {
     }
 
     @Test
+    void productIdsForReceiptFilter_escapesLikeMetacharacters() {
+        UUID id = UUID.randomUUID();
+        when(stockReceiptLineRepository.findProductIdsByReceiptNumberContains(eq(7), eq("%100\\%OFF%")))
+            .thenReturn(List.of(id));
+
+        assertThat(support.productIdsForReceiptFilter(7, "100%OFF")).containsExactly(id);
+    }
+
+    @Test
     void withLatestReceiptNumbers_mapsPerProduct() {
         UUID id = UUID.randomUUID();
         ProductResponse base = org.mockito.Mockito.mock(ProductResponse.class);

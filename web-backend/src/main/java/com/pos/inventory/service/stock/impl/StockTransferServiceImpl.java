@@ -89,7 +89,7 @@ public class StockTransferServiceImpl implements StockTransferService {
 
     @Override
     public StockTransferResponse post(UUID id) {
-        StockTransfer transfer = requireAccessible(id);
+        StockTransfer transfer = requireAccessibleForUpdate(id);
         User user = currentUserProvider.requireCurrentUser();
         postSupport.post(transfer, user);
         stockTransferRepository.save(transfer);
@@ -122,6 +122,13 @@ public class StockTransferServiceImpl implements StockTransferService {
 
     private StockTransfer requireAccessible(UUID id) {
         StockTransfer transfer = requireDetailed(id);
+        tenantAccess.assertCanAccessStore(transfer.getFromStore());
+        return transfer;
+    }
+
+    private StockTransfer requireAccessibleForUpdate(UUID id) {
+        StockTransfer transfer = stockTransferRepository.findDetailedByIdForUpdate(id)
+            .orElseThrow(() -> PosExceptions.notFound("Transfer"));
         tenantAccess.assertCanAccessStore(transfer.getFromStore());
         return transfer;
     }

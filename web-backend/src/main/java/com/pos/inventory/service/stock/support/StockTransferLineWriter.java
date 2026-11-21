@@ -5,6 +5,7 @@ import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.inventory.dto.warehouse.StockTransferLineRequest;
 import com.pos.inventory.entity.StockTransfer;
 import com.pos.inventory.entity.StockTransferLine;
+import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.QuantityUtil;
 import com.pos.util.QuantityValidator;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 public class StockTransferLineWriter {
 
     private final StockDocumentSupport stockDocument;
+    private final TenantAccessSupport tenantAccess;
 
     public BigDecimal replaceLines(StockTransfer transfer, List<StockTransferLineRequest> lineReqs) {
         stockDocument.requireLines(lineReqs);
@@ -27,6 +29,7 @@ public class StockTransferLineWriter {
         List<StockTransferLine> lines = new ArrayList<>();
         for (StockTransferLineRequest lineReq : lineReqs) {
             Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
+            tenantAccess.assertProductBelongsToTenant(product);
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
             QuantityValidator.validate(ProductQuantityRulesResolver.fromProduct(product), q);

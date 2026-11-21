@@ -9,6 +9,7 @@ import java.util.Optional;
 /**
  * Цена позиции счёт-фактуры для POS: всегда с НДС.
  * Приоритет — сумма поставки с ҚҚС / кол-во; иначе «Нарх» × (1 + ставка).
+ * Пустая/отсутствующая ставка → net без накрутки (не дефолт 12%).
  */
 public final class UzInvoicePriceWithVatResolver {
 
@@ -35,11 +36,14 @@ public final class UzInvoicePriceWithVatResolver {
             return Optional.empty();
         }
 
-        BigDecimal vatPercent = ProductImportParseUtil.normalizeTaxRatePercent(
-            ProductImportParseUtil.parseDecimalOpt(
-                vatRateRaw != null ? vatRateRaw.replace("%", "").trim() : ""
-            ).orElse(null)
+        Optional<BigDecimal> parsedVat = ProductImportParseUtil.parseDecimalOpt(
+            vatRateRaw != null ? vatRateRaw.replace("%", "").trim() : ""
         );
+        if (parsedVat.isEmpty()) {
+            return Optional.of(net.setScale(MONEY_SCALE, RoundingMode.HALF_UP));
+        }
+
+        BigDecimal vatPercent = ProductImportParseUtil.normalizeTaxRatePercent(parsedVat.get());
         if (vatPercent.compareTo(BigDecimal.ZERO) <= 0) {
             return Optional.of(net.setScale(MONEY_SCALE, RoundingMode.HALF_UP));
         }
