@@ -37,6 +37,8 @@ public class SalesReportServiceImpl implements SalesReportService {
             saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(companyId, from, to)
         );
         BigDecimal grossProfit = totalRevenue.subtract(totalCostEstimate);
+        BigDecimal cashTotal = nz(saleFactRepository.sumCashByCompanyAndDateRange(companyId, from, to));
+        BigDecimal cardTotal = nz(saleFactRepository.sumCardByCompanyAndDateRange(companyId, from, to));
         List<DailyPoint> dailyBreakdown = saleFactRepository.dailyRevenueByCompanyAndDateRange(companyId, from, to)
             .stream()
             .map(row -> new DailyPoint(
@@ -51,6 +53,8 @@ public class SalesReportServiceImpl implements SalesReportService {
             averageTransactionValue,
             totalCostEstimate,
             grossProfit,
+            cashTotal,
+            cardTotal,
             dailyBreakdown
         );
     }

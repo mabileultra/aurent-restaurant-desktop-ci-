@@ -3,7 +3,11 @@ SELECT CAST(COUNT(*) AS INTEGER),
        COALESCE(SUM(net.tax_total), 0),
        COALESCE(SUM(net.discount_total), 0),
        COALESCE(SUM(net.cash_amount), 0),
-       COALESCE(SUM(net.card_amount), 0),
+       /* Карта без Humo/Uzcard — иначе X/Z дважды считает пластик. */
+       COALESCE(SUM(CASE
+           WHEN UPPER(COALESCE(s.card_type, '')) IN ('HUMO', 'UZCARD') THEN 0
+           ELSE net.card_amount
+       END), 0),
        COALESCE(SUM(net.line_discount_total), 0),
        COALESCE(SUM(net.order_discount_amount), 0),
        COALESCE(SUM(CASE WHEN s.card_type = 'HUMO' THEN net.card_amount ELSE 0 END), 0),

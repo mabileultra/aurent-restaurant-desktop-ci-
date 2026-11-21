@@ -26,6 +26,32 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
     );
 
     @Query("""
+        SELECT COALESCE(SUM(s.cashAmount), 0)
+        FROM SaleFact s
+        WHERE s.companyId = :companyId
+          AND s.transactionDate BETWEEN :from AND :to
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
+        """)
+    BigDecimal sumCashByCompanyAndDateRange(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(s.cardAmount), 0)
+        FROM SaleFact s
+        WHERE s.companyId = :companyId
+          AND s.transactionDate BETWEEN :from AND :to
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
+        """)
+    BigDecimal sumCardByCompanyAndDateRange(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to
+    );
+
+    @Query("""
         SELECT COALESCE(SUM(s.itemsSold), 0)
         FROM SaleFact s
         WHERE s.companyId = :companyId
