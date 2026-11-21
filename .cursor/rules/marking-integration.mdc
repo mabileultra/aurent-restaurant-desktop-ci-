@@ -29,7 +29,9 @@ alwaysApply: false
    - `printFiscalQr=false` (cashier «Fiskal QR chop etish» off) skips Multikassa/FiscalDrive entirely: no OFD receipt, no Labels, marks stay in circulation. It is not «QR print only». Backend `SaleFiscalApplier` must not enforce `requireBeforeSale` when OFD is off — set `NOT_REQUIRED` if fiscal payload is null.
    - Sold-gate is per KM, not per card: a punched mark stays sold even if the cashier is on another product.
    - Grocery checkout writes `sale_sold_marks` (`MarkingSoldJournalService`) before/after the receipt; scan checks that journal first. Failed fiscal does not write. Return/void unregisters.
-   - Block KM (GTIN-14 indicator ≥ 1): `resolveBlockPackFromTasnif` takes smallest multipack count from Tasnif (`блок = 15 шт`). Cart/stock qty = N pieces per KM; OFD via `expandMarkedFiscalItems` stays count=1 + block `packageCode` + price×N. Refuse scan when stock &lt; N. Piece KM (indicator 0) stays qty=1.
+   - Block KM (GTIN-14 indicator ≥ 1): `resolveBlockPackFromTasnif` takes smallest multipack count from Tasnif (`блок = 15 шт`). Cart/stock qty = N pieces per KM; OFD via `expandMarkedFiscalItems` stays count=1 + block `packageCode` + price from cart line gross (N×piece). Refuse scan when stock &lt; N. Piece KM (indicator 0) stays qty=1.
+   - Qty on marked lines is scan-driven only: «+» blocked; «−» removes the last KM (and N pcs for a block). Never `updateQuantity` while marks stay — that made paper/OFD totals diverge.
+   - Offline/`resolveCheckoutLineItems`: `sellAsBlock` keeps cart piece qty (not `marks.length`).
    - Pack GTIN-14 must resolve the card via consumer EAN-13 (`ean13FromPackGtin14` / `barcodeLookupVariants`) — indicator≠0 changes the check digit; stripping zeros alone misses `4780…6` cards.
    - Tasnif `get/information` often returns only the piece package; block size needs history `packageNames` merged in `TasnifMxikServiceImpl` / `TasnifMxikHistoryPackagesClient` (e.g. `коробка=12 шт.`).
    - `cartProductPayload` must keep `sellAsBlock` + `unitsInPack` from mark resolve — otherwise block KM always adds qty 1.
