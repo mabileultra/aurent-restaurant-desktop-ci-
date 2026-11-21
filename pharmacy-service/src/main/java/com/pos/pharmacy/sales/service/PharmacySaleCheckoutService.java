@@ -25,6 +25,7 @@ import com.pos.pharmacy.sales.support.CheckoutOrderPricing;
 import com.pos.pharmacy.sales.support.CheckoutQuantityResolver;
 import com.pos.pharmacy.sales.support.CheckoutSaleFactory;
 import com.pos.pharmacy.sales.support.OfflineSaleContext;
+import com.pos.pharmacy.sales.support.PharmacySaleCheckoutIdempotency;
 import com.pos.pharmacy.sales.support.SaleEnumParser;
 import com.pos.pharmacy.sales.support.SaleFiscalApplier;
 import com.pos.pharmacy.sales.support.SaleMapper;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -70,12 +72,21 @@ public class PharmacySaleCheckoutService {
     private final PharmacyStockMarkService stockMarkService;
     private final PharmacyMarkWithdrawService markWithdrawService;
     private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
+    private final PharmacySaleCheckoutIdempotency saleCheckoutIdempotency;
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
         return processSale(req, cashierId, null);
     }
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId, OfflineSaleContext offline) {
+        // Offline sync already dedupes by clientSaleId before calling checkout.
+        if (offline == null) {
+            Optional<SaleResponse> existing = saleCheckoutIdempotency.findExisting(req.clientSaleId());
+            if (existing.isPresent()) {
+                return existing.get();
+            }
+        }
+
         Integer companyId = requireCompanyId();
         Integer storeId = requireStoreId(req);
         PharmacyCashierShift openShift = shiftLookup.requireOpen(storeId);

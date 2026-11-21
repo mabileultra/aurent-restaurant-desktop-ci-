@@ -66,9 +66,12 @@ public class CheckoutSaleFactory {
             .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
             .printFiscalQr(req.printFiscalQr() == null || Boolean.TRUE.equals(req.printFiscalQr()));
 
+        UUID clientSaleId = offline != null ? offline.clientSaleId() : req.clientSaleId();
+        if (clientSaleId != null) {
+            saleBuilder.clientSaleId(clientSaleId);
+        }
         if (offline != null) {
             saleBuilder
-                .clientSaleId(offline.clientSaleId())
                 .offlineDeviceId(offline.offlineDeviceId())
                 .createdAt(offline.createdAt() != null ? offline.createdAt() : Instant.now());
         }
