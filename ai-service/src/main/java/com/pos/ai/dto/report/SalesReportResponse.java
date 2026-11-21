@@ -10,5 +10,7 @@ public record SalesReportResponse(
     BigDecimal averageTransactionValue,
     BigDecimal totalCostEstimate,
     BigDecimal grossProfit,
+    BigDecimal cashTotal,
+    BigDecimal cardTotal,
     List<DailyPoint> dailyBreakdown
 ) {}
