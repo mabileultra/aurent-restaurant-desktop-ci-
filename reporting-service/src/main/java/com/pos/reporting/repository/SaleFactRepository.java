@@ -148,16 +148,19 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
                COALESCE(SUM(i.quantity - i.quantity_returned), 0),
                COALESCE(SUM(i.quantity_returned), 0),
                COALESCE(SUM(i.revenue), 0),
-               COALESCE(SUM(i.cost_estimate), 0)
+               COALESCE(SUM(i.cost_estimate), 0),
+               MIN(i.transaction_date),
+               MAX(i.transaction_date),
+               MAX(s.ingested_at)
         FROM sale_item_facts i
-        LEFT JOIN sale_facts s ON s.id = i.sale_id
+        LEFT JOIN sale_facts s ON s.sale_id = i.sale_id
         WHERE i.company_id = :companyId
           AND i.transaction_date BETWEEN :from AND :to
         GROUP BY i.store_id
         HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
             OR COALESCE(SUM(i.quantity_returned), 0) > 0
             OR COALESCE(SUM(i.revenue), 0) > 0
-        ORDER BY SUM(i.revenue) DESC
+        ORDER BY SUM(i.revenue) DESC, i.store_id ASC NULLS LAST
         """,
         countQuery = """
         SELECT COUNT(*) FROM (

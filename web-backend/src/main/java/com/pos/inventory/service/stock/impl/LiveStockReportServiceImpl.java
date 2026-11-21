@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
         Map<UUID, BigDecimal> liveQty = storeId != null
             ? storeStockService.getQuantities(ids, storeId)
             : storeStockService.sumQuantities(ids);
+        Map<UUID, Instant> updatedAt = storeStockService.maxUpdatedAt(ids, storeId);
 
         List<StockBalanceRowResponse> rows = new ArrayList<>();
         for (Product product : products) {
@@ -59,7 +61,11 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
             if (onlyWithStock && qty.signum() <= 0) {
                 continue;
             }
-            rows.add(LiveStockBalanceRowMapper.toBalance(product, raw));
+            rows.add(LiveStockBalanceRowMapper.toBalance(
+                product,
+                raw,
+                updatedAt.get(product.getId())
+            ));
         }
         return PageResponse.from(toPage(rows, pageable));
     }
@@ -76,6 +82,7 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
             byId.put(p.getId(), p);
         }
         Map<UUID, BigDecimal> liveQty = storeStockService.sumQuantities(ids);
+        Map<UUID, Instant> updatedAt = storeStockService.maxUpdatedAt(ids, null);
         List<LowStockRowResponse> rows = new ArrayList<>();
         for (UUID id : ids) {
             Product product = byId.get(id);
@@ -88,8 +95,22 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
             if (qty.compareTo(BigDecimal.valueOf(alert)) > 0) {
                 continue;
             }
-            rows.add(LiveStockBalanceRowMapper.toLowStock(product, raw));
+            rows.add(LiveStockBalanceRowMapper.toLowStock(product, raw, updatedAt.get(id)));
         }
+        rows.sort((a, b) -> {
+            Instant left = a.stockUpdatedAt();
+            Instant right = b.stockUpdatedAt();
+            if (left == null && right == null) {
+                return 0;
+            }
+            if (left == null) {
+                return 1;
+            }
+            if (right == null) {
+                return -1;
+            }
+            return right.compareTo(left);
+        });
         return PageResponse.from(toPage(rows, pageable));
     }
 

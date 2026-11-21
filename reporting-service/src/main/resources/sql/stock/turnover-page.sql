@@ -24,7 +24,8 @@ period_agg AS (
         COALESCE(SUM(CASE WHEN movement_type = 'RETURN' AND quantity > 0 THEN quantity ELSE 0 END), 0) AS returned_qty,
         COALESCE(SUM(CASE WHEN movement_type = 'SALE' AND quantity < 0 THEN -quantity ELSE 0 END), 0) AS sold_qty,
         COALESCE(SUM(CASE WHEN movement_type = 'WRITE_OFF' AND quantity < 0 THEN -quantity ELSE 0 END), 0) AS write_off_qty,
-        COALESCE(SUM(CASE WHEN movement_type = 'ADJUSTMENT' THEN quantity ELSE 0 END), 0) AS adjustment_qty
+        COALESCE(SUM(CASE WHEN movement_type = 'ADJUSTMENT' THEN quantity ELSE 0 END), 0) AS adjustment_qty,
+        MAX(created_at) AS last_movement_at
     FROM stock_movement_facts
     WHERE company_id = :companyId
       AND product_id IS NOT NULL
@@ -54,7 +55,8 @@ SELECT
     COALESCE(pa.write_off_qty, 0) AS write_off_qty,
     COALESCE(pa.adjustment_qty, 0) AS adjustment_qty,
     COALESCE(c.qty, 0) AS closing_qty,
-    COALESCE(c.qty, 0) * p.cost_price AS closing_cost
+    COALESCE(c.qty, 0) * p.cost_price AS closing_cost,
+    pa.last_movement_at AS last_movement_at
 FROM product_snapshot_facts p
 LEFT JOIN opening o ON o.product_id = p.product_id
 LEFT JOIN period_agg pa ON pa.product_id = p.product_id
@@ -75,4 +77,4 @@ WHERE p.company_id = :companyId
     OR COALESCE(pa.adjustment_qty, 0) <> 0
     OR COALESCE(c.qty, 0) <> 0
   )
-ORDER BY p.product_name ASC
+ORDER BY pa.last_movement_at DESC NULLS LAST, p.product_name ASC

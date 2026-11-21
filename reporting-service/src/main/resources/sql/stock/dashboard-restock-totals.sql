@@ -12,5 +12,5 @@ LEFT JOIN product_snapshot_facts p
  AND p.company_id = m.company_id
 WHERE m.company_id = :companyId
   AND m.transaction_date BETWEEN :from AND :to
-  AND (:storeId IS NULL OR m.store_id = :storeId)
+  AND (:storeId < 0 OR m.store_id = :storeId)
   AND m.movement_type = 'RESTOCK'

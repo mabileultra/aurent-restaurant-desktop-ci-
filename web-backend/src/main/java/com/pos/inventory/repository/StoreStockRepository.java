@@ -44,6 +44,18 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
     List<Object[]> sumQuantitiesByProductIds(@Param("productIds") Collection<UUID> productIds);
 
     @Query("""
+        SELECT ss.productId, MAX(ss.updatedAt)
+        FROM StoreStock ss
+        WHERE ss.productId IN :productIds
+          AND (:storeId IS NULL OR ss.store.id = :storeId)
+        GROUP BY ss.productId
+        """)
+    List<Object[]> maxUpdatedAtByProductIds(
+        @Param("productIds") Collection<UUID> productIds,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
         SELECT ss
         FROM StoreStock ss
         JOIN FETCH ss.store st

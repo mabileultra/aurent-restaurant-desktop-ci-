@@ -1,6 +1,7 @@
 package com.pos.dto.report.stock;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 /** Live stock balance row (store_stock + product prices). */
@@ -13,5 +14,6 @@ public record StockBalanceRowResponse(
     BigDecimal stockQuantity,
     int lowStockAlert,
     BigDecimal costPrice,
-    BigDecimal stockValue
+    BigDecimal stockValue,
+    Instant stockUpdatedAt
 ) {}

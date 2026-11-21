@@ -6,6 +6,7 @@ import com.pos.reporting.dto.PageResponse;
 import com.pos.reporting.dto.StoreSalesRowResponse;
 import com.pos.reporting.repository.SaleFactRepository;
 import com.pos.reporting.security.ReportingTenantContext;
+import com.pos.reporting.support.ReportingJdbcValues;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,13 +42,13 @@ public class StoreSalesReportServiceImpl implements StoreSalesReportService {
     }
 
     private StoreSalesRowResponse mapRow(Object[] row) {
-        Integer storeId = row[0] != null ? ((Number) row[0]).intValue() : null;
+        Integer storeId = ReportingJdbcValues.toInteger(row[0]);
         String storeName = row[1] != null ? row[1].toString() : (storeId != null ? "Store #" + storeId : "");
-        long receiptCount = toLong(row[2]);
-        long netQuantity = toLong(row[3]);
-        long quantityReturned = toLong(row[4]);
-        BigDecimal revenue = toMoney(row[5]);
-        BigDecimal costEstimate = toMoney(row[6]);
+        long receiptCount = ReportingJdbcValues.toLong(row[2]);
+        long netQuantity = ReportingJdbcValues.toLong(row[3]);
+        long quantityReturned = ReportingJdbcValues.toLong(row[4]);
+        BigDecimal revenue = ReportingJdbcValues.toMoney(row[5]);
+        BigDecimal costEstimate = ReportingJdbcValues.toMoney(row[6]);
         BigDecimal margin = revenue.subtract(costEstimate).setScale(2, RoundingMode.HALF_UP);
         return new StoreSalesRowResponse(
             storeId,
@@ -57,24 +58,10 @@ public class StoreSalesReportServiceImpl implements StoreSalesReportService {
             quantityReturned,
             revenue,
             costEstimate,
-            margin
+            margin,
+            ReportingJdbcValues.toLocalDate(row[7]),
+            ReportingJdbcValues.toLocalDate(row[8]),
+            ReportingJdbcValues.toInstant(row[9])
         );
-    }
-
-    private static long toLong(Object value) {
-        if (value == null) {
-            return 0L;
-        }
-        return ((Number) value).longValue();
-    }
-
-    private static BigDecimal toMoney(Object value) {
-        if (value == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        if (value instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
-        }
-        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 }

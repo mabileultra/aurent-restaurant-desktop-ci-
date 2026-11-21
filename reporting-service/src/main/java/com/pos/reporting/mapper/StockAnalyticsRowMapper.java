@@ -4,6 +4,7 @@ import com.pos.reporting.dto.stock.pos.PosDeadStockRow;
 import com.pos.reporting.dto.stock.pos.PosLowStockRow;
 import com.pos.reporting.dto.stock.pos.PosStockBalanceRow;
 import com.pos.reporting.dto.stock.pos.PosStockTurnoverRow;
+import com.pos.reporting.support.ReportingJdbcValues;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -42,7 +43,8 @@ public class StockAnalyticsRowMapper {
             longVal(row[8]),
             longVal(row[9]),
             longVal(row[10]),
-            toBigDecimal(row[11]).setScale(2, RoundingMode.HALF_UP)
+            toBigDecimal(row[11]).setScale(2, RoundingMode.HALF_UP),
+            ReportingJdbcValues.toInstant(row[12])
         );
     }
 

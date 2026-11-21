@@ -1,6 +1,7 @@
 package com.pos.reporting.dto.stock.pos;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public record PosStockTurnoverRow(
@@ -15,6 +16,7 @@ public record PosStockTurnoverRow(
     long writeOffQuantity,
     long adjustmentQuantity,
     long closingQuantity,
-    BigDecimal closingCostEstimate
+    BigDecimal closingCostEstimate,
+    Instant lastMovementAt
 ) {
 }
