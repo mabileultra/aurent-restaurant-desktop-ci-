@@ -23,6 +23,7 @@ public final class CashTransferSpecifications {
     public static Specification<ZReport> filter(
         Integer companyId,
         String storeSearch,
+        Integer storeId,
         Integer registerNumber,
         Instant closedFrom,
         Instant closedTo
@@ -35,6 +36,10 @@ public final class CashTransferSpecifications {
             Join<ZReport, Store> store = root.join("store");
 
             parts.add(TenantSpecifications.storeCompanyEqualsPredicate(store, cb, companyId));
+
+            if (storeId != null) {
+                parts.add(cb.equal(store.get("id"), storeId));
+            }
 
             if (StringUtils.hasText(storeSearch)) {
                 String q = "%" + storeSearch.trim().toLowerCase() + "%";

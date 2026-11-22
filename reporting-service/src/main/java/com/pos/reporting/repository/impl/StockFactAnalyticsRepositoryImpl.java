@@ -41,6 +41,7 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         Integer companyId,
         LocalDate from,
         LocalDate to,
+        Integer storeId,
         Integer categoryId,
         String search,
         Pageable pageable
@@ -48,7 +49,7 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         return nativePageExecutor.fetchPage(
             sqlResourceLoader.load("sql/stock/turnover-page.sql"),
             sqlResourceLoader.load("sql/stock/turnover-count.sql"),
-            query -> bindTurnover(query, companyId, from, to, categoryId, search),
+            query -> bindTurnover(query, companyId, from, to, storeId, categoryId, search),
             pageable
         );
     }
@@ -109,12 +110,14 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         Integer companyId,
         LocalDate from,
         LocalDate to,
+        Integer storeId,
         Integer categoryId,
         String search
     ) {
         NativeQueryParamSupport.setParameterIfPresent(query, "companyId", companyId);
         NativeQueryParamSupport.setParameterIfPresent(query, "from", from);
         NativeQueryParamSupport.setParameterIfPresent(query, "to", to);
+        NativeQueryParamSupport.bindOptionalStoreId(query, "storeId", storeId);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
         NativeQueryParamSupport.setParameterIfPresent(
             query, "searchPattern", NativeQueryParamSupport.toContainsPattern(search)

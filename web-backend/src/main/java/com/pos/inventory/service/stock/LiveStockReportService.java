@@ -15,5 +15,9 @@ public interface LiveStockReportService {
         Pageable pageable
     );
 
-    PageResponse<LowStockRowResponse> lowStock(Pageable pageable);
+    default PageResponse<LowStockRowResponse> lowStock(Pageable pageable) {
+        return lowStock(null, pageable);
+    }
+
+    PageResponse<LowStockRowResponse> lowStock(Integer storeId, Pageable pageable);
 }

@@ -92,10 +92,11 @@ public class SalesReportExportController {
     @Operation(summary = "Экспорт дневной сводки")
     @ApiResponse(responseCode = "200", description = "Файл Excel")
     public ResponseEntity<byte[]> exportDaily(
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam(required = false) Integer storeId
     ) {
         return SpreadsheetDownloadSupport.attachment(
-            salesReportExportService.exportDailySummary(date),
+            salesReportExportService.exportDailySummary(date, storeId),
             "daily_summary_export.xlsx"
         );
     }

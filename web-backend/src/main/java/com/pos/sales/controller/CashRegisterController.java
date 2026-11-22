@@ -62,12 +62,14 @@ public class CashRegisterController {
     @ApiResponse(responseCode = "200", description = "Файл Excel")
     public ResponseEntity<byte[]> exportTransfers(
         @RequestParam(required = false) String search,
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) Integer registerNumber,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closedFrom,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closedTo
     ) {
         byte[] body = cashTransferExportService.exportTransfersExcel(
             search,
+            storeId,
             registerNumber,
             closedFrom,
             closedTo
@@ -81,13 +83,14 @@ public class CashRegisterController {
     @ApiResponse(responseCode = "200", description = "Список инкассаций")
     public ResponseEntity<PageResponse<CashTransferRowResponse>> listTransfers(
         @RequestParam(required = false) String search,
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) Integer registerNumber,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closedFrom,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate closedTo,
         @PageableDefault(size = 14) Pageable pageable
     ) {
         return ResponseEntity.ok(
-            cashTransferService.list(search, registerNumber, closedFrom, closedTo, pageable)
+            cashTransferService.list(search, storeId, registerNumber, closedFrom, closedTo, pageable)
         );
     }
 

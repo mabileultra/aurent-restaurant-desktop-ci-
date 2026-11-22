@@ -22,20 +22,20 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     private final SaleItemFactRepository saleItemFactRepository;
 
     @Override
-    public DailySummaryResponse dailySummary(LocalDate date) {
+    public DailySummaryResponse dailySummary(LocalDate date, Integer storeId) {
         Integer companyId = ReportingTenantContext.requireCompanyId();
         LocalDate reportDate = date != null ? date : LocalDate.now();
-        BigDecimal totalRevenue = nz(saleFactRepository.sumTotalByCompanyAndDateRange(
-            companyId, reportDate, reportDate
+        BigDecimal totalRevenue = nz(saleFactRepository.sumTotalByCompanyDateRangeAndStore(
+            companyId, reportDate, reportDate, storeId
         ));
-        long transactionCount = saleFactRepository.countByCompanyIdAndTransactionDateBetween(
-            companyId, reportDate, reportDate
+        long transactionCount = saleFactRepository.countByCompanyDateRangeAndStore(
+            companyId, reportDate, reportDate, storeId
         );
-        long itemsSold = saleFactRepository.sumItemsSoldByCompanyAndDateRange(
-            companyId, reportDate, reportDate
+        long itemsSold = saleFactRepository.sumItemsSoldByCompanyDateRangeAndStore(
+            companyId, reportDate, reportDate, storeId
         );
-        BigDecimal totalCostEstimate = nz(saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(
-            companyId, reportDate, reportDate
+        BigDecimal totalCostEstimate = nz(saleItemFactRepository.sumCostEstimateByCompanyDateRangeAndStore(
+            companyId, reportDate, reportDate, storeId
         ));
         BigDecimal grossProfit = totalRevenue.subtract(totalCostEstimate);
         return new DailySummaryResponse(

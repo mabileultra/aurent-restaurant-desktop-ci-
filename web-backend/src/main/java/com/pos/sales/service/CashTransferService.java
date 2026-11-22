@@ -11,6 +11,7 @@ public interface CashTransferService {
 
     PageResponse<CashTransferRowResponse> list(
         String storeSearch,
+        Integer storeId,
         Integer registerNumber,
         LocalDate closedFrom,
         LocalDate closedTo,
@@ -19,6 +20,7 @@ public interface CashTransferService {
 
     List<CashTransferRowResponse> listAll(
         String storeSearch,
+        Integer storeId,
         Integer registerNumber,
         LocalDate closedFrom,
         LocalDate closedTo

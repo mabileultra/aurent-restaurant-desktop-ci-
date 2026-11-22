@@ -34,12 +34,13 @@ public class StockTurnoverReportController {
     public ResponseEntity<PageResponse<PosStockTurnoverRow>> turnover(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) Integer categoryId,
         @RequestParam(required = false) String search,
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(
-            stockTurnoverReportService.turnover(from, to, categoryId, search, pageable)
+            stockTurnoverReportService.turnover(from, to, storeId, categoryId, search, pageable)
         );
     }
 }

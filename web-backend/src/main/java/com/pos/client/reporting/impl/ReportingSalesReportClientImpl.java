@@ -87,12 +87,13 @@ public class ReportingSalesReportClientImpl implements ReportingSalesReportClien
     @Override
     @CircuitBreaker(name = REPORTING_SERVICE)
     @Retry(name = REPORTING_SERVICE)
-    public DailySummaryResponse dailySummary(LocalDate date) {
-        String uri = UriComponentsBuilder.fromPath("/reports/daily")
-            .queryParam("date", date)
-            .build()
-            .toUriString();
-        return fetch(uri, new ParameterizedTypeReference<DailySummaryResponse>() {});
+    public DailySummaryResponse dailySummary(LocalDate date, Integer storeId) {
+        UriComponentsBuilder b = UriComponentsBuilder.fromPath("/reports/daily")
+            .queryParam("date", date);
+        if (storeId != null) {
+            b.queryParam("storeId", storeId);
+        }
+        return fetch(b.build().toUriString(), new ParameterizedTypeReference<DailySummaryResponse>() {});
     }
 
     private <T> T fetch(String uri, ParameterizedTypeReference<T> type) {

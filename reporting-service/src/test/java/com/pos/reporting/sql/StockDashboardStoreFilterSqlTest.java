@@ -40,6 +40,16 @@ class StockDashboardStoreFilterSqlTest {
     }
 
     @Test
+    void turnoverPageUsesSentinelStoreFilter() throws IOException {
+        assertSentinelStoreFilter("sql/stock/turnover-page.sql");
+    }
+
+    @Test
+    void turnoverCountUsesSentinelStoreFilter() throws IOException {
+        assertSentinelStoreFilter("sql/stock/turnover-count.sql");
+    }
+
+    @Test
     void lowStockCountRequiresMovementJoin() throws IOException {
         String sql = load("sql/stock/low-stock-count.sql");
         assertTrue(sql.toUpperCase().contains("INNER JOIN STOCK_BALANCE"), sql);

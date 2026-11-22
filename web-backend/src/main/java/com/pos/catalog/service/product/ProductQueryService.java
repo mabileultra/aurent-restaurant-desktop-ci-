@@ -24,7 +24,27 @@ public interface ProductQueryService {
     ) {
         return getProducts(
             search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
-            markedProduct, soldIndividually, barcodeExact, attributeFilters, null, pageable
+            markedProduct, soldIndividually, barcodeExact, attributeFilters, null, null, pageable
+        );
+    }
+
+    default PageResponse<ProductResponse> getProducts(
+        String search,
+        Integer categoryId,
+        boolean activeOnly,
+        String deletedScope,
+        Integer storeId,
+        String ikpuStatus,
+        Boolean markedProduct,
+        Boolean soldIndividually,
+        String barcodeExact,
+        Map<String, String> attributeFilters,
+        String businessTypeCode,
+        Pageable pageable
+    ) {
+        return getProducts(
+            search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
+            markedProduct, soldIndividually, barcodeExact, attributeFilters, businessTypeCode, null, pageable
         );
     }
 
@@ -40,6 +60,7 @@ public interface ProductQueryService {
         String barcodeExact,
         Map<String, String> attributeFilters,
         String businessTypeCode,
+        Long cashRegisterId,
         Pageable pageable
     );
 
@@ -47,7 +68,11 @@ public interface ProductQueryService {
      * Offline cashier bootstrap: active company products that have store_stock at {@code storeId}
      * (qty may be zero). Admin catalog list must not use this — it keeps company-wide cards.
      */
-    PageResponse<ProductResponse> getCashierStoreProducts(Integer storeId, Pageable pageable);
+    default PageResponse<ProductResponse> getCashierStoreProducts(Integer storeId, Pageable pageable) {
+        return getCashierStoreProducts(storeId, null, pageable);
+    }
+
+    PageResponse<ProductResponse> getCashierStoreProducts(Integer storeId, Long cashRegisterId, Pageable pageable);
 
     default PageResponse<ProductResponse> getWarehouseProducts(
         String search,

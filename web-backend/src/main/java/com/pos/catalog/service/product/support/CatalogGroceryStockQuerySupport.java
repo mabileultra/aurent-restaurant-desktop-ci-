@@ -13,6 +13,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,6 +57,63 @@ public class CatalogGroceryStockQuerySupport {
             .filter(s -> s != null && !s.isBlank())
             .map(s -> UUID.fromString(s.trim()))
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroceryLowStockStoreHit> findGroceryLowStockStoreHits(
+        Integer companyId,
+        Integer storeId,
+        int limit
+    ) {
+        int safeLimit = Math.max(1, Math.min(limit, 10_000));
+        List<Object[]> rows = productRepository.findGroceryLowStockStoreRows(
+            companyId,
+            storeId,
+            PageRequest.of(0, safeLimit)
+        );
+        if (rows == null || rows.isEmpty()) {
+            return List.of();
+        }
+        List<GroceryLowStockStoreHit> hits = new ArrayList<>(rows.size());
+        for (Object[] row : rows) {
+            if (row == null || row.length < 5 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            hits.add(new GroceryLowStockStoreHit(
+                UUID.fromString(String.valueOf(row[0]).trim()),
+                ((Number) row[1]).intValue(),
+                row[2] != null ? String.valueOf(row[2]) : null,
+                toDecimal(row[3]),
+                toInstant(row[4])
+            ));
+        }
+        return hits;
+    }
+
+    private static BigDecimal toDecimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        if (value instanceof BigDecimal bd) {
+            return bd;
+        }
+        return new BigDecimal(value.toString());
+    }
+
+    private static Instant toInstant(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Instant instant) {
+            return instant;
+        }
+        if (value instanceof Timestamp ts) {
+            return ts.toInstant();
+        }
+        if (value instanceof java.util.Date date) {
+            return date.toInstant();
+        }
+        return null;
     }
 
     private static Specification<Product> fetchCategory() {

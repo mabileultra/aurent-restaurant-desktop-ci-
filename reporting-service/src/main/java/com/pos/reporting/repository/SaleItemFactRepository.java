@@ -168,6 +168,20 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
         @Param("to") LocalDate to
     );
 
+    @Query("""
+        SELECT COALESCE(SUM(i.costEstimate), 0)
+        FROM SaleItemFact i
+        WHERE i.companyId = :companyId
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+        """)
+    BigDecimal sumCostEstimateByCompanyDateRangeAndStore(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
     @Query(value = """
         SELECT CAST(i.transaction_date AS varchar),
                COALESCE(SUM(i.quantity - i.quantity_returned), 0)

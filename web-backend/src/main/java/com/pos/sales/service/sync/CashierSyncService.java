@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface CashierSyncService {
 
-    CashierSyncBootstrapResponse bootstrap(Integer storeId, UUID cashierId);
+    CashierSyncBootstrapResponse bootstrap(Integer storeId, UUID cashierId, Long cashRegisterId);
 
     OfflineSalesBatchResponse syncSalesBatch(OfflineSalesBatchRequest request, UUID cashierId);
 }

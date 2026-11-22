@@ -29,8 +29,9 @@ public class DailySummaryController {
     @GetMapping("/daily")
     @Operation(summary = "Дневная сводка (reporting_db)")
     public ResponseEntity<DailySummaryResponse> dailySummary(
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam(required = false) Integer storeId
     ) {
-        return ResponseEntity.ok(dailySummaryService.dailySummary(date));
+        return ResponseEntity.ok(dailySummaryService.dailySummary(date, storeId));
     }
 }

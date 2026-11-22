@@ -13,6 +13,8 @@ import com.pos.repository.BusinessTypeDefinitionRepository;
 import com.pos.catalog.repository.CategoryRepository;
 import com.pos.catalog.service.CategoryService;
 import com.pos.client.catalog.CatalogCategoryDualWritePublisher;
+import com.pos.sales.support.CashRegisterCategoryScope;
+import com.pos.sales.support.CashRegisterCategoryScopeResolver;
 import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
@@ -35,6 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final BusinessTypeDefinitionRepository typeRepository;
     private final CompanyBusinessTypeAssignmentService companyBusinessTypeAssignmentService;
     private final CatalogCategoryDualWritePublisher catalogCategoryDualWritePublisher;
+    private final CashRegisterCategoryScopeResolver cashRegisterCategoryScopeResolver;
 
     @Override
     @Cacheable(value = "categories", key = "@tenantCacheKeyResolver.categories(#businessTypeId)")
@@ -46,6 +49,16 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toResponseList(
             categoryRepository.findByCompanyIdFiltered(companyId, businessTypeId)
         );
+    }
+
+    @Override
+    public List<CategoryResponse> findAllForPos(Integer businessTypeId, Integer storeId, Long cashRegisterId) {
+        List<CategoryResponse> all = findAll(businessTypeId);
+        CashRegisterCategoryScope scope = cashRegisterCategoryScopeResolver.resolve(storeId, cashRegisterId);
+        if (!scope.restricted()) {
+            return all;
+        }
+        return all.stream().filter(c -> scope.allows(c.id())).toList();
     }
 
     @Override

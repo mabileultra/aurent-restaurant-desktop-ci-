@@ -10,6 +10,12 @@ public interface CategoryService {
 
     List<CategoryResponse> findAll(Integer businessTypeId);
 
+    /**
+     * POS list: same as {@link #findAll} then filtered by cash-register category config
+     * for {@code storeId}/{@code cashRegisterId}. Admin callers keep {@link #findAll}.
+     */
+    List<CategoryResponse> findAllForPos(Integer businessTypeId, Integer storeId, Long cashRegisterId);
+
     CategoryResponse create(CreateCategoryRequest req);
 
     CategoryResponse update(Integer id, UpdateCategoryRequest req);

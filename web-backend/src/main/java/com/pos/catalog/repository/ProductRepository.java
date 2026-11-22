@@ -129,4 +129,31 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
         @Param("storeId") Integer storeId,
         Pageable pageable
     );
+
+    /**
+     * Per-store grocery low-stock rows: product + store (only stores with store_stock).
+     * Optional {@code storeId} narrows to one branch.
+     */
+    @Query(value = """
+        SELECT CAST(p.id AS varchar),
+               s.store_id,
+               st.name,
+               s.quantity,
+               s.updated_at
+        FROM products p
+        LEFT JOIN business_types bt ON bt.id = p.business_type_id
+        INNER JOIN store_stock s ON s.product_id = p.id
+        INNER JOIN stores st ON st.id = s.store_id AND st.company_id = p.company_id
+        WHERE p.company_id = :companyId
+          AND p.is_active = true
+          AND (:storeId IS NULL OR s.store_id = :storeId)
+          AND COALESCE(s.quantity, 0) <= COALESCE(p.low_stock_alert, 10)
+          AND (bt.code IS NULL OR UPPER(bt.code) <> 'PHARMACY')
+        ORDER BY s.updated_at DESC NULLS LAST, p.name ASC
+        """, nativeQuery = true)
+    List<Object[]> findGroceryLowStockStoreRows(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        Pageable pageable
+    );
 }

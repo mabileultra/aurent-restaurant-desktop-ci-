@@ -44,6 +44,7 @@ import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
 import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.sales.service.sync.CashierSyncService;
+import com.pos.sales.support.CashierPosRegisterSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final UserRepository userRepository;
     private final CashierSaleSupport cashierSaleSupport;
     private final CatalogIsolationSupport catalogIsolation;
+    private final CashierPosRegisterSupport cashierPosRegisterSupport;
     private final SaleRepository saleRepository;
     private final CashierShiftRepository cashierShiftRepository;
     private final CatalogManagedProductLoader catalogManagedProductLoader;
@@ -92,19 +94,23 @@ public class CashierSyncServiceImpl implements CashierSyncService {
 
     @Override
     @Transactional(readOnly = true)
-    public CashierSyncBootstrapResponse bootstrap(Integer storeId, UUID cashierId) {
+    public CashierSyncBootstrapResponse bootstrap(Integer storeId, UUID cashierId, Long cashRegisterId) {
         User cashier = userRepository.findByIdWithDetails(cashierId)
             .orElseThrow(() -> new ResourceNotFoundException("Cashier not found"));
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
         assertStoreMatchesCashierCompany(cashier, store);
         catalogIsolation.rejectPharmacySalesInMonolith(store);
 
-        List<CategoryResponse> categories = categoryService.findAll(null);
+        Long registerId = cashRegisterId != null
+            ? cashRegisterId
+            : cashierPosRegisterSupport.resolveOpenRegisterId(cashierId, store.getId());
+        List<CategoryResponse> categories = categoryService.findAllForPos(null, store.getId(), registerId);
         List<ProductResponse> products = new ArrayList<>();
         int page = 0;
         while (true) {
             PageResponse<ProductResponse> chunk = productQueryService.getCashierStoreProducts(
                 store.getId(),
+                registerId,
                 PageRequest.of(page, BOOTSTRAP_PAGE_SIZE)
             );
             if (chunk.content() == null || chunk.content().isEmpty()) {
