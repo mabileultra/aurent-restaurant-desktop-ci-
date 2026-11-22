@@ -18,6 +18,10 @@ public record CashierShiftResponse(
     BigDecimal totalAmount,
     BigDecimal cashAmount,
     BigDecimal cardAmount,
+    BigDecimal humoAmount,
+    BigDecimal uzcardAmount,
+    BigDecimal paymeAmount,
+    BigDecimal cashlessAmount,
     BigDecimal vatAmount,
     Long zReportId,
     ShiftSoldItemsReport soldItems

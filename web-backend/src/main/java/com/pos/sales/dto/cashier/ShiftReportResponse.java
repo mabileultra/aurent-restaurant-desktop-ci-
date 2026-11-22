@@ -18,6 +18,7 @@ public record ShiftReportResponse(
     BigDecimal cardAmount,
     BigDecimal humoAmount,
     BigDecimal uzcardAmount,
+    BigDecimal paymeAmount,
     BigDecimal cashlessAmount,
     BigDecimal vatAmount,
     BigDecimal discountTotal,

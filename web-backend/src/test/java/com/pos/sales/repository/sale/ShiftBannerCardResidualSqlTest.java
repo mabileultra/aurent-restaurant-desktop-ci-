@@ -16,7 +16,8 @@ class ShiftBannerCardResidualSqlTest {
     void bannerByShiftId_excludesHumoUzcardAndCashlessFromCardTotal() throws IOException {
         String sql = readClasspath("sql/sales/aggregate-shift-banner-by-shift-id.sql");
         assertThat(sql).contains("payment_method = 'CASHLESS' THEN 0");
-        assertThat(sql).contains("IN ('HUMO', 'UZCARD') THEN 0");
+        assertThat(sql).contains("IN ('HUMO', 'UZCARD', 'PAYME') THEN 0");
+        assertThat(sql).contains("card_type = 'PAYME'");
         assertThat(sql).contains("ELSE net.card_amount");
     }
 
@@ -24,7 +25,8 @@ class ShiftBannerCardResidualSqlTest {
     void bannerByCashierTime_excludesHumoUzcardAndCashlessFromCardTotal() throws IOException {
         String sql = readClasspath("sql/sales/aggregate-shift-banner-by-cashier-time.sql");
         assertThat(sql).contains("payment_method = 'CASHLESS' THEN 0");
-        assertThat(sql).contains("IN ('HUMO', 'UZCARD') THEN 0");
+        assertThat(sql).contains("IN ('HUMO', 'UZCARD', 'PAYME') THEN 0");
+        assertThat(sql).contains("card_type = 'PAYME'");
         assertThat(sql).contains("ELSE net.card_amount");
     }
 

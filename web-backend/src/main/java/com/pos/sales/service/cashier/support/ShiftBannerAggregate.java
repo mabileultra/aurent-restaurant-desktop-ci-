@@ -13,11 +13,13 @@ public record ShiftBannerAggregate(
     BigDecimal orderDiscountTotal,
     BigDecimal humoAmount,
     BigDecimal uzcardAmount,
-    BigDecimal cashlessAmount
+    BigDecimal cashlessAmount,
+    BigDecimal paymeAmount
 ) {
     public static ShiftBannerAggregate empty() {
         return new ShiftBannerAggregate(
             0,
+            BigDecimal.ZERO,
             BigDecimal.ZERO,
             BigDecimal.ZERO,
             BigDecimal.ZERO,

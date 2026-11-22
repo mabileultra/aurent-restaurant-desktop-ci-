@@ -66,7 +66,8 @@ public interface CashierShiftMapper {
             row.length > 7 ? toBigDecimal(row[7]) : BigDecimal.ZERO,
             row.length > 8 ? toBigDecimal(row[8]) : BigDecimal.ZERO,
             row.length > 9 ? toBigDecimal(row[9]) : BigDecimal.ZERO,
-            row.length > 10 ? toBigDecimal(row[10]) : BigDecimal.ZERO
+            row.length > 10 ? toBigDecimal(row[10]) : BigDecimal.ZERO,
+            row.length > 11 ? toBigDecimal(row[11]) : BigDecimal.ZERO
         );
     }
 
@@ -114,6 +115,7 @@ public interface CashierShiftMapper {
             aggregate.cardAmount(),
             aggregate.humoAmount(),
             aggregate.uzcardAmount(),
+            aggregate.paymeAmount(),
             aggregate.cashlessAmount(),
             aggregate.vatAmount(),
             aggregate.discountTotal(),
@@ -144,6 +146,10 @@ public interface CashierShiftMapper {
         BigDecimal cashAmount = shift.getCashAmount();
         BigDecimal cardAmount = shift.getCardAmount();
         BigDecimal vatAmount = shift.getVatAmount();
+        BigDecimal humoAmount = BigDecimal.ZERO;
+        BigDecimal uzcardAmount = BigDecimal.ZERO;
+        BigDecimal paymeAmount = BigDecimal.ZERO;
+        BigDecimal cashlessAmount = BigDecimal.ZERO;
 
         if (shift.getStatus() == CashierShift.ShiftStatus.OPEN && liveAggregate != null) {
             saleCount = liveAggregate.saleCount();
@@ -151,6 +157,10 @@ public interface CashierShiftMapper {
             vatAmount = liveAggregate.vatAmount();
             cashAmount = liveAggregate.cashAmount();
             cardAmount = liveAggregate.cardAmount();
+            humoAmount = liveAggregate.humoAmount();
+            uzcardAmount = liveAggregate.uzcardAmount();
+            paymeAmount = liveAggregate.paymeAmount();
+            cashlessAmount = liveAggregate.cashlessAmount();
         }
 
         return new CashierShiftResponse(
@@ -167,6 +177,10 @@ public interface CashierShiftMapper {
             totalAmount,
             cashAmount,
             cardAmount,
+            humoAmount,
+            uzcardAmount,
+            paymeAmount,
+            cashlessAmount,
             vatAmount,
             shift.getZReport() != null ? shift.getZReport().getId() : null,
             soldItems
