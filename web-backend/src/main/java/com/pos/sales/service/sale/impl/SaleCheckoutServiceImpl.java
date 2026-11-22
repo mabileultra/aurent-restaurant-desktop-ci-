@@ -102,7 +102,11 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         catalogIsolation.rejectPharmacySalesInMonolith(store);
 
         CashierShift shift = cashierShiftRepository
-            .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
+            .findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(
+                cashier.getId(),
+                store.getId(),
+                CashierShift.ShiftStatus.OPEN
+            )
             .orElseThrow(() -> PosExceptions.badRequest("Смена не открыта. Откройте смену перед продажей."));
 
         Sale.ReceiptType receiptType = SaleEnumParser.receiptType(req.receiptType());

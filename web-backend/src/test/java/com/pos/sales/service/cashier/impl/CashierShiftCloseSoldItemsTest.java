@@ -12,6 +12,7 @@ import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.sales.service.CashRegisterTerminalService;
 import com.pos.sales.service.cashier.support.CashierShiftAccessPolicy;
 import com.pos.sales.service.cashier.support.CashierShiftAggregateLoader;
+import com.pos.sales.service.cashier.support.OpenCashierShiftLookup;
 import com.pos.sales.service.cashier.support.ShiftBannerAggregate;
 import com.pos.sales.service.cashier.support.ShiftReturnsAggregate;
 import com.pos.sales.service.cashier.support.ShiftSoldItemsLoader;
@@ -66,7 +67,8 @@ class CashierShiftCloseSoldItemsTest {
             aggregateLoader,
             soldItemsLoader,
             accessPolicy,
-            mock(CashRegisterTerminalService.class)
+            mock(CashRegisterTerminalService.class),
+            mock(OpenCashierShiftLookup.class)
         );
         shift = openShift();
         when(accessPolicy.requireOwned(shift.getId())).thenReturn(shift);

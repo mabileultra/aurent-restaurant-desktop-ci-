@@ -18,7 +18,14 @@ public interface CashierShiftRepository extends JpaRepository<CashierShift, UUID
 
     boolean existsByCashier_Id(UUID cashierId);
 
-    Optional<CashierShift> findByCashierIdAndStoreIdAndStatus(
+    /** Prefer {@link #findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc} — bare Optional throws if duplicates. */
+    Optional<CashierShift> findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(
+        UUID cashierId,
+        Integer storeId,
+        CashierShift.ShiftStatus status
+    );
+
+    List<CashierShift> findAllByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(
         UUID cashierId,
         Integer storeId,
         CashierShift.ShiftStatus status

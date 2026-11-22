@@ -21,3 +21,4 @@ Do **not** throw from `findOpen` on company mismatch (that 4xx/5xx → UI thinks
 1. `findOpen`: wrong `company_id` → empty Optional + warn (not throw).
 2. `open`: same-company OPEN → **return existing** (idempotent). Foreign-company OPEN → close orphan, then create.
 3. Topbar Open button: hide when `shift?.status === 'OPEN'` even if latch `shiftIsOpen` is still false.
+4. Grocery: never use bare `Optional findByCashierIdAndStoreIdAndStatus` for OPEN — duplicates throw `NonUnique` and block POS. Use `findFirst…OrderByOpenedAtAsc` / `OpenCashierShiftLookup`; keep partial unique `uq_cashier_shifts_open_cashier_store`.

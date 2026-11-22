@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Keep oldest OPEN per cashier+store; close race duplicates before unique index. -->
+    <changeSet id="v63-cashier-shifts-close-duplicate-opens" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cashier_shifts"/>
+        </preConditions>
+        <sql splitStatements="false">
+            WITH ranked AS (
+                SELECT id,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY cashier_id, store_id
+                           ORDER BY opened_at ASC NULLS LAST, id ASC
+                       ) AS rn
+                FROM cashier_shifts
+                WHERE status = 'OPEN'
+            )
+            UPDATE cashier_shifts cs
+            SET status = 'CLOSED',
+                closed_at = COALESCE(cs.closed_at, NOW())
+            FROM ranked r
+            WHERE cs.id = r.id
+              AND r.rn &gt; 1
+              AND cs.status = 'OPEN';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v63-cashier-shifts-unique-open-cashier-store" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cashier_shifts"/>
+            <not>
+                <indexExists tableName="cashier_shifts" indexName="uq_cashier_shifts_open_cashier_store"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE UNIQUE INDEX uq_cashier_shifts_open_cashier_store
+            ON cashier_shifts (cashier_id, store_id)
+            WHERE status = 'OPEN';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

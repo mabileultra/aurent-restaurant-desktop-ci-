@@ -18,6 +18,7 @@ import com.pos.security.CurrentUserProvider;
 import com.pos.sales.service.cashier.CashierShiftService;
 import com.pos.sales.service.cashier.support.CashierShiftAccessPolicy;
 import com.pos.sales.service.cashier.support.CashierShiftAggregateLoader;
+import com.pos.sales.service.cashier.support.OpenCashierShiftLookup;
 import com.pos.sales.service.cashier.support.ShiftSoldItemsLoader;
 import com.pos.sales.service.cashier.support.ShiftBannerAggregate;
 import com.pos.sales.service.cashier.support.ShiftReturnsAggregate;
@@ -47,13 +48,14 @@ public class CashierShiftServiceImpl implements CashierShiftService {
     private final ShiftSoldItemsLoader soldItemsLoader;
     private final CashierShiftAccessPolicy accessPolicy;
     private final CashRegisterTerminalService cashRegisterTerminalService;
+    private final OpenCashierShiftLookup openCashierShiftLookup;
 
     @Override
     public CashierShiftResponse getCurrent(Integer storeId) {
         User cashier = currentUserProvider.requireCurrentUser();
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
-        return cashierShiftRepository
-            .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
+        return openCashierShiftLookup
+            .findOpen(cashier.getId(), store.getId())
             .map(shift -> toLiveResponse(shift, store.getName()))
             .orElseThrow(() -> new ResourceNotFoundException("Открытая смена не найдена"));
     }
@@ -64,8 +66,7 @@ public class CashierShiftServiceImpl implements CashierShiftService {
         User cashier = currentUserProvider.requireCurrentUser();
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
 
-        var existingOpen = cashierShiftRepository
-            .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN);
+        var existingOpen = openCashierShiftLookup.findOpenAndCloseDuplicates(cashier.getId(), store.getId());
         if (existingOpen.isPresent()) {
             // Idempotent: POS may show Open when GET current failed while OPEN still exists.
             CashierShift open = existingOpen.get();

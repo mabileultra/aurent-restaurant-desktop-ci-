@@ -228,7 +228,11 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
         CashRegister register = resolveRegister(store.getId(), cashRegisterId);
         if (register == null) {
             register = cashierShiftRepository
-                .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
+                .findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(
+                    cashier.getId(),
+                    store.getId(),
+                    CashierShift.ShiftStatus.OPEN
+                )
                 .map(CashierShift::getCashRegister)
                 .orElse(null);
         }

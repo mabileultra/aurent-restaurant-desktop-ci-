@@ -40,7 +40,11 @@ public class MultikassaCashierRegisterGuard {
             throw new BadRequestException("У кассы не указан магазин");
         }
         boolean ownsOpenShift = cashierShiftRepository
-            .findByCashierIdAndStoreIdAndStatus(user.getId(), storeId, CashierShift.ShiftStatus.OPEN)
+            .findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(
+                user.getId(),
+                storeId,
+                CashierShift.ShiftStatus.OPEN
+            )
             .map(CashierShift::getCashRegister)
             .filter(cr -> cr != null && register.getId().equals(cr.getId()))
             .isPresent();

@@ -125,7 +125,7 @@ class MultikassaSettingsServiceImplFiscalProviderTest {
 
     @Test
     void noRegisterDefaultsToMultikassa() {
-        when(cashierShiftRepository.findByCashierIdAndStoreIdAndStatus(any(), anyInt(), any()))
+        when(cashierShiftRepository.findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(any(), anyInt(), any()))
             .thenReturn(Optional.empty());
         when(cashRegisterRepository.findFirstByStore_IdAndStatusIgnoreCaseOrderByRegisterNumberAsc(anyInt(), eq("ACTIVE")))
             .thenReturn(Optional.empty());

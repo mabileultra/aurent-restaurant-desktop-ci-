@@ -356,7 +356,11 @@ public class CashierSyncServiceImpl implements CashierSyncService {
 
     private CashierShift resolveShiftForOfflineSync(User cashier, Store store, Instant shiftOpenedAt) {
         return cashierShiftRepository
-            .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
+            .findFirstByCashierIdAndStoreIdAndStatusOrderByOpenedAtAsc(
+                cashier.getId(),
+                store.getId(),
+                CashierShift.ShiftStatus.OPEN
+            )
             .orElseGet(() -> {
                 Instant opened = shiftOpenedAt != null ? shiftOpenedAt : Instant.now();
                 CashierShift shift = CashierShift.builder()
