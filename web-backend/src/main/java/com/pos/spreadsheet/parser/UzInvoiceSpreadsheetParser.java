@@ -144,7 +144,10 @@ public class UzInvoiceSpreadsheetParser {
                 map.barcode = c;
             } else if (containsAny(h, "ўлчов", "olchov", "ед.", "единица", "бирлиги")) {
                 map.unit = c;
-            } else if (containsAny(h, "миқдор", "miqdor", "колич")) {
+            } else if (containsAny(h,
+                "миқдор", "miqdor", "колич", "кол-во", "кол во", "количество", "quantity", "qty", "count"
+            )) {
+                // Do not match monetary "amount"/сумма — that stole unit price into qty (default col 4).
                 map.qty = c;
             } else if (isLineTotalWithVatHeader(h)) {
                 map.lineTotalWithVat = c;

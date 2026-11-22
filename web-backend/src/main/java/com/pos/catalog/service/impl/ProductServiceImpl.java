@@ -141,6 +141,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductResponse> getLowStockProducts(Integer storeId) {
+        return queryService.getLowStockProducts(storeId);
+    }
+
+    @Override
     @Transactional
     public ProductResponse createProduct(CreateProductRequest req) {
         return commandService.createProduct(req);

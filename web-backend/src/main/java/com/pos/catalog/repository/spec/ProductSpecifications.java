@@ -149,8 +149,8 @@ public final class ProductSpecifications {
 
             addBusinessTypeFilter(parts, root, cb, businessTypeCode);
 
-            // storeId здесь НЕ режет ассортимент (admin catalog): цена/остаток в mapPage.
-            // Касса/склад с фильтром филиала — ProductStoreAssortmentSpecifications.presentAtStore.
+            // storeId в catalogFilter сам по себе не режет ассортимент (цена/остаток в mapPage).
+            // Режется снаружи: ProductStoreAssortmentSpecifications.presentAtStore(storeId).
 
             return parts.isEmpty() ? cb.conjunction() : cb.and(parts.toArray(new Predicate[0]));
         };

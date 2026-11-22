@@ -35,12 +35,20 @@ public class ProductLowStockQuerySupport {
     private final StoreStockService storeStockService;
 
     public List<ProductResponse> list(int limit) {
+        return list(limit, null);
+    }
+
+    public List<ProductResponse> list(int limit, Integer storeId) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
+        if (storeId != null) {
+            storeStockService.requireStoreForCompany(companyId, storeId);
+        }
         int safeLimit = Math.max(1, Math.min(limit, DEFAULT_LIMIT));
-        List<String> idRows = productRepository.findGroceryLowStockIds(
-            companyId,
-            PageRequest.of(0, safeLimit)
-        );
+        List<String> idRows = storeId == null
+            ? productRepository.findGroceryLowStockIds(companyId, PageRequest.of(0, safeLimit))
+            : productRepository.findGroceryLowStockIdsForStore(
+                companyId, storeId, PageRequest.of(0, safeLimit)
+            );
         if (idRows == null || idRows.isEmpty()) {
             return List.of();
         }
@@ -59,7 +67,9 @@ public class ProductLowStockQuerySupport {
         for (Product product : productRepository.findAllById(ids)) {
             productsById.put(product.getId(), product);
         }
-        Map<UUID, BigDecimal> stockById = storeStockService.sumQuantities(ids);
+        Map<UUID, BigDecimal> stockById = storeId == null
+            ? storeStockService.sumQuantities(ids)
+            : storeStockService.getQuantities(ids, storeId);
 
         List<ProductResponse> result = new ArrayList<>();
         for (UUID id : ids) {
