@@ -1,0 +1,28 @@
+---
+description: X-отчёт — одна печать на бумаге (Aurent ESC/POS), без дубля Multikassa
+globs: **/buildMultikassaOperations.js,**/escpos-shift-report-builder.cjs,**/escpos-layout.cjs,**/ThermalReportPrintPortal.jsx
+alwaysApply: false
+---
+
+# X-отчёт: один слип
+
+## Symptom
+
+На ленте два раза шапка / «Кассир»+магазин, даты и суммы рвутся (`22.11.` / `2026 09:42`, `НДС` → `44` + `035.71`).
+
+## Cause
+
+1. Multikassa `X_REPORT` с `force_to_print: true` печатает на ФМ, затем Aurent ESC/POS печатает ещё раз на том же принтере.
+2. X/Z ESC/POS создавал принтер без `paperWmm` (дефолт 80→42 кол.) на 58 мм ленте; сырой `leftRight` рвал суммы.
+
+## Do
+
+1. Multikassa X: `force_to_print: false` — операция на ФМ, бумага только Aurent ESC/POS.
+2. `printShiftReportEscpos` / `printZReportEscpos`: `paperWmm` из payload / имени принтера.
+3. `appendRow`: если label+value > width — value на следующей строке справа, не mid-digit wrap.
+4. Суммы X/Z через `fmtMoneyNarrow`; даты компактно `dd.MM.yy HH:mm`.
+
+## Do not
+
+- Включать обратно `force_to_print: true` на X «чтобы ФМ печатал» без отключения ESC/POS.
+- Печатать HTML `window.print` поверх ESC/POS на desktop.
