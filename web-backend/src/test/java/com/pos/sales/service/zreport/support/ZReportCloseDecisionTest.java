@@ -89,6 +89,7 @@ class ZReportCloseDecisionTest {
             BigDecimal.ZERO,
             BigDecimal.ZERO,
             BigDecimal.ZERO,
+            BigDecimal.ZERO,
             returnsCount,
             returnsCash,
             BigDecimal.ZERO,

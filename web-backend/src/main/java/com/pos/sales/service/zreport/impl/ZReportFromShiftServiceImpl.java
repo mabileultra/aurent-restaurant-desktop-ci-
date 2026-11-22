@@ -260,6 +260,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
                 BigDecimal.ZERO,
                 BigDecimal.ZERO,
                 BigDecimal.ZERO,
+                BigDecimal.ZERO,
                 shift.getVatAmount(),
                 BigDecimal.ZERO,
                 BigDecimal.ZERO,
