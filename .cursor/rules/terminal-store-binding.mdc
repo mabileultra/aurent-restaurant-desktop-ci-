@@ -11,12 +11,14 @@ alwaysApply: false
 - POS bootstrap / shift / checkout use **terminal `storeId`**, not «first of company».
 - Cashier PIN: `user.storeIds` must include terminal `storeId`, else reject.
 - Public list: `GET /api/v1/public/cashier/company-stores?companyLoginCode=`.
+- Electron setup loads that list via **main-process IPC** (setup page is `data:` → renderer `fetch` gets CORS 403 on `Origin: null`).
 
-## Assortment when `storeId` is set (cashier / warehouse filter)
+## Assortment when `storeId` is set (cashier / warehouse / write-off / balances)
 
 - Show products that have a **`store_stock` row** for that store (qty may be **0**).
 - Do **not** require store prices enabled.
-- Admin catalog list stays company-wide (price/qty overlay only).
+- Applies to: cashier bootstrap, `/warehouse/products`, write-off product pick (via warehouse lookup), live balances / обзор остатков.
+- Admin catalog list (`GET /products`) stays company-wide (price/qty overlay only).
 - Warehouse «Все» (no `storeId`) = all cards, qty = company sum.
 
 ## Must NOT

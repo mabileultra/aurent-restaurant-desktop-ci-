@@ -116,7 +116,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             warehouseReceiptSupport.productIdsForReceiptFilter(companyId, receiptNumber);
         Specification<Product> spec = ProductSpecifications.warehouseFilter(
             companyId, search, barcodeContains, markedProduct, businessTypeCode, receiptProductIds
-        );
+        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         PageResponse<ProductResponse> page = mapPage(productRepository.findAll(spec, pageable), storeId);
         java.util.List<ProductResponse> enriched =
             warehouseReceiptSupport.withLatestReceiptNumbers(companyId, page.content());
