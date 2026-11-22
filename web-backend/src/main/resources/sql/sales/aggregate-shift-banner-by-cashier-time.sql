@@ -3,8 +3,9 @@ SELECT CAST(COUNT(*) AS INTEGER),
        COALESCE(SUM(net.tax_total), 0),
        COALESCE(SUM(net.discount_total), 0),
        COALESCE(SUM(net.cash_amount), 0),
-       /* Карта без Humo/Uzcard — иначе X/Z дважды считает пластик. */
+       /* Карта без Humo/Uzcard/CASHLESS — иначе X/Z дважды считает пластик и QR. */
        COALESCE(SUM(CASE
+           WHEN s.payment_method = 'CASHLESS' THEN 0
            WHEN UPPER(COALESCE(s.card_type, '')) IN ('HUMO', 'UZCARD') THEN 0
            ELSE net.card_amount
        END), 0),

@@ -2,6 +2,7 @@ SELECT COUNT(*),
        COALESCE(SUM(tax_total), 0),
        COALESCE(SUM(cash_amount), 0),
        COALESCE(SUM(CASE
+           WHEN payment_method = 'CASHLESS' THEN 0
            WHEN UPPER(COALESCE(card_type, '')) IN ('HUMO', 'UZCARD') THEN 0
            ELSE card_amount
        END), 0),

@@ -1,0 +1,28 @@
+---
+description: X/Z card residual must not include CASHLESS/Humo/Uzcard
+globs: web-backend/src/main/resources/sql/sales/aggregate-shift-banner*.sql,web-backend/src/main/resources/sql/sales/aggregate-returns*.sql
+alwaysApply: false
+---
+
+# X/Z «Карта» vs Humo / Uzcard / QR
+
+## Symptom
+
+X/Z slip: cash + card + Humo + Uzcard + QR ≫ **Сумма**. Narrow printer wraps leading digits (`3 235 000` → `235 000` + `3` on the right).
+
+## Cause
+
+`CASHLESS` (and CARD+Humo/Uzcard) store amount in `card_amount`. Banner SQL must put that money only in Humo / Uzcard / cashless lines — not again in residual «Карта».
+
+## Do
+
+In aggregate-shift-banner / aggregate-returns SQL:
+
+1. `payment_method = 'CASHLESS' THEN 0` before residual card
+2. `card_type IN ('HUMO','UZCARD') THEN 0`
+3. else `card_amount` (Click and other residual card)
+
+## Do not
+
+- Clear `card_amount` on CASHLESS rows to “fix” reports — KPI «Безнал» uses `card_amount`
+- Drop Humo/Uzcard lines or merge them into «Карта»
