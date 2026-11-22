@@ -1,0 +1,32 @@
+---
+description: Cash register configs filter POS categories per till
+globs: **/CashRegisterConfig*,**/CashRegisterCategoryScope*,**/usePosProductsCatalog.js,**/posDataRouter.js,**/CategoryController.java,**/ProductQueryServiceImpl.java
+alwaysApply: false
+---
+
+# Cash register category config → POS
+
+## Intent
+
+Admin «Конфигурации касс» links **stores / cash registers / categories**. On POS, that list must **actually** restrict which category tiles and grocery products appear for the open till.
+
+## Match rules
+
+1. Config lists this `cashRegisterId` → apply (union of its categories).
+2. Else config has **no** registers and lists `storeId` → apply to all tills at that store.
+3. Config with categories but **neither** stores nor registers → ignore (orphan).
+4. `lockedDefault` system row → never used as a POS filter.
+5. **No** matching config → unrestricted (full company categories + store assortment).
+6. Several matches → **union** of category IDs.
+
+## Wiring
+
+- Online POS: `GET /categories?storeId&cashRegisterId`, `GET /products?...&cashRegisterId` (from open shift).
+- Offline: bootstrap/delta use open-shift register (or explicit `cashRegisterId`) via `CashRegisterCategoryScopeResolver`.
+- Assortment (`store_stock`) still applies; category config is an **extra** filter, not a replacement.
+
+## Must NOT
+
+- Filter admin catalog / warehouse / reports by cash-register config.
+- Treat empty orphan configs as company-wide hides.
+- Bind stock qty to `cash_register_id`.

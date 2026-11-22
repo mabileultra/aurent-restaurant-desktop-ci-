@@ -12,6 +12,7 @@ public interface StockTurnoverReportService {
     PageResponse<PosStockTurnoverRow> turnover(
         LocalDate from,
         LocalDate to,
+        Integer storeId,
         Integer categoryId,
         String search,
         Pageable pageable

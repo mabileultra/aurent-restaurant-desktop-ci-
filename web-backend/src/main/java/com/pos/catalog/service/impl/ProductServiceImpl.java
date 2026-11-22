@@ -63,12 +63,13 @@ public class ProductServiceImpl implements ProductService {
         String barcodeExact,
         Map<String, String> attributeFilters,
         String businessTypeCode,
+        Long cashRegisterId,
         Pageable pageable
     ) {
         return queryService.getProducts(
             search, categoryId, activeOnly, deletedScope, storeId,
             ikpuStatus, markedProduct, soldIndividually, barcodeExact, attributeFilters,
-            businessTypeCode, pageable
+            businessTypeCode, cashRegisterId, pageable
         );
     }
 

@@ -18,7 +18,11 @@ public interface ReportingSalesReportClient {
 
     List<TopProductRow> topProducts(int limit, LocalDate from, LocalDate to);
 
-    DailySummaryResponse dailySummary(LocalDate date);
+    default DailySummaryResponse dailySummary(LocalDate date) {
+        return dailySummary(date, null);
+    }
+
+    DailySummaryResponse dailySummary(LocalDate date, Integer storeId);
 
     ReturnsSummaryResponse returnsSummary(LocalDate from, LocalDate to);
 }

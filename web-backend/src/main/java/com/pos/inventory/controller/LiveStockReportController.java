@@ -46,10 +46,11 @@ public class LiveStockReportController {
     }
 
     @GetMapping("/low-stock")
-    @Operation(summary = "Товары ниже минимума (live store_stock)")
+    @Operation(summary = "Товары ниже минимума (live store_stock, опционально по филиалу)")
     public ResponseEntity<PageResponse<LowStockRowResponse>> lowStock(
+        @RequestParam(required = false) Integer storeId,
         @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(liveStockReportService.lowStock(pageable));
+        return ResponseEntity.ok(liveStockReportService.lowStock(storeId, pageable));
     }
 }

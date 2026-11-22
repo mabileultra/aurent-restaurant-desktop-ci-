@@ -30,8 +30,13 @@ public class CategoryController {
     @Operation(summary = "Список категорий", description = "Получение всех категорий товаров")
     @ApiResponse(responseCode = "200", description = "Список категорий")
     public ResponseEntity<List<CategoryResponse>> list(
-        @RequestParam(required = false) Integer businessTypeId
+        @RequestParam(required = false) Integer businessTypeId,
+        @RequestParam(required = false) Integer storeId,
+        @RequestParam(required = false) Long cashRegisterId
     ) {
+        if (storeId != null || cashRegisterId != null) {
+            return ResponseEntity.ok(categoryService.findAllForPos(businessTypeId, storeId, cashRegisterId));
+        }
         return ResponseEntity.ok(categoryService.findAll(businessTypeId));
     }
 

@@ -40,9 +40,10 @@ public class CashierSyncController {
     @ApiResponse(responseCode = "200", description = "Snapshot каталога")
     public ResponseEntity<CashierSyncBootstrapResponse> bootstrap(
         @RequestParam Integer storeId,
+        @RequestParam(required = false) Long cashRegisterId,
         @AuthenticationPrincipal User currentUser
     ) {
-        return ResponseEntity.ok(cashierSyncService.bootstrap(storeId, currentUser.getId()));
+        return ResponseEntity.ok(cashierSyncService.bootstrap(storeId, currentUser.getId(), cashRegisterId));
     }
 
     @GetMapping("/catalog/delta")

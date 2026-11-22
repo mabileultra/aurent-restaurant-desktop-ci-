@@ -20,6 +20,7 @@ public interface StockFactAnalyticsRepository {
         Integer companyId,
         LocalDate from,
         LocalDate to,
+        Integer storeId,
         Integer categoryId,
         String search,
         Pageable pageable

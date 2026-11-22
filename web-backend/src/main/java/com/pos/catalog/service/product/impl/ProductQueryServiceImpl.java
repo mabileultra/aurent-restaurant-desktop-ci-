@@ -10,6 +10,7 @@ import com.pos.exception.PosExceptions;
 import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.repository.ProductStorePriceRepository;
+import com.pos.catalog.repository.spec.ProductCategoryScopeSpecifications;
 import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.repository.spec.ProductStoreAssortmentSpecifications;
 import com.pos.catalog.service.product.ProductQueryService;
@@ -20,6 +21,7 @@ import com.pos.catalog.service.product.support.ProductCatalogTotalsSupport;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
 import com.pos.catalog.service.product.support.ProductWarehouseReceiptSupport;
 import com.pos.inventory.service.stock.StoreStockService;
+import com.pos.sales.support.CashRegisterCategoryScopeResolver;
 import com.pos.scales.codec.WeightBarcodeCodec;
 import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.catalog.service.product.support.ProductLookupSupport;
@@ -56,6 +58,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final CatalogIsolationSupport catalogIsolation;
     private final CatalogRemoteReadinessGuard catalogRemoteReadinessGuard;
     private final ProductWarehouseReceiptSupport warehouseReceiptSupport;
+    private final CashRegisterCategoryScopeResolver cashRegisterCategoryScopeResolver;
 
     @Override
     public PageResponse<ProductResponse> getProducts(
@@ -70,6 +73,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String barcodeExact,
         java.util.Map<String, String> attributeFilters,
         String businessTypeCode,
+        Long cashRegisterId,
         Pageable pageable
     ) {
         catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
@@ -78,13 +82,18 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             tenantAccess.effectiveCompanyIdOrNull(),
             search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
             attributeFilters, businessTypeCode
-        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
+        )
+            .and(ProductStoreAssortmentSpecifications.presentAtStore(storeId))
+            .and(ProductCategoryScopeSpecifications.within(
+                cashRegisterCategoryScopeResolver.resolve(storeId, cashRegisterId)
+            ));
         return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
 
     @Override
     public PageResponse<ProductResponse> getCashierStoreProducts(
         Integer storeId,
+        Long cashRegisterId,
         Pageable pageable
     ) {
         catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
@@ -94,7 +103,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
             null, null, "ACTIVE", storeId, null, null, null, null, null, null
-        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
+        )
+            .and(ProductStoreAssortmentSpecifications.presentAtStore(storeId))
+            .and(ProductCategoryScopeSpecifications.within(
+                cashRegisterCategoryScopeResolver.resolve(storeId, cashRegisterId)
+            ));
         return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
 

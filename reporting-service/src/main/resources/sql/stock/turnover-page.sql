@@ -1,19 +1,11 @@
-WITH stock_balance AS (
-    SELECT
-        product_id,
-        COALESCE(SUM(quantity), 0) AS stock_qty
-    FROM stock_movement_facts
-    WHERE company_id = :companyId
-      AND product_id IS NOT NULL
-    GROUP BY product_id
-),
-opening AS (
+WITH opening AS (
     SELECT
         product_id,
         COALESCE(SUM(quantity), 0) AS qty
     FROM stock_movement_facts
     WHERE company_id = :companyId
       AND product_id IS NOT NULL
+      AND (:storeId < 0 OR store_id = :storeId)
       AND transaction_date < :from
     GROUP BY product_id
 ),
@@ -29,6 +21,7 @@ period_agg AS (
     FROM stock_movement_facts
     WHERE company_id = :companyId
       AND product_id IS NOT NULL
+      AND (:storeId < 0 OR store_id = :storeId)
       AND transaction_date >= :from
       AND transaction_date <= :to
     GROUP BY product_id
@@ -40,6 +33,7 @@ closing AS (
     FROM stock_movement_facts
     WHERE company_id = :companyId
       AND product_id IS NOT NULL
+      AND (:storeId < 0 OR store_id = :storeId)
       AND transaction_date <= :to
     GROUP BY product_id
 )

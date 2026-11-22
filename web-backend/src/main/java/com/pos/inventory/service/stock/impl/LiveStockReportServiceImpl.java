@@ -2,7 +2,6 @@ package com.pos.inventory.service.stock.impl;
 
 import com.pos.catalog.entity.Product;
 import com.pos.catalog.service.product.support.CatalogGroceryStockQuerySupport;
-import com.pos.catalog.service.product.support.CatalogManagedProductLoader;
 import com.pos.catalog.service.product.support.StockRetailValueMath;
 import com.pos.dto.report.stock.LowStockRowResponse;
 import com.pos.dto.report.stock.StockBalanceRowResponse;
@@ -10,6 +9,7 @@ import com.pos.dto.shared.PageResponse;
 import com.pos.inventory.service.stock.LiveStockReportService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.inventory.service.stock.support.LiveStockBalanceRowMapper;
+import com.pos.inventory.service.stock.support.LiveStockLowStockAssembler;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,9 +31,9 @@ import java.util.UUID;
 public class LiveStockReportServiceImpl implements LiveStockReportService {
 
     private final CatalogGroceryStockQuerySupport catalogGroceryStockQuery;
-    private final CatalogManagedProductLoader catalogManagedProductLoader;
     private final StoreStockService storeStockService;
     private final TenantAccessSupport tenantAccess;
+    private final LiveStockLowStockAssembler liveStockLowStockAssembler;
 
     @Override
     public PageResponse<StockBalanceRowResponse> balances(
@@ -71,46 +70,9 @@ public class LiveStockReportServiceImpl implements LiveStockReportService {
     }
 
     @Override
-    public PageResponse<LowStockRowResponse> lowStock(Pageable pageable) {
+    public PageResponse<LowStockRowResponse> lowStock(Integer storeId, Pageable pageable) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        List<UUID> ids = catalogGroceryStockQuery.findGroceryLowStockIds(companyId, 10_000);
-        if (ids.isEmpty()) {
-            return PageResponse.from(Page.empty(pageable));
-        }
-        Map<UUID, Product> byId = new LinkedHashMap<>();
-        for (Product p : catalogManagedProductLoader.findAllById(ids)) {
-            byId.put(p.getId(), p);
-        }
-        Map<UUID, BigDecimal> liveQty = storeStockService.sumQuantities(ids);
-        Map<UUID, Instant> updatedAt = storeStockService.maxUpdatedAt(ids, null);
-        List<LowStockRowResponse> rows = new ArrayList<>();
-        for (UUID id : ids) {
-            Product product = byId.get(id);
-            if (product == null) {
-                continue;
-            }
-            BigDecimal raw = liveQty.getOrDefault(id, BigDecimal.ZERO);
-            BigDecimal qty = StockRetailValueMath.displayQty(raw);
-            int alert = product.getLowStockAlert();
-            if (qty.compareTo(BigDecimal.valueOf(alert)) > 0) {
-                continue;
-            }
-            rows.add(LiveStockBalanceRowMapper.toLowStock(product, raw, updatedAt.get(id)));
-        }
-        rows.sort((a, b) -> {
-            Instant left = a.stockUpdatedAt();
-            Instant right = b.stockUpdatedAt();
-            if (left == null && right == null) {
-                return 0;
-            }
-            if (left == null) {
-                return 1;
-            }
-            if (right == null) {
-                return -1;
-            }
-            return right.compareTo(left);
-        });
+        List<LowStockRowResponse> rows = liveStockLowStockAssembler.assemble(companyId, storeId);
         return PageResponse.from(toPage(rows, pageable));
     }
 

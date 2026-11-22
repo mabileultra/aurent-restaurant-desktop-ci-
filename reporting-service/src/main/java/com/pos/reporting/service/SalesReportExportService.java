@@ -8,7 +8,11 @@ public interface SalesReportExportService {
     byte[] exportByCategories(LocalDate from, LocalDate to, Integer storeId);
     byte[] exportByStores(LocalDate from, LocalDate to);
     byte[] exportPeriodCompare(LocalDate from, LocalDate to, Integer storeId);
-    byte[] exportDailySummary(LocalDate date);
+    default byte[] exportDailySummary(LocalDate date) {
+        return exportDailySummary(date, null);
+    }
+
+    byte[] exportDailySummary(LocalDate date, Integer storeId);
     byte[] exportCashierPerformance(LocalDate from, LocalDate to);
 }
 

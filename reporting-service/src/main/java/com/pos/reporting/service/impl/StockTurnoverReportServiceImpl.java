@@ -28,6 +28,7 @@ public class StockTurnoverReportServiceImpl implements StockTurnoverReportServic
     public PageResponse<PosStockTurnoverRow> turnover(
         LocalDate from,
         LocalDate to,
+        Integer storeId,
         Integer categoryId,
         String search,
         Pageable pageable
@@ -36,6 +37,7 @@ public class StockTurnoverReportServiceImpl implements StockTurnoverReportServic
             ReportingTenantContext.requireCompanyId(),
             from,
             to,
+            storeId,
             categoryId,
             ReportingSearchSupport.normalizeLikePattern(search),
             pageable

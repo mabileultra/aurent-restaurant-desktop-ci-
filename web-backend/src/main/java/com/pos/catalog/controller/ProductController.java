@@ -63,11 +63,13 @@ public class ProductController {
         @RequestParam(required = false) Boolean soldIndividually,
         @RequestParam(required = false) String barcode,
         @RequestParam(required = false) String attributeFilters,
+        @RequestParam(required = false) Long cashRegisterId,
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(productService.getProducts(
             search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
-            markedProduct, soldIndividually, barcode, AttributeFilterParser.parse(attributeFilters), pageable
+            markedProduct, soldIndividually, barcode, AttributeFilterParser.parse(attributeFilters),
+            null, cashRegisterId, pageable
         ));
     }
 

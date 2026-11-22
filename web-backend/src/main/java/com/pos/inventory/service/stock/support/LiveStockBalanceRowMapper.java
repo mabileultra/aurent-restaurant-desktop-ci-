@@ -37,7 +37,9 @@ public final class LiveStockBalanceRowMapper {
     public static LowStockRowResponse toLowStock(
         Product product,
         BigDecimal rawQty,
-        Instant stockUpdatedAt
+        Instant stockUpdatedAt,
+        Integer storeId,
+        String storeName
     ) {
         BigDecimal qty = StockRetailValueMath.displayQty(rawQty);
         int alert = product.getLowStockAlert();
@@ -48,6 +50,8 @@ public final class LiveStockBalanceRowMapper {
             product.getName(),
             product.getSku(),
             product.getBarcode(),
+            storeId,
+            storeName,
             StockRetailValueMath.scaleQty(qty),
             alert,
             StockRetailValueMath.scaleQty(deficit),

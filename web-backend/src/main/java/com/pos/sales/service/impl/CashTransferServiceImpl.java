@@ -41,6 +41,7 @@ public class CashTransferServiceImpl implements CashTransferService {
     @Override
     public PageResponse<CashTransferRowResponse> list(
         String storeSearch,
+        Integer storeId,
         Integer registerNumber,
         LocalDate closedFrom,
         LocalDate closedTo,
@@ -50,7 +51,7 @@ public class CashTransferServiceImpl implements CashTransferService {
         Instant toInst = toEndOfDay(closedTo);
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         Specification<ZReport> spec = CashTransferSpecifications.filter(
-            companyId, storeSearch, registerNumber, fromInst, toInst
+            companyId, storeSearch, storeId, registerNumber, fromInst, toInst
         );
         Page<ZReport> page = zReportRepository.findAll(spec, pageable);
         return PageResponse.from(page.map(z -> cashTransferMapper.toRowResponse(z, registerLookupFor(page.getContent()))));
@@ -59,6 +60,7 @@ public class CashTransferServiceImpl implements CashTransferService {
     @Override
     public List<CashTransferRowResponse> listAll(
         String storeSearch,
+        Integer storeId,
         Integer registerNumber,
         LocalDate closedFrom,
         LocalDate closedTo
@@ -67,7 +69,7 @@ public class CashTransferServiceImpl implements CashTransferService {
         Instant toInst = toEndOfDay(closedTo);
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         Specification<ZReport> spec = CashTransferSpecifications.filter(
-            companyId, storeSearch, registerNumber, fromInst, toInst
+            companyId, storeSearch, storeId, registerNumber, fromInst, toInst
         );
         List<ZReport> all = zReportRepository.findAll(spec);
         Map<String, Integer> registerLookup = registerLookupFor(all);

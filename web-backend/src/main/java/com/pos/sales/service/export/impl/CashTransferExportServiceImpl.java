@@ -31,12 +31,14 @@ public class CashTransferExportServiceImpl implements CashTransferExportService 
     @Override
     public byte[] exportTransfersExcel(
         String storeSearch,
+        Integer storeId,
         Integer registerNumber,
         LocalDate closedFrom,
         LocalDate closedTo
     ) {
         List<CashTransferRowResponse> rows = cashTransferService.listAll(
             storeSearch,
+            storeId,
             registerNumber,
             closedFrom,
             closedTo

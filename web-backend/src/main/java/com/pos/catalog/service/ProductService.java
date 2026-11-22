@@ -41,7 +41,27 @@ public interface ProductService {
     ) {
         return getProducts(
             search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
-            markedProduct, soldIndividually, barcodeExact, attributeFilters, null, pageable
+            markedProduct, soldIndividually, barcodeExact, attributeFilters, null, null, pageable
+        );
+    }
+
+    default PageResponse<ProductResponse> getProducts(
+        String search,
+        Integer categoryId,
+        boolean activeOnly,
+        String deletedScope,
+        Integer storeId,
+        String ikpuStatus,
+        Boolean markedProduct,
+        Boolean soldIndividually,
+        String barcodeExact,
+        Map<String, String> attributeFilters,
+        String businessTypeCode,
+        Pageable pageable
+    ) {
+        return getProducts(
+            search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
+            markedProduct, soldIndividually, barcodeExact, attributeFilters, businessTypeCode, null, pageable
         );
     }
 
@@ -57,6 +77,7 @@ public interface ProductService {
         String barcodeExact,
         Map<String, String> attributeFilters,
         String businessTypeCode,
+        Long cashRegisterId,
         Pageable pageable
     );
 

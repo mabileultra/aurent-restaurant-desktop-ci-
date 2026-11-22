@@ -5,6 +5,10 @@ import java.time.LocalDate;
 
 public interface DailySummaryService {
 
-    DailySummaryResponse dailySummary(LocalDate date);
+    default DailySummaryResponse dailySummary(LocalDate date) {
+        return dailySummary(date, null);
+    }
+
+    DailySummaryResponse dailySummary(LocalDate date, Integer storeId);
 }
 

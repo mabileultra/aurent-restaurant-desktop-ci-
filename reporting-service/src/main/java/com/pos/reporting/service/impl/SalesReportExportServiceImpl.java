@@ -84,9 +84,9 @@ public class SalesReportExportServiceImpl implements SalesReportExportService {
     }
 
     @Override
-    public byte[] exportDailySummary(LocalDate date) {
+    public byte[] exportDailySummary(LocalDate date, Integer storeId) {
         LocalDate reportDate = date != null ? date : LocalDate.now(ZONE);
-        var summary = dailySummaryService.dailySummary(reportDate);
+        var summary = dailySummaryService.dailySummary(reportDate, storeId);
         return reportExcelWriter.write(
             SalesExportTemplate.DAILY_SUMMARY,
             salesExportRowMapper.dailySummaryRow(reportDate, summary)
