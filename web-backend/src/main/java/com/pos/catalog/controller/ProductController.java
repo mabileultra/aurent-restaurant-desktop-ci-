@@ -202,10 +202,14 @@ public class ProductController {
 
     @GetMapping("/low-stock")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Товары с низким остатком", description = "Список товаров ниже минимального порога")
+    @Operation(
+        summary = "Товары с низким остатком",
+        description = "Список товаров ниже минимального порога. "
+            + "При storeId — только ассортимент филиала (есть store_stock), остаток по этому магазину."
+    )
     @ApiResponse(responseCode = "200", description = "Список товаров")
-    public ResponseEntity<?> getLowStockProducts() {
-        return ResponseEntity.ok(productService.getLowStockProducts());
+    public ResponseEntity<?> getLowStockProducts(@RequestParam(required = false) Integer storeId) {
+        return ResponseEntity.ok(productService.getLowStockProducts(storeId));
     }
 
     @PatchMapping("/bulk/tax-rate")

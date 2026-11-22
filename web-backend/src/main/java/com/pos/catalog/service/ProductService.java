@@ -131,6 +131,8 @@ public interface ProductService {
 
     List<ProductResponse> getLowStockProducts();
 
+    List<ProductResponse> getLowStockProducts(Integer storeId);
+
     ProductCatalogTotalsResponse getCatalogTotals(
         String search,
         Integer categoryId,

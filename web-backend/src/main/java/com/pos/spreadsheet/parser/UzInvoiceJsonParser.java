@@ -233,8 +233,9 @@ public class UzInvoiceJsonParser {
         String unit = firstText(item,
             "unit", "unitOfMeasure", "unit_of_measure", "measurement_unit", "measure", "olchov", "uom"
         );
+        // Never treat monetary "amount"/sum as qty — that put unit price into stock_quantity.
         String qty = firstText(item,
-            "quantity", "qty", "volume", "amount", "miqdor", "count", "product_count"
+            "quantity", "qty", "volume", "miqdor", "count", "product_count"
         );
         String price = firstText(item,
             "price", "unitPrice", "unit_price", "sellingPrice", "selling_price", "narx", "cost"

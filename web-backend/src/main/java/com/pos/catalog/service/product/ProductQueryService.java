@@ -97,6 +97,9 @@ public interface ProductQueryService {
 
     java.util.List<ProductResponse> getLowStockProducts();
 
+    /** Low stock for company; when {@code storeId} set — only SKUs with store_stock on that branch. */
+    java.util.List<ProductResponse> getLowStockProducts(Integer storeId);
+
     ProductCatalogTotalsResponse getCatalogTotals(
         String search,
         Integer categoryId,

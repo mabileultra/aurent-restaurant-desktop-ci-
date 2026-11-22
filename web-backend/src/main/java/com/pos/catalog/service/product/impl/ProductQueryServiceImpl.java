@@ -78,7 +78,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             tenantAccess.effectiveCompanyIdOrNull(),
             search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
             attributeFilters, businessTypeCode
-        );
+        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
 
@@ -156,8 +156,13 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public List<ProductResponse> getLowStockProducts() {
+        return getLowStockProducts(null);
+    }
+
+    @Override
+    public List<ProductResponse> getLowStockProducts(Integer storeId) {
         tenantAccess.requireEffectiveCompanyId();
-        return productLowStockQuerySupport.list(500);
+        return productLowStockQuerySupport.list(500, storeId);
     }
 
     @Override
@@ -180,7 +185,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             tenantAccess.effectiveCompanyIdOrNull(),
             search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
             attributeFilters, businessTypeCode
-        );
+        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         return productCatalogTotalsSupport.summarize(spec, storeId);
     }
 
