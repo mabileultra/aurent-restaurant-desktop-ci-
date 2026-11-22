@@ -46,6 +46,14 @@ public class StoreStockService {
             .orElse(BigDecimal.ZERO.setScale(QuantityUtil.SCALE));
     }
 
+    /** True when a store_stock row exists (qty may be zero). */
+    public boolean hasStorePresence(UUID productId, Integer storeId) {
+        if (productId == null || storeId == null) {
+            return false;
+        }
+        return storeStockRepository.existsByProductIdAndStoreId(productId, storeId);
+    }
+
     public Map<UUID, BigDecimal> getQuantities(Collection<UUID> productIds, Integer storeId) {
         if (productIds == null || productIds.isEmpty() || storeId == null) {
             return Map.of();

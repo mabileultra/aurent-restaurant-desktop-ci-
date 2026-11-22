@@ -1,0 +1,26 @@
+---
+description: Desktop cash terminal is bound to one store; branch assortment filter
+alwaysApply: false
+---
+
+# Terminal ↔ store + branch assortment
+
+## Terminal binding
+
+- Electron setup saves `companyLoginCode` **and** `storeId` / `storeName`.
+- POS bootstrap / shift / checkout use **terminal `storeId`**, not «first of company».
+- Cashier PIN: `user.storeIds` must include terminal `storeId`, else reject.
+- Public list: `GET /api/v1/public/cashier/company-stores?companyLoginCode=`.
+
+## Assortment when `storeId` is set (cashier / warehouse filter)
+
+- Show products that have a **`store_stock` row** for that store (qty may be **0**).
+- Do **not** require store prices enabled.
+- Admin catalog list stays company-wide (price/qty overlay only).
+- Warehouse «Все» (no `storeId`) = all cards, qty = company sum.
+
+## Must NOT
+
+- Bind stock to `cash_register_id`.
+- Hide cards only when qty > 0 (zero stock must stay visible for that branch).
+- Fall back to first company store when terminal has no `storeId` on new setups — require setup.

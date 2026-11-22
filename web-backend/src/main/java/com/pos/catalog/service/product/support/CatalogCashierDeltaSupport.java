@@ -39,6 +39,9 @@ public class CatalogCashierDeltaSupport {
             if (catalogIsolation.isPharmacyProduct(product)) {
                 continue;
             }
+            if (storeId != null && !storeStockService.hasStorePresence(product.getId(), storeId)) {
+                continue;
+            }
             catalogLoader.initCollections(product);
             out.add(withStoreFields(assembler.toResponse(product), product, storeId));
         }

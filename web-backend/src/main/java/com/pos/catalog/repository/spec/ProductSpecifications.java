@@ -149,9 +149,8 @@ public final class ProductSpecifications {
 
             addBusinessTypeFilter(parts, root, cb, businessTypeCode);
 
-            // storeId здесь НЕ режет ассортимент: цена/остаток подставляются в mapPage
-            // (store price или sellingPrice). Иначе при выключенном блоке цен магазинов
-            // bootstrap кассы возвращает 0 товаров и затирает локальный каталог.
+            // storeId здесь НЕ режет ассортимент (admin catalog): цена/остаток в mapPage.
+            // Касса/склад с фильтром филиала — ProductStoreAssortmentSpecifications.presentAtStore.
 
             return parts.isEmpty() ? cb.conjunction() : cb.and(parts.toArray(new Predicate[0]));
         };

@@ -16,6 +16,8 @@ public interface StoreRepository extends JpaRepository<Store, Integer>, JpaSpeci
 
     List<Store> findByCompanyIdOrderByNameAsc(Integer companyId);
 
+    List<Store> findByCompanyIdAndActiveTrueOrderByNameAsc(Integer companyId);
+
     List<Store> findByActiveTrueAndCompanyIsNotNullOrderByNameAsc();
 
     List<Store> findByActiveTrueAndBusinessTypeIgnoreCaseOrderByNameAsc(String businessType);
