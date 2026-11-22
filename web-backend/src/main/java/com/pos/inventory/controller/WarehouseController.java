@@ -42,8 +42,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Складской UI: те же товары, что и {@code /products}.
- * Поле {@code stockQuantity} в ответе — живой остаток из {@code store_stock}
+ * Складской UI. При {@code storeId} — только ассортимент филиала ({@code store_stock} row, qty может быть 0).
+ * Поле {@code stockQuantity} — живой остаток из {@code store_stock}
  * (филиал или сумма по компании), не сырой кэш {@code products.stock_quantity}.
  */
 @RestController
@@ -65,7 +65,8 @@ public class WarehouseController {
     @Operation(
         summary = "Товары склада",
         description = "Список товаров с фильтрами для складского интерфейса. "
-            + "При storeId остаток (stockQuantity) считается по филиалу; без storeId — сумма по компании."
+            + "При storeId — только товары с store_stock на филиале (qty может быть 0); "
+            + "остаток по филиалу. Без storeId — все активные, qty = сумма по компании."
     )
     @ApiResponse(responseCode = "200", description = "Список товаров")
     public ResponseEntity<PageResponse<ProductResponse>> listWarehouseProducts(

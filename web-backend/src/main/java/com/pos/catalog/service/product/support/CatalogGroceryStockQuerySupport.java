@@ -3,6 +3,7 @@ package com.pos.catalog.service.product.support;
 import com.pos.catalog.entity.Product;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.repository.spec.ProductSpecifications;
+import com.pos.catalog.repository.spec.ProductStoreAssortmentSpecifications;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class CatalogGroceryStockQuerySupport {
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             companyId, search, categoryId, "ACTIVE", storeId,
             null, null, null, null, null, null
-        );
+        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         return productRepository.findAll(spec.and(fetchCategory()), Sort.by("name").ascending());
     }
 
