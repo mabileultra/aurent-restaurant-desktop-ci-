@@ -2,16 +2,20 @@ package com.pos.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.client.platform.PlatformSecurityClient;
+import com.pos.dto.cashier.PublicCompanyStoresResponse;
 import com.pos.dto.platform.security.VerifyCashierServerPasswordRequest;
 import com.pos.dto.platform.security.VerifyCashierServerPasswordResponse;
+import com.pos.service.cashier.PublicCompanyStoresService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PublicCashierSecurityController {
 
     private final PlatformSecurityClient platformSecurityClient;
+    private final PublicCompanyStoresService publicCompanyStoresService;
 
     @PostMapping("/server-setup/verify-password")
     @Operation(summary = "Проверить пароль настройки сервера кассы")
@@ -29,5 +34,13 @@ public class PublicCashierSecurityController {
         @Valid @RequestBody VerifyCashierServerPasswordRequest request
     ) {
         return ResponseEntity.ok(platformSecurityClient.verifyCashierServerPassword(request.password()));
+    }
+
+    @GetMapping("/company-stores")
+    @Operation(summary = "Филиалы компании по коду входа (setup кассы)")
+    public ResponseEntity<PublicCompanyStoresResponse> listCompanyStores(
+        @RequestParam String companyLoginCode
+    ) {
+        return ResponseEntity.ok(publicCompanyStoresService.listByLoginCode(companyLoginCode));
     }
 }

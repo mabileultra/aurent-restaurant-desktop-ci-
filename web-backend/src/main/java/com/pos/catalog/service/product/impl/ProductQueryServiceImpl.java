@@ -11,6 +11,7 @@ import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.repository.ProductStorePriceRepository;
 import com.pos.catalog.repository.spec.ProductSpecifications;
+import com.pos.catalog.repository.spec.ProductStoreAssortmentSpecifications;
 import com.pos.catalog.service.product.ProductQueryService;
 import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.support.ProductBarcodeScanVariants;
@@ -78,6 +79,22 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
             attributeFilters, businessTypeCode
         );
+        return mapPage(productRepository.findAll(spec, pageable), storeId);
+    }
+
+    @Override
+    public PageResponse<ProductResponse> getCashierStoreProducts(
+        Integer storeId,
+        Pageable pageable
+    ) {
+        catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
+        if (storeId == null) {
+            throw PosExceptions.badRequest("Store is required");
+        }
+        Specification<Product> spec = ProductSpecifications.catalogFilter(
+            tenantAccess.effectiveCompanyIdOrNull(),
+            null, null, "ACTIVE", storeId, null, null, null, null, null, null
+        ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
 

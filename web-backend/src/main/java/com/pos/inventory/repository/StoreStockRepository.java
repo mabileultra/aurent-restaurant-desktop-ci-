@@ -17,6 +17,8 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
 
     Optional<StoreStock> findByProductIdAndStoreId(UUID productId, Integer storeId);
 
+    boolean existsByProductIdAndStoreId(UUID productId, Integer storeId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         SELECT ss FROM StoreStock ss

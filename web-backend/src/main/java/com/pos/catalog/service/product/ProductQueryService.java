@@ -43,6 +43,12 @@ public interface ProductQueryService {
         Pageable pageable
     );
 
+    /**
+     * Offline cashier bootstrap: active company products that have store_stock at {@code storeId}
+     * (qty may be zero). Admin catalog list must not use this — it keeps company-wide cards.
+     */
+    PageResponse<ProductResponse> getCashierStoreProducts(Integer storeId, Pageable pageable);
+
     default PageResponse<ProductResponse> getWarehouseProducts(
         String search,
         String barcodeContains,

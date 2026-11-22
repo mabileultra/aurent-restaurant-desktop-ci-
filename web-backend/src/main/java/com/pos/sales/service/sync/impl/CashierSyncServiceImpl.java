@@ -103,18 +103,8 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         List<ProductResponse> products = new ArrayList<>();
         int page = 0;
         while (true) {
-            PageResponse<ProductResponse> chunk = productQueryService.getProducts(
-                null,
-                null,
-                true,
-                "ACTIVE",
+            PageResponse<ProductResponse> chunk = productQueryService.getCashierStoreProducts(
                 store.getId(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
                 PageRequest.of(page, BOOTSTRAP_PAGE_SIZE)
             );
             if (chunk.content() == null || chunk.content().isEmpty()) {
