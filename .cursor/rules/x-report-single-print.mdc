@@ -1,28 +1,30 @@
 ---
-description: X-отчёт — одна печать на бумаге (Aurent ESC/POS), без дубля Multikassa
-globs: **/buildMultikassaOperations.js,**/escpos-shift-report-builder.cjs,**/escpos-layout.cjs,**/ThermalReportPrintPortal.jsx
+description: X-отчёт — одна печать; лента 80 мм (дефолт) и 58 мм
+globs: **/buildMultikassaOperations.js,**/escpos-shift-report-builder.cjs,**/escpos-z-report-builder.cjs,**/escpos-layout.cjs,**/escpos-format.cjs,**/ThermalReportPrintPortal.jsx
 alwaysApply: false
 ---
 
-# X-отчёт: один слип
+# X-отчёт: один слип · 80 и 58 мм
 
 ## Symptom
 
-На ленте два раза шапка / «Кассир»+магазин, даты и суммы рвутся (`22.11.` / `2026 09:42`, `НДС` → `44` + `035.71`).
+Дубль шапки; на 58 мм суммы/даты рвутся; на 80 мм не должно «ужиматься» как на 58.
 
 ## Cause
 
-1. Multikassa `X_REPORT` с `force_to_print: true` печатает на ФМ, затем Aurent ESC/POS печатает ещё раз на том же принтере.
-2. X/Z ESC/POS создавал принтер без `paperWmm` (дефолт 80→42 кол.) на 58 мм ленте; сырой `leftRight` рвал суммы.
+1. Multikassa X `force_to_print: true` + Aurent ESC/POS → два слипа.
+2. X/Z без `paperWmm` / сырой `leftRight` → mid-digit wrap на узкой ленте.
 
 ## Do
 
-1. Multikassa X: `force_to_print: false` — операция на ФМ, бумага только Aurent ESC/POS.
-2. `printShiftReportEscpos` / `printZReportEscpos`: `paperWmm` из payload / имени принтера.
-3. `appendRow`: если label+value > width — value на следующей строке справа, не mid-digit wrap.
-4. Суммы X/Z через `fmtMoneyNarrow`; даты компактно `dd.MM.yy HH:mm`.
+1. Multikassa X: `force_to_print: false` (бумага только Aurent ESC/POS).
+2. `paperWmm` из настроек печати (дефолт **80** — большинство касс; **58** — компакт).
+3. `appendRow` width-aware; `fmtMoneyForPaper` / `fmtAt(iso, paperWmm)`:
+   - 80 → суммы с пробелами, `dd.MM.yyyy HH:mm`
+   - 58 → `fmtMoneyNarrow`, `dd.MM.yy HH:mm`
+4. `resolvePrintWidth`: ≤58→32 кол., иначе→42.
 
 ## Do not
 
-- Включать обратно `force_to_print: true` на X «чтобы ФМ печатал» без отключения ESC/POS.
-- Печатать HTML `window.print` поверх ESC/POS на desktop.
+- Жёстко заточить X/Z только под 58 мм.
+- `force_to_print: true` на X без отключения ESC/POS.
