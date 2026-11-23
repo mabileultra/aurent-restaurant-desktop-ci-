@@ -1,6 +1,7 @@
 package com.pos.catalog.dto.product;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record ProductImportPreviewRow(
     int rowNum,
@@ -25,9 +26,12 @@ public record ProductImportPreviewRow(
     BigDecimal taxRatePercent,
     String status,
     /** Id уже существующей карточки (STATUS_DUPLICATE) — для привязки к кассе / прихода. */
-    java.util.UUID existingProductId,
+    UUID existingProductId,
     String existingSku,
     String existingName,
+    /** Категория существующей карточки — показать в превью, не затирать при импорте. */
+    Integer existingCategoryId,
+    String existingCategoryName,
     String message
 ) {
     public static final String STATUS_NEW = "NEW";

@@ -2,8 +2,8 @@ package com.pos.catalog.service.imports.support;
 
 import com.pos.catalog.dto.product.ProductImportConfirmRequest;
 import com.pos.catalog.dto.product.ProductImportPreviewRow;
-import com.pos.catalog.dto.product.ProductStorePriceRequest;
 import com.pos.catalog.entity.Product;
+import com.pos.catalog.entity.ProductStorePrice;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
 import com.pos.entity.Store;
@@ -21,7 +21,8 @@ import java.util.UUID;
 
 /**
  * Повторный импорт (STATUS_DUPLICATE): не создаём карточку заново,
- * а привязываем существующую к филиалу (цена + store_stock), чтобы товар появился на кассе.
+ * а привязываем существующую к филиалу (store_stock + цена при необходимости),
+ * без затирания цен других магазинов и без перезаписи уже заданной цены филиала.
  */
 @Component
 @RequiredArgsConstructor
@@ -51,19 +52,25 @@ public class ProductImportDuplicateLinker {
             throw new BadRequestException("Товар принадлежит другой компании");
         }
 
-        BigDecimal price = resolvePrice(row, rowOpts, product);
         Integer storeId = resolveStoreId(rowOpts, defaultStoreId);
         List<Store> targets = resolveTargetStores(companyId, storeId);
         if (targets.isEmpty()) {
             throw new BadRequestException("Нет активных магазинов для привязки к кассе");
         }
 
+        boolean priceForced = rowOpts != null
+            && rowOpts.sellingPrice() != null
+            && rowOpts.sellingPrice().compareTo(new BigDecimal("0.01")) >= 0;
+
         for (Store store : targets) {
             tenantAccess.assertCanAccessStore(store);
-            storePriceApplier.applyStorePrices(
-                product,
-                List.of(new ProductStorePriceRequest(store.getId(), price))
-            );
+            BigDecimal existingStorePrice = findStorePrice(product, store.getId());
+            if (priceForced) {
+                storePriceApplier.upsertStorePrice(product, store.getId(), rowOpts.sellingPrice());
+            } else if (existingStorePrice == null) {
+                BigDecimal price = resolveFallbackPrice(row, product);
+                storePriceApplier.upsertStorePrice(product, store.getId(), price);
+            }
             storeStockService.ensurePresence(product, store);
         }
         productRepository.save(product);
@@ -87,15 +94,22 @@ public class ProductImportDuplicateLinker {
         }
     }
 
-    private static BigDecimal resolvePrice(
-        ProductImportPreviewRow row,
-        ProductImportConfirmRequest.ImportRowConfirm rowOpts,
-        Product product
-    ) {
-        if (rowOpts != null && rowOpts.sellingPrice() != null
-            && rowOpts.sellingPrice().compareTo(new BigDecimal("0.01")) >= 0) {
-            return rowOpts.sellingPrice();
+    private static BigDecimal findStorePrice(Product product, Integer storeId) {
+        if (product.getStorePrices() == null) {
+            return null;
         }
+        for (ProductStorePrice line : product.getStorePrices()) {
+            if (line.getStore() != null && storeId.equals(line.getStore().getId())
+                && line.getPrice() != null
+                && line.getPrice().compareTo(new BigDecimal("0.01")) >= 0) {
+                return line.getPrice();
+            }
+        }
+        return null;
+    }
+
+    /** Цена только если у филиала ещё нет своей — из файла или карточки. */
+    private static BigDecimal resolveFallbackPrice(ProductImportPreviewRow row, Product product) {
         if (row.fileSellingPrice() != null
             && row.fileSellingPrice().compareTo(new BigDecimal("0.01")) >= 0) {
             return row.fileSellingPrice();

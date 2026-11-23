@@ -77,6 +77,30 @@ public class ProductStorePriceApplier {
         }
     }
 
+    /**
+     * Upsert цены одного филиала. Не удаляет цены других магазинов
+     * (в отличие от {@link #applyStorePrices}, который синхронизирует «полный список»).
+     */
+    public void upsertStorePrice(Product product, Integer storeId, BigDecimal price) {
+        if (product == null || storeId == null || price == null) {
+            return;
+        }
+        for (ProductStorePrice line : product.getStorePrices()) {
+            if (line.getStore() != null && storeId.equals(line.getStore().getId())) {
+                line.setPrice(price);
+                return;
+            }
+        }
+        Store store = storeRepository.findById(storeId)
+            .orElseThrow(() -> PosExceptions.notFound("Store", storeId));
+        assertStoreBelongsToProductCompany(product, store);
+        product.getStorePrices().add(ProductStorePrice.builder()
+            .product(product)
+            .store(store)
+            .price(price)
+            .build());
+    }
+
     public void applyExtraBarcodes(Product product, List<String> extras, String primaryBarcode) {
         if (extras == null) {
             return;

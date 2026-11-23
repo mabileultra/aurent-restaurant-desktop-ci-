@@ -50,7 +50,7 @@ class ProductImportReceiptPurchasePriceTest {
         return new ProductImportPreviewRow(
             1, "sku", "name", null, null, null, null, "dona", null, "PIECE",
             BigDecimal.ONE, filePrice, cost, null, null,
-            ProductImportPreviewRow.STATUS_NEW, null, null, null, null
+            ProductImportPreviewRow.STATUS_NEW, null, null, null, null, null, null
         );
     }
 }
