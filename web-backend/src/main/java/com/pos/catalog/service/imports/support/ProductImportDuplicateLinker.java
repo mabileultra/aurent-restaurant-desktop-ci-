@@ -14,6 +14,7 @@ import com.pos.repository.StoreRepository;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,8 +36,12 @@ public class ProductImportDuplicateLinker {
     private final TenantAccessSupport tenantAccess;
 
     /**
+     * Confirm идёт с {@code NOT_SUPPORTED} (построчный импорт) — своя tx нужна,
+     * иначе lazy {@code Product.storePrices} падает: no Session.
+     *
      * @return id карточки, если привязка выполнена
      */
+    @Transactional
     public UUID linkToAssortment(
         ProductImportPreviewRow row,
         ProductImportConfirmRequest.ImportRowConfirm rowOpts,
