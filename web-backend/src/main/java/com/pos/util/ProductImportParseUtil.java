@@ -99,12 +99,9 @@ public final class ProductImportParseUtil {
         }
     }
 
-    /** Узбекский/русский формат: {@code 3 125 000,00} → {@code 3125000.00} */
+    /** Узбекский/русский / Excel формат: {@code 3 125 000,00}, {@code 8,000}, {@code 8.000}. */
     private static String normalizeNumber(String raw) {
-        return raw.trim()
-            .replace("\u00a0", "")
-            .replace(" ", "")
-            .replace(',', '.');
+        return ImportNumberNormalizer.normalize(raw);
     }
 
     public static List<Integer> parseStoreIdList(String param) {
