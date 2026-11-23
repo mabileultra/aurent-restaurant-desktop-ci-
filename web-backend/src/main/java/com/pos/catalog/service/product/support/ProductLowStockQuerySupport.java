@@ -71,13 +71,18 @@ public class ProductLowStockQuerySupport {
             ? storeStockService.sumQuantities(ids)
             : storeStockService.getQuantities(ids, storeId);
 
-        List<ProductResponse> result = new ArrayList<>();
+        List<Product> ordered = new ArrayList<>();
         for (UUID id : ids) {
             Product product = productsById.get(id);
             if (product == null || catalogIsolation.isPharmacyProduct(product)) {
                 continue;
             }
-            ProductResponse base = assembler.toResponse(product);
+            ordered.add(product);
+        }
+        Map<UUID, Integer> dispatched = assembler.loadDispatchedCounts(ordered, storeId);
+        List<ProductResponse> result = new ArrayList<>();
+        for (Product product : ordered) {
+            ProductResponse base = assembler.toResponse(product, null, dispatched);
             BigDecimal stockQty = resolveQty(product, stockById);
             result.add(assembler.withStockQuantity(base, stockQty));
         }

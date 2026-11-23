@@ -25,6 +25,7 @@ public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepos
                COALESCE(SUM(CASE WHEN sm.quantity < 0 THEN -sm.quantity ELSE 0 END), 0)
         FROM StockMovement sm
         WHERE sm.productId IN :productIds
+          AND (:storeId IS NULL OR sm.store.id = :storeId)
         GROUP BY sm.productId
         """;
 
@@ -32,6 +33,7 @@ public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepos
         SELECT COALESCE(SUM(CASE WHEN sm.quantity < 0 THEN -sm.quantity ELSE 0 END), 0)
         FROM StockMovement sm
         WHERE sm.productId = :productId
+          AND (:storeId IS NULL OR sm.store.id = :storeId)
         """;
 
     private static final String FIND_PRODUCT_MOVEMENTS_JPQL = """
@@ -71,12 +73,13 @@ public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepos
     private final StockMovementJpaQueryExecutor jpaQueryExecutor;
 
     @Override
-    public List<ProductDispatchedSum> sumDispatchedByProductIds(Collection<UUID> productIds) {
+    public List<ProductDispatchedSum> sumDispatchedByProductIds(Collection<UUID> productIds, Integer storeId) {
         if (productIds == null || productIds.isEmpty()) {
             return List.of();
         }
         return entityManager.createQuery(SUM_DISPATCHED_BY_IDS_JPQL, Object[].class)
             .setParameter("productIds", productIds)
+            .setParameter("storeId", storeId)
             .getResultList()
             .stream()
             .map(row -> new ProductDispatchedSum((UUID) row[0], toLong(row[1])))
@@ -84,9 +87,10 @@ public class StockMovementQueryRepositoryImpl implements StockMovementQueryRepos
     }
 
     @Override
-    public long sumDispatchedByProductId(UUID productId) {
+    public long sumDispatchedByProductId(UUID productId, Integer storeId) {
         BigDecimal sum = entityManager.createQuery(SUM_DISPATCHED_BY_ID_JPQL, BigDecimal.class)
             .setParameter("productId", productId)
+            .setParameter("storeId", storeId)
             .getSingleResult();
         return toLong(sum);
     }

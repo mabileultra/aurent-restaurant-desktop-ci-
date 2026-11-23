@@ -31,7 +31,10 @@ public record ProductResponse(
      * Not the raw denormalized {@code products.stock_quantity} column.
      */
     BigDecimal stockQuantity,
-    /** Суммарно списано со склада (продажи, корректировки в минус) по журналу движений. */
+    /**
+     * Суммарно списано со склада (продажи, корректировки в минус) по журналу движений.
+     * При фильтре {@code storeId} — только движения этого филиала; без фильтра — по компании.
+     */
     int stockDispatched,
     int lowStockAlert,
     boolean lowStock,

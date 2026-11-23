@@ -18,7 +18,8 @@ alwaysApply: false
 - Show products that have a **`store_stock` row** for that store (qty may be **0**).
 - Do **not** require store prices enabled.
 - Applies to: cashier bootstrap, `GET /products` + catalog-totals, `/warehouse/products`, write-off pick, live balances, `GET /products/low-stock?storeId=`.
-- Without `storeId` («Все») = company-wide cards / company sum qty / company low-stock.
+- With `storeId`: `stockQuantity` **and** `stockDispatched` are for that store only (import into a new branch with qty 0 → dispatched 0 there).
+- Without `storeId` («Все») = company-wide cards / company sum qty / company dispatched / company low-stock.
 
 ## Must NOT
 

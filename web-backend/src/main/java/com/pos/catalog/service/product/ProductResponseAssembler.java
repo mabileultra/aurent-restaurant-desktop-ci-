@@ -44,7 +44,7 @@ public class ProductResponseAssembler {
             : (int) productStorePriceRepository.countByProduct_Id(product.getId());
         int stockDispatched = dispatchedByProduct != null
             ? dispatchedByProduct.getOrDefault(product.getId(), 0)
-            : (int) stockMovementQueryRepository.sumDispatchedByProductId(product.getId());
+            : (int) stockMovementQueryRepository.sumDispatchedByProductId(product.getId(), null);
         List<ProductStorePriceRow> storePrices = product.getStorePrices() == null
             ? List.of()
             : productStorePriceMapper.toRowList(product.getStorePrices());
@@ -132,12 +132,12 @@ public class ProductResponseAssembler {
         return copy(base, qty, base.stockDispatched(), low, base.sellingPrice());
     }
 
-    public Map<UUID, Integer> loadDispatchedCounts(List<Product> products) {
+    public Map<UUID, Integer> loadDispatchedCounts(List<Product> products, Integer storeId) {
         if (products == null || products.isEmpty()) {
             return Map.of();
         }
         List<UUID> ids = products.stream().map(Product::getId).distinct().toList();
-        return stockMovementQueryRepository.sumDispatchedByProductIds(ids).stream()
+        return stockMovementQueryRepository.sumDispatchedByProductIds(ids, storeId).stream()
             .collect(Collectors.toMap(
                 ProductDispatchedSum::productId,
                 row -> (int) row.dispatched()
