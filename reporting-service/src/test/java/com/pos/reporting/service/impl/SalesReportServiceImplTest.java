@@ -20,6 +20,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -50,17 +51,19 @@ class SalesReportServiceImplTest {
     void salesReportIncludesCashAndCardTotals() {
         LocalDate from = LocalDate.of(2026, 11, 21);
         LocalDate to = from;
-        when(saleFactRepository.sumTotalByCompanyAndDateRange(7, from, to))
+        when(saleFactRepository.sumTotalByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), isNull()))
             .thenReturn(new BigDecimal("1607000.00"));
-        when(saleFactRepository.countByCompanyIdAndTransactionDateBetween(7, from, to)).thenReturn(23L);
-        when(saleFactRepository.sumItemsSoldByCompanyAndDateRange(7, from, to)).thenReturn(39L);
-        when(saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(7, from, to))
+        when(saleFactRepository.countByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), isNull()))
+            .thenReturn(23L);
+        when(saleFactRepository.sumItemsSoldByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), isNull()))
+            .thenReturn(39L);
+        when(saleItemFactRepository.sumCostEstimateByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), isNull()))
             .thenReturn(new BigDecimal("1096940.43"));
-        when(saleFactRepository.sumCashByCompanyAndDateRange(eq(7), eq(from), eq(to)))
+        when(saleFactRepository.sumCashByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), isNull()))
             .thenReturn(new BigDecimal("500000.00"));
-        when(saleFactRepository.sumCardByCompanyAndDateRange(eq(7), eq(from), eq(to)))
+        when(saleFactRepository.sumCardByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), isNull()))
             .thenReturn(new BigDecimal("1107000.00"));
-        when(saleFactRepository.dailyRevenueByCompanyAndDateRange(any(), any(), any()))
+        when(saleFactRepository.dailyRevenueByCompanyDateRangeAndStore(any(), any(), any(), any()))
             .thenReturn(List.of());
 
         SalesReportResponse report = service.salesReport(from, to);
@@ -68,5 +71,30 @@ class SalesReportServiceImplTest {
         assertThat(report.cashTotal()).isEqualByComparingTo("500000.00");
         assertThat(report.cardTotal()).isEqualByComparingTo("1107000.00");
         assertThat(report.totalRevenue()).isEqualByComparingTo("1607000.00");
+    }
+
+    @Test
+    void salesReportPassesStoreId() {
+        LocalDate from = LocalDate.of(2026, 11, 21);
+        LocalDate to = from;
+        when(saleFactRepository.sumTotalByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(new BigDecimal("100.00"));
+        when(saleFactRepository.countByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(1L);
+        when(saleFactRepository.sumItemsSoldByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(1L);
+        when(saleItemFactRepository.sumCostEstimateByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(BigDecimal.ZERO);
+        when(saleFactRepository.sumCashByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(new BigDecimal("100.00"));
+        when(saleFactRepository.sumCardByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(BigDecimal.ZERO);
+        when(saleFactRepository.dailyRevenueByCompanyDateRangeAndStore(eq(7), eq(from), eq(to), eq(3)))
+            .thenReturn(List.of());
+
+        SalesReportResponse report = service.salesReport(from, to, 3);
+
+        assertThat(report.totalRevenue()).isEqualByComparingTo("100.00");
+        assertThat(report.transactionCount()).isEqualTo(1L);
     }
 }

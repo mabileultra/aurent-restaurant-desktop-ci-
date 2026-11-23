@@ -24,11 +24,16 @@ public class TopProductsServiceImpl implements TopProductsService {
 
     @Override
     public List<TopProductRowResponse> topProducts(int limit, LocalDate from, LocalDate to) {
+        return topProducts(limit, from, to, null);
+    }
+
+    @Override
+    public List<TopProductRowResponse> topProducts(int limit, LocalDate from, LocalDate to, Integer storeId) {
         Integer companyId = ReportingTenantContext.requireCompanyId();
         LocalDate end = to != null ? to : LocalDate.now();
         LocalDate start = from != null ? from : end.minus(30, ChronoUnit.DAYS);
         int cappedLimit = Math.max(1, Math.min(limit, 100));
-        return saleItemFactRepository.topProducts(companyId, start, end, cappedLimit).stream()
+        return saleItemFactRepository.topProducts(companyId, start, end, cappedLimit, storeId).stream()
             .map(row -> new TopProductRowResponse(
                 row[0] != null ? row[0].toString() : "",
                 toLong(row[1]),

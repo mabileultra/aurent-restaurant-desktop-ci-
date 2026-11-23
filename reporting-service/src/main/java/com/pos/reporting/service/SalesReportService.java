@@ -6,5 +6,6 @@ import java.time.LocalDate;
 public interface SalesReportService {
 
     SalesReportResponse salesReport(LocalDate from, LocalDate to);
-}
 
+    SalesReportResponse salesReport(LocalDate from, LocalDate to, Integer storeId);
+}

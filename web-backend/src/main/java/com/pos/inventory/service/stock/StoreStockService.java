@@ -209,6 +209,25 @@ public class StoreStockService {
         syncProductTotal(product);
     }
 
+    /**
+     * Касса показывает только товары с {@code store_stock} (qty может быть 0).
+     * Создаёт строку с нулём, если её ещё нет — остаток не трогает.
+     */
+    public void ensurePresence(Product product, Store store) {
+        if (product == null || product.getId() == null || store == null || store.getId() == null) {
+            return;
+        }
+        if (storeStockRepository.existsByProductIdAndStoreId(product.getId(), store.getId())) {
+            return;
+        }
+        storeStockRepository.save(StoreStock.builder()
+            .productId(product.getId())
+            .store(store)
+            .quantity(BigDecimal.ZERO.setScale(QuantityUtil.SCALE))
+            .build());
+        syncProductTotal(product);
+    }
+
     public void initializeForCompanyStores(Product product, Integer companyId, BigDecimal quantity) {
         syncProductTotal(product);
     }

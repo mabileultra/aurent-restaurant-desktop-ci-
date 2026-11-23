@@ -40,7 +40,7 @@ public final class ProductImportSupport {
             rowNum, "", "", null, null, null, null, "", null, null, BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO, null, BigDecimal.ZERO,
             ProductImportPreviewRow.STATUS_INVALID,
-            null, null, message
+            null, null, null, message
         );
     }
 
@@ -81,6 +81,7 @@ public final class ProductImportSupport {
                 duplicate.getSellingPrice(),
                 fields.taxRatePercent(),
                 ProductImportPreviewRow.STATUS_DUPLICATE,
+                duplicate.getId(),
                 duplicate.getSku(),
                 duplicate.getName(),
                 duplicateMessage
@@ -103,6 +104,7 @@ public final class ProductImportSupport {
             null,
             fields.taxRatePercent(),
             ProductImportPreviewRow.STATUS_NEW,
+            null,
             null,
             null,
             null
