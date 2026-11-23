@@ -16,7 +16,6 @@ alwaysApply: false
 | UI | API |
 |----|-----|
 | Products «Сумма» | `GET /products/catalog-totals` |
-| Dashboard «Остаток сейчас» / «Сумма прихода» | same totals overlaid in `mergeDashboardLiveStock` |
 | Report «Остатки» | `GET /warehouse/reports/balances` |
 | Report «Ниже минимума» | `GET /warehouse/reports/low-stock` |
 

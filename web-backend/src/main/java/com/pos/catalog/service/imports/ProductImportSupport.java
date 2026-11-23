@@ -40,7 +40,7 @@ public final class ProductImportSupport {
             rowNum, "", "", null, null, null, null, "", null, null, BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO, null, BigDecimal.ZERO,
             ProductImportPreviewRow.STATUS_INVALID,
-            null, null, null, message
+            null, null, null, null, null, message
         );
     }
 
@@ -64,6 +64,8 @@ public final class ProductImportSupport {
         String resolvedSaleType = rules.saleType().name();
 
         if (duplicate != null) {
+            Integer categoryId = duplicate.getCategory() != null ? duplicate.getCategory().getId() : null;
+            String categoryName = duplicate.getCategory() != null ? duplicate.getCategory().getName() : null;
             return new ProductImportPreviewRow(
                 rowNum,
                 sku,
@@ -84,6 +86,8 @@ public final class ProductImportSupport {
                 duplicate.getId(),
                 duplicate.getSku(),
                 duplicate.getName(),
+                categoryId,
+                categoryName,
                 duplicateMessage
             );
         }
@@ -104,6 +108,8 @@ public final class ProductImportSupport {
             null,
             fields.taxRatePercent(),
             ProductImportPreviewRow.STATUS_NEW,
+            null,
+            null,
             null,
             null,
             null,

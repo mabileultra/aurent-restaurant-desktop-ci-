@@ -149,7 +149,7 @@ class ProductImportSupportTest {
             java.math.BigDecimal.ZERO,
             null, java.math.BigDecimal.ZERO, null, null,
             ProductImportPreviewRow.STATUS_NEW,
-            null, null, null, null
+            null, null, null, null, null, null
         );
         assertEquals("row:7", ProductImportSupport.rowDedupeKey(row));
     }
