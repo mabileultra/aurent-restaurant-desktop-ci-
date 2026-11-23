@@ -9,11 +9,12 @@ import java.util.Optional;
 /**
  * Цена позиции счёт-фактуры для POS: всегда с НДС.
  * Приоритет — сумма поставки с ҚҚС / кол-во; иначе «Нарх» × (1 + ставка).
- * Пустая/отсутствующая ставка → net без накрутки (не дефолт 12%).
+ * Если «сумма строки» ≈ «Нарх» при qty&gt;1 — не делим (8000/10≠800).
  */
 public final class UzInvoicePriceWithVatResolver {
 
     private static final int MONEY_SCALE = 2;
+    private static final BigDecimal NEAR_RATIO = new BigDecimal("0.02");
 
     private UzInvoicePriceWithVatResolver() {
     }
@@ -26,12 +27,30 @@ public final class UzInvoicePriceWithVatResolver {
     ) {
         BigDecimal qty = ProductImportParseUtil.parseDecimalOpt(qtyRaw).orElse(null);
         BigDecimal lineTotal = ProductImportParseUtil.parseDecimalOpt(lineTotalWithVatRaw).orElse(null);
+        BigDecimal net = ProductImportParseUtil.parseDecimalOpt(netUnitPriceRaw).orElse(null);
+
         if (lineTotal != null && lineTotal.compareTo(BigDecimal.ZERO) > 0
-            && qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
+            && qty != null && qty.compareTo(BigDecimal.ZERO) > 0
+            && !lineTotalLooksLikeUnitPrice(lineTotal, net, qty)) {
             return Optional.of(lineTotal.divide(qty, MONEY_SCALE, RoundingMode.HALF_UP));
         }
 
-        BigDecimal net = ProductImportParseUtil.parseDecimalOpt(netUnitPriceRaw).orElse(null);
+        return fromNetUnitPrice(net, vatRateRaw);
+    }
+
+    static boolean lineTotalLooksLikeUnitPrice(BigDecimal lineTotal, BigDecimal net, BigDecimal qty) {
+        if (net == null || net.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+        if (qty.compareTo(BigDecimal.ONE) <= 0) {
+            return false;
+        }
+        BigDecimal base = net.abs().max(BigDecimal.ONE);
+        BigDecimal delta = lineTotal.subtract(net).abs();
+        return delta.compareTo(base.multiply(NEAR_RATIO)) <= 0;
+    }
+
+    private static Optional<BigDecimal> fromNetUnitPrice(BigDecimal net, String vatRateRaw) {
         if (net == null || net.compareTo(BigDecimal.ZERO) <= 0) {
             return Optional.empty();
         }

@@ -1,7 +1,6 @@
 package com.pos.spreadsheet.parser;
 
 import com.pos.exception.BadRequestException;
-import com.pos.util.ProductImportParseUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -59,7 +58,7 @@ public class UzInvoiceSpreadsheetParser {
         if (HtmlExcelTableParser.isHtmlSpreadsheet(bytes)) {
             return HtmlExcelTableParser.parse(bytes);
         }
-        DataFormatter formatter = new DataFormatter();
+        DataFormatter formatter = new DataFormatter(Locale.ROOT);
         List<List<String>> grid = new ArrayList<>();
         try (Workbook wb = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
             Sheet sheet = wb.getSheetAt(0);
@@ -94,7 +93,7 @@ public class UzInvoiceSpreadsheetParser {
             );
         }
         String documentId = UzInvoiceDocumentIdExtractor.extractFromGrid(grid);
-        ColumnMap columns = mapColumns(grid.get(headerRow));
+        UzInvoiceColumnMap columns = UzInvoiceColumnMapper.mapColumns(grid.get(headerRow));
         List<Map<String, String>> rows = new ArrayList<>();
         for (int r = headerRow + 1; r < grid.size(); r++) {
             Map<String, String> mapped = mapRow(grid.get(r), columns, r + 1, documentId);
@@ -125,76 +124,12 @@ public class UzInvoiceSpreadsheetParser {
         return -1;
     }
 
-    private ColumnMap mapColumns(List<String> header) {
-        ColumnMap map = new ColumnMap();
-        if (header == null || header.isEmpty()) {
-            applyDefaults(map);
-            return map;
-        }
-        for (int c = 0; c < header.size(); c++) {
-            String h = norm(header.get(c));
-            if (h.isEmpty()) {
-                continue;
-            }
-            if (containsAny(h, "маҳсулот номи", "mahsulot nomi", "наименован", "номи (хизмат")) {
-                map.name = c;
-            } else if (containsAny(h, "идентификация", "икпу", "ikpu", "каталог", "миллий каталог")) {
-                map.ikpu = c;
-            } else if (containsAny(h, "штрих", "shtrix", "barcode", "ean", "штрихкод")) {
-                map.barcode = c;
-            } else if (containsAny(h, "ўлчов", "olchov", "ед.", "единица", "бирлиги")) {
-                map.unit = c;
-            } else if (containsAny(h,
-                "миқдор", "miqdor", "колич", "кол-во", "кол во", "количество", "quantity", "qty", "count"
-            )) {
-                // Do not match monetary "amount"/сумма — that stole unit price into qty (default col 4).
-                map.qty = c;
-            } else if (isLineTotalWithVatHeader(h)) {
-                map.lineTotalWithVat = c;
-            } else if (h.equals("нарх") || h.contains("нарҳ")
-                || (h.contains("цена") && !h.contains("қиймат") && !h.contains("сумма"))) {
-                map.unitPrice = c;
-            } else if ((containsAny(h, "ставка") || h.equals("ққс") || h.equals("qqs") || h.contains("ндс"))
-                && !h.contains("сумма") && !isLineTotalWithVatHeader(h)) {
-                map.vatRate = c;
-            } else if ((h.contains("ққс") || h.contains("qqs") || h.contains("ндс"))
-                && !isLineTotalWithVatHeader(h)) {
-                if (map.vatRate < 0) {
-                    map.vatRate = c;
-                }
-            }
-        }
-        applyDefaults(map);
-        return map;
-    }
-
-    /** Колонка «қиймат ҚҚСни ҳисобга олган ҳолда» / сумма с НДС. */
-    private static boolean isLineTotalWithVatHeader(String h) {
-        return UzInvoiceLineTotalWithVatHeaders.matches(h);
-    }
-
-    private void applyDefaults(ColumnMap map) {
-        if (map.name < 0) {
-            map.name = 1;
-        }
-        if (map.ikpu < 0) {
-            map.ikpu = 2;
-        }
-        if (map.unit < 0) {
-            map.unit = 3;
-        }
-        if (map.qty < 0) {
-            map.qty = 4;
-        }
-        if (map.unitPrice < 0) {
-            map.unitPrice = 5;
-        }
-        if (map.vatRate < 0) {
-            map.vatRate = 7;
-        }
-    }
-
-    private Map<String, String> mapRow(List<String> row, ColumnMap cols, int excelRowNum, String uzInvoiceDocumentId) {
+    private Map<String, String> mapRow(
+        List<String> row,
+        UzInvoiceColumnMap cols,
+        int excelRowNum,
+        String uzInvoiceDocumentId
+    ) {
         if (row == null || row.isEmpty()) {
             return null;
         }
@@ -261,32 +196,9 @@ public class UzInvoiceSpreadsheetParser {
         StringBuilder sb = new StringBuilder();
         int limit = Math.min(12, row.size());
         for (int c = 0; c < limit; c++) {
-            sb.append(norm(row.get(c))).append(' ');
+            String s = row.get(c);
+            sb.append(s == null ? "" : s.trim().toLowerCase(Locale.ROOT).replace('\n', ' ')).append(' ');
         }
         return sb.toString();
-    }
-
-    private static String norm(String s) {
-        return s == null ? "" : s.trim().toLowerCase(Locale.ROOT).replace('\n', ' ');
-    }
-
-    private static boolean containsAny(String haystack, String... needles) {
-        for (String n : needles) {
-            if (haystack.contains(n)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static final class ColumnMap {
-        int name = -1;
-        int ikpu = -1;
-        int barcode = -1;
-        int unit = -1;
-        int qty = -1;
-        int unitPrice = -1;
-        int lineTotalWithVat = -1;
-        int vatRate = -1;
     }
 }

@@ -44,5 +44,24 @@ class UzInvoicePriceWithVatResolverTest {
         assertTrue(price.isPresent());
         assertEquals(new BigDecimal("100.00"), price.get());
     }
+
+    @Test
+    void doesNotDivideUnitPriceWhenLineTotalEqualsNarx() {
+        // Колонка «сумма» ошибочно = «Нарх» (8000), qty=10 → раньше 800.
+        var price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            "10", "8000", "8000", ""
+        );
+        assertTrue(price.isPresent());
+        assertEquals(new BigDecimal("8000.00"), price.get());
+    }
+
+    @Test
+    void stillUsesLineTotalWhenItIsRealLineSum() {
+        var price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            "10", "8000", "80000", "0"
+        );
+        assertTrue(price.isPresent());
+        assertEquals(new BigDecimal("8000.00"), price.get());
+    }
 }
 

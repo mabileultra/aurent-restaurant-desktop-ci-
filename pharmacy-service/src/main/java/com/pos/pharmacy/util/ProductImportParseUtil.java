@@ -91,10 +91,7 @@ public final class ProductImportParseUtil {
     }
 
     private static String normalizeNumber(String raw) {
-        return raw.trim()
-            .replace("\u00a0", "")
-            .replace(" ", "")
-            .replace(',', '.');
+        return ImportNumberNormalizer.normalize(raw);
     }
 
     public static List<Integer> parseStoreIdList(String param) {
