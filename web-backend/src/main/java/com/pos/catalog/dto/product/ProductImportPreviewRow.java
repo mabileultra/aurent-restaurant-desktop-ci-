@@ -24,6 +24,8 @@ public record ProductImportPreviewRow(
     BigDecimal existingSellingPrice,
     BigDecimal taxRatePercent,
     String status,
+    /** Id уже существующей карточки (STATUS_DUPLICATE) — для привязки к кассе / прихода. */
+    java.util.UUID existingProductId,
     String existingSku,
     String existingName,
     String message

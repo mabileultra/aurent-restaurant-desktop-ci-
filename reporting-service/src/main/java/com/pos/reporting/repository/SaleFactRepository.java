@@ -52,6 +52,36 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
     );
 
     @Query("""
+        SELECT COALESCE(SUM(s.cashAmount), 0)
+        FROM SaleFact s
+        WHERE s.companyId = :companyId
+          AND s.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR s.storeId = :storeId)
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
+        """)
+    BigDecimal sumCashByCompanyDateRangeAndStore(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(s.cardAmount), 0)
+        FROM SaleFact s
+        WHERE s.companyId = :companyId
+          AND s.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR s.storeId = :storeId)
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
+        """)
+    BigDecimal sumCardByCompanyDateRangeAndStore(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
         SELECT COALESCE(SUM(s.itemsSold), 0)
         FROM SaleFact s
         WHERE s.companyId = :companyId
@@ -94,6 +124,23 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         @Param("companyId") Integer companyId,
         @Param("from") LocalDate from,
         @Param("to") LocalDate to
+    );
+
+    @Query("""
+        SELECT s.transactionDate, COALESCE(SUM(s.totalAmount), 0)
+        FROM SaleFact s
+        WHERE s.companyId = :companyId
+          AND s.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR s.storeId = :storeId)
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
+        GROUP BY s.transactionDate
+        ORDER BY s.transactionDate
+        """)
+    List<Object[]> dailyRevenueByCompanyDateRangeAndStore(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
     );
 
     @Query("""

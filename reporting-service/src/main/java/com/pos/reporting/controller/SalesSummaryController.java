@@ -33,9 +33,10 @@ public class SalesSummaryController {
     @Operation(summary = "Отчёт по продажам (reporting_db)", description = "Агрегированный отчёт продаж за период из Kafka read-model")
     public ResponseEntity<SalesReportResponse> salesReport(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) Integer storeId
     ) {
-        return ResponseEntity.ok(salesReportService.salesReport(from, to));
+        return ResponseEntity.ok(salesReportService.salesReport(from, to, storeId));
     }
 
     @GetMapping("/summary")

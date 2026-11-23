@@ -7,6 +7,7 @@ import com.pos.catalog.dto.product.ProductImportResponse;
 import com.pos.catalog.service.imports.ProductImportParseOptions;
 import com.pos.catalog.service.imports.ProductImportSupport;
 import com.pos.catalog.service.imports.support.ProductImportCatalogRefs;
+import com.pos.catalog.service.imports.support.ProductImportDuplicateLinker;
 import com.pos.catalog.service.imports.support.ProductImportProductCreator;
 import com.pos.catalog.service.imports.support.ProductImportQuantity;
 import com.pos.catalog.service.imports.support.ProductImportReceiptSupport;
@@ -30,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/** Confirm импорта: создание карточек (+ опционально приход). */
+/** Confirm импорта: создание карточек, привязка дубликатов к кассе, опционально приход. */
 @Service
 @RequiredArgsConstructor
 public class ProductImportConfirmHandler {
@@ -39,6 +40,7 @@ public class ProductImportConfirmHandler {
     private final ProductImportCatalogRefs catalogRefs;
     private final ProductImportProductCreator productCreator;
     private final ProductImportReceiptSupport receiptSupport;
+    private final ProductImportDuplicateLinker duplicateLinker;
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ProductImportResponse importFile(MultipartFile file, ProductImportConfirmRequest options) {
@@ -66,16 +68,13 @@ public class ProductImportConfirmHandler {
         List<String> errors = new ArrayList<>();
         int created = 0;
         int skipped = 0;
+        int linked = 0;
         Set<String> seenRowKeys = new HashSet<>();
         List<StockReceiptLineRequest> receiptLines = new ArrayList<>();
 
         for (ProductImportPreviewRow row : preview.rows()) {
             if (ProductImportPreviewRow.STATUS_INVALID.equals(row.status())) {
                 errors.add("Строка " + row.rowNum() + ": " + row.message());
-                skipped++;
-                continue;
-            }
-            if (!ProductImportPreviewRow.STATUS_NEW.equals(row.status())) {
                 skipped++;
                 continue;
             }
@@ -89,6 +88,20 @@ public class ProductImportConfirmHandler {
 
             ProductImportConfirmRequest.ImportRowConfirm rowOpts = overrides.get(row.rowNum());
             try {
+                if (ProductImportPreviewRow.STATUS_DUPLICATE.equals(row.status())) {
+                    int n = handleDuplicate(row, rowOpts, defaultStoreId, strategy, receiptLines);
+                    if (n > 0) {
+                        linked += n;
+                    } else {
+                        skipped++;
+                    }
+                    continue;
+                }
+                if (!ProductImportPreviewRow.STATUS_NEW.equals(row.status())) {
+                    skipped++;
+                    continue;
+                }
+
                 UUID productId = productCreator.create(
                     row,
                     rowOpts,
@@ -98,6 +111,9 @@ public class ProductImportConfirmHandler {
                     strategy.zeroInitialStock()
                 );
                 created++;
+                if (strategy.catalogOnly()) {
+                    duplicateLinker.ensurePresenceAfterCreate(productId, defaultStoreId);
+                }
                 if (strategy.asReceipt() && productId != null) {
                     BigDecimal qty = ProductImportQuantity.resolve(row, rowOpts);
                     if (qty.signum() > 0) {
@@ -122,12 +138,41 @@ public class ProductImportConfirmHandler {
                 opts.receiptNotes(),
                 preview.uzInvoiceDocumentId(),
                 receiptLines,
-                created,
+                created + linked,
                 errors
             );
         }
 
-        return new ProductImportResponse(created, skipped, errors, receiptNumber);
+        return new ProductImportResponse(created, skipped, errors, receiptNumber, linked);
+    }
+
+    /**
+     * @return 1 если строка обработана (привязка / приход), иначе 0 → caller считает skipped
+     */
+    private int handleDuplicate(
+        ProductImportPreviewRow row,
+        ProductImportConfirmRequest.ImportRowConfirm rowOpts,
+        Integer defaultStoreId,
+        ProductImportStrategy strategy,
+        List<StockReceiptLineRequest> receiptLines
+    ) {
+        if (row.existingProductId() == null) {
+            return 0;
+        }
+        if (strategy.asReceipt()) {
+            BigDecimal qty = ProductImportQuantity.resolve(row, rowOpts);
+            if (qty.signum() <= 0) {
+                return 0;
+            }
+            receiptLines.add(receiptSupport.toLine(row.existingProductId(), row, rowOpts));
+            duplicateLinker.linkToAssortment(row, rowOpts, defaultStoreId);
+            return 1;
+        }
+        if (strategy.catalogOnly()) {
+            UUID id = duplicateLinker.linkToAssortment(row, rowOpts, defaultStoreId);
+            return id != null ? 1 : 0;
+        }
+        return 0;
     }
 
     private static ProductImportConfirmRequest defaultOptions() {

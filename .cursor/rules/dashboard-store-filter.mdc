@@ -1,0 +1,20 @@
+---
+description: Dashboard overview store filter must hit every KPI and drill-down
+alwaysApply: false
+---
+
+# Dashboard store filter (обзор)
+
+When `storeId` is selected on the dashboard, **all** period metrics and drill-downs must pass it. Partial wiring (UI only / low-stock only) is a regression.
+
+## Must
+
+1. `useDashboardPage`: `reportApi.sales(from, to, storeId)`, `reportApi.topProducts(..., storeId)`, low-stock, live stock — queryKey includes `storeId`.
+2. Detail panels: sales ledger, product sales, balances — receive and forward `storeId`.
+3. `buildDashboardSalesLinks(from, to, storeId)` — report links keep `storeId`.
+4. Reporting-service: `GET /reports/sales` and `/reports/top-products` accept optional `storeId` and filter facts.
+
+## Must NOT
+
+- Add a store dropdown that only filters stock/low-stock while revenue/cash/card stay company-wide.
+- Drop `storeId` from query keys (stale cache across filial changes).

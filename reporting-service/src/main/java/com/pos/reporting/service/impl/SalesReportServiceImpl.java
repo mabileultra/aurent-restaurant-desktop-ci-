@@ -26,20 +26,38 @@ public class SalesReportServiceImpl implements SalesReportService {
 
     @Override
     public SalesReportResponse salesReport(LocalDate from, LocalDate to) {
+        return salesReport(from, to, null);
+    }
+
+    @Override
+    public SalesReportResponse salesReport(LocalDate from, LocalDate to, Integer storeId) {
         Integer companyId = ReportingTenantContext.requireCompanyId();
-        BigDecimal totalRevenue = nz(saleFactRepository.sumTotalByCompanyAndDateRange(companyId, from, to));
-        long transactionCount = saleFactRepository.countByCompanyIdAndTransactionDateBetween(companyId, from, to);
-        long totalItemsSold = saleFactRepository.sumItemsSoldByCompanyAndDateRange(companyId, from, to);
+        BigDecimal totalRevenue = nz(
+            saleFactRepository.sumTotalByCompanyDateRangeAndStore(companyId, from, to, storeId)
+        );
+        long transactionCount = saleFactRepository.countByCompanyDateRangeAndStore(
+            companyId, from, to, storeId
+        );
+        long totalItemsSold = saleFactRepository.sumItemsSoldByCompanyDateRangeAndStore(
+            companyId, from, to, storeId
+        );
         BigDecimal averageTransactionValue = transactionCount > 0
             ? totalRevenue.divide(BigDecimal.valueOf(transactionCount), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
         BigDecimal totalCostEstimate = nz(
-            saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(companyId, from, to)
+            saleItemFactRepository.sumCostEstimateByCompanyDateRangeAndStore(
+                companyId, from, to, storeId
+            )
         );
         BigDecimal grossProfit = totalRevenue.subtract(totalCostEstimate);
-        BigDecimal cashTotal = nz(saleFactRepository.sumCashByCompanyAndDateRange(companyId, from, to));
-        BigDecimal cardTotal = nz(saleFactRepository.sumCardByCompanyAndDateRange(companyId, from, to));
-        List<DailyPoint> dailyBreakdown = saleFactRepository.dailyRevenueByCompanyAndDateRange(companyId, from, to)
+        BigDecimal cashTotal = nz(
+            saleFactRepository.sumCashByCompanyDateRangeAndStore(companyId, from, to, storeId)
+        );
+        BigDecimal cardTotal = nz(
+            saleFactRepository.sumCardByCompanyDateRangeAndStore(companyId, from, to, storeId)
+        );
+        List<DailyPoint> dailyBreakdown = saleFactRepository
+            .dailyRevenueByCompanyDateRangeAndStore(companyId, from, to, storeId)
             .stream()
             .map(row -> new DailyPoint(
                 ((LocalDate) row[0]).toString(),

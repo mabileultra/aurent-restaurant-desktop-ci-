@@ -3,10 +3,10 @@ SELECT CAST(COUNT(*) AS INTEGER),
        COALESCE(SUM(net.tax_total), 0),
        COALESCE(SUM(net.discount_total), 0),
        COALESCE(SUM(net.cash_amount), 0),
-       /* Карта без Humo/Uzcard/Payme/CASHLESS — иначе X/Z дважды считает пластик и QR. */
+       /* Карта без Humo/Uzcard/Payme/Click/CASHLESS — иначе X/Z дважды считает пластик и QR. */
        COALESCE(SUM(CASE
            WHEN s.payment_method = 'CASHLESS' THEN 0
-           WHEN UPPER(COALESCE(s.card_type, '')) IN ('HUMO', 'UZCARD', 'PAYME') THEN 0
+           WHEN UPPER(COALESCE(s.card_type, '')) IN ('HUMO', 'UZCARD', 'PAYME', 'CLICK') THEN 0
            ELSE net.card_amount
        END), 0),
        COALESCE(SUM(net.line_discount_total), 0),
@@ -14,7 +14,11 @@ SELECT CAST(COUNT(*) AS INTEGER),
        COALESCE(SUM(CASE WHEN s.card_type = 'HUMO' THEN net.card_amount ELSE 0 END), 0),
        COALESCE(SUM(CASE WHEN s.card_type = 'UZCARD' THEN net.card_amount ELSE 0 END), 0),
        COALESCE(SUM(CASE WHEN s.payment_method = 'CASHLESS' THEN net.total_amount ELSE 0 END), 0),
-       COALESCE(SUM(CASE WHEN s.card_type = 'PAYME' THEN net.card_amount ELSE 0 END), 0)
+       /* Payme + Click — один «безнал» на кассе */
+       COALESCE(SUM(CASE
+           WHEN UPPER(COALESCE(s.card_type, '')) IN ('PAYME', 'CLICK') THEN net.card_amount
+           ELSE 0
+       END), 0)
 FROM sales s
 CROSS JOIN LATERAL (
     SELECT

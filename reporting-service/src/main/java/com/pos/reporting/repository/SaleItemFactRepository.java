@@ -25,6 +25,7 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
         FROM sale_item_facts i
         WHERE i.company_id = :companyId
           AND i.transaction_date BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.store_id = :storeId)
         GROUP BY i.product_name
         HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
         ORDER BY SUM(i.quantity - i.quantity_returned) DESC
@@ -34,7 +35,8 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
         @Param("companyId") Integer companyId,
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
-        @Param("limit") int limit
+        @Param("limit") int limit,
+        @Param("storeId") Integer storeId
     );
 
     @Query(

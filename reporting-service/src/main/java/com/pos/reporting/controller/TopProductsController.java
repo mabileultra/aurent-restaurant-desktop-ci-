@@ -32,8 +32,9 @@ public class TopProductsController {
     public ResponseEntity<List<TopProductRowResponse>> topProducts(
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) Integer storeId
     ) {
-        return ResponseEntity.ok(topProductsService.topProducts(limit, from, to));
+        return ResponseEntity.ok(topProductsService.topProducts(limit, from, to, storeId));
     }
 }
