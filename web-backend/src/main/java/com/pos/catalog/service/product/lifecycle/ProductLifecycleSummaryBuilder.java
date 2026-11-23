@@ -34,7 +34,7 @@ public class ProductLifecycleSummaryBuilder {
         ProductLifecycleTypeTotals totals = ProductLifecycleTypeTotals.fromRows(
             stockMovementQueryRepository.sumQuantitiesByTypeForProduct(product.getId(), start, end, storeId)
         );
-        long dispatched = stockMovementQueryRepository.sumDispatchedByProductId(product.getId());
+        long dispatched = stockMovementQueryRepository.sumDispatchedByProductId(product.getId(), null);
         BigDecimal currentStock = resolveCurrentStock(product.getId(), storeId);
 
         return new ProductLifecycleSummaryResponse(

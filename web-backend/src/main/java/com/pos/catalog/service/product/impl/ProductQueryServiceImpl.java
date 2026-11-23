@@ -148,7 +148,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         Product product = catalogLoader.requireDetailed(id);
         tenantAccess.assertProductBelongsToTenant(product);
         catalogIsolation.hidePharmacyFromGrocery(product);
-        return forStore(assembler.toResponse(product), product, storeId);
+        return forStore(toResponseScoped(product, storeId), product, storeId);
     }
 
     @Override
@@ -156,7 +156,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), null);
         catalogIsolation.hidePharmacyFromGrocery(product);
-        return forStore(assembler.toResponse(product), product, null);
+        return forStore(toResponseScoped(product, null), product, null);
     }
 
     @Override
@@ -164,7 +164,12 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         catalogRemoteReadinessGuard.requireReachableForRemoteOnlyReads();
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), storeId);
         catalogIsolation.hidePharmacyFromGrocery(product);
-        return forStore(assembler.toResponse(product), product, storeId);
+        return forStore(toResponseScoped(product, storeId), product, storeId);
+    }
+
+    private ProductResponse toResponseScoped(Product product, Integer storeId) {
+        Map<UUID, Integer> dispatched = assembler.loadDispatchedCounts(List.of(product), storeId);
+        return assembler.toResponse(product, null, dispatched);
     }
 
     @Override
@@ -206,7 +211,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         List<Product> content = page.getContent();
         content.forEach(catalogLoader::initCollections);
         Map<UUID, Integer> storeCounts = catalogLoader.loadStoreCounts(content);
-        Map<UUID, Integer> dispatched = assembler.loadDispatchedCounts(content);
+        Map<UUID, Integer> dispatched = assembler.loadDispatchedCounts(content, storeId);
         if (storeId == null) {
             Map<UUID, BigDecimal> companyQty = storeStockService.sumQuantities(
                 content.stream().map(Product::getId).toList()

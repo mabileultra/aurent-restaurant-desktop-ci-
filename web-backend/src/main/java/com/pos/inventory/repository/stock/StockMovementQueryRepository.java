@@ -12,9 +12,9 @@ import java.util.UUID;
 
 public interface StockMovementQueryRepository {
 
-    List<ProductDispatchedSum> sumDispatchedByProductIds(Collection<UUID> productIds);
+    List<ProductDispatchedSum> sumDispatchedByProductIds(Collection<UUID> productIds, Integer storeId);
 
-    long sumDispatchedByProductId(UUID productId);
+    long sumDispatchedByProductId(UUID productId, Integer storeId);
 
     Page<StockMovement> findProductMovements(
         UUID productId,
