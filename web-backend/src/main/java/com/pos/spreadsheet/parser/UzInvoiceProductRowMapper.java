@@ -68,6 +68,15 @@ public final class UzInvoiceProductRowMapper {
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
         }
+        // Colspan/сдвиг: в qty попала сумма → цена ≈ 0.01. Восстановить из Нарҳ + суммы с НДС.
+        UzInvoiceQtyPriceSanitizer.QtyPrice sane = UzInvoiceQtyPriceSanitizer.sanitize(
+            qty, price, netUnitPriceRaw, lineTotalWithVatRaw, vatRaw
+        );
+        qty = sane.qty();
+        price = sane.unitPriceWithVat();
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            return null;
+        }
 
         BigDecimal vat = ProductImportParseUtil.normalizeTaxRatePercent(
             ProductImportParseUtil.parseDecimalOpt(
