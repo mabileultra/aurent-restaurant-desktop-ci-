@@ -1,0 +1,16 @@
+---
+description: Import number normalizer — single dot is decimal, not thousands
+globs: "**/ImportNumberNormalizer.java,**/ProductImportParseUtil.java,**/UzInvoice*Parser*.java"
+---
+
+# Import numbers (Excel / Didox)
+
+## Must
+
+- **One `.`** → decimal part: `288.000` / `6000.000` stay 288 / 6000.
+- **Several `.` groups** (`1.234.567`, `6.000.000`) → EU thousands.
+- **`,` with 3 digits** (`8,000`) → thousands; `,` + ≤2 digits (`3 125 000,00`) → decimal.
+
+## Must NOT
+
+- Treat a single `.` + exactly 3 digits as thousands. That turned Didox qty into millions and unit price into `0.01` (line total ÷ mangled qty).

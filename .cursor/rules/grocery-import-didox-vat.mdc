@@ -1,0 +1,13 @@
+---
+description: Grocery UZ invoice — price from delivery-with-VAT column
+globs: web-backend/**/UzInvoice*.java,web-backend/**/ImportNumberNormalizer.java,web-backend/**/ProductImport*.java
+---
+
+# Grocery Didox / Soliq price
+
+Column **«Етказиб беришнинг ҚҚСни ҳисобга олган ҳолда қиймати»** is the source of truth for import price (line sum **with** VAT).
+
+- Unit `selling_price` / `cost_price` / «цена в файле» = that column ÷ **Миқдор**.
+- Do **not** take «Нарҳ» (net) as file price when the with-VAT column is present.
+- Do **not** recompute only as Нарҳ × ҚҚС% when that column exists — match the factura total.
+- Without-VAT «Етказиб бериш қиймати» is not the price column.
