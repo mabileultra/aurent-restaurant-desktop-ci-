@@ -19,6 +19,23 @@ class UzInvoicePriceWithVatResolverTest {
     }
 
     @Test
+    void farovonUsesDeliveryWithVatColumnNotNarx() {
+        // «Етказиб беришнинг ҚҚСни ҳисобга олган ҳолда қиймати» 2 304 000 / 288
+        // — не «Нарҳ» 7 142.86 (без НДС).
+        var fromVatColumn = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            "288.000000", "7 142.86", "2 304 000.00", "12%"
+        );
+        var fromNarxOnly = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
+            "288.000000", "7 142.86", "", "12%"
+        );
+        assertTrue(fromVatColumn.isPresent());
+        assertEquals(new BigDecimal("8000.00"), fromVatColumn.get());
+        // Нарҳ×1.12 тоже 8000, но SoT — колонка с НДС (сумма поставки), не Нарҳ.
+        assertTrue(fromNarxOnly.isPresent());
+        assertEquals(new BigDecimal("8000.00"), fromNarxOnly.get());
+    }
+
+    @Test
     void fallsBackToNetTimesVatRate() {
         var price = UzInvoicePriceWithVatResolver.resolveUnitPriceWithVat(
             "75", "28571.43", "", "12"

@@ -2,6 +2,7 @@ package com.pos.pharmacy.util;
 
 /**
  * Нормализация чисел из Excel / счёт-фактур (пробелы тысяч, {@code 8,000}, {@code 1.234,56}).
+ * Один {@code .} — десятичная часть ({@code 288.000} → 288), не EU-тысячи.
  */
 public final class ImportNumberNormalizer {
 
@@ -9,7 +10,7 @@ public final class ImportNumberNormalizer {
     }
 
     /**
-     * {@code 3 125 000,00} → {@code 3125000.00}; {@code 8,000} → {@code 8000}; {@code 8.000} → {@code 8000}.
+     * {@code 3 125 000,00} → {@code 3125000.00}; {@code 8,000} → {@code 8000}; {@code 288.000} → {@code 288.000}.
      */
     public static String normalize(String raw) {
         if (raw == null) {
@@ -54,10 +55,7 @@ public final class ImportNumberNormalizer {
                 }
                 return s.substring(0, last).replace(".", "") + "." + afterLast;
             }
-            String after = s.substring(first + 1);
-            if (after.length() == 3 && after.chars().allMatch(Character::isDigit)) {
-                return s.replace(".", "");
-            }
+            // Один '.': десятичная часть (не тысячи). См. web-backend ImportNumberNormalizer.
         }
 
         return s;
