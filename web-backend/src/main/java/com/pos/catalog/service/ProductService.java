@@ -140,15 +140,21 @@ public interface ProductService {
 
     ProductResponse updateProduct(UUID id, UpdateProductRequest req);
 
+    ProductResponse updateProduct(UUID id, UpdateProductRequest req, Integer storeId);
+
     ProductResponse adjustStock(UUID id, BigDecimal quantity, String movementType, String notes, Integer storeId);
 
     ProductResponse receiveWarehouseStock(WarehouseReceiveRequest req);
 
     void deactivateProduct(UUID id);
 
+    void deactivateProduct(UUID id, Integer storeId);
+
     int bulkUpdateTaxRate(BulkTaxRateRequest req);
 
     int bulkDeactivateProducts(List<UUID> productIds);
+
+    int bulkDeactivateProducts(List<UUID> productIds, Integer storeId);
 
     List<ProductResponse> getLowStockProducts();
 

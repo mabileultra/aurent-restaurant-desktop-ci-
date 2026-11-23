@@ -155,13 +155,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse updateProduct(UUID id, UpdateProductRequest req) {
-        return commandService.updateProduct(id, req);
+        return commandService.updateProduct(id, req, null);
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse updateProduct(UUID id, UpdateProductRequest req, Integer storeId) {
+        return commandService.updateProduct(id, req, storeId);
     }
 
     @Override
     @Transactional
     public void deactivateProduct(UUID id) {
-        commandService.deactivateProduct(id);
+        commandService.deactivateProduct(id, null);
+    }
+
+    @Override
+    @Transactional
+    public void deactivateProduct(UUID id, Integer storeId) {
+        commandService.deactivateProduct(id, storeId);
     }
 
     @Override
@@ -173,7 +185,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public int bulkDeactivateProducts(List<UUID> productIds) {
-        return commandService.bulkDeactivateProducts(productIds);
+        return commandService.bulkDeactivateProducts(productIds, null);
+    }
+
+    @Override
+    @Transactional
+    public int bulkDeactivateProducts(List<UUID> productIds, Integer storeId) {
+        return commandService.bulkDeactivateProducts(productIds, storeId);
     }
 
     @Override

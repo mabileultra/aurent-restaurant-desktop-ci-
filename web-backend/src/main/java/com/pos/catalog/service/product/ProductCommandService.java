@@ -14,9 +14,15 @@ public interface ProductCommandService {
 
     ProductResponse updateProduct(UUID id, UpdateProductRequest req);
 
+    ProductResponse updateProduct(UUID id, UpdateProductRequest req, Integer storeId);
+
     void deactivateProduct(UUID id);
+
+    void deactivateProduct(UUID id, Integer storeId);
 
     int bulkUpdateTaxRate(BulkTaxRateRequest req);
 
     int bulkDeactivateProducts(List<UUID> productIds);
+
+    int bulkDeactivateProducts(List<UUID> productIds, Integer storeId);
 }
