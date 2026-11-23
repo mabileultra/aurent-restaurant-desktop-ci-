@@ -7,7 +7,9 @@ alwaysApply: false
 
 ## Canonical
 
-- Source: live `store_stock` + `products.selling_price` / `cost_price` via web-backend.
+- Source: live `store_stock` + prices via web-backend.
+- Without `storeId`: `products.selling_price` / `cost_price`.
+- With `storeId`: qty from that store; **retail** from `product_store_prices` for that store (fallback card `selling_price`); cost stays card `cost_price`.
 - Formula: `price × max(qty, 0)` (`StockRetailValueMath`).
 - Missing store row → qty `0` (never stale `product.stockQuantity` for company totals).
 

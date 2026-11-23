@@ -18,11 +18,19 @@ alwaysApply: false
 - Show products that have a **`store_stock` row** for that store (qty may be **0**).
 - Do **not** require store prices enabled.
 - Applies to: cashier bootstrap, `GET /products` + catalog-totals, `/warehouse/products`, write-off pick, live balances, `GET /products/low-stock?storeId=`.
-- With `storeId`: `stockQuantity` **and** `stockDispatched` are for that store only (import into a new branch with qty 0 → dispatched 0 there).
+- With `storeId`: `stockQuantity`, `stockDispatched`, list `sellingPrice`, `lowStock`, and catalog-totals retail sum are for that store only (import into a new branch with qty 0 → dispatched 0 there). `storesCount` in that filter = `1`.
 - Without `storeId` («Все») = company-wide cards / company sum qty / company dispatched / company low-stock.
+
+## Writes when catalog filter `storeId` is set
+
+- `DELETE /products/{id}?storeId=` / bulk deactivate with `storeId` → **remove from that store assortment only** (`store_stock` + store price). Do **not** set `is_active=false` on the company card.
+- Without `storeId` → company-wide soft deactivate (unchanged).
+- `PUT /products/{id}?storeId=` → upsert price for that store only; do **not** broadcast `sellingPrice` to all stores (`syncWithSellingPrice` / `applyStorePricesOrAllActive`).
+- UI must pass the filter/terminal `storeId` on delete, bulk delete, and edit save.
 
 ## Must NOT
 
 - Bind stock to `cash_register_id`.
 - Hide cards only when qty > 0 (zero stock must stay visible for that branch).
 - Fall back to first company store when terminal has no `storeId` on new setups — require setup.
+- Treat «delete while filtered by branch» as company-wide deactivate.

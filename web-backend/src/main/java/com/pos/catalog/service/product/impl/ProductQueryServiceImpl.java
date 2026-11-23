@@ -9,7 +9,6 @@ import com.pos.catalog.entity.ProductBarcode;
 import com.pos.exception.PosExceptions;
 import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.ProductRepository;
-import com.pos.catalog.repository.ProductStorePriceRepository;
 import com.pos.catalog.repository.spec.ProductCategoryScopeSpecifications;
 import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.repository.spec.ProductStoreAssortmentSpecifications;
@@ -19,6 +18,7 @@ import com.pos.catalog.service.product.support.ProductBarcodeScanVariants;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductCatalogTotalsSupport;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
+import com.pos.catalog.service.product.support.ProductStoreScopedResponseSupport;
 import com.pos.catalog.service.product.support.ProductWarehouseReceiptSupport;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.sales.support.CashRegisterCategoryScopeResolver;
@@ -47,12 +47,12 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ProductRepository productRepository;
     private final ProductLookupSupport productLookup;
     private final ProductBarcodeRepository productBarcodeRepository;
-    private final ProductStorePriceRepository productStorePriceRepository;
     private final ProductCatalogLoader catalogLoader;
     private final ProductResponseAssembler assembler;
     private final StoreStockService storeStockService;
     private final ProductLowStockQuerySupport productLowStockQuerySupport;
     private final ProductCatalogTotalsSupport productCatalogTotalsSupport;
+    private final ProductStoreScopedResponseSupport storeScopedResponse;
     private final TenantAccessSupport tenantAccess;
     private final WeightBarcodeCodec weightBarcodeCodec;
     private final CatalogIsolationSupport catalogIsolation;
@@ -223,19 +223,11 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 return assembler.withStockQuantity(base, qty);
             }));
         }
-        Map<UUID, BigDecimal> storeQty = storeStockService.getQuantities(
-            content.stream().map(Product::getId).toList(),
-            storeId
-        );
+        Map<UUID, BigDecimal> storeQty = storeScopedResponse.loadStoreQuantities(content, storeId);
+        Map<UUID, BigDecimal> storePrices = storeScopedResponse.loadStorePrices(content, storeId);
         return PageResponse.from(page.map(p -> {
             ProductResponse base = assembler.toResponse(p, storeCounts, dispatched);
-            BigDecimal qty = storeQty.getOrDefault(p.getId(), BigDecimal.ZERO);
-            ProductResponse withQty = assembler.withStockQuantity(base, qty);
-            BigDecimal price = productStorePriceRepository
-                .findByProduct_IdAndStore_Id(p.getId(), storeId)
-                .map(sp -> sp.getPrice())
-                .orElse(p.getSellingPrice());
-            return assembler.withSellingPrice(withQty, price);
+            return storeScopedResponse.applyStoreScope(base, p, storeId, storeQty, storePrices);
         }));
     }
 
@@ -245,13 +237,9 @@ public class ProductQueryServiceImpl implements ProductQueryService {
                 .getOrDefault(product.getId(), BigDecimal.ZERO);
             return assembler.withStockQuantity(base, companyQty);
         }
-        BigDecimal qty = storeStockService.getQuantity(product.getId(), storeId);
-        ProductResponse withQty = assembler.withStockQuantity(base, qty);
-        BigDecimal price = productStorePriceRepository
-            .findByProduct_IdAndStore_Id(product.getId(), storeId)
-            .map(sp -> sp.getPrice())
-            .orElse(product.getSellingPrice());
-        return assembler.withSellingPrice(withQty, price);
+        Map<UUID, BigDecimal> storeQty = Map.of(product.getId(), storeStockService.getQuantity(product.getId(), storeId));
+        Map<UUID, BigDecimal> storePrices = storeScopedResponse.loadStorePrices(List.of(product), storeId);
+        return storeScopedResponse.applyStoreScope(base, product, storeId, storeQty, storePrices);
     }
 
     private Product validateBarcodeProduct(Product product, Integer storeId) {

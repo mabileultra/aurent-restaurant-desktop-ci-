@@ -2,6 +2,8 @@ package com.pos.catalog.service.product.support;
 
 import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.entity.Product;
+import com.pos.catalog.entity.ProductStorePrice;
+import com.pos.catalog.repository.ProductStorePriceRepository;
 import com.pos.inventory.service.stock.StoreStockService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -23,7 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Catalog / dashboard stock totals from live store_stock + product prices.
+ * Catalog / dashboard stock totals from live store_stock + prices.
+ * With {@code storeId}: qty and retail price are branch-scoped ({@code product_store_prices}).
  * Missing store row → qty 0 (no stale product.stockQuantity fallback).
  */
 @Component
@@ -32,6 +35,7 @@ public class ProductCatalogTotalsSupport {
 
     private final EntityManager entityManager;
     private final StoreStockService storeStockService;
+    private final ProductStorePriceRepository productStorePriceRepository;
 
     public ProductCatalogTotalsResponse summarize(Specification<Product> spec, Integer storeId) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -68,6 +72,10 @@ public class ProductCatalogTotalsSupport {
         }
 
         List<UUID> ids = new ArrayList<>(seen);
+        if (storeId != null) {
+            applyStoreRetailPrices(ids, storeId, priceById);
+        }
+
         Map<UUID, BigDecimal> liveQty = storeId != null
             ? storeStockService.getQuantities(ids, storeId)
             : storeStockService.sumQuantities(ids);
@@ -93,5 +101,14 @@ public class ProductCatalogTotalsSupport {
             StockRetailValueMath.scaleMoney(retailTotal),
             StockRetailValueMath.scaleMoney(costTotal)
         );
+    }
+
+    private void applyStoreRetailPrices(List<UUID> ids, Integer storeId, Map<UUID, BigDecimal> priceById) {
+        for (ProductStorePrice row : productStorePriceRepository.findByProduct_IdInAndStore_Id(ids, storeId)) {
+            if (row.getProduct() == null || row.getProduct().getId() == null || row.getPrice() == null) {
+                continue;
+            }
+            priceById.put(row.getProduct().getId(), row.getPrice());
+        }
     }
 }

@@ -12,8 +12,10 @@ import com.pos.catalog.service.product.support.CatalogPrimaryProductWriteSupport
 import com.pos.catalog.service.product.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
+import com.pos.catalog.service.product.support.ProductStoreAssortmentSupport;
 import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.ProductValueNormalizer;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
     private final CatalogPrimaryProductWriteSupport catalogPrimaryWrite;
     private final InactiveBarcodeReleaser barcodeReleaser;
     private final CatalogIsolationSupport catalogIsolation;
+    private final ProductStoreAssortmentSupport assortmentSupport;
 
     @Override
     public ProductResponse createProduct(CreateProductRequest req) {
@@ -43,14 +46,38 @@ public class ProductCommandServiceImpl implements ProductCommandService {
 
     @Override
     public ProductResponse updateProduct(UUID id, UpdateProductRequest req) {
+        return updateProduct(id, req, null);
+    }
+
+    @Override
+    public ProductResponse updateProduct(UUID id, UpdateProductRequest req, Integer storeId) {
         Product product = catalogLoader.requireById(id);
         catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         catalogIsolation.rejectPharmacyCodeOnGroceryWrite(req != null ? req.businessTypeCode() : null);
-        return updateHandler.update(id, req);
+        return updateHandler.update(id, req, storeId);
     }
 
     @Override
     public void deactivateProduct(UUID id) {
+        deactivateProduct(id, null);
+    }
+
+    @Override
+    public void deactivateProduct(UUID id, Integer storeId) {
+        if (storeId != null) {
+            Product product = catalogLoader.requireDetailed(id);
+            catalogIsolation.rejectPharmacyFromGroceryWrite(product);
+            assortmentSupport.removeFromStore(product, storeId);
+            productRepository.save(product);
+            productSnapshotNotifier.notify(product.getId());
+            LogUtil.info(
+                ProductCommandServiceImpl.class,
+                "Product removed from store assortment: id={} storeId={}",
+                id,
+                storeId
+            );
+            return;
+        }
         Product product = catalogLoader.requireById(id);
         catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         catalogPrimaryWrite.deactivateBeforeLocalSave(id);
@@ -72,11 +99,28 @@ public class ProductCommandServiceImpl implements ProductCommandService {
 
     @Override
     public int bulkDeactivateProducts(List<UUID> productIds) {
+        return bulkDeactivateProducts(productIds, null);
+    }
+
+    @Override
+    public int bulkDeactivateProducts(List<UUID> productIds, Integer storeId) {
         List<Product> products = productRepository.findAllById(productIds);
         if (products.isEmpty()) {
             throw PosExceptions.badRequest("No products found for provided ids");
         }
         products.forEach(catalogIsolation::rejectPharmacyFromGroceryWrite);
+        if (storeId != null) {
+            int updated = 0;
+            for (UUID productId : productIds) {
+                Product detailed = catalogLoader.requireDetailed(productId);
+                catalogIsolation.rejectPharmacyFromGroceryWrite(detailed);
+                assortmentSupport.removeFromStore(detailed, storeId);
+                productRepository.save(detailed);
+                productSnapshotNotifier.notify(detailed.getId());
+                updated++;
+            }
+            return updated;
+        }
         int updated = 0;
         for (Product product : products) {
             if (product.isActive()) {

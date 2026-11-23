@@ -18,6 +18,8 @@ public interface ProductStorePriceRepository extends JpaRepository<ProductStoreP
 
     java.util.Optional<ProductStorePrice> findByProduct_IdAndStore_Id(UUID productId, Integer storeId);
 
+    List<ProductStorePrice> findByProduct_IdInAndStore_Id(Collection<UUID> productIds, Integer storeId);
+
     @Query("""
         SELECT sp
         FROM ProductStorePrice sp

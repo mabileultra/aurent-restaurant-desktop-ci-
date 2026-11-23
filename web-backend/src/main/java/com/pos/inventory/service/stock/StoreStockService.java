@@ -228,6 +228,18 @@ public class StoreStockService {
         syncProductTotal(product);
     }
 
+    /**
+     * Removes branch assortment row. Qty history in {@code stock_movements} is kept; live sum re-synced.
+     */
+    public void removePresence(Product product, Store store) {
+        if (product == null || product.getId() == null || store == null || store.getId() == null) {
+            return;
+        }
+        storeStockRepository.findByProductIdAndStoreId(product.getId(), store.getId())
+            .ifPresent(storeStockRepository::delete);
+        syncProductTotal(product);
+    }
+
     public void initializeForCompanyStores(Product product, Integer companyId, BigDecimal quantity) {
         syncProductTotal(product);
     }

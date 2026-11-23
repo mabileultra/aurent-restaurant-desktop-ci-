@@ -118,18 +118,23 @@ public class ProductResponseAssembler {
             base.stockDispatched(),
             base.lowStock(),
             base.sellingPrice(),
+            base.storesCount(),
             lastReceiptNumber
         );
     }
 
     public ProductResponse withSellingPrice(ProductResponse base, BigDecimal sellingPrice) {
-        return copy(base, base.stockQuantity(), base.stockDispatched(), base.lowStock(), sellingPrice);
+        return copy(base, base.stockQuantity(), base.stockDispatched(), base.lowStock(), sellingPrice, base.storesCount());
     }
 
     public ProductResponse withStockQuantity(ProductResponse base, BigDecimal stockQuantity) {
         BigDecimal qty = QuantityUtil.normalize(stockQuantity);
         boolean low = qty.compareTo(BigDecimal.valueOf(base.lowStockAlert())) <= 0;
-        return copy(base, qty, base.stockDispatched(), low, base.sellingPrice());
+        return copy(base, qty, base.stockDispatched(), low, base.sellingPrice(), base.storesCount());
+    }
+
+    public ProductResponse withStoresCount(ProductResponse base, int storesCount) {
+        return copy(base, base.stockQuantity(), base.stockDispatched(), base.lowStock(), base.sellingPrice(), storesCount);
     }
 
     public Map<UUID, Integer> loadDispatchedCounts(List<Product> products, Integer storeId) {
@@ -145,17 +150,7 @@ public class ProductResponseAssembler {
     }
 
     private static ProductResponse withStockDispatched(ProductResponse r, int stockDispatched) {
-        return copy(r, r.stockQuantity(), stockDispatched, r.lowStock(), r.sellingPrice());
-    }
-
-    private static ProductResponse copy(
-        ProductResponse r,
-        BigDecimal stockQuantity,
-        int stockDispatched,
-        boolean lowStock,
-        BigDecimal sellingPrice
-    ) {
-        return copy(r, stockQuantity, stockDispatched, lowStock, sellingPrice, r.lastReceiptNumber());
+        return copy(r, r.stockQuantity(), stockDispatched, r.lowStock(), r.sellingPrice(), r.storesCount());
     }
 
     private static ProductResponse copy(
@@ -164,6 +159,18 @@ public class ProductResponseAssembler {
         int stockDispatched,
         boolean lowStock,
         BigDecimal sellingPrice,
+        int storesCount
+    ) {
+        return copy(r, stockQuantity, stockDispatched, lowStock, sellingPrice, storesCount, r.lastReceiptNumber());
+    }
+
+    private static ProductResponse copy(
+        ProductResponse r,
+        BigDecimal stockQuantity,
+        int stockDispatched,
+        boolean lowStock,
+        BigDecimal sellingPrice,
+        int storesCount,
         String lastReceiptNumber
     ) {
         return new ProductResponse(
@@ -205,7 +212,7 @@ public class ProductResponseAssembler {
             r.ownerType(),
             r.commissionTin(),
             r.commissionPinfl(),
-            r.storesCount(),
+            storesCount,
             r.storePrices(),
             r.serviceDetails(),
             r.retailExtras(),

@@ -18,7 +18,9 @@ import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductPluValidator;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
+import com.pos.catalog.service.product.support.ProductStoreAssortmentSupport;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
+import com.pos.catalog.service.product.support.ProductStoreScopedUpdateSupport;
 import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.shared.log.LogUtil;
@@ -47,17 +49,34 @@ public class ProductUpdateHandler {
     private final ProductResponseAssembler assembler;
     private final ProductSnapshotNotifier productSnapshotNotifier;
     private final CatalogPrimaryProductWriteSupport catalogPrimaryWrite;
+    private final ProductStoreAssortmentSupport assortmentSupport;
+    private final ProductStoreScopedUpdateSupport storeScopedUpdate;
 
     @Transactional
     public ProductResponse update(UUID id, UpdateProductRequest req) {
+        return update(id, req, null);
+    }
+
+    @Transactional
+    public ProductResponse update(UUID id, UpdateProductRequest req, Integer storeId) {
         Product product = catalogLoader.requireDetailed(id);
-        applyChanges(product, req);
+        if (storeId != null) {
+            assortmentSupport.requireStore(product, storeId);
+            storeScopedUpdate.apply(product, req, storeId);
+        } else {
+            applyChanges(product, req);
+        }
         catalogPrimaryWrite.upsertBeforeLocalSave(product);
         Product saved = productRepository.save(product);
         if (req.attributes() != null) {
             productAttributeService.saveAttributes(saved.getId(), req.businessTypeCode(), req.attributes());
         }
-        LogUtil.info(ProductUpdateHandler.class, "Product updated: id={}", id);
+        LogUtil.info(
+            ProductUpdateHandler.class,
+            "Product updated: id={} storeScope={}",
+            id,
+            storeId
+        );
         productSnapshotNotifier.notify(saved.getId());
         return assembler.toResponse(saved);
     }

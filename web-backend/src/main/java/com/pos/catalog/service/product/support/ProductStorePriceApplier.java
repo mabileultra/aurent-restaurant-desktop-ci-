@@ -101,6 +101,43 @@ public class ProductStorePriceApplier {
             .build());
     }
 
+    /** Removes price for one store only; other branches stay unchanged. */
+    public void removeStorePrice(Product product, Integer storeId) {
+        if (product == null || storeId == null || product.getStorePrices() == null) {
+            return;
+        }
+        product.getStorePrices().removeIf(
+            line -> line.getStore() != null && storeId.equals(line.getStore().getId())
+        );
+    }
+
+    /**
+     * Store-scoped edit: upsert price for {@code storeId} only (from storePrices row or sellingPrice).
+     * Does not touch other stores or broadcast sellingPrice company-wide.
+     */
+    public void applySellingPriceForStore(
+        Product product,
+        Integer storeId,
+        BigDecimal sellingPrice,
+        List<ProductStorePriceRequest> storePrices
+    ) {
+        if (product == null || storeId == null) {
+            return;
+        }
+        BigDecimal price = sellingPrice;
+        if (storePrices != null) {
+            for (ProductStorePriceRequest row : storePrices) {
+                if (row != null && storeId.equals(row.storeId()) && row.price() != null) {
+                    price = row.price();
+                    break;
+                }
+            }
+        }
+        if (price != null) {
+            upsertStorePrice(product, storeId, price);
+        }
+    }
+
     public void applyExtraBarcodes(Product product, List<String> extras, String primaryBarcode) {
         if (extras == null) {
             return;

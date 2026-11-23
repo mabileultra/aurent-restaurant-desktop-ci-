@@ -170,13 +170,18 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Обновить товар", description = "Изменение данных товара")
+    @Operation(
+        summary = "Обновить товар",
+        description = "Изменение данных товара. При storeId цена пишется только в этот филиал "
+            + "(без рассылки sellingPrice по всем магазинам)."
+    )
     @ApiResponse(responseCode = "200", description = "Товар обновлён")
     public ResponseEntity<ProductResponse> updateProduct(
         @PathVariable UUID id,
-        @Valid @RequestBody UpdateProductRequest request
+        @Valid @RequestBody UpdateProductRequest request,
+        @RequestParam(required = false) Integer storeId
     ) {
-        return ResponseEntity.ok(productService.updateProduct(id, request));
+        return ResponseEntity.ok(productService.updateProduct(id, request, storeId));
     }
 
     @PatchMapping("/{id}/stock")
@@ -195,11 +200,21 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Деактивировать товар", description = "Мягкое удаление (деактивация) товара")
-    @ApiResponse(responseCode = "200", description = "Товар деактивирован")
-    public ResponseEntity<com.pos.dto.shared.ApiResponse> deleteProduct(@PathVariable UUID id) {
-        productService.deactivateProduct(id);
-        return ResponseEntity.ok(com.pos.dto.shared.ApiResponse.success("Product deactivated"));
+    @Operation(
+        summary = "Удалить товар / убрать из филиала",
+        description = "Без storeId — мягкая деактивация карточки компании. "
+            + "Со storeId — только убрать из ассортимента этого филиала (store_stock + цена филиала)."
+    )
+    @ApiResponse(responseCode = "200", description = "Товар деактивирован или убран из филиала")
+    public ResponseEntity<com.pos.dto.shared.ApiResponse> deleteProduct(
+        @PathVariable UUID id,
+        @RequestParam(required = false) Integer storeId
+    ) {
+        productService.deactivateProduct(id, storeId);
+        String msg = storeId != null
+            ? "Product removed from store assortment"
+            : "Product deactivated";
+        return ResponseEntity.ok(com.pos.dto.shared.ApiResponse.success(msg));
     }
 
     @GetMapping("/low-stock")
@@ -225,11 +240,17 @@ public class ProductController {
 
     @PatchMapping("/bulk/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Массовая деактивация", description = "Деактивация нескольких товаров по списку ID")
-    @ApiResponse(responseCode = "200", description = "Товары деактивированы")
+    @Operation(
+        summary = "Массовая деактивация / убрать из филиала",
+        description = "Без storeId — деактивация карточек. Со storeId — убрать из ассортимента филиала."
+    )
+    @ApiResponse(responseCode = "200", description = "Товары обработаны")
     public ResponseEntity<com.pos.dto.shared.ApiResponse> bulkDeactivate(@Valid @RequestBody BulkProductIdsRequest request) {
-        int n = productService.bulkDeactivateProducts(request.productIds());
-        return ResponseEntity.ok(com.pos.dto.shared.ApiResponse.success("Deactivated " + n + " products"));
+        int n = productService.bulkDeactivateProducts(request.productIds(), request.storeId());
+        String msg = request.storeId() != null
+            ? "Removed " + n + " products from store assortment"
+            : "Deactivated " + n + " products";
+        return ResponseEntity.ok(com.pos.dto.shared.ApiResponse.success(msg));
     }
 
     @GetMapping(value = "/import/template")
