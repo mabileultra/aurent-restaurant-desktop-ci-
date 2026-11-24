@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,6 +56,7 @@ public class ProductImportReceiptSupport {
         String paymentType,
         String receiptNotes,
         String invoiceDocumentId,
+        LocalDate invoiceDate,
         String contractNumber,
         List<StockReceiptLineRequest> lines,
         int createdCount,
@@ -84,7 +86,7 @@ public class ProductImportReceiptSupport {
                 notes,
                 pay,
                 invoice,
-                null,
+                invoiceDate,
                 contract,
                 lines
             ));
