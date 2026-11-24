@@ -1,0 +1,23 @@
+---
+description: Grocery barcode/search must expand marking KM to GTIN/EAN
+globs:
+  - web-backend/src/main/java/com/pos/catalog/service/product/support/ProductBarcodeScanVariants.java
+  - web-backend/src/main/java/com/pos/catalog/service/product/support/ProductMarkingGtinExtractor.java
+  - web-backend/src/main/java/com/pos/catalog/service/product/support/ProductSearchMarkingNormalizer.java
+  - web-backend/src/main/java/com/pos/catalog/service/product/impl/ProductQueryServiceImpl.java
+alwaysApply: false
+---
+
+# Marking KM → barcode lookup (grocery)
+
+## Must
+
+1. `ProductBarcodeScanVariants.of(raw)` expands DataMatrix КМ to GTIN-14 + consumer EAN via `ProductMarkingGtinExtractor` (same idea as `@aurent/shared-marking`).
+2. Catalog/warehouse `search` and `barcodeContains` go through `ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter` before specs — never LIKE the full KM string alone.
+3. by-barcode (`ProductQueryServiceImpl.resolveByBarcode`, `CatalogProductBarcodeFinder`) keeps using `ProductBarcodeScanVariants.of`.
+
+## Must NOT
+
+- Treat plain EAN-8/13 or bare 14–17 digit ИКПУ as marking.
+- Drop pack GTIN → consumer EAN-13 (`ean13FromPackGtin14`) when indicator is 1–8.
+- Put new KM parsing only in the cashier frontend and leave backend search/by-barcode raw.

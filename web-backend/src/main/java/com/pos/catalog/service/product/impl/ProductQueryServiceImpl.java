@@ -18,6 +18,7 @@ import com.pos.catalog.service.product.support.ProductBarcodeScanVariants;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductCatalogTotalsSupport;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
+import com.pos.catalog.service.product.support.ProductSearchMarkingNormalizer;
 import com.pos.catalog.service.product.support.ProductStoreScopedResponseSupport;
 import com.pos.catalog.service.product.support.ProductWarehouseReceiptSupport;
 import com.pos.inventory.service.stock.StoreStockService;
@@ -80,8 +81,16 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
-            search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
-            attributeFilters, businessTypeCode
+            ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter(search),
+            categoryId,
+            scope,
+            storeId,
+            ikpuStatus,
+            markedProduct,
+            soldIndividually,
+            ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter(barcodeExact),
+            attributeFilters,
+            businessTypeCode
         )
             .and(ProductStoreAssortmentSpecifications.presentAtStore(storeId))
             .and(ProductCategoryScopeSpecifications.within(
@@ -128,7 +137,12 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         java.util.List<UUID> receiptProductIds =
             warehouseReceiptSupport.productIdsForReceiptFilter(companyId, receiptNumber);
         Specification<Product> spec = ProductSpecifications.warehouseFilter(
-            companyId, search, barcodeContains, markedProduct, businessTypeCode, receiptProductIds
+            companyId,
+            ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter(search),
+            ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter(barcodeContains),
+            markedProduct,
+            businessTypeCode,
+            receiptProductIds
         ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         PageResponse<ProductResponse> page = mapPage(productRepository.findAll(spec, pageable), storeId);
         java.util.List<ProductResponse> enriched =
@@ -201,8 +215,16 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
-            search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
-            attributeFilters, businessTypeCode
+            ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter(search),
+            categoryId,
+            scope,
+            storeId,
+            ikpuStatus,
+            markedProduct,
+            soldIndividually,
+            ProductSearchMarkingNormalizer.forSearchOrBarcodeFilter(barcodeExact),
+            attributeFilters,
+            businessTypeCode
         ).and(ProductStoreAssortmentSpecifications.presentAtStore(storeId));
         return productCatalogTotalsSupport.summarize(spec, storeId);
     }
