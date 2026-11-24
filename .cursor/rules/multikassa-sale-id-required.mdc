@@ -1,0 +1,26 @@
+---
+description: Multikassa FISCALIZED requires receipt sale id for Soliq refund
+globs:
+  - "**/multikassa/fiscalizeSaleBeforeCommit.js"
+  - "**/multikassa/parseMultikassaResult.js"
+  - "**/multikassa/runMultikassaOperation.js"
+  - "**/SaleFiscalApplier.java"
+  - "**/saleNeedsOfdRefund.js"
+alwaysApply: false
+---
+
+# Multikassa sale id (do not regress)
+
+## Must
+
+1. Treat Multikassa fiscalization as complete only with **`multikassaSaleId`** (`receipt_sale_id` / `Result.Id`) **and** fiscal sign or OFD QR — see `isCompleteMultikassaFiscal`.
+2. Soft (`requireBeforeSale=false`): missing ID → `PENDING_FISCAL` without storing bare sign (so POS return is not blocked by `MULTIKASSA_REFUND_MISSING_SALE_ID`).
+3. Backend Multikassa register: `SaleFiscalApplier` must not persist `FISCALIZED` without `multikassaSaleId` (downgrade to PENDING).
+4. Multikassa refund without `multikassaSaleId` on an OFD sale → **block** (`MULTIKASSA_REFUND_MISSING_SALE_ID`). Do **not** skip OFD and commit POS return.
+5. Log `multikassaSaleId` on successful fiscalization; enrich from GET `/operations` when POST omits Id.
+
+## Must NOT
+
+- Mark `FISCALIZED` on sign/QR alone.
+- Unblock POS return by skipping Multikassa op4 when Soliq already has the sale.
+- Apply the Multikassa “ID required” downgrade to non-Multikassa (FiscalDrive) registers.

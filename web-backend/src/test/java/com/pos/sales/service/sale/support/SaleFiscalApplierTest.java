@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -25,8 +26,115 @@ class SaleFiscalApplierTest {
     @Mock
     private MultikassaSettingsService multikassaSettingsService;
 
+    @Spy
+    private SaleFiscalQrPolicy qrPolicy = new SaleFiscalQrPolicy();
+
     @InjectMocks
     private SaleFiscalApplier applier;
+
+    // ---- AUR-21: аванс и кредит — без QR, но с фискальным признаком -----------------------------
+
+    @Test
+    void advanceWithoutQrKeepsFiscalSignAndFlag() {
+        Sale sale = receipt(Sale.ReceiptType.ADVANCE);
+        CashierShift shift = shiftWithRegister(21L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(21L))
+            .thenReturn(Optional.of(enabledSettings(true)));
+
+        applier.apply(sale, shift, fiscalized("123456789012"));
+
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_FISCALIZED);
+        assertThat(sale.getFiscalSign()).isEqualTo("123456789012");
+        assertThat(sale.isPrintFiscalQr()).isFalse();
+    }
+
+    @Test
+    void creditWithoutQrStillRequiresFiscalizationWhenCashRegisterDemandsIt() {
+        Sale sale = receipt(Sale.ReceiptType.CREDIT);
+        CashierShift shift = shiftWithRegister(22L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(22L))
+            .thenReturn(Optional.of(enabledSettings(true)));
+
+        assertThatThrownBy(() -> applier.apply(sale, shift, null))
+            .isInstanceOf(BadRequestException.class)
+            .hasMessageContaining("фискализация");
+    }
+
+    @Test
+    void creditWithoutFiscalProofIsPendingNotNotRequired() {
+        Sale sale = receipt(Sale.ReceiptType.CREDIT);
+        CashierShift shift = shiftWithRegister(23L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(23L))
+            .thenReturn(Optional.of(enabledSettings(false)));
+
+        applier.apply(sale, shift, null, false);
+
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_PENDING);
+    }
+
+    @Test
+    void advanceIsNotFiscalizedWhenCashierTurnedOfdOff() {
+        Sale sale = receipt(Sale.ReceiptType.ADVANCE);
+        CashierShift shift = shiftWithRegister(24L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(24L))
+            .thenReturn(Optional.of(enabledSettings(true, false)));
+
+        applier.apply(sale, shift, null);
+
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_NOT_REQUIRED);
+    }
+
+    @Test
+    void advanceKeepsFiscalSignWithoutMultikassaSettings() {
+        Sale sale = receipt(Sale.ReceiptType.ADVANCE);
+        CashierShift shift = shiftWithRegister(25L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(25L)).thenReturn(Optional.empty());
+
+        applier.apply(sale, shift, fiscalized("987654321098"), false);
+
+        assertThat(sale.getFiscalSign()).isEqualTo("987654321098");
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_FISCALIZED);
+    }
+
+    private static Sale receipt(Sale.ReceiptType type) {
+        Sale sale = new Sale();
+        sale.setReceiptType(type);
+        sale.setPrintFiscalQr(false);
+        return sale;
+    }
+
+    private static SaleFiscalPayload fiscalized(String sign) {
+        return new SaleFiscalPayload(
+            SaleFiscalApplier.STATUS_FISCALIZED, sign, "7", "mk-sale-id", null, null, "TERM1"
+        );
+    }
+
+    @Test
+    void apply_multikassaFiscalizedWithoutSaleId_becomesPending() {
+        Sale sale = new Sale();
+        CashierShift shift = shiftWithRegister(17L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(17L))
+            .thenReturn(Optional.of(enabledSettings(false)));
+
+        SaleFiscalPayload noId = new SaleFiscalPayload(
+            SaleFiscalApplier.STATUS_FISCALIZED,
+            "212710349421",
+            "1",
+            null,
+            "https://ofd.soliq.uz/check?t=TERM1&r=1&c=20261124195114&s=212710349421",
+            null,
+            "TERM1"
+        );
+
+        applier.apply(sale, shift, noId);
+
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_PENDING);
+        assertThat(sale.getMultikassaSaleId()).isNull();
+        assertThat(sale.getFiscalSign()).isNull();
+        assertThat(sale.getFiscalError()).containsIgnoringCase("Multikassa ID");
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     @Test
     void apply_withoutSettingsAndNullFiscal_setsNotRequired() {
