@@ -5,16 +5,14 @@ import com.pos.catalog.dto.product.ProductCatalogTotalsResponse;
 import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.dto.shared.PageResponse;
 import com.pos.catalog.entity.Product;
-import com.pos.catalog.entity.ProductBarcode;
 import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductBarcodeRepository;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.repository.spec.ProductCategoryScopeSpecifications;
 import com.pos.catalog.repository.spec.ProductSpecifications;
 import com.pos.catalog.repository.spec.ProductStoreAssortmentSpecifications;
 import com.pos.catalog.service.product.ProductQueryService;
 import com.pos.catalog.service.product.ProductResponseAssembler;
-import com.pos.catalog.service.product.support.ProductBarcodeScanVariants;
+import com.pos.catalog.service.product.support.ProductByScanVariantsFinder;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductCatalogTotalsSupport;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
@@ -23,9 +21,7 @@ import com.pos.catalog.service.product.support.ProductStoreScopedResponseSupport
 import com.pos.catalog.service.product.support.ProductWarehouseReceiptSupport;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.sales.support.CashRegisterCategoryScopeResolver;
-import com.pos.scales.codec.WeightBarcodeCodec;
 import com.pos.service.support.CatalogIsolationSupport;
-import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -46,8 +41,7 @@ import java.util.UUID;
 public class ProductQueryServiceImpl implements ProductQueryService {
 
     private final ProductRepository productRepository;
-    private final ProductLookupSupport productLookup;
-    private final ProductBarcodeRepository productBarcodeRepository;
+    private final ProductByScanVariantsFinder byScanVariantsFinder;
     private final ProductCatalogLoader catalogLoader;
     private final ProductResponseAssembler assembler;
     private final StoreStockService storeStockService;
@@ -55,7 +49,6 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ProductCatalogTotalsSupport productCatalogTotalsSupport;
     private final ProductStoreScopedResponseSupport storeScopedResponse;
     private final TenantAccessSupport tenantAccess;
-    private final WeightBarcodeCodec weightBarcodeCodec;
     private final CatalogIsolationSupport catalogIsolation;
     private final CatalogRemoteReadinessGuard catalogRemoteReadinessGuard;
     private final ProductWarehouseReceiptSupport warehouseReceiptSupport;
@@ -275,28 +268,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private Product resolveByBarcode(String barcode) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        for (String code : ProductBarcodeScanVariants.of(barcode)) {
-            Optional<Product> primary = productLookup.findOne(
-                ProductSpecifications.lookup(companyId).barcode(code).anyActiveState()
-            );
-            if (primary.isPresent()) {
-                return primary.get();
-            }
-            Optional<Product> extra = productBarcodeRepository.findByBarcodeAndProductCompanyId(code, companyId)
-                .map(ProductBarcode::getProduct);
-            if (extra.isPresent()) {
-                return extra.get();
-            }
-            // ИКПУ/МХИК часто печатают на этикетке; в barcode поле его не кладём (см. labelBarcode).
-            Optional<Product> byIkpu = productLookup.findOne(
-                ProductSpecifications.lookup(companyId).ikpu(code).anyActiveState()
-            );
-            if (byIkpu.isPresent()) {
-                return byIkpu.get();
-            }
-        }
-        return weightBarcodeCodec.tryDecode(barcode)
-            .flatMap(decoded -> productRepository.findByCompany_IdAndPlu(companyId, decoded.plu()))
+        return byScanVariantsFinder.find(companyId, barcode)
             .orElseThrow(() -> PosExceptions.notFound("Product for barcode", barcode));
     }
 }

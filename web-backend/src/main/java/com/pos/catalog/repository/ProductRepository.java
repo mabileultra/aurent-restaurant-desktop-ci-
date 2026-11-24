@@ -156,4 +156,14 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
         @Param("storeId") Integer storeId,
         Pageable pageable
     );
+
+    Optional<Product> findFirstByCompany_IdAndBarcodeIn(
+        Integer companyId,
+        Collection<String> barcodes
+    );
+
+    Optional<Product> findFirstByCompany_IdAndIkpuIn(
+        Integer companyId,
+        Collection<String> ikpus
+    );
 }
