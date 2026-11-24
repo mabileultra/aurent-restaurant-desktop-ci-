@@ -15,6 +15,7 @@ import com.pos.inventory.service.SupplierService;
 import com.pos.inventory.service.support.SupplierMutationSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
+import com.pos.util.DbExceptionTranslator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,7 +57,7 @@ public class SupplierServiceImpl implements SupplierService {
             .company(tenantAccess.requireCompany(companyId))
             .build();
         SupplierMutationSupport.applyFields(s, req.name(), taxId, req.accountNumber(), req.phone());
-        Supplier saved = supplierRepository.save(s);
+        Supplier saved = DbExceptionTranslator.persist(() -> supplierRepository.save(s));
         LogUtil.info(SupplierServiceImpl.class, "Supplier created: id={}, taxId={}", saved.getId(), saved.getTaxId());
         return supplierMapper.toResponse(saved);
     }

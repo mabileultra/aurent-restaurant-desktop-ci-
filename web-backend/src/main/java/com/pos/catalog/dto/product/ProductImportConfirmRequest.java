@@ -22,6 +22,8 @@ public record ProductImportConfirmRequest(
     String paymentType,
     /** Комментарий к приходу; если пусто — «Импорт …». */
     String receiptNotes,
+    /** Номер договора из UI; если пусто — берётся из файла (UZ_INVOICE). */
+    String contractNumber,
     /** Наш ключ поля → точный заголовок колонки в Excel (только CATALOG). */
     Map<String, String> columnMapping,
     @Valid List<ImportRowConfirm> rows

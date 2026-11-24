@@ -93,11 +93,15 @@ public class UzInvoiceSpreadsheetParser {
             );
         }
         String documentId = UzInvoiceDocumentIdExtractor.extractFromGrid(grid);
+        String contractNumber = UzInvoiceContractNumberExtractor.extractFromGrid(grid);
         UzInvoiceColumnMap columns = UzInvoiceColumnMapper.mapColumns(grid.get(headerRow));
         List<Map<String, String>> rows = new ArrayList<>();
         for (int r = headerRow + 1; r < grid.size(); r++) {
             Map<String, String> mapped = mapRow(grid.get(r), columns, r + 1, documentId);
             if (mapped != null) {
+                if (StringUtils.hasText(contractNumber)) {
+                    mapped.put(UzInvoiceContractNumberExtractor.ROW_KEY_CONTRACT_NUMBER, contractNumber.trim());
+                }
                 rows.add(mapped);
             }
         }

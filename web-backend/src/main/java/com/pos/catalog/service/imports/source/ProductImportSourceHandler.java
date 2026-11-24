@@ -46,6 +46,11 @@ public interface ProductImportSourceHandler {
     /** Номер документа/фактуры на уровне файла, либо null если источник не оперирует таким понятием. */
     String resolveFileInvoiceId(List<Map<String, String>> rows);
 
+    /** Номер договора из шапки файла (UZ_INVOICE), иначе null. */
+    default String resolveFileContractNumber(List<Map<String, String>> rows) {
+        return null;
+    }
+
     /** Был ли уже импортирован файл с этим номером документа. По умолчанию false (источник не отслеживает файлы). */
     default boolean isFileAlreadyImported(String fileInvoiceId) {
         return false;

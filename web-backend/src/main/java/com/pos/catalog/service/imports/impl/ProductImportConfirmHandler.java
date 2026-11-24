@@ -20,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -131,12 +132,16 @@ public class ProductImportConfirmHandler {
 
         String receiptNumber = null;
         if (strategy.asReceipt()) {
+            String contract = StringUtils.hasText(opts.contractNumber())
+                ? opts.contractNumber().trim()
+                : preview.contractNumber();
             receiptNumber = receiptSupport.postReceipt(
                 defaultStoreId,
                 opts.supplierId(),
                 opts.paymentType(),
                 opts.receiptNotes(),
                 preview.uzInvoiceDocumentId(),
+                contract,
                 receiptLines,
                 created + linked,
                 errors
@@ -177,7 +182,7 @@ public class ProductImportConfirmHandler {
 
     private static ProductImportConfirmRequest defaultOptions() {
         return new ProductImportConfirmRequest(
-            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, null, List.of()
+            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, null, null, List.of()
         );
     }
 

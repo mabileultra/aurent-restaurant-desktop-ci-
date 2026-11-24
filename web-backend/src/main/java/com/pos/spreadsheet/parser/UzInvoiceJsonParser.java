@@ -44,12 +44,16 @@ public class UzInvoiceJsonParser {
         try {
             JsonNode root = objectMapper.readTree(bytes);
             String extractedDocId = extractUzInvoiceDocumentId(root);
+            String contractNumber = extractContractNumber(root);
             List<JsonNode> itemNodes = collectItemNodes(root);
             List<Map<String, String>> rows = new ArrayList<>();
             int rowNum = 2;
             for (JsonNode item : itemNodes) {
                 Map<String, String> row = mapItemNode(item, rowNum++, extractedDocId);
                 if (row != null) {
+                    if (StringUtils.hasText(contractNumber)) {
+                        row.put(UzInvoiceContractNumberExtractor.ROW_KEY_CONTRACT_NUMBER, contractNumber.trim());
+                    }
                     rows.add(row);
                 }
             }
@@ -397,6 +401,27 @@ public class UzInvoiceJsonParser {
             if (hit != null) {
                 return hit;
             }
+        }
+        return null;
+    }
+
+    private static String extractContractNumber(JsonNode root) {
+        if (root == null || root.isNull()) {
+            return null;
+        }
+        for (String key : new String[] {
+            "contractNumber", "contract_number", "contractNo", "contract_no",
+            "agreementNumber", "agreement_number", "shartnoma", "dogovor"
+        }) {
+            String v = text(findPathIgnoreCase(root, key));
+            if (!StringUtils.hasText(v)) {
+                continue;
+            }
+            String fromText = UzInvoiceContractNumberExtractor.extractFromPlainText(v);
+            if (fromText != null) {
+                return fromText;
+            }
+            return v.trim();
         }
         return null;
     }

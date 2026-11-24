@@ -18,6 +18,7 @@ import com.pos.inventory.service.stock.StockReceiptService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.inventory.service.stock.support.StockDocumentSupport;
 import com.pos.inventory.service.stock.support.StockReceiptMutationSupport;
+import com.pos.inventory.service.stock.support.StockReceiptNumberAllocator;
 import com.pos.security.CurrentUserProvider;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.service.support.CatalogIsolationSupport;
@@ -34,7 +35,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,6 +55,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     private final FinancePurchaseIntegrationService financePurchaseIntegrationService;
     private final PosDomainEventService posDomainEventService;
     private final StockReceiptMutationSupport mutationSupport;
+    private final StockReceiptNumberAllocator receiptNumberAllocator;
 
     @Override
     public StockReceiptResponse create(CreateStockReceiptRequest request) {
@@ -67,10 +68,13 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         Supplier supplier = resolveSupplier(request.supplierId());
 
         StockReceipt receipt = stockReceiptRepository.save(StockReceipt.builder()
-            .receiptNumber(nextReceiptNumber())
+            .receiptNumber(receiptNumberAllocator.next())
             .status(StockReceiptStatus.POSTED)
             .documentDate(LocalDate.now(ZONE))
             .paymentType(request.paymentType())
+            .invoiceNumber(trimToNull(request.invoiceNumber()))
+            .invoiceDate(request.invoiceDate())
+            .contractNumber(trimToNull(request.contractNumber()))
             .supplier(supplier)
             .store(store)
             .notes(trimToNull(request.notes()))
@@ -106,6 +110,9 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         receipt.setSupplier(resolveSupplier(request.supplierId()));
         receipt.setStore(store);
         receipt.setNotes(trimToNull(request.notes()));
+        receipt.setInvoiceNumber(trimToNull(request.invoiceNumber()));
+        receipt.setInvoiceDate(request.invoiceDate());
+        receipt.setContractNumber(trimToNull(request.contractNumber()));
         if (StringUtils.hasText(request.paymentType())) {
             receipt.setPaymentType(request.paymentType().trim());
         }
@@ -167,14 +174,6 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         return receipt;
     }
 
-    private String nextReceiptNumber() {
-        LocalDate today = LocalDate.now(ZONE);
-        Instant dayStart = today.atStartOfDay(ZONE).toInstant();
-        long seq = stockReceiptRepository.countByCreatedAtGreaterThanEqual(dayStart) + 1;
-        String datePart = today.format(DateTimeFormatter.BASIC_ISO_DATE);
-        return "REC-" + datePart + "-" + String.format("%04d", seq);
-    }
-
     private Supplier resolveSupplier(UUID supplierId) {
         if (supplierId == null) {
             return null;
@@ -191,20 +190,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     }
 
     private StockReceiptResponse toSummary(StockReceipt r) {
-        return new StockReceiptResponse(
-            r.getId(),
-            r.getReceiptNumber(),
-            r.getSupplier() != null ? r.getSupplier().getId() : null,
-            r.getSupplier() != null ? r.getSupplier().getName() : null,
-            r.getStore() != null ? r.getStore().getId() : null,
-            r.getStore() != null ? r.getStore().getName() : null,
-            r.getNotes(),
-            r.getTotalQuantity(),
-            r.getTotalCost(),
-            r.getCreatedBy() != null ? r.getCreatedBy().getFullName() : null,
-            r.getCreatedAt(),
-            List.of()
-        );
+        return toDto(r, List.of());
     }
 
     private StockReceiptResponse toResponse(StockReceipt r) {
@@ -220,6 +206,10 @@ public class StockReceiptServiceImpl implements StockReceiptService {
                 l.getLineCost()
             ))
             .toList();
+        return toDto(r, lines);
+    }
+
+    private StockReceiptResponse toDto(StockReceipt r, List<StockReceiptLineResponse> lines) {
         return new StockReceiptResponse(
             r.getId(),
             r.getReceiptNumber(),
@@ -227,6 +217,10 @@ public class StockReceiptServiceImpl implements StockReceiptService {
             r.getSupplier() != null ? r.getSupplier().getName() : null,
             r.getStore() != null ? r.getStore().getId() : null,
             r.getStore() != null ? r.getStore().getName() : null,
+            r.getInvoiceNumber(),
+            r.getInvoiceDate(),
+            r.getContractNumber(),
+            r.getPaymentType(),
             r.getNotes(),
             r.getTotalQuantity(),
             r.getTotalCost(),
