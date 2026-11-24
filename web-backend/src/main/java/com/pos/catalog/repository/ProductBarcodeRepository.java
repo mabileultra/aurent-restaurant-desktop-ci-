@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +22,11 @@ public interface ProductBarcodeRepository extends JpaRepository<ProductBarcode, 
     Optional<ProductBarcode> findByBarcodeAndProductCompanyId(
         @Param("barcode") String barcode,
         @Param("companyId") Integer companyId
+    );
+
+    Optional<ProductBarcode> findFirstByProduct_Company_IdAndBarcodeIn(
+        Integer companyId,
+        Collection<String> barcodes
     );
 
     void deleteByProduct_Id(java.util.UUID productId);
