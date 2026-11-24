@@ -55,6 +55,7 @@ public class ProductImportReceiptSupport {
         String paymentType,
         String receiptNotes,
         String invoiceDocumentId,
+        String contractNumber,
         List<StockReceiptLineRequest> lines,
         int createdCount,
         List<String> errors
@@ -71,17 +72,20 @@ public class ProductImportReceiptSupport {
                 + "), но приход не проведён: для долга укажите поставщика");
             return null;
         }
+        String invoice = StringUtils.hasText(invoiceDocumentId) ? invoiceDocumentId.trim() : null;
+        String contract = StringUtils.hasText(contractNumber) ? contractNumber.trim() : null;
         String notes = StringUtils.hasText(receiptNotes)
             ? receiptNotes.trim()
-            : (StringUtils.hasText(invoiceDocumentId)
-                ? "Импорт " + invoiceDocumentId.trim()
-                : "Импорт товаров");
+            : (invoice != null ? "Импорт " + invoice : "Импорт товаров");
         try {
             StockReceiptResponse receipt = stockReceiptService.create(new CreateStockReceiptRequest(
                 supplierId,
                 storeId,
                 notes,
                 pay,
+                invoice,
+                null,
+                contract,
                 lines
             ));
             return receipt.receiptNumber();

@@ -32,6 +32,15 @@ public final class DbExceptionTranslator {
             || (lower.contains("duplicate key") && lower.contains("email"))) {
             return "Email уже зарегистрирован в этой компании";
         }
+        if (lower.contains("uq_suppliers_company_tax_id")
+            || (lower.contains("suppliers") && lower.contains("tax_id")
+                && (lower.contains("duplicate key") || lower.contains("unique")))) {
+            return "Поставщик с таким ИНН/ПИНФЛ уже существует";
+        }
+        if (lower.contains("receipt_number")
+            && (lower.contains("duplicate key") || lower.contains("unique"))) {
+            return "Документ прихода с таким номером уже существует";
+        }
         if (lower.contains("pin_digest") || lower.contains("module_access_custom")) {
             return "Схема БД устарела: на сервере выполните bash deploy/update.sh";
         }
@@ -45,7 +54,7 @@ public final class DbExceptionTranslator {
             return "Ошибка загрузки данных. Обновите backend и повторите запрос.";
         }
         if (lower.contains("duplicate key") || lower.contains("unique constraint")) {
-            return "Пользователь с такими данными уже существует";
+            return "Запись с такими данными уже существует";
         }
         if (lower.contains("foreign key") || lower.contains("violates foreign key")) {
             return "Неверная компания, магазин или роль";

@@ -42,4 +42,27 @@ class DbExceptionTranslatorTest {
 
         assertEquals("Такой PIN уже используется в компании", message);
     }
+
+    @Test
+    void clientMessage_mapsSupplierTaxIdUniqueNotUser() {
+        String message = DbExceptionTranslator.clientMessage(
+            new DataIntegrityViolationException(
+                "ERROR: duplicate key value violates unique constraint \"uq_suppliers_company_tax_id\"\n"
+                    + "Detail: Key (company_id, tax_id)=(1, 309123456) already exists."
+            )
+        );
+
+        assertEquals("Поставщик с таким ИНН/ПИНФЛ уже существует", message);
+    }
+
+    @Test
+    void clientMessage_genericUniqueIsNotUserWording() {
+        String message = DbExceptionTranslator.clientMessage(
+            new DataIntegrityViolationException(
+                "ERROR: duplicate key value violates unique constraint \"some_other_uq\""
+            )
+        );
+
+        assertEquals("Запись с такими данными уже существует", message);
+    }
 }

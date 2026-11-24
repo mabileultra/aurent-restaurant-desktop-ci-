@@ -18,6 +18,9 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
 
     long countByCreatedAtGreaterThanEqual(Instant start);
 
+    @Query("SELECT r.receiptNumber FROM StockReceipt r WHERE r.receiptNumber LIKE CONCAT(:prefix, '%')")
+    List<String> findReceiptNumbersStartingWith(@Param("prefix") String prefix);
+
     boolean existsBySupplier_Id(UUID supplierId);
 
     @Query("""

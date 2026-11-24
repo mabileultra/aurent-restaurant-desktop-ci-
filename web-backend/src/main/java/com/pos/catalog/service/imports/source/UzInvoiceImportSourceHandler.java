@@ -8,6 +8,7 @@ import com.pos.catalog.service.imports.ProductImportSource;
 import com.pos.catalog.service.imports.ProductImportSupport;
 import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
+import com.pos.spreadsheet.parser.UzInvoiceContractNumberExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;
 import com.pos.spreadsheet.parser.UzInvoicePdfParser;
@@ -79,6 +80,20 @@ public class UzInvoiceImportSourceHandler implements ProductImportSourceHandler 
             String raw = ProductImportParseUtil.cell(row, UzInvoiceDocumentIdExtractor.ROW_KEY_UZ_INVOICE_DOCUMENT_ID);
             if (StringUtils.hasText(raw)) {
                 return raw.trim().toUpperCase(Locale.ROOT);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String resolveFileContractNumber(List<Map<String, String>> rows) {
+        if (rows == null) {
+            return null;
+        }
+        for (Map<String, String> row : rows) {
+            String raw = ProductImportParseUtil.cell(row, UzInvoiceContractNumberExtractor.ROW_KEY_CONTRACT_NUMBER);
+            if (StringUtils.hasText(raw)) {
+                return raw.trim();
             }
         }
         return null;
