@@ -56,6 +56,15 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
 
     @Query("""
         SELECT r FROM StockReceipt r
+        LEFT JOIN FETCH r.supplier
+        LEFT JOIN FETCH r.store
+        LEFT JOIN FETCH r.createdBy
+        WHERE r.id = :id
+        """)
+    Optional<StockReceipt> findHeaderById(@Param("id") UUID id);
+
+    @Query("""
+        SELECT r FROM StockReceipt r
         JOIN FETCH r.store st
         JOIN FETCH st.company
         LEFT JOIN FETCH r.supplier

@@ -1,6 +1,8 @@
 package com.pos.inventory.repository;
 
 import com.pos.inventory.entity.StockReceiptLine;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +12,17 @@ import java.util.List;
 import java.util.UUID;
 
 public interface StockReceiptLineRepository extends JpaRepository<StockReceiptLine, UUID> {
+
+    @Query("""
+        SELECT l FROM StockReceiptLine l
+        WHERE l.receipt.id = :receiptId
+        ORDER BY l.productName ASC NULLS LAST, l.id ASC
+        """)
+    Page<StockReceiptLine> findPageByReceiptId(
+        @Param("receiptId") UUID receiptId,
+        Pageable pageable
+    );
+
 
     /**
      * Latest posted receipt number per product (Postgres DISTINCT ON).
