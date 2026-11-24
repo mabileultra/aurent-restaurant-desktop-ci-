@@ -2,6 +2,7 @@ package com.pos.inventory.service.stock;
 
 import com.pos.dto.shared.PageResponse;
 import com.pos.inventory.dto.warehouse.CreateStockReceiptRequest;
+import com.pos.inventory.dto.warehouse.StockReceiptLineResponse;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.inventory.dto.warehouse.UpdateStockReceiptRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ public interface StockReceiptService {
     void delete(UUID id);
 
     StockReceiptResponse getById(UUID id);
+
+    PageResponse<StockReceiptLineResponse> listLines(UUID id, Pageable pageable);
 
     PageResponse<StockReceiptResponse> list(LocalDate from, LocalDate to, Integer storeId, Pageable pageable);
 }

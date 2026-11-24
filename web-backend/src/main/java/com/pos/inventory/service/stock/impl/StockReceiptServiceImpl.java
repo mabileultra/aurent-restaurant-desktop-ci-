@@ -17,6 +17,8 @@ import com.pos.inventory.repository.SupplierRepository;
 import com.pos.inventory.service.stock.StockReceiptService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.inventory.service.stock.support.StockDocumentSupport;
+import com.pos.inventory.service.stock.support.StockReceiptLineMapper;
+import com.pos.inventory.service.stock.support.StockReceiptLineQuerySupport;
 import com.pos.inventory.service.stock.support.StockReceiptMutationSupport;
 import com.pos.inventory.service.stock.support.StockReceiptNumberAllocator;
 import com.pos.security.CurrentUserProvider;
@@ -56,6 +58,8 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     private final PosDomainEventService posDomainEventService;
     private final StockReceiptMutationSupport mutationSupport;
     private final StockReceiptNumberAllocator receiptNumberAllocator;
+    private final StockReceiptLineQuerySupport lineQuerySupport;
+    private final StockReceiptLineMapper lineMapper;
 
     @Override
     public StockReceiptResponse create(CreateStockReceiptRequest request) {
@@ -150,6 +154,12 @@ public class StockReceiptServiceImpl implements StockReceiptService {
 
     @Override
     @Transactional(readOnly = true)
+    public PageResponse<StockReceiptLineResponse> listLines(UUID id, Pageable pageable) {
+        return lineQuerySupport.listLines(id, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PageResponse<StockReceiptResponse> list(
         LocalDate from,
         LocalDate to,
@@ -195,16 +205,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
 
     private StockReceiptResponse toResponse(StockReceipt r) {
         List<StockReceiptLineResponse> lines = r.getLines().stream()
-            .map(l -> new StockReceiptLineResponse(
-                l.getId(),
-                l.getProductId(),
-                l.getProductName(),
-                l.getProductSku(),
-                l.getQuantity(),
-                l.getPurchasePrice(),
-                l.getUnitSellingPrice(),
-                l.getLineCost()
-            ))
+            .map(lineMapper::toResponse)
             .toList();
         return toDto(r, lines);
     }

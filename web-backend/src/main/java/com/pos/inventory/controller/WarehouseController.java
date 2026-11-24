@@ -11,6 +11,7 @@ import com.pos.inventory.dto.warehouse.CreateStockTransferRequest;
 import com.pos.inventory.dto.warehouse.StockExpenseResponse;
 import com.pos.inventory.dto.warehouse.StockInventoryResponse;
 import com.pos.inventory.dto.warehouse.StockProductionResponse;
+import com.pos.inventory.dto.warehouse.StockReceiptLineResponse;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.inventory.dto.warehouse.StockTransferResponse;
 import com.pos.inventory.dto.warehouse.UpdateStockReceiptRequest;
@@ -25,6 +26,7 @@ import com.pos.inventory.service.stock.StockProductionService;
 import com.pos.inventory.service.stock.StockReceiptService;
 import com.pos.inventory.service.stock.StockTransferService;
 import com.pos.inventory.service.stock.StockWriteOffService;
+import com.pos.shared.api.PageLimits;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -118,6 +120,16 @@ public class WarehouseController {
     @ApiResponse(responseCode = "200", description = "Данные прихода")
     public ResponseEntity<StockReceiptResponse> getReceipt(@PathVariable UUID id) {
         return ResponseEntity.ok(stockReceiptService.getById(id));
+    }
+
+    @GetMapping("/receipts/{id}/lines")
+    @Operation(summary = "Строки прихода", description = "Постраничный список позиций документа прихода")
+    @ApiResponse(responseCode = "200", description = "Страница строк прихода")
+    public ResponseEntity<PageResponse<StockReceiptLineResponse>> listReceiptLines(
+        @PathVariable UUID id,
+        @PageableDefault(size = PageLimits.DEFAULT_SIZE) Pageable pageable
+    ) {
+        return ResponseEntity.ok(stockReceiptService.listLines(id, pageable));
     }
 
     @PutMapping("/receipts/{id}")
