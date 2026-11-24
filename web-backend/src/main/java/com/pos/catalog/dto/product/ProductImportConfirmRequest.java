@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +25,10 @@ public record ProductImportConfirmRequest(
     String receiptNotes,
     /** Номер договора из UI; если пусто — берётся из файла (UZ_INVOICE). */
     String contractNumber,
+    /** № фактуры из UI; если пусто — берётся из файла (UZ_INVOICE). */
+    String invoiceNumber,
+    /** Дата фактуры из UI (yyyy-MM-dd). */
+    LocalDate invoiceDate,
     /** Наш ключ поля → точный заголовок колонки в Excel (только CATALOG). */
     Map<String, String> columnMapping,
     @Valid List<ImportRowConfirm> rows

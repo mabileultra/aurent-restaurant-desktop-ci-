@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +50,7 @@ class ProductImportReceiptSupportTest {
 
         List<String> errors = new ArrayList<>();
         String number = support.postReceipt(
-            1, supplierId, "CASH", null, "IS-00008429", "481", lines, 1, errors
+            1, supplierId, "CASH", null, "IS-00008429", null, "481", lines, 1, errors
         );
 
         assertEquals("REC-1", number);
@@ -63,8 +64,31 @@ class ProductImportReceiptSupportTest {
     }
 
     @Test
+    void postReceipt_passesInvoiceDate() {
+        List<StockReceiptLineRequest> lines = List.of(
+            new StockReceiptLineRequest(
+                UUID.randomUUID(), BigDecimal.ONE, BigDecimal.TEN, BigDecimal.TEN, 12, false, null
+            )
+        );
+        when(stockReceiptService.create(any())).thenReturn(
+            new StockReceiptResponse(
+                UUID.randomUUID(), "REC-2", null, null, 1, "Store",
+                "IS-2", LocalDate.of(2026, 3, 15), null, "CASH", "n",
+                BigDecimal.ONE, BigDecimal.TEN, "User", null, List.of()
+            )
+        );
+        List<String> errors = new ArrayList<>();
+        support.postReceipt(
+            1, null, "CASH", "n", "IS-2", LocalDate.of(2026, 3, 15), null, lines, 1, errors
+        );
+        ArgumentCaptor<CreateStockReceiptRequest> captor = ArgumentCaptor.forClass(CreateStockReceiptRequest.class);
+        verify(stockReceiptService).create(captor.capture());
+        assertEquals(LocalDate.of(2026, 3, 15), captor.getValue().invoiceDate());
+    }
+
+    @Test
     void postReceipt_emptyLines_returnsNull() {
         List<String> errors = new ArrayList<>();
-        assertNull(support.postReceipt(1, null, "CASH", null, "IS-1", null, List.of(), 0, errors));
+        assertNull(support.postReceipt(1, null, "CASH", null, "IS-1", null, null, List.of(), 0, errors));
     }
 }

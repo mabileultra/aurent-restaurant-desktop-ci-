@@ -135,12 +135,16 @@ public class ProductImportConfirmHandler {
             String contract = StringUtils.hasText(opts.contractNumber())
                 ? opts.contractNumber().trim()
                 : preview.contractNumber();
+            String invoice = StringUtils.hasText(opts.invoiceNumber())
+                ? opts.invoiceNumber().trim()
+                : preview.uzInvoiceDocumentId();
             receiptNumber = receiptSupport.postReceipt(
                 defaultStoreId,
                 opts.supplierId(),
                 opts.paymentType(),
                 opts.receiptNotes(),
-                preview.uzInvoiceDocumentId(),
+                invoice,
+                opts.invoiceDate(),
                 contract,
                 receiptLines,
                 created + linked,
@@ -182,7 +186,7 @@ public class ProductImportConfirmHandler {
 
     private static ProductImportConfirmRequest defaultOptions() {
         return new ProductImportConfirmRequest(
-            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, null, null, List.of()
+            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, null, null, null, null, List.of()
         );
     }
 
