@@ -110,7 +110,7 @@ class SaleFiscalApplierTest {
     }
 
     @Test
-    void apply_multikassaFiscalizedWithoutSaleId_becomesPending() {
+    void apply_multikassaFiscalizedWithoutSaleId_keepsFiscalizedForOfdRefund() {
         Sale sale = new Sale();
         CashierShift shift = shiftWithRegister(17L);
         when(multikassaSettingsService.findEnabledByCashRegisterId(17L))
@@ -128,10 +128,11 @@ class SaleFiscalApplierTest {
 
         applier.apply(sale, shift, noId);
 
-        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_PENDING);
+        assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_FISCALIZED);
         assertThat(sale.getMultikassaSaleId()).isNull();
-        assertThat(sale.getFiscalSign()).isNull();
-        assertThat(sale.getFiscalError()).containsIgnoringCase("Multikassa ID");
+        assertThat(sale.getFiscalSign()).isEqualTo("212710349421");
+        assertThat(sale.getFiscalReceiptSeq()).isEqualTo("1");
+        assertThat(sale.getFiscalTerminalId()).isEqualTo("TERM1");
     }
 
     // ---------------------------------------------------------------------------------------------

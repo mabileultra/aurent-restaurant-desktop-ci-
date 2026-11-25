@@ -42,7 +42,7 @@ public class SaleFiscalApplier {
                 return;
             }
             // Не Multikassa (напр. FiscalDrive) — пишем payload как пришёл.
-            writeFiscalFields(sale, fiscal, false);
+            writeFiscalFields(sale, fiscal);
             return;
         }
 
@@ -66,35 +66,15 @@ public class SaleFiscalApplier {
             throw PosExceptions.badRequest("Требуется успешная фискализация Multikassa перед продажей");
         }
 
-        writeFiscalFields(sale, fiscal, true);
+        writeFiscalFields(sale, fiscal);
     }
 
-    /**
-     * @param multikassaRegister касса с включённым Multikassa — FISCALIZED без sale id недопустим.
-     */
-    private void writeFiscalFields(Sale sale, SaleFiscalPayload fiscal, boolean multikassaRegister) {
+    private void writeFiscalFields(Sale sale, SaleFiscalPayload fiscal) {
         String status = normalizeStatus(fiscal.fiscalStatus());
-        String saleId = trimToNull(fiscal.multikassaSaleId());
-        // Multikassa refund (op4) needs receipt_sale_id. Sign/QR alone → PENDING, not FISCALIZED.
-        if (multikassaRegister && STATUS_FISCALIZED.equals(status) && saleId == null) {
-            sale.setFiscalStatus(STATUS_PENDING);
-            sale.setFiscalSign(null);
-            sale.setFiscalReceiptSeq(null);
-            sale.setMultikassaSaleId(null);
-            sale.setFiscalQrUrl(null);
-            sale.setFiscalTerminalId(trimToNull(fiscal.fiscalTerminalId()));
-            sale.setFiscalError(trimToNull(
-                StringUtils.hasText(fiscal.fiscalError())
-                    ? fiscal.fiscalError()
-                    : "Нет Multikassa ID чека (нужен для возврата в Soliq)"
-            ));
-            sale.setFiscalizedAt(null);
-            return;
-        }
         sale.setFiscalStatus(status);
         sale.setFiscalSign(trimToNull(fiscal.fiscalSign()));
         sale.setFiscalReceiptSeq(trimToNull(fiscal.fiscalReceiptSeq()));
-        sale.setMultikassaSaleId(saleId);
+        sale.setMultikassaSaleId(trimToNull(fiscal.multikassaSaleId()));
         sale.setFiscalQrUrl(trimToNull(fiscal.fiscalQrUrl()));
         sale.setFiscalTerminalId(trimToNull(fiscal.fiscalTerminalId()));
         sale.setFiscalError(trimToNull(fiscal.fiscalError()));
@@ -118,9 +98,7 @@ public class SaleFiscalApplier {
         if (!STATUS_FISCALIZED.equals(status)) {
             throw PosExceptions.badRequest("Требуется успешная фискализация Multikassa перед продажей");
         }
-        if (!StringUtils.hasText(fiscal.multikassaSaleId())) {
-            throw PosExceptions.badRequest("Нет ID чека Multikassa (нужен для возврата в Soliq)");
-        }
+        // Multikassa.Pos refund uses RefundInfo (terminal/seq/sign); sale id optional.
         if (!StringUtils.hasText(fiscal.fiscalSign()) && !StringUtils.hasText(fiscal.fiscalQrUrl())) {
             throw PosExceptions.badRequest("Нет фискального признака / QR Multikassa");
         }
