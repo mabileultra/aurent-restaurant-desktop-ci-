@@ -64,4 +64,23 @@ class PharmacyReceiptPricingTest {
             new BigDecimal("10")
         ));
     }
+
+    @Test
+    void computesPurchaseAndRetailTotalsFromInvoiceUnitPrices() {
+        BigDecimal quantity = new BigDecimal("10");
+        BigDecimal purchase = new BigDecimal("16758.94");
+        BigDecimal purchaseWithVat = PharmacyReceiptPricing.withVat(purchase, new BigDecimal("12"));
+
+        assertEquals(new BigDecimal("187700.10"), PharmacyReceiptPricing.linePurchaseSum(purchaseWithVat, purchase, quantity));
+        assertEquals(new BigDecimal("84000.00"), PharmacyReceiptPricing.lineRetailSum(new BigDecimal("8400.00"), quantity));
+    }
+
+    @Test
+    void roundsLineTotalsAfterMultiplyingByFractionalQuantity() {
+        BigDecimal price = new BigDecimal("10.01");
+        BigDecimal quantity = new BigDecimal("0.500");
+
+        assertEquals(new BigDecimal("5.01"), PharmacyReceiptPricing.linePurchaseSum(null, price, quantity));
+        assertEquals(new BigDecimal("5.01"), PharmacyReceiptPricing.lineRetailSum(price, quantity));
+    }
 }
