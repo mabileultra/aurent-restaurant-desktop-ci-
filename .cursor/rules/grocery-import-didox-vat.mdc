@@ -11,3 +11,4 @@ Column **«Етказиб беришнинг ҚҚСни ҳисобга олга�
 - Do **not** take «Нарҳ» (net) as file price when the with-VAT column is present.
 - Do **not** recompute only as Нарҳ × ҚҚС% when that column exists — match the factura total.
 - Without-VAT «Етказиб бериш қиймати» is not the price column.
+- Invoice id «даги 18+00004384-сонли» (digits + `+`) must extract as document id → SKU `18+00004384-L-{row}`; never fall back to bare `INV-{row}` when that form is present.

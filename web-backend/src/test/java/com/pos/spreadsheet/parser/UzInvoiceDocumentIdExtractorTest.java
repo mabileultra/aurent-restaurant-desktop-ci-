@@ -82,6 +82,34 @@ class UzInvoiceDocumentIdExtractorTest {
     }
 
     @Test
+    void matchesPlusStyleSonliInvoiceNumber() {
+        assertEquals(
+            "18+00004384",
+            UzInvoiceDocumentIdExtractor.extractFromPlainText(
+                "25.11.2025 даги 18+00004384-сонли ҳисобварақ-фактура"
+            )
+        );
+    }
+
+    @Test
+    void prefersPlusStyleInvoiceOverContractInGrid() {
+        List<List<String>> grid = new ArrayList<>();
+        grid.add(Arrays.asList("06.01.2025 даги 99-сонли шартномага", "", ""));
+        grid.add(Arrays.asList("25.11.2025 даги 18+00004384-сонли", "", ""));
+        assertEquals("18+00004384", UzInvoiceDocumentIdExtractor.extractFromGrid(grid));
+    }
+
+    @Test
+    void buildsScopedSkuFromPlusStyleSonli() {
+        var row = UzInvoiceProductRowMapper.toCatalogRow(
+            "Напиток", "02202003001037002", null, "dona", "24", "8928.57", "12", 20, "18+00004384"
+        );
+        assertNotNull(row);
+        assertEquals("18+00004384-L-20", row.get("sku"));
+        assertEquals("18+00004384", row.get(UzInvoiceDocumentIdExtractor.ROW_KEY_UZ_INVOICE_DOCUMENT_ID));
+    }
+
+    @Test
     void ignoresSonliContractShartnoma() {
         assertNull(
             UzInvoiceDocumentIdExtractor.extractFromPlainText(

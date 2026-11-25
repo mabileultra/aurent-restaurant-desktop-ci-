@@ -31,11 +31,12 @@ public final class UzInvoiceDocumentIdExtractor {
     private static final Pattern IS_COMPACT = Pattern.compile("(?i)\\b(IS\\d{6,})\\b");
 
     /**
-     * Excel Didox: «23.05.2026 даги 2683-сонли».
+     * Excel Didox: «23.05.2026 даги 2683-сонли» или «25.11.2025 даги 18+00004384-сонли».
      * Не матчит договор: «14.01.2026 даги 481-сонли шартномага».
      */
     private static final Pattern SONLI_INVOICE = Pattern.compile(
-        "(?iu)даги\\s+(\\d{1,12})-(?:сонли|sonli)(?!\\s*(?:шартном|shartnom|договор|dogovor|contract))"
+        "(?iu)даги\\s+(\\d{1,12}(?:\\+\\d{1,12})?)-(?:сонли|sonli)"
+            + "(?!\\s*(?:шартном|shartnom|договор|dogovor|contract))"
     );
 
     /**
