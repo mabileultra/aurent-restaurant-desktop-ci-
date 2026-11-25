@@ -14,6 +14,7 @@ import com.pos.sales.repository.ZReportRepository;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceZReportIntegrationService;
 import com.pos.sales.service.zreport.ZReportFromShiftService;
+import com.pos.sales.service.zreport.support.ZReportCashlessTotal;
 import com.pos.sales.service.zreport.support.ZReportCloseDecision;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -109,7 +110,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             .cardTotal(report.cardAmount())
             .humoTotal(report.humoAmount())
             .uzcardTotal(report.uzcardAmount())
-            .cashlessTotal(report.cashlessAmount())
+            .cashlessTotal(ZReportCashlessTotal.of(report.cashlessAmount(), report.paymeAmount()))
             .returnsCash(returnsCash)
             .returnsCard(returnsCard)
             .returnsHumo(report.returnsHumo())
@@ -201,7 +202,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             .cardTotal(report.cardAmount())
             .humoTotal(report.humoAmount())
             .uzcardTotal(report.uzcardAmount())
-            .cashlessTotal(report.cashlessAmount())
+            .cashlessTotal(ZReportCashlessTotal.of(report.cashlessAmount(), report.paymeAmount()))
             .returnsCash(returnsCash)
             .returnsCard(returnsCard)
             .returnsHumo(report.returnsHumo())
