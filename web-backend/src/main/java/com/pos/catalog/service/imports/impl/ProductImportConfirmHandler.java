@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -138,13 +139,16 @@ public class ProductImportConfirmHandler {
             String invoice = StringUtils.hasText(opts.invoiceNumber())
                 ? opts.invoiceNumber().trim()
                 : preview.uzInvoiceDocumentId();
+            LocalDate invoiceDate = opts.invoiceDate() != null
+                ? opts.invoiceDate()
+                : parsePreviewInvoiceDate(preview.invoiceDate());
             receiptNumber = receiptSupport.postReceipt(
                 defaultStoreId,
                 opts.supplierId(),
                 opts.paymentType(),
                 opts.receiptNotes(),
                 invoice,
-                opts.invoiceDate(),
+                invoiceDate,
                 contract,
                 receiptLines,
                 created + linked,
@@ -201,5 +205,16 @@ public class ProductImportConfirmHandler {
             map.put(row.rowNum(), row);
         }
         return map;
+    }
+
+    private static LocalDate parsePreviewInvoiceDate(String raw) {
+        if (!StringUtils.hasText(raw)) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(raw.trim());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

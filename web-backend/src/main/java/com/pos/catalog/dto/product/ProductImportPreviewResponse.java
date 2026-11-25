@@ -8,6 +8,8 @@ public record ProductImportPreviewResponse(
     String uzInvoiceDocumentId,
     /** Номер договора из шапки файла (UZ_INVOICE), напр. 481. */
     String contractNumber,
+    /** Дата фактуры из шапки (yyyy-MM-dd), если удалось разобрать. */
+    String invoiceDate,
     /** В БД уже есть активный товар с этим номером фактуры. */
     boolean invoiceAlreadyImported,
     int totalRows,

@@ -55,11 +55,13 @@ public class ProductImportPreviewHandler {
             .count();
         String fileInvoiceId = handler.resolveFileInvoiceId(rows);
         String contractNumber = handler.resolveFileContractNumber(rows);
+        String invoiceDate = handler.resolveFileInvoiceDate(rows);
         boolean invoiceAlreadyImported = handler.isFileAlreadyImported(fileInvoiceId);
         return new ProductImportPreviewResponse(
             importSource.name(),
             fileInvoiceId,
             contractNumber,
+            invoiceDate,
             invoiceAlreadyImported,
             preview.size(),
             newRows,
