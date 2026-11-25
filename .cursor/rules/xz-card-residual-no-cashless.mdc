@@ -19,10 +19,12 @@ X/Z slip: cash + card + Humo + Uzcard + QR ≫ **Сумма**. Narrow printer wr
 In aggregate-shift-banner / aggregate-returns SQL:
 
 1. `payment_method = 'CASHLESS' THEN 0` before residual card
-2. `card_type IN ('HUMO','UZCARD') THEN 0`
-3. else `card_amount` (Click and other residual card)
+2. `card_type IN ('HUMO','UZCARD','PAYME','CLICK') THEN 0`
+3. else `card_amount` (прочая карта без QR/Humo/Uzcard/Payme/Click)
+4. Payme+Click → отдельный `paymeAmount`; на печати и в `Z.cashlessTotal` суммировать с QR (`ZReportCashlessTotal` / `shiftCashlessPrintAmount`)
 
 ## Do not
 
 - Clear `card_amount` on CASHLESS rows to “fix” reports — KPI «Безнал» uses `card_amount`
 - Drop Humo/Uzcard lines or merge them into «Карта»
+- Печатать на X/Z только `cashlessAmount` без `paymeAmount`
