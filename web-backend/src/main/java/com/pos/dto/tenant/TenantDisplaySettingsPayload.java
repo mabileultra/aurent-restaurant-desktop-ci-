@@ -18,5 +18,7 @@ public record TenantDisplaySettingsPayload(
     /** Reserved for per-company UI theme JSON; null until theme UI ships. */
     Map<String, Object> uiTheme,
     /** Per fiscal-field size/bold: { footer: { size: "md", bold: false }, ... }. */
-    Map<String, Object> receiptFieldStyles
+    Map<String, Object> receiptFieldStyles,
+    /** Per-store receipt header overrides keyed by store id. */
+    Map<Integer, StoreReceiptProfilePayload> storeReceiptProfiles
 ) {}

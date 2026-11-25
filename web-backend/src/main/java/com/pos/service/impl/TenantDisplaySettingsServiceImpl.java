@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.dto.tenant.TenantDisplaySettingsPayload;
 import com.pos.exception.BadRequestException;
 import com.pos.service.TenantDisplaySettingsService;
+import com.pos.service.support.StoreReceiptProfileSanitizer;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
@@ -120,7 +121,8 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
             payload.userFormFields(),
             payload.printSettings(),
             payload.uiTheme(),
-            payload.receiptFieldStyles()
+            payload.receiptFieldStyles(),
+            StoreReceiptProfileSanitizer.sanitize(payload.storeReceiptProfiles())
         );
     }
 
@@ -181,7 +183,7 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
         return new TenantDisplaySettingsPayload(
             null, null, null, null, null,
             null, null, null, null,
-            null, null, null, null, null
+            null, null, null, null, null, null
         );
     }
 
