@@ -94,6 +94,7 @@ public class UzInvoiceSpreadsheetParser {
         }
         String documentId = UzInvoiceDocumentIdExtractor.extractFromGrid(grid);
         String contractNumber = UzInvoiceContractNumberExtractor.extractFromGrid(grid);
+        String invoiceDate = UzInvoiceInvoiceDateExtractor.extractFromGrid(grid);
         UzInvoiceColumnMap columns = UzInvoiceColumnMapper.mapColumns(grid.get(headerRow));
         List<Map<String, String>> rows = new ArrayList<>();
         for (int r = headerRow + 1; r < grid.size(); r++) {
@@ -101,6 +102,9 @@ public class UzInvoiceSpreadsheetParser {
             if (mapped != null) {
                 if (StringUtils.hasText(contractNumber)) {
                     mapped.put(UzInvoiceContractNumberExtractor.ROW_KEY_CONTRACT_NUMBER, contractNumber.trim());
+                }
+                if (StringUtils.hasText(invoiceDate)) {
+                    mapped.put(UzInvoiceInvoiceDateExtractor.ROW_KEY_INVOICE_DATE, invoiceDate.trim());
                 }
                 rows.add(mapped);
             }

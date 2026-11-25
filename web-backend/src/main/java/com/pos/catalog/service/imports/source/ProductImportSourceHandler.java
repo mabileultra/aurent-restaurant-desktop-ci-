@@ -51,6 +51,11 @@ public interface ProductImportSourceHandler {
         return null;
     }
 
+    /** Дата фактуры yyyy-MM-dd из шапки файла (UZ_INVOICE), иначе null. */
+    default String resolveFileInvoiceDate(List<Map<String, String>> rows) {
+        return null;
+    }
+
     /** Был ли уже импортирован файл с этим номером документа. По умолчанию false (источник не отслеживает файлы). */
     default boolean isFileAlreadyImported(String fileInvoiceId) {
         return false;

@@ -10,6 +10,7 @@ import com.pos.catalog.service.product.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.spreadsheet.parser.UzInvoiceContractNumberExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
+import com.pos.spreadsheet.parser.UzInvoiceInvoiceDateExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;
 import com.pos.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.spreadsheet.parser.UzInvoiceSpreadsheetParser;
@@ -92,6 +93,20 @@ public class UzInvoiceImportSourceHandler implements ProductImportSourceHandler 
         }
         for (Map<String, String> row : rows) {
             String raw = ProductImportParseUtil.cell(row, UzInvoiceContractNumberExtractor.ROW_KEY_CONTRACT_NUMBER);
+            if (StringUtils.hasText(raw)) {
+                return raw.trim();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String resolveFileInvoiceDate(List<Map<String, String>> rows) {
+        if (rows == null) {
+            return null;
+        }
+        for (Map<String, String> row : rows) {
+            String raw = ProductImportParseUtil.cell(row, UzInvoiceInvoiceDateExtractor.ROW_KEY_INVOICE_DATE);
             if (StringUtils.hasText(raw)) {
                 return raw.trim();
             }
