@@ -28,7 +28,9 @@ public class TenantDisplaySettingsController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    // UI opens via module `usersPrinterSettings` (ADMIN by default, can be granted to MANAGER).
+    // Gate must match that — ADMIN-only rejected managers who already have the page.
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Сохранить настройки", description = "Обновление настроек отображения компании")
     @ApiResponse(responseCode = "200", description = "Настройки сохранены")
     public ResponseEntity<TenantDisplaySettingsPayload> save(@RequestBody TenantDisplaySettingsPayload payload) {
