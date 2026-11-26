@@ -5,6 +5,7 @@ import com.pos.domain.SaleType;
 import com.pos.catalog.dto.product.ProductImportPreviewRow;
 import com.pos.catalog.entity.Product;
 import com.pos.catalog.service.imports.source.ProductImportRowFields;
+import com.pos.catalog.service.imports.support.ProductImportUnitAlign;
 import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.util.ProductImportParseUtil;
 import org.springframework.util.StringUtils;
@@ -53,8 +54,9 @@ public final class ProductImportSupport {
         String duplicateMessage
     ) {
         String unit = fields.unitOfMeasure();
+        SaleType alignedSaleType = ProductImportUnitAlign.alignSaleType(fields.saleType(), unit);
         ProductQuantityRules rules = ProductQuantityRulesResolver.resolve(
-            fields.saleType(),
+            alignedSaleType,
             null,
             null,
             null,
@@ -63,6 +65,7 @@ public final class ProductImportSupport {
         String importSaleType = fields.saleType() != null ? fields.saleType().name() : null;
         String resolvedSaleType = rules.saleType().name();
         String resolvedUnitCode = rules.unitCode() != null ? rules.unitCode().name() : null;
+        String unitDisplay = ProductImportUnitAlign.displayUnit(unit, rules.unitCode());
 
         if (duplicate != null) {
             Integer categoryId = duplicate.getCategory() != null ? duplicate.getCategory().getId() : null;
@@ -75,7 +78,7 @@ public final class ProductImportSupport {
                 fields.barcode(),
                 fields.storageLocation(),
                 fields.uzInvoiceDocumentId(),
-                unit,
+                unitDisplay,
                 importSaleType,
                 resolvedSaleType,
                 resolvedUnitCode,
@@ -101,7 +104,7 @@ public final class ProductImportSupport {
             fields.barcode(),
             fields.storageLocation(),
             fields.uzInvoiceDocumentId(),
-            unit,
+            unitDisplay,
             importSaleType,
             resolvedSaleType,
             resolvedUnitCode,
