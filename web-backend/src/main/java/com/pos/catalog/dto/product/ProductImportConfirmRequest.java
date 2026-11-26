@@ -45,7 +45,13 @@ public record ProductImportConfirmRequest(
         Boolean markedProduct,
         String ikpuStatus,
         /** Количество строки. Пусто — берётся из файла. */
-        @DecimalMin("0") BigDecimal quantity
+        @DecimalMin("0") BigDecimal quantity,
+        /** PIECE / WEIGHT / SERVICE — правка из предпросмотра. */
+        String saleType,
+        /** PCS / L / KG … — правка из предпросмотра. */
+        String unitCode,
+        /** Подпись единицы; пусто — из файла или displayLabel(unitCode). */
+        String unitOfMeasure
     ) {
     }
 }

@@ -16,7 +16,16 @@ class SaleTypeSupportTest {
         assertEquals(SaleType.WEIGHT, SaleTypeSupport.resolve(null, "кг"));
         assertEquals(SaleType.WEIGHT, SaleTypeSupport.resolve(null, "л"));
         assertEquals(SaleType.WEIGHT, SaleTypeSupport.resolve(null, "литр"));
+        assertEquals(SaleType.WEIGHT, SaleTypeSupport.resolve(null, "litr"));
         assertEquals(SaleType.WEIGHT, SaleTypeSupport.resolve(null, "g"));
+    }
+
+    @Test
+    void importRules_litrAliasMapsToLiter() {
+        ProductQuantityRules rules = ProductQuantityRulesResolver.resolve(null, null, null, null, "litr");
+        assertEquals(SaleType.WEIGHT, rules.saleType());
+        assertEquals(UnitCode.L, rules.unitCode());
+        assertTrue(rules.allowFraction());
     }
 
     @Test

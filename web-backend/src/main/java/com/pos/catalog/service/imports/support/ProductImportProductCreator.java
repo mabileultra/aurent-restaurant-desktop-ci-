@@ -4,9 +4,7 @@ import com.pos.catalog.dto.product.CreateProductRequest;
 import com.pos.catalog.dto.product.ProductImportConfirmRequest;
 import com.pos.catalog.dto.product.ProductImportPreviewRow;
 import com.pos.catalog.dto.product.ProductStorePriceRequest;
-import com.pos.catalog.service.imports.ProductImportSupport;
 import com.pos.catalog.service.product.ProductCommandService;
-import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.domain.ProductQuantityRules;
 import com.pos.exception.BadRequestException;
 import com.pos.util.ProductImportParseUtil;
@@ -41,16 +39,8 @@ public class ProductImportProductCreator {
         Integer categoryId = resolveCategoryId(row, rowOpts, defaultCategoryId);
         BigDecimal costPrice = resolveCostPrice(row);
         BigDecimal taxRate = ProductImportParseUtil.normalizeTaxRatePercent(row.taxRatePercent());
-        String unitOfMeasure = StringUtils.hasText(row.unitOfMeasure())
-            ? row.unitOfMeasure().trim()
-            : "dona";
-        ProductQuantityRules quantityRules = ProductQuantityRulesResolver.resolve(
-            ProductImportSupport.parseImportSaleType(row.importSaleType()),
-            null,
-            null,
-            null,
-            unitOfMeasure
-        );
+        ProductQuantityRules quantityRules = ProductImportUnitRules.resolve(row, rowOpts);
+        String unitOfMeasure = ProductImportUnitRules.resolveUnitOfMeasureLabel(row, rowOpts, quantityRules);
         BigDecimal initialStock = resolveInitialStock(row, rowOpts, zeroInitialStock);
         Integer storeId = resolveStoreId(row, rowOpts, defaultStoreId);
         List<ProductStorePriceRequest> storePrices = storeId != null
