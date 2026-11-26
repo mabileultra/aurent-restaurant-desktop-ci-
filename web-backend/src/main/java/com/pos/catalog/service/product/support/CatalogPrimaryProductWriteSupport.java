@@ -17,6 +17,7 @@ public class CatalogPrimaryProductWriteSupport {
 
     private final CatalogServiceProperties properties;
     private final CatalogPrimaryProductSync primaryProductSync;
+    private final CatalogPrimaryLocalRollbackCompensator rollbackCompensator;
 
     public boolean enabled() {
         return properties.catalogPrimaryWrite();
@@ -39,6 +40,7 @@ public class CatalogPrimaryProductWriteSupport {
         }
         ensureId(product);
         primaryProductSync.upsertOrFail(product);
+        rollbackCompensator.armDeactivateIfLocalMissing(product.getId());
     }
 
     public void deactivateBeforeLocalSave(UUID productId) {
