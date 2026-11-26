@@ -77,7 +77,8 @@ public class PharmacyImportRowMapper {
         BigDecimal purchaseWithVat = PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE_WITH_VAT)
         );
-        if (purchase == null && purchaseWithVat != null) {
+        boolean purchaseFromGross = purchase == null && purchaseWithVat != null;
+        if (purchaseFromGross) {
             purchase = PharmacyReceiptPricing.withoutVat(purchaseWithVat, vat);
         }
         if (purchase == null) {
@@ -91,16 +92,32 @@ public class PharmacyImportRowMapper {
         BigDecimal retailRaw = PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.RETAIL)
         );
-        BigDecimal retail = PharmacyImportRetailResolve.resolve(purchase, vat, markupPercent, retailRaw, qty);
-        if (retail == null) {
-            BigDecimal base = purchaseWithVat != null ? purchaseWithVat : PharmacyReceiptPricing.withVat(purchase, vat);
-            retail = base.multiply(BigDecimal.ONE.add(defaultMarkup.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)))
-                .setScale(2, RoundingMode.HALF_UP);
-        }
-        if (useFinalSums && qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
-            purchase = purchase.divide(qty, 2, RoundingMode.HALF_UP);
-            if (markupPercent == null) {
-                retail = retail.divide(qty, 2, RoundingMode.HALF_UP);
+        BigDecimal didoxTotal = PharmacyImportDidoxAmounts.lineTotalWithVat(row,
+            roles.getOrDefault(PharmacyImportRoles.PURCHASE, -1),
+            roles.getOrDefault(PharmacyImportRoles.QTY, -1),
+            roles.getOrDefault(PharmacyImportRoles.RETAIL, -1),
+            roles.getOrDefault(PharmacyImportRoles.VAT_RATE, -1));
+        BigDecimal retail;
+        if (didoxTotal != null) {
+            retail = useFinalSums
+                ? didoxTotal.divide(qty, 2, RoundingMode.HALF_UP)
+                : PharmacyReceiptPricing.withVat(retailRaw, vat);
+        } else if (useFinalSums && qty != null && qty.signum() > 0) {
+            BigDecimal vatFactor = BigDecimal.ONE.add(vat.movePointLeft(2));
+            BigDecimal purchaseTotalWithVat = purchaseWithVat != null ? purchaseWithVat : purchase.multiply(vatFactor);
+            BigDecimal markup = markupPercent != null ? markupPercent : defaultMarkup;
+            BigDecimal retailTotal = retailRaw != null
+                ? retailRaw
+                : purchaseTotalWithVat.multiply(BigDecimal.ONE.add(markup.movePointLeft(2)));
+            purchase = purchaseFromGross
+                ? purchaseWithVat.divide(qty.multiply(vatFactor), 2, RoundingMode.HALF_UP)
+                : purchase.divide(qty, 2, RoundingMode.HALF_UP);
+            retail = retailTotal.divide(qty, 2, RoundingMode.HALF_UP);
+        } else {
+            retail = PharmacyImportRetailResolve.resolve(purchase, vat, markupPercent, retailRaw, qty);
+            if (retail == null) {
+                BigDecimal base = purchaseWithVat != null ? purchaseWithVat : PharmacyReceiptPricing.withVat(purchase, vat);
+                retail = PharmacyReceiptPricing.retailFromMarkup(base, defaultMarkup);
             }
         }
         BigDecimal units = PharmacyImportValueParser.decimal(

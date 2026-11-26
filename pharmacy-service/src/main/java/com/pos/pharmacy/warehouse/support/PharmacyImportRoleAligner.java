@@ -107,7 +107,8 @@ public final class PharmacyImportRoleAligner {
             BigDecimal vatValue = vat >= 0 && vat < row.size()
                 ? PharmacyImportPercent.vatRate(PharmacyImportValueParser.decimal(row.get(vat)))
                 : null;
-            if (PharmacyImportRetailResolve.looksLikeVatSum(purchaseValue, vatValue, qtyValue, retailValue)) {
+            if (PharmacyImportRetailResolve.looksLikeVatSum(purchaseValue, vatValue, qtyValue, retailValue)
+                && PharmacyImportDidoxAmounts.lineTotalWithVat(row, purchase, qty, retail, vat) == null) {
                 hits++;
             }
             if (seen >= 8) {
