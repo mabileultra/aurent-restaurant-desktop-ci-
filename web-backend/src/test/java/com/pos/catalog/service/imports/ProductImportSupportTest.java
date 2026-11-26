@@ -232,6 +232,22 @@ class ProductImportSupportTest {
     }
 
     @Test
+    void catalog_pcsUnit_overridesWeightSaleTypeColumn() {
+        Map<String, String> row = new LinkedHashMap<>();
+        row.put("sku", "BOX-1");
+        row.put("name", "Коробка");
+        row.put("unit_of_measure", "pcs");
+        row.put("sale_type", "WEIGHT");
+        row.put("selling_price", "1000");
+
+        ProductImportPreviewRow preview = catalog.toPreviewRow(4, row, DEFAULT_OPTS);
+
+        assertEquals("PIECE", preview.saleType());
+        assertEquals("PCS", preview.unitCode());
+        assertEquals("шт", preview.unitOfMeasure());
+    }
+
+    @Test
     void storageLocation_fromFileAndDefault() {
         Map<String, String> row = new LinkedHashMap<>();
         row.put("sku", "SKU-2");
