@@ -145,7 +145,7 @@ class ProductImportSupportTest {
     @Test
     void rowDedupeKey_usesRowNumberOnly() {
         ProductImportPreviewRow row = new ProductImportPreviewRow(
-            7, "IS-001-L-7", "Name", "123", null, "A-1", "IS-001", "dona", null, "PIECE",
+            7, "IS-001-L-7", "Name", "123", null, "A-1", "IS-001", "dona", null, "PIECE", "PCS",
             java.math.BigDecimal.ZERO,
             null, java.math.BigDecimal.ZERO, null, null,
             ProductImportPreviewRow.STATUS_NEW,
@@ -214,6 +214,21 @@ class ProductImportSupportTest {
         ProductImportPreviewRow preview = catalog.toPreviewRow(2, row, DEFAULT_OPTS);
 
         assertEquals("PIECE", preview.saleType());
+        assertEquals("PCS", preview.unitCode());
+    }
+
+    @Test
+    void catalog_literResolvesToUnitCodeL() {
+        Map<String, String> row = new LinkedHashMap<>();
+        row.put("sku", "OIL-1");
+        row.put("name", "Масло");
+        row.put("unit_of_measure", "litr");
+        row.put("selling_price", "45000");
+
+        ProductImportPreviewRow preview = catalog.toPreviewRow(3, row, DEFAULT_OPTS);
+
+        assertEquals("WEIGHT", preview.saleType());
+        assertEquals("L", preview.unitCode());
     }
 
     @Test

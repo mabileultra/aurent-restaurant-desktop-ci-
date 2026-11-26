@@ -85,7 +85,12 @@ public enum UnitCode {
         if (u.equals("m3") || u.equals("м³") || u.contains("cubic")) {
             return M3;
         }
-        if (u.equals("l") || u.equals("л") || u.contains("litre") || u.contains("liter") || u.contains("литр")) {
+        if (u.equals("l")
+            || u.equals("л")
+            || u.equals("litr")
+            || u.contains("litre")
+            || u.contains("liter")
+            || u.contains("литр")) {
             return L;
         }
         if (u.equals("ml") || u.equals("мл")) {

@@ -37,7 +37,7 @@ public final class ProductImportSupport {
 
     public static ProductImportPreviewRow invalidRow(int rowNum, String message) {
         return new ProductImportPreviewRow(
-            rowNum, "", "", null, null, null, null, "", null, null, BigDecimal.ZERO,
+            rowNum, "", "", null, null, null, null, "", null, null, null, BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO, null, BigDecimal.ZERO,
             ProductImportPreviewRow.STATUS_INVALID,
             null, null, null, null, null, message
@@ -62,6 +62,7 @@ public final class ProductImportSupport {
         );
         String importSaleType = fields.saleType() != null ? fields.saleType().name() : null;
         String resolvedSaleType = rules.saleType().name();
+        String resolvedUnitCode = rules.unitCode() != null ? rules.unitCode().name() : null;
 
         if (duplicate != null) {
             Integer categoryId = duplicate.getCategory() != null ? duplicate.getCategory().getId() : null;
@@ -77,6 +78,7 @@ public final class ProductImportSupport {
                 unit,
                 importSaleType,
                 resolvedSaleType,
+                resolvedUnitCode,
                 fields.quantity(),
                 fields.sellingPrice(),
                 fields.costPrice(),
@@ -102,6 +104,7 @@ public final class ProductImportSupport {
             unit,
             importSaleType,
             resolvedSaleType,
+            resolvedUnitCode,
             fields.quantity(),
             fields.sellingPrice(),
             fields.costPrice(),

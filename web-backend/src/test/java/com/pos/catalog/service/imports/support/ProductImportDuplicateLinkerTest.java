@@ -128,7 +128,8 @@ class ProductImportDuplicateLinkerTest {
 
         ProductImportPreviewRow row = dupRow(productId, new BigDecimal("2000"));
         var opts = new ProductImportConfirmRequest.ImportRowConfirm(
-            1, new BigDecimal("2500"), null, 3, null, null, null, null, null, null, null
+            1, new BigDecimal("2500"), null, 3, null, null, null, null, null, null, null,
+            null, null, null
         );
         linker.linkToAssortment(row, opts, 3);
 
@@ -138,7 +139,7 @@ class ProductImportDuplicateLinkerTest {
     @Test
     void linkToAssortment_skipsWhenNoExistingId() {
         ProductImportPreviewRow row = new ProductImportPreviewRow(
-            1, "SKU-1", "Test", null, null, null, null, "dona", null, "PIECE",
+            1, "SKU-1", "Test", null, null, null, null, "dona", null, "PIECE", "PCS",
             BigDecimal.ONE, BigDecimal.ONE, null, null, null,
             ProductImportPreviewRow.STATUS_DUPLICATE, null, "SKU-1", "Test", null, null, "dup"
         );
@@ -149,7 +150,7 @@ class ProductImportDuplicateLinkerTest {
 
     private static ProductImportPreviewRow dupRow(UUID productId, BigDecimal filePrice) {
         return new ProductImportPreviewRow(
-            1, "SKU-1", "Test", null, null, null, null, "dona", null, "PIECE",
+            1, "SKU-1", "Test", null, null, null, null, "dona", null, "PIECE", "PCS",
             BigDecimal.TEN, filePrice, null, new BigDecimal("1000"), null,
             ProductImportPreviewRow.STATUS_DUPLICATE, productId, "SKU-1", "Test",
             null, null, "Товар уже есть в базе"

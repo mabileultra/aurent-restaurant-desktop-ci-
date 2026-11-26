@@ -18,6 +18,8 @@ public record ProductImportPreviewRow(
     String importSaleType,
     /** Вычисленный тип: PIECE / WEIGHT / SERVICE (для предпросмотра). */
     String saleType,
+    /** Канонический код единицы (PCS, L, KG…) из quantity rules. */
+    String unitCode,
     BigDecimal quantity,
     BigDecimal fileSellingPrice,
     /** Себестоимость / закупочная из файла (cost_price), если есть. */

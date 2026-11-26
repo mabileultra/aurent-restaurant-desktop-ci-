@@ -48,7 +48,7 @@ class ProductImportReceiptPurchasePriceTest {
 
     private static ProductImportPreviewRow row(BigDecimal cost, BigDecimal filePrice) {
         return new ProductImportPreviewRow(
-            1, "sku", "name", null, null, null, null, "dona", null, "PIECE",
+            1, "sku", "name", null, null, null, null, "dona", null, "PIECE", "PCS",
             BigDecimal.ONE, filePrice, cost, null, null,
             ProductImportPreviewRow.STATUS_NEW, null, null, null, null, null, null
         );
