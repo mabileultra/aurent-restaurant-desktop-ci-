@@ -16,6 +16,7 @@ public record PharmacyImportMatchItem(
     String productName,
     BigDecimal quantity,
     BigDecimal purchasePrice,
+    BigDecimal purchasePriceWithVat,
     BigDecimal vatPercent,
     BigDecimal retailPrice,
     String batchNumber,

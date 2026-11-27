@@ -133,15 +133,19 @@ class PharmacyReceiptImportPricingTest {
         var first = items.required(0);
         var second = items.required(1);
         var third = items.required(2);
+        // SoT = колонка с НДС из файла / qty (не базавий нарҳ)
         assertAll(
             () -> assertThat(first.required("quantity").decimalValue()).isEqualByComparingTo("40"),
-            () -> assertThat(first.required("purchasePrice").decimalValue()).isEqualByComparingTo("2250.00"),
+            () -> assertThat(first.required("purchasePrice").decimalValue()).isEqualByComparingTo("14850.00"),
+            () -> assertThat(first.required("purchasePriceWithVat").decimalValue()).isEqualByComparingTo("16632.00"),
             () -> assertThat(first.required("retailPrice").decimalValue()).isEqualByComparingTo("16632.00"),
             () -> assertThat(second.required("quantity").decimalValue()).isEqualByComparingTo("10"),
-            () -> assertThat(second.required("purchasePrice").decimalValue()).isEqualByComparingTo("16758.94"),
+            () -> assertThat(second.required("purchasePrice").decimalValue()).isEqualByComparingTo("7500.00"),
+            () -> assertThat(second.required("purchasePriceWithVat").decimalValue()).isEqualByComparingTo("8400.00"),
             () -> assertThat(second.required("retailPrice").decimalValue()).isEqualByComparingTo("8400.00"),
             () -> assertThat(third.required("quantity").decimalValue()).isEqualByComparingTo("2"),
-            () -> assertThat(third.required("purchasePrice").decimalValue()).isEqualByComparingTo("44557.58"),
+            () -> assertThat(third.required("purchasePrice").decimalValue()).isEqualByComparingTo("20422.88"),
+            () -> assertThat(third.required("purchasePriceWithVat").decimalValue()).isEqualByComparingTo("22873.63"),
             () -> assertThat(third.required("retailPrice").decimalValue()).isEqualByComparingTo(useFinalSums ? "22873.63" : "22873.64")
         );
     }

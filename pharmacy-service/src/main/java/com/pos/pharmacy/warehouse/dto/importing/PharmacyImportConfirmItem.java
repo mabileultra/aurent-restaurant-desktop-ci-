@@ -14,6 +14,7 @@ public record PharmacyImportConfirmItem(
     String country,
     BigDecimal quantity,
     BigDecimal purchasePrice,
+    BigDecimal purchasePriceWithVat,
     BigDecimal vatPercent,
     BigDecimal retailPrice,
     String batchNumber,

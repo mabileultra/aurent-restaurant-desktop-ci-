@@ -122,6 +122,7 @@ public class PharmacyImportRowMapper {
         BigDecimal purchaseWithVat = PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE_WITH_VAT)
         );
+        BigDecimal unitWithVat = PharmacyImportPurchaseResolve.unitWithVat(purchaseWithVat, qty);
         BigDecimal purchase = PharmacyImportPurchaseResolve.unitWithoutVat(
             purchaseRaw, purchaseWithVat, vat, qty
         );
@@ -209,6 +210,7 @@ public class PharmacyImportRowMapper {
             catalog.productName(),
             qty,
             purchase,
+            unitWithVat,
             vat,
             retail,
             blankToNull(batch),
@@ -256,12 +258,7 @@ public class PharmacyImportRowMapper {
     }
 
     private static UUIDFields onReceipt(Product product) {
-        return new UUIDFields(
-            product.getId(),
-            product.getName(),
-            STATUS_DUPLICATE,
-            PharmacyImportMatchSupport.alreadyOnReceiptMessage()
-        );
+        return matched(product, PharmacyImportMatchSupport.alreadyOnReceiptMessage());
     }
 
     private static UUIDFields matched(Product product, String prefix) {

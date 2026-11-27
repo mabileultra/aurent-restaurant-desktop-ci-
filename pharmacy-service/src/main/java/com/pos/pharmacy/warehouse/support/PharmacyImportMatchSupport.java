@@ -115,7 +115,7 @@ public class PharmacyImportMatchSupport {
     }
 
     public static String alreadyOnReceiptMessage() {
-        return "Товар уже есть в этом приходе";
+        return "Уже в приходе — количество будет добавлено к строке";
     }
 
     public static String normalizeInvoiceId(String invoiceId) {

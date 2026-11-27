@@ -93,11 +93,12 @@ class PharmacyImportExcelScreenshotAccuracyTest {
         assertEquals(new BigDecimal("9704.29"), narx);
         assertEquals(new BigDecimal("10"), qty);
         assertEquals(new BigDecimal("108688.05"), gross);
-        assertEquals(0, new BigDecimal("8571.18").compareTo(
+        // SoT = колонка с НДС из файла (не базавий × ҚҚС%)
+        assertEquals(0, new BigDecimal("9704.29").compareTo(
             PharmacyImportPurchaseResolve.unitWithoutVat(purchase, gross, vat, qty)
         ));
-        assertEquals(0, new BigDecimal("9704.29").compareTo(
-            PharmacyImportPurchaseResolve.unitWithoutVat(null, gross, vat, qty)
+        assertEquals(0, new BigDecimal("10868.81").compareTo(
+            PharmacyImportPurchaseResolve.unitWithVat(gross, qty)
         ));
 
         BigDecimal retail = PharmacyImportRetailResolve.resolve(purchase, vat, markup, narx, qty);
