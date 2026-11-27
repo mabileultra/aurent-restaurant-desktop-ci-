@@ -53,4 +53,16 @@ class PharmacyImportCatalogMatcherTest {
             ));
         assertTrue(matcher.barcodeTaken(1, "460123"));
     }
+
+    @Test
+    void findsByIkpuWhenBarcodeMissing() {
+        Product byIkpu = Product.builder()
+            .id(UUID.randomUUID()).companyId(1).active(true).ikpu("03304001003000000").name("A").build();
+        when(productRepository.findByCompanyIdAndIkpuIn(1, List.of("03304001003000000")))
+            .thenReturn(List.of(byIkpu));
+
+        Optional<Product> found = matcher.findExisting(1, null, "03304001003000000");
+        assertTrue(found.isPresent());
+        assertEquals(byIkpu.getId(), found.get().getId());
+    }
 }

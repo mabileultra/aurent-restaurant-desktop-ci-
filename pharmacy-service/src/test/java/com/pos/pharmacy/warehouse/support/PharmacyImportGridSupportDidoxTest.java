@@ -25,10 +25,13 @@ class PharmacyImportGridSupportDidoxTest {
         );
         int header = support.findHeaderRow(grid);
         assertEquals(1, header);
-        List<List<String>> rows = support.dataRows(grid, header);
-        assertEquals(1, rows.size());
-        assertEquals("1 Трусы", rows.get(0).get(0));
-        List<List<String>> peeled = DidoxInvoiceNameNumberStrip.apply(rows);
+        var extracted = support.extractDataRows(grid, header);
+        assertEquals(1, extracted.rows().size());
+        assertEquals(2, extracted.skipped().size());
+        assertEquals("INDEX_ROW", extracted.skipped().get(0).reason());
+        assertEquals("FOOTER", extracted.skipped().get(1).reason());
+        assertEquals("1 Трусы", extracted.rows().get(0).get(0));
+        List<List<String>> peeled = DidoxInvoiceNameNumberStrip.apply(extracted.rows());
         assertEquals("Трусы", peeled.get(0).get(0));
         var columns = support.columns(grid.get(header));
         assertEquals(PharmacyImportRoles.BATCH, columns.get(4).suggestedRole());

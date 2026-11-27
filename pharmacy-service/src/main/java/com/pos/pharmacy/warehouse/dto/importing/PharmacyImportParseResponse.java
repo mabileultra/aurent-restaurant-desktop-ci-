@@ -8,5 +8,12 @@ public record PharmacyImportParseResponse(
     String uzInvoiceDocumentId,
     boolean invoiceAlreadyImported,
     List<PharmacyImportColumnHint> columns,
-    List<List<String>> rows
-) {}
+    List<List<String>> rows,
+    List<PharmacyImportSkippedRow> skippedRows
+) {
+    public PharmacyImportParseResponse {
+        if (skippedRows == null) {
+            skippedRows = List.of();
+        }
+    }
+}

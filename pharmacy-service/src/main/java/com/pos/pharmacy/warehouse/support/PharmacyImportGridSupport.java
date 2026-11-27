@@ -4,6 +4,7 @@ import com.pos.pharmacy.exception.PharmacyException;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportColumnHint;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportSkippedRow;
 import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetCellCleaner;
 import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetHeaderJoiner;
 import com.pos.pharmacy.importing.spreadsheet.parser.HtmlExcelTableParser;
@@ -106,16 +107,27 @@ public class PharmacyImportGridSupport {
     }
 
     public List<List<String>> dataRows(List<List<String>> grid, int headerRow) {
+        return extractDataRows(grid, headerRow).rows();
+    }
+
+    public PharmacyImportDataRows extractDataRows(List<List<String>> grid, int headerRow) {
         List<List<String>> rows = new ArrayList<>();
+        List<PharmacyImportSkippedRow> skipped = new ArrayList<>();
         for (int r = headerRow + 1; r < grid.size(); r++) {
             List<String> row = grid.get(r);
             if (!row.stream().anyMatch(StringUtils::hasText)) {
                 continue;
             }
-            if (InvoiceGridRowKinds.numericIndexRow(row) || InvoiceGridRowKinds.repeatedProductHeader(row)) {
+            if (InvoiceGridRowKinds.numericIndexRow(row)) {
+                skipped.add(skip(r, "INDEX_ROW", row));
+                continue;
+            }
+            if (InvoiceGridRowKinds.repeatedProductHeader(row)) {
+                skipped.add(skip(r, "REPEATED_HEADER", row));
                 continue;
             }
             if (DidoxInvoiceFooterFilter.isFooter(row)) {
+                skipped.add(skip(r, "FOOTER", row));
                 continue;
             }
             rows.add(row);
@@ -123,7 +135,19 @@ public class PharmacyImportGridSupport {
         if (rows.isEmpty()) {
             throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_NO_ROWS);
         }
-        return rows;
+        return new PharmacyImportDataRows(rows, skipped);
+    }
+
+    private static PharmacyImportSkippedRow skip(int gridRow, String reason, List<String> row) {
+        String preview = row.stream()
+            .filter(StringUtils::hasText)
+            .findFirst()
+            .map(String::trim)
+            .orElse("");
+        if (preview.length() > 80) {
+            preview = preview.substring(0, 80);
+        }
+        return new PharmacyImportSkippedRow(gridRow + 1, reason, preview);
     }
 
     private static List<List<String>> prepareSpreadsheet(List<List<String>> grid) {

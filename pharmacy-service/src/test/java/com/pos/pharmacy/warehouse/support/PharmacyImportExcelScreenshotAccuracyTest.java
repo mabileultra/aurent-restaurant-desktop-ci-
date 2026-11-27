@@ -49,6 +49,10 @@ class PharmacyImportExcelScreenshotAccuracyTest {
         assertEquals(PharmacyImportRoles.QTY, roleAt(cols, roles.get(PharmacyImportRoles.QTY)));
         assertEquals(PharmacyImportRoles.RETAIL, roleAt(cols, roles.get(PharmacyImportRoles.RETAIL)));
         assertEquals(PharmacyImportRoles.VAT_RATE, roleAt(cols, roles.get(PharmacyImportRoles.VAT_RATE)));
+        assertEquals(
+            PharmacyImportRoles.PURCHASE_WITH_VAT,
+            roleAt(cols, roles.get(PharmacyImportRoles.PURCHASE_WITH_VAT))
+        );
         assertEquals(PharmacyImportRoles.COUNTRY, roleAt(cols, roles.get(PharmacyImportRoles.COUNTRY)));
         assertEquals(PharmacyImportRoles.BARCODE, roleAt(cols, roles.get(PharmacyImportRoles.BARCODE)));
 
@@ -62,6 +66,7 @@ class PharmacyImportExcelScreenshotAccuracyTest {
         assertEquals("10", PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.QTY));
         assertEquals("9 704,29", PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.RETAIL));
         assertEquals("12%", PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.VAT_RATE));
+        assertEquals("108 688,05", PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.PURCHASE_WITH_VAT));
         assertEquals("Ўзбекистон", PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.COUNTRY));
 
         BigDecimal purchase = PharmacyImportValueParser.decimal(
@@ -79,11 +84,21 @@ class PharmacyImportExcelScreenshotAccuracyTest {
         BigDecimal vat = PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.VAT_RATE)
         );
+        BigDecimal gross = PharmacyImportValueParser.decimal(
+            PharmacyImportRoleCells.text(linkas, roles, PharmacyImportRoles.PURCHASE_WITH_VAT)
+        );
 
         assertEquals(new BigDecimal("8571.18"), purchase);
         assertEquals(new BigDecimal("13.22"), markup);
         assertEquals(new BigDecimal("9704.29"), narx);
         assertEquals(new BigDecimal("10"), qty);
+        assertEquals(new BigDecimal("108688.05"), gross);
+        assertEquals(0, new BigDecimal("8571.18").compareTo(
+            PharmacyImportPurchaseResolve.unitWithoutVat(purchase, gross, vat, qty)
+        ));
+        assertEquals(0, new BigDecimal("9704.29").compareTo(
+            PharmacyImportPurchaseResolve.unitWithoutVat(null, gross, vat, qty)
+        ));
 
         BigDecimal retail = PharmacyImportRetailResolve.resolve(purchase, vat, markup, narx, qty);
         assertEquals(0, new BigDecimal("10868.80").compareTo(retail));

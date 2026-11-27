@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /** Разбор одной строки Excel/Didox → PharmacyImportMatchItem (+ матч каталога по штрихкоду). */
 @Component
@@ -38,6 +40,49 @@ public class PharmacyImportRowMapper {
         boolean rowDuplicate,
         String invoiceId,
         Integer companyId
+    ) {
+        return map(
+            rowIndex,
+            row,
+            roles,
+            defaultMarkup,
+            useFinalSums,
+            invoiceId,
+            companyId,
+            null,
+            Set.of(),
+            rowDuplicate
+        );
+    }
+
+    public PharmacyImportMatchItem map(
+        int rowIndex,
+        List<String> row,
+        Map<String, Integer> roles,
+        BigDecimal defaultMarkup,
+        boolean useFinalSums,
+        String invoiceId,
+        Integer companyId,
+        Product preferredProduct,
+        Set<UUID> productIdsOnDraft
+    ) {
+        return map(
+            rowIndex, row, roles, defaultMarkup, useFinalSums, invoiceId, companyId,
+            preferredProduct, productIdsOnDraft, false
+        );
+    }
+
+    private PharmacyImportMatchItem map(
+        int rowIndex,
+        List<String> row,
+        Map<String, Integer> roles,
+        BigDecimal defaultMarkup,
+        boolean useFinalSums,
+        String invoiceId,
+        Integer companyId,
+        Product preferredProduct,
+        Set<UUID> productIdsOnDraft,
+        boolean forceInvoiceDuplicate
     ) {
         String name = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.NAME);
         if (!StringUtils.hasText(name) || DidoxInvoiceFooterFilter.isFooterText(name)) {
@@ -71,19 +116,15 @@ public class PharmacyImportRowMapper {
         BigDecimal vat = PharmacyImportPercent.vatRate(PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.VAT_RATE)
         ));
-        BigDecimal purchase = PharmacyImportValueParser.decimal(
+        BigDecimal purchaseRaw = PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE)
         );
         BigDecimal purchaseWithVat = PharmacyImportValueParser.decimal(
             PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE_WITH_VAT)
         );
-        boolean purchaseFromGross = purchase == null && purchaseWithVat != null;
-        if (purchaseFromGross) {
-            purchase = PharmacyReceiptPricing.withoutVat(purchaseWithVat, vat);
-        }
-        if (purchase == null) {
-            purchase = BigDecimal.ZERO;
-        }
+        BigDecimal purchase = PharmacyImportPurchaseResolve.unitWithoutVat(
+            purchaseRaw, purchaseWithVat, vat, qty
+        );
         BigDecimal markupPercent = roles.get(PharmacyImportRoles.MARKUP) == null
             ? null
             : PharmacyImportValueParser.decimal(
@@ -104,19 +145,28 @@ public class PharmacyImportRowMapper {
                 : PharmacyReceiptPricing.withVat(retailRaw, vat);
         } else if (useFinalSums && qty != null && qty.signum() > 0) {
             BigDecimal vatFactor = BigDecimal.ONE.add(vat.movePointLeft(2));
-            BigDecimal purchaseTotalWithVat = purchaseWithVat != null ? purchaseWithVat : purchase.multiply(vatFactor);
+            BigDecimal purchaseTotalWithVat = purchaseWithVat != null
+                ? purchaseWithVat
+                : purchase.multiply(vatFactor);
             BigDecimal markup = markupPercent != null ? markupPercent : defaultMarkup;
             BigDecimal retailTotal = retailRaw != null
                 ? retailRaw
                 : purchaseTotalWithVat.multiply(BigDecimal.ONE.add(markup.movePointLeft(2)));
-            purchase = purchaseFromGross
-                ? purchaseWithVat.divide(qty.multiply(vatFactor), 2, RoundingMode.HALF_UP)
-                : purchase.divide(qty, 2, RoundingMode.HALF_UP);
+            if (purchaseRaw == null && purchaseWithVat != null) {
+                purchase = purchaseWithVat.divide(qty.multiply(vatFactor), 2, RoundingMode.HALF_UP);
+            } else if (purchaseWithVat == null) {
+                purchase = purchase.divide(qty, 2, RoundingMode.HALF_UP);
+            }
             retail = retailTotal.divide(qty, 2, RoundingMode.HALF_UP);
         } else {
             retail = PharmacyImportRetailResolve.resolve(purchase, vat, markupPercent, retailRaw, qty);
             if (retail == null) {
-                BigDecimal base = purchaseWithVat != null ? purchaseWithVat : PharmacyReceiptPricing.withVat(purchase, vat);
+                BigDecimal unitGross = PharmacyImportPurchaseWithVat.unitFromCell(
+                    purchaseWithVat, purchaseRaw, qty
+                );
+                BigDecimal base = unitGross != null
+                    ? unitGross
+                    : PharmacyReceiptPricing.withVat(purchase, vat);
                 retail = PharmacyReceiptPricing.retailFromMarkup(base, defaultMarkup);
             }
         }
@@ -138,17 +188,23 @@ public class PharmacyImportRowMapper {
             hints.prescriptionRequired()
         );
 
-        UUIDFields catalog = rowDuplicate
-            ? UUIDFields.empty()
-            : resolveCatalog(companyId, barcode);
+        UUIDFields catalog = resolveCatalog(
+            companyId,
+            barcode,
+            ikpu,
+            preferredProduct,
+            productIdsOnDraft == null ? Set.of() : productIdsOnDraft,
+            forceInvoiceDuplicate,
+            invoiceId
+        );
 
         return new PharmacyImportMatchItem(
             rowIndex,
             name,
             official.manufacturer(),
             official.country(),
-            catalog.status(rowDuplicate),
-            catalog.message(rowDuplicate, invoiceId),
+            catalog.status(),
+            catalog.message(),
             catalog.productId(),
             catalog.productName(),
             qty,
@@ -168,40 +224,63 @@ public class PharmacyImportRowMapper {
         );
     }
 
-    private UUIDFields resolveCatalog(Integer companyId, String barcode) {
-        Optional<Product> existing = catalogMatcher.findExisting(companyId, barcode);
+    private UUIDFields resolveCatalog(
+        Integer companyId,
+        String barcode,
+        String ikpu,
+        Product preferredProduct,
+        Set<UUID> productIdsOnDraft,
+        boolean forceInvoiceDuplicate,
+        String invoiceId
+    ) {
+        if (forceInvoiceDuplicate) {
+            return new UUIDFields(
+                null, null, STATUS_DUPLICATE, PharmacyImportMatchSupport.duplicateMessage(invoiceId)
+            );
+        }
+        if (preferredProduct != null) {
+            if (productIdsOnDraft.contains(preferredProduct.getId())) {
+                return onReceipt(preferredProduct);
+            }
+            return matched(preferredProduct, "Найден по предыдущему импорту фактуры — количество добавится в приход");
+        }
+        Optional<Product> existing = catalogMatcher.findExisting(companyId, barcode, ikpu);
         if (existing.isEmpty()) {
             return UUIDFields.empty();
         }
         Product product = existing.get();
-        return new UUIDFields(product.getId(), product.getName());
+        if (productIdsOnDraft.contains(product.getId())) {
+            return onReceipt(product);
+        }
+        return matched(product, "Найден в каталоге — количество добавится в приход");
+    }
+
+    private static UUIDFields onReceipt(Product product) {
+        return new UUIDFields(
+            product.getId(),
+            product.getName(),
+            STATUS_DUPLICATE,
+            PharmacyImportMatchSupport.alreadyOnReceiptMessage()
+        );
+    }
+
+    private static UUIDFields matched(Product product, String prefix) {
+        String message = prefix + (StringUtils.hasText(product.getName()) ? ": " + product.getName() : "");
+        return new UUIDFields(product.getId(), product.getName(), STATUS_MATCHED, message);
     }
 
     private static String blankToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
     }
 
-    private record UUIDFields(java.util.UUID productId, String productName) {
+    private record UUIDFields(
+        java.util.UUID productId,
+        String productName,
+        String status,
+        String message
+    ) {
         static UUIDFields empty() {
-            return new UUIDFields(null, null);
-        }
-
-        String status(boolean rowDuplicate) {
-            if (rowDuplicate) {
-                return STATUS_DUPLICATE;
-            }
-            return productId != null ? STATUS_MATCHED : STATUS_NEW;
-        }
-
-        String message(boolean rowDuplicate, String invoiceId) {
-            if (rowDuplicate) {
-                return PharmacyImportMatchSupport.duplicateMessage(invoiceId);
-            }
-            if (productId == null) {
-                return null;
-            }
-            return "Найден в каталоге — количество добавится в приход"
-                + (StringUtils.hasText(productName) ? ": " + productName : "");
+            return new UUIDFields(null, null, STATUS_NEW, null);
         }
     }
 }

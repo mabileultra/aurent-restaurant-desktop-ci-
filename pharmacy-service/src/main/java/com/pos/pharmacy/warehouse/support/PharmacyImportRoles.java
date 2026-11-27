@@ -77,7 +77,15 @@ public final class PharmacyImportRoles {
             return RETAIL;
         }
         if (containsAny(h, "етказиб", "yetkazib")) {
+            // С НДС — SoT суммы строки; «Етказиб бериш қиймати» без ҚҚС → SKIP.
+            if (containsAny(h, "ҳисобга олган", "хисобга олган", "hisobga olgan",
+                "с учётом ндс", "с учетом ндс", "включая ндс", "with vat", "including vat")) {
+                return PURCHASE_WITH_VAT;
+            }
             return SKIP;
+        }
+        if (containsAny(h, "покупн", "закуп") && containsAny(h, "с ндс", "with vat")) {
+            return PURCHASE_WITH_VAT;
         }
         if (containsAny(h, "бериш усул", "дори восита", "рецептли", "рецептсиз",
             "retseptli", "retseptsiz", "prescription")) {
@@ -85,9 +93,6 @@ public final class PharmacyImportRoles {
         }
         if (containsAny(h, "устама", "ustama", "надбав", "қўшимча", "кушимча", "qoshimcha", "markup")) {
             return MARKUP;
-        }
-        if (containsAny(h, "покупн", "закуп") && containsAny(h, "с ндс", "with vat")) {
-            return PURCHASE_WITH_VAT;
         }
         if (containsAny(h, "без ндс", "without vat", "qqssiz", "ққссиз")) {
             return PURCHASE;
