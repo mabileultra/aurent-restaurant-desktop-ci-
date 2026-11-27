@@ -31,18 +31,40 @@ public class PharmacyImportCatalogMatcher {
     private final ProductBarcodeRepository productBarcodeRepository;
 
     public Optional<Product> findExisting(Integer companyId, String barcode) {
-        if (companyId == null || !StringUtils.hasText(barcode)) {
+        return findExisting(companyId, barcode, null);
+    }
+
+    /** Штрихкод → доп. коды → ИКПУ (если штрихкода нет или не нашли). */
+    public Optional<Product> findExisting(Integer companyId, String barcode, String ikpu) {
+        if (companyId == null) {
             return Optional.empty();
         }
-        List<String> candidates = new ArrayList<>(PharmacyBarcodeVariants.of(barcode));
-        if (candidates.isEmpty()) {
-            candidates.add(barcode.trim());
+        if (StringUtils.hasText(barcode)) {
+            List<String> candidates = new ArrayList<>(PharmacyBarcodeVariants.of(barcode));
+            if (candidates.isEmpty()) {
+                candidates.add(barcode.trim());
+            }
+            Product primary = matchPrimary(companyId, candidates);
+            if (primary != null) {
+                return Optional.of(primary);
+            }
+            Product extra = matchExtra(companyId, candidates);
+            if (extra != null) {
+                return Optional.of(extra);
+            }
         }
-        Product primary = matchPrimary(companyId, candidates);
-        if (primary != null) {
-            return Optional.of(primary);
+        return matchIkpu(companyId, ikpu);
+    }
+
+    private Optional<Product> matchIkpu(Integer companyId, String ikpu) {
+        if (!StringUtils.hasText(ikpu)) {
+            return Optional.empty();
         }
-        return Optional.ofNullable(matchExtra(companyId, candidates));
+        List<Product> hits = productRepository.findByCompanyIdAndIkpuIn(companyId, List.of(ikpu.trim()));
+        if (hits.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(preferActive(hits));
     }
 
     /** Есть ли уже этот штрихкод у компании (в т.ч. дубликаты) — для create без NonUniqueResult. */

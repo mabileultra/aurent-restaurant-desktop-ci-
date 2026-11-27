@@ -1,5 +1,6 @@
 package com.pos.pharmacy.warehouse.service.impl;
 
+import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.config.PharmacyExecutorNames;
 import com.pos.pharmacy.exception.PharmacyErrors;
@@ -20,6 +21,7 @@ import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyReceiptImportService;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
+import com.pos.pharmacy.warehouse.support.PharmacyImportDataRows;
 import com.pos.pharmacy.warehouse.support.PharmacyImportGridSupport;
 import com.pos.pharmacy.warehouse.support.PharmacyImportMatchSupport;
 import com.pos.pharmacy.warehouse.support.PharmacyImportPercent;
@@ -90,14 +92,15 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         List<List<String>> grid = gridSupport.readGrid(file);
         int headerRow = gridSupport.findHeaderRow(grid);
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(gridSupport.extractInvoiceId(grid));
-        List<List<String>> rows = gridSupport.dataRows(grid, headerRow);
+        PharmacyImportDataRows data = gridSupport.extractDataRows(grid, headerRow);
         return new PharmacyImportParseResponse(
             file.getOriginalFilename(),
             headerRow,
             invoiceId,
             matchSupport.isImportedOnAnotherReceipt(companyId, receipt, invoiceId),
-            gridSupport.columns(grid.get(headerRow), rows),
-            rows
+            gridSupport.columns(grid.get(headerRow), data.rows()),
+            data.rows(),
+            data.skipped()
         );
     }
 
@@ -113,9 +116,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         int skuHorizon = request.totalRows() != null && request.totalRows() > 0
             ? request.totalRows()
             : rowOffset + rows.size();
-        Set<String> savedSkus = blocked
-            ? Set.of()
-            : matchSupport.savedInvoiceSkus(companyId, invoiceId, skuHorizon);
+        Map<String, Product> savedProducts = matchSupport.savedInvoiceProducts(companyId, invoiceId, skuHorizon);
+        Set<UUID> onDraft = matchSupport.productIdsOnReceipt(receipt);
         Map<String, Integer> roles = PharmacyImportRoleMap.normalize(
             request.roles(),
             PharmacyImportRoleMap.rowWidth(rows)
@@ -127,9 +129,18 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         for (int i = 0; i < rows.size(); i++) {
             final int rowIndex = rowOffset + i;
             final List<String> row = rows.get(i);
-            final boolean rowDuplicate = blocked || skuAlreadySaved(savedSkus, invoiceId, rowIndex);
+            final String sku = ProductImportParseUtil.resolveUzInvoiceSku(invoiceId, rowIndex + 1);
+            final Product bySku = sku == null ? null : savedProducts.get(sku.toUpperCase(Locale.ROOT));
             tasks.add(() -> rowMapper.map(
-                rowIndex, row, roles, defaultMarkup, request.useFinalSums(), rowDuplicate, invoiceId, companyId
+                rowIndex,
+                row,
+                roles,
+                defaultMarkup,
+                request.useFinalSums(),
+                invoiceId,
+                companyId,
+                bySku,
+                onDraft
             ));
         }
         List<PharmacyImportMatchItem> items = PharmacyParallelTasks.supplyAll(tasks, importExecutor).stream()
@@ -144,12 +155,6 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         StockReceipt receipt = requireDraft(receiptId);
         Integer companyId = tenant.requireCompanyId();
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
-        if (matchSupport.isImportedOnAnotherReceipt(companyId, receipt, invoiceId)) {
-            throw PharmacyErrors.of(
-                PharmacyReceiptErrors.PHARM_IMPORT_INVOICE_DUPLICATE,
-                PharmacyImportMatchSupport.duplicateMessage(invoiceId)
-            );
-        }
         if (!StringUtils.hasText(receipt.getInvoiceNumber()) && StringUtils.hasText(invoiceId)) {
             receipt.setInvoiceNumber(PharmacyDbFieldLimits.invoiceNumber(invoiceId));
             stockReceiptRepository.save(receipt);
@@ -158,11 +163,16 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal defaultMarkup = receipt.getDefaultMarkupPercent() != null
             ? receipt.getDefaultMarkupPercent()
             : new BigDecimal("20");
+        Set<UUID> alreadyOnDraft = matchSupport.productIdsOnReceipt(receipt);
         List<PharmacyImportConfirmItem> accepted = new ArrayList<>();
         for (PharmacyImportConfirmItem item : request.items()) {
-            if (item.quantity() != null && item.quantity().compareTo(BigDecimal.ZERO) > 0) {
-                accepted.add(item);
+            if (item.quantity() == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
             }
+            if (item.productId() != null && alreadyOnDraft.contains(item.productId())) {
+                continue;
+            }
+            accepted.add(item);
         }
         if (accepted.isEmpty()) {
             throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_IMPORT_NO_QTY_LINES);
@@ -216,11 +226,4 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         return receipt;
     }
 
-    private static boolean skuAlreadySaved(Set<String> savedSkus, String invoiceId, int rowIndex) {
-        if (savedSkus.isEmpty() || invoiceId == null) {
-            return false;
-        }
-        String sku = ProductImportParseUtil.resolveUzInvoiceSku(invoiceId, rowIndex + 1);
-        return savedSkus.contains(sku.toUpperCase(Locale.ROOT));
-    }
 }

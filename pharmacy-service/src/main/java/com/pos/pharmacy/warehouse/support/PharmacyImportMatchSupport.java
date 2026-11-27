@@ -10,11 +10,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -76,21 +79,43 @@ public class PharmacyImportMatchSupport {
     }
 
     public Set<String> savedInvoiceSkus(Integer companyId, String invoiceId, int rowCount) {
+        return savedInvoiceProducts(companyId, invoiceId, rowCount).keySet();
+    }
+
+    /** SKU фактуры → уже созданная карточка (повторный импорт → MATCHED, не новый дубль). */
+    public Map<String, Product> savedInvoiceProducts(Integer companyId, String invoiceId, int rowCount) {
         String id = normalizeInvoiceId(invoiceId);
         if (companyId == null || id == null || rowCount <= 0) {
-            return Set.of();
+            return Map.of();
         }
         List<String> skus = new ArrayList<>(rowCount);
         for (int rowNum = 1; rowNum <= rowCount; rowNum++) {
             skus.add(ProductImportParseUtil.resolveUzInvoiceSku(id, rowNum));
         }
-        Set<String> saved = new HashSet<>();
+        Map<String, Product> bySku = new HashMap<>();
         for (Product product : productRepository.findByCompanyIdAndSkuIn(companyId, skus)) {
             if (StringUtils.hasText(product.getSku())) {
-                saved.add(product.getSku().toUpperCase(Locale.ROOT));
+                bySku.put(product.getSku().toUpperCase(Locale.ROOT), product);
             }
         }
-        return saved;
+        return bySku;
+    }
+
+    public Set<UUID> productIdsOnReceipt(StockReceipt receipt) {
+        Set<UUID> ids = new HashSet<>();
+        if (receipt == null || receipt.getLines() == null) {
+            return ids;
+        }
+        for (StockReceiptLine line : receipt.getLines()) {
+            if (line.getProduct() != null && line.getProduct().getId() != null) {
+                ids.add(line.getProduct().getId());
+            }
+        }
+        return ids;
+    }
+
+    public static String alreadyOnReceiptMessage() {
+        return "Товар уже есть в этом приходе";
     }
 
     public static String normalizeInvoiceId(String invoiceId) {
