@@ -56,15 +56,19 @@ public class PharmacyImportCatalogMatcher {
         return matchIkpu(companyId, ikpu);
     }
 
+    /**
+     * ИКПУ без штрихкода — только если в каталоге ровно одна карточка.
+     * Общие коды (шприцы и т.п.) иначе схлопывают разные позиции фактуры в один SKU.
+     */
     private Optional<Product> matchIkpu(Integer companyId, String ikpu) {
         if (!StringUtils.hasText(ikpu)) {
             return Optional.empty();
         }
         List<Product> hits = productRepository.findByCompanyIdAndIkpuIn(companyId, List.of(ikpu.trim()));
-        if (hits.isEmpty()) {
+        if (hits.size() != 1) {
             return Optional.empty();
         }
-        return Optional.of(preferActive(hits));
+        return Optional.of(hits.get(0));
     }
 
     /** Есть ли уже этот штрихкод у компании (в т.ч. дубликаты) — для create без NonUniqueResult. */

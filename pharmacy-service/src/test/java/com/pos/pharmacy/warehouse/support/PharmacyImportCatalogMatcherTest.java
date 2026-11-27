@@ -65,4 +65,15 @@ class PharmacyImportCatalogMatcherTest {
         assertTrue(found.isPresent());
         assertEquals(byIkpu.getId(), found.get().getId());
     }
+
+    @Test
+    void doesNotCollapseWhenSeveralProductsShareIkpu() {
+        when(productRepository.findByCompanyIdAndIkpuIn(1, List.of("09018001080000000")))
+            .thenReturn(List.of(
+                Product.builder().id(UUID.randomUUID()).companyId(1).ikpu("09018001080000000").name("10ml").build(),
+                Product.builder().id(UUID.randomUUID()).companyId(1).ikpu("09018001080000000").name("5ml").build()
+            ));
+
+        assertTrue(matcher.findExisting(1, null, "09018001080000000").isEmpty());
+    }
 }
