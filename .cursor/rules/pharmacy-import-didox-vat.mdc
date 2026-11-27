@@ -8,5 +8,7 @@ globs: pharmacy-service/**/PharmacyImport*.java,pharmacy-service/**/PharmacyRece
 Column **«Етказиб беришнинг ҚҚСни ҳисобга олган ҳолда қиймати»** → role `PURCHASE_WITH_VAT` (line sum with VAT).
 
 - Divide by qty → unit `purchasePriceWithVat`; derive ex-VAT via `withoutVat`.
+- When this column is present it **wins over** «Сотиб олиш / базавий» — do not use unit×ҚҚС% or base cost instead.
 - Do **not** SKIP all «етказиб» headers; only the without-VAT «Етказиб бериш қиймати» stays SKIP.
-- Do **not** recompute unit×ҚҚС% when this column is present — factura total must match Soliq/Didox.
+- Confirm must pass file `purchasePriceWithVat` into the receipt line (no `withVat(purchase, vat)` overwrite).
+- Product already on **this** draft → `MATCHED`, confirm **adds qty** to the existing line (not block as DUPLICATE).

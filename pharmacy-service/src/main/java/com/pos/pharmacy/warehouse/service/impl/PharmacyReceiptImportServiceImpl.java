@@ -21,7 +21,9 @@ import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyReceiptImportService;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
+import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
 import com.pos.pharmacy.warehouse.support.PharmacyImportDataRows;
+import com.pos.pharmacy.warehouse.support.PharmacyImportDraftQtyMerge;
 import com.pos.pharmacy.warehouse.support.PharmacyImportGridSupport;
 import com.pos.pharmacy.warehouse.support.PharmacyImportMatchSupport;
 import com.pos.pharmacy.warehouse.support.PharmacyImportPercent;
@@ -163,27 +165,41 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal defaultMarkup = receipt.getDefaultMarkupPercent() != null
             ? receipt.getDefaultMarkupPercent()
             : new BigDecimal("20");
-        Set<UUID> alreadyOnDraft = matchSupport.productIdsOnReceipt(receipt);
+        Map<UUID, StockReceiptLine> onDraft = PharmacyImportDraftQtyMerge.linesByProduct(receipt);
         List<PharmacyImportConfirmItem> accepted = new ArrayList<>();
+        List<PharmacyImportConfirmItem> mergeItems = new ArrayList<>();
         for (PharmacyImportConfirmItem item : request.items()) {
             if (item.quantity() == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
                 continue;
             }
-            if (item.productId() != null && alreadyOnDraft.contains(item.productId())) {
-                continue;
+            if (item.productId() != null && onDraft.containsKey(item.productId())) {
+                mergeItems.add(item);
+            } else {
+                accepted.add(item);
             }
-            accepted.add(item);
         }
-        if (accepted.isEmpty()) {
+        if (accepted.isEmpty() && mergeItems.isEmpty()) {
             throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_IMPORT_NO_QTY_LINES);
         }
-        List<UUID> productIds = productWriter.write(accepted, storeId, invoiceId, companyId);
-        List<PharmacyStockReceiptLineRequest> lines = new ArrayList<>();
-        for (int i = 0; i < accepted.size(); i++) {
-            lines.add(toLine(accepted.get(i), productIds.get(i), defaultMarkup));
+        int changed = 0;
+        if (!accepted.isEmpty()) {
+            List<UUID> productIds = productWriter.write(accepted, storeId, invoiceId, companyId);
+            List<PharmacyStockReceiptLineRequest> lines = new ArrayList<>();
+            for (int i = 0; i < accepted.size(); i++) {
+                lines.add(toLine(accepted.get(i), productIds.get(i), defaultMarkup));
+            }
+            pharmacyStockReceiptService.addLines(receiptId, lines);
+            changed += lines.size();
         }
-        pharmacyStockReceiptService.addLines(receiptId, lines);
-        return new PharmacyImportConfirmResult(lines.size());
+        for (PharmacyImportConfirmItem item : mergeItems) {
+            StockReceiptLine existing = onDraft.get(item.productId());
+            PharmacyStockReceiptLineRequest merged = PharmacyImportDraftQtyMerge.withAddedQty(
+                existing, item, toLine(item, item.productId(), defaultMarkup)
+            );
+            pharmacyStockReceiptService.updateLine(receiptId, existing.getId(), merged);
+            changed++;
+        }
+        return new PharmacyImportConfirmResult(changed);
     }
 
     private PharmacyStockReceiptLineRequest toLine(
@@ -194,12 +210,15 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal qty = item.quantity() != null ? item.quantity() : BigDecimal.ONE;
         BigDecimal purchase = item.purchasePrice() != null ? item.purchasePrice() : BigDecimal.ZERO;
         BigDecimal vat = PharmacyImportPercent.vatRate(item.vatPercent());
+        BigDecimal purchaseWithVat = item.purchasePriceWithVat() != null
+            ? item.purchasePriceWithVat()
+            : PharmacyReceiptPricing.withVat(purchase, vat);
         BigDecimal retail = item.retailPrice() != null
             ? item.retailPrice()
-            : PharmacyReceiptPricing.withVat(purchase, vat).multiply(
+            : purchaseWithVat.multiply(
                 BigDecimal.ONE.add(defaultMarkup.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP))
             ).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal markup = PharmacyReceiptPricing.markupFrom(PharmacyReceiptPricing.withVat(purchase, vat), retail);
+        BigDecimal markup = PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail);
         return new PharmacyStockReceiptLineRequest(
             productId,
             qty,
@@ -208,7 +227,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             vat,
             markup,
             item.unitsInPack(),
-            PharmacyReceiptPricing.withVat(purchase, vat),
+            purchaseWithVat,
             retail,
             retail,
             item.batchNumber(),

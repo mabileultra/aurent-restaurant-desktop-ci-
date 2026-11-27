@@ -28,7 +28,7 @@ class PharmacyImportProductFactoryTest {
         PharmacyImportProductFactory factory = factory();
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             0, null, true, "Кюпен таб", null, null,
-            BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("12"), new BigDecimal("11"),
+            BigDecimal.ONE, BigDecimal.TEN, null, new BigDecimal("12"), new BigDecimal("11"),
             "UQT", null, "8908", "03004409005052001", BigDecimal.ONE, List.of(),
             true, true, null, null
         );
@@ -43,7 +43,7 @@ class PharmacyImportProductFactoryTest {
         PharmacyImportProductFactory factory = factory();
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             1, null, true, "Трусы", null, null,
-            BigDecimal.ONE, BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.TEN,
+            BigDecimal.ONE, BigDecimal.TEN, null, BigDecimal.ZERO, BigDecimal.TEN,
             null, null, null, null, BigDecimal.ONE, List.of(),
             false, false, null, null
         );
@@ -57,7 +57,7 @@ class PharmacyImportProductFactoryTest {
         PharmacyImportProductFactory factory = factory();
         PharmacyImportConfirmItem item = new PharmacyImportConfirmItem(
             0, null, true, "Кюпен таб", null, null,
-            BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("12"), new BigDecimal("11"),
+            BigDecimal.ONE, BigDecimal.TEN, null, new BigDecimal("12"), new BigDecimal("11"),
             "UQT", null, "8908", "03004409005052001", BigDecimal.ONE, List.of(),
             true, true, "1546940", "FOUND"
         );

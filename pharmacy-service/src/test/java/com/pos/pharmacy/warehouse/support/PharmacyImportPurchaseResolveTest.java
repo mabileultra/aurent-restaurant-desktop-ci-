@@ -9,14 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PharmacyImportPurchaseResolveTest {
 
     @Test
-    void prefersExplicitPurchaseColumnOverGross() {
+    void prefersFacturaGrossOverBasePurchaseColumn() {
         BigDecimal unit = PharmacyImportPurchaseResolve.unitWithoutVat(
-            new BigDecimal("33600"),
-            new BigDecimal("2182656"),
+            new BigDecimal("1666.50"),
+            new BigDecimal("1989868.16"),
             new BigDecimal("12"),
-            new BigDecimal("58")
+            new BigDecimal("400")
         );
-        assertEquals(0, new BigDecimal("33600").compareTo(unit));
+        assertEquals(0, new BigDecimal("4441.67").compareTo(unit));
+        assertEquals(0, new BigDecimal("4974.67").compareTo(
+            PharmacyImportPurchaseResolve.unitWithVat(
+                new BigDecimal("1989868.16"),
+                new BigDecimal("400")
+            )
+        ));
     }
 
     @Test
